@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "bingo",
+  "name": "BINGO (Fabric)",
+  "version": "$version",
+  "environment": "server",
+  "icon": "assets/bingo/icon.png",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.Bingo"
+      }
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.7.2",
+    "minecraft": ">=1.19-"
+  },
+  "contact": {
+    "homepage": "https://minecraft.horrific.dev/",
+    "sources": "https://gitlab.com/horrific-tweaks/bingo/",
+    "issues": "https://gitlab.com/horrific-tweaks/bingo/issues/"
+  },
+  "authors": [
+    "fennifith"
+  ],
+  "description": "BINGO",
+  "mixins": [
+    "mixins.lidar.json"
+  ]
+}
