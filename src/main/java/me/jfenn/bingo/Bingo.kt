@@ -1,26 +1,38 @@
 package me.jfenn.bingo
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.*
+import me.jfenn.bingo.card.WinCondition
 import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.generator.CardService
 import me.jfenn.bingo.map.BingoMapService
+import me.jfenn.bingo.menu.MenuEntity
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.block.ChestBlock
 import net.minecraft.block.entity.ChestBlockEntity
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.resource.ResourceManager
+import net.minecraft.resource.ResourceType
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.command.SetWorldSpawnCommand
 import net.minecraft.server.command.SpreadPlayersCommand
 import net.minecraft.util.Hand
+import net.minecraft.util.Identifier
 import net.minecraft.util.TypedActionResult
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.Heightmap
 
 const val MOD_ID = "bingo"
@@ -29,11 +41,16 @@ lateinit var minecraftServer: MinecraftServer
 
 object Bingo : ModInitializer {
 
+    val lobbyWorld by lazy {
+        minecraftServer.worlds.find { it.registryKey.value == Identifier.of("bingo", "lobby") }!!
+    }
+
     override fun onInitialize() {
         println("$MOD_ID mod initialized (main)")
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
+            BingoGame.spawnMenu()
         }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->
@@ -47,6 +64,8 @@ object Bingo : ModInitializer {
                         if (hasItem) BingoGame.markTileCollected(item, team)
                     }
                 }
+
+                BingoGame.updateTimer()
             }
 
             // TODO: move this elsewhere?
@@ -55,14 +74,24 @@ object Bingo : ModInitializer {
             }
         }
 
-        PlayerEvents.onPlayerJoin {
-            BingoGame.updateGameMode(it)
-            BingoGame.giveMapCardItem(it)
+        PlayerEvents.onPlayerJoin { player ->
+            BingoGame.updateGameMode(player)
+            BingoGame.giveMapCardItem(player)
+
+            // if in pregame, move to the lobby world
+            if (BingoGame.state == GameState.PREGAME) {
+                player.teleport(lobbyWorld, 0.5, 100.0, 0.5, 0f, 0f)
+            }
         }
 
         ServerPlayerEvents.AFTER_RESPAWN.register { player, _, _ ->
             // give player a new map, if they don't have one?
             BingoGame.giveMapCardItem(player)
+
+            // if in pregame, move to the lobby world
+            if (BingoGame.state == GameState.PREGAME) {
+                player.teleport(lobbyWorld, 0.5, 100.0, 0.5, 0f, 0f)
+            }
         }
 
         UseItemCallback.EVENT.register { player, world, hand ->

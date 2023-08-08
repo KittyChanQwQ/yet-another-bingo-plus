@@ -123,7 +123,7 @@ object SpreadPlayers {
             return
         }
 
-        player.requestTeleport(spawn.x + 0.5, spawn.y + 1.0, spawn.z + 0.5)
+        player.teleport(minecraftServer.overworld, spawn.x + 0.5, spawn.y + 1.0, spawn.z + 0.5, 0f, 0f)
         player.setSpawnPoint(
             minecraftServer.overworld.registryKey,
             spawn,
