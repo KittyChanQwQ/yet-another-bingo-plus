@@ -41,7 +41,17 @@ object BingoMapService {
 
                 // if x is within a map border
                 if (x < MAP_BORDER || y < MAP_BORDER || x >= MAP_SIZE - MAP_BORDER || y >= MAP_SIZE - MAP_BORDER) {
-                    state.colors[i] = team.color
+                    val borderLight = (team.color*4) + 2
+                    val borderMid = (team.color*4) + 1
+                    val borderDark = (team.color*4) + 3
+                    state.colors[i] = when {
+                        x == 0 || y == 0 -> borderLight
+                        x == MAP_SIZE-1 || y == MAP_SIZE-1 -> (team.color*4) + 3
+                        x in 1 until MAP_BORDER-1 || y in 1 until MAP_BORDER-1 -> borderMid
+                        x in MAP_SIZE - MAP_BORDER + 1 until MAP_SIZE-1 || y in MAP_SIZE - MAP_BORDER + 1 until MAP_SIZE-1 -> borderMid
+                        x == MAP_SIZE - MAP_BORDER || y == MAP_SIZE - MAP_BORDER -> borderLight
+                        else -> borderDark
+                    }.toUByte().toByte()
                     continue
                 }
 
