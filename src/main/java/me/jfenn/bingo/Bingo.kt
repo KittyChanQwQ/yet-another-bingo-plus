@@ -12,10 +12,14 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.minecraft.block.ChestBlock
+import net.minecraft.block.entity.ChestBlockEntity
+import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.command.SpreadPlayersCommand
+import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
 import net.minecraft.world.Heightmap
 
@@ -62,17 +66,20 @@ object Bingo : ModInitializer {
         }
 
         UseItemCallback.EVENT.register { player, world, hand ->
-            val team = BingoTeam.fromPlayer(player) ?: return@register TypedActionResult.pass(null)
-
             val itemStack = player.getStackInHand(hand)
+            val team = BingoTeam.fromPlayer(player) ?: return@register TypedActionResult.pass(itemStack)
+
+            // if the player has an item they could use in their offhand (e.g. food or a block), don't open the map
+            // - this prevents a de-sync bug where the player could use both items at once
+            val isUsingOffhand = !player.offHandStack.isEmpty && hand != Hand.OFF_HAND
 
             // if the item is the player's bingo map, open the item details chest
-            if (itemStack.item == Items.FILLED_MAP && itemStack.nbt?.getInt("map") == team.mapId) {
+            if (itemStack.item == Items.FILLED_MAP && itemStack.nbt?.getInt("map") == team.mapId && !isUsingOffhand) {
                 CardService.showInventory(player, BingoGame.card)
-                return@register TypedActionResult.consume(null)
+                return@register TypedActionResult.success(itemStack, true)
             }
 
-            TypedActionResult.pass(null)
+            TypedActionResult.pass(itemStack)
         }
 
         CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->

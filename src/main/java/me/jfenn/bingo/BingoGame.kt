@@ -13,6 +13,8 @@ import net.minecraft.registry.Registries
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.GameMode
 
@@ -45,6 +47,11 @@ object BingoGame {
             // reset player info
             player.clearStatusEffects()
             player.inventory.clear()
+
+            // unlock all crafting recipes
+            // TODO: conditional based on config
+            player.unlockRecipes(minecraftServer.recipeManager.values())
+
             updateGameMode(player)
             // give each player their team's card
             giveMapCardItem(player)
@@ -74,7 +81,19 @@ object BingoGame {
     }
 
     fun markTileCollected(tile: BingoCardEntry, team: BingoTeam) {
+        // unlock the collected item
+        val linesBefore = card.countLines(team)
         tile.setAchieved(team, true)
+        val linesAfter = card.countLines(team)
+
+        if (linesAfter > linesBefore) {
+            minecraftServer.playerManager.broadcast(
+                Text.literal("${team.name} team has scored $linesAfter line${if (linesAfter > 1) "s" else ""}!")
+                    .formatted(Formatting.BOLD)
+                    .formatted(team.formatting),
+                false,
+            )
+        }
 
         // play the doink sound
         playTileCollected(team)
@@ -117,6 +136,22 @@ object BingoGame {
         state = GameState.POSTGAME
         minecraftServer.playerManager.playerList.forEach { player ->
             updateGameMode(player)
+
+            player.networkHandler.sendPacket(
+                PlaySoundS2CPacket(
+                    Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_PORTAL_TRAVEL),
+                    SoundCategory.BLOCKS,
+                    player.x, player.y, player.z,
+                    0.2f, 1f, 0
+                )
+            )
+
+            minecraftServer.playerManager.broadcast(
+                Text.literal("${winner.name} team is the winner!")
+                    .formatted(Formatting.BOLD)
+                    .formatted(winner.formatting),
+                false,
+            )
         }
     }
 
