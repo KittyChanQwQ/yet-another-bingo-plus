@@ -28,7 +28,7 @@ object BingoMapService {
     val TILE_IMAGE = 16
     val TILE_PADDING = 3
     val TILE_MARGIN = 2
-    val TILE_SIZE = TILE_IMAGE + TILE_PADDING *2 + TILE_MARGIN
+    val TILE_SIZE = TILE_IMAGE + TILE_PADDING*2 + TILE_MARGIN
 
     fun update(team: BingoTeam, card: BingoCard) {
         val state = MapState.of(1, true, minecraftServer.overworld.registryKey)
@@ -41,8 +41,7 @@ object BingoMapService {
 
                 // if x is within a map border
                 if (x < MAP_BORDER || y < MAP_BORDER || x >= MAP_SIZE - MAP_BORDER || y >= MAP_SIZE - MAP_BORDER) {
-                    // TODO: set border color
-                    state.colors[i] = 16
+                    state.colors[i] = team.color
                     continue
                 }
 

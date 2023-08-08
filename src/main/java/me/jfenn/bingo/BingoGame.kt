@@ -7,10 +7,14 @@ import me.jfenn.bingo.generator.CardService
 import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.team.BingoTeam
+import net.minecraft.item.Items
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
 import net.minecraft.registry.Registries
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.util.math.BlockPos
+import net.minecraft.world.GameMode
 
 object BingoGame {
 
@@ -22,6 +26,8 @@ object BingoGame {
 
     var card: BingoCard = CardService.generate(itemDistribution)
 
+    var teamSpawnpoints = mapOf<BingoTeam, BlockPos>()
+
     fun start() {
         card = CardService.generate(itemDistribution)
         state = GameState.PLAYING
@@ -31,7 +37,40 @@ object BingoGame {
             BingoMapService.update(team, card)
         }
 
-        SpreadPlayers.spread()
+        // spread player teams to spawnpoint
+        teamSpawnpoints = SpreadPlayers.spread()
+        SpreadPlayers.teleportPlayers(teamSpawnpoints)
+
+        minecraftServer.playerManager.playerList.forEach { player ->
+            // reset player info
+            player.clearStatusEffects()
+            player.inventory.clear()
+            updateGameMode(player)
+            // give each player their team's card
+            giveMapCardItem(player)
+        }
+    }
+
+    fun updateGameMode(player: ServerPlayerEntity) {
+        val isOnTeam = BingoTeam.values()
+            .any { player.isTeamPlayer(it.team()) }
+
+        val gameMode = when {
+            state == GameState.PREGAME -> GameMode.ADVENTURE
+            state == GameState.PLAYING && isOnTeam -> GameMode.SURVIVAL
+            else -> GameMode.SPECTATOR
+        }
+
+        player.changeGameMode(gameMode)
+    }
+
+    fun giveMapCardItem(player: ServerPlayerEntity) {
+        val hasMap = player.inventory.containsAny { it.item == Items.FILLED_MAP }
+        if (!hasMap) {
+            BingoTeam.fromPlayer(player)
+                ?.let { team -> BingoMapService.createMapItem(team) }
+                ?.also { player.giveItemStack(it) }
+        }
     }
 
     fun markTileCollected(tile: BingoCardEntry, team: BingoTeam) {
@@ -42,6 +81,9 @@ object BingoGame {
 
         // update the team map
         BingoMapService.update(team, card)
+
+        // check win conditions
+        updateWinCondition()
     }
 
     fun playTileCollected(team: BingoTeam) {
@@ -65,6 +107,16 @@ object BingoGame {
                     )
                 )
             }
+        }
+    }
+
+    fun updateWinCondition() {
+        val winner = winCondition.getWinner(card) ?: return
+        // TODO: send win message/etc
+
+        state = GameState.POSTGAME
+        minecraftServer.playerManager.playerList.forEach { player ->
+            updateGameMode(player)
         }
     }
 

@@ -3,6 +3,8 @@ package me.jfenn.bingo.spawn
 import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.team.BingoTeam
 import net.minecraft.block.Blocks
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.Heightmap
 import net.minecraft.world.biome.BiomeKeys
@@ -47,12 +49,13 @@ object SpreadPlayers {
         }
     }
 
-    fun spread() {
+    fun spread(): Map<BingoTeam, BlockPos> {
         val teams = BingoTeam.values()
-            .map { it.team() }
-            .filter { it.playerList.isNotEmpty() }
+            .filter { it.team().playerList.isNotEmpty() }
 
         val groups = spreadGroups(teams.size)
+
+        val spawns = mutableMapOf<BingoTeam, BlockPos>()
 
         for (i in teams.indices) {
             val team = teams[i]
@@ -105,14 +108,33 @@ object SpreadPlayers {
                     continue@findChunk
                 }
 
-                minecraftServer.playerManager.playerList
-                    .filter { it.isTeamPlayer(team) }
-                    .forEach { it.requestTeleport(spawnX + 0.5, height + 1.0, spawnZ + 0.5) }
-
+                spawns[team] = BlockPos(spawnX, height, spawnZ)
                 break@findChunk
             }
         }
+
+        return spawns
     }
 
+    fun teleportPlayer(spawnpoints: Map<BingoTeam, BlockPos>, player: ServerPlayerEntity) {
+        val team = BingoTeam.fromPlayer(player) ?: return
+        val spawn = spawnpoints[team] ?: run {
+            log.warn("Team ${team.name} does not have a stored spawnpoint")
+            return
+        }
+
+        player.requestTeleport(spawn.x + 0.5, spawn.y + 1.0, spawn.z + 0.5)
+        player.setSpawnPoint(
+            minecraftServer.overworld.registryKey,
+            spawn,
+            0f, true, false,
+        )
+    }
+
+    fun teleportPlayers(spawnpoints: Map<BingoTeam, BlockPos>) {
+        for (player in minecraftServer.playerManager.playerList) {
+            teleportPlayer(spawnpoints, player)
+        }
+    }
 
 }

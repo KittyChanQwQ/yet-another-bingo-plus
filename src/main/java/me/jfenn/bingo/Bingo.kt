@@ -1,14 +1,17 @@
 package me.jfenn.bingo
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.*
+import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.generator.CardService
 import me.jfenn.bingo.map.BingoMapService
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseItemCallback
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
@@ -44,13 +47,18 @@ object Bingo : ModInitializer {
 
             // TODO: move this elsewhere?
             for (player in server.playerManager.playerList) {
-                val hasMap = player.inventory.containsAny { it.item == Items.FILLED_MAP }
-                if (!hasMap) {
-                    BingoTeam.fromPlayer(player)
-                        ?.let { team -> BingoMapService.createMapItem(team) }
-                        ?.also { player.giveItemStack(it) }
-                }
+                BingoGame.giveMapCardItem(player)
             }
+        }
+
+        PlayerEvents.onPlayerJoin {
+            BingoGame.updateGameMode(it)
+            BingoGame.giveMapCardItem(it)
+        }
+
+        ServerPlayerEvents.AFTER_RESPAWN.register { player, _, _ ->
+            // give player a new map, if they don't have one?
+            BingoGame.giveMapCardItem(player)
         }
 
         UseItemCallback.EVENT.register { player, world, hand ->
@@ -69,27 +77,15 @@ object Bingo : ModInitializer {
 
         CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
             dispatcher.register(literal<ServerCommandSource?>("start").executes { ctx ->
-                // generate a new card for the round
-                BingoGame.start()
-
-
-                SpreadPlayersCommand()
-
                 // TODO: sort teams evenly
                 for (player in ctx.source.server.playerManager.playerList) {
                     // TODO: temporary, remove this
                     if (BingoTeam.fromPlayer(player) == null)
                         BingoTeam.BLUE.addPlayer(player)
-
-                    // reset player info
-                    player.clearStatusEffects()
-                    player.inventory.clear()
-
-                    // give each player their team's card
-                    BingoTeam.fromPlayer(player)
-                        ?.let { team -> BingoMapService.createMapItem(team) }
-                        ?.also { item -> player.giveItemStack(item) }
                 }
+
+                // generate a new card for the round
+                BingoGame.start()
 
                 1
             })
