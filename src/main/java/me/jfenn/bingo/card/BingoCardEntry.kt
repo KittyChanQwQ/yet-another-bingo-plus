@@ -1,5 +1,6 @@
-package me.jfenn.bingo.data
+package me.jfenn.bingo.card
 
+import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.utils.lazyRef
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.util.log.Log
@@ -7,7 +8,6 @@ import net.fabricmc.loader.impl.util.log.LogCategory
 import net.minecraft.item.Item
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
-import java.io.File
 import java.nio.file.Path
 import javax.imageio.ImageIO
 

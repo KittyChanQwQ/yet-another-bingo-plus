@@ -1,7 +1,8 @@
 package me.jfenn.bingo.map
 
-import me.jfenn.bingo.data.*
+import me.jfenn.bingo.card.*
 import me.jfenn.bingo.minecraftServer
+import me.jfenn.bingo.team.BingoTeam
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.item.map.MapState

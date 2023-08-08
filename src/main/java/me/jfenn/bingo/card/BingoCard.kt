@@ -1,4 +1,6 @@
-package me.jfenn.bingo.data
+package me.jfenn.bingo.card
+
+import me.jfenn.bingo.team.BingoTeam
 
 class BingoCard(
     val entries: List<BingoCardEntry>,

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.generator
 
-import me.jfenn.bingo.data.BingoCard
+import me.jfenn.bingo.card.BingoCard
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack

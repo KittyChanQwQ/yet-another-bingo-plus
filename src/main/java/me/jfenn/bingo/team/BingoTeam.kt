@@ -1,4 +1,4 @@
-package me.jfenn.bingo.data
+package me.jfenn.bingo.team
 
 import me.jfenn.bingo.minecraftServer
 import net.minecraft.entity.player.PlayerEntity

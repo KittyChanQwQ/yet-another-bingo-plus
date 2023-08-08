@@ -1,21 +1,10 @@
 package me.jfenn.bingo.generator
 
-import me.jfenn.bingo.data.BingoCard
-import me.jfenn.bingo.data.BingoCardEntry
-import me.jfenn.bingo.minecraftServer
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.minecraft.client.gui.screen.ingame.InventoryScreen
+import me.jfenn.bingo.card.BingoCard
+import me.jfenn.bingo.card.BingoCardEntry
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.inventory.Inventories
-import net.minecraft.network.PacketByteBuf
-import net.minecraft.registry.Registries
-import net.minecraft.screen.NamedScreenHandlerFactory
-import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import java.util.*
 
 object CardService {
 
