@@ -7,6 +7,7 @@ import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.generator.CardService
 import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.menu.MenuEntity
+import me.jfenn.bingo.menu.PlaceStructure
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
@@ -25,15 +26,21 @@ import net.minecraft.item.Items
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceType
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.command.PlaceCommand
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.command.SetWorldSpawnCommand
 import net.minecraft.server.command.SpreadPlayersCommand
+import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.util.Hand
 import net.minecraft.util.Identifier
 import net.minecraft.util.TypedActionResult
+import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Vec3d
+import net.minecraft.world.GameRules
 import net.minecraft.world.Heightmap
+import net.minecraft.world.gen.structure.Structure
 
 const val MOD_ID = "bingo"
 
@@ -42,7 +49,12 @@ lateinit var minecraftServer: MinecraftServer
 object Bingo : ModInitializer {
 
     val lobbyWorld by lazy {
-        minecraftServer.worlds.find { it.registryKey.value == Identifier.of("bingo", "lobby") }!!
+        minecraftServer.worlds
+            .find { it.registryKey.value == Identifier.of("bingo", "lobby") }!!
+            .also {
+                // always load the spawn chunks
+                it.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
+            }
     }
 
     override fun onInitialize() {
@@ -50,7 +62,11 @@ object Bingo : ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
-            BingoGame.spawnMenu()
+            // remove overworld spawn tickets
+            minecraftServer.overworld.chunkManager.removePersistentTickets()
+
+            PlaceStructure.placeStructure(lobbyWorld, BlockPos(-24, -1, -24), Identifier.of("bingo", "lobby")!!)
+            BingoGame.spawnMenu(Vec3d(-4.0, 3.0, -4.0))
         }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->
@@ -80,7 +96,8 @@ object Bingo : ModInitializer {
 
             // if in pregame, move to the lobby world
             if (BingoGame.state == GameState.PREGAME) {
-                player.teleport(lobbyWorld, 0.5, 100.0, 0.5, 0f, 0f)
+                player.setSpawnPoint(lobbyWorld.registryKey, BlockPos.ORIGIN, 0f, true, false)
+                player.teleport(lobbyWorld, 0.5, 0.0, 0.5, 0f, 0f)
             }
         }
 
@@ -90,7 +107,8 @@ object Bingo : ModInitializer {
 
             // if in pregame, move to the lobby world
             if (BingoGame.state == GameState.PREGAME) {
-                player.teleport(lobbyWorld, 0.5, 100.0, 0.5, 0f, 0f)
+                player.setSpawnPoint(lobbyWorld.registryKey, BlockPos.ORIGIN, 0f, true, false)
+                player.teleport(lobbyWorld, 0.5, 0.0, 0.5, 0f, 0f)
             }
         }
 

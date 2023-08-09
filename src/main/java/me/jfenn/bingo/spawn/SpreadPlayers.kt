@@ -135,6 +135,8 @@ object SpreadPlayers {
         for (player in minecraftServer.playerManager.playerList) {
             teleportPlayer(spawnpoints, player)
         }
+
+        // TODO: add a 1-chunk load ticket for each spawnpoint?
     }
 
 }

@@ -57,14 +57,25 @@ object BingoGame {
 
     var startedAt: Instant? = null
 
-    fun spawnMenu() {
+    fun spawnMenu(pos: Vec3d) {
+        val startButton = ButtonEntity(
+            position = pos.add(9.0, -1.0, 0.0),
+            text = "START",
+            isActive = isConfigValid(),
+        ).apply {
+            onClick {
+                if (isConfigValid())
+                    start()
+            }
+        }
+
         MenuEntity(
             title = "Win Condition",
             options = WinCondition.values()
                 .map { it.name.replace('_', ' ') },
             selectedIndex = WinCondition.values()
                 .indexOfFirst { it == winCondition },
-            position = Vec3d(0.0, 80.0, 0.0),
+            position = pos,
         ).onChange {
             winCondition = WinCondition.values()[it]
         }
@@ -75,23 +86,21 @@ object BingoGame {
                 .map { it.name.replace('_', ' ').trim() },
             selectedIndex = TimeLimit.values()
                 .indexOfFirst { it == timeLimit },
-            position = Vec3d(2.0, 80.0, 0.0),
+            position = pos.add(2.0, 0.0, 0.0),
         ).onChange {
             timeLimit = TimeLimit.values()[it]
         }
 
         ItemDistributionEntity(
-            position = Vec3d(5.5, 80.0, 0.0),
+            position = pos.add(5.5, 0.0, 0.0),
         ).onChange {
             itemDistribution = it
+            startButton.isActive = isConfigValid()
         }
+    }
 
-        ButtonEntity(
-            position = Vec3d(9.0, 80.0, 0.0),
-            text = "START",
-        ).onClick {
-            start()
-        }
+    fun isConfigValid(): Boolean {
+        return itemDistribution.sum() == 25
     }
 
     fun start() {
@@ -153,6 +162,7 @@ object BingoGame {
     }
 
     fun giveMapCardItem(player: ServerPlayerEntity) {
+        if (state != GameState.PLAYING) return
         val hasMap = player.inventory.containsAny { it.item == Items.FILLED_MAP }
         if (!hasMap) {
             BingoTeam.fromPlayer(player)

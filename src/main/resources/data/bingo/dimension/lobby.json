@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:overworld",
+  "type": "bingo:lobby",
   "generator": {
     "type": "minecraft:flat",
     "settings": {
