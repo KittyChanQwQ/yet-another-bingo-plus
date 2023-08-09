@@ -18,7 +18,7 @@ object Config {
             json.decodeFromStream(clazz.serializer(), Files.newInputStream(filePath))
         } catch (e: Exception) {
             e.printStackTrace()
-            json.decodeFromString(clazz.serializer(), "{}").also { }
+            json.decodeFromString(clazz.serializer(), "{}").also { Config.write(clazz, file, it) }
         }
     }
 
