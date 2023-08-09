@@ -72,6 +72,7 @@ class ItemDistributionEntity(
                         Text.literal("Item Distribution")
                     ))
                     putString("billboard", "fixed")
+                    putString("alignment", "center")
                 })
             }
     }
@@ -86,6 +87,7 @@ class ItemDistributionEntity(
                     Text.literal(itemDistribution[i].toString())
                 ))
                 putString("billboard", "fixed")
+                putString("alignment", "center")
             })
         }
     }

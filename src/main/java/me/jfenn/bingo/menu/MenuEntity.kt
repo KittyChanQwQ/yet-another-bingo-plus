@@ -52,6 +52,7 @@ class MenuEntity(
                         Text.literal(title)
                     ))
                     putString("billboard", "fixed")
+                    putString("alignment", "center")
                 })
             }
             .also { world.spawnEntity(it) }

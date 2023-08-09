@@ -67,6 +67,7 @@ class ButtonEntity(
                 Text.literal(text).formatted(if (isActive) Formatting.BLACK else Formatting.GRAY)
             ))
             putString("billboard", "fixed")
+            putString("alignment", "center")
             putInt("background", (if (isActive) 0xA0_FFFFFFu else 0x00_000000u).toInt())
         })
     }
