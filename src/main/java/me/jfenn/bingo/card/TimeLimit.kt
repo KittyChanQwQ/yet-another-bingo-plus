@@ -1,7 +1,7 @@
 package me.jfenn.bingo.card
 
 enum class TimeLimit(val minutes: Int) {
-    _30_MINUTES(30),
+    `30_MINUTES`(30),
     ONE_HOUR(60),
     TWO_HOURS(120);
 

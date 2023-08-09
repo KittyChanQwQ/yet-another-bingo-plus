@@ -18,14 +18,6 @@ repositories {
 		name = 'Modrinth'
 		url = "https://api.modrinth.com/maven"
 	}
-//	maven {
-//		name = 'Ladysnake Mods'
-//		url = 'https://ladysnake.jfrog.io/artifactory/mods'
-//		content {
-//			includeGroup 'io.github.ladysnake'
-//			includeGroupByRegex 'io\\.github\\.onyxstudios.*'
-//		}
-//	}
 }
 
 dependencies {
@@ -43,9 +35,6 @@ dependencies {
 	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
 	implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2"
-
-//	modImplementation "io.github.ladysnake:satin:${satin_version}"
-//	include "io.github.ladysnake:satin:${satin_version}"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
 }

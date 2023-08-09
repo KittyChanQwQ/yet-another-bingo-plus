@@ -8,6 +8,11 @@ enum class WinCondition(val numLines: Int) {
     THREE_LINES(3),
     FULL_CARD(12);
 
+    fun getLeading(card: BingoCard): BingoTeam? {
+        return BingoTeam.values()
+            .maxByOrNull { team -> card.countLines(team) }
+    }
+
     fun getWinner(card: BingoCard): BingoTeam? {
         for (team in BingoTeam.values()) {
             val lines = card.countLines(team)

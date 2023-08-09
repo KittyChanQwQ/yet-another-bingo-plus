@@ -117,10 +117,14 @@ object SpreadPlayers {
     }
 
     fun teleportPlayer(spawnpoints: Map<BingoTeam, BlockPos>, player: ServerPlayerEntity) {
-        val team = BingoTeam.fromPlayer(player) ?: return
-        val spawn = spawnpoints[team] ?: run {
-            log.warn("Team ${team.name} does not have a stored spawnpoint")
-            return
+        val team = BingoTeam.fromPlayer(player)
+        val spawn = team?.let {
+            spawnpoints[team] ?: run {
+                log.warn("Team ${team.name} does not have a stored spawnpoint")
+                null
+            }
+        } ?: run {
+            BlockPos(0, 100, 0)
         }
 
         player.teleport(minecraftServer.overworld, spawn.x + 0.5, spawn.y + 1.0, spawn.z + 0.5, 0f, 0f)

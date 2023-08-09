@@ -13,7 +13,7 @@ import net.minecraft.world.World
 class ItemDistributionEntity(
     private val world: World = Bingo.lobbyWorld,
     private val position: Vec3d,
-    private var itemDistribution: List<Int> = listOf(2, 6, 9, 6, 2),
+    private var itemDistribution: List<Int>,
     private val requiredPermissionLevel: Int = 2,
 ) {
 

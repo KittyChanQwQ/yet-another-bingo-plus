@@ -4,6 +4,9 @@ import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.card.BingoCardEntry
 import me.jfenn.bingo.card.TimeLimit
 import me.jfenn.bingo.card.WinCondition
+import me.jfenn.bingo.config.BingoConfig
+import me.jfenn.bingo.config.Config
+import me.jfenn.bingo.config.config
 import me.jfenn.bingo.generator.CardService
 import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.menu.ButtonEntity
@@ -30,12 +33,13 @@ import java.util.*
 
 object BingoGame {
 
+    var config: BingoConfig by config("bingo/config.json")
+
     var state = GameState.PREGAME
 
-    var winCondition = WinCondition.THREE_LINES
+    private var leadingTeam: BingoTeam? = null
 
-    var timeLimit = TimeLimit.ONE_HOUR
-    val timeBar by lazy {
+    private val timeBar by lazy {
         // if the boss bar already exists, recreate it
         minecraftServer.bossBarManager.get(Identifier.of("fennifith", "bingo"))
             ?.also { minecraftServer.bossBarManager.remove(it) }
@@ -49,22 +53,20 @@ object BingoGame {
             }
     }
 
-    var itemDistribution = listOf(2, 6, 9, 6, 2)
-
-    var card: BingoCard = CardService.generate(itemDistribution)
+    var card: BingoCard = CardService.generate(config.itemDistribution)
 
     var teamSpawnpoints = mapOf<BingoTeam, BlockPos>()
 
-    var startedAt: Instant? = null
+    private var startedAt: Instant? = null
 
     fun spawnMenu(pos: Vec3d) {
         val startButton = ButtonEntity(
             position = pos.add(9.0, -1.0, 0.0),
             text = "START",
-            isActive = isConfigValid(),
+            isActive = config.isValid(),
         ).apply {
             onClick {
-                if (isConfigValid())
+                if (config.isValid())
                     start()
             }
         }
@@ -74,10 +76,10 @@ object BingoGame {
             options = WinCondition.values()
                 .map { it.name.replace('_', ' ') },
             selectedIndex = WinCondition.values()
-                .indexOfFirst { it == winCondition },
+                .indexOfFirst { it == config.winCondition },
             position = pos,
         ).onChange {
-            winCondition = WinCondition.values()[it]
+            config.winCondition = WinCondition.values()[it]
         }
 
         MenuEntity(
@@ -85,26 +87,28 @@ object BingoGame {
             options = TimeLimit.values()
                 .map { it.name.replace('_', ' ').trim() },
             selectedIndex = TimeLimit.values()
-                .indexOfFirst { it == timeLimit },
+                .indexOfFirst { it == config.timeLimit },
             position = pos.add(2.0, 0.0, 0.0),
         ).onChange {
-            timeLimit = TimeLimit.values()[it]
+            config.timeLimit = TimeLimit.values()[it]
         }
 
         ItemDistributionEntity(
             position = pos.add(5.5, 0.0, 0.0),
+            itemDistribution = config.itemDistribution,
         ).onChange {
-            itemDistribution = it
-            startButton.isActive = isConfigValid()
+            config.itemDistribution = it
+            startButton.isActive = config.isValid()
         }
     }
 
-    fun isConfigValid(): Boolean {
-        return itemDistribution.sum() == 25
-    }
-
     fun start() {
-        card = CardService.generate(itemDistribution)
+        // save the current config, if overwrite option is set
+        if (config.overwrite) {
+            config = config.copy()
+        }
+
+        card = CardService.generate(config.itemDistribution)
         state = GameState.PLAYING
         startedAt = Instant.now()
 
@@ -117,13 +121,19 @@ object BingoGame {
         teamSpawnpoints = SpreadPlayers.spread()
         SpreadPlayers.teleportPlayers(teamSpawnpoints)
 
+        // unload lobby dimension
+        Bingo.lobbyWorld.chunkManager.removePersistentTickets()
+
+        // reset world settings
+        minecraftServer.overworld.timeOfDay = 0
+
         minecraftServer.playerManager.playerList.forEach { player ->
             // reset player info
             player.clearStatusEffects()
             player.inventory.clear()
 
             // unlock all crafting recipes
-            // TODO: conditional based on config
+            // TODO: conditional based on config?
             player.unlockRecipes(minecraftServer.recipeManager.values())
 
             updateGameMode(player)
@@ -133,6 +143,23 @@ object BingoGame {
     }
 
     fun end() {
+        val winMessage = config.winCondition.getWinner(card)?.let { winner ->
+                Text.literal("${winner.name} team completed their card!")
+                    .formatted(Formatting.BOLD)
+                    .formatted(winner.formatting)
+            }
+            ?: config.winCondition.getLeading(card)?.let { leader ->
+                Text.literal("${leader.name} team is the winner!")
+                    .formatted(Formatting.BOLD)
+                    .formatted(leader.formatting)
+            }
+            ?: run {
+                Text.literal("The game is a draw!")
+                    .formatted(Formatting.BOLD)
+            }
+
+        minecraftServer.playerManager.broadcast(winMessage, false)
+
         state = GameState.POSTGAME
         minecraftServer.playerManager.playerList.forEach { player ->
             updateGameMode(player)
@@ -192,8 +219,29 @@ object BingoGame {
         // update the team map
         BingoMapService.update(team, card)
 
-        // check win conditions
-        updateWinCondition()
+        // check if the team has won the game
+        if (config.winCondition.getWinner(card) != null) {
+            end()
+            return
+        }
+
+        // check if the leading team has changed, and announce the leader
+        val leadingTeam = config.winCondition.getLeading(card)
+        if (leadingTeam != this.leadingTeam) {
+            this.leadingTeam = leadingTeam
+
+            val leadingMessage = if (leadingTeam != null) {
+                Text.literal("${leadingTeam.name} team is in the lead!")
+                    .formatted(Formatting.BOLD)
+                    .formatted(team.formatting)
+            } else {
+                Text.literal("${team.name} team is tied in the lead!")
+                    .formatted(Formatting.BOLD)
+                    .formatted(team.formatting)
+            }
+
+            minecraftServer.playerManager.broadcast(leadingMessage, false)
+        }
     }
 
     fun playTileCollected(team: BingoTeam) {
@@ -220,22 +268,6 @@ object BingoGame {
         }
     }
 
-    fun updateWinCondition() {
-        val winner = winCondition.getWinner(card) ?: return
-        // TODO: send win message/etc
-
-        minecraftServer.playerManager.playerList.forEach { player ->
-            minecraftServer.playerManager.broadcast(
-                Text.literal("${winner.name} team is the winner!")
-                    .formatted(Formatting.BOLD)
-                    .formatted(winner.formatting),
-                false,
-            )
-        }
-
-        end()
-    }
-
     fun updateTimer() {
         if (state != GameState.PLAYING) return
         val start = startedAt ?: return
@@ -246,13 +278,13 @@ object BingoGame {
             timeBar.addPlayer(player)
         }
 
-        val secondsRemaining = Duration.ofSeconds(timeLimit.seconds - duration.toSeconds())
+        val secondsRemaining = Duration.ofSeconds(config.timeLimit.seconds - duration.toSeconds())
         val secondsRemainingStr = String.format(Locale.US, "%02dh %02dm %02ds", secondsRemaining.toHoursPart(), secondsRemaining.toMinutesPart(), secondsRemaining.toSecondsPart())
 
         timeBar.name = Text.literal("Time Remaining: $secondsRemainingStr")
-        timeBar.value = ((1f - (duration.toSeconds() / timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
+        timeBar.value = ((1f - (duration.toSeconds() / config.timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
 
-        if (duration.toMinutes() > timeLimit.minutes)
+        if (duration.toMinutes() >= config.timeLimit.minutes)
             end()
     }
 
