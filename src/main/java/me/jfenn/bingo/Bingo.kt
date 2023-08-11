@@ -11,10 +11,15 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseItemCallback
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.command.WorldBorderCommand
 import net.minecraft.server.world.ChunkTicketType
+import net.minecraft.text.LiteralTextContent
+import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import net.minecraft.util.Identifier
 import net.minecraft.util.TypedActionResult
@@ -35,6 +40,10 @@ object Bingo : ModInitializer {
             .also {
                 // always load the spawn chunks
                 it.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
+                it.worldBorder.apply {
+                    setCenter(0.0, 0.0)
+                    size = 48.0
+                }
             }
     }
 
@@ -42,15 +51,13 @@ object Bingo : ModInitializer {
         println("$MOD_ID mod initialized (main)")
 
         // TODO:
-        // - spawn area worldborder
+        // ? spawn area worldborder
         // - spawn area saturation
         // - spawn team picker, fix hitboxes, give interaction feedback
         // - spawn team shuffle tool
-        // ? fix transparent items (glass) not rendering at all
-        // - post-game, give all team cards to players
-        // - add /coords command
-        // - card /reroll command
-        // - send to team chat by default
+        // - setting for pvp mode
+        // - setting for granting recipes
+        // ? fix transparent items (glass) not rendering at all (is this done?)
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
@@ -80,6 +87,21 @@ object Bingo : ModInitializer {
             for (player in server.playerManager.playerList) {
                 BingoGame.giveMapCardItem(player)
             }
+        }
+
+        ServerMessageEvents.ALLOW_CHAT_MESSAGE.register { message, player, type ->
+            if (BingoGame.state != GameState.PLAYING) return@register true
+            val team = BingoTeam.fromPlayer(player) ?: return@register true
+
+            // broadcast message to team
+            team.broadcastMessage(
+                Text.empty()
+                    .append(Text.literal("TEAM ${player.entityName}").formatted(team.formatting))
+                    .append(Text.literal(": "))
+                    .append(message.content)
+            )
+
+            false
         }
 
         PlayerEvents.onPlayerJoin { player ->
@@ -122,6 +144,12 @@ object Bingo : ModInitializer {
             }
 
             TypedActionResult.pass(itemStack)
+        }
+
+        CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
+            for (command in commands()) {
+                dispatcher.register(command)
+            }
         }
     }
 

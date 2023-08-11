@@ -40,6 +40,12 @@ enum class BingoTeam(
         minecraftServer.scoreboard.removePlayerFromTeam(player.entityName, team())
     }
 
+    fun broadcastMessage(text: Text) {
+        minecraftServer.playerManager.playerList
+            .filter { it.isTeamPlayer(team()) }
+            .forEach { it.sendMessage(text) }
+    }
+
     val mapId by lazy { minecraftServer.overworld.nextMapId }
     val mapName by lazy { "map_${mapId}" }
 

@@ -45,11 +45,13 @@ object BingoGame {
     private var leadingTeam: BingoTeam? = null
 
     private val timeBar by lazy {
+        val id = Identifier.of("fennifith", "bingo")
+
         // if the boss bar already exists, recreate it
-        minecraftServer.bossBarManager.get(Identifier.of("fennifith", "bingo"))
+        minecraftServer.bossBarManager.get(id)
             ?.also { minecraftServer.bossBarManager.remove(it) }
 
-        minecraftServer.bossBarManager.add(Identifier.of("fennifith", "bingo"), Text.literal("Time Remaining"))
+        minecraftServer.bossBarManager.add(id, Text.literal("Time Remaining"))
             .apply {
                 color = BossBar.Color.WHITE
                 style = BossBar.Style.PROGRESS
@@ -108,33 +110,47 @@ object BingoGame {
 
         TeamEntity(
             team = BingoTeam.ORANGE,
-            position = Vec3d(-17.0, 4.0, -4.0),
+            position = Vec3d(-16.5, 4.0, -3.5),
         )
 
         TeamEntity(
             team = BingoTeam.GREEN,
-            position = Vec3d(-15.0, 8.0, -20.0),
+            position = Vec3d(-14.5, 8.0, -19.5),
         )
 
         TeamEntity(
             team = BingoTeam.PINK,
-            position = Vec3d(5.0, 5.0, -16.0),
+            position = Vec3d(5.5, 5.0, -15.5),
         )
 
         TeamEntity(
             team = BingoTeam.BLUE,
-            position = Vec3d(16.0, 3.0, -9.0),
+            position = Vec3d(16.5, 3.0, -8.5),
         )
 
         TeamEntity(
             team = BingoTeam.YELLOW,
-            position = Vec3d(18.0, 3.0, 6.0),
+            position = Vec3d(18.5, 3.0, 6.5),
+        )
+
+        TeamEntity(
+            team = BingoTeam.AQUA,
+            position = Vec3d(16.5, 5.0, 17.5),
         )
 
         TeamEntity(
             team = BingoTeam.GRAY,
-            position = Vec3d(-2.0, 1.0, 18.0),
+            position = Vec3d(-1.5, 1.0, 18.5),
         )
+    }
+
+    fun rollCard() {
+        card = CardService.generate(config.itemDistribution)
+
+        // update the card map images
+        for (team in BingoTeam.values()) {
+            BingoMapService.update(team, card)
+        }
     }
 
     fun start() {
@@ -143,14 +159,9 @@ object BingoGame {
             config = config.copy()
         }
 
-        card = CardService.generate(config.itemDistribution)
         state = GameState.PLAYING
         startedAt = Instant.now()
-
-        // create the initial card map images
-        for (team in BingoTeam.values()) {
-            BingoMapService.update(team, card)
-        }
+        rollCard()
 
         // spread player teams to spawnpoint
         teamSpawnpoints = SpreadPlayers.spread()
