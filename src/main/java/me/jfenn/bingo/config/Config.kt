@@ -18,7 +18,7 @@ object Config {
             json.decodeFromStream(clazz.serializer(), Files.newInputStream(filePath))
         } catch (e: Exception) {
             e.printStackTrace()
-            json.decodeFromString(clazz.serializer(), "{}").also { Config.write(clazz, file, it) }
+            json.decodeFromString(clazz.serializer(), "{}").also { write(clazz, file, it) }
         }
     }
 
@@ -42,10 +42,6 @@ class ConfigDelegate<T: Any>(
 
     override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
         this.value = value.also { Config.write(clazz, file, value) }
-    }
-
-    fun write() {
-        value?.let { Config.write(clazz, file, it) }
     }
 }
 

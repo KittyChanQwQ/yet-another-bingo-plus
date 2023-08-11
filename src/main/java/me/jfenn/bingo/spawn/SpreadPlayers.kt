@@ -95,7 +95,6 @@ object SpreadPlayers {
                 val spawnBlockPos = BlockPos(spawnX, height-1, spawnZ)
                 val spawnBlock = minecraftServer.overworld.getBlockState(spawnBlockPos)
 
-
                 if (invalidSpawnBiomes.contains(minecraftServer.overworld.getBiome(spawnBlockPos).key.get())) {
                     log.info("Skipping chunk ($x, $z) for invalid biome")
                     x += 4 * x.sign

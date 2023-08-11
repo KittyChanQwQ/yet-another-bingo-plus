@@ -1,7 +1,5 @@
 package me.jfenn.bingo.team
 
-import me.jfenn.bingo.map.Color
-import me.jfenn.bingo.map.rgb
 import me.jfenn.bingo.minecraftServer
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.scoreboard.Team

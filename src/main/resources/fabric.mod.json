@@ -27,6 +27,6 @@
   ],
   "description": "BINGO",
   "mixins": [
-    "mixins.lidar.json"
+    "mixins.bingo.json"
   ]
 }

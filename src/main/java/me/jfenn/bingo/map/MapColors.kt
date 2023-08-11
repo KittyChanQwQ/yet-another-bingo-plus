@@ -1,17 +1,39 @@
 package me.jfenn.bingo.map
 
 import kotlin.math.pow
+import kotlin.math.sqrt
 
-typealias Color = Int
-
-fun rgb(r: Int, g: Int, b: Int): Color {
+fun rgb(r: Int, g: Int, b: Int): Int {
     return -0x1000000 or (r shl 16 and 0x00FF0000) or (g shl 8 and 0x0000FF00) or (b and 0x000000FF)
 }
 
-data class RGBA(val r: Int, val g: Int, val b: Int, val a: Int)
+data class Color(val r: Int, val g: Int, val b: Int, val a: Int) {
+    fun map(mapper: (Int) -> Int): Color {
+        return Color(
+            mapper(this.r),
+            mapper(this.g),
+            mapper(this.b),
+            this.a
+        )
+    }
 
-fun Color.rgba(): RGBA {
-    return RGBA(
+    fun toInt(): Int {
+        return rgb(r, g, b)
+    }
+
+    fun mix(other: Color): Color {
+        val alpha: Float = other.a / 255f
+        return Color(
+            ((r * (1-alpha)) + (other.r * alpha)).toInt(),
+            ((g * (1-alpha)) + (other.g * alpha)).toInt(),
+            ((b * (1-alpha)) + (other.b * alpha)).toInt(),
+            a,
+        )
+    }
+}
+
+fun Int.rgba(): Color {
+    return Color(
         (this ushr 16) and 0xFF,
         (this ushr 8) and 0xFF,
         this and 0xFF,
@@ -19,19 +41,16 @@ fun Color.rgba(): RGBA {
     )
 }
 
-fun RGBA.map(mapper: (Int) -> Int): RGBA {
-    return RGBA(
-        mapper(this.r),
-        mapper(this.g),
-        mapper(this.b),
-        this.a
-    )
-}
-
-fun Color.colorDistance(other: Color): Double {
+fun Int.colorDistance(other: Int): Double {
     val (r, g, b, _) = rgba()
     val (r2, g2, b2, _) = other.rgba()
-    val rMean = (r + r2) / 2.0
+    val rMean = (r + r2) / 2
+    val rDiff = r - r2;
+    val gDiff = g - g2;
+    val bDiff = b - b2;
+    return sqrt((((512 + rMean) * rDiff * rDiff) shr 8) + (4 * gDiff * gDiff) + (((767 - rMean) * bDiff * bDiff) shr 8).toDouble())
+
+    /*
     val weightR = (2 + rMean) / 256.0
     val weightG = 4.0
     val weightB = 2 + (255 - rMean) / 256.0
@@ -40,13 +59,10 @@ fun Color.colorDistance(other: Color): Double {
             + weightG * (g - g2).toDouble().pow(2)
             + weightB * (b - b2).toDouble().pow(2)
     )
+     */
 }
 
-fun RGBA.toInt(): Color {
-    return rgb(r, g, b)
-}
-
-val MAP_COLORS_BASE = arrayOf<Color>(
+val MAP_COLORS_BASE = arrayOf<Int>(
     0,
     rgb(127, 178, 56),
     rgb(247, 233, 163),
@@ -111,7 +127,7 @@ val MAP_COLORS_BASE = arrayOf<Color>(
     rgb(127, 167, 150),
 )
 
-val MAP_COLORS = Array<Color>(248) { index ->
+val MAP_COLORS = Array<Int>(248) { index ->
     val baseIndex = index / 4
     val baseColor = MAP_COLORS_BASE[baseIndex]
     val multiplier = when (index % 4) {
@@ -124,7 +140,7 @@ val MAP_COLORS = Array<Color>(248) { index ->
     baseColor.rgba().map { it * multiplier / 255 }.toInt()
 }
 
-fun Color.closestColorByte(): Byte {
+fun Int.closestColorByte(): Byte {
     var index = 0
     var best = Double.MAX_VALUE;
 

@@ -1,35 +1,19 @@
 package me.jfenn.bingo
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.*
-import me.jfenn.bingo.card.WinCondition
 import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.generator.CardService
-import me.jfenn.bingo.map.BingoMapService
-import me.jfenn.bingo.menu.MenuEntity
 import me.jfenn.bingo.menu.PlaceStructure
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
-import net.minecraft.block.ChestBlock
-import net.minecraft.block.entity.ChestBlockEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.resource.ResourceManager
-import net.minecraft.resource.ResourceType
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.command.PlaceCommand
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.command.SetWorldSpawnCommand
-import net.minecraft.server.command.SpreadPlayersCommand
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.util.Hand
 import net.minecraft.util.Identifier
@@ -38,9 +22,6 @@ import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Vec3d
-import net.minecraft.world.GameRules
-import net.minecraft.world.Heightmap
-import net.minecraft.world.gen.structure.Structure
 
 const val MOD_ID = "bingo"
 
@@ -59,6 +40,17 @@ object Bingo : ModInitializer {
 
     override fun onInitialize() {
         println("$MOD_ID mod initialized (main)")
+
+        // TODO:
+        // - spawn area worldborder
+        // - spawn area saturation
+        // - spawn team picker, fix hitboxes, give interaction feedback
+        // - spawn team shuffle tool
+        // ? fix transparent items (glass) not rendering at all
+        // - post-game, give all team cards to players
+        // - add /coords command
+        // - card /reroll command
+        // - send to team chat by default
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
@@ -116,33 +108,20 @@ object Bingo : ModInitializer {
             val itemStack = player.getStackInHand(hand)
             val team = BingoTeam.fromPlayer(player) ?: return@register TypedActionResult.pass(itemStack)
 
-            // if the player has an item they could use in their offhand (e.g. food or a block), don't open the map
+            // if the player has an item they could use in their other hand (e.g. food or a block), don't open the map
             // - this prevents a de-sync bug where the player could use both items at once
-            val isUsingOffhand = !player.offHandStack.isEmpty && hand != Hand.OFF_HAND
+            val otherHandStack = player.getStackInHand(when (hand) {
+                Hand.MAIN_HAND -> Hand.OFF_HAND
+                else -> Hand.MAIN_HAND
+            })
 
             // if the item is the player's bingo map, open the item details chest
-            if (itemStack.item == Items.FILLED_MAP && itemStack.nbt?.getInt("map") == team.mapId && !isUsingOffhand) {
+            if (itemStack.item == Items.FILLED_MAP && itemStack.nbt?.getInt("map") == team.mapId && otherHandStack.isEmpty) {
                 CardService.showInventory(player, BingoGame.card)
                 return@register TypedActionResult.success(itemStack, true)
             }
 
             TypedActionResult.pass(itemStack)
-        }
-
-        CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
-            dispatcher.register(literal<ServerCommandSource?>("start").executes { ctx ->
-                // TODO: sort teams evenly
-                for (player in ctx.source.server.playerManager.playerList) {
-                    // TODO: temporary, remove this
-                    if (BingoTeam.fromPlayer(player) == null)
-                        BingoTeam.BLUE.addPlayer(player)
-                }
-
-                // generate a new card for the round
-                BingoGame.start()
-
-                1
-            })
         }
     }
 

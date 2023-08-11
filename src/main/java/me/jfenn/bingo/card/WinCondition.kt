@@ -9,8 +9,19 @@ enum class WinCondition(val numLines: Int) {
     FULL_CARD(12);
 
     fun getLeading(card: BingoCard): BingoTeam? {
-        return BingoTeam.values()
-            .maxByOrNull { team -> card.countLines(team) }
+        var max: BingoTeam? = null
+        var maxLines: Int = 0
+        for (team in BingoTeam.values()) {
+           val teamLines = card.countLines(team)
+           if (teamLines > maxLines) {
+               max = team
+               maxLines = teamLines
+           } else if (teamLines == maxLines) {
+               max = null
+           }
+        }
+
+        return max
     }
 
     fun getWinner(card: BingoCard): BingoTeam? {

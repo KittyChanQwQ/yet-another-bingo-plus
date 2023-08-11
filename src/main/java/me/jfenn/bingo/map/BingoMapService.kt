@@ -6,13 +6,24 @@ import me.jfenn.bingo.team.BingoTeam
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.item.map.MapState
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 
 
 object BingoMapService {
 
     fun createMapItem(team: BingoTeam): ItemStack {
         val item = ItemStack(Items.FILLED_MAP, 1)
-        item.getOrCreateNbt().putInt("map", team.mapId)
+        item.getOrCreateNbt().apply {
+            putInt("map", team.mapId)
+            put("display", NbtCompound().apply {
+                putString("Name", Text.Serializer.toJson(
+                    Text.literal("Bingo Card (${team.name.lowercase()})")
+                        .formatted(team.formatting, Formatting.ITALIC)
+                ))
+            })
+        }
 
         return item
     }
@@ -80,8 +91,12 @@ object BingoMapService {
                 val imgX = tileX - TILE_PADDING
                 val imgY = tileY - TILE_PADDING
                 if (imgX in 0 until TILE_IMAGE && imgY in 0 until TILE_IMAGE) {
-                    val rgba: Color = item.image?.getRGB(imgX, imgY) ?: continue
-                    if (rgba.rgba().a < 255) continue
+                    var rgba: Int = item.image?.getRGB(imgX, imgY) ?: continue
+                    val color = rgba.rgba()
+                    if (color.a == 0) continue
+                    if (color.a < 255) {
+                        rgba = Color(150, 150, 150, 255).mix(color).toInt()
+                    }
 
                     state.colors[i] = rgba.closestColorByte()
                     continue

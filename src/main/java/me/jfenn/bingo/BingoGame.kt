@@ -12,13 +12,17 @@ import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.menu.ButtonEntity
 import me.jfenn.bingo.menu.ItemDistributionEntity
 import me.jfenn.bingo.menu.MenuEntity
+import me.jfenn.bingo.menu.TeamEntity
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.team.BingoTeam
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.item.Items
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
+import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
+import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.command.ItemCommand
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -101,6 +105,36 @@ object BingoGame {
             config.itemDistribution = it
             startButton.isActive = config.isValid()
         }
+
+        TeamEntity(
+            team = BingoTeam.ORANGE,
+            position = Vec3d(-17.0, 4.0, -4.0),
+        )
+
+        TeamEntity(
+            team = BingoTeam.GREEN,
+            position = Vec3d(-15.0, 8.0, -20.0),
+        )
+
+        TeamEntity(
+            team = BingoTeam.PINK,
+            position = Vec3d(5.0, 5.0, -16.0),
+        )
+
+        TeamEntity(
+            team = BingoTeam.BLUE,
+            position = Vec3d(16.0, 3.0, -9.0),
+        )
+
+        TeamEntity(
+            team = BingoTeam.YELLOW,
+            position = Vec3d(18.0, 3.0, 6.0),
+        )
+
+        TeamEntity(
+            team = BingoTeam.GRAY,
+            position = Vec3d(-2.0, 1.0, 18.0),
+        )
     }
 
     fun start() {
@@ -128,7 +162,7 @@ object BingoGame {
         // reset world settings
         minecraftServer.overworld.timeOfDay = 0
 
-        minecraftServer.playerManager.playerList.forEach { player ->
+        for (player in minecraftServer.playerManager.playerList) {
             // reset player info
             player.clearStatusEffects()
             player.inventory.clear()
@@ -150,7 +184,7 @@ object BingoGame {
                     .formatted(winner.formatting)
             }
             ?: config.winCondition.getLeading(card)?.let { leader ->
-                Text.literal("${leader.name} team is the winner!")
+                Text.literal("Out of time! ${leader.name} team is the winner!")
                     .formatted(Formatting.BOLD)
                     .formatted(leader.formatting)
             }
@@ -162,7 +196,11 @@ object BingoGame {
         minecraftServer.playerManager.broadcast(winMessage, false)
 
         state = GameState.POSTGAME
-        minecraftServer.playerManager.playerList.forEach { player ->
+        for (player in minecraftServer.playerManager.playerList) {
+            // send the winning team title message
+            player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO")))
+            player.networkHandler.sendPacket(SubtitleS2CPacket(winMessage))
+
             updateGameMode(player)
 
             player.networkHandler.sendPacket(
@@ -173,6 +211,18 @@ object BingoGame {
                     0.2f, 1f, 0
                 )
             )
+
+            // hide the boss bar once the game is complete
+            timeBar.removePlayer(player)
+
+            // give all maps for active teams to the player
+            BingoTeam.values()
+                .filter { it.team().playerList.isNotEmpty() }
+                .map { BingoMapService.createMapItem(it) }
+                .forEachIndexed { i, stack ->
+                    player.getStackReference(i).set(stack)
+                    player.currentScreenHandler.sendContentUpdates()
+                }
         }
     }
 
@@ -183,6 +233,7 @@ object BingoGame {
         val gameMode = when {
             state == GameState.PREGAME -> GameMode.ADVENTURE
             state == GameState.PLAYING && isOnTeam -> GameMode.SURVIVAL
+            state == GameState.POSTGAME -> GameMode.CREATIVE
             else -> GameMode.SPECTATOR
         }
 
@@ -227,6 +278,7 @@ object BingoGame {
         }
 
         // check if the leading team has changed, and announce the leader
+        // TODO: (green) BLUE team is in the lead!
         val leadingTeam = config.winCondition.getLeading(card)
         if (leadingTeam != this.leadingTeam) {
             this.leadingTeam = leadingTeam
@@ -234,7 +286,7 @@ object BingoGame {
             val leadingMessage = if (leadingTeam != null) {
                 Text.literal("${leadingTeam.name} team is in the lead!")
                     .formatted(Formatting.BOLD)
-                    .formatted(team.formatting)
+                    .formatted(leadingTeam.formatting)
             } else {
                 Text.literal("${team.name} team is tied in the lead!")
                     .formatted(Formatting.BOLD)
@@ -275,7 +327,7 @@ object BingoGame {
 
         val duration = Duration.between(start, Instant.now())
 
-        minecraftServer.playerManager.playerList.forEach { player ->
+        for (player in minecraftServer.playerManager.playerList) {
             timeBar.addPlayer(player)
         }
 
