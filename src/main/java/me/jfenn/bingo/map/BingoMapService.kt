@@ -3,6 +3,7 @@ package me.jfenn.bingo.map
 import me.jfenn.bingo.card.*
 import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.team.BingoTeam
+import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.item.map.MapState
@@ -26,6 +27,13 @@ object BingoMapService {
         }
 
         return item
+    }
+
+    /**
+     * Returns true if the item stack is a team's map card
+     */
+    fun isMapItem(stack: ItemStack): Boolean {
+        return stack.item == Items.FILLED_MAP && BingoTeam.values().any { FilledMapItem.getMapId(stack) == it.mapId }
     }
 
     val COLOR_BACKGROUND = rgb(150, 150, 150).closestColorByte()

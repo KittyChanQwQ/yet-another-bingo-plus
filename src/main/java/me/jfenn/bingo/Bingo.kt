@@ -4,6 +4,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder.*
 import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.generator.CardService
+import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.menu.PlaceStructure
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -12,6 +13,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
+import net.minecraft.item.FilledMapItem
 import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
@@ -57,7 +59,6 @@ object Bingo : ModInitializer {
         // - spawn team shuffle tool
         // - setting for pvp mode
         // - setting for granting recipes
-        // ? fix transparent items (glass) not rendering at all (is this done?)
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
@@ -75,8 +76,8 @@ object Bingo : ModInitializer {
 
                     // check inventory for changes
                     for (item in BingoGame.card.entries) if (!item.hasAchieved(team)) {
-                        val hasItem = player.inventory.containsAny { it.item == item.item() }
-                                || player.currentScreenHandler.cursorStack.item == item.item()
+                        val hasItem = player.inventory.containsAny { item.canSatisfy(it) }
+                                || item.canSatisfy(player.currentScreenHandler.cursorStack)
                         if (hasItem) BingoGame.markTileCollected(item, team)
                     }
                 }

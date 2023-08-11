@@ -254,6 +254,8 @@ object BingoGame {
 
     fun giveMapCardItem(player: ServerPlayerEntity) {
         if (state != GameState.PLAYING) return
+        if (!player.isAlive) return
+
         val hasMap = player.inventory.containsAny { it.item == Items.FILLED_MAP }
                 || player.currentScreenHandler.cursorStack.item == Items.FILLED_MAP
 

@@ -35,8 +35,8 @@ object CardService {
 
     fun showInventory(player: PlayerEntity, card: BingoCard) {
         player.openHandledScreen(SimpleNamedScreenHandlerFactory(
-            { syncId, _, _ ->
-                CardScreenHandler(syncId, card)
+            { syncId, inv, _ ->
+                CardScreenHandler(syncId, card, inv)
             },
             Text.literal("BINGO Card")
         ))

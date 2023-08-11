@@ -4,9 +4,10 @@
   "package": "me.jfenn.bingo.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "PlayerManagerMixin",
     "InteractionEntityMixin",
-    "MinecraftServerMixin"
+    "MinecraftServerMixin",
+    "PlayerEntityMixin",
+    "PlayerManagerMixin"
   ],
   "client": [
   ],

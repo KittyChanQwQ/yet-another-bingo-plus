@@ -2,6 +2,7 @@ package me.jfenn.bingo.generator
 
 import me.jfenn.bingo.card.BingoCard
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.screen.ScreenHandler
@@ -13,6 +14,7 @@ import net.minecraft.screen.slot.SlotActionType
 class CardScreenHandler(
     syncId: Int,
     card: BingoCard,
+    playerInventory: PlayerInventory,
 ) : ScreenHandler(ScreenHandlerType.GENERIC_9X5, syncId) {
 
     init {
@@ -31,6 +33,19 @@ class CardScreenHandler(
                     this.addSlot(EmptySlot(inventory, index, x, y))
                 }
             }
+        }
+
+        // player inventory
+        val offset = 5*18 + 12
+        for (row in 0 until 3) {
+            for (col in 0 until 9) {
+                this.addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, offset + row * 18))
+            }
+        }
+
+        // hotbar
+        for (col in 0 until 9) {
+            this.addSlot(Slot(playerInventory, col, 8 + col * 18, offset + 58))
         }
     }
 
