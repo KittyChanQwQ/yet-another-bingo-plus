@@ -15,6 +15,7 @@ import me.jfenn.bingo.menu.MenuEntity
 import me.jfenn.bingo.menu.TeamEntity
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.team.BingoTeam
+import net.fabricmc.fabric.api.event.EventFactory
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.item.Items
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
@@ -254,6 +255,8 @@ object BingoGame {
     fun giveMapCardItem(player: ServerPlayerEntity) {
         if (state != GameState.PLAYING) return
         val hasMap = player.inventory.containsAny { it.item == Items.FILLED_MAP }
+                || player.currentScreenHandler.cursorStack.item == Items.FILLED_MAP
+
         if (!hasMap) {
             BingoTeam.fromPlayer(player)
                 ?.let { team -> BingoMapService.createMapItem(team) }

@@ -76,6 +76,7 @@ object Bingo : ModInitializer {
                     // check inventory for changes
                     for (item in BingoGame.card.entries) if (!item.hasAchieved(team)) {
                         val hasItem = player.inventory.containsAny { it.item == item.item() }
+                                || player.currentScreenHandler.cursorStack.item == item.item()
                         if (hasItem) BingoGame.markTileCollected(item, team)
                     }
                 }
