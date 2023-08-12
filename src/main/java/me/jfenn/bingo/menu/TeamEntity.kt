@@ -1,15 +1,13 @@
 package me.jfenn.bingo.menu
 
-import me.jfenn.bingo.Bingo
 import me.jfenn.bingo.event.InteractionEntityEvents
 import me.jfenn.bingo.lobbyWorld
-import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.team.BingoTeam
+import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.Vec3d

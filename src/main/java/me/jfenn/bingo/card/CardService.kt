@@ -1,7 +1,5 @@
-package me.jfenn.bingo.generator
+package me.jfenn.bingo.card
 
-import me.jfenn.bingo.card.BingoCard
-import me.jfenn.bingo.card.BingoCardEntry
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.text.Text
@@ -9,10 +7,10 @@ import net.minecraft.text.Text
 object CardService {
 
     val tiers = mapOf<String, GeneratorTier>(
-        "A" to GeneratorTier.fromFilename("a_tier.txt"),
-        "B" to GeneratorTier.fromFilename("b_tier.txt"),
-        "C" to GeneratorTier.fromFilename("c_tier.txt"),
         "D" to GeneratorTier.fromFilename("d_tier.txt"),
+        "C" to GeneratorTier.fromFilename("c_tier.txt"),
+        "B" to GeneratorTier.fromFilename("b_tier.txt"),
+        "A" to GeneratorTier.fromFilename("a_tier.txt"),
         "S" to GeneratorTier.fromFilename("s_tier.txt"),
     )
 

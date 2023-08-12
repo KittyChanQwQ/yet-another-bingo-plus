@@ -2,28 +2,18 @@ package me.jfenn.bingo
 
 import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.card.BingoCardEntry
-import me.jfenn.bingo.card.TimeLimit
-import me.jfenn.bingo.card.WinCondition
 import me.jfenn.bingo.config.BingoConfig
-import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.config.config
-import me.jfenn.bingo.generator.CardService
+import me.jfenn.bingo.card.CardService
 import me.jfenn.bingo.map.BingoMapService
-import me.jfenn.bingo.menu.ButtonEntity
-import me.jfenn.bingo.menu.ItemDistributionEntity
-import me.jfenn.bingo.menu.MenuEntity
-import me.jfenn.bingo.menu.TeamEntity
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.team.BingoTeam
-import net.fabricmc.fabric.api.event.EventFactory
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.item.Items
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.registry.Registries
-import net.minecraft.server.MinecraftServer
-import net.minecraft.server.command.ItemCommand
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -31,7 +21,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameMode
 import java.time.Duration
 import java.time.Instant
@@ -66,84 +55,6 @@ object BingoGame {
     var teamSpawnpoints = mapOf<BingoTeam, BlockPos>()
 
     private var startedAt: Instant? = null
-
-    fun spawnMenu(pos: Vec3d) {
-        val startButton = ButtonEntity(
-            position = pos.add(9.0, -1.0, 0.0),
-            text = "START",
-            isActive = config.isValid(),
-        ).apply {
-            onClick {
-                if (config.isValid())
-                    start()
-            }
-        }
-
-        MenuEntity(
-            title = "Win Condition",
-            options = WinCondition.values()
-                .map { it.name.replace('_', ' ') },
-            selectedIndex = WinCondition.values()
-                .indexOfFirst { it == config.winCondition },
-            position = pos,
-        ).onChange {
-            config.winCondition = WinCondition.values()[it]
-        }
-
-        MenuEntity(
-            title = "Time Limit",
-            options = TimeLimit.values()
-                .map { it.name.replace('_', ' ').trim() },
-            selectedIndex = TimeLimit.values()
-                .indexOfFirst { it == config.timeLimit },
-            position = pos.add(2.0, 0.0, 0.0),
-        ).onChange {
-            config.timeLimit = TimeLimit.values()[it]
-        }
-
-        ItemDistributionEntity(
-            position = pos.add(5.5, 0.0, 0.0),
-            itemDistribution = config.itemDistribution,
-        ).onChange {
-            config.itemDistribution = it
-            startButton.isActive = config.isValid()
-        }
-
-        TeamEntity(
-            team = BingoTeam.ORANGE,
-            position = Vec3d(-16.5, 4.0, -3.5),
-        )
-
-        TeamEntity(
-            team = BingoTeam.GREEN,
-            position = Vec3d(-14.5, 8.0, -19.5),
-        )
-
-        TeamEntity(
-            team = BingoTeam.PINK,
-            position = Vec3d(5.5, 5.0, -15.5),
-        )
-
-        TeamEntity(
-            team = BingoTeam.BLUE,
-            position = Vec3d(16.5, 3.0, -8.5),
-        )
-
-        TeamEntity(
-            team = BingoTeam.YELLOW,
-            position = Vec3d(18.5, 3.0, 6.5),
-        )
-
-        TeamEntity(
-            team = BingoTeam.AQUA,
-            position = Vec3d(16.5, 5.0, 17.5),
-        )
-
-        TeamEntity(
-            team = BingoTeam.GRAY,
-            position = Vec3d(-1.5, 1.0, 18.5),
-        )
-    }
 
     fun rollCard() {
         card = CardService.generate(config.itemDistribution)
@@ -294,7 +205,6 @@ object BingoGame {
         }
 
         // check if the leading team has changed, and announce the leader
-        // TODO: (green) BLUE team is in the lead!
         val leadingTeam = config.winCondition.getLeading(card)
         if (leadingTeam != this.leadingTeam) {
             this.leadingTeam = leadingTeam

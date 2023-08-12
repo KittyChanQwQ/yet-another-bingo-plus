@@ -1,4 +1,4 @@
-package me.jfenn.bingo.menu
+package me.jfenn.bingo.utils
 
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtList

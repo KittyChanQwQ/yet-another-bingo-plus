@@ -1,8 +1,6 @@
 package me.jfenn.bingo.config
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.card.TimeLimit
-import me.jfenn.bingo.card.WinCondition
 
 @Serializable
 data class BingoConfig(

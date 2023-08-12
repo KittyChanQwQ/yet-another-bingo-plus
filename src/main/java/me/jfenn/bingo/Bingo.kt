@@ -1,28 +1,20 @@
 package me.jfenn.bingo
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder.*
 import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.team.BingoTeam
-import me.jfenn.bingo.generator.CardService
-import me.jfenn.bingo.map.BingoMapService
-import me.jfenn.bingo.menu.PlaceStructure
+import me.jfenn.bingo.card.CardService
+import me.jfenn.bingo.menu.MenuService
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
-import net.minecraft.item.FilledMapItem
 import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.command.WorldBorderCommand
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.LiteralTextContent
-import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import net.minecraft.util.Identifier
@@ -30,8 +22,6 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
 
 const val MOD_ID = "bingo"
 
@@ -57,6 +47,7 @@ object Bingo : ModInitializer {
 
     override fun onInitialize() {
         println("$MOD_ID mod initialized (main)")
+        WorldDeleter.invoke()
 
         // TODO:
         // ? spawn area worldborder
@@ -65,14 +56,14 @@ object Bingo : ModInitializer {
         // - spawn team shuffle tool
         // - setting for pvp mode
         // - setting for granting recipes
+        // - initialize item configs from resources if missing
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
             // remove overworld spawn tickets
             minecraftServer.overworld.chunkManager.removePersistentTickets()
 
-            PlaceStructure.placeStructure(lobbyWorld, BlockPos(-24, -1, -24), Identifier.of("bingo", "lobby")!!)
-            BingoGame.spawnMenu(Vec3d(-4.0, 3.0, -4.0))
+            MenuService.spawn()
         }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->

@@ -8,7 +8,11 @@ import me.jfenn.bingo.team.BingoTeam
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 
+/**
+ * Return a sequence of commands related to the game
+ */
 fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequence {
+    // send current player coordinates to other team members
     literal<ServerCommandSource?>("coords")
         .requires { ctx -> ctx.player?.let { BingoTeam.fromPlayer(it) } != null }
         .then(
@@ -39,6 +43,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         }
         .also { yield(it) }
 
+    // send a message to all teams, outside of the team-local chat
     literal<ServerCommandSource?>("all")
         .then(
             argument<ServerCommandSource?, String?>("message", greedyString())
@@ -58,6 +63,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         )
         .also { yield(it) }
 
+    // re-roll the bingo card in a round (operator only)
     literal<ServerCommandSource?>("reroll")
         .requires { it.hasPermissionLevel(2) }
         .executes { _ ->

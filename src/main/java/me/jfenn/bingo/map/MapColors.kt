@@ -1,8 +1,5 @@
 package me.jfenn.bingo.map
 
-import org.joml.Matrix3d
-import org.joml.Vector3d
-import kotlin.math.pow
 import kotlin.math.sqrt
 
 fun rgb(r: Int, g: Int, b: Int): Int {
@@ -47,9 +44,9 @@ fun Int.colorDistance(other: Int): Double {
     val (r, g, b, _) = rgba()
     val (r2, g2, b2, _) = other.rgba()
     val rMean = (r + r2) / 2
-    val rDiff = r - r2;
-    val gDiff = g - g2;
-    val bDiff = b - b2;
+    val rDiff = r - r2
+    val gDiff = g - g2
+    val bDiff = b - b2
     return sqrt((((512 + rMean) * rDiff * rDiff) shr 8) + (4 * gDiff * gDiff) + (((767 - rMean) * bDiff * bDiff) shr 8).toDouble())
 }
 
@@ -133,7 +130,7 @@ val MAP_COLORS = Array<Int>(248) { index ->
 
 fun Int.closestColorByte(): Byte {
     var index = 0
-    var best = Double.MAX_VALUE;
+    var best = Double.MAX_VALUE
 
     for (i in 4 until MAP_COLORS.size) {
         val distance = this.colorDistance(MAP_COLORS[i])

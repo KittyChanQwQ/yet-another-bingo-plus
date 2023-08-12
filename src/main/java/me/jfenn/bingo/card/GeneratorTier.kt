@@ -1,4 +1,4 @@
-package me.jfenn.bingo.generator
+package me.jfenn.bingo.card
 
 import net.fabricmc.loader.api.FabricLoader
 import java.io.File

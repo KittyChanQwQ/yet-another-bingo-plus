@@ -1,9 +1,8 @@
 package me.jfenn.bingo.menu
 
-import me.jfenn.bingo.Bingo
 import me.jfenn.bingo.lobbyWorld
-import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.utils.EventListener
+import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.nbt.NbtCompound

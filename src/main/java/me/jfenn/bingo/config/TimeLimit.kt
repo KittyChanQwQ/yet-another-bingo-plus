@@ -1,4 +1,4 @@
-package me.jfenn.bingo.card
+package me.jfenn.bingo.config
 
 enum class TimeLimit(val minutes: Int) {
     `30_MINUTES`(30),

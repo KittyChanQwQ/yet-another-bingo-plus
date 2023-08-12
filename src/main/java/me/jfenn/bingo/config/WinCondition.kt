@@ -1,5 +1,6 @@
-package me.jfenn.bingo.card
+package me.jfenn.bingo.config
 
+import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.team.BingoTeam
 
 enum class WinCondition(val numLines: Int) {

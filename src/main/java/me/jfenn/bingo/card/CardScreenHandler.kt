@@ -1,6 +1,5 @@
-package me.jfenn.bingo.generator
+package me.jfenn.bingo.card
 
-import me.jfenn.bingo.card.BingoCard
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
@@ -9,7 +8,6 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.Slot
 import net.minecraft.screen.slot.SlotActionType
-
 
 class CardScreenHandler(
     syncId: Int,
