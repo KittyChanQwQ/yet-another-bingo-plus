@@ -10,6 +10,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -40,15 +41,24 @@ object Config {
      * Obtains a resource InputStream from the config directory, or
      * creates it from the java resources if it doesn't exist
      */
-    fun getResource(file: String): InputStream {
+    fun readStream(
+        file: String,
+        shouldWriteDefault: Boolean = true,
+        default: () -> InputStream = {
+            javaClass.getResourceAsStream("/bingo/$file")!!
+        },
+    ): InputStream {
         val filePath = FabricLoader.getInstance().configDir.resolve("bingo/$file")
         if (!Files.exists(filePath)) {
+            if (!shouldWriteDefault)
+                return default()
+
             filePath.parent.toFile().mkdirs()
             Files.createFile(filePath)
 
             // write the default resource file to the config dir
             FileOutputStream(filePath.toFile()).use { output ->
-                val input = javaClass.getResourceAsStream("/bingo/$file")!!
+                val input = default()
                 IOUtils.copy(input, output)
                 input.close()
             }

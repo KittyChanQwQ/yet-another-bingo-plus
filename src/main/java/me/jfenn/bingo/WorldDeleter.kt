@@ -10,7 +10,6 @@ object WorldDeleter {
 
     val FILES_TO_RM = listOf(
         "world/advancements",
-        "world/dimensions",
         "world/data",
         "world/DIM1",
         "world/DIM-1",
@@ -19,6 +18,7 @@ object WorldDeleter {
         "world/playerdata",
         "world/poi",
         "world/region",
+        "world/stats",
         "world/level.dat"
     )
 

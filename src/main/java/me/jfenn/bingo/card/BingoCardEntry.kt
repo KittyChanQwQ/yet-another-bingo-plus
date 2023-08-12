@@ -10,13 +10,16 @@ import net.fabricmc.loader.impl.util.log.Log
 import net.fabricmc.loader.impl.util.log.LogCategory
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.entity.DisplayEntityRenderer.ItemDisplayEntityRenderer
+import net.minecraft.client.render.item.ItemModels
 import net.minecraft.client.render.item.ItemRenderer
+import net.minecraft.data.client.Models
 import net.minecraft.data.client.TextureKey
 import net.minecraft.data.client.TextureMap
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
+import java.lang.IllegalArgumentException
 import java.nio.file.Path
 import javax.imageio.ImageIO
 
@@ -53,7 +56,14 @@ class BingoCardEntry(
 
     val image by lazyRef {
         try {
-            ImageIO.read(Config.getResource(imagePath))
+            val inputStream = Config.readStream(imagePath, false) {
+                javaClass.getResourceAsStream("/bingo/images/${item.lowercase()}.png")
+                    ?: javaClass.getResourceAsStream("/assets/minecraft/textures/item/${item.lowercase()}.png")
+                    ?: javaClass.getResourceAsStream("/assets/minecraft/textures/block/${item.lowercase()}.png")
+                    ?: throw IllegalArgumentException("Cannot find default texture for ${item.lowercase()}.png")
+            }
+
+            ImageIO.read(inputStream)
         } catch (e: Exception) {
             Log.error(LogCategory.LOG, "Error reading item image: $imagePath")
             e.printStackTrace()
