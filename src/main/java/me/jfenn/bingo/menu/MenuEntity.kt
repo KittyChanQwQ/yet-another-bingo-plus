@@ -1,6 +1,7 @@
 package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.Bingo
+import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.utils.EventListener
 import net.minecraft.entity.EntityType
@@ -11,7 +12,7 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
 class MenuEntity(
-    world: World = Bingo.lobbyWorld,
+    world: World = lobbyWorld,
     title: String,
     private val options: List<String>,
     private val position: Vec3d,

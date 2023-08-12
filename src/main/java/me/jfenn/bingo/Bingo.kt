@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.minecraft.item.FilledMapItem
@@ -19,6 +20,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.command.WorldBorderCommand
 import net.minecraft.server.world.ChunkTicketType
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.LiteralTextContent
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -29,25 +31,29 @@ import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Vec3d
+import net.minecraft.world.World
 
 const val MOD_ID = "bingo"
 
 lateinit var minecraftServer: MinecraftServer
 
-object Bingo : ModInitializer {
+val LOBBY_WORLD_ID = Identifier.of("bingo", "lobby")
+val lobbyWorld: ServerWorld by lazy {
+    minecraftServer.worlds
+        .find { it.registryKey.value == LOBBY_WORLD_ID }!!
+        .also { world ->
+            // always load the spawn chunks
+            world.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
 
-    val lobbyWorld by lazy {
-        minecraftServer.worlds
-            .find { it.registryKey.value == Identifier.of("bingo", "lobby") }!!
-            .also {
-                // always load the spawn chunks
-                it.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
-                it.worldBorder.apply {
-                    setCenter(0.0, 0.0)
-                    size = 48.0
-                }
-            }
-    }
+            // this doesn't work because world border settings only take effect when applied to the overworld
+            // world.worldBorder.apply {
+            //     setCenter(0.0, 0.0)
+            //     size = 48.0
+            // }
+        }
+}
+
+object Bingo : ModInitializer {
 
     override fun onInitialize() {
         println("$MOD_ID mod initialized (main)")

@@ -33,7 +33,7 @@ abstract class InteractionEntityMixin extends Entity {
         }
     }
 
-    @Inject(at = @At(value = "HEAD"), method = "interact")
+    @Inject(at = @At(value = "HEAD"), method = "interact", cancellable = true)
     public void interact(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> ci) {
         var callback = InteractionEntityEvents.INSTANCE.getINTERACT_LISTENERS().get(uuid);
         if (callback != null) {

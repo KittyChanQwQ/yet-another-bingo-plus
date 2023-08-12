@@ -169,7 +169,7 @@ object BingoGame {
         SpreadPlayers.teleportPlayers(teamSpawnpoints)
 
         // unload lobby dimension
-        Bingo.lobbyWorld.chunkManager.removePersistentTickets()
+        lobbyWorld.chunkManager.removePersistentTickets()
 
         // reset world settings
         minecraftServer.overworld.timeOfDay = 0

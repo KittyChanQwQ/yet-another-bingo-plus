@@ -2,6 +2,7 @@ package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.Bingo
 import me.jfenn.bingo.event.InteractionEntityEvents
+import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.utils.EventListener
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
@@ -15,7 +16,7 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
 class ButtonEntity(
-    world: World = Bingo.lobbyWorld,
+    world: World = lobbyWorld,
     val position: Vec3d,
     text: String,
     isActive: Boolean = false,

@@ -2,6 +2,7 @@ package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.Bingo
 import me.jfenn.bingo.event.InteractionEntityEvents
+import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.team.BingoTeam
 import net.minecraft.entity.EntityType
@@ -17,7 +18,7 @@ import net.minecraft.world.World
 class TeamEntity(
     val team: BingoTeam,
     val position: Vec3d,
-    val world: World = Bingo.lobbyWorld,
+    val world: World = lobbyWorld,
 ) {
 
     private val interactionListenerEntity = InteractionEntity(EntityType.INTERACTION, world)
