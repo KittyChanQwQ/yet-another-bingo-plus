@@ -1,7 +1,6 @@
 package me.jfenn.bingo.card
 
-import net.fabricmc.loader.api.FabricLoader
-import java.io.File
+import me.jfenn.bingo.config.Config
 
 class GeneratorTier(
     val items: List<Set<String>> = listOf(),
@@ -15,16 +14,10 @@ class GeneratorTier(
 
     companion object {
         fun fromFilename(name: String): GeneratorTier {
-            val path = FabricLoader.getInstance().configDir
-                .resolve("bingo/item_data/${name}")
+            val inputStream = Config.getResource(name)
 
-            return fromFile(path.toFile())
-        }
-
-        fun fromFile(file: File): GeneratorTier {
             val items = mutableListOf<Set<String>>()
-
-            file.bufferedReader().useLines { lines ->
+            inputStream.bufferedReader().useLines { lines ->
                 for (line in lines) {
                     items.add(
                         line.split("|")

@@ -56,7 +56,7 @@ object Bingo : ModInitializer {
         // - spawn team shuffle tool
         // - setting for pvp mode
         // - setting for granting recipes
-        // - initialize item configs from resources if missing
+        // - collect bingo image resources from the minecraft jar (as a gradle task?)
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server

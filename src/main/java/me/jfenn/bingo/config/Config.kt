@@ -5,6 +5,10 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.utils.json
 import net.fabricmc.loader.api.FabricLoader
+import org.apache.commons.io.IOUtils
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.InputStream
 import java.nio.file.Files
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
@@ -25,8 +29,33 @@ object Config {
     @OptIn(InternalSerializationApi::class)
     fun <T: Any> write(clazz: KClass<T>, file: String, config: T) {
         val filePath = FabricLoader.getInstance().configDir.resolve(file)
-        if (!Files.exists(filePath)) Files.createFile(filePath)
+        if (!Files.exists(filePath)) {
+            filePath.parent.toFile().mkdirs()
+            Files.createFile(filePath)
+        }
         Files.write(filePath, json.encodeToString(clazz.serializer(), config).toByteArray())
+    }
+
+    /**
+     * Obtains a resource InputStream from the config directory, or
+     * creates it from the java resources if it doesn't exist
+     */
+    fun getResource(file: String): InputStream {
+        val filePath = FabricLoader.getInstance().configDir.resolve("bingo/$file")
+        if (!Files.exists(filePath)) {
+            filePath.parent.toFile().mkdirs()
+            Files.createFile(filePath)
+
+            // write the default resource file to the config dir
+            FileOutputStream(filePath.toFile()).use { output ->
+                val input = javaClass.getResourceAsStream("/bingo/$file")!!
+                IOUtils.copy(input, output)
+                input.close()
+            }
+        }
+
+        // return the config dir file content
+        return FileInputStream(filePath.toFile())
     }
 }
 
