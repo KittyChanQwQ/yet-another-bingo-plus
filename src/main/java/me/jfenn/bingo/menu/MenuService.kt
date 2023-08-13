@@ -15,7 +15,7 @@ import net.minecraft.util.math.Vec3d
 object MenuService {
 
     fun spawn() {
-        placeStructure(lobbyWorld, BlockPos(-24, -1, -24), Identifier.of("bingo", "lobby")!!)
+        placeStructure(lobbyWorld, BlockPos(-24, -2, -24), Identifier.of("bingo", "lobby")!!)
         spawnMenuEntities(Vec3d(-4.0, 3.0, -4.0))
     }
 
@@ -94,6 +94,11 @@ object MenuService {
         TeamEntity(
             team = BingoTeam.GRAY,
             position = Vec3d(-1.5, 1.0, 18.5),
+        )
+
+        TeamEntity(
+            team = BingoTeam.RED,
+            position = Vec3d(-16.5, 3.0, 14.5),
         )
     }
 
