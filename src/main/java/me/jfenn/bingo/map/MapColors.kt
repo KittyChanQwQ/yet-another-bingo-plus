@@ -29,20 +29,22 @@ data class Color(val r: Int, val g: Int, val b: Int, val a: Int) {
             a,
         )
     }
-}
 
-fun Int.rgba(): Color {
-    return Color(
-        (this ushr 16) and 0xFF,
-        (this ushr 8) and 0xFF,
-        this and 0xFF,
-        (this ushr 24) and 0xFF,
-    )
+    companion object {
+        fun fromInt(i: Int): Color {
+            return Color(
+                (i ushr 16) and 0xFF,
+                (i ushr 8) and 0xFF,
+                i and 0xFF,
+                (i ushr 24) and 0xFF,
+            )
+        }
+    }
 }
 
 fun Int.colorDistance(other: Int): Double {
-    val (r, g, b, _) = rgba()
-    val (r2, g2, b2, _) = other.rgba()
+    val (r, g, b, _) = Color.fromInt(this)
+    val (r2, g2, b2, _) = Color.fromInt(other)
     val rMean = (r + r2) / 2
     val rDiff = r - r2
     val gDiff = g - g2
@@ -125,7 +127,7 @@ val MAP_COLORS = Array<Int>(248) { index ->
         else -> 255
     }
 
-    baseColor.rgba().map { it * multiplier / 255 }.toInt()
+    Color.fromInt(baseColor).map { it * multiplier / 255 }.toInt()
 }
 
 fun Int.closestColorByte(): Byte {

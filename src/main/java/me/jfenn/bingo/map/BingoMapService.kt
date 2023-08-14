@@ -99,7 +99,7 @@ object BingoMapService {
                 val imgY = tileY - TILE_PADDING
                 if (imgX in 0 until TILE_IMAGE && imgY in 0 until TILE_IMAGE) {
                     var rgba: Int = item.image?.getRGB(imgX, imgY) ?: continue
-                    val color = rgba.rgba()
+                    val color = Color.fromInt(rgba)
                     if (color.a == 0) continue
                     if (color.a < 255) {
                         rgba = Color(150, 150, 150, 255).mix(color).toInt()
