@@ -8,12 +8,14 @@ import me.jfenn.bingo.card.CardService
 import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.team.BingoTeam
+import net.minecraft.advancement.AdvancementManager
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.item.Items
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.registry.Registries
+import net.minecraft.server.command.AdvancementCommand
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -91,6 +93,18 @@ object BingoGame {
             // reset player info
             player.clearStatusEffects()
             player.inventory.clear()
+            player.health = 20f
+            player.hungerManager.foodLevel = 20
+            player.hungerManager.saturationLevel = 5f
+            player.hungerManager.exhaustion = 0f
+
+            // reset advancements state
+            for (advancement in minecraftServer.advancementLoader.advancements) {
+                val progress = player.advancementTracker.getProgress(advancement)
+                for (criteria in progress.obtainedCriteria) {
+                    player.advancementTracker.revokeCriterion(advancement, criteria)
+                }
+            }
 
             // unlock all crafting recipes
             // TODO: conditional based on config?

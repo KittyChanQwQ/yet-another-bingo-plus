@@ -50,12 +50,10 @@ object Bingo : ModInitializer {
         WorldDeleter.invoke()
 
         // TODO:
-        // ? spawn area worldborder
-        // - spawn area saturation
-        // - spawn team picker, fix hitboxes, give interaction feedback
         // - spawn team shuffle tool
         // - setting for pvp mode
         // - setting for granting recipes
+        // - fix boss bar desync when leaving mid-game
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
