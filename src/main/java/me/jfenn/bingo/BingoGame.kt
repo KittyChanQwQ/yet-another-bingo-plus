@@ -25,6 +25,7 @@ import net.minecraft.world.GameMode
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 object BingoGame {
 
@@ -76,8 +77,9 @@ object BingoGame {
         rollCard()
 
         // spread player teams to spawnpoint
-        teamSpawnpoints = SpreadPlayers.spread()
-        SpreadPlayers.teleportPlayers(teamSpawnpoints)
+        val spread = SpreadPlayers(world = minecraftServer.overworld)
+        teamSpawnpoints = spread.spread()
+        spread.teleportPlayers(teamSpawnpoints)
 
         // unload lobby dimension
         lobbyWorld.chunkManager.removePersistentTickets()

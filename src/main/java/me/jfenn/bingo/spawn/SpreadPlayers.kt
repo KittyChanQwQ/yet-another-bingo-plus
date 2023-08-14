@@ -4,6 +4,7 @@ import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.team.BingoTeam
 import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.Heightmap
 import net.minecraft.world.biome.BiomeKeys
@@ -14,7 +15,9 @@ import kotlin.math.cos
 import kotlin.math.sign
 import kotlin.math.sin
 
-object SpreadPlayers {
+class SpreadPlayers(
+    private val world: ServerWorld = minecraftServer.overworld,
+) {
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -66,8 +69,15 @@ object SpreadPlayers {
             log.info("Spawning team ${team.name} near chunk ($x, $z)")
 
             findChunk@ while (true) {
-                // This looks unsafe. but maybe it isn't though?
-                val chunk = minecraftServer.overworld.getChunk(x, z, ChunkStatus.FULL, true)!!
+                // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
+                val biomeTest = world.getBiome(BlockPos(x*16 + 8, world.logicalHeight, z*16 + 8))
+                if (invalidSpawnBiomes.contains(biomeTest.key.get())) {
+                    x += 4 * x.sign
+                    continue@findChunk
+                }
+
+                // This "!!" looks unsafe. but maybe it isn't though? (it should actually be fine)
+                val chunk = world.getChunk(x, z, ChunkStatus.FULL, true)!!
 
                 val heightmapWG = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG)
                 val heightmap = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE)
@@ -95,10 +105,10 @@ object SpreadPlayers {
                 val spawnZ = z*16 + (closestIndex / 16)
 
                 val spawnBlockPos = BlockPos(spawnX, height-1, spawnZ)
-                val spawnBlock = minecraftServer.overworld.getBlockState(spawnBlockPos)
+                val spawnBlock = world.getBlockState(spawnBlockPos)
 
-                if (invalidSpawnBiomes.contains(minecraftServer.overworld.getBiome(spawnBlockPos).key.get())) {
-                    log.info("Skipping chunk ($x, $z) for invalid biome")
+                if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
+                    log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
                     x += 4 * x.sign
                     continue@findChunk
                 }
@@ -128,9 +138,9 @@ object SpreadPlayers {
             BlockPos(0, 100, 0)
         }
 
-        player.teleport(minecraftServer.overworld, spawn.x + 0.5, spawn.y + 1.0, spawn.z + 0.5, 0f, 0f)
+        player.teleport(world, spawn.x + 0.5, spawn.y + 1.0, spawn.z + 0.5, 0f, 0f)
         player.setSpawnPoint(
-            minecraftServer.overworld.registryKey,
+            world.registryKey,
             spawn,
             0f, true, false,
         )
