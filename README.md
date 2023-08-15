@@ -13,6 +13,8 @@ games. Make sure this is not installed on an existing world or you _will_ lose y
 
 ![A screenshot of Minecraft plains/ocean with a BINGO card in the corner](./bingo.png)
 
+Requires: [fabric-api](https://modrinth.com/mod/fabric-api)
+
 ## 📖 Configuration
 
 On the first startup, the mod will create its initial config files in `./config/bingo/...`. No initial setup is needed
