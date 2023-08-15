@@ -34,6 +34,10 @@ object BingoGame {
     var config: BingoConfig by config("bingo/config.json")
 
     var state = GameState.PREGAME
+        set(value) {
+            minecraftServer.setMotd("${value.color}[${value.motd}]§f Minecraft BINGO")
+            field = value
+        }
 
     private var leadingTeam: BingoTeam? = null
 

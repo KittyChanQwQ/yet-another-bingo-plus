@@ -70,6 +70,7 @@ object Bingo : ModInitializer {
             // boss bar needs to be initialized here, to fix client desync
             // - where are these stored? previous bossbars are somehow persisted, even though world data isn't
             BingoGame.timeBar
+            BingoGame.state = GameState.PREGAME
         }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->
