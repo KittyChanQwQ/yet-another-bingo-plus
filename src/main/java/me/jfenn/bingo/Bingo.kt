@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.Items
+import net.minecraft.network.packet.s2c.play.BossBarS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ChunkTicketType
@@ -47,15 +48,17 @@ val lobbyWorld: ServerWorld by lazy {
 
 object Bingo : ModInitializer {
 
+    init {
+        WorldDeleter.invoke()
+    }
+
     override fun onInitialize() {
         println("$MOD_ID mod initialized (main)")
-        WorldDeleter.invoke()
 
         // TODO:
         // - spawn team shuffle tool
         // - setting for pvp mode
         // - setting for granting recipes
-        // - fix boss bar desync when leaving mid-game
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
@@ -63,6 +66,10 @@ object Bingo : ModInitializer {
             minecraftServer.overworld.chunkManager.removePersistentTickets()
 
             MenuService.spawn()
+
+            // boss bar needs to be initialized here, to fix client desync
+            // - where are these stored? previous bossbars are somehow persisted, even though world data isn't
+            BingoGame.timeBar
         }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->

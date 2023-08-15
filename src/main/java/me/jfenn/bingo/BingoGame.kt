@@ -37,7 +37,7 @@ object BingoGame {
 
     private var leadingTeam: BingoTeam? = null
 
-    private val timeBar by lazy {
+    val timeBar by lazy {
         val id = Identifier.of("fennifith", "bingo")
 
         // if the boss bar already exists, recreate it
@@ -97,6 +97,9 @@ object BingoGame {
             player.hungerManager.foodLevel = 20
             player.hungerManager.saturationLevel = 5f
             player.hungerManager.exhaustion = 0f
+
+            // add player to boss bar
+            timeBar.addPlayer(player)
 
             // reset advancements state
             for (advancement in minecraftServer.advancementLoader.advancements) {
@@ -268,10 +271,6 @@ object BingoGame {
         val start = startedAt ?: return
 
         val duration = Duration.between(start, Instant.now())
-
-        for (player in minecraftServer.playerManager.playerList) {
-            timeBar.addPlayer(player)
-        }
 
         val secondsRemaining = Duration.ofSeconds(config.timeLimit.seconds - duration.toSeconds())
         val secondsRemainingStr = String.format(Locale.US, "%02dh %02dm %02ds", secondsRemaining.toHoursPart(), secondsRemaining.toMinutesPart(), secondsRemaining.toSecondsPart())
