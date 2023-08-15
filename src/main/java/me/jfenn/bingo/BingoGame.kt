@@ -283,9 +283,16 @@ object BingoGame {
         val duration = Duration.between(start, Instant.now())
 
         val secondsRemaining = Duration.ofSeconds(config.timeLimit.seconds - duration.toSeconds())
-        val secondsRemainingStr = String.format(Locale.US, "%02dh %02dm %02ds", secondsRemaining.toHoursPart(), secondsRemaining.toMinutesPart(), secondsRemaining.toSecondsPart())
+        val secondsRemainingStr = String.format(Locale.US, "%02dm %02ds", secondsRemaining.toMinutesPart(), secondsRemaining.toSecondsPart())
 
-        timeBar.name = Text.literal("Time Remaining: $secondsRemainingStr")
+        timeBar.name = Text.empty()
+            .append(Text.literal("Time Remaining: "))
+            .append(
+                Text.literal("${secondsRemaining.toHoursPart().takeIf { it > 0 }?.let { "${it}h " }.orEmpty()}$secondsRemainingStr")
+                    .formatted(if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
+            )
+            .append(Text.literal(" or ${config.winCondition.name.lowercase().replace('_', ' ')}"))
+
         timeBar.value = ((1f - (duration.toSeconds() / config.timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
 
         if (duration.toMinutes() >= config.timeLimit.minutes)
