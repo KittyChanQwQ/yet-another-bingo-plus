@@ -22,7 +22,6 @@ object Config {
         return try {
             json.decodeFromStream(clazz.serializer(), Files.newInputStream(filePath))
         } catch (e: Exception) {
-            e.printStackTrace()
             json.decodeFromString(clazz.serializer(), "{}").also { write(clazz, file, it) }
         }
     }
