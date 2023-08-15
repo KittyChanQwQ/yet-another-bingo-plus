@@ -28,7 +28,13 @@ public class PlayerManagerMixin {
     private void respawnPlayer(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> info) {
         if (player.isSpawnForced()) return;
 
-        Optional<Vec3d> targetRespawn = PlayerEntity.findRespawnPosition(player.getServerWorld(), player.getSpawnPointPosition(), player.getSpawnAngle(), player.isSpawnForced(), alive);
+        Optional<Vec3d> targetRespawn = PlayerEntity.findRespawnPosition(
+                player.server.getWorld(player.getSpawnPointDimension()),
+                player.getSpawnPointPosition(),
+                player.getSpawnAngle(),
+                player.isSpawnForced(),
+                alive
+        );
 
         // if the targeted spawnpoint is invalid (i.e. a broken bed, or otherwise somewhere that would reset to the world spawn) ...
         if (targetRespawn.isEmpty()) {
