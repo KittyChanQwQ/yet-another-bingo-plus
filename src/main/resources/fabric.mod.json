@@ -15,7 +15,7 @@
   },
   "depends": {
     "fabricloader": ">=0.7.2",
-    "minecraft": ">=1.19-"
+    "minecraft": ">=1.20-"
   },
   "contact": {
     "homepage": "https://minecraft.horrific.dev/",
