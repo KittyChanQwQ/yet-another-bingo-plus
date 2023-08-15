@@ -1,5 +1,8 @@
 package me.jfenn.bingo
 
+import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.mojang.brigadier.arguments.IntegerArgumentType.getInteger
+import com.mojang.brigadier.arguments.IntegerArgumentType.integer
 import com.mojang.brigadier.arguments.StringArgumentType.*
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.*
@@ -7,6 +10,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.*
 import me.jfenn.bingo.team.BingoTeam
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
+import kotlin.math.ceil
 
 /**
  * Return a sequence of commands related to the game
@@ -65,10 +69,32 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
 
     // re-roll the bingo card in a round (operator only)
     literal<ServerCommandSource?>("reroll")
-        .requires { it.hasPermissionLevel(2) }
+        .requires { it.hasPermissionLevel(2) && BingoGame.state == GameState.PLAYING }
         .executes { _ ->
             BingoGame.rollCard()
             1
         }
+        .also { yield(it) }
+
+    literal<ServerCommandSource?>("shuffleteams")
+        .requires { it.hasPermissionLevel(2) && BingoGame.state == GameState.PREGAME }
+        .then(
+            argument<ServerCommandSource?, Int?>("teams", integer(1, BingoTeam.values().size))
+                .executes { ctx ->
+                    val teams = getInteger(ctx, "teams")
+                    val players = ctx.source.server.playerManager.playerList
+                    val playersPerTeam = ceil(players.size / teams.toDouble()).toInt()
+
+                    players.shuffled()
+                        .chunked(playersPerTeam)
+                        .forEachIndexed { i, teamPlayers ->
+                            val team = BingoTeam.values()[i]
+                            for (teamPlayer in teamPlayers)
+                                team.addPlayer(teamPlayer)
+                        }
+
+                    1
+                }
+        )
         .also { yield(it) }
 }

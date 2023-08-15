@@ -22,14 +22,12 @@ enum class BingoTeam(
 
     val id = this.name.lowercase()
 
-    init {
-        val team = minecraftServer.scoreboard.addTeam(id)
-        team.color = formatting
-        team.displayName = Text.of(name.substring(0, 1) + name.substring(1).lowercase())
-    }
-
     fun team(): Team {
-        return minecraftServer.scoreboard.getTeam(id)!!
+        return minecraftServer.scoreboard.getTeam(id)
+            ?: minecraftServer.scoreboard.addTeam(id).apply {
+                color = formatting
+                displayName = Text.of(name.substring(0, 1) + name.substring(1).lowercase())
+            }
     }
 
     fun addPlayer(player: PlayerEntity) {

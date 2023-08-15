@@ -157,6 +157,12 @@ object BingoGame {
             // hide the boss bar once the game is complete
             timeBar.removePlayer(player)
 
+            // remove any existing maps in the player's inventory
+            for (i in 0 until player.inventory.size()) {
+                if (BingoMapService.isMapItem(player.inventory.getStack(i)))
+                    player.inventory.removeStack(i)
+            }
+
             // give all maps for active teams to the player
             BingoTeam.values()
                 .filter { it.team().playerList.isNotEmpty() }
