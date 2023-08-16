@@ -14,8 +14,8 @@ public class PlayerEntityMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;", cancellable = true)
     public void dropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> ci) {
-        // if the item is a bingo map, it should not drop as an entity
-        if (BingoMapService.INSTANCE.isMapItem(stack)) {
+        // if the item has the bingo_ignore flag, it should not drop as an entity
+        if (stack.hasNbt() && stack.getNbt().getBoolean("bingo_ignore")) {
             ci.setReturnValue(null);
             ci.cancel();
         }

@@ -24,6 +24,7 @@ object BingoMapService {
                     Text.literal("Bingo Card (${team.name.lowercase()})")
                         .formatted(team.formatting, Formatting.ITALIC)
                 ))
+                putBoolean("bingo_ignore", true)
             })
         }
 

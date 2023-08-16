@@ -70,8 +70,9 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
     // re-roll the bingo card in a round (operator only)
     literal<ServerCommandSource?>("reroll")
         .requires { it.hasPermissionLevel(2) && BingoGame.state == GameState.PLAYING }
-        .executes { _ ->
+        .executes { ctx ->
             BingoGame.rollCard()
+            ctx.source.sendMessage(Text.literal("Card re-rolled."))
             1
         }
         .also { yield(it) }
@@ -93,6 +94,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                                 team.addPlayer(teamPlayer)
                         }
 
+                    ctx.source.sendMessage(Text.literal("Players sorted into $teams team(s), $playersPerTeam player(s) per team."))
                     1
                 }
         )

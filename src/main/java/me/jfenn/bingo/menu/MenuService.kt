@@ -6,6 +6,7 @@ import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.TimeLimit
 import me.jfenn.bingo.config.WinCondition
 import me.jfenn.bingo.lobbyWorld
+import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.utils.toNbt
 import net.minecraft.block.entity.StructureBlockBlockEntity
@@ -15,6 +16,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.structure.StructurePlacementData
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
@@ -33,8 +35,20 @@ object MenuService {
             isActive = config.isValid(),
         ).apply {
             onClick {
-                if (config.isValid())
-                    BingoGame.start()
+                if (!config.isValid()) {
+                    it.sendMessage(Text.literal("Item distribution must add up to 25!").formatted(Formatting.YELLOW, Formatting.ITALIC))
+                    return@onClick
+                }
+
+                val isEveryPlayerOnATeam = minecraftServer.playerManager.playerList
+                    .all { player -> BingoTeam.values().any { team -> player.isTeamPlayer(team.team()) } }
+
+                if (!isEveryPlayerOnATeam && !it.isSneaking) {
+                    it.sendMessage(Text.literal("Some players have not picked a team! Run /shuffleteams or sneak+click to ignore.").formatted(Formatting.YELLOW, Formatting.ITALIC))
+                    return@onClick
+                }
+
+                BingoGame.start()
             }
         }
 
