@@ -1,6 +1,8 @@
 package me.jfenn.bingo.map
 
 import me.jfenn.bingo.card.*
+import me.jfenn.bingo.config.BingoConfig
+import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.team.BingoTeam
 import net.minecraft.item.FilledMapItem
@@ -39,6 +41,7 @@ object BingoMapService {
     val COLOR_MARGIN = rgb(199, 199, 199).closestColorByte()
     val COLOR_SHADOW = rgb(20, 20, 20).closestColorByte()
     val COLOR_ACHIEVED = rgb(100, 255, 100).closestColorByte()
+    val COLOR_LOCKED = rgb(150, 0, 0).closestColorByte()
 
     val MAP_SIZE = 128
     val MAP_BORDER = 5
@@ -48,7 +51,7 @@ object BingoMapService {
     val TILE_MARGIN = 2
     val TILE_SIZE = TILE_IMAGE + TILE_PADDING*2 + TILE_MARGIN
 
-    fun update(team: BingoTeam, card: BingoCard) {
+    fun update(team: BingoTeam, card: BingoCard, config: BingoConfig) {
         val state = MapState.of(1, true, minecraftServer.overworld.registryKey)
 
         for (x in 0 until MAP_SIZE) {
@@ -97,6 +100,15 @@ object BingoMapService {
                 // draw the item image in the tile (offset by tile padding)
                 val imgX = tileX - TILE_PADDING
                 val imgY = tileY - TILE_PADDING
+
+                // draw an X if the item is locked (if BingoMode.LOCKOUT)
+                if (imgX in imgY..imgY+1 || (TILE_IMAGE - imgY) in imgX..imgX+1) {
+                    if (config.gameMode == BingoMode.LOCKOUT && item.teams.isNotEmpty() && !item.hasAchieved(team)) {
+                        state.colors[i] = COLOR_LOCKED
+                        continue
+                    }
+                }
+
                 if (imgX in 0 until TILE_IMAGE && imgY in 0 until TILE_IMAGE) {
                     var rgba: Int = item.image?.getRGB(imgX, imgY) ?: continue
                     val color = Color.fromInt(rgba)
@@ -108,8 +120,6 @@ object BingoMapService {
                     state.colors[i] = rgba.closestColorByte()
                     continue
                 }
-
-                // TODO: Draw an X if the item is locked (if GameMode.LOCKOUT)
             }
         }
 

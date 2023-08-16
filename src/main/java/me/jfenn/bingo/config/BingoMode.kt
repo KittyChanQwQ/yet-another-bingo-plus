@@ -1,6 +1,6 @@
 package me.jfenn.bingo.config
 
-enum class GameMode {
+enum class BingoMode {
     STANDARD,
     LOCKOUT,
     INVENTORY,

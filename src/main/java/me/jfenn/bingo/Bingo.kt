@@ -3,6 +3,7 @@ package me.jfenn.bingo
 import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.card.CardService
+import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.menu.MenuService
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -55,10 +56,6 @@ object Bingo : ModInitializer {
     override fun onInitialize() {
         println("$MOD_ID mod initialized (main)")
 
-        // TODO:
-        // - GAMEMODES: Standard, Lockout, Inventory
-        // - FEATURES: Unlock Recipes, Anti-PvP, Elytra
-
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
             // remove overworld spawn tickets
@@ -82,6 +79,21 @@ object Bingo : ModInitializer {
                         val hasItem = player.inventory.containsAny { item.canSatisfy(it) }
                                 || item.canSatisfy(player.currentScreenHandler.cursorStack)
                         if (hasItem) BingoGame.markTileCollected(item, team)
+                    }
+                }
+
+                // if BingoMode.INVENTORY, we need to check that each team still has all their items
+                // and mark them as lost if not
+                if (BingoGame.config.gameMode == BingoMode.INVENTORY) {
+                    for (item in BingoGame.card.entries) {
+                        for (team in item.teams) {
+                            val hasTeamItem = server.playerManager.playerList
+                                .filter { it.isTeamPlayer(team.team()) }
+                                .any { player -> player.inventory.containsAny { item.canSatisfy(it) }
+                                        || item.canSatisfy(player.currentScreenHandler.cursorStack) }
+
+                            if (!hasTeamItem) BingoGame.markTileLost(item, team)
+                        }
                     }
                 }
 

@@ -33,4 +33,18 @@ enum class WinCondition(val numLines: Int) {
 
         return null
     }
+
+    fun isStalemate(card: BingoCard, config: BingoConfig): Boolean {
+        if (config.gameMode != BingoMode.LOCKOUT) return false
+
+        // check all teams against the number of lines needed to win
+        // if any team can win the game, it is not a stalemate
+        for (team in BingoTeam.values()) {
+            // count number of lines that the team can achieve
+            val possibleLines = card.countLines { entry -> entry.teams.isEmpty() || entry.hasAchieved(team) }
+            if (possibleLines >= numLines) return false
+        }
+
+        return true
+    }
 }

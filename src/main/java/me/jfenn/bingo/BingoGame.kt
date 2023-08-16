@@ -5,6 +5,7 @@ import me.jfenn.bingo.card.BingoCardEntry
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.config
 import me.jfenn.bingo.card.CardService
+import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.team.BingoTeam
@@ -68,7 +69,7 @@ object BingoGame {
 
         // update the card map images
         for (team in BingoTeam.values()) {
-            BingoMapService.update(team, card)
+            BingoMapService.update(team, card, config)
         }
     }
 
@@ -126,19 +127,19 @@ object BingoGame {
         }
     }
 
-    fun end() {
+    fun end(reason: String) {
         val winMessage = config.winCondition.getWinner(card)?.let { winner ->
                 Text.literal("${winner.name} team completed their card!")
                     .formatted(Formatting.BOLD)
                     .formatted(winner.formatting)
             }
             ?: config.winCondition.getLeading(card)?.let { leader ->
-                Text.literal("Out of time! ${leader.name} team is the winner!")
+                Text.literal("$reason ${leader.name} team is the winner!")
                     .formatted(Formatting.BOLD)
                     .formatted(leader.formatting)
             }
             ?: run {
-                Text.literal("The game is a draw!")
+                Text.literal("$reason The game is a draw!")
                     .formatted(Formatting.BOLD)
             }
 
@@ -263,6 +264,10 @@ object BingoGame {
     }
 
     fun markTileCollected(tile: BingoCardEntry, team: BingoTeam) {
+        // if the gamemode is lockout, tiles cannot be collected by >1 team
+        if (config.gameMode == BingoMode.LOCKOUT && tile.teams.isNotEmpty())
+            return
+
         // unlock the collected item
         val linesBefore = card.countLines(team)
         tile.setAchieved(team, true)
@@ -281,11 +286,23 @@ object BingoGame {
         playTileCollected(team)
 
         // update the team map
-        BingoMapService.update(team, card)
+        if (config.gameMode == BingoMode.LOCKOUT) {
+            // if the mode is LOCKOUT, all team cards need to be updated (to redraw locked items)
+            for (otherTeam in BingoTeam.values())
+                BingoMapService.update(otherTeam, card, config)
+        } else {
+            BingoMapService.update(team, card, config)
+        }
 
         // check if the team has won the game
         if (config.winCondition.getWinner(card) != null) {
-            end()
+            end("")
+            return
+        }
+
+        // check if the game is in a stalemate
+        if (config.winCondition.isStalemate(card, config)) {
+            end("Stalemate!")
             return
         }
 
@@ -332,6 +349,17 @@ object BingoGame {
         }
     }
 
+    /**
+     * This is only used in BingoMode.INVENTORY to un-mark a tile if
+     * the item is no longer in a player's inventory
+     */
+    fun markTileLost(tile: BingoCardEntry, team: BingoTeam) {
+        if (config.gameMode != BingoMode.INVENTORY) return
+
+        tile.setAchieved(team, false)
+        BingoMapService.update(team, card, config)
+    }
+
     fun updateTimer() {
         if (state != GameState.PLAYING) return
         val start = startedAt ?: return
@@ -352,7 +380,7 @@ object BingoGame {
         timeBar.value = ((1f - (duration.toSeconds() / config.timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
 
         if (duration.toMinutes() >= config.timeLimit.minutes)
-            end()
+            end("Out of time!")
     }
 
 }

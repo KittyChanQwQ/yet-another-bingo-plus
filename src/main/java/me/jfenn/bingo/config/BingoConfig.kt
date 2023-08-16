@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BingoConfig(
     var overwrite: Boolean = true,
-    var gameMode: GameMode = GameMode.STANDARD,
+    var gameMode: BingoMode = BingoMode.STANDARD,
     var winCondition: WinCondition = WinCondition.THREE_LINES,
     var timeLimit: TimeLimit = TimeLimit.ONE_HOUR,
     var itemDistribution: List<Int> = listOf(2, 6, 9, 6, 2),

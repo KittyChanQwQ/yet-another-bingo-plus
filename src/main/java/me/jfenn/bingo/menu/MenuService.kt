@@ -2,7 +2,7 @@ package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.BingoGame
 import me.jfenn.bingo.config.BingoConfig
-import me.jfenn.bingo.config.GameMode
+import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.TimeLimit
 import me.jfenn.bingo.config.WinCondition
 import me.jfenn.bingo.lobbyWorld
@@ -43,7 +43,7 @@ object MenuService {
             value = config.gameMode,
             position = pos.add(-2.0, 0.0, 0.0),
         ).onChange {
-            config.gameMode = GameMode.values()[it]
+            config.gameMode = BingoMode.values()[it]
         }
 
         spawnMenu(
