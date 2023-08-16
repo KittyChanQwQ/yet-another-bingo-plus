@@ -1,19 +1,24 @@
 # Yet Another Minecraft BINGO
 
 This is a server-side BINGO item hunt mod + lobby, intended for use with vanilla clients. Clients do not need to install
-any mods or resource packs to join; this only needs to be installed on the server.
-
-Up to 8 teams can compete to collect items on the BINGO card. Teams can score items in horizontal, vertical, or diagonal
-lines to win the game. (the "win condition" can be set to a number of lines, or the full card).
+any mods or resource packs to join; this only needs to be installed on the server (along with [fabric-api](https://modrinth.com/mod/fabric-api)).
 
 > **⚠ WARNING**
 >
 > This mod **deletes the world folder on startup**! It is meant to be hosted on a dedicated server for short, temporary
 games. Make sure this is not installed on an existing world or you _will_ lose your data!
 
+Up to 8 teams can compete to collect items on the BINGO card. Teams can score items in horizontal, vertical, or diagonal
+lines to win the game. (the "win condition" can be set to a number of lines, or the full card).
+
 ![A screenshot of Minecraft plains/ocean with a BINGO card in the corner](./bingo.png)
 
-Requires: [fabric-api](https://modrinth.com/mod/fabric-api)
+### Gamemodes:
+
+- **Standard**: Collecting an item scores the tile. Normal BINGO behavior.
+- **Lockout**: Once an item is collected by any team, that tile is locked and no other teams can collect it.
+- **Inventory**: Items must remain in a team member's inventory to hold a tile. Losing an item un-marks its tile on the
+  card (meaning you need to stay alive with your items in order to win).
 
 ## 📖 Configuration
 
@@ -31,7 +36,7 @@ The configured game rules (win condition, item distribution) will be saved in `.
 changing these in-game will overwrite this file. If you'd prefer to have the same default rules on each startup, this
 can be turned off by setting `"overwrite": false`.
 
-## Commands
+## ⌨️ Commands
 
 - `/coords` prints the current player coordinates in the team chat
 - `/all` sends a message to the global chat (sending a regular chat message defaults to team chat when in-game)
