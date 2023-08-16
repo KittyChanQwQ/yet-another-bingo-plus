@@ -1,65 +1,76 @@
 package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.BingoGame
+import me.jfenn.bingo.config.BingoConfig
+import me.jfenn.bingo.config.GameMode
 import me.jfenn.bingo.config.TimeLimit
 import me.jfenn.bingo.config.WinCondition
 import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.team.BingoTeam
+import me.jfenn.bingo.utils.toNbt
 import net.minecraft.block.entity.StructureBlockBlockEntity
+import net.minecraft.entity.EntityType
+import net.minecraft.entity.decoration.DisplayEntity
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.structure.StructurePlacementData
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 
 object MenuService {
 
-    fun spawn() {
+    fun spawn(config: BingoConfig) {
         placeStructure(lobbyWorld, BlockPos(-24, -2, -24), Identifier.of("bingo", "lobby")!!)
-        spawnMenuEntities(Vec3d(-4.0, 3.0, -4.0))
+        spawnMenuEntities(Vec3d(-4.0, 3.0, -4.0), config)
     }
 
-    private fun spawnMenuEntities(pos: Vec3d) {
+    private fun spawnMenuEntities(pos: Vec3d, config: BingoConfig) {
         val startButton = ButtonEntity(
-            position = pos.add(9.0, -1.0, 0.0),
+            position = pos.add(11.0, -1.0, 0.0),
             text = "START",
-            isActive = BingoGame.config.isValid(),
+            isActive = config.isValid(),
         ).apply {
             onClick {
-                if (BingoGame.config.isValid())
+                if (config.isValid())
                     BingoGame.start()
             }
         }
 
-        MenuEntity(
-            title = "Win Condition",
-            options = WinCondition.values()
-                .map { it.name.replace('_', ' ') },
-            selectedIndex = WinCondition.values()
-                .indexOfFirst { it == BingoGame.config.winCondition },
-            position = pos,
+        spawnMenu(
+            title = "Game Mode",
+            value = config.gameMode,
+            position = pos.add(-2.0, 0.0, 0.0),
         ).onChange {
-            BingoGame.config.winCondition = WinCondition.values()[it]
+            config.gameMode = GameMode.values()[it]
         }
 
-        MenuEntity(
+        spawnMenu(
+            title = "Win Condition",
+            value = config.winCondition,
+            position = pos,
+        ).onChange {
+            config.winCondition = WinCondition.values()[it]
+        }
+
+        spawnMenu(
             title = "Time Limit",
-            options = TimeLimit.values()
-                .map { it.name.replace('_', ' ').trim() },
-            selectedIndex = TimeLimit.values()
-                .indexOfFirst { it == BingoGame.config.timeLimit },
+            value = config.timeLimit,
             position = pos.add(2.0, 0.0, 0.0),
         ).onChange {
-            BingoGame.config.timeLimit = TimeLimit.values()[it]
+            config.timeLimit = TimeLimit.values()[it]
         }
 
         ItemDistributionEntity(
             position = pos.add(5.5, 0.0, 0.0),
             itemDistribution = BingoGame.config.itemDistribution,
         ).onChange {
-            BingoGame.config.itemDistribution = it
-            startButton.isActive = BingoGame.config.isValid()
+            config.itemDistribution = it
+            startButton.isActive = config.isValid()
         }
+
+        spawnFeatures(pos.add(9.0, 0.0, 0.0), config)
 
         TeamEntity(
             team = BingoTeam.ORANGE,
@@ -100,6 +111,64 @@ object MenuService {
             team = BingoTeam.RED,
             position = Vec3d(-16.5, 3.0, 14.5),
         )
+    }
+
+    private inline fun <reified E : Enum<E>> spawnMenu(position: Vec3d, title: String, value: E): MenuEntity {
+        val options = value.javaClass.enumConstants
+        return MenuEntity(
+            title = title,
+            options =  options.map { it.name.replace('_', ' ') },
+            selectedIndex = options.indexOfFirst { value == it },
+            position = position,
+        )
+    }
+
+    private fun spawnFeatures(position: Vec3d, config: BingoConfig) {
+        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+            .apply {
+                readNbt(NbtCompound().apply {
+                    put("Pos", position.toNbt())
+                    putString("text", Text.Serializer.toJson(
+                        Text.literal("Features")
+                    ))
+                    putString("billboard", "fixed")
+                    putString("alignment", "center")
+                })
+            }
+            .also { lobbyWorld.spawnEntity(it) }
+
+        ButtonEntity(
+            position = position.add(0.0, -1.0, 0.0),
+            text = "Unlock Recipes",
+            isActive = config.isUnlockRecipes,
+        ).apply {
+            onClick {
+                config.isUnlockRecipes = !config.isUnlockRecipes
+                this.isActive = config.isUnlockRecipes
+            }
+        }
+
+        ButtonEntity(
+            position = position.add(0.0, -1.5, 0.0),
+            text = "Elytra",
+            isActive = config.isElytra,
+        ).apply {
+            onClick {
+                config.isElytra = !config.isElytra
+                this.isActive = config.isElytra
+            }
+        }
+
+        ButtonEntity(
+            position = position.add(0.0, -2.0, 0.0),
+            text = "Allow PvP",
+            isActive = BingoGame.config.isPvpEnabled,
+        ).apply {
+            onClick {
+                config.isPvpEnabled = !config.isPvpEnabled
+                this.isActive = config.isPvpEnabled
+            }
+        }
     }
 
     private fun placeStructure(world: ServerWorld, pos: BlockPos, identifier: Identifier) {

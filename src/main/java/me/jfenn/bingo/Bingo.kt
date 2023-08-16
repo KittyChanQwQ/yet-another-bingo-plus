@@ -56,16 +56,15 @@ object Bingo : ModInitializer {
         println("$MOD_ID mod initialized (main)")
 
         // TODO:
-        // - spawn team shuffle tool
-        // - setting for pvp mode
-        // - setting for granting recipes
+        // - GAMEMODES: Standard, Lockout, Inventory
+        // - FEATURES: Unlock Recipes, Anti-PvP, Elytra
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
             // remove overworld spawn tickets
             minecraftServer.overworld.chunkManager.removePersistentTickets()
 
-            MenuService.spawn()
+            MenuService.spawn(BingoGame.config)
 
             // boss bar needs to be initialized here, to fix client desync
             // - where are these stored? previous bossbars are somehow persisted, even though world data isn't
@@ -89,9 +88,9 @@ object Bingo : ModInitializer {
                 BingoGame.updateTimer()
             }
 
-            // TODO: move this elsewhere?
             for (player in server.playerManager.playerList) {
                 BingoGame.giveMapCardItem(player)
+                BingoGame.giveElytra(player)
             }
         }
 

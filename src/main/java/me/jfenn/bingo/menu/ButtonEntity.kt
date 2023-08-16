@@ -65,7 +65,10 @@ class ButtonEntity(
         textDisplayEntity.readNbt(NbtCompound().apply {
             put("Pos", position.toNbt())
             putString("text", Text.Serializer.toJson(
-                Text.literal(text).formatted(if (isActive) Formatting.BLACK else Formatting.GRAY)
+                Text.empty()
+                    .append(if (isActive) Text.literal("✔ ") else Text.empty())
+                    .append(Text.literal(text))
+                    .formatted(if (isActive) Formatting.BLACK else Formatting.GRAY)
             ))
             putString("billboard", "fixed")
             putString("alignment", "center")

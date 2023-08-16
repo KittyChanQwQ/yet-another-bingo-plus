@@ -108,6 +108,8 @@ object BingoMapService {
                     state.colors[i] = rgba.closestColorByte()
                     continue
                 }
+
+                // TODO: Draw an X if the item is locked (if GameMode.LOCKOUT)
             }
         }
 

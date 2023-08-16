@@ -8,14 +8,15 @@ import me.jfenn.bingo.card.CardService
 import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.team.BingoTeam
-import net.minecraft.advancement.AdvancementManager
 import net.minecraft.entity.boss.BossBar
+import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtList
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.registry.Registries
-import net.minecraft.server.command.AdvancementCommand
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -27,7 +28,6 @@ import net.minecraft.world.GameMode
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-import kotlin.system.measureTimeMillis
 
 object BingoGame {
 
@@ -82,6 +82,9 @@ object BingoGame {
         startedAt = Instant.now()
         rollCard()
 
+        // update server to match config choices
+        minecraftServer.isPvpEnabled = config.isPvpEnabled
+
         // spread player teams to spawnpoint
         val spread = SpreadPlayers(world = minecraftServer.overworld)
         teamSpawnpoints = spread.spread()
@@ -113,9 +116,9 @@ object BingoGame {
                 }
             }
 
-            // unlock all crafting recipes
-            // TODO: conditional based on config?
-            player.unlockRecipes(minecraftServer.recipeManager.values())
+            // unlock all crafting recipes, if set
+            if (config.isUnlockRecipes)
+                player.unlockRecipes(minecraftServer.recipeManager.values())
 
             updateGameMode(player)
             // give each player their team's card
@@ -192,6 +195,10 @@ object BingoGame {
         player.changeGameMode(gameMode)
     }
 
+    /**
+     * Ensure that the player has their team's bingo map card.
+     * Has no effect if the player already has a card
+     */
     fun giveMapCardItem(player: ServerPlayerEntity) {
         if (state != GameState.PLAYING) return
         if (!player.isAlive) return
@@ -203,6 +210,55 @@ object BingoGame {
             BingoTeam.fromPlayer(player)
                 ?.let { team -> BingoMapService.createMapItem(team) }
                 ?.also { player.giveItemStack(it) }
+        }
+    }
+
+    /**
+     * Equip the player with elytra and firework rockets.
+     * Only runs if config.isElytra is true
+     */
+    fun giveElytra(player: ServerPlayerEntity) {
+        if (state != GameState.PLAYING) return
+        if (BingoTeam.fromPlayer(player) == null) return
+        if (!player.isAlive) return
+        if (!config.isElytra) return
+
+        val ARMOR_SLOT = 2
+        val hasElytra = player.inventory.getArmorStack(ARMOR_SLOT).item == Items.ELYTRA
+
+        if (!hasElytra) {
+            // insert elytra in armor slot
+            player.inventory.armor[ARMOR_SLOT] = ItemStack(Items.ELYTRA, 1).also {
+                it.getOrCreateNbt().apply {
+                    // unbreakable (should not take damage)
+                    putBoolean("Unbreakable", true)
+                    put("Enchantments", NbtList().apply {
+                        // curse of binding
+                        add(NbtCompound().apply {
+                            putString("id", "binding_curse")
+                            putInt("lvl", 1)
+                        })
+                    })
+                    putBoolean("bingo_ignore", true)
+                }
+            }
+        }
+
+        // also give rocket
+        val hasRocket = player.inventory.containsAny {
+            if (it.item == Items.FIREWORK_ROCKET && it.nbt?.getBoolean("bingo_ignore") == true) {
+                if (it.count < 2) it.count = 2
+                true
+            } else false
+        } || player.currentScreenHandler.cursorStack.item == Items.FIREWORK_ROCKET
+
+        if (!hasRocket) {
+            player.giveItemStack(ItemStack(Items.FIREWORK_ROCKET, 2).also {
+                it.getOrCreateNbt().apply {
+                    putBoolean("bingo_ignore", true)
+                    put("Fireworks", NbtCompound())
+                }
+            })
         }
     }
 
