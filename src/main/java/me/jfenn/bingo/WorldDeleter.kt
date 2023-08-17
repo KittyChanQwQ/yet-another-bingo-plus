@@ -19,7 +19,8 @@ object WorldDeleter {
         "world/poi",
         "world/region",
         "world/stats",
-        "world/level.dat"
+        "world/level.dat",
+        "world/level.dat_old",
     )
 
     fun invoke() {
