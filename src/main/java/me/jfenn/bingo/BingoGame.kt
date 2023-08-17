@@ -88,7 +88,7 @@ object BingoGame {
 
         // spread player teams to spawnpoint
         val spread = SpreadPlayers(world = minecraftServer.overworld)
-        teamSpawnpoints = spread.spread()
+        teamSpawnpoints = spread.spread(500) // TODO: configurable spawn distance?
         spread.teleportPlayers(teamSpawnpoints)
 
         // unload lobby dimension

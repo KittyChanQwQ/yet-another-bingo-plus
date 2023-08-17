@@ -37,8 +37,7 @@ class SpreadPlayers(
         BiomeKeys.DEEP_LUKEWARM_OCEAN,
     )
 
-    fun spreadGroups(count: Int): List<Pair<Int, Int>> {
-        val distance = 1000
+    fun spreadGroups(count: Int, distance: Int): List<Pair<Int, Int>> {
         val radius = (distance * count) / (2 * Math.PI)
 
         val theta = 2 * Math.PI * Math.random()
@@ -54,11 +53,11 @@ class SpreadPlayers(
         }
     }
 
-    fun spread(): Map<BingoTeam, BlockPos> {
+    fun spread(distance: Int): Map<BingoTeam, BlockPos> {
         val teams = BingoTeam.values()
             .filter { it.team().playerList.isNotEmpty() }
 
-        val groups = spreadGroups(teams.size)
+        val groups = spreadGroups(teams.size, distance)
 
         val spawns = mutableMapOf<BingoTeam, BlockPos>()
 
