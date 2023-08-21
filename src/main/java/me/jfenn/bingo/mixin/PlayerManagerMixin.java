@@ -24,6 +24,11 @@ public class PlayerManagerMixin {
         PlayerEvents.INSTANCE.getOnPlayerJoin().invoke(player);
     }
 
+    @Inject(at = @At(value = "TAIL"), method = "remove")
+    private void onPlayerLeave(ServerPlayerEntity player, CallbackInfo info) {
+        PlayerEvents.INSTANCE.getOnPlayerLeave().invoke(player);
+    }
+
     @Inject(at = @At(value = "HEAD"), method = "respawnPlayer")
     private void respawnPlayer(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> info) {
         if (player.isSpawnForced()) return;

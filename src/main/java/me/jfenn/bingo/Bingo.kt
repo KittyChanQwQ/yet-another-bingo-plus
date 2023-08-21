@@ -58,6 +58,7 @@ object Bingo : ModInitializer {
 
         // TODO:
         // - turn off server world force-save on exit
+        // - display number of player count
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server

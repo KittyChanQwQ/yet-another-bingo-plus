@@ -5,6 +5,7 @@ import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.TimeLimit
 import me.jfenn.bingo.config.WinCondition
+import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.team.BingoTeam
@@ -51,6 +52,8 @@ object MenuService {
                 BingoGame.start()
             }
         }
+
+        spawnPlayerCount(pos.add(0.0, 1.0, 0.0))
 
         spawnMenu(
             title = "Game Mode",
@@ -183,6 +186,35 @@ object MenuService {
                 this.isActive = config.isPvpEnabled
             }
         }
+    }
+
+    private fun spawnPlayerCount(position: Vec3d) {
+        val textEntity = DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+            .apply {
+                readNbt(NbtCompound().apply {
+                    put("Pos", position.toNbt())
+                    putString("text", Text.Serializer.toJson(
+                        Text.literal("Player Count")
+                    ))
+                    putString("billboard", "fixed")
+                    putString("alignment", "center")
+                })
+            }
+            .also { lobbyWorld.spawnEntity(it) }
+
+        val update = {
+            textEntity.readNbt(NbtCompound().apply {
+                put("Pos", position.toNbt())
+                putString("text", Text.Serializer.toJson(
+                    Text.literal("Player Count: ${minecraftServer.currentPlayerCount} / ${minecraftServer.maxPlayerCount}")
+                ))
+                putString("billboard", "fixed")
+                putString("alignment", "center")
+            })
+        }
+
+        PlayerEvents.onPlayerJoin { update() }
+        PlayerEvents.onPlayerLeave { update() }
     }
 
     private fun placeStructure(world: ServerWorld, pos: BlockPos, identifier: Identifier) {

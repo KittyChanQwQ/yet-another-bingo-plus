@@ -264,6 +264,7 @@ object BingoGame {
     }
 
     fun markTileCollected(tile: BingoCardEntry, team: BingoTeam) {
+        if (state != GameState.PLAYING) return
         // if the gamemode is lockout, tiles cannot be collected by >1 team
         if (config.gameMode == BingoMode.LOCKOUT && tile.teams.isNotEmpty())
             return
@@ -354,6 +355,7 @@ object BingoGame {
      * the item is no longer in a player's inventory
      */
     fun markTileLost(tile: BingoCardEntry, team: BingoTeam) {
+        if (state != GameState.PLAYING) return
         if (config.gameMode != BingoMode.INVENTORY) return
 
         tile.setAchieved(team, false)
