@@ -11,7 +11,7 @@ class EventListener<T> {
         listeners.forEach {
             try {
                 it(event)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 log.error("Exception in event handler:", e)
             }
         }

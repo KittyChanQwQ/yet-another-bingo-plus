@@ -8,8 +8,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.*
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.*
 import me.jfenn.bingo.team.BingoTeam
+import me.jfenn.bingo.utils.sendInfoMessage
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import kotlin.math.ceil
 
 /**
@@ -72,7 +74,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         .requires { it.hasPermissionLevel(2) && BingoGame.state == GameState.PLAYING }
         .executes { ctx ->
             BingoGame.rollCard()
-            ctx.source.sendMessage(Text.literal("Card re-rolled."))
+            ctx.source.player?.sendInfoMessage("Card re-rolled.")
             1
         }
         .also { yield(it) }
@@ -94,7 +96,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                                 team.addPlayer(teamPlayer)
                         }
 
-                    ctx.source.sendMessage(Text.literal("Players sorted into $teams team(s), $playersPerTeam player(s) per team."))
+                    ctx.source.player?.sendInfoMessage("Players sorted into $teams team(s), $playersPerTeam player(s) per team.")
                     1
                 }
         )

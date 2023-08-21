@@ -2,27 +2,26 @@ package me.jfenn.bingo
 
 import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.card.BingoCardEntry
-import me.jfenn.bingo.config.BingoConfig
-import me.jfenn.bingo.config.config
 import me.jfenn.bingo.card.CardService
+import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
+import me.jfenn.bingo.config.config
 import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.utils.allHeldStacks
+import me.jfenn.bingo.utils.formatString
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
-import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
-import net.minecraft.registry.Registries
+import net.minecraft.server.command.SeedCommand
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
+import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
@@ -130,21 +129,36 @@ object BingoGame {
 
     fun end(reason: String) {
         val winMessage = config.winCondition.getWinner(card)?.let { winner ->
-                Text.literal("${winner.name} team completed their card!")
-                    .formatted(Formatting.BOLD)
-                    .formatted(winner.formatting)
+                Text.empty()
+                    .append(winner.text())
+                    .append(Text.literal(" completed their card!").formatted(Formatting.YELLOW))
             }
             ?: config.winCondition.getLeading(card)?.let { leader ->
-                Text.literal("$reason ${leader.name} team is the winner!")
-                    .formatted(Formatting.BOLD)
-                    .formatted(leader.formatting)
+                Text.empty()
+                    .append(Text.literal("$reason ").formatted(Formatting.YELLOW))
+                    .append(leader.text())
+                    .append(Text.literal(" is the winner!").formatted(Formatting.YELLOW))
             }
-            ?: run {
-                Text.literal("$reason The game is a draw!")
-                    .formatted(Formatting.BOLD)
-            }
+            ?: Text.literal("$reason The game is a draw!").formatted(Formatting.YELLOW)
 
-        minecraftServer.playerManager.broadcast(winMessage, false)
+        sequence {
+            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
+            yield(Text.empty().append("  ").append(winMessage))
+
+            Text.empty()
+                .append(Text.literal("  Game duration: ").formatted(Formatting.YELLOW))
+                .append(Duration.between(startedAt ?: Instant.now(), Instant.now()).formatString())
+                .also { yield(it) }
+
+            Text.empty()
+                .append(Text.literal("  Seed: "))
+                .append(Texts.bracketedCopyable(minecraftServer.overworld.seed.toString()))
+                .also { yield(it) }
+
+            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
+        }.forEach {
+            minecraftServer.playerManager.broadcast(it, false)
+        }
 
         state = GameState.POSTGAME
         for (player in minecraftServer.playerManager.playerList) {
@@ -154,14 +168,7 @@ object BingoGame {
 
             updateGameMode(player)
 
-            player.networkHandler.sendPacket(
-                PlaySoundS2CPacket(
-                    Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_PORTAL_TRAVEL),
-                    SoundCategory.BLOCKS,
-                    player.x, player.y, player.z,
-                    0.2f, 1f, 0
-                )
-            )
+            Sounds.playGameOver(player)
 
             // hide the boss bar once the game is complete
             timeBar.removePlayer(player)
@@ -266,6 +273,8 @@ object BingoGame {
         if (state != GameState.PLAYING) return
         // TODO: only update the inventory state when marked dirty
 
+        val updatedTeams = mutableSetOf<BingoTeam>()
+
         for (player in minecraftServer.playerManager.playerList) {
             val team = BingoTeam.fromPlayer(player) ?: continue
 
@@ -275,8 +284,10 @@ object BingoGame {
                 val tile = card.itemIndex[stack.item] ?: continue
 
                 // if the item hasn't been achieved and can be satisfied, mark it as collected
-                if (!tile.hasAchieved(team) && tile.canSatisfy(stack))
+                if (!tile.hasAchieved(team) && tile.canSatisfy(stack)) {
                     markTileCollected(tile, team)
+                    updatedTeams.add(team)
+                }
             }
         }
 
@@ -292,45 +303,29 @@ object BingoGame {
                                 || item.canSatisfy(player.currentScreenHandler.cursorStack) }
 
                     // if noone on the team has the item anymore, mark it lost
-                    if (!hasTeamItem) markTileLost(item, team)
+                    if (!hasTeamItem) {
+                        markTileLost(item, team)
+                        updatedTeams.add(team)
+                    }
                 }
             }
         }
-    }
 
-    fun markTileCollected(tile: BingoCardEntry, team: BingoTeam) {
-        if (state != GameState.PLAYING) return
-        // if the gamemode is lockout, tiles cannot be collected by >1 team
-        if (config.gameMode == BingoMode.LOCKOUT && tile.teams.isNotEmpty())
-            return
+        // if there are no updated teams, we can skip the remaining checks...
+        if (updatedTeams.isEmpty()) return
 
-        // unlock the collected item
-        val linesBefore = card.countLines(team)
-        tile.setAchieved(team, true)
-        val linesAfter = card.countLines(team)
-
-        if (linesAfter > linesBefore) {
-            minecraftServer.playerManager.broadcast(
-                Text.literal("${team.name} team has scored $linesAfter line${if (linesAfter > 1) "s" else ""}!")
-                    .formatted(Formatting.BOLD)
-                    .formatted(team.formatting),
-                false,
-            )
-        }
-
-        // play the doink sound
-        playTileCollected(team)
-
-        // update the team map
+        // update the team map(s)
         if (config.gameMode == BingoMode.LOCKOUT) {
             // if the mode is LOCKOUT, all team cards need to be updated (to redraw locked items)
-            for (otherTeam in BingoTeam.values())
-                BingoMapService.update(otherTeam, card, config)
+            for (team in BingoTeam.values())
+                BingoMapService.update(team, card, config)
         } else {
-            BingoMapService.update(team, card, config)
+            // otherwise, only redraw maps for the updated teams
+            for (team in updatedTeams)
+                BingoMapService.update(team, card, config)
         }
 
-        // check if the team has won the game
+        // check if a team has won the game
         if (config.winCondition.getWinner(card) != null) {
             end("")
             return
@@ -348,48 +343,49 @@ object BingoGame {
             this.leadingTeam = leadingTeam
 
             val leadingMessage = if (leadingTeam != null) {
-                Text.literal("${leadingTeam.name} team is in the lead!")
-                    .formatted(Formatting.BOLD)
-                    .formatted(leadingTeam.formatting)
+                Text.empty()
+                    .append(leadingTeam.text())
+                    .append(Text.literal(" is in the lead!").formatted(Formatting.YELLOW))
             } else {
-                Text.literal("${team.name} team is tied in the lead!")
-                    .formatted(Formatting.BOLD)
-                    .formatted(team.formatting)
+                val team = updatedTeams.first()
+                Text.empty()
+                    .append(team.text())
+                    .append(Text.literal(" is tied in the lead!").formatted(Formatting.YELLOW))
             }
 
             minecraftServer.playerManager.broadcast(leadingMessage, false)
         }
     }
 
-    fun playTileCollected(team: BingoTeam) {
-        for (player in minecraftServer.playerManager.playerList) {
-            if (player.isTeamPlayer(team.team())) {
-                player.networkHandler.sendPacket(
-                    PlaySoundS2CPacket(
-                        Registries.SOUND_EVENT.getEntry(SoundEvents.ENTITY_PLAYER_LEVELUP),
-                        SoundCategory.BLOCKS,
-                        player.x, player.y, player.z,
-                        1f, 2f, 0
-                    )
-                )
-            } else {
-                player.networkHandler.sendPacket(
-                    PlaySoundS2CPacket(
-                        Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value()),
-                        SoundCategory.BLOCKS,
-                        player.x, player.y, player.z,
-                        1f, 1f, 0
-                    )
-                )
-            }
+    private fun markTileCollected(tile: BingoCardEntry, team: BingoTeam) {
+        if (state != GameState.PLAYING) return
+        // if the gamemode is lockout, tiles cannot be collected by >1 team
+        if (config.gameMode == BingoMode.LOCKOUT && tile.teams.isNotEmpty())
+            return
+
+        // unlock the collected item
+        val linesBefore = card.countLines(team)
+        tile.setAchieved(team, true)
+        val linesAfter = card.countLines(team)
+
+        if (linesAfter > linesBefore) {
+            minecraftServer.playerManager.broadcast(
+                Text.empty()
+                    .append(team.text())
+                    .append(Text.literal(" has scored $linesAfter line${if (linesAfter > 1) "s" else ""}!").formatted(Formatting.YELLOW)),
+                false,
+            )
         }
+
+        // play the doink sound
+        Sounds.playTileCollected(team)
     }
 
     /**
      * This is only used in BingoMode.INVENTORY to un-mark a tile if
      * the item is no longer in a player's inventory
      */
-    fun markTileLost(tile: BingoCardEntry, team: BingoTeam) {
+    private fun markTileLost(tile: BingoCardEntry, team: BingoTeam) {
         if (state != GameState.PLAYING) return
         if (config.gameMode != BingoMode.INVENTORY) return
 
@@ -402,14 +398,12 @@ object BingoGame {
         val start = startedAt ?: return
 
         val duration = Duration.between(start, Instant.now())
-
         val secondsRemaining = Duration.ofSeconds(config.timeLimit.seconds - duration.toSeconds())
-        val secondsRemainingStr = String.format(Locale.US, "%02dm %02ds", secondsRemaining.toMinutesPart(), secondsRemaining.toSecondsPart())
 
         timeBar.name = Text.empty()
             .append(Text.literal("Time Remaining: "))
             .append(
-                Text.literal("${secondsRemaining.toHoursPart().takeIf { it > 0 }?.let { "${it}h " }.orEmpty()}$secondsRemainingStr")
+                Text.literal(secondsRemaining.formatString())
                     .formatted(if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
             )
             .append(Text.literal(" or ${config.winCondition.name.lowercase().replace('_', ' ')}"))

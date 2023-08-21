@@ -3,6 +3,8 @@ package me.jfenn.bingo.team
 import me.jfenn.bingo.minecraftServer
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.scoreboard.Team
+import net.minecraft.text.HoverEvent
+import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -28,6 +30,16 @@ enum class BingoTeam(
                 color = formatting
                 displayName = Text.of(name.substring(0, 1) + name.substring(1).lowercase())
             }
+    }
+
+    fun text(): Text {
+        val text = Text.empty()
+            .append("[")
+            .append(Text.literal("$name team").formatted(formatting))
+            .append("]")
+
+        text.style = Style.EMPTY.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(team().playerList.joinToString(", "))))
+        return text
     }
 
     fun addPlayer(player: PlayerEntity) {

@@ -52,10 +52,6 @@ object Bingo : ModInitializer {
     override fun onInitialize() {
         println("$MOD_ID mod initialized (main)")
 
-        // TODO:
-        // - turn off server world force-save on exit
-        // - display number of player count
-
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
             // remove overworld spawn tickets
