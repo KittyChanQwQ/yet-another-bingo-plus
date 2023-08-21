@@ -2,30 +2,22 @@ package me.jfenn.bingo.card
 
 import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.map.BingoMapService
-import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.utils.lazyRef
-import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.util.log.Log
 import net.fabricmc.loader.impl.util.log.LogCategory
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.render.entity.DisplayEntityRenderer.ItemDisplayEntityRenderer
-import net.minecraft.client.render.item.ItemModels
-import net.minecraft.client.render.item.ItemRenderer
-import net.minecraft.data.client.Models
-import net.minecraft.data.client.TextureKey
-import net.minecraft.data.client.TextureMap
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import java.lang.IllegalArgumentException
-import java.nio.file.Path
 import javax.imageio.ImageIO
 
-class BingoCardEntry(
+data class BingoCardEntry(
     val item: String,
 ) {
+
+    val identifier get() = Identifier.of("minecraft", item.lowercase())!!
 
     val teams = HashSet<BingoTeam>()
 
@@ -54,7 +46,7 @@ class BingoCardEntry(
     }
 
     fun item(): Item {
-        return Registries.ITEM[Identifier.of("minecraft", item.lowercase())]
+        return Registries.ITEM.get(identifier)
     }
 
     private val imagePath: String = "images/${item.lowercase()}.png"

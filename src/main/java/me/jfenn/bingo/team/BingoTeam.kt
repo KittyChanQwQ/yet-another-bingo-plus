@@ -48,9 +48,12 @@ enum class BingoTeam(
     val mapName by lazy { "map_${mapId}" }
 
     companion object {
+
+        private val TEAM_ID_INDEX = BingoTeam.values().associateBy { it.id }
+
         fun fromPlayer(player: PlayerEntity): BingoTeam? {
-            val team = minecraftServer.scoreboard.getPlayerTeam(player.entityName)
-            return BingoTeam.values().find { team?.name == it.id }
+            val team = player.scoreboard.getPlayerTeam(player.entityName) ?: return null
+            return TEAM_ID_INDEX[team.name]
         }
     }
 

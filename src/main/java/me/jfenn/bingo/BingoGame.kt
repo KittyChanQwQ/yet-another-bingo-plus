@@ -9,6 +9,7 @@ import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.team.BingoTeam
+import me.jfenn.bingo.utils.allHeldStacks
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -204,8 +205,7 @@ object BingoGame {
         if (state != GameState.PLAYING) return
         if (!player.isAlive) return
 
-        val hasMap = player.inventory.containsAny { it.item == Items.FILLED_MAP }
-                || player.currentScreenHandler.cursorStack.item == Items.FILLED_MAP
+        val hasMap = player.allHeldStacks().any { BingoMapService.isMapItem(it) }
 
         if (!hasMap) {
             BingoTeam.fromPlayer(player)
@@ -246,20 +246,55 @@ object BingoGame {
         }
 
         // also give rocket
-        val hasRocket = player.inventory.containsAny {
-            if (it.item == Items.FIREWORK_ROCKET && it.nbt?.getBoolean("bingo_ignore") == true) {
-                if (it.count < 2) it.count = 2
-                true
-            } else false
-        } || player.currentScreenHandler.cursorStack.item == Items.FIREWORK_ROCKET
+        val rocketStack = player.allHeldStacks().find { it.item == Items.FIREWORK_ROCKET }
 
-        if (!hasRocket) {
+        if (rocketStack != null && rocketStack.count < 2) {
+            rocketStack.count = 2
+        }
+
+        if (rocketStack == null) {
             player.giveItemStack(ItemStack(Items.FIREWORK_ROCKET, 2).also {
                 it.getOrCreateNbt().apply {
                     putBoolean("bingo_ignore", true)
                     put("Fireworks", NbtCompound())
                 }
             })
+        }
+    }
+
+    fun updateInventory() {
+        if (state != GameState.PLAYING) return
+        // TODO: only update the inventory state when marked dirty
+
+        for (player in minecraftServer.playerManager.playerList) {
+            val team = BingoTeam.fromPlayer(player) ?: continue
+
+            // check inventory for new collected items
+            for (stack in player.allHeldStacks()) {
+                // get the item tile, if it is on the card
+                val tile = card.itemIndex[stack.item] ?: continue
+
+                // if the item hasn't been achieved and can be satisfied, mark it as collected
+                if (!tile.hasAchieved(team) && tile.canSatisfy(stack))
+                    markTileCollected(tile, team)
+            }
+        }
+
+        // if BingoMode.INVENTORY, we need to check that each team still has all their items
+        // and mark them as lost if not
+        if (config.gameMode == BingoMode.INVENTORY) {
+            for (item in card.entries) {
+                for (team in item.teams) if (item.hasAchieved(team)) {
+                    val teamInstance = team.team()
+                    val hasTeamItem = minecraftServer.playerManager.playerList
+                        .filter { it.isTeamPlayer(teamInstance) }
+                        .any { player -> player.inventory.containsAny { item.canSatisfy(it) }
+                                || item.canSatisfy(player.currentScreenHandler.cursorStack) }
+
+                    // if noone on the team has the item anymore, mark it lost
+                    if (!hasTeamItem) markTileLost(item, team)
+                }
+            }
         }
     }
 

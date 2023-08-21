@@ -6,10 +6,27 @@ class BingoCard(
     val entries: List<BingoCardEntry>,
 ) {
 
+    /**
+     * Index the card entries on their item for faster querying.
+     */
+    val itemIndex by lazy { entries.associateBy { it.item() } }
+
+    /**
+     * Gets the card entry at the provided x/y index.
+     *
+     * Throws if [x] or [y] arguments are not within 0..4
+     */
     fun entry(x: Int, y: Int): BingoCardEntry {
+        assert(x in 0 until 5) { "x=$x is not within the required 0..4 range" }
+        assert(y in 0 until 5) { "y=$y is not within the required 0..4 range" }
+
         return entries[x + y * 5]
     }
 
+    /**
+     * Counts every horizontal, vertical, and diagonal line on the card
+     * satisfied by the [predicate], and returns the sum.
+     */
     fun countLines(predicate: (BingoCardEntry) -> Boolean): Int {
         var lines = 0
 
@@ -44,6 +61,10 @@ class BingoCard(
         return lines
     }
 
+    /**
+     * Counts every horizontal, vertical, and diagonal line on the card
+     * achieved by the given [team].
+     */
     fun countLines(team: BingoTeam): Int = countLines { it.hasAchieved(team) }
 
 }

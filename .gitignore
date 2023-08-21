@@ -27,3 +27,8 @@
 
 ## gedit
 *~
+
+# test run/config files
+/bingo
+/logs
+/*.sh

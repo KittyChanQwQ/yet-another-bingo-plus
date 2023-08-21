@@ -3,7 +3,6 @@ package me.jfenn.bingo
 import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.card.CardService
-import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.menu.MenuService
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -13,11 +12,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
-import net.minecraft.item.FilledMapItem
 import net.minecraft.item.Items
-import net.minecraft.network.packet.s2c.play.BossBarS2CPacket
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
@@ -74,35 +70,8 @@ object Bingo : ModInitializer {
         }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->
-            if (BingoGame.state == GameState.PLAYING) {
-                for (player in server.playerManager.playerList) {
-                    val team = BingoTeam.fromPlayer(player) ?: continue
-
-                    // check inventory for changes
-                    for (item in BingoGame.card.entries) if (!item.hasAchieved(team)) {
-                        val hasItem = player.inventory.containsAny { item.canSatisfy(it) }
-                                || item.canSatisfy(player.currentScreenHandler.cursorStack)
-                        if (hasItem) BingoGame.markTileCollected(item, team)
-                    }
-                }
-
-                // if BingoMode.INVENTORY, we need to check that each team still has all their items
-                // and mark them as lost if not
-                if (BingoGame.config.gameMode == BingoMode.INVENTORY) {
-                    for (item in BingoGame.card.entries) {
-                        for (team in item.teams) {
-                            val hasTeamItem = server.playerManager.playerList
-                                .filter { it.isTeamPlayer(team.team()) }
-                                .any { player -> player.inventory.containsAny { item.canSatisfy(it) }
-                                        || item.canSatisfy(player.currentScreenHandler.cursorStack) }
-
-                            if (!hasTeamItem) BingoGame.markTileLost(item, team)
-                        }
-                    }
-                }
-
-                BingoGame.updateTimer()
-            }
+            BingoGame.updateInventory()
+            BingoGame.updateTimer()
 
             for (player in server.playerManager.playerList) {
                 BingoGame.giveMapCardItem(player)

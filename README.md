@@ -20,6 +20,12 @@ lines to win the game. (the "win condition" can be set to a number of lines, or 
 - **Inventory**: Items must remain in a team member's inventory to hold a tile. Losing an item un-marks its tile on the
   card (meaning you need to stay alive with your items in order to win).
 
+### Extra Options:
+
+- **Unlock Recipes**: Gives players all crafting recipes at the start of the game.
+- **Elytra**: Gives all players an elytra and infinite rockets throughout the game.
+- **Allow PvP**: Toggles whether players can attack each other.
+
 ## 📖 Configuration
 
 On the first startup, the mod will create its initial config files in `./config/bingo/...`. No initial setup is needed

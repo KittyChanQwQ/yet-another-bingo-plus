@@ -16,9 +16,16 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 object Config {
+
+    val configDir get() = try {
+        FabricLoader.getInstance().configDir
+    } catch (e: Exception) {
+        Path.of("").toAbsolutePath()
+    }
+
     @OptIn(InternalSerializationApi::class)
     fun <T: Any> read(clazz: KClass<T>, file: String): T {
-        val filePath = FabricLoader.getInstance().configDir.resolve(file)
+        val filePath = configDir.resolve(file)
         return try {
             json.decodeFromStream(clazz.serializer(), Files.newInputStream(filePath))
         } catch (e: Exception) {
@@ -28,7 +35,7 @@ object Config {
 
     @OptIn(InternalSerializationApi::class)
     fun <T: Any> write(clazz: KClass<T>, file: String, config: T) {
-        val filePath = FabricLoader.getInstance().configDir.resolve(file)
+        val filePath = configDir.resolve(file)
         if (!Files.exists(filePath)) {
             filePath.parent.toFile().mkdirs()
             Files.createFile(filePath)
@@ -47,7 +54,7 @@ object Config {
             javaClass.getResourceAsStream("/bingo/$file")!!
         },
     ): InputStream {
-        val filePath = FabricLoader.getInstance().configDir.resolve("bingo/$file")
+        val filePath = configDir.resolve("bingo/$file")
         if (!Files.exists(filePath)) {
             if (!shouldWriteDefault)
                 return default()
