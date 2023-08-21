@@ -6,23 +6,15 @@ import net.minecraft.text.Text
 
 object CardService {
 
-    val tiers = mapOf<String, GeneratorTier>(
-        "D" to GeneratorTier.fromFilename("d_tier.txt"),
-        "C" to GeneratorTier.fromFilename("c_tier.txt"),
-        "B" to GeneratorTier.fromFilename("b_tier.txt"),
-        "A" to GeneratorTier.fromFilename("a_tier.txt"),
-        "S" to GeneratorTier.fromFilename("s_tier.txt"),
-    )
-
     fun generate(dist: List<Int>): BingoCard {
-        assert(dist.size == tiers.size ) { "Item distribution does not match the number of tiers (${tiers.size})!" }
+        assert(dist.size == GeneratorTier.values().size ) { "Item distribution does not match the number of tiers (${GeneratorTier.values().size})!" }
         assert(dist.sum() == 25) { "Item distribution does not add up to 25!" }
 
-        val items = buildList<String> {
-            tiers.iterator()
+        val items = buildList {
+            GeneratorTier.values()
                 .withIndex()
                 .forEach { (index, value) ->
-                    addAll(value.value.pick(dist[index]))
+                    addAll(value.pick(dist[index]))
                 }
         }
             .map { BingoCardEntry(it) }

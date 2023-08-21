@@ -38,11 +38,11 @@ object BingoMapService {
         return stack.item == Items.FILLED_MAP && BingoTeam.values().any { FilledMapItem.getMapId(stack) == it.mapId }
     }
 
-    val COLOR_BACKGROUND = rgb(150, 150, 150).closestColorByte()
-    val COLOR_MARGIN = rgb(199, 199, 199).closestColorByte()
-    val COLOR_SHADOW = rgb(20, 20, 20).closestColorByte()
-    val COLOR_ACHIEVED = rgb(100, 255, 100).closestColorByte()
-    val COLOR_LOCKED = rgb(150, 0, 0).closestColorByte()
+    val COLOR_BACKGROUND = Color(150, 150, 150)
+    val COLOR_MARGIN = Color(199, 199, 199)
+    val COLOR_SHADOW = Color(20, 20, 20)
+    val COLOR_ACHIEVED = Color(100, 255, 100)
+    val COLOR_LOCKED = Color(150, 0, 0)
 
     val MAP_SIZE = 128
     val MAP_BORDER = 5
@@ -59,7 +59,7 @@ object BingoMapService {
             for (y in 0 until MAP_SIZE) {
                 val i = x + y * MAP_SIZE
                 // default to background color
-                state.colors[i] = COLOR_BACKGROUND
+                state.colors[i] = COLOR_BACKGROUND.asByte
 
                 // if x is within a map border
                 if (x < MAP_BORDER || y < MAP_BORDER || x >= MAP_SIZE - MAP_BORDER || y >= MAP_SIZE - MAP_BORDER) {
@@ -83,7 +83,7 @@ object BingoMapService {
 
                 // if the item has been captured, give it a different color
                 if (item.hasAchieved(team)) {
-                    state.colors[i] = COLOR_ACHIEVED
+                    state.colors[i] = COLOR_ACHIEVED.asByte
                 }
 
                 val tileX = (x - MAP_BORDER) % TILE_SIZE
@@ -91,9 +91,9 @@ object BingoMapService {
 
                 if (tileX >= TILE_SIZE - TILE_MARGIN || tileY >= TILE_SIZE - TILE_MARGIN) {
                     if (tileX == TILE_SIZE - TILE_MARGIN || tileY == TILE_SIZE - TILE_MARGIN) {
-                        state.colors[i] = COLOR_MARGIN
+                        state.colors[i] = COLOR_MARGIN.asByte
                     } else {
-                        state.colors[i] = COLOR_SHADOW
+                        state.colors[i] = COLOR_SHADOW.asByte
                     }
                     continue
                 }
@@ -105,7 +105,7 @@ object BingoMapService {
                 // draw an X if the item is locked (if BingoMode.LOCKOUT)
                 if (imgX in imgY..imgY+1 || (TILE_IMAGE - imgY) in imgX..imgX+1) {
                     if (config.gameMode == BingoMode.LOCKOUT && item.teams.isNotEmpty() && !item.hasAchieved(team)) {
-                        state.colors[i] = COLOR_LOCKED
+                        state.colors[i] = COLOR_LOCKED.asByte
                         continue
                     }
                 }
@@ -115,7 +115,13 @@ object BingoMapService {
                     val color = Color.fromInt(rgba)
                     if (color.a == 0) continue
                     if (color.a < 255) {
-                        rgba = Color(150, 150, 150, 255).mix(color).toInt()
+                        // if the image is transparent (glass), blend with the card background
+                        rgba = COLOR_BACKGROUND.mix(color).toInt()
+                    }
+
+                    if (item.hasAchieved(team)) {
+                        // make the item image slightly transparent when achieved
+                        rgba = COLOR_ACHIEVED.mix(color.copy(a = 200)).toInt()
                     }
 
                     state.colors[i] = rgba.closestColorByte()

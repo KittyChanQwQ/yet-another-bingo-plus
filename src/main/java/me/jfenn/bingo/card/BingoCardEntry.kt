@@ -10,6 +10,7 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
+import org.slf4j.LoggerFactory
 import java.lang.IllegalArgumentException
 import javax.imageio.ImageIO
 
@@ -49,7 +50,7 @@ data class BingoCardEntry(
         return Registries.ITEM.get(identifier)
     }
 
-    private val imagePath: String = "images/${item.lowercase()}.png"
+    val imagePath: String = "images/${item.lowercase()}.png"
 
     val image by lazyRef {
         try {
@@ -61,11 +62,14 @@ data class BingoCardEntry(
             }
 
             ImageIO.read(inputStream)
-        } catch (e: Exception) {
-            Log.error(LogCategory.LOG, "Error reading item image: $imagePath")
-            e.printStackTrace()
+        } catch (e: Throwable) {
+            log.error("Error reading item image: $imagePath", e)
             null
         }
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(this::class.java)
     }
 
 }

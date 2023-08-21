@@ -1,5 +1,6 @@
 package me.jfenn.bingo.menu
 
+import me.jfenn.bingo.card.GeneratorTier
 import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.utils.EventListener
 import me.jfenn.bingo.utils.toNbt
@@ -17,14 +18,18 @@ class ItemDistributionEntity(
     private val requiredPermissionLevel: Int = 2,
 ) {
 
-    private val labels = listOf("D", "C", "B", "A", "S")
+    companion object {
+        const val TIER_WIDTH = 0.5
+        const val TIER_OFFSET = -1.0
+    }
 
     private val tierIncrementButtons = List(5) { i ->
         ButtonEntity(
             world = world,
-            position = position.add(i - 2.0, -1.0, 0.0),
+            position = position.add(i*TIER_WIDTH + TIER_OFFSET, -MENU_ITEM_OFFSET, 0.0),
             text = "+",
             requiredPermissionLevel = requiredPermissionLevel,
+            width = TIER_WIDTH.toFloat(),
         ).apply {
             onClick {
                 itemDistribution = itemDistribution.toMutableList().apply {
@@ -39,9 +44,10 @@ class ItemDistributionEntity(
     private val tierDecrementButtons = List(5) { i ->
         ButtonEntity(
             world = world,
-            position = position.add(i - 2.0, -2.0, 0.0),
+            position = position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
             text = "-",
             requiredPermissionLevel = requiredPermissionLevel,
+            width = TIER_WIDTH.toFloat(),
         ).apply {
             onClick {
                 itemDistribution = itemDistribution.toMutableList().apply {
@@ -75,14 +81,31 @@ class ItemDistributionEntity(
                     putString("alignment", "center")
                 })
             }
+
+        for (i in GeneratorTier.values().indices) {
+            val tier = GeneratorTier.values()[i]
+
+            DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, world)
+                .apply {
+                    readNbt(NbtCompound().apply {
+                        put("Pos", position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0).toNbt())
+                        putString("text", Text.Serializer.toJson(
+                            Text.literal(tier.name).formatted(tier.formatting)
+                        ))
+                        putString("billboard", "fixed")
+                        putString("alignment", "center")
+                    })
+                }
+                .also { world.spawnEntity(it) }
+        }
     }
 
     private fun update() {
-        for (i in labels.indices) {
+        for (i in GeneratorTier.values().indices) {
             val tierDisplayEntity = tierDisplayEntities[i]
 
             tierDisplayEntity.readNbt(NbtCompound().apply {
-                put("Pos", position.add(i - 2.0, -1.5, 0.0).toNbt())
+                put("Pos", position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0).toNbt())
                 putString("text", Text.Serializer.toJson(
                     Text.literal(itemDistribution[i].toString())
                 ))

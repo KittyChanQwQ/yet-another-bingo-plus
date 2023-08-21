@@ -1,16 +1,21 @@
 package me.jfenn.bingo.card
 
 import me.jfenn.bingo.config.Config
+import me.jfenn.bingo.utils.lazyRef
+import net.minecraft.util.Formatting
 
-class GeneratorTier(
-    val items: List<Set<String>> = listOf(),
+enum class GeneratorTier(
+    val formatting: Formatting,
 ) {
+    S(Formatting.DARK_RED),
+    A(Formatting.RED),
+    B(Formatting.GOLD),
+    C(Formatting.YELLOW),
+    D(Formatting.GREEN),
+    ;
 
-    init {
-        // ensure that each item has a texture available
-        for (itemRow in items) for (item in itemRow) {
-            assert(BingoCardEntry(item).image != null) { "No item texture is available for '$item.png'" }
-        }
+    val items by lazyRef {
+        GeneratorTier.readFile("${name.lowercase()}_tier.txt")
     }
 
     fun pick(count: Int): List<String> {
@@ -20,7 +25,7 @@ class GeneratorTier(
     }
 
     companion object {
-        fun fromFilename(name: String): GeneratorTier {
+        private fun readFile(name: String): List<Set<String>> {
             val inputStream = Config.readStream(name)
 
             val items = mutableListOf<Set<String>>()
@@ -34,7 +39,7 @@ class GeneratorTier(
                 }
             }
 
-            return GeneratorTier(items)
+            return items
         }
     }
 }

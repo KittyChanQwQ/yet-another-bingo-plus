@@ -30,17 +30,21 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import org.joml.Vector3f
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.sin
 
 object MenuService {
 
     fun spawn(config: BingoConfig) {
         placeStructure(lobbyWorld, BlockPos(-24, -2, -24), Identifier.of("bingo", "lobby")!!)
-        spawnMenuEntities(Vec3d(-4.0, 3.0, -4.0), config)
+        spawnMenuEntities(Vec3d(-4.0, 2.5, -4.0), config)
+        spawnPlayerCount(Vec3d(0.0, 3.5, -4.0))
     }
 
     private fun spawnMenuEntities(pos: Vec3d, config: BingoConfig) {
         val startButton = ButtonEntity(
-            position = pos.add(11.0, -1.0, 0.0),
+            position = pos.add(9.0, -MENU_ITEM_OFFSET, 0.0),
             text = "START",
             isActive = config.isValid(),
         ).apply {
@@ -61,8 +65,6 @@ object MenuService {
                 BingoGame.start()
             }
         }
-
-        spawnPlayerCount(pos.add(0.0, 1.0, 0.0))
 
         spawnMenu(
             title = "Game Mode",
@@ -89,14 +91,14 @@ object MenuService {
         }
 
         ItemDistributionEntity(
-            position = pos.add(5.5, 0.0, 0.0),
+            position = pos.add(4.3, 0.0, 0.0),
             itemDistribution = BingoGame.config.itemDistribution,
         ).onChange {
             config.itemDistribution = it
             startButton.isActive = config.isValid()
         }
 
-        spawnFeatures(pos.add(9.0, 0.0, 0.0), config)
+        spawnFeatures(pos.add(7.0, 0.0, 0.0), config)
 
         spawnTeamEntity(Vec3d(-16.5, 4.0, -3.5), BingoTeam.ORANGE)
         spawnTeamEntity(Vec3d(-14.5, 8.0, -19.5), BingoTeam.GREEN)
@@ -133,7 +135,7 @@ object MenuService {
             .also { lobbyWorld.spawnEntity(it) }
 
         ButtonEntity(
-            position = position.add(0.0, -1.0, 0.0),
+            position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
             text = "Unlock Recipes",
             isActive = config.isUnlockRecipes,
         ).apply {
@@ -144,7 +146,18 @@ object MenuService {
         }
 
         ButtonEntity(
-            position = position.add(0.0, -1.5, 0.0),
+            position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
+            text = "Keep Inventory",
+            isActive = config.isKeepInventory,
+        ).apply {
+            onClick {
+                config.isKeepInventory = !config.isKeepInventory
+                this.isActive = config.isKeepInventory
+            }
+        }
+
+        ButtonEntity(
+            position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0),
             text = "Elytra",
             isActive = config.isElytra,
         ).apply {
@@ -155,7 +168,7 @@ object MenuService {
         }
 
         ButtonEntity(
-            position = position.add(0.0, -2.0, 0.0),
+            position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
             text = "Allow PvP",
             isActive = BingoGame.config.isPvpEnabled,
         ).apply {

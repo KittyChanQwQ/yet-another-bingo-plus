@@ -1,8 +1,10 @@
 package me.jfenn.bingo
 
+import me.jfenn.bingo.card.BingoCardEntry
 import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.card.CardService
+import me.jfenn.bingo.card.GeneratorTier
 import me.jfenn.bingo.menu.MenuService
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -21,6 +23,7 @@ import net.minecraft.util.*
 import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
+import org.slf4j.LoggerFactory
 import java.util.UUID
 
 const val MOD_ID = "bingo"
@@ -45,12 +48,21 @@ val lobbyWorld: ServerWorld by lazy {
 
 object Bingo : ModInitializer {
 
+    private val log = LoggerFactory.getLogger(this::class.java)
+
     init {
         WorldDeleter.invoke()
     }
 
     override fun onInitialize() {
         println("$MOD_ID mod initialized (main)")
+
+        // Startup check: ensure that each item has a texture available
+        for (tier in GeneratorTier.values()) for (itemRow in tier.items) for (item in itemRow) {
+            BingoCardEntry(item).let {
+                if (it.image == null) log.error("($MOD_ID) No item texture is available for '${it.imagePath}'")
+            }
+        }
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server

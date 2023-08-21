@@ -12,6 +12,7 @@ data class BingoConfig(
     var isElytra: Boolean = false,
     var isUnlockRecipes: Boolean = true,
     var isPvpEnabled: Boolean = true,
+    var isKeepInventory: Boolean = false,
 ) {
 
     fun isValid(): Boolean {

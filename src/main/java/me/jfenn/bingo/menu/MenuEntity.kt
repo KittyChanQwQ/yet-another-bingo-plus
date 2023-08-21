@@ -22,7 +22,7 @@ class MenuEntity(
     private val buttonEntities = List(options.size) { i ->
         ButtonEntity(
             world = world,
-            position = position.add(0.0, -(1.0 + i * 0.5), 0.0),
+            position = position.add(0.0, -(MENU_ITEM_OFFSET + i * MENU_ITEM_HEIGHT), 0.0),
             text = options[i],
             requiredPermissionLevel = requiredPermissionLevel,
         ).apply {

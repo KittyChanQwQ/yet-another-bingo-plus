@@ -21,14 +21,16 @@ class ButtonEntity(
     text: String,
     isActive: Boolean = false,
     requiredPermissionLevel: Int = 2,
+    width: Float = MENU_HITBOX_WIDTH,
+    height: Float = MENU_HITBOX_HEIGHT,
 ) {
 
     private val interactionListenerEntity = InteractionEntity(EntityType.INTERACTION, world)
         .apply {
             readNbt(NbtCompound().apply {
                 put("Pos", position.add(0.0, 0.0, -0.5).toNbt())
-                putFloat("width", 1f)
-                putFloat("height", 0.25f)
+                putFloat("width", width)
+                putFloat("height", height)
             })
         }
 

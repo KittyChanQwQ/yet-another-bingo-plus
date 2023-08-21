@@ -9,7 +9,7 @@ class LazyRefHolder<T>(
 
     private var weakRef: WeakReference<T>? = null
 
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
         return weakRef?.get()
             ?: factory().also {
                 weakRef = WeakReference(it)

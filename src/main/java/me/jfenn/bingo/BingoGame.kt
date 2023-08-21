@@ -26,6 +26,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.GameMode
+import net.minecraft.world.GameRules
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -85,6 +86,7 @@ object BingoGame {
 
         // update server to match config choices
         minecraftServer.isPvpEnabled = config.isPvpEnabled
+        minecraftServer.gameRules.get(GameRules.KEEP_INVENTORY).set(config.isKeepInventory, minecraftServer)
 
         // spread player teams to spawnpoint
         val spread = SpreadPlayers(world = minecraftServer.overworld)
