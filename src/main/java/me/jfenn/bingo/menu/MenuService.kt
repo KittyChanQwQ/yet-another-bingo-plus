@@ -24,15 +24,11 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.structure.StructurePlacementData
 import net.minecraft.text.Text
-import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import org.joml.Vector3f
-import kotlin.math.abs
-import kotlin.math.acos
-import kotlin.math.sin
 
 object MenuService {
 

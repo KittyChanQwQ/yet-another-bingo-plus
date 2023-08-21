@@ -1,17 +1,16 @@
 package me.jfenn.bingo
 
-import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType.getInteger
 import com.mojang.brigadier.arguments.IntegerArgumentType.integer
-import com.mojang.brigadier.arguments.StringArgumentType.*
+import com.mojang.brigadier.arguments.StringArgumentType.getString
+import com.mojang.brigadier.arguments.StringArgumentType.greedyString
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
-import com.mojang.brigadier.builder.LiteralArgumentBuilder.*
-import com.mojang.brigadier.builder.RequiredArgumentBuilder.*
+import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
+import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.utils.sendInfoMessage
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import kotlin.math.ceil
 
 /**

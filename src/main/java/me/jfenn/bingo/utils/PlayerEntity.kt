@@ -2,9 +2,7 @@ package me.jfenn.bingo.utils
 
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
-import net.minecraft.text.MutableText
 import net.minecraft.text.Text
-import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 
 fun PlayerEntity.allHeldStacks() = sequence<ItemStack> {

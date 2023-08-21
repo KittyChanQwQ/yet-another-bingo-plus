@@ -1,6 +1,9 @@
 package me.jfenn.bingo
 
 import net.fabricmc.loader.api.FabricLoader
+import org.slf4j.LoggerFactory
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 /**
  * This deletes all world files that should reset when the
@@ -8,7 +11,9 @@ import net.fabricmc.loader.api.FabricLoader
  */
 object WorldDeleter {
 
-    val FILES_TO_RM = listOf(
+    private val log = LoggerFactory.getLogger(this::class.java)
+
+    private val FILES_TO_RM = listOf(
         "world/advancements",
         "world/data",
         "world/DIM1",
@@ -23,12 +28,18 @@ object WorldDeleter {
         "world/level.dat_old",
     )
 
+    @OptIn(ExperimentalTime::class)
     fun invoke() {
         val gameDir = FabricLoader.getInstance().gameDir
+        log.info("Deleting world files in dir: ${gameDir.toAbsolutePath()}")
 
-        for (fileName in FILES_TO_RM) {
-            val file = gameDir.resolve(fileName).toFile()
-            file.deleteRecursively()
+        measureTime {
+            for (fileName in FILES_TO_RM) {
+                val file = gameDir.resolve(fileName).toFile()
+                file.deleteRecursively()
+            }
+        }.also {
+            log.info("Done ($it)")
         }
     }
 }
