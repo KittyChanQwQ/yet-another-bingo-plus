@@ -3,6 +3,10 @@
 This is a server-side BINGO item hunt mod + lobby, intended for use with vanilla clients. Clients do not need to install
 any mods or resource packs to join; this only needs to be installed on the server (along with [fabric-api](https://modrinth.com/mod/fabric-api)).
 
+Recommended mods (optional, but have been tested for compatibility):
+- [Lithium](https://modrinth.com/mod/lithium/version/mc1.20.1-0.11.2)
+- [MC-249136 Fix](https://modrinth.com/mod/mc-249136-fix/version/1.0.0)
+
 > **⚠ WARNING**
 >
 > This mod **deletes the world folder on startup**! It is meant to be hosted on a dedicated server for short, temporary
