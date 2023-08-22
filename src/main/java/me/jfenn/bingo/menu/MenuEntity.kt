@@ -53,6 +53,8 @@ class MenuEntity(
                     ))
                     putString("billboard", "fixed")
                     putString("alignment", "center")
+                    putInt("background", 0)
+                    putBoolean("shadow", true)
                 })
             }
             .also { world.spawnEntity(it) }

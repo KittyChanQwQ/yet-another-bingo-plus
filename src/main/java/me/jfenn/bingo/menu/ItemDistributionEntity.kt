@@ -8,6 +8,7 @@ import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
@@ -79,6 +80,8 @@ class ItemDistributionEntity(
                     ))
                     putString("billboard", "fixed")
                     putString("alignment", "center")
+                    putInt("background", 0)
+                    putBoolean("shadow", true)
                 })
             }
 
@@ -90,10 +93,12 @@ class ItemDistributionEntity(
                     readNbt(NbtCompound().apply {
                         put("Pos", position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0).toNbt())
                         putString("text", Text.Serializer.toJson(
-                            Text.literal(tier.name).formatted(tier.formatting)
+                            Text.literal(tier.name).formatted(tier.formatting, Formatting.BOLD)
                         ))
                         putString("billboard", "fixed")
                         putString("alignment", "center")
+                        putInt("background", 0)
+                        putBoolean("shadow", true)
                     })
                 }
                 .also { world.spawnEntity(it) }
@@ -111,6 +116,8 @@ class ItemDistributionEntity(
                 ))
                 putString("billboard", "fixed")
                 putString("alignment", "center")
+                putInt("background", 0)
+                putBoolean("shadow", true)
             })
         }
     }

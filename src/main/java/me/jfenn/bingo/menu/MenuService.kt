@@ -36,6 +36,15 @@ object MenuService {
         placeStructure(lobbyWorld, BlockPos(-24, -2, -24), Identifier.of("bingo", "lobby")!!)
         spawnMenuEntities(Vec3d(-4.0, 2.5, -4.0), config)
         spawnPlayerCount(Vec3d(0.0, 3.5, -4.0))
+
+        spawnTeamEntity(Vec3d(-16.5, 4.0, -3.5), BingoTeam.ORANGE)
+        spawnTeamEntity(Vec3d(-14.5, 8.0, -19.5), BingoTeam.GREEN)
+        spawnTeamEntity(Vec3d(5.5, 5.0, -15.5), BingoTeam.PINK)
+        spawnTeamEntity(Vec3d(16.5, 3.0, -8.5), BingoTeam.BLUE)
+        spawnTeamEntity(Vec3d(18.5, 3.0, 6.5), BingoTeam.YELLOW)
+        spawnTeamEntity(Vec3d(16.5, 5.0, 17.5), BingoTeam.AQUA)
+        spawnTeamEntity(Vec3d(-1.5, 1.0, 18.5), BingoTeam.GRAY)
+        spawnTeamEntity(Vec3d(-16.5, 3.0, 14.5), BingoTeam.RED)
     }
 
     private fun spawnMenuEntities(pos: Vec3d, config: BingoConfig) {
@@ -94,16 +103,7 @@ object MenuService {
             startButton.isActive = config.isValid()
         }
 
-        spawnFeatures(pos.add(7.0, 0.0, 0.0), config)
-
-        spawnTeamEntity(Vec3d(-16.5, 4.0, -3.5), BingoTeam.ORANGE)
-        spawnTeamEntity(Vec3d(-14.5, 8.0, -19.5), BingoTeam.GREEN)
-        spawnTeamEntity(Vec3d(5.5, 5.0, -15.5), BingoTeam.PINK)
-        spawnTeamEntity(Vec3d(16.5, 3.0, -8.5), BingoTeam.BLUE)
-        spawnTeamEntity(Vec3d(18.5, 3.0, 6.5), BingoTeam.YELLOW)
-        spawnTeamEntity(Vec3d(16.5, 5.0, 17.5), BingoTeam.AQUA)
-        spawnTeamEntity(Vec3d(-1.5, 1.0, 18.5), BingoTeam.GRAY)
-        spawnTeamEntity(Vec3d(-16.5, 3.0, 14.5), BingoTeam.RED)
+        spawnFeaturesMenu(pos.add(7.0, 0.0, 0.0), config)
     }
 
     private inline fun <reified E : Enum<E>> spawnMenu(position: Vec3d, title: String, value: E): MenuEntity {
@@ -116,7 +116,7 @@ object MenuService {
         )
     }
 
-    private fun spawnFeatures(position: Vec3d, config: BingoConfig) {
+    private fun spawnFeaturesMenu(position: Vec3d, config: BingoConfig) {
         DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
                 readNbt(NbtCompound().apply {
@@ -126,6 +126,8 @@ object MenuService {
                     ))
                     putString("billboard", "fixed")
                     putString("alignment", "center")
+                    putInt("background", 0)
+                    putBoolean("shadow", true)
                 })
             }
             .also { lobbyWorld.spawnEntity(it) }
@@ -177,29 +179,24 @@ object MenuService {
 
     private fun spawnPlayerCount(position: Vec3d) {
         val textEntity = DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
-            .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.toNbt())
-                    putString("text", Text.Serializer.toJson(
-                        Text.literal("Player Count")
-                    ))
-                    putString("billboard", "fixed")
-                    putString("alignment", "center")
-                })
-            }
             .also { lobbyWorld.spawnEntity(it) }
 
         val update = {
             textEntity.readNbt(NbtCompound().apply {
                 put("Pos", position.toNbt())
                 putString("text", Text.Serializer.toJson(
-                    Text.literal("Player Count: ${minecraftServer.currentPlayerCount} / ${minecraftServer.maxPlayerCount}")
+                    Text.empty()
+                        .append("Player count: ")
+                        .append(Text.literal("${minecraftServer.currentPlayerCount} / ${minecraftServer.maxPlayerCount}").formatted(Formatting.GREEN))
                 ))
                 putString("billboard", "fixed")
                 putString("alignment", "center")
+                putInt("background", 0)
+                putBoolean("shadow", true)
             })
         }
 
+        update()
         PlayerEvents.onPlayerJoin { update() }
         PlayerEvents.onPlayerLeave { update() }
     }
@@ -215,6 +212,8 @@ object MenuService {
                     ))
                     putString("billboard", "vertical")
                     putString("alignment", "center")
+                    putInt("background", 0)
+                    putBoolean("shadow", true)
                 })
             }
             .also { lobbyWorld.spawnEntity(it) }

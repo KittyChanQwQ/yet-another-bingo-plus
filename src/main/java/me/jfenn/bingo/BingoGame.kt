@@ -73,6 +73,9 @@ object BingoGame {
     }
 
     fun start() {
+        // if the game has already been started, ignore
+        if (startedAt != null) return
+
         // save the current config, if overwrite option is set
         if (config.overwrite) {
             config = config.copy()
