@@ -13,6 +13,7 @@ data class BingoConfig(
     var isUnlockRecipes: Boolean = true,
     var isPvpEnabled: Boolean = true,
     var isKeepInventory: Boolean = false,
+    var spreadPlayersDistance: Int = 100,
 ) {
 
     fun isValid(): Boolean {
