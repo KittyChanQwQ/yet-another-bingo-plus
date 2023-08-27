@@ -1,5 +1,6 @@
 package me.jfenn.bingo.map
 
+import net.minecraft.util.Formatting
 import kotlin.math.sqrt
 
 fun rgb(r: Int, g: Int, b: Int): Int {

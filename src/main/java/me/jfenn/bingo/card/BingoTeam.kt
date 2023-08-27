@@ -1,4 +1,4 @@
-package me.jfenn.bingo.team
+package me.jfenn.bingo.card
 
 import me.jfenn.bingo.minecraftServer
 import net.minecraft.entity.player.PlayerEntity
@@ -64,7 +64,7 @@ enum class BingoTeam(
         private val TEAM_ID_INDEX = BingoTeam.values().associateBy { it.id }
 
         fun fromPlayer(player: PlayerEntity): BingoTeam? {
-            val team = player.scoreboard.getPlayerTeam(player.entityName) ?: return null
+            val team = player.scoreboardTeam ?: return null
             return TEAM_ID_INDEX[team.name]
         }
     }

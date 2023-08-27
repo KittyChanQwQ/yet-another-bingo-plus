@@ -1,6 +1,6 @@
 package me.jfenn.bingo
 
-import me.jfenn.bingo.team.BingoTeam
+import me.jfenn.bingo.card.BingoTeam
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -8,8 +8,9 @@ import net.minecraft.sound.SoundEvents
 object Sounds {
 
     fun playTileCollected(team: BingoTeam) {
+        val teamInstance = team.team()
         for (player in minecraftServer.playerManager.playerList) {
-            if (player.isTeamPlayer(team.team())) {
+            if (player.isTeamPlayer(teamInstance)) {
                 player.playSound(
                     SoundEvents.ENTITY_PLAYER_LEVELUP,
                     SoundCategory.BLOCKS,

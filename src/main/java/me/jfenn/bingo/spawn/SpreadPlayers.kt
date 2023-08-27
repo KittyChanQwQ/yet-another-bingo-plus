@@ -1,7 +1,7 @@
 package me.jfenn.bingo.spawn
 
 import me.jfenn.bingo.minecraftServer
-import me.jfenn.bingo.team.BingoTeam
+import me.jfenn.bingo.card.BingoTeam
 import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld

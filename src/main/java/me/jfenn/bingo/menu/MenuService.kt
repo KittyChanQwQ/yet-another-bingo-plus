@@ -2,6 +2,7 @@ package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.BingoGame
 import me.jfenn.bingo.Sounds
+import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.TimeLimit
@@ -11,7 +12,6 @@ import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.map.Color
 import me.jfenn.bingo.minecraftServer
-import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.utils.sendWarningMessage
 import me.jfenn.bingo.utils.toNbt
 import net.minecraft.block.entity.StructureBlockBlockEntity

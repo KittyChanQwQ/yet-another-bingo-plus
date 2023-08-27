@@ -7,7 +7,7 @@ import com.mojang.brigadier.arguments.StringArgumentType.greedyString
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
-import me.jfenn.bingo.team.BingoTeam
+import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.utils.sendInfoMessage
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text

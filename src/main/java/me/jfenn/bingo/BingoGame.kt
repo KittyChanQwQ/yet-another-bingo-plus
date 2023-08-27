@@ -2,13 +2,13 @@ package me.jfenn.bingo
 
 import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.card.BingoCardEntry
+import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.CardService
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.config
 import me.jfenn.bingo.map.BingoMapService
 import me.jfenn.bingo.spawn.SpreadPlayers
-import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.formatString
 import net.minecraft.entity.boss.BossBar
@@ -131,16 +131,16 @@ object BingoGame {
     }
 
     fun end(reason: String) {
-        val winMessage = config.winCondition.getWinner(card)?.let { winner ->
+        val winMessage = card.getWinner(config)?.let { winner ->
                 Text.empty()
                     .append(winner.text())
                     .append(Text.literal(" completed their card!").formatted(Formatting.YELLOW))
             }
-            ?: config.winCondition.getLeading(card)?.let { leader ->
+            ?: card.getLeading()?.let { leader ->
                 Text.empty()
                     .append(Text.literal("$reason ").formatted(Formatting.YELLOW))
                     .append(leader.text())
-                    .append(Text.literal(" is the winner!").formatted(Formatting.YELLOW))
+                    .append(Text.literal(" wins by # of lines!").formatted(Formatting.YELLOW))
             }
             ?: Text.literal("$reason The game is a draw!").formatted(Formatting.YELLOW)
 
@@ -300,7 +300,7 @@ object BingoGame {
         // and mark them as lost if not
         if (config.gameMode == BingoMode.INVENTORY) {
             for (item in card.entries) {
-                for (team in item.teams) if (item.hasAchieved(team)) {
+                for (team in item.teams) {
                     val teamInstance = team.team()
                     val hasTeamItem = minecraftServer.playerManager.playerList
                         .filter { it.isTeamPlayer(teamInstance) }
@@ -332,19 +332,19 @@ object BingoGame {
         }
 
         // check if a team has won the game
-        if (config.winCondition.getWinner(card) != null) {
+        if (card.getWinner(config) != null) {
             end("")
             return
         }
 
         // check if the game is in a stalemate
-        if (config.winCondition.isStalemate(card, config)) {
+        if (card.isStalemate(config)) {
             end("Stalemate!")
             return
         }
 
         // check if the leading team has changed, and announce the leader
-        val leadingTeam = config.winCondition.getLeading(card)
+        val leadingTeam = card.getLeading()
         if (leadingTeam != this.leadingTeam) {
             this.leadingTeam = leadingTeam
 

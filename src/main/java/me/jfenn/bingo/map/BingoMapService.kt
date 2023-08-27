@@ -1,10 +1,10 @@
 package me.jfenn.bingo.map
 
-import me.jfenn.bingo.card.*
+import me.jfenn.bingo.card.BingoCard
+import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.minecraftServer
-import me.jfenn.bingo.team.BingoTeam
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -12,8 +12,12 @@ import net.minecraft.item.map.MapState
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import org.slf4j.LoggerFactory
+import kotlin.system.measureTimeMillis
 
 object BingoMapService {
+
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     fun createMapItem(team: BingoTeam): ItemStack {
         val item = ItemStack(Items.FILLED_MAP, 1)
@@ -38,22 +42,26 @@ object BingoMapService {
         return stack.item == Items.FILLED_MAP && BingoTeam.values().any { FilledMapItem.getMapId(stack) == it.mapId }
     }
 
-    val COLOR_BACKGROUND = Color(150, 150, 150)
-    val COLOR_MARGIN = Color(199, 199, 199)
-    val COLOR_SHADOW = Color(20, 20, 20)
-    val COLOR_ACHIEVED = Color(100, 255, 100)
-    val COLOR_LOCKED = Color(150, 0, 0)
+    private val COLOR_BACKGROUND = Color(150, 150, 150)
+    private val COLOR_MARGIN = Color(199, 199, 199)
+    private val COLOR_SHADOW = Color(20, 20, 20)
+    private val COLOR_ACHIEVED = Color(100, 255, 100)
+    private val COLOR_LOCKED = Color(150, 0, 0)
 
-    val MAP_SIZE = 128
-    val MAP_BORDER = 5
+    private const val MAP_SIZE = 128
+    private const val MAP_BORDER = 5
 
-    val TILE_IMAGE = 16
-    val TILE_PADDING = 3
-    val TILE_MARGIN = 2
-    val TILE_SIZE = TILE_IMAGE + TILE_PADDING*2 + TILE_MARGIN
+    private const val TILE_IMAGE = 16
+    private const val TILE_PADDING = 3
+    private const val TILE_MARGIN = 2
+    private const val TILE_SIZE = TILE_IMAGE + TILE_PADDING*2 + TILE_MARGIN
 
-    fun update(team: BingoTeam, card: BingoCard, config: BingoConfig) {
+    fun update(team: BingoTeam, card: BingoCard, config: BingoConfig) = measureTimeMillis {
         val state = MapState.of(1, true, minecraftServer.overworld.registryKey)
+
+        val borderLight = (team.color*4) + 2
+        val borderMid = (team.color*4) + 1
+        val borderDark = (team.color*4) + 3
 
         for (x in 0 until MAP_SIZE) {
             for (y in 0 until MAP_SIZE) {
@@ -63,9 +71,6 @@ object BingoMapService {
 
                 // if x is within a map border
                 if (x < MAP_BORDER || y < MAP_BORDER || x >= MAP_SIZE - MAP_BORDER || y >= MAP_SIZE - MAP_BORDER) {
-                    val borderLight = (team.color*4) + 2
-                    val borderMid = (team.color*4) + 1
-                    val borderDark = (team.color*4) + 3
                     state.colors[i] = when {
                         x == 0 || y == 0 -> borderLight
                         x == MAP_SIZE-1 || y == MAP_SIZE-1 -> (team.color*4) + 3
@@ -132,6 +137,8 @@ object BingoMapService {
 
         state.isDirty = false
         minecraftServer.overworld.putMapState(team.mapName, state)
+    }.also {
+        log.info("Re-drawing map for team ${team.name} (${it}ms)")
     }
 
 }

@@ -1,6 +1,7 @@
 package me.jfenn.bingo.card
 
-import me.jfenn.bingo.team.BingoTeam
+import me.jfenn.bingo.config.BingoConfig
+import me.jfenn.bingo.config.BingoMode
 
 class BingoCard(
     val entries: List<BingoCardEntry>,
@@ -66,5 +67,44 @@ class BingoCard(
      * achieved by the given [team].
      */
     fun countLines(team: BingoTeam): Int = countLines { it.hasAchieved(team) }
+
+    fun getLeading(): BingoTeam? {
+        var max: BingoTeam? = null
+        var maxLines = 0
+        for (team in BingoTeam.values()) {
+            val teamLines = countLines(team)
+            if (teamLines > maxLines) {
+                max = team
+                maxLines = teamLines
+            } else if (teamLines == maxLines) {
+                max = null
+            }
+        }
+
+        return max
+    }
+
+    fun getWinner(config: BingoConfig): BingoTeam? {
+        for (team in BingoTeam.values()) {
+            val lines = countLines(team)
+            if (lines >= config.winCondition.numLines) return team
+        }
+
+        return null
+    }
+
+    fun isStalemate(config: BingoConfig): Boolean {
+        if (config.gameMode != BingoMode.LOCKOUT) return false
+
+        // check all teams for the number of capture-able lines
+        // if any team can capture a line, it is not a stalemate
+        for (team in BingoTeam.values()) {
+            // count number of lines that the team can achieve
+            val possibleLines = countLines { entry -> entry.teams.isEmpty() || entry.hasAchieved(team) }
+            if (possibleLines >= 1) return false
+        }
+
+        return true
+    }
 
 }

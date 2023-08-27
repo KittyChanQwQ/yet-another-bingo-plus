@@ -1,8 +1,8 @@
 package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.BingoGame;
+import me.jfenn.bingo.card.BingoTeam;
 import me.jfenn.bingo.event.PlayerEvents;
-import me.jfenn.bingo.team.BingoTeam;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.PlayerManager;

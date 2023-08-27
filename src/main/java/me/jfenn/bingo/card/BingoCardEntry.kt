@@ -2,7 +2,6 @@ package me.jfenn.bingo.card
 
 import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.map.BingoMapService
-import me.jfenn.bingo.team.BingoTeam
 import me.jfenn.bingo.utils.lazyRef
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -35,6 +34,9 @@ data class BingoCardEntry(
         return teams.contains(team)
     }
 
+    /**
+     * @return true if the tile state has changed
+     */
     fun setAchieved(team: BingoTeam, value: Boolean): Boolean {
         return if (value) {
             teams.add(team)

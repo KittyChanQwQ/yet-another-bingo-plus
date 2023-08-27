@@ -1,10 +1,10 @@
 package me.jfenn.bingo
 
 import me.jfenn.bingo.card.BingoCardEntry
-import me.jfenn.bingo.event.PlayerEvents
-import me.jfenn.bingo.team.BingoTeam
+import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.CardService
 import me.jfenn.bingo.card.GeneratorTier
+import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.menu.MenuService
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -24,7 +24,7 @@ import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 
 const val MOD_ID = "bingo"
 
@@ -89,15 +89,17 @@ object Bingo : ModInitializer {
 
         ServerMessageEvents.ALLOW_CHAT_MESSAGE.register { message, player, type ->
             if (BingoGame.state != GameState.PLAYING) return@register true
-            val team = BingoTeam.fromPlayer(player) ?: return@register true
+            val team = player.scoreboardTeam ?: return@register true
+
+            val messageText = Text.empty()
+                .append(Text.literal("TEAM ${player.entityName}").formatted(team.color))
+                .append(Text.literal(": "))
+                .append(message.content)
 
             // broadcast message to team
-            team.broadcastMessage(
-                Text.empty()
-                    .append(Text.literal("TEAM ${player.entityName}").formatted(team.formatting))
-                    .append(Text.literal(": "))
-                    .append(message.content)
-            )
+            for (otherPlayer in minecraftServer.playerManager.playerList) {
+                if (otherPlayer.isTeamPlayer(team)) otherPlayer.sendMessage(messageText)
+            }
 
             false
         }
