@@ -287,10 +287,12 @@ object BingoGame {
                 val tile = card.itemIndex[stack.item] ?: continue
 
                 // if the item hasn't been achieved and can be satisfied, mark it as collected
-                if (!tile.hasAchieved(team) && tile.canSatisfy(stack)) {
-                    markTileCollected(tile, team)
-                    updatedTeams.add(team)
-                }
+                if (!tile.canSatisfy(stack)) continue
+                if (tile.hasAchieved(team)) continue
+
+                markTileCollected(tile, team)
+                    // if the tile has changed, mark updatedTeams
+                    .also { isChanged -> if (isChanged) updatedTeams.add(team) }
             }
         }
 
@@ -308,7 +310,8 @@ object BingoGame {
                     // if noone on the team has the item anymore, mark it lost
                     if (!hasTeamItem) {
                         markTileLost(item, team)
-                        updatedTeams.add(team)
+                            // if the tile has changed, mark updatedTeams
+                            .also { isChanged -> if (isChanged) updatedTeams.add(team) }
                     }
                 }
             }
@@ -360,11 +363,17 @@ object BingoGame {
         }
     }
 
-    private fun markTileCollected(tile: BingoCardEntry, team: BingoTeam) {
-        if (state != GameState.PLAYING) return
+    /**
+     * @return if the given tile has been changed
+     */
+    private fun markTileCollected(tile: BingoCardEntry, team: BingoTeam): Boolean {
+        if (state != GameState.PLAYING) return false
         // if the gamemode is lockout, tiles cannot be collected by >1 team
         if (config.gameMode == BingoMode.LOCKOUT && tile.teams.isNotEmpty())
-            return
+            return false
+        // if the team has already achieved the tile, there is nothing to change
+        if (tile.hasAchieved(team))
+            return false
 
         // unlock the collected item
         val linesBefore = card.countLines(team)
@@ -382,18 +391,22 @@ object BingoGame {
 
         // play the doink sound
         Sounds.playTileCollected(team)
+        return true
     }
 
     /**
      * This is only used in BingoMode.INVENTORY to un-mark a tile if
      * the item is no longer in a player's inventory
+     *
+     * @return if the given tile has been changed
      */
-    private fun markTileLost(tile: BingoCardEntry, team: BingoTeam) {
-        if (state != GameState.PLAYING) return
-        if (config.gameMode != BingoMode.INVENTORY) return
+    private fun markTileLost(tile: BingoCardEntry, team: BingoTeam): Boolean {
+        if (state != GameState.PLAYING) return false
+        // if the team doesn't have the tile, there is nothing to change
+        if (!tile.hasAchieved(team)) return false
 
         tile.setAchieved(team, false)
-        BingoMapService.update(team, card, config)
+        return true
     }
 
     fun updateTimer() {
