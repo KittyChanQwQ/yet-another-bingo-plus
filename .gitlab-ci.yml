@@ -9,15 +9,13 @@
 # https://gradle.org/
 # https://github.com/gradle/gradle
 
-image: gradle:alpine
-
-before_script:
-  - GRADLE_USER_HOME="$(pwd)/.gradle"
-  - export GRADLE_USER_HOME
-
 build:
   stage: build
-  script: gradle --build-cache assemble
+  image: gradle:alpine
+  script:
+    - GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export GRADLE_USER_HOME
+    - gradle --build-cache assemble
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
@@ -27,3 +25,24 @@ build:
   artifacts:
     paths:
       - build/libs/*.jar
+
+pages:
+  stage: deploy
+  image: node:18.12.1
+  cache:
+    key: npm
+    policy: pull-push
+    paths:
+      - .npm/
+  script:
+    - pushd docs
+    - npm ci --cache ../.npm --prefer-offline
+    - npm run docs:build
+    - popd
+    - rm -rf public
+    - mv docs/.vitepress/dist public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

@@ -5,3 +5,7 @@
 
 # Generate report files (or --all)
 java -DbundlerMainClass=net.minecraft.data.Main -jar server.jar --reports
+
+# Copy the items list into data/items.json
+mkdir -p data
+cat generated/reports/registries.json | jq '.["minecraft:item"].entries | keys' > ./data/items.json

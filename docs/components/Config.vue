@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { computed, ref, Ref } from "vue";
 import ItemList from './ItemList.vue';
-import registries from "../generated/reports/registries.json";
+import itemData from "../data/items.json";
 import UploadItemsInput from "./UploadItemsInput.vue";
 import DownloadItemsInput from "./DownloadItemsInput.vue";
 
@@ -41,7 +41,7 @@ const tierLists: Ref<{ [K in typeof tiers[number]]: string[] }> = ref({
 });
 
 const allItems = computed(() => {
-	const items = Object.keys(registries["minecraft:item"].entries)
+	const items = Object.keys(itemData)
 		.filter(item => !Object.values(tierLists.value).some(list => list.some(items => items.split("|").includes(item))));
 	return items;
 });
@@ -55,8 +55,6 @@ function onItemsChanged(tier: typeof tiers[number], newItems: string[]) {
 table {
 	overflow-x: scroll;
 }
-
-
 
 th, td {
 	min-width: 150px;

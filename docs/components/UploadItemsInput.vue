@@ -8,12 +8,12 @@
 </template>
 
 <script setup lang="ts">
-import registries from "../generated/reports/registries.json";
+import itemData from "../data/items.json";
 import { Icon } from '@iconify/vue';
 
 const inputId = `ID${Math.random()}`;
 
-const validItemSet = new Set(Object.keys(registries["minecraft:item"].entries));
+const validItemSet = new Set(Object.keys(itemData));
 
 const emit = defineEmits<{
 	(event: "itemsUploaded", items: string[]): void;
