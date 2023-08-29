@@ -1,16 +1,19 @@
 # Yet Another Minecraft BINGO
 
+[![Available on Modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/modrinth_vector.svg)](https://modrinth.com/mod/yet-another-minecraft-bingo)
+[![Requires Fabric API](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/requires/fabric-api_vector.svg)](https://modrinth.com/mod/fabric-api)
+
 This is a server-side BINGO item hunt mod + lobby, intended for use with vanilla clients. Clients do not need to install
 any mods or resource packs to join; this only needs to be installed on the server (along with [fabric-api](https://modrinth.com/mod/fabric-api)).
+
+> ⚠⚠⚠ **WARNING** ⚠⚠⚠
+>
+> This mod **deletes the world folder on startup**! It is meant to be hosted on a dedicated server for short, temporary
+games. Make sure this is not installed on an existing world or you _will_ lose your data!
 
 Recommended mods (optional, but have been tested for compatibility):
 - [Lithium](https://modrinth.com/mod/lithium/version/mc1.20.1-0.11.2)
 - [MC-249136 Fix](https://modrinth.com/mod/mc-249136-fix/version/1.0.0)
-
-> **⚠ WARNING**
->
-> This mod **deletes the world folder on startup**! It is meant to be hosted on a dedicated server for short, temporary
-games. Make sure this is not installed on an existing world or you _will_ lose your data!
 
 Up to 8 teams can compete to collect items on the BINGO card. Teams can score items in horizontal, vertical, or diagonal
 lines to win the game. (the "win condition" can be set to a number of lines, or the full card).
@@ -27,6 +30,7 @@ lines to win the game. (the "win condition" can be set to a number of lines, or 
 ### Extra Options:
 
 - **Unlock Recipes**: Gives players all crafting recipes at the start of the game.
+- **Keep Inventory**: Sets the `keepInventory` gamerule. (players keep their items on respawn)
 - **Elytra**: Gives all players an elytra and infinite rockets throughout the game.
 - **Allow PvP**: Toggles whether players can attack each other.
 
@@ -56,7 +60,7 @@ can be turned off by setting `"overwrite": false`.
 ## Credits
 
 Parts of this mod are derived/inspired/ported from [Extremelyd1/minecraft-bingo](https://github.com/Extremelyd1/minecraft-bingo),
-the Spigot/Paper version of this gamemode.
+the awesome Spigot/Paper version of this gamemode.
 
 ## License
 

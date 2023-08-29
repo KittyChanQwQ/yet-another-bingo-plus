@@ -1,6 +1,5 @@
 package me.jfenn.bingo.mixin;
 
-import me.jfenn.bingo.map.BingoMapService;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
