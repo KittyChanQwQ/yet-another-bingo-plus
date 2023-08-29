@@ -13,7 +13,7 @@ import { Icon } from '@iconify/vue';
 
 const inputId = `ID${Math.random()}`;
 
-const validItemSet = new Set(Object.keys(itemData));
+const validItemSet = new Set(itemData);
 
 const emit = defineEmits<{
 	(event: "itemsUploaded", items: string[]): void;

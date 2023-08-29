@@ -41,8 +41,7 @@ const tierLists: Ref<{ [K in typeof tiers[number]]: string[] }> = ref({
 });
 
 const allItems = computed(() => {
-	const items = Object.keys(itemData)
-		.filter(item => !Object.values(tierLists.value).some(list => list.some(items => items.split("|").includes(item))));
+	const items = itemData.filter(item => !Object.values(tierLists.value).some(list => list.some(items => items.split("|").includes(item))));
 	return items;
 });
 
