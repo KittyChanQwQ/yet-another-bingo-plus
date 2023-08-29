@@ -29,6 +29,7 @@ build:
     - changes:
         - ./*.*
         - src/*
+        - .gitlab-ci.yml
       allow_failure: true
 
 pages:
@@ -53,4 +54,5 @@ pages:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - docs/*
+        - .gitlab-ci.yml
       allow_failure: true
