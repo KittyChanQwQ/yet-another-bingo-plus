@@ -25,10 +25,11 @@ build:
   artifacts:
     paths:
       - build/libs/*.jar
-  only:
-    changes:
-      - ./*.*
-      - src/*
+  rules:
+    - changes:
+        - ./*.*
+        - src/*
+      allow_failure: true
 
 pages:
   stage: deploy
@@ -50,6 +51,6 @@ pages:
       - public
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  only:
-    changes:
-      - docs/*
+      changes:
+        - docs/*
+      allow_failure: true
