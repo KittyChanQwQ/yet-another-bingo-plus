@@ -16,7 +16,10 @@ const props = defineProps<{
 }>();
 
 const uri = computed(() => {
-	const items = props.items.map(s => s.replace(/^minecraft\:/, "").toUpperCase()).join("\n") + "\n";
+	const items = props.items.map(
+		s => s.split("|").map(item => item.replace(/^minecraft\:/, "").toUpperCase()).join("|")
+	).join("\n") + "\n";
+
 	return `data:text/plain;charset=utf-8,${encodeURIComponent(items)}`;
 });
 
