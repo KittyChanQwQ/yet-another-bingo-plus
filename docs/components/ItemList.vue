@@ -1,20 +1,22 @@
 <template>
 	<div class="dropTarget" :data-dragged-over="isDraggedOver" ref="dropTargetRef">
-		<div v-for="(item, i) in filteredItems">
-			<ItemGroup
-				v-if="item.includes('|')"
-				:name="item"
-				@item-changed="(newItem) => onItemChanged(i, newItem)"
-				@item-removed="onItemRemoved(i)"
-			/>
-			<Item
-				v-else
-				:can-drag="props.canDrag"
-				:can-drop="props.canGroup"
-				:name="item"
-				@item-changed="(newItem) => onItemChanged(i, newItem)"
-				@item-removed="onItemRemoved(i)"
-			/>
+		<div v-for="(item, i) in props.items">
+			<template v-if="shouldFilter(item)">
+				<ItemGroup
+					v-if="item.includes('|')"
+					:name="item"
+					@item-changed="(newItem) => onItemChanged(i, newItem)"
+					@item-removed="onItemRemoved(i)"
+				/>
+				<Item
+					v-else
+					:can-drag="props.canDrag"
+					:can-drop="props.canGroup"
+					:name="item"
+					@item-changed="(newItem) => onItemChanged(i, newItem)"
+					@item-removed="onItemRemoved(i)"
+				/>
+			</template>
 		</div>
 	</div>
 </template>
@@ -33,14 +35,9 @@ const props = defineProps<{
 	filter?: string,
 }>();
 
-
-const filteredItems = computed(() => {
-	const filter = props.filter;
-	if (filter)
-		return props.items
-			.filter(s => s.includes(filter.toLowerCase().trim().replace(/ /g, "_")))
-	else return props.items;
-});
+function shouldFilter(item: string) {
+	return !props.filter || item.includes(props.filter.toLowerCase().trim().replace(/ /g, "_"));
+}
 
 const emit = defineEmits<{
 	(event: 'itemsChanged', items: string[]): void,
