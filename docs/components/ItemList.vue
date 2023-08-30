@@ -1,6 +1,6 @@
 <template>
 	<div class="dropTarget" :data-dragged-over="isDraggedOver" ref="dropTargetRef">
-		<div v-for="(item, i) in props.items">
+		<div v-for="(item, i) in filteredItems">
 			<ItemGroup
 				v-if="item.includes('|')"
 				:name="item"
@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useDragTarget } from "../compositions/useDragTarget";
 import Item from "./Item.vue";
 import ItemGroup from "./ItemGroup.vue";
@@ -30,10 +30,17 @@ const props = defineProps<{
 	canDrag?: boolean,
 	canDrop?: boolean,
 	canGroup?: boolean,
+	filter?: string,
 }>();
 
 
-// emits: itemAdded, itemRemoved
+const filteredItems = computed(() => {
+	const filter = props.filter;
+	if (filter)
+		return props.items
+			.filter(s => s.includes(filter.toLowerCase().trim().replace(/ /g, "_")))
+	else return props.items;
+});
 
 const emit = defineEmits<{
 	(event: 'itemsChanged', items: string[]): void,

@@ -1,4 +1,5 @@
 <template>
+	<SearchInput @change="onFilterChanged" />
 	<table>
 		<thead>
 			<tr>
@@ -20,11 +21,17 @@
 						can-drop
 						can-group
 						:items="tierLists[tier]"
+						:filter="filter"
 						@items-changed="(items) => onItemsChanged(tier, items)"
 					/>
 				</td>
 				<td>
-					<ItemList :items="allItems" can-drag can-drop />
+					<ItemList
+						:items="allItems"
+						:filter="filter"
+						can-drag
+						can-drop
+					/>
 				</td>
 			</tr>
 		</tbody>
@@ -37,6 +44,7 @@ import ItemList from './ItemList.vue';
 import itemData from "../data/items.json";
 import UploadItemsInput from "./UploadItemsInput.vue";
 import DownloadItemsInput from "./DownloadItemsInput.vue";
+import SearchInput from "./SearchInput.vue";
 
 const tiers = ['s', 'a', 'b', 'c', 'd'] as const;
 
@@ -65,6 +73,12 @@ function onItemsChanged(tier: typeof tiers[number], newItems: string[]) {
 	tierLists.value[tier] = newItems;
 	// write items to localStorage
 	localStorage.setItem(`bingo_${tier}`, JSON.stringify(newItems));
+}
+
+const filter = ref<string>();
+
+function onFilterChanged(value: string) {
+	filter.value = !!value.trim() ? value : undefined;
 }
 </script>
 
