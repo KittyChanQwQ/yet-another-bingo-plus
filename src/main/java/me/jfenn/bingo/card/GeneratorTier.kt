@@ -31,11 +31,13 @@ enum class GeneratorTier(
             val items = mutableListOf<Set<String>>()
             inputStream.bufferedReader().useLines { lines ->
                 for (line in lines) {
-                    items.add(
-                        line.split("|")
-                            .map { it.uppercase().trim() }
-                            .toSet()
-                    )
+                    line.split("|")
+                        .map { it.uppercase().trim() }
+                        // TODO: filter only valid item ids?
+                        .filter { it.isNotEmpty() }
+                        .toSet()
+                        .takeIf { it.isNotEmpty() }
+                        ?.also { items.add(it) }
                 }
             }
 

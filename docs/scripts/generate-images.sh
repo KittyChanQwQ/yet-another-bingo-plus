@@ -189,7 +189,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     # if it's a grass/fern block, we need to apply the colormap: #48b518.
     if [ "$item_id" == "grass" ] || [ "$item_id" == "tall_grass" ] || [ "$item_id" == "fern" ] || [ "$item_id" == "large_fern" ]; then
       # some items (leaves / grass / ferns) have color masks that need to be applied... #48b518.
-      echo -n "USING COLOR TINT: $item_texture"
+      echo "USING COLOR TINT: $item_texture"
       color_texture $item_texture "#48b518" $item_id
       continue
     fi
@@ -232,23 +232,32 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   fi
 
   # otherwise, try to find an image file that matches...
-  fallback_image=./assets/minecraft/textures/block/$item_id.png
-  [ -f $fallback_image ] && cp -f $fallback_image $OUT_DIR/$(echo $item_id | xargs).png
-
   fallback_image=./assets/minecraft/textures/item/$item_id.png
-  [ -f $fallback_image ] && cp -f $fallback_image $OUT_DIR/$(echo $item_id | xargs).png
+  [ -f $fallback_image ] && {
+    echo "FALLBACK ITEM"
+    cp -f $fallback_image $OUT_DIR/$(echo $item_id | xargs).png
+    continue
+  }
 
-  echo "FALLBACK"
+  fallback_image=./assets/minecraft/textures/block/$item_id.png
+  [ -f $fallback_image ] && {
+    echo "FALLBACK BLOCK"
+    cp -f $fallback_image $OUT_DIR/$(echo $item_id | xargs).png
+    continue
+  }
+
+  if [ "$item_parent" == "null" ]; then
+    echo AIR
+    continue
+  fi
+
+  echo "NO IMAGE FOUND"
   # TODO: list items making it here:
   # - zombie_head
   # - anything under template_skull (wither_skull, skeleton_skull)
   # - decorated_pot
   # - conduit
   # - chest
-
-  if [ "$item_parent" == "null" ]; then
-    echo AIR
-  fi
 done
 
 popd
