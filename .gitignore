@@ -28,6 +28,9 @@
 ## gedit
 *~
 
+# generated image files
+/src/main/resources/bingo/images/*.png
+
 # test run/config files
 /bingo
 /logs
