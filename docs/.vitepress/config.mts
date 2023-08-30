@@ -14,9 +14,13 @@ export default defineConfig({
 
     sidebar: [
       {
-        text: 'Configuration Tool',
-        items: []
-      }
+        text: 'Configuration',
+        items: [
+          { text: 'Editor', link: '/config' },
+          { text: 'Item Distribution', link: '/item-distribution' },
+          { text: 'Item Images', link: '/item-images' },
+        ],
+      },
     ],
 
     socialLinks: [],

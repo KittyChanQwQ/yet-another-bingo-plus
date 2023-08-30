@@ -8,10 +8,9 @@ import Config from './components/Config.vue'
 
 # Configuration Tool
 
-Use this page to generate your own item tier lists to use with the mod.
+Use this page to generate your own item tier lists to use with the mod. These files can be downloaded and placed in your server's config directory - located in `./config/bingo/a_tier.txt`.
 
-The "item distribution" can be configured in-game to change how many items will be pulled from each tier to make the card.
-
+The items below can be dragged between each column to sort them into tiers. Dragging an item back to "all items" will remove it from the list.
 
 <Config />
 
