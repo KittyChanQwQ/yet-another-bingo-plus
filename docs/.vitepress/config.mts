@@ -15,10 +15,7 @@ export default defineConfig({
     sidebar: [
       {
         text: 'Configuration Tool',
-        items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
-        ]
+        items: []
       }
     ],
 

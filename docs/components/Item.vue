@@ -39,7 +39,7 @@ if (props.canDrag) {
 	});
 
 	onDragEnd((isSuccessful) => {
-		emit("itemRemoved");
+		if (isSuccessful) emit("itemRemoved");
 	});
 }
 
@@ -86,6 +86,7 @@ if (props.canDrop) {
 .itemName {
 	font-size: 0.8rem;
 	line-height: 1rem;
+	flex-grow: 1;
 }
 
 .item:hover {

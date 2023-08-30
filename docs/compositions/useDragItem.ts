@@ -7,7 +7,7 @@ type DragItemProps = {
 	data: MaybeRef<any>,
 };
 
-type DragListener = (isSuccessful: boolean) => void;
+type DragListener = (isSuccessful: boolean, e: DragEvent) => void;
 
 export const DRAG_DATA_KEY = "application/yamb";
 
@@ -32,7 +32,7 @@ export function useDragItem({
 
 	useEventListener(element, "dragstart", (e: DragEvent) => {
 		if (!e.dataTransfer) return;
-		e.dataTransfer.setData(DRAG_DATA_KEY, JSON.stringify(unref(data)));
+		e.dataTransfer.setData(JSON.stringify(unref(data)), "");
 		e.dataTransfer.effectAllowed = effectAllowed;
 		e.stopPropagation();
 
@@ -46,7 +46,7 @@ export function useDragItem({
 		const isSuccessful = e.dataTransfer?.dropEffect === effectAllowed;
 
 		for (const listener of listeners)
-			listener(isSuccessful);
+			listener(isSuccessful, e);
 	});
 
 	return { isDragging, onDragEnd };

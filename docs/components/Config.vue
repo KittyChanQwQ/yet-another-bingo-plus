@@ -14,21 +14,25 @@
 		</thead>
 		<tbody>
 			<tr>
-				<ItemList
-					v-for="tier in tiers"
-					can-drag
-					can-drop
-					:items="tierLists[tier]"
-					@items-changed="(items) => onItemsChanged(tier, items)"
-				/>
-				<ItemList :items="allItems" can-drag />
+				<td v-for="tier in tiers">
+					<ItemList
+						can-drag
+						can-drop
+						can-group
+						:items="tierLists[tier]"
+						@items-changed="(items) => onItemsChanged(tier, items)"
+					/>
+				</td>
+				<td>
+					<ItemList :items="allItems" can-drag can-drop />
+				</td>
 			</tr>
 		</tbody>
 	</table>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, Ref } from "vue";
+import { computed, ref, Ref, onMounted } from "vue";
 import ItemList from './ItemList.vue';
 import itemData from "../data/items.json";
 import UploadItemsInput from "./UploadItemsInput.vue";
@@ -40,23 +44,43 @@ const tierLists: Ref<{ [K in typeof tiers[number]]: string[] }> = ref({
 	s: [], a: [], b: [], c: [], d: [],
 });
 
+onMounted(() => {
+	// load saved items from localStorage when mounted
+	for (const tier of tiers) {
+		const storedItems = localStorage.getItem(`bingo_${tier}`);
+		if (storedItems) {
+			tierLists.value[tier] = JSON.parse(storedItems);
+		}
+	}
+});
+
 const allItems = computed(() => {
+	// the "allItems" column should only show items that aren't included in any other tiers
 	const items = itemData.filter(item => !Object.values(tierLists.value).some(list => list.some(items => items.split("|").includes(item))));
 	return items;
 });
 
 function onItemsChanged(tier: typeof tiers[number], newItems: string[]) {
+	// update the tierLists ref
 	tierLists.value[tier] = newItems;
+	// write items to localStorage
+	localStorage.setItem(`bingo_${tier}`, JSON.stringify(newItems));
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 table {
-	overflow-x: scroll;
+	overflow-x: auto;
 }
 
 th, td {
 	min-width: 150px;
 	vertical-align: top;
+}
+
+td {
+	// this is a hack to get a <div style="height: 100%;"> to fill the table cell
+	height: 1px;
+	padding: 0;
 }
 </style>

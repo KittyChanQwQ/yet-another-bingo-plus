@@ -8,7 +8,7 @@ type DragTargetProps = {
 	action?: "move" | "copy" | 'link',
 };
 
-type DropListener = (data: any) => void;
+type DropListener = (data: any, e: DragEvent) => void;
 
 export function useDragTarget({
 	element,
@@ -22,7 +22,7 @@ export function useDragTarget({
 
 	useEventListener(element, "dragenter", (e: DragEvent) => {
 		if (!e.dataTransfer) return;
-		const dataStr = e.dataTransfer.getData(DRAG_DATA_KEY);
+		const dataStr = e.dataTransfer.types[0];
 		const data = dataStr ? JSON.parse(dataStr) : undefined;
 
 		if (!filter(data)) return;
@@ -35,10 +35,14 @@ export function useDragTarget({
 
 	useEventListener(element, "dragover", (e: DragEvent) => {
 		if (!e.dataTransfer) return;
-		const dataStr = e.dataTransfer.getData(DRAG_DATA_KEY);
+		const dataStr = e.dataTransfer.types[0];
 		const data = dataStr ? JSON.parse(dataStr) : undefined;
 
-		if (!filter(data)) return;
+		if (!filter(data)) {
+			e.dataTransfer.dropEffect = "none";
+			return;
+		}
+
 		isDraggedOver.value = true;
 
 		e.preventDefault();
@@ -50,7 +54,7 @@ export function useDragTarget({
 		isDraggedOver.value = false;
 
 		if (!e.dataTransfer) return;
-		const dataStr = e.dataTransfer.getData(DRAG_DATA_KEY);
+		const dataStr = e.dataTransfer.types[0];
 		const data = dataStr ? JSON.parse(dataStr) : undefined;
 
 		if (!filter(data)) return;
@@ -58,7 +62,7 @@ export function useDragTarget({
 		e.stopPropagation();
 
 		for (const listener of listeners)
-			listener(data);
+			listener(data, e);
 	});
 
 	return { isDraggedOver, onDrop };

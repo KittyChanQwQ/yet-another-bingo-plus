@@ -1,5 +1,5 @@
 <template>
-	<td class="dropTarget" :data-dragged-over="isDraggedOver" ref="dropTargetRef">
+	<div class="dropTarget" :data-dragged-over="isDraggedOver" ref="dropTargetRef">
 		<div v-for="(item, i) in props.items">
 			<ItemGroup
 				v-if="item.includes('|')"
@@ -10,13 +10,13 @@
 			<Item
 				v-else
 				:can-drag="props.canDrag"
-				:can-drop="props.canDrop"
+				:can-drop="props.canGroup"
 				:name="item"
 				@item-changed="(newItem) => onItemChanged(i, newItem)"
 				@item-removed="onItemRemoved(i)"
 			/>
 		</div>
-	</td>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -29,6 +29,7 @@ const props = defineProps<{
 	items: string[],
 	canDrag?: boolean,
 	canDrop?: boolean,
+	canGroup?: boolean,
 }>();
 
 
@@ -44,9 +45,9 @@ let isDraggedOver = ref(false);
 if (props.canDrop) {
 	const { isDraggedOver: isDraggedOverRef, onDrop } = useDragTarget({
 		element: dropTargetRef,
-		/*filter(data) {
+		filter(data) {
 			return !props.items.includes(data?.name);
-		},*/
+		},
 	});
 
 	isDraggedOver = isDraggedOverRef;
@@ -54,9 +55,20 @@ if (props.canDrop) {
 	/**
 	 * When a new item is dropped onto the list
 	 */
-	onDrop((data) => {
-		if (data && data.name)
-			emit("itemsChanged", [...props.items, data.name]);
+	onDrop((data, e) => {
+		if (!data || !data.name) return;
+
+		const parentElement = dropTargetRef.value!!;
+		let index = 0;
+		for (let i = 0; i < parentElement.children.length; i++) {
+			const element = parentElement.children[i] as HTMLElement;
+			if (e.offsetY > element.offsetTop)
+				index = i+1;
+		}
+
+		const newItems = props.items.slice();
+		newItems.splice(index, 0, data.name);
+		emit("itemsChanged", [...new Set(newItems)]);
 	});
 }
 
@@ -83,6 +95,7 @@ function onItemRemoved(i: number) {
 <style scoped>
 .dropTarget {
 	height: 100%;
+	padding: 8px 16px;
 
 	transition: background-color .25s, box-shadow .25s;
 }
