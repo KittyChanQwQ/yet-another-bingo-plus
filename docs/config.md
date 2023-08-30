@@ -15,12 +15,21 @@ The "item distribution" can be configured in-game to change how many items will 
 
 <Config />
 
-<style>
+<style lang="scss">
 	.content-container {
 		max-width: unset !important;
 	}
 
 	.aside {
 		display: none !important;
+	}
+
+	header {
+		// the default "position: fixed;" causes the drag-to-scroll behavior to break over the nav header
+		position: sticky !important;
+	}
+
+	.VPContent {
+		padding-top: 0 !important;
 	}
 </style>
