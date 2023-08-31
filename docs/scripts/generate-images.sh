@@ -1,8 +1,9 @@
 #!/bin/bash
 set -e
 
-VERSION="1.20.1"
-JAR_FILE="$(realpath ~/.minecraft/versions/$VERSION/*.jar)"
+# https://mcversions.net; 1.20.1
+[ -f client.jar ] || wget https://piston-data.mojang.com/v1/objects/0c3ec587af28e5a785c0b4a7b8a30f9a8f78f838/client.jar
+JAR_FILE="$(realpath ./client.jar)"
 
 [ -f $JAR_FILE ] || {
   echo "Error: minecraft jar for $VERSION not found."
@@ -24,57 +25,47 @@ TMP_DIR=/tmp/mc-generate-images
 mkdir -p $TMP_DIR
 pushd $TMP_DIR
 
-# Copy a texture identifier directly to the output dir
+# get a file path to an image from the provided texture id
 # $1 = texture ("minecraft:block/oak_planks")
-# $2 = item ("oak_planks")
-function copy_texture {
+function get_texture_file {
   texture_id=$(echo $1 | xargs | rev | cut -d ':' -f1 | rev)
-  texture_file=./assets/minecraft/textures/$texture_id.png
+  texture_file=$(realpath ./assets/minecraft/textures/$texture_id.png)
 
   [ -f $texture_file ] || {
     echo "Error: texture file for $texture_file does not exist!"
     exit 1
   }
 
+  echo -n $texture_file
+}
+
+# Copy a texture identifier directly to the output dir
+# $1 = input texture file (.png)
+# $2 = output file (.png)
+function copy_texture {
   # copy the texture to the out_dir
-  cp -f $texture_file $OUT_DIR/$(echo $2 | xargs).png
+  cp -f $1 $2
 }
 
 # Apply a mask image to the texture identifier before writing to the output dir
-# $1 = texture ("minecraft:block/oak_planks")
-# $2 = mask image (/home/.../data/masks/image.png)
-# $3 = item ("oak_planks")
+# $1 = input texture file (.png)
+# $2 = mask image file (/home/.../data/masks/image.png)
+# $3 = output file (.png)
 function mask_texture {
-  texture_id="$(echo $1 | xargs | rev | cut -d ':' -f1 | rev)"
-  texture_file=./assets/minecraft/textures/${texture_id}.png
-
-  [ -f $texture_file ] || {
-    echo "Error: texture file for $texture_id does not exist!"
-    exit 1
-  }
-
   # mask the image with ImageMagick, and write to the output dir
   # https://stackoverflow.com/a/22417663
-  convert $texture_file \( $2 \) -compose CopyOpacity -composite PNG32:$OUT_DIR/$(echo $3 | xargs).png
+  convert $1 \( $2 \) -compose CopyOpacity -composite PNG32:$3
 }
 
 # Apply a color tint to the texture identifier before writing it to the output dir
-# $1 = texture ("minecraft:block/oak_planks")
+# $1 = input texture file (.png)
 # $2 = color (#ffffff)
-# $3 = item ("oak_planks")
+# $3 = output file (.png)
 function color_texture {
-  texture_id="$(echo $1 | xargs | rev | cut -d ':' -f1 | rev)"
-  texture_file=./assets/minecraft/textures/${texture_id}.png
-
-  [ -f $texture_file ] || {
-    echo "Error: texture file for $texture_id does not exist!"
-    exit 1
-  }
-
   # tint the image with ImageMagick, and write to the output dir
   # https://www.imagemagick.org/discourse-server/viewtopic.php?t=33380
   # convert $texture_file -colorspace gray -fill $2 -tint 100 PNG32:$OUT_DIR/$(echo $3 | xargs).png
-  convert $texture_file \( xc:$(echo $2 | xargs) -scale 16x16 \) -compose multiply -channel rgb -composite PNG32:$OUT_DIR/$(echo $3 | xargs).png
+  convert $1 \( xc:$(echo $2 | xargs) -scale 16x16 \) -compose multiply -channel rgb -composite PNG32:$3
 }
 
 # extract jar assets (into ./assets)
@@ -84,6 +75,8 @@ jar -xf $JAR_FILE assets
 for item in $(jq -r ".[]" $ITEMS_FILE); do
   item_id="$(echo $item | cut -d ':' -f2)"
   echo -n "${item_id}: "
+
+  item_out_file=$OUT_DIR/$(echo $item_id | xargs).png
 
   item_model_file=./assets/minecraft/models/item/"${item_id}.json"
   [ -f $item_model_file ] || {
@@ -136,6 +129,8 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
       exit 1
     }
 
+    block_texture_file=$(get_texture_file $block_texture)
+
     # see if any image masks are included in the item models
     image_mask_id="null"
     image_mask_file="null"
@@ -150,28 +145,28 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     # hack for bamboo fence & fence gate; these have a messy texture map that doesn't work well with the image masks
     if [ "$item_id" == "bamboo_fence" ] || [ "$item_id" == "bamboo_fence_gate" ]; then
       echo "USING MASK $image_mask_id: minecraft:block/bamboo_planks"
-      mask_texture "minecraft:block/bamboo_planks" $image_mask_file $item_id
+      mask_texture $(get_texture_file "minecraft:block/bamboo_planks") $image_mask_file $item_out_file
       continue
     fi
 
     # if there is an image mask, write the masked texture
     [ "$image_mask_file" != "null" ] && {
       echo "USING MASK $image_mask_id: $block_texture"
-      mask_texture $block_texture $image_mask_file $item_id
+      mask_texture $block_texture_file $image_mask_file $item_out_file
       continue
     }
 
     # if it's a leaf block, we need to apply the colormap: #48b518.
     if echo $item_models | jq -e '. | index( "minecraft:block/leaves" )' >/dev/null; then
       echo "USING COLOR TINT: $block_texture"
-      color_texture $block_texture "#48b518" $item_id
+      color_texture $block_texture_file "#48b518" $item_out_file
       continue
     fi
 
     # otherwise, copy the full block texture
     echo -n "$block_texture :"
     echo $item_models
-    copy_texture $block_texture $item_id
+    copy_texture $block_texture_file $item_out_file
     continue
   fi
 
@@ -186,17 +181,42 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
       exit 1
     }
 
+    item_texture_file=$(get_texture_file $item_texture)
+
     # if it's a grass/fern block, we need to apply the colormap: #48b518.
-    if [ "$item_id" == "grass" ] || [ "$item_id" == "tall_grass" ] || [ "$item_id" == "fern" ] || [ "$item_id" == "large_fern" ]; then
+    if [ "$item_id" == "grass" ] || [ "$item_id" == "tall_grass" ] || [ "$item_id" == "fern" ] || [ "$item_id" == "large_fern" ] || [ "$item_id" == "vines" ]; then
       # some items (leaves / grass / ferns) have color masks that need to be applied... #48b518.
       echo "USING COLOR TINT: $item_texture"
-      color_texture $item_texture "#48b518" $item_id
+      color_texture $item_texture_file "#48b518" $item_out_file
+      continue
+    fi
+
+    # if the item is leather or a potion, it needs to be tinted (and use both layers, if a second is provided)
+    # matches: leather_horse_armor, leather_boots, ...
+    if [[ "$item_id" == "leather_"* ]] || [[ "$item_id" == *"potion" ]]; then
+      item_color="gray"
+      [[ "$item_id" == "leather_"* ]] && item_color="#945b3e"
+      [[ "$item_id" == *"potion" ]] && item_color="#b743cc"
+
+      # color the item texture and write to tmp.png
+      color_texture $item_texture_file $item_color tmp.png
+
+      item_texture1=$(jq ".textures.layer1" tmp.json)
+      if [ "$item_texture1" != "null" ]; then
+        echo "TINTED ITEM WITH OVERLAY"
+        item_texture1_file=$(get_texture_file $item_texture1)
+        convert tmp.png $item_texture1_file -composite $item_out_file
+      else
+        echo "TINTED ITEM"
+        copy_texture tmp.png $item_out_file
+      fi
+
       continue
     fi
 
     # copy the texture with no modifications
     echo $item_texture
-    copy_texture $item_texture $item_id
+    copy_texture $item_texture_file $item_out_file
     continue
   fi
 
@@ -208,6 +228,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     [ "$item_color" == "light_blue" ] && item_color="#8db4f0"
     [ "$item_color" == "light_gray" ] && item_color="gray80"
     [ "$item_color" == "brown" ] && item_color="#602b04"
+    [ "$item_color" == "pink" ] && item_color="#efaecf"
 
     echo "BANNER TINT: $item_color"
     # convert $IMAGE_MASK_DIR/template_banner.png -colorspace gray -fill $item_color -tint 300 PNG32:$OUT_DIR/$(echo $item_id | xargs).png
@@ -223,6 +244,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     [ "$item_color" == "light_blue" ] && item_color="#8db4f0"
     [ "$item_color" == "light_gray" ] && item_color="gray80"
     [ "$item_color" == "brown" ] && item_color="#602b04"
+    [ "$item_color" == "pink" ] && item_color="#efaecf"
 
     echo "BED TINT: $item_color"
     # convert $IMAGE_MASK_DIR/template_bed.png -colorspace gray -fill $item_color -tint 300 PNG32:$OUT_DIR/$(echo $item_id | xargs).png
@@ -258,6 +280,18 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   # - decorated_pot
   # - conduit
   # - chest
+  # - trapped_chest
+  # - ender_chest
+  # - dragon_head
+  # - shield
+
+  # TODO: list items that need better textures
+  # - small_dripleaf
+  # - big_dripleaf
+  # - lectern
+  # - tipped_arrow
+  # - calibrated_sculk_sensor
+  # - grindstone
 done
 
 popd

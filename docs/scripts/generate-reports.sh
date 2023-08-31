@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Download the Minecraft Server jar
+# https://mcversions.net; 1.20.1
 [ -f server.jar ] || wget https://piston-data.mojang.com/v1/objects/84194a2f286ef7c14ed7ce0090dba59902951553/server.jar
 
 # Generate report files (or --all)
