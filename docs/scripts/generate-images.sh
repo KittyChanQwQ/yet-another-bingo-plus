@@ -55,7 +55,8 @@ function copy_texture {
 function mask_texture {
   # mask the image with ImageMagick, and write to the output dir
   # https://stackoverflow.com/a/22417663
-  convert $1 \( $2 \) -compose CopyOpacity -composite PNG32:$3
+  # convert $1 \( $2 \) -compose CopyOpacity -composite PNG32:$3
+  convert $1 \( $2 \) -compose multiply -channel rgba -composite PNG32:$3
 }
 
 # Apply a color tint to the texture identifier before writing it to the output dir
@@ -192,7 +193,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     item_texture_file=$(get_texture_file $item_texture)
 
     # if it's a grass/fern block, we need to apply the colormap: #48b518.
-    if [ "$item_id" == "grass" ] || [ "$item_id" == "tall_grass" ] || [ "$item_id" == "fern" ] || [ "$item_id" == "large_fern" ] || [ "$item_id" == "vines" ]; then
+    if [ "$item_id" == "grass" ] || [ "$item_id" == "tall_grass" ] || [ "$item_id" == "fern" ] || [ "$item_id" == "large_fern" ] || [ "$item_id" == "vine" ]; then
       # some items (leaves / grass / ferns) have color masks that need to be applied... #48b518.
       echo "USING COLOR TINT: $item_texture"
       color_texture $item_texture_file "#48b518" $item_out_file
@@ -283,8 +284,10 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   fi
 
   echo "NO IMAGE FOUND"
-  # TODO: list items that need better textures
-  # - calibrated_sculk_sensor
+  # TODO:
+  # - player_head
+  # - piglin_head
+  # - zombified_piglin_head
 done
 
 popd
