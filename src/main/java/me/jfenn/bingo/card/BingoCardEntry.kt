@@ -55,8 +55,6 @@ data class BingoCardEntry(
         try {
             val inputStream = Config.readStream(imagePath, false) {
                 javaClass.getResourceAsStream("/bingo/images/${item.lowercase()}.png")
-                    ?: javaClass.getResourceAsStream("/assets/minecraft/textures/item/${item.lowercase()}.png")
-                    ?: javaClass.getResourceAsStream("/assets/minecraft/textures/block/${item.lowercase()}.png")
                     ?: throw IllegalArgumentException("Cannot find default texture for ${item.lowercase()}.png")
             }
 
