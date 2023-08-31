@@ -17,6 +17,7 @@ ITEMS_FILE="$(realpath ./data/items.json)"
 }
 
 IMAGE_MASK_DIR="$(realpath ./data/masks)"
+IMAGE_OVERRIDE_DIR="$(realpath ./data/images)"
 
 OUT_DIR="$(realpath ../src/main/resources/bingo/images)"
 mkdir -p $OUT_DIR
@@ -77,6 +78,13 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   echo -n "${item_id}: "
 
   item_out_file=$OUT_DIR/$(echo $item_id | xargs).png
+
+  # if there's an image override, copy that instead of proceeding further
+  if [ -f $IMAGE_OVERRIDE_DIR/$(echo $item_id | xargs).png ]; then
+    echo "OVERRIDE"
+    copy_texture $IMAGE_OVERRIDE_DIR/$(echo $item_id | xargs).png $item_out_file
+    continue
+  fi
 
   item_model_file=./assets/minecraft/models/item/"${item_id}.json"
   [ -f $item_model_file ] || {
@@ -193,10 +201,11 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
 
     # if the item is leather or a potion, it needs to be tinted (and use both layers, if a second is provided)
     # matches: leather_horse_armor, leather_boots, ...
-    if [[ "$item_id" == "leather_"* ]] || [[ "$item_id" == *"potion" ]]; then
+    if [[ "$item_id" == "leather_"* ]] || [[ "$item_id" == *"potion" ]] || [ "$item_id" == "tipped_arrow" ]; then
       item_color="gray"
       [[ "$item_id" == "leather_"* ]] && item_color="#945b3e"
       [[ "$item_id" == *"potion" ]] && item_color="#b743cc"
+      [ "$item_id" == "tipped_arrow" ] && item_color="#ff0000"
 
       # color the item texture and write to tmp.png
       color_texture $item_texture_file $item_color tmp.png
@@ -274,24 +283,8 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   fi
 
   echo "NO IMAGE FOUND"
-  # TODO: list items making it here:
-  # - zombie_head
-  # - anything under template_skull (wither_skull, skeleton_skull)
-  # - decorated_pot
-  # - conduit
-  # - chest
-  # - trapped_chest
-  # - ender_chest
-  # - dragon_head
-  # - shield
-
   # TODO: list items that need better textures
-  # - small_dripleaf
-  # - big_dripleaf
-  # - lectern
-  # - tipped_arrow
   # - calibrated_sculk_sensor
-  # - grindstone
 done
 
 popd
