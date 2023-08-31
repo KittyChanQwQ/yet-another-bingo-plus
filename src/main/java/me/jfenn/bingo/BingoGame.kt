@@ -302,7 +302,7 @@ object BingoGame {
         // and mark them as lost if not
         if (config.gameMode == BingoMode.INVENTORY) {
             for (item in card.entries) {
-                for (team in item.teams) {
+                for (team in item.teams.toSet()) {
                     val teamInstance = team.team()
                     val hasTeamItem = minecraftServer.playerManager.playerList
                         .filter { it.isTeamPlayer(teamInstance) }
