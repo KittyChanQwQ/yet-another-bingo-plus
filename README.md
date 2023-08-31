@@ -18,7 +18,7 @@ Recommended mods (optional, but have been tested for compatibility):
 Up to 8 teams can compete to collect items on the BINGO card. Teams can score items in horizontal, vertical, or diagonal
 lines to win the game. (the "win condition" can be set to a number of lines, or the full card).
 
-![A screenshot of Minecraft plains/ocean with a BINGO card in the corner](./bingo.png)
+![A screenshot of Minecraft plains/ocean with a BINGO card in the corner](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot.png)
 
 ### Gamemodes:
 
