@@ -34,7 +34,7 @@ class BingoCard(
         for (row in 0..4) {
             val isLine = (0..4)
                 .map { entry(row, it) }
-                .all { predicate(it) }
+                .all(predicate)
 
             if (isLine) lines++
         }
@@ -42,20 +42,20 @@ class BingoCard(
         for (col in 0..4) {
             val isLine = (0..4)
                 .map { entry(it, col) }
-                .all { predicate(it) }
+                .all(predicate)
 
             if (isLine) lines++
         }
 
         val isD1 = (0..4)
             .map { entry(it, it) }
-            .all { predicate(it) }
+            .all(predicate)
 
         if (isD1) lines++
 
         val isD2 = (0..4)
             .map { entry(it, 4 - it) }
-            .all { predicate(it) }
+            .all(predicate)
 
         if (isD2) lines++
 
@@ -68,14 +68,28 @@ class BingoCard(
      */
     fun countLines(team: BingoTeam): Int = countLines { it.hasAchieved(team) }
 
+    /**
+     * Counts the total number of items achieved by the given [team].
+     */
+    fun countItems(team: BingoTeam): Int = entries.count { it.hasAchieved(team) }
+
     fun getLeading(): BingoTeam? {
         var max: BingoTeam? = null
         var maxLines = 0
+        var maxItems = 0
         for (team in BingoTeam.values()) {
             val teamLines = countLines(team)
-            if (teamLines > maxLines) {
+            val teamItems = countItems(team)
+
+            if (
+                // if the team is winning by lines
+                teamLines > maxLines
+                // otherwise, if the team is tied on lines but has more items
+                || (teamLines == maxLines && teamItems > maxItems)
+            ) {
                 max = team
                 maxLines = teamLines
+                maxItems = teamItems
             } else if (teamLines == maxLines) {
                 max = null
             }

@@ -142,7 +142,7 @@ object BingoGame {
                 Text.empty()
                     .append(Text.literal("$reason ").formatted(Formatting.YELLOW))
                     .append(leader.text())
-                    .append(Text.literal(" wins by # of lines!").formatted(Formatting.YELLOW))
+                    .append(Text.literal(" was in the lead!").formatted(Formatting.YELLOW))
             }
             ?: Text.literal("$reason The game is a draw!").formatted(Formatting.YELLOW)
 
