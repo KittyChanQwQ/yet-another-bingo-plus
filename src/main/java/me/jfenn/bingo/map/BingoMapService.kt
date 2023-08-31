@@ -23,12 +23,12 @@ object BingoMapService {
         val item = ItemStack(Items.FILLED_MAP, 1)
         item.getOrCreateNbt().apply {
             putInt("map", team.mapId)
+            putBoolean("bingo_ignore", true)
             put("display", NbtCompound().apply {
                 putString("Name", Text.Serializer.toJson(
                     Text.literal("Bingo Card (${team.name.lowercase()})")
                         .formatted(team.formatting, Formatting.ITALIC)
                 ))
-                putBoolean("bingo_ignore", true)
             })
         }
 
