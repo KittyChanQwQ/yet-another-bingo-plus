@@ -104,6 +104,8 @@ object BingoGame {
             // reset player info
             player.clearStatusEffects()
             player.inventory.clear()
+            player.fireTicks = 0
+            player.isOnFire = false
             player.health = 20f
             player.hungerManager.foodLevel = 20
             player.hungerManager.saturationLevel = 5f
