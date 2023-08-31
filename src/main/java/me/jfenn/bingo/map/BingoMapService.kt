@@ -42,7 +42,7 @@ object BingoMapService {
         return stack.item == Items.FILLED_MAP && BingoTeam.values().any { FilledMapItem.getMapId(stack) == it.mapId }
     }
 
-    private val COLOR_BACKGROUND = Color(150, 150, 150)
+    private val COLOR_BACKGROUND = Color(130, 130, 130)
     private val COLOR_MARGIN = Color(199, 199, 199)
     private val COLOR_SHADOW = Color(20, 20, 20)
     private val COLOR_ACHIEVED = Color(100, 255, 100)
