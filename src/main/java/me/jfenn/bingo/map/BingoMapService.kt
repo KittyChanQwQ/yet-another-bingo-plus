@@ -43,6 +43,7 @@ object BingoMapService {
     }
 
     private val COLOR_BACKGROUND = Color(130, 130, 130)
+    private val COLOR_ITEM_SHADOW = Color(100, 100, 100)
     private val COLOR_MARGIN = Color(199, 199, 199)
     private val COLOR_SHADOW = Color(20, 20, 20)
     private val COLOR_ACHIEVED = Color(100, 255, 100)
@@ -115,10 +116,19 @@ object BingoMapService {
                     }
                 }
 
-                if (imgX in 0 until TILE_IMAGE && imgY in 0 until TILE_IMAGE) {
-                    var rgba: Int = item.image?.getRGB(imgX, imgY) ?: continue
+                if (imgX in 0 until TILE_IMAGE+1 && imgY in 0 until TILE_IMAGE+1) {
+                    var rgba: Int = if (imgX < TILE_IMAGE && imgY < TILE_IMAGE) {
+                        item.image?.getRGB(imgX, imgY) ?: continue
+                    } else 0
+
                     val color = Color.fromInt(rgba)
-                    if (color.a == 0) continue
+                    if (color.a == 0) {
+                        // image shadow
+                        if (imgX > 0 && imgY > 0 && item.image?.getRGB(imgX-1, imgY-1)?.let { Color.fromInt(it) }?.a != 0)
+                            state.colors[i] = COLOR_ITEM_SHADOW.asByte
+                        continue
+                    }
+
                     if (color.a < 255) {
                         // if the image is transparent (glass), blend with the card background
                         rgba = COLOR_BACKGROUND.mix(color).toInt()
