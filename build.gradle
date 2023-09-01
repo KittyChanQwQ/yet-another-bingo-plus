@@ -38,6 +38,7 @@ dependencies {
 
 	// used for color conversions; specifically RGB to CIE_LCH in MapColors.kt
 	implementation 'org.apache.commons:commons-imaging:1.0-alpha3'
+	include 'org.apache.commons:commons-imaging:1.0-alpha3'
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
 	testImplementation "io.mockk:mockk:1.13.+"
