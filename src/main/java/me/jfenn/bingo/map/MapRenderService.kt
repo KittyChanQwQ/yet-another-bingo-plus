@@ -57,7 +57,7 @@ object MapRenderService {
                     if (color.a == 0) continue
 
                     // if the image is transparent (glass), blend with the card background
-                    if (color.a < 255) color = COLOR_BACKGROUND.mix(color)
+                    if (color.a < 255) color = COLOR_BACKGROUND.mix(color.copy(a = (color.a * 2).coerceAtMost(255)))
 
                     tileImage.regular[i] = color.asByte
                     // make the item image slightly transparent when achieved

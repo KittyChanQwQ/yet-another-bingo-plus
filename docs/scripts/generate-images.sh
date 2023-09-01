@@ -200,6 +200,13 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
       continue
     fi
 
+    # if it's a glass pane, we need to apply a manual image mask
+    if [[ "$item_id" == *"_glass_pane" ]]; then
+      echo "GLASS PANE"
+      mask_texture $item_texture_file $IMAGE_MASK_DIR/template_glass_pane.png $item_out_file
+      continue
+    fi
+
     # if the item is leather or a potion, it needs to be tinted (and use both layers, if a second is provided)
     # matches: leather_horse_armor, leather_boots, ...
     if [[ "$item_id" == "leather_"* ]] || [[ "$item_id" == *"potion" ]] || [ "$item_id" == "tipped_arrow" ]; then
