@@ -1,30 +1,32 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")
+TMP_DIR=$SCRIPT_DIR/tmp
+
+mkdir -p $TMP_DIR
+pushd $TMP_DIR
+
 # https://mcversions.net; 1.20.1
 [ -f client.jar ] || wget https://piston-data.mojang.com/v1/objects/0c3ec587af28e5a785c0b4a7b8a30f9a8f78f838/client.jar
-JAR_FILE="$(realpath ./client.jar)"
+JAR_FILE="$(realpath client.jar)"
 
 [ -f $JAR_FILE ] || {
   echo "Error: minecraft jar for $VERSION not found."
   exit 1
 }
 
-ITEMS_FILE="$(realpath ./data/items.json)"
+ITEMS_FILE="$(realpath $SCRIPT_DIR/data/items.json)"
 [ -f $ITEMS_FILE ] || {
   echo "Error: items.json missing. Run scripts/generate-reports.sh first!"
   exit 1
 }
 
-IMAGE_MASK_DIR="$(realpath ./data/masks)"
-IMAGE_OVERRIDE_DIR="$(realpath ./data/images)"
+IMAGE_MASK_DIR="$(realpath $SCRIPT_DIR/data/masks)"
+IMAGE_OVERRIDE_DIR="$(realpath $SCRIPT_DIR/data/images)"
 
-OUT_DIR="$(realpath ../src/main/resources/bingo/images)"
+OUT_DIR="$(realpath $SCRIPT_DIR/../src/main/resources/bingo/images)"
 mkdir -p $OUT_DIR
-
-TMP_DIR=/tmp/mc-generate-images
-mkdir -p $TMP_DIR
-pushd $TMP_DIR
 
 # get a file path to an image from the provided texture id
 # $1 = texture ("minecraft:block/oak_planks")
@@ -155,6 +157,22 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     if [ "$item_id" == "bamboo_fence" ] || [ "$item_id" == "bamboo_fence_gate" ]; then
       echo "USING MASK $image_mask_id: minecraft:block/bamboo_planks"
       mask_texture $(get_texture_file "minecraft:block/bamboo_planks") $image_mask_file $item_out_file
+      continue
+    fi
+
+    # if the block is waxed, apply a waxed overlay
+    if [[ "$item_id" == "waxed_"* ]]; then
+      echo "WAXED"
+
+      # if there is an image mask, write the masked texture to tmp.png
+      if [ "$image_mask_file" != "null" ]; then
+        mask_texture $block_texture_file $image_mask_file tmp.png
+      else
+        copy_texture $block_texture_file tmp.png
+      fi
+
+      # apply the wax overlay to tmp.png
+      convert tmp.png $IMAGE_MASK_DIR/overlay_waxed.png -composite $item_out_file
       continue
     fi
 
@@ -298,4 +316,3 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
 done
 
 popd
-rm -rf $TMP_DIR

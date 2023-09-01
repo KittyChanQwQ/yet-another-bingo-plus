@@ -1,9 +1,3 @@
-/generated/
-/logs/
-/versions/
-/libraries/
 /node_modules/
-/server.jar
-/client.jar
 .vitepress/cache
 .vitepress/dist

@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import itemData from "../data/items.json";
+import itemData from "../../scripts/data/items.json";
 import { Icon } from '@iconify/vue';
 
 const inputId = `ID${Math.random()}`;

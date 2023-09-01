@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { computed, ref, Ref, onMounted } from "vue";
 import ItemList from './ItemList.vue';
-import itemData from "../data/items.json";
+import itemData from "../../scripts/data/items.json";
 import UploadItemsInput from "./UploadItemsInput.vue";
 import DownloadItemsInput from "./DownloadItemsInput.vue";
 import SearchInput from "./SearchInput.vue";
