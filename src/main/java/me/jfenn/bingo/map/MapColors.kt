@@ -1,6 +1,7 @@
 package me.jfenn.bingo.map
 
-import kotlin.math.sqrt
+import org.apache.commons.imaging.color.ColorConversions
+import kotlin.math.*
 
 fun rgb(r: Int, g: Int, b: Int): Int {
     return -0x1000000 or (r shl 16 and 0x00FF0000) or (g shl 8 and 0x0000FF00) or (b and 0x000000FF)
@@ -46,6 +47,11 @@ data class Color(val r: Int, val g: Int, val b: Int, val a: Int = 255) {
     }
 }
 
+/**
+ * Computes the visual "distance" between two color int values
+ * using a low-cost approximation of visual color space:
+ * https://stackoverflow.com/a/9085524
+ */
 fun Int.colorDistance(other: Int): Double {
     val (r, g, b, _) = Color.fromInt(this)
     val (r2, g2, b2, _) = Color.fromInt(other)
@@ -54,6 +60,55 @@ fun Int.colorDistance(other: Int): Double {
     val gDiff = g - g2
     val bDiff = b - b2
     return sqrt((((512 + rMean) * rDiff * rDiff) shr 8) + (4 * gDiff * gDiff) + (((767 - rMean) * bDiff * bDiff) shr 8).toDouble())
+}
+
+/**
+ * Computes the visual "distance" between two color int values
+ * using the CMC l:c algorithm:
+ * https://en.wikipedia.org/wiki/Color_difference#CMC_l:c_(1984)
+ */
+fun Int.colorDistanceCMC1984(other: Int): Double {
+    val color1Lab = ColorConversions.convertRGBtoXYZ(this)
+        .let { ColorConversions.convertXYZtoCIELab(it) }
+    val color1Lch = ColorConversions.convertCIELabtoCIELCH(color1Lab)
+
+    val color2Lab = ColorConversions.convertRGBtoXYZ(other)
+        .let { ColorConversions.convertXYZtoCIELab(it) }
+    val color2Lch = ColorConversions.convertCIELabtoCIELCH(color2Lab)
+
+    // Ratio of l:c (lightness/chroma) - using 1:1
+    val l = 1
+    val c = 2
+
+    val T = when {
+        (color1Lch.h + 360.0) % 360.0 in 165.0..345.0 -> 0.56 + abs(0.2 * cos(color1Lch.h + 168))
+        else -> 0.36 + abs(0.4 * cos(color1Lch.h + 35))
+    }
+
+    val F = sqrt(color1Lch.C.pow(4) / (color1Lch.C.pow(4) + 1900))
+
+    val S_C = (0.0638 * color1Lch.C) / (1 + 0.0131 * color1Lch.C)
+
+    val S_L = when {
+        color1Lch.L < 16 -> 0.511
+        else -> (0.040975 * color1Lch.L) / (1 + 0.01765 * color1Lch.L)
+    }
+
+    val S_H = S_C * (F*T + 1 - F)
+
+    val deltaH = sqrt(
+        (color1Lab.a - color2Lab.a).pow(2)
+        + (color1Lab.b - color2Lab.b).pow(2)
+        - (color1Lch.C - color2Lch.C).pow(2)
+    )
+
+    val deltaE = sqrt(
+        ((color2Lch.L - color1Lch.L) / (l * S_L)).pow(2)
+            + ((color2Lch.C - color1Lch.C) / (c * S_C)).pow(2)
+            + (deltaH / S_H).pow(2)
+    )
+
+    return deltaE
 }
 
 val MAP_COLORS_BASE = arrayOf<Int>(
@@ -135,16 +190,15 @@ val MAP_COLORS = Array<Int>(248) { index ->
 }
 
 fun Int.closestColorByte(): Byte {
-    var index = 0
-    var best = Double.MAX_VALUE
+    // colorDistanceCMC1984 fails on comparisons to #000... so we're doing this manually
+    if (Color.fromInt(this).let { (r, g, b) -> r == 0 && g == 0 && b == 0 })
+        return (29 * 4).toUByte().toByte()
 
-    for (i in 4 until MAP_COLORS.size) {
-        val distance = this.colorDistance(MAP_COLORS[i])
-        if (distance < best) {
-            best = distance
-            index = i
+    return (4 until MAP_COLORS.size)
+        .minByOrNull { i ->
+            this.colorDistance(MAP_COLORS[i]) + 0.5 * this.colorDistanceCMC1984(MAP_COLORS[i])
         }
-    }
-
-    return index.toUByte().toByte()
+        .let { it ?: (29 * 4) }
+        .toUByte()
+        .toByte()
 }

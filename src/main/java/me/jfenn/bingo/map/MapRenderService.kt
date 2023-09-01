@@ -8,7 +8,9 @@ import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.minecraftServer
 import net.minecraft.item.map.MapState
+import net.minecraft.registry.Registries
 import org.slf4j.LoggerFactory
+import java.io.InputStream
 import javax.imageio.ImageIO
 import kotlin.system.measureTimeMillis
 
@@ -38,14 +40,28 @@ object MapRenderService {
 
     private val imageMap = mutableMapOf<String, BingoTileImage?>()
 
-    private fun readTileImage(item: BingoCardEntry): BingoTileImage? {
+    fun validateItems() {
+        for (item in Registries.ITEM.keys) {
+            try {
+                readTileImage(item.value.path)
+            } catch (e: Throwable) {
+                log.warn("Missing item image: ${item.value.path}.png")
+            }
+        }
+    }
+
+    private fun readTileImage(item: String): InputStream {
+        return Config.readStream("images/${item.lowercase()}.png", false) {
+            javaClass.getResourceAsStream("/bingo/images/${item.lowercase()}.png")
+                ?: throw IllegalArgumentException("Cannot find default texture for ${item.lowercase()}.png")
+        }
+    }
+
+    private fun getTileImage(item: BingoCardEntry): BingoTileImage? {
         imageMap[item.item]?.let { return it }
 
         try {
-            val inputStream = Config.readStream(item.imagePath, false) {
-                javaClass.getResourceAsStream("/bingo/images/${item.item.lowercase()}.png")
-                    ?: throw IllegalArgumentException("Cannot find default texture for ${item.item.lowercase()}.png")
-            }
+            val inputStream = readTileImage(item.item)
 
             val image = ImageIO.read(inputStream)
             val tileImage = BingoTileImage()
@@ -68,7 +84,7 @@ object MapRenderService {
             imageMap[item.item] = tileImage
             return tileImage
         } catch (e: Throwable) {
-            log.error("Error reading item image: ${item.imagePath}", e)
+            log.error("Error reading item image: ${item.item}", e)
             imageMap[item.item] = null
             return null
         }
@@ -134,7 +150,7 @@ object MapRenderService {
                 }
 
                 if (imgX in 0..TILE_IMAGE && imgY in 0..TILE_IMAGE) {
-                    val tileImage = readTileImage(item) ?: continue
+                    val tileImage = getTileImage(item) ?: continue
                     val tileImageArray = if (item.hasAchieved(team)) tileImage.achieved else tileImage.regular
                     val tileImageIndex = imgX + imgY * TILE_IMAGE
 

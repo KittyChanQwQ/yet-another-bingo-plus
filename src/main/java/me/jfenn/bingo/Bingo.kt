@@ -5,6 +5,7 @@ import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.CardService
 import me.jfenn.bingo.card.GeneratorTier
 import me.jfenn.bingo.event.PlayerEvents
+import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.menu.MenuService
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -55,7 +56,8 @@ object Bingo : ModInitializer {
     }
 
     override fun onInitialize() {
-        println("$MOD_ID mod initialized (main)")
+        log.info("$MOD_ID mod initialized (main)")
+        MapRenderService.validateItems()
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server

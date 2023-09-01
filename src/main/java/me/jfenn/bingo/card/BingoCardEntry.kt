@@ -44,6 +44,4 @@ data class BingoCardEntry(
         return Registries.ITEM.get(identifier)
     }
 
-    val imagePath: String = "images/${item.lowercase()}.png"
-
 }
