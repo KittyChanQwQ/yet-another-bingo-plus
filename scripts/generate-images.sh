@@ -184,7 +184,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     }
 
     # if it's a leaf block, we need to apply the colormap: #48b518.
-    if echo $item_models | jq -e '. | index( "minecraft:block/leaves" )' >/dev/null; then
+    if (echo $item_models | jq -e '. | index( "minecraft:block/leaves" )' >/dev/null) && [[ "$item_id" != "cherry"* ]]; then
       echo "USING COLOR TINT: $block_texture"
       color_texture $block_texture_file "#48b518" $item_out_file
       continue
@@ -259,11 +259,15 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   if echo $item_models | jq -e '. | index( "minecraft:item/template_banner" )' >/dev/null; then
     item_color=${item_id%_banner}
     # replace some unsupported item colors with ImageMagick ids
-    [ "$item_color" == "dark_green" ] && item_color="green4"
-    [ "$item_color" == "light_blue" ] && item_color="#8db4f0"
+    [ "$item_color" == "green" ] && item_color="#405411"
+    [ "$item_color" == "lime" ] && item_color="#85ce20"
+    [ "$item_color" == "light_blue" ] && item_color="#3cbae3"
+    [ "$item_color" == "blue" ] && item_color="#3e47b0"
+    [ "$item_color" == "cyan" ] && item_color="#17a2a2"
     [ "$item_color" == "light_gray" ] && item_color="gray80"
-    [ "$item_color" == "brown" ] && item_color="#602b04"
-    [ "$item_color" == "pink" ] && item_color="#efaecf"
+    [ "$item_color" == "brown" ] && item_color="#885734"
+    [ "$item_color" == "pink" ] && item_color="#e890b0"
+    [ "$item_color" == "red" ] && item_color="#b72f28"
 
     echo "BANNER TINT: $item_color"
     # convert $IMAGE_MASK_DIR/template_banner.png -colorspace gray -fill $item_color -tint 300 PNG32:$OUT_DIR/$(echo $item_id | xargs).png
@@ -275,11 +279,15 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   if echo $item_models | jq -e '. | index( "minecraft:item/template_bed" )' >/dev/null; then
     item_color=${item_id%_bed}
     # replace some unsupported item colors with ImageMagick ids
-    [ "$item_color" == "dark_green" ] && item_color="green4"
-    [ "$item_color" == "light_blue" ] && item_color="#8db4f0"
+    [ "$item_color" == "green" ] && item_color="#405411"
+    [ "$item_color" == "lime" ] && item_color="#85ce20"
+    [ "$item_color" == "light_blue" ] && item_color="#3cbae3"
+    [ "$item_color" == "blue" ] && item_color="#3e47b0"
+    [ "$item_color" == "cyan" ] && item_color="#17a2a2"
     [ "$item_color" == "light_gray" ] && item_color="gray80"
-    [ "$item_color" == "brown" ] && item_color="#602b04"
-    [ "$item_color" == "pink" ] && item_color="#efaecf"
+    [ "$item_color" == "brown" ] && item_color="#885734"
+    [ "$item_color" == "pink" ] && item_color="#e890b0"
+    [ "$item_color" == "red" ] && item_color="#b72f28"
 
     echo "BED TINT: $item_color"
     # convert $IMAGE_MASK_DIR/template_bed.png -colorspace gray -fill $item_color -tint 300 PNG32:$OUT_DIR/$(echo $item_id | xargs).png
