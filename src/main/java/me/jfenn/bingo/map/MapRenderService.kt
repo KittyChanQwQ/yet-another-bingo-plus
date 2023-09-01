@@ -1,46 +1,20 @@
 package me.jfenn.bingo.map
 
 import me.jfenn.bingo.card.BingoCard
+import me.jfenn.bingo.card.BingoCardEntry
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
+import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.minecraftServer
-import net.minecraft.item.FilledMapItem
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
 import net.minecraft.item.map.MapState
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import org.slf4j.LoggerFactory
+import javax.imageio.ImageIO
 import kotlin.system.measureTimeMillis
 
-object BingoMapService {
+object MapRenderService {
 
     private val log = LoggerFactory.getLogger(this::class.java)
-
-    fun createMapItem(team: BingoTeam): ItemStack {
-        val item = ItemStack(Items.FILLED_MAP, 1)
-        item.getOrCreateNbt().apply {
-            putInt("map", team.mapId)
-            putBoolean("bingo_ignore", true)
-            put("display", NbtCompound().apply {
-                putString("Name", Text.Serializer.toJson(
-                    Text.literal("Bingo Card (${team.name.lowercase()})")
-                        .formatted(team.formatting, Formatting.ITALIC)
-                ))
-            })
-        }
-
-        return item
-    }
-
-    /**
-     * Returns true if the item stack is a team's map card
-     */
-    fun isMapItem(stack: ItemStack): Boolean {
-        return stack.item == Items.FILLED_MAP && BingoTeam.values().any { FilledMapItem.getMapId(stack) == it.mapId }
-    }
 
     private val COLOR_BACKGROUND = Color(130, 130, 130)
     private val COLOR_ITEM_SHADOW = Color(100, 100, 100)
@@ -56,6 +30,49 @@ object BingoMapService {
     private const val TILE_PADDING = 3
     private const val TILE_MARGIN = 2
     private const val TILE_SIZE = TILE_IMAGE + TILE_PADDING*2 + TILE_MARGIN
+
+    class BingoTileImage(
+        val regular: Array<Byte> = Array(16*16) { 0 },
+        val achieved: Array<Byte> = Array(16*16) { 0 },
+    )
+
+    private val imageMap = mutableMapOf<String, BingoTileImage?>()
+
+    private fun readTileImage(item: BingoCardEntry): BingoTileImage? {
+        imageMap[item.item]?.let { return it }
+
+        try {
+            val inputStream = Config.readStream(item.imagePath, false) {
+                javaClass.getResourceAsStream("/bingo/images/${item.item.lowercase()}.png")
+                    ?: throw IllegalArgumentException("Cannot find default texture for ${item.item.lowercase()}.png")
+            }
+
+            val image = ImageIO.read(inputStream)
+            val tileImage = BingoTileImage()
+
+            for (x in 0 until TILE_IMAGE) {
+                for (y in 0 until TILE_IMAGE) {
+                    val i = x + y * TILE_IMAGE
+                    var color = Color.fromInt(image.getRGB(x, y))
+                    if (color.a == 0) continue
+
+                    // if the image is transparent (glass), blend with the card background
+                    if (color.a < 255) color = COLOR_BACKGROUND.mix(color)
+
+                    tileImage.regular[i] = color.asByte
+                    // make the item image slightly transparent when achieved
+                    tileImage.achieved[i] = COLOR_ACHIEVED.mix(color.copy(a = 200)).asByte
+                }
+            }
+
+            imageMap[item.item] = tileImage
+            return tileImage
+        } catch (e: Throwable) {
+            log.error("Error reading item image: ${item.imagePath}", e)
+            imageMap[item.item] = null
+            return null
+        }
+    }
 
     fun update(team: BingoTeam, card: BingoCard, config: BingoConfig) = measureTimeMillis {
         val state = MapState.of(1, true, minecraftServer.overworld.registryKey)
@@ -116,30 +133,23 @@ object BingoMapService {
                     }
                 }
 
-                if (imgX in 0 until TILE_IMAGE+1 && imgY in 0 until TILE_IMAGE+1) {
-                    var rgba: Int = if (imgX < TILE_IMAGE && imgY < TILE_IMAGE) {
-                        item.image?.getRGB(imgX, imgY) ?: continue
-                    } else 0
+                if (imgX in 0..TILE_IMAGE && imgY in 0..TILE_IMAGE) {
+                    val tileImage = readTileImage(item) ?: continue
+                    val tileImageArray = if (item.hasAchieved(team)) tileImage.achieved else tileImage.regular
+                    val tileImageIndex = imgX + imgY * TILE_IMAGE
 
-                    val color = Color.fromInt(rgba)
-                    if (color.a == 0) {
-                        // image shadow
-                        if (imgX > 0 && imgY > 0 && item.image?.getRGB(imgX-1, imgY-1)?.let { Color.fromInt(it) }?.a != 0)
-                            state.colors[i] = COLOR_ITEM_SHADOW.asByte
+                    if (imgX >= TILE_IMAGE || imgY >= TILE_IMAGE || tileImageArray[tileImageIndex] == 0.toByte()) {
+                        if (imgX > 0 && imgY > 0) {
+                            // image shadow
+                            val prevIndex = (imgX-1) + (imgY-1) * TILE_IMAGE
+                            if (prevIndex in tileImageArray.indices && tileImageArray[prevIndex] != 0.toByte())
+                                state.colors[i] = COLOR_ITEM_SHADOW.asByte
+                        }
+
                         continue
                     }
 
-                    if (color.a < 255) {
-                        // if the image is transparent (glass), blend with the card background
-                        rgba = COLOR_BACKGROUND.mix(color).toInt()
-                    }
-
-                    if (item.hasAchieved(team)) {
-                        // make the item image slightly transparent when achieved
-                        rgba = COLOR_ACHIEVED.mix(color.copy(a = 200)).toInt()
-                    }
-
-                    state.colors[i] = rgba.closestColorByte()
+                    state.colors[i] = tileImageArray[tileImageIndex]
                     continue
                 }
             }

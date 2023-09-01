@@ -7,7 +7,8 @@ import me.jfenn.bingo.card.CardService
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.config
-import me.jfenn.bingo.map.BingoMapService
+import me.jfenn.bingo.map.MapItemService
+import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.formatString
@@ -68,7 +69,7 @@ object BingoGame {
 
         // update the card map images
         for (team in BingoTeam.values()) {
-            BingoMapService.update(team, card, config)
+            MapRenderService.update(team, card, config)
         }
     }
 
@@ -180,14 +181,14 @@ object BingoGame {
 
             // remove any existing maps in the player's inventory
             for (i in 0 until player.inventory.size()) {
-                if (BingoMapService.isMapItem(player.inventory.getStack(i)))
+                if (MapItemService.isMapItem(player.inventory.getStack(i)))
                     player.inventory.removeStack(i)
             }
 
             // give all maps for active teams to the player
             BingoTeam.values()
                 .filter { it.team().playerList.isNotEmpty() }
-                .map { BingoMapService.createMapItem(it) }
+                .map { MapItemService.createMapItem(it) }
                 .forEachIndexed { i, stack ->
                     player.getStackReference(i).set(stack)
                     player.currentScreenHandler.sendContentUpdates()
@@ -217,11 +218,11 @@ object BingoGame {
         if (state != GameState.PLAYING) return
         if (!player.isAlive) return
 
-        val hasMap = player.allHeldStacks().any { BingoMapService.isMapItem(it) }
+        val hasMap = player.allHeldStacks().any { MapItemService.isMapItem(it) }
 
         if (!hasMap) {
             BingoTeam.fromPlayer(player)
-                ?.let { team -> BingoMapService.createMapItem(team) }
+                ?.let { team -> MapItemService.createMapItem(team) }
                 ?.also { player.giveItemStack(it) }
         }
     }
@@ -326,11 +327,11 @@ object BingoGame {
         if (config.gameMode == BingoMode.LOCKOUT) {
             // if the mode is LOCKOUT, all team cards need to be updated (to redraw locked items)
             for (team in BingoTeam.values())
-                BingoMapService.update(team, card, config)
+                MapRenderService.update(team, card, config)
         } else {
             // otherwise, only redraw maps for the updated teams
             for (team in updatedTeams)
-                BingoMapService.update(team, card, config)
+                MapRenderService.update(team, card, config)
         }
 
         // check if a team has won the game

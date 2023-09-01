@@ -57,13 +57,6 @@ object Bingo : ModInitializer {
     override fun onInitialize() {
         println("$MOD_ID mod initialized (main)")
 
-        // Startup check: ensure that each item has a texture available
-        for (tier in GeneratorTier.values()) for (itemRow in tier.items) for (item in itemRow) {
-            BingoCardEntry(item).let {
-                if (it.image == null) log.error("($MOD_ID) No item texture is available for '${it.imagePath}'")
-            }
-        }
-
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             minecraftServer = server
             // remove overworld spawn tickets
