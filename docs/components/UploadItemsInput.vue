@@ -27,10 +27,12 @@ async function onChange(e: Event) {
 	const fileText = await file.text();
 
 	const items = fileText.split("\n")
-		.map(s => s.trim())
 		.map(s => {
-			return s.split("|")
-				.filter(i => validItemSet.has(`minecraft:${i.toLowerCase()}`))
+			return s.trim()
+				.toLowerCase()
+				.split("|")
+				.map(item => item.replace(/^minecraft\:/, ""))
+				.filter(item => validItemSet.has(`minecraft:${item}`))
 				.join("|");
 		})
 		.filter(s => !!s.length)

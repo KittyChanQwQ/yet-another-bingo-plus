@@ -46,6 +46,8 @@ import UploadItemsInput from "./UploadItemsInput.vue";
 import DownloadItemsInput from "./DownloadItemsInput.vue";
 import SearchInput from "./SearchInput.vue";
 
+const validItemSet = new Set(itemData);
+
 const tiers = ['s', 'a', 'b', 'c', 'd'] as const;
 
 const tierLists: Ref<{ [K in typeof tiers[number]]: string[] }> = ref({
@@ -57,14 +59,25 @@ onMounted(() => {
 	for (const tier of tiers) {
 		const storedItems = localStorage.getItem(`bingo_${tier}`);
 		if (storedItems) {
-			tierLists.value[tier] = JSON.parse(storedItems);
+			tierLists.value[tier] = [...JSON.parse(storedItems)]
+				.map(s => {
+					return s.trim()
+						.toLowerCase()
+						.split("|")
+						.map(item => item.replace(/^minecraft\:/, ""))
+						.filter(item => validItemSet.has(`minecraft:${item}`))
+						.join("|");
+				})
+				.filter(s => !!s.length)
 		}
 	}
 });
 
 const allItems = computed(() => {
 	// the "allItems" column should only show items that aren't included in any other tiers
-	const items = itemData.filter(item => !Object.values(tierLists.value).some(list => list.some(items => items.split("|").includes(item))));
+	const items = itemData
+		.map(item => item.replace(/^minecraft\:/, ""))
+		.filter(item => !Object.values(tierLists.value).some(list => list.some(items => items.split("|").includes(item))));
 	return items;
 });
 
