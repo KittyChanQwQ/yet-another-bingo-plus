@@ -147,16 +147,16 @@ fun Int.colorDistanceCMC1984(other: Int): Double {
 
     // Ratio of l:c (lightness/chroma) - using 1:1
     val l = 1
-    val c = 2
+    val c = 1
 
     val T = when {
-        (color1Lch.h + 360.0) % 360.0 in 165.0..345.0 -> 0.56 + abs(0.2 * cos(color1Lch.h + 168))
-        else -> 0.36 + abs(0.4 * cos(color1Lch.h + 35))
+        color1Lch.h in 164.0..345.0 -> 0.56 + abs(0.2 * cos(Math.toRadians(color1Lch.h + 168)))
+        else -> 0.36 + abs(0.4 * cos(Math.toRadians(color1Lch.h + 35)))
     }
 
     val F = sqrt(color1Lch.C.pow(4) / (color1Lch.C.pow(4) + 1900))
 
-    val S_C = (0.0638 * color1Lch.C) / (1 + 0.0131 * color1Lch.C)
+    val S_C = ((0.0638 * color1Lch.C) / (1 + 0.0131 * color1Lch.C)) + 0.638
 
     val S_L = when {
         color1Lch.L < 16 -> 0.511
@@ -191,6 +191,7 @@ fun Int.closestColorByte(): Byte {
             val (b, g, r) = Color.fromInt(mapColorBGR)
             val mapColor = rgb(r, g, b)
             this.colorDistance(mapColor) + 0.5 * this.colorDistanceCMC1984(mapColor)
+            // this.colorDistanceCMC1984(mapColor)
         }
         .let { it ?: (29 * 4) }
         .toUByte()
