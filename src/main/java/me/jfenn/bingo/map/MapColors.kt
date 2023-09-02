@@ -1,5 +1,6 @@
 package me.jfenn.bingo.map
 
+import net.minecraft.block.MapColor
 import org.apache.commons.imaging.color.ColorConversions
 import kotlin.math.*
 
@@ -62,6 +63,74 @@ fun Int.colorDistance(other: Int): Double {
     return sqrt((((512 + rMean) * rDiff * rDiff) shr 8) + (4 * gDiff * gDiff) + (((767 - rMean) * bDiff * bDiff) shr 8).toDouble())
 }
 
+
+/**
+ * Computes the visual "distance" between two color int values
+ * using the CDIDE2000 formula:
+ * https://en.wikipedia.org/wiki/Color_difference#CIEDE2000
+ */
+fun Int.colorDistanceCDIDE2000(other: Int): Double {
+    val color1Lab = ColorConversions.convertRGBtoXYZ(this)
+        .let { ColorConversions.convertXYZtoCIELab(it) }
+    val color1Lch = ColorConversions.convertCIELabtoCIELCH(color1Lab)
+
+    val color2Lab = ColorConversions.convertRGBtoXYZ(other)
+        .let { ColorConversions.convertXYZtoCIELab(it) }
+    val color2Lch = ColorConversions.convertCIELabtoCIELCH(color2Lab)
+
+    val k_l = 1
+    val k_c = 1
+    val k_h = 1
+
+    val lAvg = (color1Lch.L + color2Lch.L) / 2
+    val cAvg = (color1Lch.C + color2Lch.C) / 2
+
+    val a1 = color1Lab.a + (color1Lab.a / 2) * (1 - sqrt(cAvg.pow(7) / (cAvg.pow(7) + 25.0.pow(7))))
+    val a2 = color2Lab.a + (color2Lab.a / 2) * (1 - sqrt(cAvg.pow(7) / (cAvg.pow(7) + 25.0.pow(7))))
+
+    val C1 = sqrt(a1.pow(2) + color1Lab.a.pow(2))
+    val C2 = sqrt(a2.pow(2) + color2Lab.a.pow(2))
+
+    val h1 = (Math.toDegrees(atan2(color1Lab.b, a1)) + 360.0) % 360.0
+    val h2 = (Math.toDegrees(atan2(color2Lab.b, a2)) + 360.0) % 360.0
+
+    val deltah = when {
+        abs(h1 - h2) > 180 && h2 <= h1 -> h2 - h1 + 360
+        abs(h1 - h2) > 180 && h2 > h1 -> h2 - h1 - 360
+        else -> h2 - h1
+    }
+
+    val hAvg = when {
+        C1 == 0.0 || C2 == 0.0 -> h1 + h2
+        abs(h1 - h2) > 180 && h1 + h2 < 360 -> (h1 + h2 + 360) / 2
+        abs(h1 - h2) > 180 && h1 + h2 >= 360 -> (h1 + h2 - 360) / 2
+        else -> (h1 + h2) / 2
+    }
+
+    val deltaH = 2 * sqrt(C1 * C2) * sin(Math.toRadians(deltah / 2))
+
+    val T = 1
+        - 0.17 * cos(Math.toRadians(hAvg - 30))
+        + 0.24 * cos(Math.toRadians(2 * hAvg))
+        + 0.32 * cos(Math.toRadians(3 * hAvg + 6))
+        - 0.20 * cos(Math.toRadians(4 * hAvg - 63))
+
+    val S_L = 1 + ((0.015 * (lAvg - 50).pow(2)) / sqrt(20 + (lAvg - 50).pow(2)))
+    val S_C = 1 + 0.045 * cAvg
+    val S_H = 1 + 0.015 * cAvg * T
+
+    val R_T = -2 * sqrt(cAvg.pow(7) / (cAvg.pow(7) + 25.0.pow(7))) * sin(Math.toRadians(60 * exp(-1 * ((hAvg - 275) / 25).pow(2))))
+
+    val deltaE = sqrt(
+        ((color2Lch.L - color1Lch.L) / (k_l * S_L)).pow(2)
+            + ((C2 - C1) / (k_c * S_C)).pow(2)
+            + (deltaH / (k_h * S_H)).pow(2)
+            + R_T * ((C2 - C1) / (k_c * S_C)) * (deltaH / (k_h * S_H))
+    )
+
+    return deltaE
+}
+
 /**
  * Computes the visual "distance" between two color int values
  * using the CMC l:c algorithm:
@@ -111,92 +180,17 @@ fun Int.colorDistanceCMC1984(other: Int): Double {
     return deltaE
 }
 
-val MAP_COLORS_BASE = arrayOf<Int>(
-    0,
-    rgb(127, 178, 56),
-    rgb(247, 233, 163),
-    rgb(199, 199, 199),
-    rgb(255, 0, 0),
-    rgb(160, 160, 255),
-    rgb(167, 167, 167),
-    rgb(0, 124, 0),
-    rgb(255, 255, 255),
-    rgb(164, 168, 184),
-    rgb(151, 109, 77),
-    rgb(112, 112, 112),
-    rgb(64, 64, 255),
-    rgb(143, 119, 72),
-    rgb(255, 252, 245),
-    rgb(216, 127, 51),
-    rgb(178, 76, 216),
-    rgb(102, 153, 216),
-    rgb(229, 229, 51),
-    rgb(127, 204, 25),
-    rgb(242, 127, 165),
-    rgb(76, 76, 76),
-    rgb(153, 153, 153),
-    rgb(76, 127, 153),
-    rgb(127, 63, 178),
-    rgb(51, 76, 178),
-    rgb(102, 76, 51),
-    rgb(102, 127, 51),
-    rgb(153, 51, 51),
-    rgb(25, 25, 25),
-    rgb(250, 238, 77),
-    rgb(92, 219, 213),
-    rgb(74, 128, 255),
-    rgb(0, 217, 58),
-    rgb(129, 86, 49),
-    rgb(112, 2, 0),
-    rgb(209, 177, 161),
-    rgb(159, 82, 36),
-    rgb(149, 87, 108),
-    rgb(112, 108, 138),
-    rgb(186, 133, 36),
-    rgb(103, 117, 53),
-    rgb(160, 77, 78),
-    rgb(57, 41, 35),
-    rgb(135, 107, 98),
-    rgb(87, 92, 92),
-    rgb(122, 73, 88),
-    rgb(76, 62, 92),
-    rgb(76, 50, 35),
-    rgb(76, 82, 42),
-    rgb(142, 60, 46),
-    rgb(37, 22, 16),
-    rgb(189, 48, 49),
-    rgb(148, 63, 97),
-    rgb(92, 25, 29),
-    rgb(22, 126, 134),
-    rgb(58, 142, 140),
-    rgb(86, 44, 62),
-    rgb(20, 180, 133),
-    rgb(100, 100, 100),
-    rgb(216, 175, 147),
-    rgb(127, 167, 150),
-)
-
-val MAP_COLORS = Array<Int>(248) { index ->
-    val baseIndex = index / 4
-    val baseColor = MAP_COLORS_BASE[baseIndex]
-    val multiplier = when (index % 4) {
-        0 -> 180
-        1 -> 220
-        3 -> 135
-        else -> 255
-    }
-
-    Color.fromInt(baseColor).map { it * multiplier / 255 }.toInt()
-}
-
 fun Int.closestColorByte(): Byte {
     // colorDistanceCMC1984 fails on comparisons to #000... so we're doing this manually
     if (Color.fromInt(this).let { (r, g, b) -> r == 0 && g == 0 && b == 0 })
         return (29 * 4).toUByte().toByte()
 
-    return (4 until MAP_COLORS.size)
+    return (4 until 248)
         .minByOrNull { i ->
-            this.colorDistance(MAP_COLORS[i]) + 0.5 * this.colorDistanceCMC1984(MAP_COLORS[i])
+            val mapColorBGR = MapColor.getRenderColor(i)
+            val (b, g, r) = Color.fromInt(mapColorBGR)
+            val mapColor = rgb(r, g, b)
+            this.colorDistance(mapColor) + 0.5 * this.colorDistanceCMC1984(mapColor)
         }
         .let { it ?: (29 * 4) }
         .toUByte()
