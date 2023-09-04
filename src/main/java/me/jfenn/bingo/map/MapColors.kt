@@ -60,7 +60,26 @@ fun Int.colorDistance(other: Int): Double {
     val rDiff = r - r2
     val gDiff = g - g2
     val bDiff = b - b2
-    return sqrt((((512 + rMean) * rDiff * rDiff) shr 8) + (4 * gDiff * gDiff) + (((767 - rMean) * bDiff * bDiff) shr 8).toDouble())
+    return (((512 + rMean) * rDiff * rDiff) shr 8) + (4 * gDiff * gDiff) + (((767 - rMean) * bDiff * bDiff) shr 8).toDouble()
+}
+
+
+/**
+ * Computes the visual "distance" approximation similar to what
+ * is used in Spigot/Bukkit.
+ */
+fun Int.colorDistanceEuclidian(other: Int): Double {
+    val (r, g, b, _) = Color.fromInt(this)
+    val (r2, g2, b2, _) = Color.fromInt(other)
+    val rMean = (r + r2) / 2
+    val rWeight = 2 + rMean / 256
+    val gWeight = 4.0
+    val bWeight = 2 + (255 - rMean) / 256
+    return (
+        rWeight * (r - r2).toDouble().pow(2)
+        + gWeight * (g - g2).toDouble().pow(2)
+        + bWeight * (b - b2).toDouble().pow(2)
+    )
 }
 
 
@@ -190,8 +209,8 @@ fun Int.closestColorByte(): Byte {
             val mapColorBGR = MapColor.getRenderColor(i)
             val (b, g, r) = Color.fromInt(mapColorBGR)
             val mapColor = rgb(r, g, b)
-            this.colorDistance(mapColor) + 0.5 * this.colorDistanceCMC1984(mapColor)
-            // this.colorDistanceCMC1984(mapColor)
+            // this.colorDistance(mapColor) + 0.5 * this.colorDistanceCMC1984(mapColor)
+            this.colorDistanceEuclidian(mapColor)
         }
         .let { it ?: (29 * 4) }
         .toUByte()
