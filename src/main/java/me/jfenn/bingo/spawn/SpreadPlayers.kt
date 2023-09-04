@@ -107,15 +107,17 @@ class SpreadPlayers(
                 val spawnBlockPos = BlockPos(spawnX, height-1, spawnZ)
                 val spawnBlock = world.getBlockState(spawnBlockPos)
 
+                val xSign = x.sign.takeIf { it != 0 } ?: 1
+
                 if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
                     log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
-                    x += 4 * x.sign
+                    x += 4 * xSign
                     continue@findChunk
                 }
 
                 if (spawnBlock.isLiquid || spawnBlockPos.y <= 62 || spawnBlock.block == Blocks.POWDER_SNOW) {
                     log.info("Skipping chunk ($x, $z) to avoid spawning underwater")
-                    x += 1 * x.sign
+                    x += 1 * xSign
                     continue@findChunk
                 }
 
