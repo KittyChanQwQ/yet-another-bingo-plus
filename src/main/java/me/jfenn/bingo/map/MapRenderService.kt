@@ -23,6 +23,7 @@ object MapRenderService {
     private val COLOR_MARGIN = Color(199, 199, 199)
     private val COLOR_SHADOW = Color(20, 20, 20)
     private val COLOR_ACHIEVED = Color(100, 255, 100)
+    private val COLOR_ACHIEVED_SHADOW = Color(80, 120, 80)
     private val COLOR_LOCKED = Color(150, 0, 0)
 
     private const val MAP_SIZE = 128
@@ -159,7 +160,7 @@ object MapRenderService {
                             // image shadow
                             val prevIndex = (imgX-1) + (imgY-1) * TILE_IMAGE
                             if (prevIndex in tileImageArray.indices && tileImageArray[prevIndex] != 0.toByte())
-                                state.colors[i] = COLOR_ITEM_SHADOW.asByte
+                                state.colors[i] = if (item.hasAchieved(team)) COLOR_ACHIEVED_SHADOW.asByte else COLOR_ITEM_SHADOW.asByte
                         }
 
                         continue

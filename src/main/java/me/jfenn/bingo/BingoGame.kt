@@ -423,9 +423,13 @@ object BingoGame {
             .append(Text.literal("Time Remaining: "))
             .append(
                 Text.literal(secondsRemaining.formatString())
-                    .formatted(if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
+                    .formatted(Formatting.BOLD, if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
             )
-            .append(Text.literal(" or ${config.winCondition.name.lowercase().replace('_', ' ')}"))
+            .append(Text.literal(" or "))
+            .append(
+                Text.literal(config.winCondition.name.lowercase().replace('_', ' '))
+                    .formatted(Formatting.BOLD)
+            )
 
         timeBar.value = ((1f - (duration.toSeconds() / config.timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
 

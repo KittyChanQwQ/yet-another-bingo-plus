@@ -72,7 +72,9 @@ object Bingo : ModInitializer {
 
         ServerTickEvents.START_SERVER_TICK.register { server ->
             BingoGame.updateInventory()
-            BingoGame.updateTimer()
+
+            if (server.ticks % 20 == 0)
+                BingoGame.updateTimer()
 
             for (player in server.playerManager.playerList) {
                 BingoGame.giveMapCardItem(player)
