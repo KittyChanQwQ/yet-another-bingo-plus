@@ -1,0 +1,109 @@
+package me.jfenn.bingo.map
+
+import me.jfenn.bingo.BingoGame
+import me.jfenn.bingo.card.BingoTeam
+import me.jfenn.bingo.card.CardService
+import me.jfenn.bingo.minecraftServer
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.fabricmc.fabric.api.event.player.UseBlockCallback
+import net.fabricmc.fabric.api.event.player.UseEntityCallback
+import net.fabricmc.fabric.api.event.player.UseItemCallback
+import net.minecraft.item.BlockItem
+import net.minecraft.item.Items
+import net.minecraft.util.ActionResult
+import net.minecraft.util.TypedActionResult
+import net.minecraft.util.UseAction
+import net.minecraft.util.hit.HitResult
+import java.util.*
+
+object MapItemHandler {
+
+    // set of players for which the bingo map item was used in the current tick
+    private val usedBingoMap = mutableSetOf<UUID>()
+    // set of players for which *any* item was used in the current tick
+    private val usedAnyItem = mutableSetOf<UUID>()
+
+    private val itemCooldown = mutableMapOf<UUID, Int>()
+
+    fun registerCallbacks() {
+        UseItemCallback.EVENT.register { player, world, hand ->
+            val itemStack = player.getStackInHand(hand)
+            val team = BingoTeam.fromPlayer(player) ?: return@register TypedActionResult.pass(itemStack)
+
+            usedAnyItem.add(player.uuid)
+
+            // if the item is the player's bingo map, open the item details chest
+            if (itemStack.item == Items.FILLED_MAP && itemStack.nbt?.getInt("map") == team.mapId) {
+                usedBingoMap.add(player.uuid)
+                return@register TypedActionResult.success(itemStack, false)
+            }
+
+            // vaguely determine if the held item will be used or not
+            // (e.g. suspicious stew, potions, etc. - vs. static items such as iron ingots)
+            val isUsable = when {
+                itemStack.useAction == UseAction.EAT -> player.canConsume(false)
+                itemStack.useAction == UseAction.DRINK -> true
+                itemStack.useAction == UseAction.BLOCK || itemStack.item is BlockItem -> {
+                    // if holding a block, check if it can be placed on a surface within reach
+                    val hit = player.raycast(5.0, 0f, false)
+                    hit.type == HitResult.Type.BLOCK
+                }
+                itemStack.item == Items.FIREWORK_ROCKET -> player.isFallFlying
+                itemStack.item == Items.SUSPICIOUS_STEW -> true
+                itemStack.isUsedOnRelease -> true
+                itemStack.useAction == UseAction.NONE -> false
+                else -> true
+            }
+
+            // if the item *can* be used, and *isn't* a bingo map, it should prevent the bingo map from being used
+            if (isUsable && usedBingoMap.remove(player.uuid)) {
+                usedBingoMap.remove(player.uuid)
+            }
+
+            TypedActionResult.pass(itemStack)
+        }
+
+        UseBlockCallback.EVENT.register { player, world, hand, hit ->
+            usedAnyItem.add(player.uuid)
+
+            val itemStack = player.getStackInHand(hand)
+
+            if (!MapItemService.isMapItem(itemStack) && !itemStack.isEmpty && usedBingoMap.remove(player.uuid)) {
+                usedBingoMap.remove(player.uuid)
+            }
+
+            ActionResult.PASS
+        }
+
+        UseEntityCallback.EVENT.register { player, world, hand, entity, hit ->
+            usedAnyItem.add(player.uuid)
+
+            val itemStack = player.getStackInHand(hand)
+
+            if (!MapItemService.isMapItem(itemStack) && !itemStack.isEmpty && usedBingoMap.remove(player.uuid)) {
+                usedBingoMap.remove(player.uuid)
+            }
+
+            ActionResult.PASS
+        }
+
+        ServerTickEvents.START_SERVER_TICK.register { server ->
+            for (player in server.playerManager.playerList) {
+                // ensure the player waits at least 10 ticks before using the map
+                // - if the use button is held, this will continually update the cooldown, and never exit this state until released
+                val isInCooldown = minecraftServer.ticks < (itemCooldown[player.uuid] ?: 0) + 10
+
+                if (usedBingoMap.contains(player.uuid) && !isInCooldown) {
+                    CardService.showInventory(player, BingoGame.card)
+                }
+
+                if (usedAnyItem.contains(player.uuid) || player.itemUseTimeLeft > 0)
+                    itemCooldown[player.uuid] = minecraftServer.ticks
+            }
+
+            usedBingoMap.clear()
+            usedAnyItem.clear()
+        }
+    }
+
+}

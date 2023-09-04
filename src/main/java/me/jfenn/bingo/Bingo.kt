@@ -1,8 +1,7 @@
 package me.jfenn.bingo
 
-import me.jfenn.bingo.card.BingoTeam
-import me.jfenn.bingo.card.CardService
 import me.jfenn.bingo.event.PlayerEvents
+import me.jfenn.bingo.map.MapItemHandler
 import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.menu.MenuService
 import net.fabricmc.api.ModInitializer
@@ -10,21 +9,17 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
-import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
-import net.minecraft.util.*
+import net.minecraft.util.Identifier
 import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.GameRules
 import org.slf4j.LoggerFactory
-import java.util.*
 
 const val MOD_ID = "bingo"
 
@@ -126,36 +121,7 @@ object Bingo : ModInitializer {
             }
         }
 
-        val itemCooldown = mutableMapOf<UUID, Int>()
-        UseItemCallback.EVENT.register { player, world, hand ->
-            val itemStack = player.getStackInHand(hand)
-            val team = BingoTeam.fromPlayer(player) ?: return@register TypedActionResult.pass(itemStack)
-
-            // if the player has an item they could use in their other hand (e.g. food or a block), don't open the map
-            // - this prevents a de-sync bug where the player could use both items at once
-            val otherHandStack = player.getStackInHand(when (hand) {
-                Hand.MAIN_HAND -> Hand.OFF_HAND
-                else -> Hand.MAIN_HAND
-            })
-
-            // ensure the player waits at least 10 ticks before using the map
-            // - if the use button is held, this will continually update the cooldown, and never exit this state until released
-            val isInCooldown = minecraftServer.ticks < (itemCooldown[player.uuid] ?: 0) + 10
-
-            // if the item is the player's bingo map, open the item details chest
-            if (itemStack.item == Items.FILLED_MAP && itemStack.nbt?.getInt("map") == team.mapId && otherHandStack.isEmpty && !isInCooldown) {
-                CardService.showInventory(player, BingoGame.card)
-                return@register TypedActionResult.success(itemStack, true)
-            }
-
-            itemCooldown[player.uuid] = minecraftServer.ticks
-            TypedActionResult.pass(itemStack)
-        }
-
-        UseBlockCallback.EVENT.register { player, world, hand, hit ->
-            itemCooldown[player.uuid] = minecraftServer.ticks
-            ActionResult.PASS
-        }
+        MapItemHandler.registerCallbacks()
 
         CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
             for (command in commands()) {
