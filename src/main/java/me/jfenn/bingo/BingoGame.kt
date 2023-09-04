@@ -27,6 +27,7 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
+import net.minecraft.world.border.WorldBorder
 import java.time.Duration
 import java.time.Instant
 
@@ -76,6 +77,7 @@ object BingoGame {
     fun start() {
         // if the game has already been started, ignore
         if (startedAt != null) return
+        if (!config.isValid()) return
 
         // save the current config, if overwrite option is set
         if (config.overwrite) {
@@ -89,6 +91,8 @@ object BingoGame {
         // update server to match config choices
         minecraftServer.isPvpEnabled = config.isPvpEnabled
         minecraftServer.gameRules.get(GameRules.KEEP_INVENTORY).set(config.isKeepInventory, minecraftServer)
+        minecraftServer.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(true, minecraftServer)
+        minecraftServer.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(true, minecraftServer)
 
         // spread player teams to spawnpoint
         val spread = SpreadPlayers(world = minecraftServer.overworld)

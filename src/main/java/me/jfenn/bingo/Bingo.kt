@@ -22,6 +22,7 @@ import net.minecraft.util.*
 import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
+import net.minecraft.world.GameRules
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -61,6 +62,10 @@ object Bingo : ModInitializer {
             minecraftServer = server
             // remove overworld spawn tickets
             minecraftServer.overworld.chunkManager.removePersistentTickets()
+
+            // hide spammy messages in the lobby
+            minecraftServer.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(false, minecraftServer)
+            minecraftServer.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(false, minecraftServer)
 
             MenuService.spawn(BingoGame.config)
 
