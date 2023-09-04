@@ -1,9 +1,7 @@
 package me.jfenn.bingo
 
-import me.jfenn.bingo.card.BingoCardEntry
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.CardService
-import me.jfenn.bingo.card.GeneratorTier
 import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.menu.MenuService

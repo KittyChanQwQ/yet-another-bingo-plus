@@ -14,6 +14,7 @@ data class BingoConfig(
     var isPvpEnabled: Boolean = true,
     var isKeepInventory: Boolean = false,
     var spreadPlayersDistance: Int = 100,
+    var unsafeSkipWorldClose: Boolean = false,
 ) {
 
     fun isValid(): Boolean {

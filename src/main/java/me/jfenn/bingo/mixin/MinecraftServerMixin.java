@@ -1,5 +1,6 @@
 package me.jfenn.bingo.mixin;
 
+import me.jfenn.bingo.BingoGame;
 import net.minecraft.resource.LifecycledResourceManager;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.*;
@@ -63,6 +64,13 @@ public abstract class MinecraftServerMixin {
         if (this.playerManager != null) {
             log.info("Disconnecting players");
             this.playerManager.disconnectAllPlayers();
+        }
+
+        if (BingoGame.INSTANCE.getConfig().getUnsafeSkipWorldClose()) {
+            log.info("unsafeSkipWorldClose is true; skipping file closing");
+            log.info("This will likely cause a crash...");
+            ci.cancel();
+            return;
         }
 
         log.info("Closing worlds");

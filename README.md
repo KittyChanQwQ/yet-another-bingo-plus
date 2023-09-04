@@ -12,8 +12,9 @@ any mods or resource packs to join; this only needs to be installed on the serve
 games. Make sure this is not installed on an existing world or you _will_ lose your data!
 
 Recommended mods (optional, but have been tested for compatibility):
-- [Lithium](https://modrinth.com/mod/lithium/version/mc1.20.1-0.11.2)
-- [MC-249136 Fix](https://modrinth.com/mod/mc-249136-fix/version/1.0.0)
+- [Lithium](https://modrinth.com/mod/lithium)
+- [Krypton](https://modrinth.com/mod/krypton)
+- [MC-249136 Fix](https://modrinth.com/mod/mc-249136-fix)
 
 Up to 8 teams can compete to collect items on the BINGO card. Teams can score items in horizontal, vertical, or diagonal
 lines to win the game. (the "win condition" can be set to a number of lines, or the full card).

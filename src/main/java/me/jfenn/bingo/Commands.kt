@@ -100,4 +100,12 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                 }
         )
         .also { yield(it) }
+
+    literal<ServerCommandSource>("restart")
+        .requires { it.hasPermissionLevel(2) }
+        .executes { ctx ->
+            ctx.source.server.stop(false)
+            1
+        }
+        .also { yield(it) }
 }
