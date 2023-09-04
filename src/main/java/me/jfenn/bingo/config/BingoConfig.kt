@@ -7,7 +7,7 @@ data class BingoConfig(
     var overwrite: Boolean = true,
     var gameMode: BingoMode = BingoMode.STANDARD,
     var winCondition: WinCondition = WinCondition.THREE_LINES,
-    var timeLimit: TimeLimit = TimeLimit.ONE_HOUR,
+    var timerMinutes: Int? = 60,
     var itemDistribution: List<Int> = listOf(2, 6, 9, 6, 2),
     var isElytra: Boolean = false,
     var isUnlockRecipes: Boolean = true,

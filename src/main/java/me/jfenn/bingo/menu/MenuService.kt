@@ -34,7 +34,7 @@ object MenuService {
 
     fun spawn(config: BingoConfig) {
         placeStructure(lobbyWorld, BlockPos(-24, -2, -24), Identifier.of("bingo", "lobby")!!)
-        spawnMenuEntities(Vec3d(-4.0, 2.5, -4.0), config)
+        spawnMenuEntities(Vec3d(-3.0, 2.5, -4.0), config)
         spawnPlayerCount(Vec3d(0.0, 3.5, -4.0))
 
         spawnTeamEntity(Vec3d(-16.5, 4.0, -3.5), BingoTeam.ORANGE)
@@ -49,7 +49,7 @@ object MenuService {
 
     private fun spawnMenuEntities(pos: Vec3d, config: BingoConfig) {
         val startButton = ButtonEntity(
-            position = pos.add(9.0, -MENU_ITEM_OFFSET, 0.0),
+            position = pos.add(8.0, -MENU_ITEM_OFFSET, 0.0),
             text = "START",
             isActive = config.isValid(),
         ).apply {
@@ -82,28 +82,28 @@ object MenuService {
         spawnMenu(
             title = "Win Condition",
             value = config.winCondition,
-            position = pos,
+            position = pos.add(2.2, 0.0, 0.0),
         ).onChange {
             config.winCondition = WinCondition.values()[it]
         }
 
-        spawnMenu(
+        TimerEntity(
             title = "Time Limit",
-            value = config.timeLimit,
-            position = pos.add(2.0, 0.0, 0.0),
+            timerMinutesDefault = config.timerMinutes,
+            position = pos.add(4.0, 0.0, 0.0),
         ).onChange {
-            config.timeLimit = TimeLimit.values()[it]
+            config.timerMinutes = it
         }
 
         ItemDistributionEntity(
-            position = pos.add(4.3, 0.0, 0.0),
+            position = pos.add(6.0, 0.0, 0.0),
             itemDistribution = BingoGame.config.itemDistribution,
         ).onChange {
             config.itemDistribution = it
             startButton.isActive = config.isValid()
         }
 
-        spawnFeaturesMenu(pos.add(7.0, 0.0, 0.0), config)
+        spawnFeaturesMenu(pos.add(0.0, 0.0, 0.0), config)
     }
 
     private inline fun <reified E : Enum<E>> spawnMenu(position: Vec3d, title: String, value: E): MenuEntity {

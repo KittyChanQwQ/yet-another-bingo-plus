@@ -106,6 +106,8 @@ class ItemDistributionEntity(
     }
 
     private fun update() {
+        val isValid = itemDistribution.sum() == 25
+
         for (i in GeneratorTier.values().indices) {
             val tierDisplayEntity = tierDisplayEntities[i]
 
@@ -113,6 +115,7 @@ class ItemDistributionEntity(
                 put("Pos", position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0).toNbt())
                 putString("text", Text.Serializer.toJson(
                     Text.literal(itemDistribution[i].toString())
+                        .formatted(if (isValid) Formatting.WHITE else Formatting.RED)
                 ))
                 putString("billboard", "fixed")
                 putString("alignment", "center")

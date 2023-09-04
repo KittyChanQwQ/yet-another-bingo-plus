@@ -420,25 +420,34 @@ object BingoGame {
         if (state != GameState.PLAYING) return
         val start = startedAt ?: return
 
-        val duration = Duration.between(start, Instant.now())
-        val secondsRemaining = Duration.ofSeconds(config.timeLimit.seconds - duration.toSeconds())
+        val timeLimit = config.timerMinutes?.let { Duration.ofMinutes(it.toLong()) }
+
+        val timerText = if (timeLimit != null) {
+            val duration = Duration.between(start, Instant.now())
+            val secondsRemaining = Duration.ofSeconds(timeLimit.seconds - duration.toSeconds())
+
+            timeBar.value = ((1f - (duration.toSeconds() / timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
+
+            if (duration.toMinutes() >= timeLimit.toMinutes()) {
+                end("Out of time!")
+                return
+            }
+
+            Text.literal(secondsRemaining.formatString())
+                .formatted(Formatting.BOLD, if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
+        } else {
+            Text.literal("(No Time Limit)")
+                .formatted(Formatting.BOLD)
+        }
 
         timeBar.name = Text.empty()
             .append(Text.literal("Time Remaining: "))
-            .append(
-                Text.literal(secondsRemaining.formatString())
-                    .formatted(Formatting.BOLD, if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
-            )
+            .append(timerText)
             .append(Text.literal(" or "))
             .append(
                 Text.literal(config.winCondition.name.lowercase().replace('_', ' '))
                     .formatted(Formatting.BOLD)
             )
-
-        timeBar.value = ((1f - (duration.toSeconds() / config.timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
-
-        if (duration.toMinutes() >= config.timeLimit.minutes)
-            end("Out of time!")
     }
 
 }
