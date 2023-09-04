@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.item.BlockItem
 import net.minecraft.item.Items
+import net.minecraft.item.ShieldItem
 import net.minecraft.util.ActionResult
 import net.minecraft.util.TypedActionResult
 import net.minecraft.util.UseAction
@@ -43,7 +44,8 @@ object MapItemHandler {
             val isUsable = when {
                 itemStack.useAction == UseAction.EAT -> player.canConsume(false)
                 itemStack.useAction == UseAction.DRINK -> true
-                itemStack.useAction == UseAction.BLOCK || itemStack.item is BlockItem -> {
+                itemStack.useAction == UseAction.BLOCK -> true // blocking with a shield
+                itemStack.item is BlockItem -> {
                     // if holding a block, check if it can be placed on a surface within reach
                     val hit = player.raycast(5.0, 0f, false)
                     hit.type == HitResult.Type.BLOCK
@@ -93,7 +95,7 @@ object MapItemHandler {
                 // - if the use button is held, this will continually update the cooldown, and never exit this state until released
                 val isInCooldown = minecraftServer.ticks < (itemCooldown[player.uuid] ?: 0) + 10
 
-                if (usedBingoMap.contains(player.uuid) && !isInCooldown) {
+                if (usedBingoMap.contains(player.uuid) && !isInCooldown && !player.isSneaking) {
                     CardService.showInventory(player, BingoGame.card)
                 }
 
