@@ -1,5 +1,12 @@
 <template>
-	<SearchInput @change="onFilterChanged" />
+	<div style="display: flex; align-items: center;">
+		<SearchInput @change="onFilterChanged" />
+		<div style="flex-grow: 1;"></div>
+		<div>
+			<input id="unobtainableCheckbox" type="checkbox" v-model="shouldIncludeUnobtainable">
+			<label for="unobtainableCheckbox">Include unobtainable items</label>
+		</div>
+	</div>
 	<table>
 		<thead>
 			<tr>
@@ -48,6 +55,30 @@ import SearchInput from "./SearchInput.vue";
 
 const validItemSet = new Set(itemData);
 
+const shouldIncludeUnobtainable = ref(false);
+
+const unobtainableItems = [
+	"air",
+	"barrier",
+	"bedrock",
+	/_spawn_egg$/,
+	"bundle",
+	/command_block/,
+	"chorus_plant",
+	"debug_stick",
+	"dirt_path",
+	"end_portal_frame",
+	"farmland",
+	"frogspawn",
+	"jigsaw",
+	"knowledge_book",
+	"light",
+	"petrified_oak_slab",
+	"reinforced_deepslate",
+	"spawner",
+	/structure/,
+];
+
 const tiers = ['s', 'a', 'b', 'c', 'd'] as const;
 
 const tierLists: Ref<{ [K in typeof tiers[number]]: string[] }> = ref({
@@ -77,7 +108,8 @@ const allItems = computed(() => {
 	// the "allItems" column should only show items that aren't included in any other tiers
 	const items = itemData
 		.map(item => item.replace(/^minecraft\:/, ""))
-		.filter(item => !Object.values(tierLists.value).some(list => list.some(items => items.split("|").includes(item))));
+		.filter(item => !Object.values(tierLists.value).some(list => list.some(items => items.split("|").includes(item))))
+		.filter(item => shouldIncludeUnobtainable.value || !unobtainableItems.some(unobtainable => typeof unobtainable === "string" ? unobtainable === item : new RegExp(unobtainable).test(item)));
 	return items;
 });
 
