@@ -7,6 +7,14 @@ import net.minecraft.sound.SoundEvents
 
 object Sounds {
 
+    fun playGameStarted(player: ServerPlayerEntity) {
+        player.playSound(
+            SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(),
+            SoundCategory.BLOCKS,
+            1f, 2f
+        )
+    }
+
     fun playTileCollected(team: BingoTeam) {
         val teamInstance = team.team()
         for (player in minecraftServer.playerManager.playerList) {

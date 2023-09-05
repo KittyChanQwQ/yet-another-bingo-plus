@@ -6,7 +6,7 @@ import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.TeamService
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
-import me.jfenn.bingo.config.TimeLimit
+import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.config.WinCondition
 import me.jfenn.bingo.event.InteractionEntityEvents
 import me.jfenn.bingo.event.PlayerEvents
@@ -15,11 +15,13 @@ import me.jfenn.bingo.map.Color
 import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.utils.sendWarningMessage
 import me.jfenn.bingo.utils.toNbt
+import net.minecraft.block.Blocks
 import net.minecraft.block.entity.StructureBlockBlockEntity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtIo
 import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
@@ -30,22 +32,21 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import org.joml.Vector3f
+import org.slf4j.LoggerFactory
+import java.nio.file.Files
+import kotlin.io.path.name
+import kotlin.system.measureTimeMillis
 
 object MenuService {
 
-    fun spawn(config: BingoConfig) {
-        placeStructure(lobbyWorld, BlockPos(-24, -2, -24), Identifier.of("bingo", "lobby")!!)
-        spawnMenuEntities(Vec3d(-2.0, 2.5, -4.0), config)
-        spawnPlayerCount(Vec3d(0.0, 3.5, -4.0))
+    private val log = LoggerFactory.getLogger(this::class.java)
 
-        spawnTeamEntity(Vec3d(-16.5, 4.0, -3.5), BingoTeam.ORANGE)
-        spawnTeamEntity(Vec3d(-14.5, 8.0, -19.5), BingoTeam.GREEN)
-        spawnTeamEntity(Vec3d(5.5, 5.0, -15.5), BingoTeam.PINK)
-        spawnTeamEntity(Vec3d(16.5, 3.0, -8.5), BingoTeam.BLUE)
-        spawnTeamEntity(Vec3d(18.5, 3.0, 6.5), BingoTeam.YELLOW)
-        spawnTeamEntity(Vec3d(16.5, 5.0, 17.5), BingoTeam.AQUA)
-        spawnTeamEntity(Vec3d(-1.5, 1.0, 18.5), BingoTeam.GRAY)
-        spawnTeamEntity(Vec3d(-16.5, 3.0, 14.5), BingoTeam.RED)
+    var spawnPos: BlockPos = BlockPos.ORIGIN
+
+    fun spawn(config: BingoConfig) {
+        spawnLobbyStructure()
+        spawnMenuEntities(Vec3d(-2.0, spawnPos.y + 2.5, -4.0), config)
+        spawnPlayerCount(Vec3d(0.0, spawnPos.y + 3.5, -4.0))
     }
 
     private fun spawnMenuEntities(pos: Vec3d, config: BingoConfig) {
@@ -260,14 +261,73 @@ object MenuService {
         }
     }
 
-    private fun placeStructure(world: ServerWorld, pos: BlockPos, identifier: Identifier) {
-        val template = world.structureTemplateManager.getTemplate(identifier).get()
+    private fun spawnLobbyStructure() = measureTimeMillis {
+        val lobbyDir = Config.configDir.resolve("lobby")
+        if (!Files.exists(lobbyDir))
+            lobbyDir.toFile().mkdirs()
+
+        val lobbyFile = Files.list(lobbyDir)
+            .map { it.name }
+            .toList()
+            .toMutableSet()
+            .apply { add("lobby.nbt") }
+            .random()
+
+        log.info("Spawning lobby structure '$lobbyFile'")
+
+        // get a random NBT structure from the config, and read as string
+        val lobbyFileStream = lobbyDir.resolve(lobbyFile)
+            .toFile()
+            .takeIf { it.exists() }
+            ?.inputStream()
+            ?: run {
+                // if there aren't any custom NBT files, read the default (lobby.nbt) from resources
+                javaClass.getResourceAsStream("/bingo/lobby/lobby.nbt")
+                    ?: throw RuntimeException("Unable to obtain lobby.nbt resource")
+            }
+
+        val lobbyNbt = NbtIo.readCompressed(lobbyFileStream)
+        placeStructure(lobbyWorld, BlockPos(0, 24, 0), lobbyNbt)
+
+        // Search for team join entities
+        for (x in -24..24) {
+            for (y in -24..24) {
+                for (z in -24..24) {
+                    val isLodestone = lobbyWorld.getBlockState(BlockPos(x, y-1, z)).block == Blocks.LODESTONE
+                    if (!isLodestone) continue
+
+                    val blockPos = BlockPos(x, y, z)
+                    val blockState = lobbyWorld.getBlockState(blockPos)
+
+                    val team = BingoTeam.values() .find { it.carpetBlock == blockState.block } ?: continue
+                    spawnTeamEntity(Vec3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team)
+                    lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
+                }
+            }
+        }
+
+        // Search for spawnpoint
+        val spawnY = (0..24)
+            .asSequence()
+            .filter { y -> lobbyWorld.getBlockState(BlockPos(0, y, 0)).isSolidBlock(lobbyWorld, BlockPos.ORIGIN) }
+            .max()
+
+        spawnPos = BlockPos(0, spawnY+1, 0)
+        log.info("Set lobby spawnpoint to $spawnPos")
+    }.also {
+        log.info("Done (${it}ms)!")
+    }
+
+    private fun placeStructure(world: ServerWorld, pos: BlockPos, nbt: NbtCompound) {
+        val template = world.structureTemplateManager.createTemplate(nbt)
         val placement = StructurePlacementData()
+
+        val posOffset = template.size.run { pos.add(-x/2, -y/2, -z/2) }
 
         template.place(
             world,
-            pos,
-            pos,
+            posOffset,
+            posOffset,
             placement,
             StructureBlockBlockEntity.createRandom(world.seed),
             2

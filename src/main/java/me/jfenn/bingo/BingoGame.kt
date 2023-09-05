@@ -88,6 +88,13 @@ object BingoGame {
         startedAt = Instant.now()
         rollCard()
 
+        for (player in minecraftServer.playerManager.playerList) {
+            val team = BingoTeam.fromPlayer(player)
+            player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
+            player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game is starting!")))
+            Sounds.playGameStarted(player)
+        }
+
         // update server to match config choices
         minecraftServer.isPvpEnabled = config.isPvpEnabled
         minecraftServer.gameRules.get(GameRules.KEEP_INVENTORY).set(config.isKeepInventory, minecraftServer)
@@ -134,6 +141,11 @@ object BingoGame {
             updateGameMode(player)
             // give each player their team's card
             giveMapCardItem(player)
+
+            val team = BingoTeam.fromPlayer(player)
+            player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
+            player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game has started!")))
+            Sounds.playGameStarted(player)
         }
     }
 

@@ -1,6 +1,8 @@
 package me.jfenn.bingo.card
 
 import me.jfenn.bingo.minecraftServer
+import net.minecraft.block.Block
+import net.minecraft.block.Blocks
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.scoreboard.Team
 import net.minecraft.text.HoverEvent
@@ -11,15 +13,16 @@ import net.minecraft.util.Formatting
 enum class BingoTeam(
     val formatting: Formatting,
     val color: Byte,
+    val carpetBlock: Block,
 ) {
-    BLUE(Formatting.BLUE, 12),
-    RED(Formatting.RED, 4),
-    GREEN(Formatting.GREEN, 33),
-    YELLOW(Formatting.YELLOW, 30),
-    PINK(Formatting.LIGHT_PURPLE, 20),
-    AQUA(Formatting.AQUA, 31),
-    ORANGE(Formatting.GOLD, 15),
-    GRAY(Formatting.GRAY, 21),
+    BLUE(Formatting.BLUE, 12, Blocks.BLUE_CARPET),
+    RED(Formatting.RED, 4, Blocks.RED_CARPET),
+    GREEN(Formatting.GREEN, 33, Blocks.GREEN_CARPET),
+    YELLOW(Formatting.YELLOW, 30, Blocks.YELLOW_CARPET),
+    PINK(Formatting.LIGHT_PURPLE, 20, Blocks.PINK_CARPET),
+    AQUA(Formatting.AQUA, 31, Blocks.CYAN_CARPET),
+    ORANGE(Formatting.GOLD, 15, Blocks.ORANGE_CARPET),
+    GRAY(Formatting.GRAY, 21, Blocks.LIGHT_GRAY_CARPET),
     ;
 
     val id = this.name.lowercase()

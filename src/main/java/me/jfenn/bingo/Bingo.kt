@@ -105,8 +105,9 @@ object Bingo : ModInitializer {
 
             // if in pregame, move to the lobby world
             if (BingoGame.state == GameState.PREGAME) {
-                player.setSpawnPoint(lobbyWorld.registryKey, BlockPos.ORIGIN, 180f, true, false)
-                player.teleport(lobbyWorld, 0.5, 0.0, 0.5, 180f, 0f)
+                val spawnPos = MenuService.spawnPos
+                player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
+                player.teleport(lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
             }
         }
 
@@ -116,8 +117,9 @@ object Bingo : ModInitializer {
 
             // if in pregame, move to the lobby world
             if (BingoGame.state == GameState.PREGAME) {
-                player.setSpawnPoint(lobbyWorld.registryKey, BlockPos.ORIGIN, 180f, true, false)
-                player.teleport(lobbyWorld, 0.5, 0.0, 0.5, 180f, 0f)
+                val spawnPos = MenuService.spawnPos
+                player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
+                player.teleport(lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
             }
         }
 
