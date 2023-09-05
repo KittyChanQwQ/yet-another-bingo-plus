@@ -13,6 +13,7 @@ import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
 import net.minecraft.util.UseAction
 import net.minecraft.util.hit.HitResult
@@ -40,7 +41,7 @@ object MapItemHandler {
                 val hit = player.raycast(5.0, 0f, false)
                 hit.type == HitResult.Type.BLOCK
             }
-            itemStack.item == Items.FIREWORK_ROCKET -> player.isFallFlying
+            itemStack.item == Items.FIREWORK_ROCKET -> player.isFallFlying || player.isTouchingWater
             itemStack.item == Items.SUSPICIOUS_STEW -> true
             itemStack.isUsedOnRelease -> true
             itemStack.useAction == UseAction.NONE -> false
@@ -59,12 +60,20 @@ object MapItemHandler {
 
             // if the item is the player's bingo map, open the item details chest
             if (itemStack.item == Items.FILLED_MAP && itemStack.nbt?.getInt("map") == team.mapId) {
+                val otherItemStack = player.getStackInHand(when (hand) {
+                    Hand.MAIN_HAND -> Hand.OFF_HAND
+                    else -> Hand.MAIN_HAND
+                })
+
+                if (isItemUsable(otherItemStack, player))
+                    return@register TypedActionResult.pass(itemStack)
+
                 usedBingoMap.add(player.uuid)
                 return@register TypedActionResult.success(itemStack, false)
             }
 
             // if the item *can* be used, and *isn't* a bingo map, it should prevent the bingo map from being used
-            if (isItemUsable(itemStack, player) && usedBingoMap.remove(player.uuid)) {
+            if (usedBingoMap.contains(player.uuid) && isItemUsable(itemStack, player)) {
                 // println("Removing; item used ($hand, with ${itemStack.translationKey})")
                 usedBingoMap.remove(player.uuid)
             }
@@ -77,7 +86,7 @@ object MapItemHandler {
 
             val itemStack = player.getStackInHand(hand)
 
-            if (!MapItemService.isMapItem(itemStack) && !itemStack.isEmpty && usedBingoMap.remove(player.uuid)) {
+            if (usedBingoMap.contains(player.uuid) && !MapItemService.isMapItem(itemStack) && !itemStack.isEmpty) {
                 // println("Removing; block used ($hand, with ${itemStack.translationKey})")
                 usedBingoMap.remove(player.uuid)
             }
@@ -90,7 +99,7 @@ object MapItemHandler {
 
             val itemStack = player.getStackInHand(hand)
 
-            if (!MapItemService.isMapItem(itemStack) && !itemStack.isEmpty && usedBingoMap.remove(player.uuid)) {
+            if (usedBingoMap.contains(player.uuid) && !MapItemService.isMapItem(itemStack) && !itemStack.isEmpty) {
                 // println("Removing; entity used")
                 usedBingoMap.remove(player.uuid)
             }
