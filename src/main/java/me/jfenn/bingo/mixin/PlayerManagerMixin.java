@@ -1,9 +1,15 @@
 package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.BingoGame;
+import me.jfenn.bingo.GameState;
 import me.jfenn.bingo.card.BingoTeam;
 import me.jfenn.bingo.event.PlayerEvents;
+import me.jfenn.bingo.menu.MenuService;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtDouble;
+import net.minecraft.nbt.NbtFloat;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -19,6 +25,32 @@ import java.util.Optional;
 
 @Mixin(PlayerManager.class)
 public class PlayerManagerMixin {
+
+    @Inject(at = @At(value = "RETURN"), method = "loadPlayerData", cancellable = true)
+    private void loadPlayerData(ServerPlayerEntity player, CallbackInfoReturnable<NbtCompound> ci) {
+        // Provide default player data (for the lobby dimension / spawnpoint) if null
+        if (ci.getReturnValue() == null && BingoGame.INSTANCE.getState() == GameState.PREGAME) {
+            NbtCompound nbt = new NbtCompound();
+            nbt.putString("Dimension", "bingo:lobby");
+
+            BlockPos spawnPos = MenuService.INSTANCE.getSpawnPos();
+
+            NbtList position = new NbtList();
+            position.add(NbtDouble.of(spawnPos.getX() + 0.5));
+            position.add(NbtDouble.of(spawnPos.getY()));
+            position.add(NbtDouble.of(spawnPos.getZ() + 0.5));
+            nbt.put("Pos", position);
+
+            NbtList rotation = new NbtList();
+            rotation.add(NbtFloat.of(180f)); // yaw
+            rotation.add(NbtFloat.of(0f)); // pitch
+            nbt.put("Rotation", rotation);
+
+            player.readNbt(nbt);
+            ci.setReturnValue(nbt);
+        }
+    }
+
     @Inject(at = @At(value = "TAIL"), method = "onPlayerConnect")
     private void onPlayerJoin(ClientConnection connection, ServerPlayerEntity player, CallbackInfo info) {
         PlayerEvents.INSTANCE.getOnPlayerJoin().invoke(player);
