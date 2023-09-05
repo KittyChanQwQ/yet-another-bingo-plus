@@ -10,6 +10,21 @@ for every item that can be drawn on the card.
 These are packaged with the mod by default. However, they can be overridden by placing image files in the
 `./config/bingo/images/` directory. These images must be 16x16 PNG files.
 
+```txt{3-4}
+🗀 config/
+ └ 🗀 bingo/
+   ├ 🗀 images/
+   │ └ acacia_trapdoor.png
+   ├ a_tier.txt
+   ├ b_tier.txt
+   ├ c_tier.txt
+   ├ d_tier.txt
+   └ s_tier.txt
+🗀 mods/
+🗀 world/
+server.properties
+```
+
 For example, `./config/bingo/images/acacia_trapdoor.png` will override the image for the "acacia trapdoor" item. These
 must match its item id, which can be checked in the tier list or in-game (using F3+H to see the item ids in tooltips).
 

@@ -19,6 +19,7 @@ export default defineConfig({
           { text: 'Editor', link: '/config' },
           { text: 'Item Distribution', link: '/item-distribution' },
           { text: 'Item Images', link: '/item-images' },
+          { text: 'Lobby Structure', link: '/lobby-structure' },
         ],
       },
     ],
