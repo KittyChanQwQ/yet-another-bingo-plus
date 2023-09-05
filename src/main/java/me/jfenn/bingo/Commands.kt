@@ -8,10 +8,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import me.jfenn.bingo.card.BingoTeam
+import me.jfenn.bingo.card.TeamService
 import me.jfenn.bingo.utils.sendInfoMessage
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
-import kotlin.math.ceil
 
 /**
  * Return a sequence of commands related to the game
@@ -84,18 +84,9 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
             argument<ServerCommandSource?, Int?>("teams", integer(1, BingoTeam.values().size))
                 .executes { ctx ->
                     val teams = getInteger(ctx, "teams")
-                    val players = ctx.source.server.playerManager.playerList
-                    val playersPerTeam = ceil(players.size / teams.toDouble()).toInt()
+                    TeamService.shuffleTeams(teams)
 
-                    players.shuffled()
-                        .chunked(playersPerTeam)
-                        .forEachIndexed { i, teamPlayers ->
-                            val team = BingoTeam.values()[i]
-                            for (teamPlayer in teamPlayers)
-                                team.addPlayer(teamPlayer)
-                        }
-
-                    ctx.source.player?.sendInfoMessage("Players sorted into $teams team(s), $playersPerTeam player(s) per team.")
+                    ctx.source.player?.sendInfoMessage("Teams have been shuffled!")
                     1
                 }
         )

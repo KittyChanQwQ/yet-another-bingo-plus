@@ -42,14 +42,6 @@ enum class BingoTeam(
         return text
     }
 
-    fun addPlayer(player: PlayerEntity) {
-        minecraftServer.scoreboard.addPlayerToTeam(player.entityName, team())
-    }
-
-    fun removePlayer(player: PlayerEntity) {
-        minecraftServer.scoreboard.removePlayerFromTeam(player.entityName, team())
-    }
-
     fun broadcastMessage(text: Text) {
         minecraftServer.playerManager.playerList
             .filter { it.isTeamPlayer(team()) }

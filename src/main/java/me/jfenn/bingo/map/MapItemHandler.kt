@@ -8,9 +8,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
+import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.item.ShieldItem
 import net.minecraft.util.ActionResult
 import net.minecraft.util.TypedActionResult
 import net.minecraft.util.UseAction
@@ -26,6 +27,29 @@ object MapItemHandler {
 
     private val itemCooldown = mutableMapOf<UUID, Int>()
 
+    private fun isItemUsable(itemStack: ItemStack, player: PlayerEntity): Boolean {
+        // vaguely determine if the held item will be used or not
+        // (e.g. suspicious stew, potions, etc. - vs. static items such as iron ingots)
+        val isUsable = when {
+            itemStack.isEmpty -> false
+            itemStack.useAction == UseAction.EAT -> player.canConsume(false)
+            itemStack.useAction == UseAction.DRINK -> true
+            itemStack.useAction == UseAction.BLOCK -> true // blocking with a shield
+            itemStack.item is BlockItem -> {
+                // if holding a block, check if it can be placed on a surface within reach
+                val hit = player.raycast(5.0, 0f, false)
+                hit.type == HitResult.Type.BLOCK
+            }
+            itemStack.item == Items.FIREWORK_ROCKET -> player.isFallFlying
+            itemStack.item == Items.SUSPICIOUS_STEW -> true
+            itemStack.isUsedOnRelease -> true
+            itemStack.useAction == UseAction.NONE -> false
+            else -> true
+        }
+
+        return isUsable
+    }
+
     fun registerCallbacks() {
         UseItemCallback.EVENT.register { player, world, hand ->
             val itemStack = player.getStackInHand(hand)
@@ -39,26 +63,9 @@ object MapItemHandler {
                 return@register TypedActionResult.success(itemStack, false)
             }
 
-            // vaguely determine if the held item will be used or not
-            // (e.g. suspicious stew, potions, etc. - vs. static items such as iron ingots)
-            val isUsable = when {
-                itemStack.useAction == UseAction.EAT -> player.canConsume(false)
-                itemStack.useAction == UseAction.DRINK -> true
-                itemStack.useAction == UseAction.BLOCK -> true // blocking with a shield
-                itemStack.item is BlockItem -> {
-                    // if holding a block, check if it can be placed on a surface within reach
-                    val hit = player.raycast(5.0, 0f, false)
-                    hit.type == HitResult.Type.BLOCK
-                }
-                itemStack.item == Items.FIREWORK_ROCKET -> player.isFallFlying
-                itemStack.item == Items.SUSPICIOUS_STEW -> true
-                itemStack.isUsedOnRelease -> true
-                itemStack.useAction == UseAction.NONE -> false
-                else -> true
-            }
-
             // if the item *can* be used, and *isn't* a bingo map, it should prevent the bingo map from being used
-            if (isUsable && usedBingoMap.remove(player.uuid)) {
+            if (isItemUsable(itemStack, player) && usedBingoMap.remove(player.uuid)) {
+                // println("Removing; item used ($hand, with ${itemStack.translationKey})")
                 usedBingoMap.remove(player.uuid)
             }
 
@@ -71,6 +78,7 @@ object MapItemHandler {
             val itemStack = player.getStackInHand(hand)
 
             if (!MapItemService.isMapItem(itemStack) && !itemStack.isEmpty && usedBingoMap.remove(player.uuid)) {
+                // println("Removing; block used ($hand, with ${itemStack.translationKey})")
                 usedBingoMap.remove(player.uuid)
             }
 
@@ -83,6 +91,7 @@ object MapItemHandler {
             val itemStack = player.getStackInHand(hand)
 
             if (!MapItemService.isMapItem(itemStack) && !itemStack.isEmpty && usedBingoMap.remove(player.uuid)) {
+                // println("Removing; entity used")
                 usedBingoMap.remove(player.uuid)
             }
 

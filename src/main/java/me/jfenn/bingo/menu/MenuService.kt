@@ -3,6 +3,7 @@ package me.jfenn.bingo.menu
 import me.jfenn.bingo.BingoGame
 import me.jfenn.bingo.Sounds
 import me.jfenn.bingo.card.BingoTeam
+import me.jfenn.bingo.card.TeamService
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.TimeLimit
@@ -34,7 +35,7 @@ object MenuService {
 
     fun spawn(config: BingoConfig) {
         placeStructure(lobbyWorld, BlockPos(-24, -2, -24), Identifier.of("bingo", "lobby")!!)
-        spawnMenuEntities(Vec3d(-3.0, 2.5, -4.0), config)
+        spawnMenuEntities(Vec3d(-2.0, 2.5, -4.0), config)
         spawnPlayerCount(Vec3d(0.0, 3.5, -4.0))
 
         spawnTeamEntity(Vec3d(-16.5, 4.0, -3.5), BingoTeam.ORANGE)
@@ -70,6 +71,11 @@ object MenuService {
                 BingoGame.start()
             }
         }
+
+        TeamsEntity(
+            title = "Teams",
+            position = pos.add(-3.5, 0.0, 0.0),
+        )
 
         spawnMenu(
             title = "Game Mode",
@@ -250,7 +256,7 @@ object MenuService {
                 Sounds.playTeamChanged(player)
             }
 
-            team.addPlayer(player)
+            TeamService.joinTeam(player, team)
         }
     }
 
