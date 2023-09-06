@@ -82,6 +82,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         }
         .also { yield(it) }
 
+    // Shuffle player teams by a number of teams
     literal<ServerCommandSource?>("shuffleteams")
         .requires { it.hasPermissionLevel(2) && BingoGame.state == GameState.PREGAME }
         .then(
@@ -96,14 +97,16 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         )
         .also { yield(it) }
 
+    // End the game, if running
     literal<ServerCommandSource>("end")
         .requires { it.hasPermissionLevel(2) && BingoGame.state == GameState.PLAYING }
         .executes { ctx ->
-            BingoGame.end("")
+            BingoGame.end()
             1
         }
         .also { yield(it) }
 
+    // Stop (restart) the server
     literal<ServerCommandSource>("restart")
         .requires { it.hasPermissionLevel(2) }
         .executes { ctx ->
