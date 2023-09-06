@@ -90,7 +90,7 @@ class BingoCard(
                 max = team
                 maxLines = teamLines
                 maxItems = teamItems
-            } else if (teamLines == maxLines) {
+            } else if (teamLines == maxLines && teamItems == maxItems) {
                 max = null
             }
         }
