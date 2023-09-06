@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
+import net.minecraft.item.BoatItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.util.ActionResult
@@ -36,6 +37,7 @@ object MapItemHandler {
             itemStack.useAction == UseAction.EAT -> player.canConsume(false)
             itemStack.useAction == UseAction.DRINK -> true
             itemStack.useAction == UseAction.BLOCK -> true // blocking with a shield
+            itemStack.item is BoatItem -> true // trying to place a boat
             itemStack.item is BlockItem -> {
                 // if holding a block, check if it can be placed on a surface within reach
                 val hit = player.raycast(5.0, 0f, false)
@@ -65,7 +67,10 @@ object MapItemHandler {
                     else -> Hand.MAIN_HAND
                 })
 
-                if (isItemUsable(otherItemStack, player))
+                if (hand == Hand.OFF_HAND && !otherItemStack.isEmpty)
+                    return@register TypedActionResult.pass(itemStack)
+
+                if (hand == Hand.MAIN_HAND && isItemUsable(otherItemStack, player))
                     return@register TypedActionResult.pass(itemStack)
 
                 usedBingoMap.add(player.uuid)
