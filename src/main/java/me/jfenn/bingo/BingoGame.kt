@@ -149,19 +149,29 @@ object BingoGame {
         }
     }
 
-    fun end(reason: String) {
+    fun end(reason: String? = null) {
         val winMessage = card.getWinner(config)?.let { winner ->
                 Text.empty()
                     .append(winner.text())
                     .append(Text.literal(" completed their card!").formatted(Formatting.YELLOW))
             }
-            ?: card.getLeading()?.let { leader ->
+            ?: card.getLeadingByLines()?.let { leader ->
                 Text.empty()
-                    .append(Text.literal("$reason ").formatted(Formatting.YELLOW))
+                    .append(Text.literal(reason?.plus(" ") ?: "").formatted(Formatting.YELLOW))
+                    .append(leader.text())
+                    .append(Text.literal(" had more lines and won!").formatted(Formatting.YELLOW))
+            }
+            ?: card.getLeadingByItems()?.let { leader ->
+                Text.empty()
+                    .append(Text.literal(reason?.plus(" ") ?: "").formatted(Formatting.YELLOW))
                     .append(leader.text())
                     .append(Text.literal(" had more items and won!").formatted(Formatting.YELLOW))
             }
-            ?: Text.literal("$reason The game is a draw!").formatted(Formatting.YELLOW)
+            ?: run {
+                Text.empty()
+                    .append(Text.literal(reason?.plus(" ") ?: "").formatted(Formatting.YELLOW))
+                    .append(Text.literal("The game is a draw!").formatted(Formatting.YELLOW))
+            }
 
         sequence {
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))

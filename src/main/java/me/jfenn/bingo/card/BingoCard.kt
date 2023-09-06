@@ -74,23 +74,36 @@ class BingoCard(
     fun countItems(team: BingoTeam): Int = entries.count { it.hasAchieved(team) }
 
     fun getLeading(): BingoTeam? {
+        return getLeadingByLines() ?: getLeadingByItems()
+    }
+
+    fun getLeadingByLines(): BingoTeam? {
         var max: BingoTeam? = null
         var maxLines = 0
-        var maxItems = 0
         for (team in BingoTeam.values()) {
             val teamLines = countLines(team)
-            val teamItems = countItems(team)
 
-            if (
-                // if the team is winning by lines
-                teamLines > maxLines
-                // otherwise, if the team is tied on lines but has more items
-                || (teamLines == maxLines && teamItems > maxItems)
-            ) {
+            if (teamLines > maxLines) {
                 max = team
                 maxLines = teamLines
+            } else if (teamLines == maxLines) {
+                max = null
+            }
+        }
+
+        return max
+    }
+
+    fun getLeadingByItems(): BingoTeam? {
+        var max: BingoTeam? = null
+        var maxItems = 0
+        for (team in BingoTeam.values()) {
+            val teamItems = countItems(team)
+
+            if (teamItems > maxItems) {
+                max = team
                 maxItems = teamItems
-            } else if (teamLines == maxLines && teamItems == maxItems) {
+            } else if (teamItems == maxItems) {
                 max = null
             }
         }
