@@ -49,24 +49,28 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         .also { yield(it) }
 
     // send a message to all teams, outside of the team-local chat
-    literal<ServerCommandSource?>("all")
-        .then(
-            argument<ServerCommandSource?, String?>("message", greedyString())
-                .executes { ctx ->
-                    val player = ctx.source.player ?: return@executes 0
-                    val message = getString(ctx, "message")
+    listOf("all", "g", "global")
+        .map { literal<ServerCommandSource?>(it) }
+        .forEach { command ->
+            command.then(
+                argument<ServerCommandSource?, String?>("message", greedyString())
+                    .executes { ctx ->
+                        val player = ctx.source.player ?: return@executes 0
+                        val message = getString(ctx, "message")
 
-                    minecraftServer.playerManager.broadcast(
-                        Text.empty()
-                            .append(Text.literal("<"))
-                            .append(player.name)
-                            .append(Text.literal("> $message")),
-                        false,
-                    )
-                    1
-                }
-        )
-        .also { yield(it) }
+                        minecraftServer.playerManager.broadcast(
+                            Text.empty()
+                                .append(Text.literal("<"))
+                                .append(player.name)
+                                .append(Text.literal("> $message")),
+                            false,
+                        )
+                        1
+                    }
+            )
+                .also { yield(it) }
+        }
+
 
     // re-roll the bingo card in a round (operator only)
     literal<ServerCommandSource?>("reroll")
@@ -90,6 +94,14 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                     1
                 }
         )
+        .also { yield(it) }
+
+    literal<ServerCommandSource>("end")
+        .requires { it.hasPermissionLevel(2) && BingoGame.state == GameState.PLAYING }
+        .executes { ctx ->
+            BingoGame.end("")
+            1
+        }
         .also { yield(it) }
 
     literal<ServerCommandSource>("restart")

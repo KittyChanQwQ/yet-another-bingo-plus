@@ -16,7 +16,6 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Unit
-import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.GameRules
 import org.slf4j.LoggerFactory
@@ -79,6 +78,7 @@ object Bingo : ModInitializer {
             for (player in server.playerManager.playerList) {
                 BingoGame.giveMapCardItem(player)
                 BingoGame.giveElytra(player)
+                BingoGame.giveSpectatorMapItems(player)
             }
         }
 

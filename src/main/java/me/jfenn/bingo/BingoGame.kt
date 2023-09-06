@@ -13,6 +13,7 @@ import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.formatString
 import net.minecraft.entity.boss.BossBar
+import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
@@ -27,7 +28,6 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
-import net.minecraft.world.border.WorldBorder
 import java.time.Duration
 import java.time.Instant
 
@@ -202,13 +202,7 @@ object BingoGame {
             }
 
             // give all maps for active teams to the player
-            BingoTeam.values()
-                .filter { it.team().playerList.isNotEmpty() }
-                .map { MapItemService.createMapItem(it) }
-                .forEachIndexed { i, stack ->
-                    player.getStackReference(i).set(stack)
-                    player.currentScreenHandler.sendContentUpdates()
-                }
+            giveSpectatorMapItems(player)
         }
     }
 
@@ -241,6 +235,29 @@ object BingoGame {
                 ?.let { team -> MapItemService.createMapItem(team) }
                 ?.also { player.giveItemStack(it) }
         }
+    }
+
+    /**
+     * Ensure that the player has every team's bingo map card
+     * in their hotbar slots. Indiscriminately replaces any existing
+     * hotbar items.
+     */
+    fun giveSpectatorMapItems(player: ServerPlayerEntity) {
+        if (state == GameState.PREGAME) return
+
+        val isOnTeam = BingoTeam.values()
+            .any { player.isTeamPlayer(it.team()) }
+
+        if (isOnTeam && state != GameState.POSTGAME) return
+
+        BingoTeam.values()
+            .filter { it.team().playerList.isNotEmpty() }
+            .map { MapItemService.createMapItem(it) }
+            .forEachIndexed { i, stack ->
+                val mapId = FilledMapItem.getMapId(stack)
+                val hasMap = player.allHeldStacks().any { FilledMapItem.getMapId(it) == mapId }
+                if (!hasMap) player.getStackReference(i).set(stack)
+            }
     }
 
     /**
