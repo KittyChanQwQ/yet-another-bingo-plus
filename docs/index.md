@@ -5,16 +5,16 @@ layout: home
 hero:
   name: "Yet Another Minecraft BINGO"
   image:
-    src: https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot.png
-    alt: A Minecraft BINGO card
+    src: /logo.svg
+    alt: BINGO
   tagline: A server-side BINGO item hunt mod + lobby, compatible with vanilla clients.
   actions:
     - theme: brand
       text: Get it on Modrinth
       link: https://modrinth.com/mod/yet-another-minecraft-bingo
     - theme: alt
-      text: Source Code
-      link: https://gitlab.com/horrific-tweaks/bingo
+      text: Read the Docs
+      link: /config
 
 features:
   - icon: ⚙️
