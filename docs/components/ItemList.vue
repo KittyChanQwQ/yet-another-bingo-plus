@@ -98,8 +98,8 @@ function onItemRemoved(i: number) {
 
 <style scoped>
 .dropTarget {
-	height: 100%;
 	padding: 8px 16px;
+	min-height: 100vh;
 
 	transition: background-color .25s, box-shadow .25s;
 }
