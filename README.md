@@ -21,6 +21,10 @@ lines to win the game. (the "win condition" can be set to a number of lines, or 
 
 ![A screenshot of Minecraft plains/ocean with a BINGO card in the corner](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot.png)
 
+> **Note:** When in-game, you can right-click to "use" the card when it's in your main hand,
+> which will display the card items in an inventory menu. This can help if any of the
+> images drawn on the card are unclear.
+
 ### Gamemodes:
 
 - **Standard**: Collecting an item scores the tile. Normal BINGO behavior.
