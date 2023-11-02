@@ -13,6 +13,7 @@ import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.map.Color
 import me.jfenn.bingo.minecraftServer
+import me.jfenn.bingo.spawn.SpawnItem
 import me.jfenn.bingo.utils.sendWarningMessage
 import me.jfenn.bingo.utils.toNbt
 import net.minecraft.block.Blocks
@@ -23,12 +24,12 @@ import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
 import net.minecraft.particle.DustParticleEffect
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.structure.StructurePlacementData
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import org.joml.Vector3f
@@ -72,6 +73,11 @@ object MenuService {
                 BingoGame.start()
             }
         }
+
+        spawnKitMenu(
+            position = pos.add(-5.2, 0.0, 0.0),
+            config = config,
+        )
 
         TeamsEntity(
             title = "Teams",
@@ -180,6 +186,54 @@ object MenuService {
             onClick {
                 config.isPvpEnabled = !config.isPvpEnabled
                 this.isActive = config.isPvpEnabled
+            }
+        }
+    }
+
+    private fun spawnKitMenu(position: Vec3d, config: BingoConfig) {
+        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+            .apply {
+                readNbt(NbtCompound().apply {
+                    put("Pos", position.toNbt())
+                    putString("text", Text.Serializer.toJson(
+                        Text.literal("Spawn Kit")
+                    ))
+                    putString("billboard", "fixed")
+                    putString("alignment", "center")
+                    putInt("background", 0)
+                    putBoolean("shadow", true)
+                })
+            }
+            .also { lobbyWorld.spawnEntity(it) }
+
+        ButtonEntity(
+            position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
+            text = "Player Items",
+            isActive = config.isPlayerKit,
+        ).apply {
+            onClick {
+                config.isPlayerKit = !config.isPlayerKit
+                this.isActive = config.isPlayerKit
+            }
+        }
+
+        ButtonEntity(
+            position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
+            text = "Edit...",
+        ).apply {
+            onClick { player ->
+                player.openHandledScreen(
+                    SimpleNamedScreenHandlerFactory(
+                        { syncId, inv, _ ->
+                            InventoryScreenHandler(syncId, config.playerKitItems.flatMap { it.toItemStacks() }, inv).apply {
+                                onClose { stacks ->
+                                    config.playerKitItems = stacks.map { SpawnItem.fromItemStack(it) }
+                                }
+                            }
+                        },
+                        Text.literal("Player Items")
+                    )
+                )
             }
         }
     }

@@ -113,7 +113,6 @@ object Bingo : ModInitializer {
         }
 
         ServerPlayerEvents.AFTER_RESPAWN.register { _, player, _ ->
-            log.info("PLAYER IS RESPAWNING!")
             // give player a new map, if they don't have one?
             BingoGame.giveMapCardItem(player)
 
@@ -127,7 +126,7 @@ object Bingo : ModInitializer {
             // if playing, give the player new spawn equipment
             if (
                 BingoGame.state == GameState.PLAYING
-                && BingoGame.config.refillSpawnEquipmentOnRespawn
+                && BingoGame.config.refillPlayerKitOnRespawn
                 // if KEEP_INVENTORY is on, we don't need to replace these items
                 && !minecraftServer.gameRules.get(GameRules.KEEP_INVENTORY).get()
             ) {

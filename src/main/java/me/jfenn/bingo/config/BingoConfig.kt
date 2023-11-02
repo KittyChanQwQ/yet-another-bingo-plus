@@ -1,6 +1,7 @@
 package me.jfenn.bingo.config
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.spawn.SpawnItem
 
 @Serializable
 data class BingoConfig(
@@ -16,9 +17,9 @@ data class BingoConfig(
     var spreadPlayersDistance: Int = 100,
 
 
-    var refillSpawnEquipmentOnRespawn: Boolean = true,
-    var isSpawnEquipment: Boolean = true,
-    var spawnEquipmentItems: List<SpawnItem> = listOf(
+    var refillPlayerKitOnRespawn: Boolean = true,
+    var isPlayerKit: Boolean = false,
+    var playerKitItems: List<SpawnItem> = listOf(
         SpawnItem("minecraft:iron_chestplate"),
         SpawnItem("minecraft:iron_pickaxe"),
         SpawnItem("minecraft:iron_axe"),
@@ -40,12 +41,5 @@ data class BingoConfig(
     fun isValid(): Boolean {
         return itemDistribution.sum() == 25
     }
-
-    @Serializable
-    data class SpawnItem(
-        val id: String,
-        val nbt: String = "{}",
-        val count: Int = 1,
-    )
 
 }
