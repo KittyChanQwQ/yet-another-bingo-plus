@@ -9,6 +9,7 @@ import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.config
 import me.jfenn.bingo.map.MapItemService
 import me.jfenn.bingo.map.MapRenderService
+import me.jfenn.bingo.spawn.SpawnService
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.formatString
@@ -18,13 +19,8 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
-import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket
-import net.minecraft.network.packet.s2c.play.InventoryS2CPacket
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
-import net.minecraft.server.command.GiveCommand
-import net.minecraft.server.command.ItemCommand
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
@@ -66,8 +62,6 @@ object BingoGame {
 
     var card: BingoCard = CardService.generate(config.itemDistribution)
 
-    var teamSpawnpoints = mapOf<BingoTeam, BlockPos>()
-
     private var startedAt: Instant? = null
 
     fun rollCard() {
@@ -107,9 +101,7 @@ object BingoGame {
         minecraftServer.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(true, minecraftServer)
 
         // spread player teams to spawnpoint
-        val spread = SpreadPlayers(world = minecraftServer.overworld)
-        teamSpawnpoints = spread.spread(config.spreadPlayersDistance) // TODO: configurable spawn distance?
-        spread.teleportPlayers(teamSpawnpoints)
+        SpawnService.createSpawnpoints(config)
 
         // unload lobby dimension
         lobbyWorld.chunkManager.removePersistentTickets()
@@ -152,6 +144,9 @@ object BingoGame {
             player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game has started!")))
             Sounds.playGameStarted(player)
         }
+
+        // give spawn equipment to all players that are on a team
+        SpawnService.giveSpawnEquipment(config, minecraftServer.playerManager.playerList.filter { BingoTeam.fromPlayer(it) != null })
     }
 
     fun end(reason: String? = null) {
@@ -301,7 +296,8 @@ object BingoGame {
                             putInt("lvl", 1)
                         })
                     })
-                    putBoolean("bingo_ignore", true)
+                    putBoolean(NBT_BINGO_IGNORE, true)
+                    putBoolean(NBT_BINGO_VANISH, true)
                 }
             }
         }
@@ -316,7 +312,8 @@ object BingoGame {
         if (rocketStack == null) {
             player.giveItemStack(ItemStack(Items.FIREWORK_ROCKET, 2).also {
                 it.getOrCreateNbt().apply {
-                    putBoolean("bingo_ignore", true)
+                    putBoolean(NBT_BINGO_IGNORE, true)
+                    putBoolean(NBT_BINGO_VANISH, true)
                     put("Fireworks", NbtCompound())
                 }
             })

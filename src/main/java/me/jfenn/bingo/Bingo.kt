@@ -4,6 +4,7 @@ import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.map.MapItemHandler
 import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.menu.MenuService
+import me.jfenn.bingo.spawn.SpawnService
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
@@ -111,7 +112,8 @@ object Bingo : ModInitializer {
             }
         }
 
-        ServerPlayerEvents.AFTER_RESPAWN.register { player, _, _ ->
+        ServerPlayerEvents.AFTER_RESPAWN.register { _, player, _ ->
+            log.info("PLAYER IS RESPAWNING!")
             // give player a new map, if they don't have one?
             BingoGame.giveMapCardItem(player)
 
@@ -120,6 +122,16 @@ object Bingo : ModInitializer {
                 val spawnPos = MenuService.spawnPos
                 player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
                 player.teleport(lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
+            }
+
+            // if playing, give the player new spawn equipment
+            if (
+                BingoGame.state == GameState.PLAYING
+                && BingoGame.config.refillSpawnEquipmentOnRespawn
+                // if KEEP_INVENTORY is on, we don't need to replace these items
+                && !minecraftServer.gameRules.get(GameRules.KEEP_INVENTORY).get()
+            ) {
+                SpawnService.giveSpawnEquipment(BingoGame.config, listOf(player))
             }
         }
 

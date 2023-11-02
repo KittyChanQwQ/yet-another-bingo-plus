@@ -5,6 +5,7 @@ import me.jfenn.bingo.GameState;
 import me.jfenn.bingo.card.BingoTeam;
 import me.jfenn.bingo.event.PlayerEvents;
 import me.jfenn.bingo.menu.MenuService;
+import me.jfenn.bingo.spawn.SpawnService;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
@@ -80,7 +81,7 @@ public class PlayerManagerMixin {
             BingoTeam team = BingoTeam.Companion.fromPlayer(player);
             if (team == null) return;
 
-            BlockPos spawn = BingoGame.INSTANCE.getTeamSpawnpoints().get(team);
+            BlockPos spawn = SpawnService.INSTANCE.getTeamSpawnpoints().get(team);
             if (spawn == null) return;
 
             // change the player's spawnpoint back to the team spawn location

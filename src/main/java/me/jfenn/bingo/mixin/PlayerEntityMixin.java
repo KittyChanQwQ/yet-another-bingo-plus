@@ -1,5 +1,6 @@
 package me.jfenn.bingo.mixin;
 
+import me.jfenn.bingo.ConstantsKt;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -13,8 +14,8 @@ public class PlayerEntityMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;", cancellable = true)
     public void dropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> ci) {
-        // if the item has the bingo_ignore flag, it should not drop as an entity
-        if (stack.hasNbt() && stack.getNbt().getBoolean("bingo_ignore")) {
+        // if the item has the bingo_vanish flag, it should not drop as an entity
+        if (stack.hasNbt() && stack.getNbt().getBoolean(ConstantsKt.NBT_BINGO_VANISH)) {
             ci.setReturnValue(null);
             ci.cancel();
         }

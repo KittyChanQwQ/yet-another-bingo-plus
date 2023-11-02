@@ -1,5 +1,6 @@
 package me.jfenn.bingo.card
 
+import me.jfenn.bingo.NBT_BINGO_IGNORE
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
@@ -22,7 +23,7 @@ data class BingoCardEntry(
      * - item has a "bingo_ignore:true" NBT tag
      */
     fun canSatisfy(stack: ItemStack): Boolean {
-        return stack.item == item() && stack.nbt?.getBoolean("bingo_ignore") != true
+        return stack.item == item() && stack.nbt?.getBoolean(NBT_BINGO_IGNORE) != true
     }
 
     fun hasAchieved(team: BingoTeam): Boolean {
