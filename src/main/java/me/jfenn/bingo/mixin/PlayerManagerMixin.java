@@ -12,6 +12,7 @@ import net.minecraft.nbt.NbtFloat;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -52,7 +53,7 @@ public class PlayerManagerMixin {
     }
 
     @Inject(at = @At(value = "TAIL"), method = "onPlayerConnect")
-    private void onPlayerJoin(ClientConnection connection, ServerPlayerEntity player, CallbackInfo info) {
+    private void onPlayerJoin(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo info) {
         PlayerEvents.INSTANCE.getOnPlayerJoin().invoke(player);
     }
 
