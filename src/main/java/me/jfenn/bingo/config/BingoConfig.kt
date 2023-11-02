@@ -27,13 +27,12 @@ data class BingoConfig(
         SpawnItem("minecraft:torch", count = 64),
     ),
 
-    // TODO: create a spawn chest per team
-    // var isSpawnChest: Boolean = true,
-    // var spawnChestItems: List<SpawnItem> = listOf(
-    //    SpawnItem("minecraft:iron_ingot", count = 64),
-    //    SpawnItem("minecraft:oak_log", count = 64),
-    //    SpawnItem("minecraft:torch", count = 64),
-    // ),
+    var isTeamKit: Boolean = false,
+    var teamKitItems: List<SpawnItem> = listOf(
+        SpawnItem("minecraft:iron_ingot", count = 64),
+        SpawnItem("minecraft:oak_log", count = 64),
+        SpawnItem("minecraft:torch", count = 64),
+    ),
 
     var unsafeSkipWorldClose: Boolean = false,
 ) {

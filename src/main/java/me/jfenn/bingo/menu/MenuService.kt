@@ -236,6 +236,37 @@ object MenuService {
                 )
             }
         }
+
+        ButtonEntity(
+            position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 3), 0.0),
+            text = "Team Chest",
+            isActive = config.isTeamKit,
+        ).apply {
+            onClick {
+                config.isTeamKit = !config.isTeamKit
+                this.isActive = config.isTeamKit
+            }
+        }
+
+        ButtonEntity(
+            position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 4), 0.0),
+            text = "Edit...",
+        ).apply {
+            onClick { player ->
+                player.openHandledScreen(
+                    SimpleNamedScreenHandlerFactory(
+                        { syncId, inv, _ ->
+                            InventoryScreenHandler(syncId, config.teamKitItems.flatMap { it.toItemStacks() }, inv).apply {
+                                onClose { stacks ->
+                                    config.teamKitItems = stacks.map { SpawnItem.fromItemStack(it) }
+                                }
+                            }
+                        },
+                        Text.literal("Team Chest")
+                    )
+                )
+            }
+        }
     }
 
     private fun spawnPlayerCount(position: Vec3d) {
