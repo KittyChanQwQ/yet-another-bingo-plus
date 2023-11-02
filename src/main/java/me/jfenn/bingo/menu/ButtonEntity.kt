@@ -28,7 +28,7 @@ class ButtonEntity(
     private val interactionListenerEntity = InteractionEntity(EntityType.INTERACTION, world)
         .apply {
             readNbt(NbtCompound().apply {
-                put("Pos", position.add(0.0, 0.0, -0.5).toNbt())
+                put("Pos", position.add(0.0, 0.0, -width / 2.0).toNbt())
                 putFloat("width", width)
                 putFloat("height", height)
             })
