@@ -6,6 +6,8 @@ import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtList
+import net.minecraft.nbt.NbtString
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
@@ -18,6 +20,7 @@ class TimerEntity(
     timerMinutesDefault: Int?,
     private val requiredPermissionLevel: Int = 2,
     private val title: String = "Time Limit",
+    private val tags: Set<String> = emptySet(),
 ) {
 
     companion object {
@@ -38,6 +41,7 @@ class TimerEntity(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
         text = "+",
         requiredPermissionLevel = requiredPermissionLevel,
+        tags = tags,
     ).apply {
         onClick {
             timerMinutes = (timerMinutes ?: 0).let { mins ->
@@ -53,6 +57,7 @@ class TimerEntity(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
         text = "-",
         requiredPermissionLevel = requiredPermissionLevel,
+        tags = tags,
     ).apply {
         onClick {
             timerMinutes = (timerMinutes ?: (MAX_TIMER_MINUTES + 30)).let { mins ->
@@ -78,6 +83,9 @@ class TimerEntity(
                     putString("alignment", "center")
                     putInt("background", 0)
                     putBoolean("shadow", true)
+                    put("Tags", NbtList().apply {
+                        tags.forEach { add(NbtString.of(it)) }
+                    })
                 })
             }
             .also { world.spawnEntity(it) }
@@ -100,6 +108,9 @@ class TimerEntity(
             putString("alignment", "center")
             putInt("background", 0)
             putBoolean("shadow", true)
+            put("Tags", NbtList().apply {
+                tags.forEach { add(NbtString.of(it)) }
+            })
         })
     }
 

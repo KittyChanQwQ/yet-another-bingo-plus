@@ -9,6 +9,8 @@ import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtList
+import net.minecraft.nbt.NbtString
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -23,6 +25,7 @@ class ButtonEntity(
     requiredPermissionLevel: Int = 2,
     width: Float = MENU_HITBOX_WIDTH,
     height: Float = MENU_HITBOX_HEIGHT,
+    val tags: Set<String> = emptySet(),
 ) {
 
     private val interactionListenerEntity = InteractionEntity(EntityType.INTERACTION, world)
@@ -31,6 +34,9 @@ class ButtonEntity(
                 put("Pos", position.add(0.0, 0.0, -width / 2.0).toNbt())
                 putFloat("width", width)
                 putFloat("height", height)
+                put("Tags", NbtList().apply {
+                    tags.forEach { add(NbtString.of(it)) }
+                })
             })
         }
 
@@ -75,6 +81,9 @@ class ButtonEntity(
             putString("billboard", "fixed")
             putString("alignment", "center")
             putInt("background", (if (isActive) 0xA0_FFFFFFu else 0x00_000000u).toInt())
+            put("Tags", NbtList().apply {
+                tags.forEach { add(NbtString.of(it)) }
+            })
         })
     }
 

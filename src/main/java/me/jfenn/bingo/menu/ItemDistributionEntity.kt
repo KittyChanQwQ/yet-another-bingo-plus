@@ -7,6 +7,8 @@ import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtList
+import net.minecraft.nbt.NbtString
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.Vec3d
@@ -17,6 +19,7 @@ class ItemDistributionEntity(
     private val position: Vec3d,
     private var itemDistribution: List<Int>,
     private val requiredPermissionLevel: Int = 2,
+    private val tags: Set<String> = emptySet(),
 ) {
 
     companion object {
@@ -31,6 +34,7 @@ class ItemDistributionEntity(
             text = "+",
             requiredPermissionLevel = requiredPermissionLevel,
             width = TIER_WIDTH.toFloat(),
+            tags = tags,
         ).apply {
             onClick {
                 itemDistribution = itemDistribution.toMutableList().apply {
@@ -49,6 +53,7 @@ class ItemDistributionEntity(
             text = "-",
             requiredPermissionLevel = requiredPermissionLevel,
             width = TIER_WIDTH.toFloat(),
+            tags = tags,
         ).apply {
             onClick {
                 itemDistribution = itemDistribution.toMutableList().apply {
@@ -82,6 +87,9 @@ class ItemDistributionEntity(
                     putString("alignment", "center")
                     putInt("background", 0)
                     putBoolean("shadow", true)
+                    put("Tags", NbtList().apply {
+                        tags.forEach { add(NbtString.of(it)) }
+                    })
                 })
             }
 
@@ -99,6 +107,9 @@ class ItemDistributionEntity(
                         putString("alignment", "center")
                         putInt("background", 0)
                         putBoolean("shadow", true)
+                        put("Tags", NbtList().apply {
+                            tags.forEach { add(NbtString.of(it)) }
+                        })
                     })
                 }
                 .also { world.spawnEntity(it) }
@@ -121,6 +132,9 @@ class ItemDistributionEntity(
                 putString("alignment", "center")
                 putInt("background", 0)
                 putBoolean("shadow", true)
+                put("Tags", NbtList().apply {
+                    tags.forEach { add(NbtString.of(it)) }
+                })
             })
         }
     }

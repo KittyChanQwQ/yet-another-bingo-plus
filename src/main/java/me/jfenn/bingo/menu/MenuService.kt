@@ -14,6 +14,7 @@ import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.map.Color
 import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.spawn.SpawnItem
+import me.jfenn.bingo.utils.EventListener
 import me.jfenn.bingo.utils.sendWarningMessage
 import me.jfenn.bingo.utils.toNbt
 import net.minecraft.block.Blocks
@@ -23,6 +24,8 @@ import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
+import net.minecraft.nbt.NbtList
+import net.minecraft.nbt.NbtString
 import net.minecraft.particle.DustParticleEffect
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
@@ -44,15 +47,16 @@ object MenuService {
 
     var spawnPos: BlockPos = BlockPos.ORIGIN
 
+    val onUpdate = EventListener<Unit>()
+
+    const val MENU_PAGE_TAG = "bingoLobbyPage"
+
     fun spawn(config: BingoConfig) {
         spawnLobbyStructure()
-        spawnMenuEntities(Vec3d(-2.0, spawnPos.y + 2.5, -4.0), config)
-        spawnPlayerCount(Vec3d(0.0, spawnPos.y + 3.5, -4.0))
-    }
+        spawnPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.0))
 
-    private fun spawnMenuEntities(pos: Vec3d, config: BingoConfig) {
         val startButton = ButtonEntity(
-            position = pos.add(8.0, -MENU_ITEM_OFFSET, 0.0),
+            position = Vec3d(5.0, spawnPos.y + 2.0 - MENU_ITEM_OFFSET, -4.0),
             text = "START",
             isActive = config.isValid(),
         ).apply {
@@ -74,63 +78,116 @@ object MenuService {
             }
         }
 
-        spawnDimensionMenu(
-            position = pos.add(-7.0, 0.0, 0.0),
-            config = config,
-        )
-
-        spawnKitMenu(
-            position = pos.add(-5.2, 0.0, 0.0),
-            config = config,
-        )
-
-        TeamsEntity(
-            title = "Teams",
-            position = pos.add(-3.5, 0.0, 0.0),
-        )
-
-        spawnMenu(
-            title = "Game Mode",
-            value = config.gameMode,
-            position = pos.add(-2.0, 0.0, 0.0),
-        ).onChange {
-            config.gameMode = BingoMode.values()[it]
-        }
-
-        spawnMenu(
-            title = "Win Condition",
-            value = config.winCondition,
-            position = pos.add(2.2, 0.0, 0.0),
-        ).onChange {
-            config.winCondition = WinCondition.values()[it]
-        }
-
-        TimerEntity(
-            title = "Time Limit",
-            timerMinutesDefault = config.timerMinutes,
-            position = pos.add(4.0, 0.0, 0.0),
-        ).onChange {
-            config.timerMinutes = it
-        }
-
-        ItemDistributionEntity(
-            position = pos.add(6.0, 0.0, 0.0),
-            itemDistribution = BingoGame.config.itemDistribution,
-        ).onChange {
-            config.itemDistribution = it
+        onUpdate {
             startButton.isActive = config.isValid()
         }
 
-        spawnFeaturesMenu(pos.add(0.0, 0.0, 0.0), config)
+        val menuPagePos = Vec3d(0.0, spawnPos.y + 2.0, -4.0)
+        spawnMenuPage(menuPagePos, 1, config)
+
+        var page2: ButtonEntity? = null
+
+        val page1 = ButtonEntity(
+            position = menuPagePos.add(-1.0, 0.5, 0.0),
+            text = "Page 1",
+            isActive = true,
+        ).apply {
+            onClick {
+                spawnMenuPage(menuPagePos, 1, config)
+                page2?.isActive = false
+                this.isActive = true
+            }
+        }
+
+        page2 = ButtonEntity(
+            position = menuPagePos.add(1.0, 0.5, 0.0),
+            text = "Page 2",
+        ).apply {
+            onClick {
+                spawnMenuPage(menuPagePos, 2, config)
+                page1.isActive = false
+                this.isActive = true
+            }
+        }
     }
 
-    private inline fun <reified E : Enum<E>> spawnMenu(position: Vec3d, title: String, value: E): MenuEntity {
+    private fun spawnMenuPage(pos: Vec3d, page: Int, config: BingoConfig) {
+        lobbyWorld.iterateEntities()
+            .filter { it.commandTags.contains(MENU_PAGE_TAG) }
+            .forEach { it.kill() }
+
+        if (page == 1) {
+            spawnMenu(
+                title = "Game Mode",
+                value = config.gameMode,
+                position = pos.add(-3.0, 0.0, 0.0),
+                tags = setOf(MENU_PAGE_TAG),
+            ).onChange {
+                config.gameMode = BingoMode.values()[it]
+            }
+
+            spawnFeaturesMenu(
+                position = pos.add(-1.0, 0.0, 0.0),
+                tags = setOf(MENU_PAGE_TAG),
+                config = config,
+            )
+
+            spawnMenu(
+                title = "Win Condition",
+                value = config.winCondition,
+                position = pos.add(1.2, 0.0, 0.0),
+                tags = setOf(MENU_PAGE_TAG),
+            ).onChange {
+                config.winCondition = WinCondition.values()[it]
+            }
+
+            TimerEntity(
+                title = "Time Limit",
+                timerMinutesDefault = config.timerMinutes,
+                position = pos.add(3.0, 0.0, 0.0),
+                tags = setOf(MENU_PAGE_TAG),
+            ).onChange {
+                config.timerMinutes = it
+            }
+        }
+
+        if (page == 2) {
+            spawnDimensionMenu(
+                position = pos.add(-3.0, 0.0, 0.0),
+                config = config,
+            )
+
+            spawnKitMenu(
+                position = pos.add(-1.0, 0.0, 0.0),
+                config = config,
+                tags = setOf(MENU_PAGE_TAG),
+            )
+
+            TeamsEntity(
+                title = "Teams",
+                position = pos.add(0.7, 0.0, 0.0),
+                tags = setOf(MENU_PAGE_TAG),
+            )
+
+            ItemDistributionEntity(
+                position = pos.add(2.7, 0.0, 0.0),
+                itemDistribution = BingoGame.config.itemDistribution,
+                tags = setOf(MENU_PAGE_TAG),
+            ).onChange {
+                config.itemDistribution = it
+                onUpdate(Unit)
+            }
+        }
+    }
+
+    private inline fun <reified E : Enum<E>> spawnMenu(position: Vec3d, title: String, value: E, tags: Set<String> = emptySet()): MenuEntity {
         val options = value.javaClass.enumConstants
         return MenuEntity(
             title = title,
             options =  options.map { it.name.replace('_', ' ') },
             selectedIndex = options.indexOfFirst { value == it },
             position = position,
+            tags = tags,
         )
     }
 
@@ -144,12 +201,13 @@ object MenuService {
             options = dimensions.map { it.path },
             selectedIndex = dimensions.indexOfFirst { config.spawnDimension == it.toString() },
             position = position,
+            tags = setOf(MENU_PAGE_TAG),
         ).onChange {
             config.spawnDimension = dimensions[it].toString()
         }
     }
 
-    private fun spawnFeaturesMenu(position: Vec3d, config: BingoConfig) {
+    private fun spawnFeaturesMenu(position: Vec3d, tags: Set<String>, config: BingoConfig) {
         DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
                 readNbt(NbtCompound().apply {
@@ -161,6 +219,9 @@ object MenuService {
                     putString("alignment", "center")
                     putInt("background", 0)
                     putBoolean("shadow", true)
+                    put("Tags", NbtList().apply {
+                        tags.forEach { add(NbtString.of(it)) }
+                    })
                 })
             }
             .also { lobbyWorld.spawnEntity(it) }
@@ -169,6 +230,7 @@ object MenuService {
             position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
             text = "Unlock Recipes",
             isActive = config.isUnlockRecipes,
+            tags = tags,
         ).apply {
             onClick {
                 config.isUnlockRecipes = !config.isUnlockRecipes
@@ -180,6 +242,7 @@ object MenuService {
             position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
             text = "Keep Inventory",
             isActive = config.isKeepInventory,
+            tags = tags,
         ).apply {
             onClick {
                 config.isKeepInventory = !config.isKeepInventory
@@ -191,6 +254,7 @@ object MenuService {
             position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0),
             text = "Elytra",
             isActive = config.isElytra,
+            tags = tags,
         ).apply {
             onClick {
                 config.isElytra = !config.isElytra
@@ -202,6 +266,7 @@ object MenuService {
             position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
             text = "Allow PvP",
             isActive = BingoGame.config.isPvpEnabled,
+            tags = tags,
         ).apply {
             onClick {
                 config.isPvpEnabled = !config.isPvpEnabled
@@ -210,7 +275,7 @@ object MenuService {
         }
     }
 
-    private fun spawnKitMenu(position: Vec3d, config: BingoConfig) {
+    private fun spawnKitMenu(position: Vec3d, tags: Set<String>, config: BingoConfig) {
         DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
                 readNbt(NbtCompound().apply {
@@ -222,6 +287,9 @@ object MenuService {
                     putString("alignment", "center")
                     putInt("background", 0)
                     putBoolean("shadow", true)
+                    put("Tags", NbtList().apply {
+                        tags.forEach { add(NbtString.of(it)) }
+                    })
                 })
             }
             .also { lobbyWorld.spawnEntity(it) }
@@ -230,6 +298,7 @@ object MenuService {
             position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
             text = "Player Items",
             isActive = config.isPlayerKit,
+            tags = tags,
         ).apply {
             onClick {
                 config.isPlayerKit = !config.isPlayerKit
@@ -240,6 +309,7 @@ object MenuService {
         ButtonEntity(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
             text = "Edit...",
+            tags = tags,
         ).apply {
             onClick { player ->
                 player.openHandledScreen(
@@ -261,6 +331,7 @@ object MenuService {
             position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 3), 0.0),
             text = "Team Chest",
             isActive = config.isTeamKit,
+            tags = tags,
         ).apply {
             onClick {
                 config.isTeamKit = !config.isTeamKit
@@ -271,6 +342,7 @@ object MenuService {
         ButtonEntity(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 4), 0.0),
             text = "Edit...",
+            tags = tags,
         ).apply {
             onClick { player ->
                 player.openHandledScreen(

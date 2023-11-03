@@ -6,6 +6,8 @@ import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtList
+import net.minecraft.nbt.NbtString
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
@@ -17,6 +19,7 @@ class MenuEntity(
     private val position: Vec3d,
     selectedIndex: Int = 0,
     requiredPermissionLevel: Int = 2,
+    tags: Set<String> = emptySet(),
 ) {
 
     private val buttonEntities = List(options.size) { i ->
@@ -25,6 +28,7 @@ class MenuEntity(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + i * MENU_ITEM_HEIGHT), 0.0),
             text = options[i],
             requiredPermissionLevel = requiredPermissionLevel,
+            tags = tags,
         ).apply {
             onClick {
                 this@MenuEntity.selectedIndex = i
@@ -55,6 +59,9 @@ class MenuEntity(
                     putString("alignment", "center")
                     putInt("background", 0)
                     putBoolean("shadow", true)
+                    put("Tags", NbtList().apply {
+                        tags.forEach { add(NbtString.of(it)) }
+                    })
                 })
             }
             .also { world.spawnEntity(it) }

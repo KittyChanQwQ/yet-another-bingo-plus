@@ -8,6 +8,8 @@ import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtList
+import net.minecraft.nbt.NbtString
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
@@ -17,6 +19,7 @@ class TeamsEntity(
     private val position: Vec3d,
     private val requiredPermissionLevel: Int = 2,
     private val title: String = "Teams",
+    private val tags: Set<String> = emptySet(),
 ) {
 
     private var teamCount = 3
@@ -30,6 +33,7 @@ class TeamsEntity(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
         text = "+",
         requiredPermissionLevel = requiredPermissionLevel,
+        tags = tags,
     ).apply {
         onClick {
             teamCount = (teamCount + 1).coerceIn(1, BingoTeam.values().size)
@@ -41,6 +45,7 @@ class TeamsEntity(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
         text = "-",
         requiredPermissionLevel = requiredPermissionLevel,
+        tags = tags,
     ).apply {
         onClick {
             teamCount = (teamCount - 1).coerceIn(1, BingoTeam.values().size)
@@ -55,6 +60,7 @@ class TeamsEntity(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 3 * MENU_ITEM_HEIGHT), 0.0),
         text = "Shuffle!",
         requiredPermissionLevel = requiredPermissionLevel,
+        tags = tags,
     ).apply {
         onClick { player ->
             TeamService.shuffleTeams(teamCount)
@@ -74,6 +80,9 @@ class TeamsEntity(
                     putString("alignment", "center")
                     putInt("background", 0)
                     putBoolean("shadow", true)
+                    put("Tags", NbtList().apply {
+                        tags.forEach { add(NbtString.of(it)) }
+                    })
                 })
             }
             .also { world.spawnEntity(it) }
@@ -91,6 +100,9 @@ class TeamsEntity(
             putString("alignment", "center")
             putInt("background", 0)
             putBoolean("shadow", true)
+            put("Tags", NbtList().apply {
+                tags.forEach { add(NbtString.of(it)) }
+            })
         })
     }
 
