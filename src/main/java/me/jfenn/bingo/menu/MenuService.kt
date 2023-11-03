@@ -74,6 +74,11 @@ object MenuService {
             }
         }
 
+        spawnDimensionMenu(
+            position = pos.add(-7.0, 0.0, 0.0),
+            config = config,
+        )
+
         spawnKitMenu(
             position = pos.add(-5.2, 0.0, 0.0),
             config = config,
@@ -127,6 +132,21 @@ object MenuService {
             selectedIndex = options.indexOfFirst { value == it },
             position = position,
         )
+    }
+
+    private fun spawnDimensionMenu(position: Vec3d, config: BingoConfig) {
+        val dimensions = minecraftServer.worlds
+            .filter { it != lobbyWorld }
+            .map { it.registryKey.value }
+
+        MenuEntity(
+            title = "Spawn Dimension",
+            options = dimensions.map { it.path },
+            selectedIndex = dimensions.indexOfFirst { config.spawnDimension == it.toString() },
+            position = position,
+        ).onChange {
+            config.spawnDimension = dimensions[it].toString()
+        }
     }
 
     private fun spawnFeaturesMenu(position: Vec3d, config: BingoConfig) {

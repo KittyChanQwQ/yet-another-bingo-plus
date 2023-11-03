@@ -16,6 +16,7 @@ data class BingoConfig(
     var isKeepInventory: Boolean = false,
     var spreadPlayersDistance: Int = 100,
 
+    var spawnDimension: String = "minecraft:overworld",
 
     var refillPlayerKitOnRespawn: Boolean = true,
     var isPlayerKit: Boolean = false,

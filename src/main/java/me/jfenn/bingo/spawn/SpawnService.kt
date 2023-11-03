@@ -7,7 +7,9 @@ import net.minecraft.block.Blocks
 import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.MobEntity
+import net.minecraft.registry.Registries
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.Heightmap
@@ -23,13 +25,20 @@ object SpawnService {
      * Create team spawnpoints and teleport teams to their spawns
      */
     fun createSpawnpoints(config: BingoConfig) {
+        val world = minecraftServer.worlds.find {
+            it.registryKey.value.toString() == config.spawnDimension
+        } ?: run {
+            log.error("Could not find spawnDimension '${config.spawnDimension}'; defaulting to minecraft:overworld")
+            minecraftServer.overworld
+        }
+
         // spread player teams to spawnpoint
-        val spread = SpreadPlayers(world = minecraftServer.overworld)
+        val spread = SpreadPlayers(world)
         teamSpawnpoints = spread.spread(config.spreadPlayersDistance)
         spread.teleportPlayers(teamSpawnpoints)
 
         teamSpawnpoints.forEach { (_, blockPos) ->
-            createTeamChest(config, blockPos)
+            createTeamChest(config, world, blockPos)
         }
     }
 
@@ -37,11 +46,8 @@ object SpawnService {
      * Place a team kit chest in the world, nearby the provided [spawnpoint]
      * Similar behavior to the BonusChestFeature
      */
-    private fun createTeamChest(config: BingoConfig, spawnpoint: BlockPos) {
+    private fun createTeamChest(config: BingoConfig, world: ServerWorld, spawnpoint: BlockPos) {
         if (!config.isTeamKit) return
-
-        // TODO: world might be configurable in the future
-        val world = minecraftServer.overworld
 
         val chunk = world.getChunk(spawnpoint)
         val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES)

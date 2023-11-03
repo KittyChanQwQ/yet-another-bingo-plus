@@ -62,6 +62,11 @@ class SpreadPlayers(
 
         val spawns = mutableMapOf<BingoTeam, BlockPos>()
 
+        val seaLevel = world.chunkManager.chunkGenerator.seaLevel
+
+        // TODO: if world.dimension.hasCeiling, this needs to find a spawnpoint without using heightmaps
+        // otherwise, choosing "the_nether" will spawn players on the nether roof!
+
         for (i in teams.indices) {
             val team = teams[i]
             var (x, z) = groups[i]
@@ -115,8 +120,8 @@ class SpreadPlayers(
                     continue@findChunk
                 }
 
-                if (spawnBlock.isLiquid || spawnBlockPos.y <= 62 || spawnBlock.block == Blocks.POWDER_SNOW) {
-                    log.info("Skipping chunk ($x, $z) to avoid spawning underwater")
+                if (spawnBlock.isLiquid || spawnBlockPos.y <= seaLevel || spawnBlock.block == Blocks.POWDER_SNOW) {
+                    log.info("Skipping chunk ($x, $z) to avoid spawning underwater (y=$seaLevel)")
                     x += 1 * xSign
                     continue@findChunk
                 }
