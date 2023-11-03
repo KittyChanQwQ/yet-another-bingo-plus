@@ -1,21 +1,15 @@
 package me.jfenn.bingo.menu
 
-import me.jfenn.bingo.BingoGame
 import me.jfenn.bingo.Sounds
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.TeamService
 import me.jfenn.bingo.config.BingoConfig
-import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.Config
-import me.jfenn.bingo.config.WinCondition
 import me.jfenn.bingo.event.InteractionEntityEvents
 import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.map.Color
 import me.jfenn.bingo.minecraftServer
-import me.jfenn.bingo.spawn.SpawnItem
-import me.jfenn.bingo.utils.EventListener
-import me.jfenn.bingo.utils.sendWarningMessage
 import me.jfenn.bingo.utils.toNbt
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.StructureBlockBlockEntity
@@ -24,10 +18,7 @@ import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
-import net.minecraft.nbt.NbtList
-import net.minecraft.nbt.NbtString
 import net.minecraft.particle.DustParticleEffect
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.structure.StructurePlacementData
@@ -47,342 +38,39 @@ object MenuService {
 
     var spawnPos: BlockPos = BlockPos.ORIGIN
 
-    val onUpdate = EventListener<Unit>()
-
-    const val MENU_PAGE_TAG = "bingoLobbyPage"
+    init {
+        spawnLobbyStructure()
+    }
 
     fun spawn(config: BingoConfig) {
         spawnLobbyStructure()
-        spawnPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.0))
 
-        val startButton = ButtonEntity(
-            position = Vec3d(5.0, spawnPos.y + 2.0 - MENU_ITEM_OFFSET, -4.0),
-            text = "START",
-            isActive = config.isValid(),
-        ).apply {
-            onClick {
-                if (!config.isValid()) {
-                    it.sendWarningMessage("Item distribution must add up to 25!")
-                    return@onClick
-                }
-
-                val isEveryPlayerOnATeam = minecraftServer.playerManager.playerList
-                    .all { player -> BingoTeam.values().any { team -> player.isTeamPlayer(team.team()) } }
-
-                if (!isEveryPlayerOnATeam && !it.isSneaking) {
-                    it.sendWarningMessage("Some players have not picked a team! Run /shuffleteams or sneak+click to ignore.")
-                    return@onClick
-                }
-
-                BingoGame.start()
-            }
+        val tracker = MenuTracker(lobbyWorld)
+        val lobbyMenu = component {
+            registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.0))
+            registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.0), config)
         }
-
-        onUpdate {
-            startButton.isActive = config.isValid()
-        }
-
-        val menuPagePos = Vec3d(0.0, spawnPos.y + 2.0, -4.0)
-        spawnMenuPage(menuPagePos, 1, config)
-
-        var page2: ButtonEntity? = null
-
-        val page1 = ButtonEntity(
-            position = menuPagePos.add(-1.0, 0.5, 0.0),
-            text = "Page 1",
-            isActive = true,
-        ).apply {
-            onClick {
-                spawnMenuPage(menuPagePos, 1, config)
-                page2?.isActive = false
-                this.isActive = true
-            }
-        }
-
-        page2 = ButtonEntity(
-            position = menuPagePos.add(1.0, 0.5, 0.0),
-            text = "Page 2",
-        ).apply {
-            onClick {
-                spawnMenuPage(menuPagePos, 2, config)
-                page1.isActive = false
-                this.isActive = true
-            }
-        }
+        lobbyMenu.spawn(tracker)
     }
 
-    private fun spawnMenuPage(pos: Vec3d, page: Int, config: BingoConfig) {
-        lobbyWorld.iterateEntities()
-            .filter { it.commandTags.contains(MENU_PAGE_TAG) }
-            .forEach { it.kill() }
+    private fun MenuComponent.registerPlayerCount(position: Vec3d) {
+        var playerCount by property(MutableProperty<Int>(minecraftServer.currentPlayerCount))
 
-        if (page == 1) {
-            spawnMenu(
-                title = "Game Mode",
-                value = config.gameMode,
-                position = pos.add(-3.0, 0.0, 0.0),
-                tags = setOf(MENU_PAGE_TAG),
-            ).onChange {
-                config.gameMode = BingoMode.values()[it]
-            }
-
-            spawnFeaturesMenu(
-                position = pos.add(-1.0, 0.0, 0.0),
-                tags = setOf(MENU_PAGE_TAG),
-                config = config,
-            )
-
-            spawnMenu(
-                title = "Win Condition",
-                value = config.winCondition,
-                position = pos.add(1.2, 0.0, 0.0),
-                tags = setOf(MENU_PAGE_TAG),
-            ).onChange {
-                config.winCondition = WinCondition.values()[it]
-            }
-
-            TimerEntity(
-                title = "Time Limit",
-                timerMinutesDefault = config.timerMinutes,
-                position = pos.add(3.0, 0.0, 0.0),
-                tags = setOf(MENU_PAGE_TAG),
-            ).onChange {
-                config.timerMinutes = it
-            }
+        registerEntity(EntityType.TEXT_DISPLAY) {
+            put("Pos", position.toNbt())
+            putString("text", Text.Serializer.toJson(
+                Text.empty()
+                    .append("Player count: ")
+                    .append(Text.literal("$playerCount / ${minecraftServer.maxPlayerCount}").formatted(Formatting.GREEN))
+            ))
+            putString("billboard", "fixed")
+            putString("alignment", "center")
+            putInt("background", 0)
+            putBoolean("shadow", true)
         }
 
-        if (page == 2) {
-            spawnDimensionMenu(
-                position = pos.add(-3.0, 0.0, 0.0),
-                config = config,
-            )
-
-            spawnKitMenu(
-                position = pos.add(-1.0, 0.0, 0.0),
-                config = config,
-                tags = setOf(MENU_PAGE_TAG),
-            )
-
-            TeamsEntity(
-                title = "Teams",
-                position = pos.add(0.7, 0.0, 0.0),
-                tags = setOf(MENU_PAGE_TAG),
-            )
-
-            ItemDistributionEntity(
-                position = pos.add(2.7, 0.0, 0.0),
-                itemDistribution = BingoGame.config.itemDistribution,
-                tags = setOf(MENU_PAGE_TAG),
-            ).onChange {
-                config.itemDistribution = it
-                onUpdate(Unit)
-            }
-        }
-    }
-
-    private inline fun <reified E : Enum<E>> spawnMenu(position: Vec3d, title: String, value: E, tags: Set<String> = emptySet()): MenuEntity {
-        val options = value.javaClass.enumConstants
-        return MenuEntity(
-            title = title,
-            options =  options.map { it.name.replace('_', ' ') },
-            selectedIndex = options.indexOfFirst { value == it },
-            position = position,
-            tags = tags,
-        )
-    }
-
-    private fun spawnDimensionMenu(position: Vec3d, config: BingoConfig) {
-        val dimensions = minecraftServer.worlds
-            .filter { it != lobbyWorld }
-            .map { it.registryKey.value }
-
-        MenuEntity(
-            title = "Spawn Dimension",
-            options = dimensions.map { it.path },
-            selectedIndex = dimensions.indexOfFirst { config.spawnDimension == it.toString() },
-            position = position,
-            tags = setOf(MENU_PAGE_TAG),
-        ).onChange {
-            config.spawnDimension = dimensions[it].toString()
-        }
-    }
-
-    private fun spawnFeaturesMenu(position: Vec3d, tags: Set<String>, config: BingoConfig) {
-        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
-            .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.toNbt())
-                    putString("text", Text.Serializer.toJson(
-                        Text.literal("Features")
-                    ))
-                    putString("billboard", "fixed")
-                    putString("alignment", "center")
-                    putInt("background", 0)
-                    putBoolean("shadow", true)
-                    put("Tags", NbtList().apply {
-                        tags.forEach { add(NbtString.of(it)) }
-                    })
-                })
-            }
-            .also { lobbyWorld.spawnEntity(it) }
-
-        ButtonEntity(
-            position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
-            text = "Unlock Recipes",
-            isActive = config.isUnlockRecipes,
-            tags = tags,
-        ).apply {
-            onClick {
-                config.isUnlockRecipes = !config.isUnlockRecipes
-                this.isActive = config.isUnlockRecipes
-            }
-        }
-
-        ButtonEntity(
-            position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
-            text = "Keep Inventory",
-            isActive = config.isKeepInventory,
-            tags = tags,
-        ).apply {
-            onClick {
-                config.isKeepInventory = !config.isKeepInventory
-                this.isActive = config.isKeepInventory
-            }
-        }
-
-        ButtonEntity(
-            position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0),
-            text = "Elytra",
-            isActive = config.isElytra,
-            tags = tags,
-        ).apply {
-            onClick {
-                config.isElytra = !config.isElytra
-                this.isActive = config.isElytra
-            }
-        }
-
-        ButtonEntity(
-            position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
-            text = "Allow PvP",
-            isActive = BingoGame.config.isPvpEnabled,
-            tags = tags,
-        ).apply {
-            onClick {
-                config.isPvpEnabled = !config.isPvpEnabled
-                this.isActive = config.isPvpEnabled
-            }
-        }
-    }
-
-    private fun spawnKitMenu(position: Vec3d, tags: Set<String>, config: BingoConfig) {
-        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
-            .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.toNbt())
-                    putString("text", Text.Serializer.toJson(
-                        Text.literal("Spawn Kit")
-                    ))
-                    putString("billboard", "fixed")
-                    putString("alignment", "center")
-                    putInt("background", 0)
-                    putBoolean("shadow", true)
-                    put("Tags", NbtList().apply {
-                        tags.forEach { add(NbtString.of(it)) }
-                    })
-                })
-            }
-            .also { lobbyWorld.spawnEntity(it) }
-
-        ButtonEntity(
-            position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
-            text = "Player Items",
-            isActive = config.isPlayerKit,
-            tags = tags,
-        ).apply {
-            onClick {
-                config.isPlayerKit = !config.isPlayerKit
-                this.isActive = config.isPlayerKit
-            }
-        }
-
-        ButtonEntity(
-            position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
-            text = "Edit...",
-            tags = tags,
-        ).apply {
-            onClick { player ->
-                player.openHandledScreen(
-                    SimpleNamedScreenHandlerFactory(
-                        { syncId, inv, _ ->
-                            InventoryScreenHandler(syncId, config.playerKitItems.flatMap { it.toItemStacks() }, inv).apply {
-                                onClose { stacks ->
-                                    config.playerKitItems = stacks.map { SpawnItem.fromItemStack(it) }
-                                }
-                            }
-                        },
-                        Text.literal("Player Items")
-                    )
-                )
-            }
-        }
-
-        ButtonEntity(
-            position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 3), 0.0),
-            text = "Team Chest",
-            isActive = config.isTeamKit,
-            tags = tags,
-        ).apply {
-            onClick {
-                config.isTeamKit = !config.isTeamKit
-                this.isActive = config.isTeamKit
-            }
-        }
-
-        ButtonEntity(
-            position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 4), 0.0),
-            text = "Edit...",
-            tags = tags,
-        ).apply {
-            onClick { player ->
-                player.openHandledScreen(
-                    SimpleNamedScreenHandlerFactory(
-                        { syncId, inv, _ ->
-                            InventoryScreenHandler(syncId, config.teamKitItems.flatMap { it.toItemStacks() }, inv).apply {
-                                onClose { stacks ->
-                                    config.teamKitItems = stacks.map { SpawnItem.fromItemStack(it) }
-                                }
-                            }
-                        },
-                        Text.literal("Team Chest")
-                    )
-                )
-            }
-        }
-    }
-
-    private fun spawnPlayerCount(position: Vec3d) {
-        val textEntity = DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
-            .also { lobbyWorld.spawnEntity(it) }
-
-        val update = {
-            textEntity.readNbt(NbtCompound().apply {
-                put("Pos", position.toNbt())
-                putString("text", Text.Serializer.toJson(
-                    Text.empty()
-                        .append("Player count: ")
-                        .append(Text.literal("${minecraftServer.currentPlayerCount} / ${minecraftServer.maxPlayerCount}").formatted(Formatting.GREEN))
-                ))
-                putString("billboard", "fixed")
-                putString("alignment", "center")
-                putInt("background", 0)
-                putBoolean("shadow", true)
-            })
-        }
-
-        update()
-        PlayerEvents.onPlayerJoin { update() }
-        PlayerEvents.onPlayerLeave { update() }
+        PlayerEvents.onPlayerJoin { playerCount = minecraftServer.currentPlayerCount }
+        PlayerEvents.onPlayerLeave { playerCount = minecraftServer.currentPlayerCount }
     }
 
     private fun spawnTeamEntity(position: Vec3d, team: BingoTeam) {
