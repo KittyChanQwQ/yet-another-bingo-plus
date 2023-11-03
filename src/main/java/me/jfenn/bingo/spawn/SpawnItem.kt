@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 import me.jfenn.bingo.NBT_BINGO_IGNORE
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.StringNbtReader
-import net.minecraft.nbt.visitor.StringNbtWriter
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory

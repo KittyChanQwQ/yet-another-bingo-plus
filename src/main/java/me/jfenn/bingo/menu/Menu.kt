@@ -67,6 +67,7 @@ fun MenuComponent.registerDimensionMenu(
     val dimensions = minecraftServer.worlds
         .filter { it != lobbyWorld }
         .map { it.registryKey.value }
+        .sortedBy { it.toString() }
 
     var dimension by dimensionProperty
 

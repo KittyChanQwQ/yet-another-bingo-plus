@@ -7,7 +7,6 @@ import net.minecraft.block.Blocks
 import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.MobEntity
-import net.minecraft.registry.Registries
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
@@ -50,25 +49,31 @@ object SpawnService {
         if (!config.isTeamKit) return
 
         val chunk = world.getChunk(spawnpoint)
-        val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES)
+        // if the dimension has a ceiling, we can't use heightmaps...
+        val chestBlockPos: BlockPos? = if (world.dimension.hasCeiling) {
+            // spawn the chest directly next to the player
+            BlockPos(spawnpoint.x + 1, spawnpoint.y, spawnpoint.z)
+        } else {
+            val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES)
 
-        // Choose a random position in the chunk to spawn the team chest at
-        val chestBlockPos = buildList {
-            for (x in 0..16) {
-                for (z in 0..16) {
-                    add(Pair(x, z))
+            // Choose a random position in the chunk to spawn the team chest at
+            buildList {
+                for (x in 0..15) {
+                    for (z in 0..15) {
+                        add(Pair(x, z))
+                    }
                 }
             }
+                .shuffled()
+                .asSequence()
+                .map { (x, z) ->
+                    val y = heightmap.get(x, z)
+                    chunk.pos.getBlockPos(x, y, z)
+                }
+                .find {  blockPos ->
+                    world.isAir(blockPos) || world.getBlockState(blockPos).getCollisionShape(world, blockPos).isEmpty
+                }
         }
-            .shuffled()
-            .asSequence()
-            .map { (x, z) ->
-                val y = heightmap.get(x, z)
-                chunk.pos.getBlockPos(x, y, z)
-            }
-            .find {  blockPos ->
-                world.isAir(blockPos) || world.getBlockState(blockPos).getCollisionShape(world, blockPos).isEmpty
-            }
 
         if (chestBlockPos == null) {
             log.error("No valid locations to create a team kit chest!")

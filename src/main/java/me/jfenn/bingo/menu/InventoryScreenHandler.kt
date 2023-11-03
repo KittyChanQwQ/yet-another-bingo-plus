@@ -3,17 +3,13 @@ package me.jfenn.bingo.menu
 import me.jfenn.bingo.NBT_BINGO_IGNORE
 import me.jfenn.bingo.NBT_BINGO_VANISH
 import me.jfenn.bingo.utils.EventListener
-import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.inventory.Inventory
 import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack
-import net.minecraft.screen.PlayerScreenHandler
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.Slot
-import net.minecraft.screen.slot.SlotActionType
 
 class InventoryScreenHandler(
     syncId: Int,
