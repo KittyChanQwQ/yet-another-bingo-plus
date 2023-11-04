@@ -1,6 +1,7 @@
 package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.BingoGame;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resource.LifecycledResourceManager;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.*;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -52,6 +54,9 @@ public abstract class MinecraftServerMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "shutdown", cancellable = true)
     public void shutdown(CallbackInfo ci) {
+        // tell Fabric to invoke SERVER_STOPPING, which *might* not be the first mixin
+        ServerLifecycleEvents.SERVER_STOPPING.invoker().onServerStopping(this.playerManager.getServer());
+
         // many of the shutdown tasks can be skipped, since we don't care if all the world data is saved
         log.info("Stopping server");
 
@@ -69,6 +74,10 @@ public abstract class MinecraftServerMixin {
         if (BingoGame.INSTANCE.getConfig().getUnsafeSkipWorldClose()) {
             log.info("unsafeSkipWorldClose is true; skipping file closing");
             log.info("This will likely cause a crash...");
+
+            this.saving = false;
+            // tell Fabric to invoke SERVER_STOPPED (otherwise this would not reach its mixin)
+            ServerLifecycleEvents.SERVER_STOPPED.invoker().onServerStopped(this.playerManager.getServer());
             ci.cancel();
             return;
         }
@@ -95,6 +104,8 @@ public abstract class MinecraftServerMixin {
             log.error("Exception closing the session", e);
         }
 
+        // tell Fabric to invoke SERVER_STOPPED (otherwise this would not reach its mixin)
+        ServerLifecycleEvents.SERVER_STOPPED.invoker().onServerStopped(this.playerManager.getServer());
         ci.cancel();
     }
 

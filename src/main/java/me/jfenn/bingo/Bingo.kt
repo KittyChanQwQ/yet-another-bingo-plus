@@ -143,14 +143,6 @@ object Bingo : ModInitializer {
                 dispatcher.register(command)
             }
         }
-
-        ServerLifecycleEvents.SERVER_STOPPING.register {
-            println("BINGO! stopping...")
-        }
-
-        ServerLifecycleEvents.SERVER_STOPPED.register {
-            println("BINGO! stopped!")
-        }
     }
 
 }
