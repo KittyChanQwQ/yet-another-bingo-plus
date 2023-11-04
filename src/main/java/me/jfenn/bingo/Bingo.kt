@@ -1,6 +1,5 @@
 package me.jfenn.bingo
 
-import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.map.MapItemHandler
 import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.menu.MenuService
@@ -11,6 +10,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
@@ -100,7 +100,8 @@ object Bingo : ModInitializer {
             false
         }
 
-        PlayerEvents.onPlayerJoin { player ->
+        ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
+            val player = handler.player
             BingoGame.updateGameMode(player)
             BingoGame.giveMapCardItem(player)
 
@@ -110,6 +111,7 @@ object Bingo : ModInitializer {
                 player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
                 player.teleport(lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
             }
+
         }
 
         ServerPlayerEvents.AFTER_RESPAWN.register { _, player, _ ->
@@ -140,6 +142,14 @@ object Bingo : ModInitializer {
             for (command in commands()) {
                 dispatcher.register(command)
             }
+        }
+
+        ServerLifecycleEvents.SERVER_STOPPING.register {
+            println("BINGO! stopping...")
+        }
+
+        ServerLifecycleEvents.SERVER_STOPPED.register {
+            println("BINGO! stopped!")
         }
     }
 

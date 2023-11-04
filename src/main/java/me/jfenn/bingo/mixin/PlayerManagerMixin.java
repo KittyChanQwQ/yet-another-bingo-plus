@@ -3,7 +3,6 @@ package me.jfenn.bingo.mixin;
 import me.jfenn.bingo.BingoGame;
 import me.jfenn.bingo.GameState;
 import me.jfenn.bingo.card.BingoTeam;
-import me.jfenn.bingo.event.PlayerEvents;
 import me.jfenn.bingo.menu.MenuService;
 import me.jfenn.bingo.spawn.SpawnService;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,16 +10,13 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtFloat;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.network.ClientConnection;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
@@ -51,16 +47,6 @@ public class PlayerManagerMixin {
             player.readNbt(nbt);
             ci.setReturnValue(nbt);
         }
-    }
-
-    @Inject(at = @At(value = "TAIL"), method = "onPlayerConnect")
-    private void onPlayerJoin(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo info) {
-        PlayerEvents.INSTANCE.getOnPlayerJoin().invoke(player);
-    }
-
-    @Inject(at = @At(value = "TAIL"), method = "remove")
-    private void onPlayerLeave(ServerPlayerEntity player, CallbackInfo info) {
-        PlayerEvents.INSTANCE.getOnPlayerLeave().invoke(player);
     }
 
     @Inject(at = @At(value = "HEAD"), method = "respawnPlayer")

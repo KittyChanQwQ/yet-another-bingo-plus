@@ -9,6 +9,7 @@ import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.config
 import me.jfenn.bingo.map.MapItemService
 import me.jfenn.bingo.map.MapRenderService
+import me.jfenn.bingo.menu.MenuService
 import me.jfenn.bingo.spawn.SpawnService
 import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.utils.allHeldStacks
@@ -104,6 +105,7 @@ object BingoGame {
         SpawnService.createSpawnpoints(config)
 
         // unload lobby dimension
+        MenuService.despawn()
         lobbyWorld.chunkManager.removePersistentTickets()
 
         // reset world settings

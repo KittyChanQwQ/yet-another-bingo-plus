@@ -6,11 +6,11 @@ import me.jfenn.bingo.card.TeamService
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.event.InteractionEntityEvents
-import me.jfenn.bingo.event.PlayerEvents
 import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.map.Color
 import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.utils.toNbt
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.StructureBlockBlockEntity
 import net.minecraft.entity.EntityType
@@ -38,19 +38,20 @@ object MenuService {
 
     var spawnPos: BlockPos = BlockPos.ORIGIN
 
-    init {
-        spawnLobbyStructure()
-    }
+    private var lobbyMenu: MenuComponent? = null
 
     fun spawn(config: BingoConfig) {
         spawnLobbyStructure()
 
         val tracker = MenuTracker(lobbyWorld)
-        val lobbyMenu = component {
+        lobbyMenu = component {
             registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.0))
             registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.0), config)
-        }
-        lobbyMenu.spawn(tracker)
+        }.also { it.spawn(tracker) }
+    }
+
+    fun despawn() {
+        lobbyMenu?.despawn()
     }
 
     private fun MenuComponent.registerPlayerCount(position: Vec3d) {
@@ -69,8 +70,13 @@ object MenuService {
             putBoolean("shadow", true)
         }
 
-        PlayerEvents.onPlayerJoin { playerCount = minecraftServer.currentPlayerCount }
-        PlayerEvents.onPlayerLeave { playerCount = minecraftServer.currentPlayerCount }
+        ServerPlayConnectionEvents.JOIN.register { _, _, server ->
+            playerCount = server.currentPlayerCount + 1
+        }
+
+        ServerPlayConnectionEvents.DISCONNECT.register { _, server ->
+            playerCount = server.currentPlayerCount - 1
+        }
     }
 
     private fun spawnTeamEntity(position: Vec3d, team: BingoTeam) {

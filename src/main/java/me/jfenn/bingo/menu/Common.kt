@@ -73,6 +73,7 @@ open class MenuComponent {
     val entities: MutableList<MenuEntityHandle<*>> = mutableListOf()
 
     val onUpdate = EventListener<MenuTracker>()
+    val onDespawn = EventListener<Unit>()
 
     fun <P: Property<*>> property(property: P) = property.apply {
         subscribe {
@@ -105,6 +106,7 @@ open class MenuComponent {
 
     open fun despawn() {
         entities.forEach { tracker?.despawn(it) }
+        onDespawn.invoke(Unit)
         this.tracker = null
     }
 }

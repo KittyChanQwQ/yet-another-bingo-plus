@@ -103,4 +103,9 @@ fun MenuComponent.registerMenuPage(
             }
         }
     }
+
+    onDespawn {
+        page1.despawn()
+        page2.despawn()
+    }
 }
