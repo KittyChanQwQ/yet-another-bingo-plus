@@ -399,14 +399,18 @@ object BingoGame {
             this.leadingTeam = leadingTeam
 
             val leadingMessage = if (leadingTeam != null) {
+                val items = card.countItems(leadingTeam)
+
                 Text.empty()
                     .append(leadingTeam.text())
-                    .append(Text.literal(" is in the lead!").formatted(Formatting.YELLOW))
+                    .append(Text.literal(" is in the lead with $items item${"s".takeIf { items > 1 } ?: ""}!").formatted(Formatting.YELLOW))
             } else {
                 val team = updatedTeams.first()
+                val items = card.countItems(team)
+
                 Text.empty()
                     .append(team.text())
-                    .append(Text.literal(" is tied in the lead!").formatted(Formatting.YELLOW))
+                    .append(Text.literal(" is tied in the lead with $items item${"s".takeIf { items > 1 } ?: ""}!").formatted(Formatting.YELLOW))
             }
 
             minecraftServer.playerManager.broadcast(leadingMessage, false)
