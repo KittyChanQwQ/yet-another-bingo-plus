@@ -35,6 +35,7 @@ data class BingoConfig(
         SpawnItem("minecraft:torch", count = 64),
     ),
 
+    var autoShutDownInPostgame: Boolean = true,
     var unsafeSkipWorldClose: Boolean = false,
 ) {
 

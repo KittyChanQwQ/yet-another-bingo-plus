@@ -143,6 +143,14 @@ object Bingo : ModInitializer {
                 dispatcher.register(command)
             }
         }
+
+        ServerPlayConnectionEvents.DISCONNECT.register { _, _ ->
+            // if the last player is disconnecting after a bingo game, shut down the server
+            if (BingoGame.config.autoShutDownInPostgame && BingoGame.state == GameState.POSTGAME && minecraftServer.currentPlayerCount <= 1) {
+                log.info("Last player has disconnected and 'autoShutDownInPostgame' is true; Shutting down the server...")
+                minecraftServer.stop(false)
+            }
+        }
     }
 
 }
