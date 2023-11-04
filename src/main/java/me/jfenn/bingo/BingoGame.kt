@@ -22,6 +22,8 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
+import net.minecraft.server.command.AdvancementCommand
+import net.minecraft.server.command.CommandOutput
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
@@ -126,12 +128,17 @@ object BingoGame {
             timeBar.addPlayer(player)
 
             // reset advancements state
-            for (advancement in minecraftServer.advancementLoader.advancements) {
-                val progress = player.advancementTracker.getProgress(advancement)
-                for (criteria in progress.obtainedCriteria) {
-                    player.advancementTracker.revokeCriterion(advancement, criteria)
-                }
-            }
+            // The yarn mappings for these APIs conflict between versions, so we're using the command for this instead
+            // for (advancement in minecraftServer.advancementLoader.advancements) {
+            //     val progress = player.advancementTracker
+            //     for (criteria in progress.obtainedCriteria) {
+            //         player.advancementTracker.revokeCriterion(advancement, criteria)
+            //     }
+            // }
+            minecraftServer.commandManager.executeWithPrefix(
+                minecraftServer.commandSource.withOutput(CommandOutput.DUMMY),
+                "advancement revoke @a everything"
+            )
 
             // unlock all crafting recipes, if set
             if (config.isUnlockRecipes)

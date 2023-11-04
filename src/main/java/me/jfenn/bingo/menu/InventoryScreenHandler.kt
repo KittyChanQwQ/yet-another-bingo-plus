@@ -3,6 +3,7 @@ package me.jfenn.bingo.menu
 import me.jfenn.bingo.NBT_BINGO_IGNORE
 import me.jfenn.bingo.NBT_BINGO_VANISH
 import me.jfenn.bingo.utils.EventListener
+import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.SimpleInventory
@@ -62,6 +63,9 @@ class InventoryScreenHandler(
         return true
     }
 
+    /**
+     * Refer to GenericContainerScreenHandler for how this should be implemented
+     */
     override fun quickMove(player: PlayerEntity?, slot: Int): ItemStack {
         val slotInstance = slots[slot]
         if (!slotInstance.hasStack())
@@ -78,10 +82,7 @@ class InventoryScreenHandler(
                 return ItemStack.EMPTY
         }
 
-        if (originalStack.isEmpty)
-            slotInstance.stack = ItemStack.EMPTY
-        else slotInstance.markDirty()
-
+        slotInstance.markDirty()
         return newStack
     }
 
