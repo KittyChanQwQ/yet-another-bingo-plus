@@ -4,6 +4,9 @@ import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.card.BingoTeam
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
+import net.minecraft.block.FluidBlock
+import net.minecraft.fluid.WaterFluid
+import net.minecraft.registry.Registries
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
@@ -68,6 +71,40 @@ class SpreadPlayers(
         }
     }
 
+    private fun isEmptyBlock(blockPos: BlockPos, blockState: BlockState): Boolean {
+        return blockState.isAir || blockState.getCollisionShape(world, blockPos).isEmpty
+    }
+
+    private fun isFluidBlock(blockState: BlockState): Boolean {
+        return blockState.block is FluidBlock
+    }
+
+    private fun isValidSpawn(chunk: Chunk, groundPos: BlockPos): Boolean {
+        if (world.registryKey == World.OVERWORLD && groundPos.y <= world.seaLevel) {
+            log.debug("Skipping block {} to avoid spawning underwater (y <= {})", groundPos, world.seaLevel)
+            return false
+        }
+
+        val groundState = chunk.getBlockState(groundPos)
+        if (isEmptyBlock(groundPos, groundState))
+            return false
+        if (isFluidBlock(groundState) || invalidSpawnBlocks.contains(groundState.block)) {
+            log.debug("Skipping block {} to avoid spawning on {}", groundPos, groundState.block.translationKey)
+            return false
+        }
+
+        for (y in 1..2) {
+            val blockPos = BlockPos(groundPos.x, groundPos.y + y, groundPos.z)
+            val blockState = chunk.getBlockState(blockPos)
+            if (!isEmptyBlock(blockPos, blockState) || isFluidBlock(blockState)) {
+                log.debug("Skipping block {} to avoid spawning inside {}", groundPos, blockState.block.translationKey)
+                return false
+            }
+        }
+
+        return true
+    }
+
     private fun selectChunkPosition(chunk: Chunk): BlockPos? {
         // if world.dimension.hasCeiling, this needs to find a spawnpoint without using heightmaps
         // otherwise, choosing "the_nether" will spawn players on the nether roof!
@@ -75,8 +112,8 @@ class SpreadPlayers(
         if (world.dimension.hasCeiling) {
             // choose random positions in the chunk until a valid one is found
             val spawnBlockPos = buildList {
-                for (x in 0..15) {
-                    for (z in 0..15) {
+                for (x in 2..13) {
+                    for (z in 2..13) {
                         add(Pair(x, z))
                     }
                 }
@@ -84,7 +121,7 @@ class SpreadPlayers(
                 .shuffled()
                 .asSequence()
                 .map { (x, z) ->
-                    chunk.pos.getBlockPos(x, world.logicalHeight, z).mutableCopy()
+                    chunk.pos.getBlockPos(x, world.logicalHeight - 2, z).mutableCopy()
                 }
                 .map { pos ->
                     // iterate until these match (false, false, true)
@@ -92,25 +129,38 @@ class SpreadPlayers(
                     var isEmptyAbove = false
                     var isEmpty = false
                     var isEmptyBelow = false
-                    var blockState: BlockState? = null
                     while (pos.y > world.bottomY && pos.y > world.seaLevel && !(isEmptyAbove && isEmpty && !isEmptyBelow)) {
                         isEmptyAbove = isEmpty
                         isEmpty = isEmptyBelow
 
-                        blockState = chunk.getBlockState(pos.move(Direction.DOWN))
-                        isEmptyBelow = blockState.let { block ->
-                            block.isAir || block.getCollisionShape(world, pos).isEmpty
-                        }
+                        pos.move(Direction.DOWN)
+                        isEmptyBelow = isEmptyBlock(pos, chunk.getBlockState(pos))
                     }
 
-                    val isValidSpawn = isEmptyAbove
-                            && isEmpty
-                            && !isEmptyBelow
-                            && blockState?.let { block -> !invalidSpawnBlocks.contains(block.block) } == true
+                    if (!(isEmptyAbove && isEmpty && !isEmptyBelow))
+                        return@map null
 
-                    if (isValidSpawn)
-                        pos
-                    else null
+                    if (!isValidSpawn(chunk, pos))
+                        return@map null
+
+                    // ensure that there is space on each side of the spawn
+                    val isSpace = (1..2)
+                        .flatMap {
+                            listOf(
+                                BlockPos(pos.x + it, pos.y, pos.z),
+                                BlockPos(pos.x - it, pos.y, pos.z),
+                                BlockPos(pos.x, pos.y, pos.z + it),
+                                BlockPos(pos.x, pos.y, pos.z - it),
+                            )
+                        }
+                        .all {
+                            isValidSpawn(chunk, it)
+                        }
+
+                    if (!isSpace)
+                        return@map null
+
+                    pos
                 }
                 .find { it != null }
 
@@ -141,7 +191,11 @@ class SpreadPlayers(
 
             val spawnX = closestIndex % 16
             val spawnZ = closestIndex / 16
-            return chunk.pos.getBlockPos(spawnX, height-1, spawnZ)
+            val spawnBlockPos = chunk.pos.getBlockPos(spawnX, height-1, spawnZ)
+            if (!isValidSpawn(chunk, spawnBlockPos))
+                return null
+
+            return spawnBlockPos
         }
     }
 
@@ -178,23 +232,9 @@ class SpreadPlayers(
                     continue@findChunk
                 }
 
-                val spawnBlockBelow = world.getBlockState(spawnBlockPos)
-
                 if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
                     log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
                     x += 4 * xSign
-                    continue@findChunk
-                }
-
-                if (spawnBlockBelow.isLiquid || (world.registryKey == World.OVERWORLD && spawnBlockPos.y <= world.seaLevel)) {
-                    log.info("Skipping chunk ($x, $z) to avoid spawning underwater (y <= ${world.seaLevel})")
-                    x += 1 * xSign
-                    continue@findChunk
-                }
-
-                if (invalidSpawnBlocks.contains(spawnBlockBelow.block)) {
-                    log.info("Skipping chunk ($x, $z) to avoid spawning on ${spawnBlockBelow.block.name}")
-                    x += 1 * xSign
                     continue@findChunk
                 }
 
