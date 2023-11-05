@@ -9,6 +9,7 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.Heightmap
+import net.minecraft.world.World
 import net.minecraft.world.biome.BiomeKeys
 import net.minecraft.world.chunk.Chunk
 import net.minecraft.world.chunk.ChunkStatus
@@ -185,7 +186,7 @@ class SpreadPlayers(
                     continue@findChunk
                 }
 
-                if (spawnBlockBelow.isLiquid || spawnBlockPos.y <= world.seaLevel) {
+                if (spawnBlockBelow.isLiquid || (world.registryKey == World.OVERWORLD && spawnBlockPos.y <= world.seaLevel)) {
                     log.info("Skipping chunk ($x, $z) to avoid spawning underwater (y <= ${world.seaLevel})")
                     x += 1 * xSign
                     continue@findChunk
