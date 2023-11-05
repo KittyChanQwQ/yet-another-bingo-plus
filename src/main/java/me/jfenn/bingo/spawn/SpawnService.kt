@@ -113,13 +113,16 @@ object SpawnService {
 
         for (stack in itemStacks) {
             for (player in players) {
+                // copy the stack for each player
+                val playerStack = stack.copy()
+
                 // if the item can be equipped (e.g. iron chestplate), put it in an equipment slot
                 val slot = MobEntity.getPreferredEquipmentSlot(stack)
-                if (player.canEquip(stack) && slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND) {
-                    player.equipStack(slot, stack)
+                if (player.canEquip(playerStack) && slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND) {
+                    player.equipStack(slot, playerStack)
                 } else {
                     // otherwise, put it in the player's inventory
-                    player.giveItemStack(stack)
+                    player.giveItemStack(playerStack)
                 }
             }
         }
