@@ -15,7 +15,7 @@ fun MenuComponent.registerTimer(
     requiredPermissionLevel: Int = 2,
     title: String = "Time Limit",
 ) {
-    var timerMinutes by property(timerMinutesProp)
+    var timerMinutes by timerMinutesProp
 
     registerButton(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),

@@ -13,7 +13,7 @@ fun MenuComponent.registerTeams(
     requiredPermissionLevel: Int = 2,
     title: String = "Teams",
 ) {
-    var teamCount by property(MutableProperty<Int>(3))
+    var teamCount = 3
 
     registerButton(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
@@ -21,6 +21,7 @@ fun MenuComponent.registerTeams(
         requiredPermissionLevel = requiredPermissionLevel,
     ) {
         teamCount = (teamCount + 1).coerceIn(1, BingoTeam.values().size)
+        markDirty()
     }
 
     registerButton(
@@ -29,6 +30,7 @@ fun MenuComponent.registerTeams(
         requiredPermissionLevel = requiredPermissionLevel,
     ) {
         teamCount = (teamCount - 1).coerceIn(1, BingoTeam.values().size)
+        markDirty()
     }
 
     registerButton(

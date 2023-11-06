@@ -62,10 +62,16 @@ can be turned off by setting `"overwrite": false`.
 
 ## ⌨️ Commands
 
+Global commands:
 - `/coords` prints the current player coordinates in the team chat
-- `/all` sends a message to the global chat (sending a regular chat message defaults to team chat when in-game)
-- `/reroll` (operator-only) rerolls for a new BINGO card with different items
-- `/shuffleteams <number>` (operator-only) randomly sorts all players onto the given number of teams
+- `/all` or `/g` sends a message to the global chat (sending a regular chat message defaults to team chat when in-game)
+
+BINGO commands (operator-only):
+- `/bingo elytra <true/false>` changes the elytra mode setting
+- `/bingo itemdist <distribution...>` changes the item distribution used to generate the card
+- `/bingo reroll` rerolls for a new BINGO card with different items
+- `/bingo shuffleteams <number>` randomly sorts all players onto the given number of teams
+- `/bingo end` ends the current game and displays the winner (or a draw)
 
 ## Credits
 

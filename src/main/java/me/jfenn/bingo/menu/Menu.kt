@@ -11,11 +11,11 @@ fun MenuComponent.registerMenu(
     title: String,
     options: List<String>,
     position: Vec3d,
-    selectedIndexProp: MutableProperty<Int> = MutableProperty(0),
+    selectedIndexProp: MutableProperty<Int>,
     requiredPermissionLevel: Int = 2,
 ) {
 
-    var selectedIndex by property(selectedIndexProp)
+    var selectedIndex by selectedIndexProp
 
     options.forEachIndexed { i, option ->
         registerButton(
@@ -48,9 +48,10 @@ inline fun <reified E : Enum<E>> MenuComponent.registerEnumMenu(
     val options = E::class.java.enumConstants
 
     var value by valueProp
-
-    val indexProp = MutableProperty(options.indexOf(value))
-    indexProp.subscribe { value = options[it] }
+    val indexProp = DelegatedProperty(
+        getter = { options.indexOf(value) },
+        setter = { value = options[it] },
+    )
 
     registerMenu(
         title = title,
@@ -70,9 +71,10 @@ fun MenuComponent.registerDimensionMenu(
         .sortedBy { it.toString() }
 
     var dimension by dimensionProperty
-
-    val indexProp = MutableProperty(dimensions.indexOfFirst { it.toString() == dimension })
-    indexProp.subscribe { dimension = dimensions[it].toString() }
+    val indexProp = DelegatedProperty(
+        getter = { dimensions.indexOfFirst { it.toString() == dimension } },
+        setter = { dimension = dimensions[it].toString() },
+    )
 
     registerMenu(
         title = "Spawn Dimension",

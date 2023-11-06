@@ -12,25 +12,25 @@ fun MenuComponent.registerMenuPage(
     config: BingoConfig,
 ) {
 
-    var page by property(MutableProperty<Int>(1))
+    var page = 1
 
-    val itemDistributionProp = property(MutableProperty.ref(config::itemDistribution))
+    val itemDistributionProp = propertyRef(config::itemDistribution)
 
     val page1 = component {
         registerEnumMenu(
             title = "Game Mode",
-            valueProp = MutableProperty.ref(config::gameMode),
+            valueProp = propertyRef(config::gameMode),
             position = position.add(-3.0, 0.0, 0.0),
         )
         registerFeatures(position.add(-1.0, 0.0, 0.0), config)
         registerEnumMenu(
             title = "Win Condition",
-            valueProp = MutableProperty.ref(config::winCondition),
+            valueProp = propertyRef(config::winCondition),
             position = position.add(1.2, 0.0, 0.0),
         )
         registerTimer(
             title = "Time Limit",
-            timerMinutesProp = MutableProperty.ref(config::timerMinutes),
+            timerMinutesProp = propertyRef(config::timerMinutes),
             position = position.add(3.0, 0.0, 0.0),
         )
     }
@@ -38,7 +38,7 @@ fun MenuComponent.registerMenuPage(
     val page2 = component {
         registerDimensionMenu(
             position = position.add(-3.0, 0.0, 0.0),
-            dimensionProperty = MutableProperty.ref(config::spawnDimension),
+            dimensionProperty = propertyRef(config::spawnDimension),
         )
         registerSpawnKit(
             position = position.add(-1.0, 0.0, 0.0),
@@ -60,6 +60,7 @@ fun MenuComponent.registerMenuPage(
         isActiveProp = computedProperty { page == 1 },
     ) {
         page = 1
+        markDirty()
     }
 
     registerButton(
@@ -68,6 +69,7 @@ fun MenuComponent.registerMenuPage(
         isActiveProp = computedProperty { page == 2 },
     ) {
         page = 2
+        markDirty()
     }
 
     registerButton(
@@ -81,7 +83,7 @@ fun MenuComponent.registerMenuPage(
         }
 
         val isEveryPlayerOnATeam = minecraftServer.playerManager.playerList
-            .all { player -> BingoTeam.values().any { team -> player.isTeamPlayer(team.team()) } }
+            .all { teamPlayer -> BingoTeam.values().any { team -> teamPlayer.isTeamPlayer(team.team()) } }
 
         if (!isEveryPlayerOnATeam && !player.isSneaking) {
             player.sendWarningMessage("Some players have not picked a team! Run /shuffleteams or sneak+click to ignore.")

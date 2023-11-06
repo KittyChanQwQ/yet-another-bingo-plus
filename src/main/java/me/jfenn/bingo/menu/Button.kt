@@ -12,13 +12,13 @@ import net.minecraft.util.math.Vec3d
 fun MenuComponent.registerButton(
     position: Vec3d,
     text: String,
-    isActiveProp: Property<Boolean> = MutableProperty(false),
+    isActiveProp: Property<Boolean> = ConstantProperty(false),
     width: Float = MENU_HITBOX_WIDTH,
     height: Float = MENU_HITBOX_HEIGHT,
     requiredPermissionLevel: Int = 2,
     onClick: (player: PlayerEntity) -> Unit,
 ) {
-    val isActive by property(isActiveProp)
+    val isActive by isActiveProp
 
     registerEntity(EntityType.INTERACTION) {
         put("Pos", position.add(0.0, 0.0, -width / 2.0).toNbt())
@@ -52,13 +52,12 @@ fun MenuComponent.registerToggleButton(
     text: String,
     toggleProp: MutableProperty<Boolean>,
 ) {
-    var toggle by property(toggleProp)
-
     registerButton(
         position = position,
         text = text,
-        isActiveProp = computedProperty { toggle },
+        isActiveProp = toggleProp,
     ) {
+        var toggle by toggleProp
         toggle = !toggle
     }
 }

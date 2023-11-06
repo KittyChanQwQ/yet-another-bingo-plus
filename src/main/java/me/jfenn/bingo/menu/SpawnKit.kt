@@ -28,7 +28,7 @@ fun MenuComponent.registerSpawnKit(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
         text = "Player Items",
-        toggleProp = MutableProperty.ref(config::isPlayerKit)
+        toggleProp = propertyRef(config::isPlayerKit)
     )
 
     registerButton(
@@ -52,7 +52,7 @@ fun MenuComponent.registerSpawnKit(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 3), 0.0),
         text = "Team Chest",
-        toggleProp = MutableProperty.ref(config::isTeamKit)
+        toggleProp = propertyRef(config::isTeamKit)
     )
 
     registerButton(

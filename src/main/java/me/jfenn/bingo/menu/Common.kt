@@ -16,42 +16,35 @@ const val MENU_HITBOX_WIDTH = 1f
 
 const val MENU_ITEM_OFFSET = 0.5
 const val MENU_ITEM_HEIGHT = 0.3
+
 interface Property<T> {
-    val subscribe: EventListener<T>
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T
 }
 
-class MutableProperty<T>(
-    private var value: T
-) : Property<T> {
-    override val subscribe = EventListener<T>()
+interface MutableProperty<T>: Property<T> {
+    override operator fun getValue(thisRef: Any?, property: KProperty<*>): T
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T)
+}
 
+class ConstantProperty<T>(val value: T): Property<T> {
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
         return value
     }
-
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        this.value = value
-        subscribe.invoke(value)
-    }
-
-    companion object {
-        fun <T> ref(prop: KMutableProperty0<T>): MutableProperty<T> {
-            val property = MutableProperty(prop.get())
-            property.subscribe { prop.set(it) }
-            return property
-        }
-    }
 }
 
-class DerivedProperty<T>(
-    private var getter: () -> T
-) : Property<T> {
-    override val subscribe = EventListener<T>()
+class DelegatedProperty<T>(
+    private var getter: () -> T,
+    private var setter: (T) -> Unit,
+): MutableProperty<T> {
 
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
         return getter()
     }
+
+    override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+        setter(value)
+    }
+
 }
 
 data class MenuEntityHandle<T: Entity>(
@@ -75,16 +68,28 @@ open class MenuComponent {
     val onUpdate = EventListener<MenuTracker>()
     val onDespawn = EventListener<Unit>()
 
-    fun <P: Property<*>> property(property: P) = property.apply {
-        subscribe {
-            tracker?.let { spawn(it) }
-        }
+    private var isDirty = false
+
+    fun markDirty() {
+        isDirty = true
+    }
+
+    fun <T> propertyRef(ref: KMutableProperty0<T>): MutableProperty<T> {
+        return DelegatedProperty(
+            getter = {
+                ref.get()
+            },
+            setter = {
+                ref.set(it)
+                markDirty()
+            },
+        )
     }
 
     fun <T> computedProperty(getter: () -> T): Property<T> {
         // this assumes that anything used in the getter is already observed
         // so this does not need to add any listeners
-        return DerivedProperty(getter)
+        return DelegatedProperty(getter) {}
     }
 
     fun <T: Entity> registerEntity(type: EntityType<T>, nbt: NbtCompound.() -> Unit = {}): MenuEntityHandle<T> {
@@ -98,13 +103,21 @@ open class MenuComponent {
         return handle
     }
 
-    open fun spawn(tracker: MenuTracker) {
+    init {
+        MenuService.onTick {
+            if (isDirty)
+                tracker?.let { spawn(it) }
+        }
+    }
+
+    fun spawn(tracker: MenuTracker) {
         this.tracker = tracker
         onUpdate.invoke(tracker)
         entities.forEach { tracker.spawn(it, NbtCompound().apply(it.nbt)) }
+        isDirty = false
     }
 
-    open fun despawn() {
+    fun despawn() {
         entities.forEach { tracker?.despawn(it) }
         onDespawn.invoke(Unit)
         this.tracker = null

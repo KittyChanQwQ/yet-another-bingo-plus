@@ -71,6 +71,9 @@ object Bingo : ModInitializer {
         }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->
+            if (BingoGame.state == GameState.PREGAME)
+                MenuService.tick()
+
             BingoGame.updateInventory()
 
             if (server.ticks % 20 == 0)

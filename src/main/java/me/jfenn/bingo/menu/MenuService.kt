@@ -9,6 +9,7 @@ import me.jfenn.bingo.event.InteractionEntityEvents
 import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.map.Color
 import me.jfenn.bingo.minecraftServer
+import me.jfenn.bingo.utils.EventListener
 import me.jfenn.bingo.utils.toNbt
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.block.Blocks
@@ -50,12 +51,23 @@ object MenuService {
         }.also { it.spawn(tracker) }
     }
 
+    val onTick = EventListener<Unit>()
+
+    fun tick() {
+        onTick.invoke(Unit)
+    }
+
+    fun markDirty() {
+        lobbyMenu?.markDirty()
+    }
+
     fun despawn() {
         lobbyMenu?.despawn()
+        lobbyMenu = null
     }
 
     private fun MenuComponent.registerPlayerCount(position: Vec3d) {
-        var playerCount by property(MutableProperty<Int>(minecraftServer.currentPlayerCount))
+        var playerCount = 0
 
         registerEntity(EntityType.TEXT_DISPLAY) {
             put("Pos", position.toNbt())
@@ -72,10 +84,12 @@ object MenuService {
 
         ServerPlayConnectionEvents.JOIN.register { _, _, server ->
             playerCount = server.currentPlayerCount + 1
+            markDirty()
         }
 
         ServerPlayConnectionEvents.DISCONNECT.register { _, server ->
             playerCount = server.currentPlayerCount - 1
+            markDirty()
         }
     }
 

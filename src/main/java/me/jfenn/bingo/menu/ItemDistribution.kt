@@ -15,7 +15,7 @@ fun MenuComponent.registerItemDistribution(
     itemDistributionProp: MutableProperty<List<Int>>,
     requiredPermissionLevel: Int = 2,
 ) {
-    var itemDistribution by property(itemDistributionProp)
+    var itemDistribution by itemDistributionProp
 
     fun createTier(
         i: Int,

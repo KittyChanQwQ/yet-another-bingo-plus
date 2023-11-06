@@ -24,24 +24,24 @@ fun MenuComponent.registerFeatures(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
         text = "Unlock Recipes",
-        toggleProp = MutableProperty.ref(config::isUnlockRecipes),
+        toggleProp = propertyRef(config::isUnlockRecipes),
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
         text = "Keep Inventory",
-        toggleProp = MutableProperty.ref(config::isKeepInventory),
+        toggleProp = propertyRef(config::isKeepInventory),
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0),
         text = "Elytra",
-        toggleProp = MutableProperty.ref(config::isElytra),
+        toggleProp = propertyRef(config::isElytra),
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
         text = "Allow PvP",
-        toggleProp = MutableProperty.ref(config::isPvpEnabled),
+        toggleProp = propertyRef(config::isPvpEnabled),
     )
 }
