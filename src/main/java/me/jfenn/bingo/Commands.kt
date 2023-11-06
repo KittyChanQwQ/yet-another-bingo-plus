@@ -13,6 +13,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.GeneratorTier
 import me.jfenn.bingo.card.TeamService
+import me.jfenn.bingo.config.WinCondition
 import me.jfenn.bingo.menu.MenuService
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.sendInfoMessage
@@ -111,6 +112,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                 })
         )
         .then(
+            // Change the elytra mode feature setting (while the game is running)
             literal<ServerCommandSource>("elytra")
                 .then(
                     argument<ServerCommandSource, Boolean>("true/false", bool())
@@ -132,6 +134,52 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                             }
 
                             ctx.source.player?.sendInfoMessage("Elytra mode: $isElytra")
+                            1
+                        }
+                )
+        )
+        .then(
+            // Change the win condition setting (while the game is running)
+            literal<ServerCommandSource>("wincon")
+                .let {
+                    val options = WinCondition.values()
+                        .map {  wincon ->
+                            literal<ServerCommandSource>(wincon.name)
+                                .executes { ctx ->
+                                    BingoGame.config.winCondition = wincon
+                                    MenuService.markDirty()
+                                    ctx.source.player?.sendInfoMessage("Win condition: ${wincon.name}")
+                                    1
+                                }
+                        }
+                        .toMutableList()
+
+                    var last = it
+                    while (options.isNotEmpty())
+                        last = last.then(options.removeLast())
+
+                    last
+                }
+        )
+        .then(
+            // Change the time limit setting (while the game is running)
+            literal<ServerCommandSource>("timelimit")
+                .then(
+                    argument<ServerCommandSource, Int>("minutes", integer())
+                        .executes { ctx ->
+                            val minutes = getInteger(ctx, "minutes")
+                            BingoGame.config.timerMinutes = minutes
+                            MenuService.markDirty()
+                            ctx.source.player?.sendInfoMessage("Time limit: ${minutes} minutes")
+                            1
+                        }
+                )
+                .then(
+                    literal<ServerCommandSource?>("off")
+                        .executes { ctx ->
+                            BingoGame.config.timerMinutes = null
+                            MenuService.markDirty()
+                            ctx.source.player?.sendInfoMessage("Time limit: Off")
                             1
                         }
                 )
