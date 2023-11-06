@@ -86,7 +86,7 @@ fun MenuComponent.registerMenuPage(
             .all { teamPlayer -> BingoTeam.values().any { team -> teamPlayer.isTeamPlayer(team.team()) } }
 
         if (!isEveryPlayerOnATeam && !player.isSneaking) {
-            player.sendWarningMessage("Some players have not picked a team! Run /shuffleteams or sneak+click to ignore.")
+            player.sendWarningMessage("Some players have not picked a team! Run '/bingo shuffleteams' or sneak+click to ignore.")
             return@registerButton
         }
 
