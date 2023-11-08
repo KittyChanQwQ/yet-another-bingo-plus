@@ -15,6 +15,7 @@ Recommended mods (optional, but have been tested for compatibility):
 - [Lithium](https://modrinth.com/mod/lithium)
 - [Krypton](https://modrinth.com/mod/krypton)
 - [MC-249136 Fix](https://modrinth.com/mod/mc-249136-fix)
+- [Third Person Maps](https://modrinth.com/mod/third-person-maps) (client-side)
 
 Up to 8 teams can compete to collect items on the BINGO card. Teams can score items in horizontal, vertical, or diagonal
 lines to win the game. (the "win condition" can be set to a number of lines, or the full card).
@@ -38,6 +39,7 @@ lines to win the game. (the "win condition" can be set to a number of lines, or 
 - **Keep Inventory**: Sets the `keepInventory` gamerule. (players keep their items on respawn)
 - **Elytra**: Gives all players an elytra and infinite rockets throughout the game.
 - **Allow PvP**: Toggles whether players can attack each other.
+- **Spawn Kit**: Give teams or players a configurable set of starting gear.
 
 ## 📖 Configuration
 
@@ -74,6 +76,8 @@ BINGO commands (operator-only):
 - `/bingo reroll` rerolls for a new BINGO card with different items
 - `/bingo shuffleteams <number>` randomly sorts all players onto the given number of teams
 - `/bingo end` ends the current game and displays the winner (or a draw)
+
+(operators can also move specific players to different teams using the vanilla `/team join <team> <player>` command)
 
 ## Credits
 
