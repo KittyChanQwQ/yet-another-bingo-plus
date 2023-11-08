@@ -76,8 +76,10 @@ object Bingo : ModInitializer {
 
             BingoGame.updateInventory()
 
-            if (server.ticks % 20 == 0)
+            if (server.ticks % 20 == 0) {
                 BingoGame.updateTimer()
+                BingoGame.updateSidebars()
+            }
 
             for (player in server.playerManager.playerList) {
                 BingoGame.giveMapCardItem(player)
@@ -105,6 +107,7 @@ object Bingo : ModInitializer {
 
         ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
             val player = handler.player
+            BingoGame.updateSettings(player)
             BingoGame.updateGameMode(player)
             BingoGame.giveMapCardItem(player)
 

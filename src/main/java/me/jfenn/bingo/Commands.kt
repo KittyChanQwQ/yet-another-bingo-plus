@@ -6,20 +6,20 @@ import com.mojang.brigadier.arguments.IntegerArgumentType.getInteger
 import com.mojang.brigadier.arguments.IntegerArgumentType.integer
 import com.mojang.brigadier.arguments.StringArgumentType.getString
 import com.mojang.brigadier.arguments.StringArgumentType.greedyString
-import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.GeneratorTier
 import me.jfenn.bingo.card.TeamService
+import me.jfenn.bingo.config.ConfigService
+import me.jfenn.bingo.config.PlayerSettings
 import me.jfenn.bingo.config.WinCondition
 import me.jfenn.bingo.menu.MenuService
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.sendInfoMessage
 import me.jfenn.bingo.utils.sendWarningMessage
 import net.minecraft.item.Items
-import net.minecraft.server.command.GameRuleCommand
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 
@@ -82,9 +82,43 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         }
 
     literal<ServerCommandSource>("bingo")
-        .requires { it.hasPermissionLevel(2) }
+        .then(
+            run {
+                var setCommand = literal<ServerCommandSource>("set")
+                val fields = listOf(
+                    PlayerSettings::scoreboard,
+                    PlayerSettings::bossbar,
+                    PlayerSettings::leadingMessages,
+                    PlayerSettings::scoreMessages,
+                )
+
+                for (field in fields) {
+                    setCommand = setCommand.then(
+                        literal<ServerCommandSource>(field.name)
+                            .then(
+                                argument<ServerCommandSource, Boolean>("value", bool())
+                                    .executes { ctx ->
+                                        val player = ctx.source.player ?: return@executes 0
+
+                                        val config = ConfigService.getPlayer(player.uuidAsString)
+                                        val value = getBool(ctx, "value")
+                                        field.set(config, value)
+                                        ConfigService.setPlayer(player.uuidAsString, config)
+
+                                        BingoGame.updateSettings(player)
+                                        ctx.source.player?.sendInfoMessage("${field.name.replaceFirstChar { it.uppercase() }}: $value")
+                                        1
+                                    }
+                            )
+                    )
+                }
+
+                setCommand
+            }
+        )
         .then(
             literal<ServerCommandSource>("itemdist")
+                .requires { it.hasPermissionLevel(2) }
                 .then(run {
                     val args = GeneratorTier.values()
                         .map { tier -> argument<ServerCommandSource, Int>(tier.name, integer(0, 25)) }
@@ -114,6 +148,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         .then(
             // Change the elytra mode feature setting (while the game is running)
             literal<ServerCommandSource>("elytra")
+                .requires { it.hasPermissionLevel(2) }
                 .then(
                     argument<ServerCommandSource, Boolean>("true/false", bool())
                         .executes { ctx ->
@@ -141,6 +176,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         .then(
             // Change the win condition setting (while the game is running)
             literal<ServerCommandSource>("wincon")
+                .requires { it.hasPermissionLevel(2) }
                 .let {
                     val options = WinCondition.values()
                         .map {  wincon ->
@@ -164,6 +200,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         .then(
             // Change the time limit setting (while the game is running)
             literal<ServerCommandSource>("timelimit")
+                .requires { it.hasPermissionLevel(2) }
                 .then(
                     argument<ServerCommandSource, Int>("minutes", integer())
                         .executes { ctx ->
@@ -187,6 +224,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         .then(
             // Shuffle player teams by a number of teams
             literal<ServerCommandSource>("shuffleteams")
+                .requires { it.hasPermissionLevel(2) }
                 .requires { BingoGame.state == GameState.PREGAME }
                 .then(
                     argument<ServerCommandSource?, Int?>("teams", integer(1, BingoTeam.values().size))
@@ -202,6 +240,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         .then(
             // re-roll the bingo card in a round (operator only)
             literal<ServerCommandSource>("reroll")
+                .requires { it.hasPermissionLevel(2) }
                 .requires { BingoGame.state == GameState.PLAYING }
                 .executes { ctx ->
                     BingoGame.rollCard()
@@ -212,7 +251,8 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
         .then(
             // End the game, if running
             literal<ServerCommandSource>("end")
-                .requires { it.hasPermissionLevel(2) && BingoGame.state == GameState.PLAYING }
+                .requires { it.hasPermissionLevel(2) }
+                .requires { BingoGame.state == GameState.PLAYING }
                 .executes { _ ->
                     BingoGame.end()
                     1

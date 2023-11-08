@@ -6,4 +6,8 @@ enum class WinCondition(val numLines: Int) {
     THREE_LINES(3),
     FOUR_LINES(4),
     FULL_CARD(12);
+
+    fun formatName(): String {
+        return name.lowercase().replace('_', ' ')
+    }
 }

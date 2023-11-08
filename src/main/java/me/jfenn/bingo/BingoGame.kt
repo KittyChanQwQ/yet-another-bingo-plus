@@ -4,14 +4,11 @@ import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.card.BingoCardEntry
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.CardService
-import me.jfenn.bingo.config.BingoConfig
-import me.jfenn.bingo.config.BingoMode
-import me.jfenn.bingo.config.config
+import me.jfenn.bingo.config.*
 import me.jfenn.bingo.map.MapItemService
 import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.menu.MenuService
 import me.jfenn.bingo.spawn.SpawnService
-import me.jfenn.bingo.spawn.SpreadPlayers
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.formatString
 import net.minecraft.entity.boss.BossBar
@@ -20,16 +17,17 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
+import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
-import net.minecraft.server.command.AdvancementCommand
+import net.minecraft.scoreboard.ScoreboardCriterion
+import net.minecraft.scoreboard.ScoreboardDisplaySlot
 import net.minecraft.server.command.CommandOutput
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.BlockPos
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
 import java.time.Duration
@@ -124,8 +122,7 @@ object BingoGame {
             player.hungerManager.saturationLevel = 5f
             player.hungerManager.exhaustion = 0f
 
-            // add player to boss bar
-            timeBar.addPlayer(player)
+            updateSettings(player)
 
             // reset advancements state
             // The yarn mappings for these APIs conflict between versions, so we're using the command for this instead
@@ -210,9 +207,6 @@ object BingoGame {
             updateGameMode(player)
 
             Sounds.playGameOver(player)
-
-            // hide the boss bar once the game is complete
-            timeBar.removePlayer(player)
 
             // remove any existing maps in the player's inventory
             for (i in 0 until player.inventory.size()) {
@@ -420,7 +414,9 @@ object BingoGame {
                     .append(Text.literal(" is tied in the lead with $items item${"s".takeIf { items > 1 } ?: ""}!").formatted(Formatting.YELLOW))
             }
 
-            minecraftServer.playerManager.broadcast(leadingMessage, false)
+            minecraftServer.playerManager.playerList
+                .filter { ConfigService.getPlayer(it.uuidAsString).leadingMessages }
+                .forEach { it.sendMessage(leadingMessage, false) }
         }
     }
 
@@ -442,12 +438,13 @@ object BingoGame {
         val linesAfter = card.countLines(team)
 
         if (linesAfter > linesBefore) {
-            minecraftServer.playerManager.broadcast(
-                Text.empty()
-                    .append(team.text())
-                    .append(Text.literal(" has scored $linesAfter line${if (linesAfter > 1) "s" else ""}!").formatted(Formatting.YELLOW)),
-                false,
-            )
+            val message = Text.empty()
+                .append(team.text())
+                .append(Text.literal(" has scored $linesAfter line${if (linesAfter > 1) "s" else ""}!").formatted(Formatting.YELLOW))
+
+            minecraftServer.playerManager.playerList
+                .filter { ConfigService.getPlayer(it.uuidAsString).scoreMessages }
+                .forEach { it.sendMessage(message, false) }
         }
 
         // play the doink sound
@@ -470,38 +467,117 @@ object BingoGame {
         return true
     }
 
+    private fun formatTimeRemaining(): Text {
+        val start = startedAt ?: return Text.literal("Pre-Game")
+        val timeLimit = config.timerMinutes?.let { Duration.ofMinutes(it.toLong()) }
+            ?: return Text.literal("(No Time Limit)")
+                .formatted(Formatting.BOLD)
+
+        val duration = Duration.between(start, Instant.now())
+        val secondsRemaining = Duration.ofSeconds(timeLimit.seconds - duration.toSeconds())
+
+        if (duration.toMinutes() >= timeLimit.toMinutes())
+            return Text.literal("Game Over")
+
+        timeBar.value = ((1f - (duration.toSeconds() / timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
+
+        return Text.literal(secondsRemaining.formatString())
+            .formatted(Formatting.BOLD, if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
+    }
+
     fun updateTimer() {
         if (state != GameState.PLAYING) return
         val start = startedAt ?: return
 
-        val timeLimit = config.timerMinutes?.let { Duration.ofMinutes(it.toLong()) }
-
-        val timerText = if (timeLimit != null) {
-            val duration = Duration.between(start, Instant.now())
-            val secondsRemaining = Duration.ofSeconds(timeLimit.seconds - duration.toSeconds())
-
-            timeBar.value = ((1f - (duration.toSeconds() / timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
-
-            if (duration.toMinutes() >= timeLimit.toMinutes()) {
-                end("Out of time!")
-                return
-            }
-
-            Text.literal(secondsRemaining.formatString())
-                .formatted(Formatting.BOLD, if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
-        } else {
-            Text.literal("(No Time Limit)")
-                .formatted(Formatting.BOLD)
+        val isTimeOver = config.timerMinutes?.let { timeLimit ->
+            Duration.between(start, Instant.now()).toMinutes() >= timeLimit.toLong()
+        }
+        if (isTimeOver == true) {
+            end("Out of time!")
+            return
         }
 
         timeBar.name = Text.empty()
             .append(Text.literal("Time Remaining: "))
-            .append(timerText)
+            .append(formatTimeRemaining())
             .append(Text.literal(" or "))
             .append(
-                Text.literal(config.winCondition.name.lowercase().replace('_', ' '))
+                Text.literal(config.winCondition.formatName())
                     .formatted(Formatting.BOLD)
             )
+    }
+
+    private val teamScoreboards by lazy {
+        BingoTeam.values()
+            .associateWith { team ->
+                minecraftServer.scoreboard.addObjective(
+                    "bingo_sidebar_" + team.name,
+                    ScoreboardCriterion.DUMMY,
+                    Text.literal("Minecraft BINGO"),
+                    ScoreboardCriterion.RenderType.INTEGER,
+                )
+            }
+    }
+
+    fun updateSidebars() {
+        for ((team, objective) in teamScoreboards) {
+            val scoreboardText = buildList {
+                add("")
+                add("Game type: ${Formatting.YELLOW}${config.winCondition.formatName()}")
+                add("Time left: ${Formatting.YELLOW}${formatTimeRemaining().string}")
+                add("")
+                add("Team: ${team.formatting}${team.name}")
+                add("Items scored: ${team.formatting}${card.countItems(team)}")
+                add("Lines scored: ${team.formatting}${card.countLines(team)}")
+                add("")
+                add("Leading team: ${leadingTeam?.let { it.formatting.toString() + it.name } ?: "${Formatting.GRAY}Tie"}")
+                leadingTeam?.let { leadingTeam ->
+                    add("Items scored: ${leadingTeam.formatting}${card.countItems(leadingTeam)}")
+                    add("Lines scored: ${leadingTeam.formatting}${card.countLines(leadingTeam)}")
+                }
+                add("")
+            }.mapIndexed { i, str ->
+                str.ifEmpty { " ".repeat(i) }
+            }
+
+            // Remove any previous sidebar lines that have been changed
+            for (score in minecraftServer.scoreboard.getAllPlayerScores(objective)) {
+                if (!scoreboardText.contains(score.playerName))
+                    minecraftServer.scoreboard.resetPlayerScore(score.playerName, objective)
+            }
+
+            // Set the score of any new sidebar lines to the list index
+            scoreboardText.forEachIndexed { i, text ->
+                val score = minecraftServer.scoreboard.getPlayerScore(text, objective)
+                score.score = scoreboardText.size - i - 1
+            }
+
+            // Manually send the scoreboard packets to each player
+            val packets = minecraftServer.scoreboard.createChangePackets(objective)
+            val displayPacket = ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, objective)
+            minecraftServer.playerManager.playerList
+                .filter { it.isTeamPlayer(team.team()) }
+                .filter { ConfigService.getPlayer(it.uuidAsString).scoreboard }
+                .forEach {
+                    for (packet in packets)
+                        it.networkHandler.sendPacket(packet)
+
+                    it.networkHandler.sendPacket(displayPacket)
+                }
+        }
+    }
+
+    fun updateSettings(player: ServerPlayerEntity) {
+        val config = ConfigService.getPlayer(player.uuidAsString)
+
+        if (config.bossbar)
+            timeBar.addPlayer(player)
+        else timeBar.removePlayer(player)
+
+        if (!config.scoreboard) {
+            // send a packet remove the scoreboard sidebar if set to false
+            player.networkHandler.sendPacket(ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, null))
+        }
     }
 
 }
