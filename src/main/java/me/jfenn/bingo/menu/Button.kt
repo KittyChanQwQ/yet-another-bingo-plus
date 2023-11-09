@@ -4,9 +4,13 @@ import me.jfenn.bingo.event.InteractionEntityEvents
 import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.nbt.NbtDouble
+import net.minecraft.nbt.NbtFloat
+import net.minecraft.nbt.NbtList
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerButton(
@@ -15,13 +19,15 @@ fun MenuComponent.registerButton(
     isActiveProp: Property<Boolean> = ConstantProperty(false),
     width: Float = MENU_HITBOX_WIDTH,
     height: Float = MENU_HITBOX_HEIGHT,
+    facing: Direction = Direction.SOUTH,
     requiredPermissionLevel: Int = 2,
     onClick: (player: PlayerEntity) -> Unit,
 ) {
     val isActive by isActiveProp
 
     registerEntity(EntityType.INTERACTION) {
-        put("Pos", position.add(0.0, 0.0, -width / 2.0).toNbt())
+        val offset = -width / 2.0
+        put("Pos", position.add(facing.vector.x * offset, 0.0, facing.vector.z * offset).toNbt())
         putFloat("width", width)
         putFloat("height", height)
     }.onUpdate { entity ->
@@ -35,6 +41,10 @@ fun MenuComponent.registerButton(
 
     registerEntity(EntityType.TEXT_DISPLAY) {
         put("Pos", position.toNbt())
+        put("Rotation", NbtList().apply {
+            add(NbtFloat.of(facing.asRotation()))
+            add(NbtFloat.of(0f))
+        })
         putString("text", Text.Serializer.toJson(
             Text.empty()
                 .append(if (isActive) Text.literal("✔ ") else Text.empty())

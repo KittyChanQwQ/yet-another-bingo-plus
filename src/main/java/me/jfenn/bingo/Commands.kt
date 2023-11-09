@@ -12,11 +12,13 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.GeneratorTier
 import me.jfenn.bingo.card.TeamService
+import me.jfenn.bingo.commands.Coords
 import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.config.PlayerSettings
 import me.jfenn.bingo.config.WinCondition
 import me.jfenn.bingo.menu.MenuService
 import me.jfenn.bingo.utils.allHeldStacks
+import me.jfenn.bingo.utils.formatTitle
 import me.jfenn.bingo.utils.sendInfoMessage
 import me.jfenn.bingo.utils.sendWarningMessage
 import net.minecraft.item.Items
@@ -27,36 +29,7 @@ import net.minecraft.text.Text
  * Return a sequence of commands related to the game
  */
 fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequence {
-    // send current player coordinates to other team members
-    literal<ServerCommandSource?>("coords")
-        .requires { ctx -> ctx.player?.let { BingoTeam.fromPlayer(it) } != null }
-        .then(
-            argument<ServerCommandSource?, String?>("message", greedyString())
-                .executes { ctx ->
-                    val player = ctx.source.player ?: return@executes 0
-                    val team = BingoTeam.fromPlayer(player) ?: return@executes 0
-                    val message = getString(ctx, "message")
-
-                    team.broadcastMessage(
-                        Text.empty()
-                            .append(Text.literal("TEAM ${player.entityName}").formatted(team.formatting))
-                            .append(Text.literal(with(player.blockPos) { ": [$x, $y, $z] $message" }))
-                    )
-                    1
-                }
-        )
-        .executes { ctx ->
-            val player = ctx.source.player ?: return@executes 0
-            val team = BingoTeam.fromPlayer(player) ?: return@executes 0
-
-            team.broadcastMessage(
-                Text.empty()
-                    .append(Text.literal("TEAM ${player.entityName}").formatted(team.formatting))
-                    .append(Text.literal(with(player.blockPos) { ": [$x, $y, $z]" }))
-            )
-            1
-        }
-        .also { yield(it) }
+    yieldAll(Coords.register())
 
     // send a message to all teams, outside of the team-local chat
     listOf("all", "g", "global")
@@ -99,14 +72,9 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                                 argument<ServerCommandSource, Boolean>("value", bool())
                                     .executes { ctx ->
                                         val player = ctx.source.player ?: return@executes 0
-
-                                        val config = ConfigService.getPlayer(player.uuidAsString)
                                         val value = getBool(ctx, "value")
-                                        field.set(config, value)
-                                        ConfigService.setPlayer(player.uuidAsString, config)
-
-                                        BingoGame.updateSettings(player)
-                                        ctx.source.player?.sendInfoMessage("${field.name.replaceFirstChar { it.uppercase() }}: $value")
+                                        ConfigService.setPlayerConfig(player, field, value)
+                                        player.sendInfoMessage("${field.name.formatTitle()}: $value")
                                         1
                                     }
                             )

@@ -26,6 +26,7 @@ import net.minecraft.structure.StructurePlacementData
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import org.joml.Vector3f
 import org.slf4j.LoggerFactory
@@ -48,6 +49,7 @@ object MenuService {
         lobbyMenu = component {
             registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.0))
             registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.0), config)
+            registerPlayerMenu(Vec3d(0.0, spawnPos.y + 2.0, 4.0), Direction.NORTH)
         }.also { it.spawn(tracker) }
     }
 

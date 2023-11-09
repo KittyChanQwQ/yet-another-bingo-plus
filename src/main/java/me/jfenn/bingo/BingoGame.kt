@@ -468,11 +468,11 @@ object BingoGame {
     }
 
     private fun formatTimeRemaining(): Text {
-        val start = startedAt ?: return Text.literal("Pre-Game")
         val timeLimit = config.timerMinutes?.let { Duration.ofMinutes(it.toLong()) }
             ?: return Text.literal("(No Time Limit)")
                 .formatted(Formatting.BOLD)
 
+        val start = startedAt ?: return Text.literal(timeLimit.formatString())
         val duration = Duration.between(start, Instant.now())
         val secondsRemaining = Duration.ofSeconds(timeLimit.seconds - duration.toSeconds())
 
@@ -492,19 +492,10 @@ object BingoGame {
         val isTimeOver = config.timerMinutes?.let { timeLimit ->
             Duration.between(start, Instant.now()).toMinutes() >= timeLimit.toLong()
         }
+
         if (isTimeOver == true) {
             end("Out of time!")
-            return
         }
-
-        timeBar.name = Text.empty()
-            .append(Text.literal("Time Remaining: "))
-            .append(formatTimeRemaining())
-            .append(Text.literal(" or "))
-            .append(
-                Text.literal(config.winCondition.formatName())
-                    .formatted(Formatting.BOLD)
-            )
     }
 
     private val teamScoreboards by lazy {
@@ -520,6 +511,15 @@ object BingoGame {
     }
 
     fun updateSidebars() {
+        timeBar.name = Text.empty()
+            .append(Text.literal("Time Remaining: "))
+            .append(formatTimeRemaining())
+            .append(Text.literal(" or "))
+            .append(
+                Text.literal(config.winCondition.formatName())
+                    .formatted(Formatting.BOLD)
+            )
+
         for ((team, objective) in teamScoreboards) {
             val scoreboardText = buildList {
                 add("")
