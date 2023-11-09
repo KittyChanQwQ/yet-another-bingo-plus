@@ -6,7 +6,6 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.BingoGame
 import me.jfenn.bingo.GameState
 import me.jfenn.bingo.card.BingoTeam
-import me.jfenn.bingo.utils.formatString
 import me.jfenn.bingo.utils.formatStringSmall
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.command.ServerCommandSource

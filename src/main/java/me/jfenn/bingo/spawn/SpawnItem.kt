@@ -1,6 +1,7 @@
 package me.jfenn.bingo.spawn
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.BingoGame
 import me.jfenn.bingo.NBT_BINGO_IGNORE
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.StringNbtReader
@@ -11,7 +12,7 @@ import org.slf4j.LoggerFactory
 @Serializable
 data class SpawnItem(
     val id: String,
-    val nbt: String = "{}",
+    val nbt: String? = null,
     val count: Int = 1,
 ) {
 
@@ -23,7 +24,7 @@ data class SpawnItem(
 
             return SpawnItem(
                 id = identifier.toString(),
-                nbt = itemStack.getOrCreateNbt().toString(),
+                nbt = itemStack.nbt?.toString(),
                 count = itemStack.count,
             )
         }
@@ -53,24 +54,28 @@ data class SpawnItem(
             if (extraStackCount > 0) {
                 yield(ItemStack(item, extraStackCount))
             }
-        }
+        }.toList()
 
-        return itemStacks
-            .map {
+        if (nbt != null && nbt != "{}") {
+            for (itemStack in itemStacks) {
                 try {
-                    it.nbt = StringNbtReader.parse(nbt)
+                    itemStack.nbt = StringNbtReader.parse(nbt)
                 } catch (e: Error) {
                     log.error("spawnEquipmentItems nbt '${nbt}' could not be parsed", e)
                 }
+            }
+        }
 
+        if (BingoGame.config.preventScoringSpawnKitItems) {
+            for (itemStack in itemStacks) {
                 // set BINGO_IGNORE flag so that spawn items do not count on the bingo card
-                it.getOrCreateNbt().apply {
+                itemStack.getOrCreateNbt().apply {
                     putBoolean(NBT_BINGO_IGNORE, true)
                 }
-
-                it
             }
-            .toList()
+        }
+
+        return itemStacks
     }
 
 }

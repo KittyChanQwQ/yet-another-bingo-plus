@@ -18,6 +18,7 @@ data class BingoConfig(
 
     var spawnDimension: String = "minecraft:overworld",
 
+    var preventScoringSpawnKitItems: Boolean = false,
     var refillPlayerKitOnRespawn: Boolean = true,
     var isPlayerKit: Boolean = false,
     var playerKitItems: List<SpawnItem> = listOf(

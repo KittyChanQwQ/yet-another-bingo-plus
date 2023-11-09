@@ -1,6 +1,5 @@
 package me.jfenn.bingo.menu
 
-import com.mojang.brigadier.StringReader
 import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.config.PlayerSettings
 import me.jfenn.bingo.lobbyWorld
@@ -11,7 +10,6 @@ import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtFloat
 import net.minecraft.nbt.NbtList
 import net.minecraft.particle.DustParticleEffect
-import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.math.Direction
