@@ -464,15 +464,14 @@ object BingoGame {
 
     private fun formatTimeRemaining(): Text {
         val timeLimit = config.timerMinutes?.let { Duration.ofMinutes(it.toLong()) }
-            ?: return Text.literal("(No Time Limit)")
-                .formatted(Formatting.BOLD)
+            ?: return Text.literal("(No Time Limit)").formatted(Formatting.BOLD)
 
         val start = startedAt ?: return Text.literal(timeLimit.formatString())
         val duration = Duration.between(start, Instant.now())
         val secondsRemaining = Duration.ofSeconds(timeLimit.seconds - duration.toSeconds())
 
-        if (duration.toMinutes() >= timeLimit.toMinutes())
-            return Text.literal("Game Over")
+        if (duration.toMinutes() >= timeLimit.toMinutes() || state == GameState.POSTGAME)
+            return Text.literal("(Game Over)").formatted(Formatting.BOLD)
 
         timeBar.value = ((1f - (duration.toSeconds() / timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
 
@@ -555,14 +554,24 @@ object BingoGame {
             // Manually send the scoreboard packets to each player
             val packets = minecraftServer.scoreboard.createChangePackets(objective)
             val displayPacket = ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, objective)
+            val hidePacket = ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, null)
             minecraftServer.playerManager.playerList
                 .filter { BingoTeam.fromPlayer(it) == team }
                 .filter { ConfigService.getPlayer(it.uuidAsString).scoreboard }
-                .forEach {
-                    for (packet in packets)
-                        it.networkHandler.sendPacket(packet)
+                .forEach { player ->
+                    // if the player is holding the map item, show the scoreboard; otherwise, hide it
+                    val isHoldingMapItem = player.interactionManager.gameMode != GameMode.SURVIVAL
+                            || MapItemService.isMapItem(player.mainHandStack)
+                            || MapItemService.isMapItem(player.offHandStack)
 
-                    it.networkHandler.sendPacket(displayPacket)
+                    if (isHoldingMapItem) {
+                        for (packet in packets)
+                            player.networkHandler.sendPacket(packet)
+
+                        player.networkHandler.sendPacket(displayPacket)
+                    } else {
+                        player.networkHandler.sendPacket(hidePacket)
+                    }
                 }
         }
     }
