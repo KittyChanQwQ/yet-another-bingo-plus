@@ -21,12 +21,17 @@ import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
+import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket
+import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.scoreboard.ScoreboardCriterion
 import net.minecraft.scoreboard.ScoreboardDisplaySlot
+import net.minecraft.scoreboard.ServerScoreboard
 import net.minecraft.server.command.CommandOutput
+import net.minecraft.server.command.ScoreboardCommand
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
@@ -541,8 +546,12 @@ object BingoGame {
 
             // Remove any previous sidebar lines that have been changed
             for (score in minecraftServer.scoreboard.getAllPlayerScores(objective)) {
-                if (!scoreboardText.contains(score.playerName))
+                if (!scoreboardText.contains(score.playerName)) {
                     minecraftServer.scoreboard.resetPlayerScore(score.playerName, objective)
+                    // The server sometimes fails to send this packet, so we're adding it manually. I don't know why.
+                    // - yes, this does need to be sent to all players, otherwise it may cause desync
+                    minecraftServer.playerManager.sendToAll(ScoreboardPlayerUpdateS2CPacket(ServerScoreboard.UpdateMode.REMOVE, objective.name, score.playerName, 0))
+                }
             }
 
             // Set the score of any new sidebar lines to the list index
