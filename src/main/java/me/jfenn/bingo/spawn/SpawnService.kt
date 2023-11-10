@@ -6,8 +6,6 @@ import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.utils.giveOrEquipStack
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.ChestBlockEntity
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.mob.MobEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos

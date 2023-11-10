@@ -32,7 +32,8 @@ export default defineConfig({
       {
         text: 'Configuration',
         items: [
-          { text: 'Editor', link: '/config' },
+          { text: 'Configuration', link: '/config' },
+          { text: 'Tier List Editor', link: '/tier-editor' },
           { text: 'Item Distribution', link: '/item-distribution' },
           { text: 'Item Images', link: '/item-images' },
           { text: 'Lobby Structure', link: '/lobby-structure' },
@@ -41,5 +42,8 @@ export default defineConfig({
     ],
 
     socialLinks: [],
-  }
+  },
+  markdown: {
+    math: true,
+  },
 })
