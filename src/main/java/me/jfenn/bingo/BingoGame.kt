@@ -14,6 +14,7 @@ import me.jfenn.bingo.menu.MenuService
 import me.jfenn.bingo.spawn.SpawnService
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.formatString
+import me.jfenn.bingo.utils.formatTitle
 import me.jfenn.bingo.utils.giveOrEquipStack
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.item.FilledMapItem
@@ -494,9 +495,11 @@ object BingoGame {
 
     private val teamScoreboards by lazy {
         BingoTeam.values()
+            .toMutableList<BingoTeam?>()
+            .apply { add(null) }
             .associateWith { team ->
                 minecraftServer.scoreboard.addObjective(
-                    "bingo_sidebar_" + team.name,
+                    "bingo_sidebar_" + team?.name,
                     ScoreboardCriterion.DUMMY,
                     Text.literal("Minecraft BINGO"),
                     ScoreboardCriterion.RenderType.INTEGER,
@@ -510,20 +513,23 @@ object BingoGame {
             .append(formatTimeRemaining())
             .append(Text.literal(" or "))
             .append(
-                Text.literal(config.winCondition.formatName())
+                Text.literal(config.winCondition.name.formatTitle())
                     .formatted(Formatting.BOLD)
             )
 
         for ((team, objective) in teamScoreboards) {
             val scoreboardText = buildList {
                 add("")
-                add("Game type: ${Formatting.YELLOW}${config.winCondition.formatName()}")
+                add("Game mode: ${Formatting.YELLOW}${config.gameMode.name.formatTitle()}")
+                add("Win condition: ${Formatting.YELLOW}${config.winCondition.name.formatTitle()}")
                 add("Time left: ${Formatting.YELLOW}${formatTimeRemaining().string}")
                 add("")
-                add("Team: ${team.formatting}${team.name}")
-                add("Items scored: ${team.formatting}${card.countItems(team)}")
-                add("Lines scored: ${team.formatting}${card.countLines(team)}")
-                add("")
+                if (team != null) {
+                    add("Team: ${team.formatting}${team.name}")
+                    add("Items scored: ${team.formatting}${card.countItems(team)}")
+                    add("Lines scored: ${team.formatting}${card.countLines(team)}")
+                    add("")
+                }
                 add("Leading team: ${leadingTeam?.let { it.formatting.toString() + it.name } ?: "${Formatting.GRAY}Tie"}")
                 leadingTeam?.let { leadingTeam ->
                     add("Items scored: ${leadingTeam.formatting}${card.countItems(leadingTeam)}")
@@ -550,7 +556,7 @@ object BingoGame {
             val packets = minecraftServer.scoreboard.createChangePackets(objective)
             val displayPacket = ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, objective)
             minecraftServer.playerManager.playerList
-                .filter { it.isTeamPlayer(team.team()) }
+                .filter { BingoTeam.fromPlayer(it) == team }
                 .filter { ConfigService.getPlayer(it.uuidAsString).scoreboard }
                 .forEach {
                     for (packet in packets)

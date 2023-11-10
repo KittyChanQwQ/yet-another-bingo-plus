@@ -49,7 +49,7 @@ object MenuService {
         lobbyMenu = component {
             registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.0))
             registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.0), config)
-            registerPlayerMenu(Vec3d(0.0, spawnPos.y + 2.0, 4.0), Direction.NORTH)
+            registerPlayerMenu(Vec3d(-2.0, spawnPos.y + 2.0, 7.0), Direction.NORTH)
         }.also { it.spawn(tracker) }
     }
 

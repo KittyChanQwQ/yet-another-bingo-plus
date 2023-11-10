@@ -1,6 +1,10 @@
 package me.jfenn.bingo.utils
 
 fun String.formatTitle(): String {
-    return this.replaceFirstChar { it.uppercase() }
+    return this
         .replace(Regex("([a-z][A-Z])")) { it.value[0] + " " + it.value[1] }
+        .lowercase()
+        .replace('_', ' ')
+        .replaceFirstChar { it.uppercase() }
+        .replace(Regex("(\\s[a-z])")) { it.value.uppercase() }
 }
