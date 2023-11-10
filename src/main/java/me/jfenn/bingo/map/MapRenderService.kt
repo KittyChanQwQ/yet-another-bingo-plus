@@ -63,9 +63,7 @@ object MapRenderService {
         imageMap[item.identifier]?.let { return it }
 
         try {
-            val inputStream = readTileImage(item.identifier)
-
-            val image = ImageIO.read(inputStream)
+            val image = readTileImage(item.identifier).use { ImageIO.read(it) }
             val tileImage = BingoTileImage()
 
             for (x in 0 until TILE_IMAGE) {

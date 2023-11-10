@@ -27,7 +27,7 @@ object Config {
     fun <T: Any> read(clazz: KClass<T>, file: String): T {
         val filePath = configDir.resolve(file)
         return try {
-            json.decodeFromStream(clazz.serializer(), Files.newInputStream(filePath))
+            Files.newInputStream(filePath).use { json.decodeFromStream(clazz.serializer(), it) }
         } catch (e: Exception) {
             json.decodeFromString(clazz.serializer(), "{}").also { write(clazz, file, it) }
         }
@@ -64,9 +64,7 @@ object Config {
 
             // write the default resource file to the config dir
             FileOutputStream(filePath.toFile()).use { output ->
-                val input = default()
-                IOUtils.copy(input, output)
-                input.close()
+                default().use { input -> IOUtils.copy(input, output) }
             }
         }
 
