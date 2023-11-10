@@ -3,6 +3,7 @@ package me.jfenn.bingo.spawn
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.minecraftServer
+import me.jfenn.bingo.utils.giveOrEquipStack
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.entity.EquipmentSlot
@@ -115,15 +116,8 @@ object SpawnService {
             for (player in players) {
                 // copy the stack for each player
                 val playerStack = stack.copy()
-
                 // if the item can be equipped (e.g. iron chestplate), put it in an equipment slot
-                val slot = MobEntity.getPreferredEquipmentSlot(stack)
-                if (player.canEquip(playerStack) && slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND) {
-                    player.equipStack(slot, playerStack)
-                } else {
-                    // otherwise, put it in the player's inventory
-                    player.giveItemStack(playerStack)
-                }
+                player.giveOrEquipStack(playerStack)
             }
         }
     }

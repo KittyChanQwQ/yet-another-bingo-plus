@@ -4,19 +4,22 @@ import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.card.BingoCardEntry
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.CardService
-import me.jfenn.bingo.config.*
+import me.jfenn.bingo.config.BingoConfig
+import me.jfenn.bingo.config.BingoMode
+import me.jfenn.bingo.config.ConfigService
+import me.jfenn.bingo.config.config
 import me.jfenn.bingo.map.MapItemService
 import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.menu.MenuService
 import me.jfenn.bingo.spawn.SpawnService
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.formatString
+import me.jfenn.bingo.utils.giveOrEquipStack
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.NbtList
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
@@ -61,12 +64,12 @@ object BingoGame {
             }
     }
 
-    var card: BingoCard = CardService.generate(config.itemDistribution)
+    var card: BingoCard = CardService.generate(config)
 
     private var startedAt: Instant? = null
 
     fun rollCard() {
-        card = CardService.generate(config.itemDistribution)
+        card = CardService.generate(config)
 
         // update the card map images
         for (team in BingoTeam.values()) {
@@ -283,26 +286,17 @@ object BingoGame {
         if (!player.isAlive) return
         if (!config.isElytra) return
 
-        val ARMOR_SLOT = 2
-        val hasElytra = player.inventory.getArmorStack(ARMOR_SLOT).item == Items.ELYTRA
-
+        val hasElytra = player.allHeldStacks().any { it.item == Items.ELYTRA && it.nbt?.getBoolean(NBT_BINGO_VANISH) == true }
         if (!hasElytra) {
             // insert elytra in armor slot
-            player.inventory.armor[ARMOR_SLOT] = ItemStack(Items.ELYTRA, 1).also {
+            player.giveOrEquipStack(ItemStack(Items.ELYTRA, 1).also {
                 it.getOrCreateNbt().apply {
                     // unbreakable (should not take damage)
                     putBoolean("Unbreakable", true)
-                    put("Enchantments", NbtList().apply {
-                        // curse of binding
-                        add(NbtCompound().apply {
-                            putString("id", "binding_curse")
-                            putInt("lvl", 1)
-                        })
-                    })
                     putBoolean(NBT_BINGO_IGNORE, true)
                     putBoolean(NBT_BINGO_VANISH, true)
                 }
-            }
+            })
         }
 
         // also give rocket

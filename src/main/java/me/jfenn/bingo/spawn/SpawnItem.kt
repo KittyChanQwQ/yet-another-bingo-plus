@@ -30,11 +30,15 @@ data class SpawnItem(
         }
     }
 
-    fun toItemStacks(): List<ItemStack> {
-        val identifier = Identifier.tryParse(id) ?: run {
+    fun toIdentifier(): Identifier? {
+        return Identifier.tryParse(id) ?: run {
             log.error("Cannot parse spawnEquipmentItems id '$id'")
             null
-        } ?: return emptyList()
+        }
+    }
+
+    fun toItemStacks(): List<ItemStack> {
+        val identifier = toIdentifier() ?: return emptyList()
 
         val item = try {
             Registries.ITEM.get(identifier)

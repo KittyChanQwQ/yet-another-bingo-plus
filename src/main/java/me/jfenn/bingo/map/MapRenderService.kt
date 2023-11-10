@@ -9,6 +9,7 @@ import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.minecraftServer
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
+import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import javax.imageio.ImageIO
@@ -39,30 +40,30 @@ object MapRenderService {
         val achieved: Array<Byte> = Array(16*16) { 0 },
     )
 
-    private val imageMap = mutableMapOf<String, BingoTileImage?>()
+    private val imageMap = mutableMapOf<Identifier, BingoTileImage?>()
 
     fun validateItems() {
         for (item in Registries.ITEM.keys) {
             try {
-                readTileImage(item.value.path)
+                readTileImage(item.value).close()
             } catch (e: Throwable) {
                 log.warn("Missing item image: ${item.value.path}.png")
             }
         }
     }
 
-    private fun readTileImage(item: String): InputStream {
-        return Config.readStream("images/${item.lowercase()}.png", false) {
-            javaClass.getResourceAsStream("/bingo/images/${item.lowercase()}.png")
-                ?: throw IllegalArgumentException("Cannot find default texture for ${item.lowercase()}.png")
+    private fun readTileImage(item: Identifier): InputStream {
+        return Config.readStream("images/${item.path}.png", false) {
+            javaClass.getResourceAsStream("/bingo/images/${item.path}.png")
+                ?: throw IllegalArgumentException("Cannot find default texture for ${item.path}.png")
         }
     }
 
     private fun getTileImage(item: BingoCardEntry): BingoTileImage? {
-        imageMap[item.item]?.let { return it }
+        imageMap[item.identifier]?.let { return it }
 
         try {
-            val inputStream = readTileImage(item.item)
+            val inputStream = readTileImage(item.identifier)
 
             val image = ImageIO.read(inputStream)
             val tileImage = BingoTileImage()
@@ -82,11 +83,11 @@ object MapRenderService {
                 }
             }
 
-            imageMap[item.item] = tileImage
+            imageMap[item.identifier] = tileImage
             return tileImage
         } catch (e: Throwable) {
-            log.error("Error reading item image: ${item.item}", e)
-            imageMap[item.item] = null
+            log.error("Error reading item image: ${item.identifier}", e)
+            imageMap[item.identifier] = null
             return null
         }
     }

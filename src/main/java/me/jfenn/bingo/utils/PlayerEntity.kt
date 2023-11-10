@@ -1,5 +1,7 @@
 package me.jfenn.bingo.utils
 
+import net.minecraft.entity.EquipmentSlot
+import net.minecraft.entity.mob.MobEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
@@ -13,6 +15,21 @@ fun PlayerEntity.allHeldStacks() = sequence<ItemStack> {
 
     // yield the current cursor stack
     yield(currentScreenHandler.cursorStack)
+}
+
+/**
+ * Give the player an ItemStack, equipping it in the preferred slot if armor,
+ * and otherwise placing it in the inventory
+ */
+fun PlayerEntity.giveOrEquipStack(itemStack: ItemStack) {
+    // if the item can be equipped (e.g. iron chestplate), put it in an equipment slot
+    val slot = MobEntity.getPreferredEquipmentSlot(itemStack)
+    if (canEquip(itemStack) && slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND) {
+        equipStack(slot, itemStack)
+    } else {
+        // otherwise, put it in the player's inventory
+        giveItemStack(itemStack)
+    }
 }
 
 fun PlayerEntity.sendInfoMessage(text: String) {

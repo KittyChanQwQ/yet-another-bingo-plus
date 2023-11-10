@@ -18,7 +18,10 @@ data class BingoConfig(
 
     var spawnDimension: String = "minecraft:overworld",
 
+    // adds BINGO_IGNORE to spawn kit items, preventing them from being scored
     var preventScoringSpawnKitItems: Boolean = false,
+    // excludes the active spawn kit items from item tiers when generating a card
+    var excludeSpawnKitItemsFromCards: Boolean = true,
     var refillPlayerKitOnRespawn: Boolean = true,
     var isPlayerKit: Boolean = false,
     var playerKitItems: List<SpawnItem> = listOf(

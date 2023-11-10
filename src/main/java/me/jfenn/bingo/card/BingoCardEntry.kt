@@ -7,10 +7,8 @@ import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 
 data class BingoCardEntry(
-    val item: String,
+    val identifier: Identifier,
 ) {
-
-    val identifier get() = Identifier.of("minecraft", item.lowercase())!!
 
     val teams = HashSet<BingoTeam>()
 

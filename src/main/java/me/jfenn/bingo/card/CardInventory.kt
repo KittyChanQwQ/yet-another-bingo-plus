@@ -3,8 +3,6 @@ package me.jfenn.bingo.card
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
-import net.minecraft.registry.Registries
-import net.minecraft.util.Identifier
 
 class CardInventory(
     val card: BingoCard,
@@ -26,7 +24,7 @@ class CardInventory(
 
         if (slotX in 0 until 5 && slotY in 0 until 5) {
             val entry = card.entry(slotX, slotY)
-            val item = Registries.ITEM[Identifier.of("minecraft", entry.item.lowercase())]
+            val item = entry.item()
             return ItemStack(item, 1)
         }
 
