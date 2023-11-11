@@ -107,7 +107,7 @@ object MapRenderService {
                 if (x < MAP_BORDER || y < MAP_BORDER || x >= MAP_SIZE - MAP_BORDER || y >= MAP_SIZE - MAP_BORDER) {
                     state.colors[i] = when {
                         x == 0 || y == 0 -> borderLight
-                        x == MAP_SIZE-1 || y == MAP_SIZE-1 -> (team.color*4) + 3
+                        x == MAP_SIZE-1 || y == MAP_SIZE-1 -> borderDark
                         x in 1 until MAP_BORDER-1 || y in 1 until MAP_BORDER-1 -> borderMid
                         x in MAP_SIZE - MAP_BORDER + 1 until MAP_SIZE-1 || y in MAP_SIZE - MAP_BORDER + 1 until MAP_SIZE-1 -> borderMid
                         x == MAP_SIZE - MAP_BORDER || y == MAP_SIZE - MAP_BORDER -> borderLight
@@ -135,6 +135,25 @@ object MapRenderService {
                         state.colors[i] = COLOR_SHADOW.asByte
                     }
                     continue
+                }
+
+                if (
+                    config.drawOtherTeamCompletions
+                    && item.teams.isNotEmpty()
+                    && (
+                        tileX == 0
+                        || tileX == TILE_SIZE - TILE_MARGIN - 1
+                        || tileY == 0
+                        || tileY == TILE_SIZE - TILE_MARGIN - 1
+                    )
+                ) {
+                    val itemTeams = item.teams.filter { it != team }
+                    val tileTeamX = (tileX + tileY) * itemTeams.size / ((TILE_SIZE - TILE_MARGIN) * 2)
+                    val itemTeam = itemTeams.getOrNull(tileTeamX)
+                    if (itemTeam != null) {
+                        state.colors[i] = ((itemTeam.color*4) + 1).toUByte().toByte()
+                        continue
+                    }
                 }
 
                 // draw the item image in the tile (offset by tile padding)

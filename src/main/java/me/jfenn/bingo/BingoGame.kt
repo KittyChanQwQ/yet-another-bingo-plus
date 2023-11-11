@@ -372,7 +372,7 @@ object BingoGame {
         if (updatedTeams.isEmpty()) return
 
         // update the team map(s)
-        if (config.gameMode == BingoMode.LOCKOUT) {
+        if (config.gameMode == BingoMode.LOCKOUT || config.drawOtherTeamCompletions) {
             // if the mode is LOCKOUT, all team cards need to be updated (to redraw locked items)
             for (team in BingoTeam.values())
                 MapRenderService.update(team, card, config)

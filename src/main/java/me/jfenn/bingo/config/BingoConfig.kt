@@ -10,13 +10,19 @@ data class BingoConfig(
     var winCondition: WinCondition = WinCondition.THREE_LINES,
     var timerMinutes: Int? = 60,
     var itemDistribution: List<Int> = listOf(2, 6, 9, 6, 2),
+
+    // game feature settings
     var isElytra: Boolean = false,
     var isUnlockRecipes: Boolean = true,
     var isPvpEnabled: Boolean = true,
     var isKeepInventory: Boolean = false,
+
+    // team spawnpoint settings
+    var spawnDimension: String = "minecraft:overworld",
     var spreadPlayersDistance: Int = 100,
 
-    var spawnDimension: String = "minecraft:overworld",
+    // bingo card settings
+    var drawOtherTeamCompletions: Boolean = false,
 
     // adds BINGO_IGNORE to spawn kit items, preventing them from being scored
     var preventScoringSpawnKitItems: Boolean = false,
