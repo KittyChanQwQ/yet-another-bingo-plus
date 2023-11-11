@@ -10,11 +10,17 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtFloat;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -22,7 +28,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Optional;
 
 @Mixin(PlayerManager.class)
-public class PlayerManagerMixin {
+public abstract class PlayerManagerMixin {
+
+    @Shadow @Final private MinecraftServer server;
+    Logger log = LoggerFactory.getLogger(PlayerManagerMixin.class);
 
     @Inject(at = @At(value = "RETURN"), method = "loadPlayerData", cancellable = true)
     private void loadPlayerData(ServerPlayerEntity player, CallbackInfoReturnable<NbtCompound> ci) {
@@ -51,15 +60,33 @@ public class PlayerManagerMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "respawnPlayer")
     private void respawnPlayer(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> info) {
+        if (alive) {
+            // the player is exiting through the end portal...
+            var dimension = SpawnService.INSTANCE.getSpawnDimension(BingoGame.INSTANCE.getConfig());
+            // if the spawnpoint is also in the end, then respawn them in the overworld
+            if (dimension.getRegistryKey().getValue().getPath().equals("the_end")) {
+                var overworld = player.getServer().getOverworld();
+                player.setSpawnPoint(overworld.getRegistryKey(), overworld.getSpawnPos(), overworld.getSpawnAngle(), false, false);
+            }
+            return;
+        }
         if (player.isSpawnForced()) return;
 
-        Optional<Vec3d> targetRespawn = PlayerEntity.findRespawnPosition(
-                player.server.getWorld(player.getSpawnPointDimension()),
-                player.getSpawnPointPosition(),
-                player.getSpawnAngle(),
-                player.isSpawnForced(),
-                alive
-        );
+        // this can be null if the player's previous spawnpoint failed... so it should default to the origin
+        Optional<Vec3d> targetRespawn = Optional.empty();
+        try {
+            var spawnWorld = player.server.getWorld(player.getSpawnPointDimension());
+            var spawnPosition = player.getSpawnPointPosition();
+            targetRespawn = PlayerEntity.findRespawnPosition(
+                    spawnWorld != null ? spawnWorld : server.getOverworld(),
+                    spawnPosition != null ? spawnPosition : BlockPos.ORIGIN,
+                    player.getSpawnAngle(),
+                    player.isSpawnForced(),
+                    alive
+            );
+        } catch (Throwable e) {
+            log.error("Exception thrown during PlayerEntity.findRespawnPosition", e);
+        }
 
         // if the targeted spawnpoint is invalid (i.e. a broken bed, or otherwise somewhere that would reset to the world spawn) ...
         if (targetRespawn.isEmpty()) {
@@ -71,7 +98,8 @@ public class PlayerManagerMixin {
             if (spawn == null) return;
 
             // change the player's spawnpoint back to the team spawn location
-            player.setSpawnPoint(player.getServer().getOverworld().getRegistryKey(), spawn, 0f, true, false);
+            var dimension = SpawnService.INSTANCE.getSpawnDimension(BingoGame.INSTANCE.getConfig());
+            player.setSpawnPoint(dimension.getRegistryKey(), spawn, 0f, true, false);
         }
     }
 }

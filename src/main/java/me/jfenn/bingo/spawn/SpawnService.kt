@@ -19,16 +19,20 @@ object SpawnService {
 
     var teamSpawnpoints = mapOf<BingoTeam, BlockPos>()
 
-    /**
-     * Create team spawnpoints and teleport teams to their spawns
-     */
-    fun createSpawnpoints(config: BingoConfig) {
-        val world = minecraftServer.worlds.find {
+    fun getSpawnDimension(config: BingoConfig): ServerWorld {
+        return minecraftServer.worlds.find {
             it.registryKey.value.toString() == config.spawnDimension
         } ?: run {
             log.error("Could not find spawnDimension '${config.spawnDimension}'; defaulting to minecraft:overworld")
             minecraftServer.overworld
         }
+    }
+
+    /**
+     * Create team spawnpoints and teleport teams to their spawns
+     */
+    fun createSpawnpoints(config: BingoConfig) {
+        val world = getSpawnDimension(config)
 
         // spread player teams to spawnpoint
         val spread = SpreadPlayers(world)
