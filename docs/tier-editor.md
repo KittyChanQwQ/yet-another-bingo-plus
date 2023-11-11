@@ -1,5 +1,6 @@
 ---
 layout: doc
+aside: false
 ---
 
 <script setup>
@@ -28,21 +29,3 @@ The items below can be dragged between each column to sort them into tiers. Drag
 
 <Config />
 
-<style lang="scss">
-	.content-container {
-		max-width: unset !important;
-	}
-
-	.aside {
-		display: none !important;
-	}
-
-	header {
-		// the default "position: fixed;" causes the drag-to-scroll behavior to break over the nav header
-		position: sticky !important;
-	}
-
-	.VPContent {
-		padding-top: 0 !important;
-	}
-</style>

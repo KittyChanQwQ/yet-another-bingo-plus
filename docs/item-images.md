@@ -30,7 +30,7 @@ must match its item id, which can be checked in the tier list or in-game (using 
 
 ## Color Accuracy
 
-Minecraft maps are represented by a `byte[]` of color indexes, which correspond to this list as described in [the Minecraft wiki](https://minecraft.fandom.com/wiki/Map_item_format#Base_colors).
+Minecraft maps are represented by a `byte[]` of color indexes, which correspond to this list as described in [the Minecraft wiki](https://minecraft.wiki/wiki/Map_item_format#Base_colors).
 
 In order to render item images, we need to pick the closest map color to each pixel. Currently this is achieved with a
 bruteforce method of comparing each possible color index to the desired color, and finding the closest value.

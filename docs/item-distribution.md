@@ -13,7 +13,7 @@ card. These values must add up to 25.
 
 In the tier list editor, dragging an item into another item will create an "item group":
 
-<div style="max-width: 280px;">
+<div style="max-width: 280px;" inert>
     <ItemGroup name="pointed_dripstone|dripstone_block" />
 </div>
 

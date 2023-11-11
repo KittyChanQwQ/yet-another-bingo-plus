@@ -1,7 +1,7 @@
 # Lobby Structure
 
 The lobby structure used as the game's spawn area can also be customized by adding an
-[NBT structure file](https://minecraft.fandom.com/wiki/Structure_Block)
+[NBT structure file](https://minecraft.wiki/wiki/Structure_Block)
 to the config.
 
 These files can be created with a structure block, which will place a `.nbt` file in your world save, under
