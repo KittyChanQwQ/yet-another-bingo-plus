@@ -173,7 +173,7 @@ object MenuService {
                     ?: throw RuntimeException("Unable to obtain lobby.nbt resource")
             }
 
-        val lobbyNbt = NbtIo.readCompressed(lobbyFileStream)
+        val lobbyNbt = lobbyFileStream.use { NbtIo.readCompressed(it) }
         placeStructure(lobbyWorld, BlockPos(0, 24, 0), lobbyNbt)
 
         // Search for team join entities

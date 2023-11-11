@@ -21,6 +21,12 @@ data class BingoConfig(
     var spawnDimension: String = "minecraft:overworld",
     var spreadPlayersDistance: Int = 100,
 
+    // score info settings
+    var showRemainingTime: Boolean = true,
+    var showCompletedItems: Boolean = true,
+    var showCompletedLines: Boolean = true,
+    var showLeadingTeam: Boolean = true,
+
     // bingo card settings
     var drawOtherTeamCompletions: Boolean = false,
 

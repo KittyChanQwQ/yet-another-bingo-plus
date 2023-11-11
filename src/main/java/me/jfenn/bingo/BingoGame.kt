@@ -21,9 +21,7 @@ import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
-import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
@@ -31,7 +29,6 @@ import net.minecraft.scoreboard.ScoreboardCriterion
 import net.minecraft.scoreboard.ScoreboardDisplaySlot
 import net.minecraft.scoreboard.ServerScoreboard
 import net.minecraft.server.command.CommandOutput
-import net.minecraft.server.command.ScoreboardCommand
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
@@ -399,24 +396,36 @@ object BingoGame {
         if (leadingTeam != this.leadingTeam) {
             this.leadingTeam = leadingTeam
 
-            val leadingMessage = if (leadingTeam != null) {
-                val items = card.countItems(leadingTeam)
+            // if the leading team should be shown, announce the new leader
+            if (config.showLeadingTeam) {
+                val leadingMessage = if (leadingTeam != null) {
+                    val items = card.countItems(leadingTeam)
 
-                Text.empty()
-                    .append(leadingTeam.text())
-                    .append(Text.literal(" is in the lead with $items item${"s".takeIf { items > 1 } ?: ""}!").formatted(Formatting.YELLOW))
-            } else {
-                val team = updatedTeams.first()
-                val items = card.countItems(team)
 
-                Text.empty()
-                    .append(team.text())
-                    .append(Text.literal(" is tied in the lead with $items item${"s".takeIf { items > 1 } ?: ""}!").formatted(Formatting.YELLOW))
+                    Text.empty()
+                        .append(leadingTeam.text())
+                        .append(Text.literal(
+                            " is in the lead"
+                                    + (if (config.showCompletedItems) " with $items item${"s".takeIf { items > 1 }.orEmpty()}" else "")
+                                    + "!"
+                        ).formatted(Formatting.YELLOW))
+                } else {
+                    val team = updatedTeams.first()
+                    val items = card.countItems(team)
+
+                    Text.empty()
+                        .append(team.text())
+                        .append(Text.literal(
+                            " is tied in the lead"
+                                    + (if (config.showCompletedItems) " with $items item${"s".takeIf { items > 1 } ?: ""}" else "")
+                                    + "!"
+                        ).formatted(Formatting.YELLOW))
+                }
+
+                minecraftServer.playerManager.playerList
+                    .filter { ConfigService.getPlayer(it.uuidAsString).leadingMessages }
+                    .forEach { it.sendMessage(leadingMessage, false) }
             }
-
-            minecraftServer.playerManager.playerList
-                .filter { ConfigService.getPlayer(it.uuidAsString).leadingMessages }
-                .forEach { it.sendMessage(leadingMessage, false) }
         }
     }
 
@@ -437,7 +446,7 @@ object BingoGame {
         tile.setAchieved(team, true)
         val linesAfter = card.countLines(team)
 
-        if (linesAfter > linesBefore) {
+        if (linesAfter > linesBefore && config.showCompletedLines) {
             val message = Text.empty()
                 .append(team.text())
                 .append(Text.literal(" has scored $linesAfter line${if (linesAfter > 1) "s" else ""}!").formatted(Formatting.YELLOW))
@@ -478,8 +487,6 @@ object BingoGame {
         if (duration.toMinutes() >= timeLimit.toMinutes() || state == GameState.POSTGAME)
             return Text.literal("(Game Over)").formatted(Formatting.BOLD)
 
-        timeBar.value = ((1f - (duration.toSeconds() / timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
-
         return Text.literal(secondsRemaining.formatString())
             .formatted(Formatting.BOLD, if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
     }
@@ -487,12 +494,17 @@ object BingoGame {
     fun updateTimer() {
         if (state != GameState.PLAYING) return
         val start = startedAt ?: return
+        val timeLimit = config.timerMinutes?.let { Duration.ofMinutes(it.toLong()) }
+            ?: return
 
-        val isTimeOver = config.timerMinutes?.let { timeLimit ->
-            Duration.between(start, Instant.now()).toMinutes() >= timeLimit.toLong()
+        val duration = Duration.between(start, Instant.now())
+
+        if (config.showRemainingTime) {
+            timeBar.value = ((1f - (duration.toSeconds() / timeLimit.seconds.toFloat())) * timeBar.maxValue).toInt()
         }
 
-        if (isTimeOver == true) {
+        val isTimeOver = duration.toMinutes() > timeLimit.toMinutes()
+        if (isTimeOver) {
             end("Out of time!")
         }
     }
@@ -513,9 +525,13 @@ object BingoGame {
 
     fun updateSidebars() {
         timeBar.name = Text.empty()
-            .append(Text.literal("Time Remaining: "))
-            .append(formatTimeRemaining())
-            .append(Text.literal(" or "))
+            .let {
+                if (config.showRemainingTime) {
+                    it.append(Text.literal("Time Remaining: "))
+                        .append(formatTimeRemaining())
+                        .append(Text.literal(" or "))
+                } else it
+            }
             .append(
                 Text.literal(config.winCondition.name.formatTitle())
                     .formatted(Formatting.BOLD)
@@ -526,7 +542,9 @@ object BingoGame {
                 add("")
                 add("Game mode: ${Formatting.YELLOW}${config.gameMode.name.formatTitle()}")
                 add("Win condition: ${Formatting.YELLOW}${config.winCondition.name.formatTitle()}")
-                add("Time left: ${Formatting.YELLOW}${formatTimeRemaining().string}")
+                if (config.showRemainingTime) {
+                    add("Time left: ${Formatting.YELLOW}${formatTimeRemaining().string}")
+                }
                 add("")
                 if (team != null) {
                     add("Team: ${team.formatting}${team.name}")
@@ -534,12 +552,32 @@ object BingoGame {
                     add("Lines scored: ${team.formatting}${card.countLines(team)}")
                     add("")
                 }
-                add("Leading team: ${leadingTeam?.let { it.formatting.toString() + it.name } ?: "${Formatting.GRAY}Tie"}")
-                leadingTeam?.let { leadingTeam ->
-                    add("Items scored: ${leadingTeam.formatting}${card.countItems(leadingTeam)}")
-                    add("Lines scored: ${leadingTeam.formatting}${card.countLines(leadingTeam)}")
+                if (config.showLeadingTeam) {
+                    add("Leading team: ${leadingTeam?.let { it.formatting.toString() + it.name } ?: "${Formatting.WHITE}Tie"}")
                 }
-                add("")
+
+                val formatting = when {
+                    // if the leading team should be hidden, don't use its formatting
+                    !config.showLeadingTeam -> Formatting.WHITE
+                    // otherwise, default to WHITE if the team is tied
+                    else -> leadingTeam?.formatting ?: Formatting.WHITE
+                }
+
+                if (config.showCompletedItems) {
+                    // if the leading team is a tie, find one of the tied teams to get the item/line count
+                    val leadingOrTied = leadingTeam ?: card.getLeadingByItems(allowTies = true)
+                    val itemsScored = leadingOrTied?.let { card.countItems(it)} ?: 0
+                    add("Items scored: $formatting$itemsScored")
+                }
+                if (config.showCompletedLines) {
+                    // if the leading team is a tie, find one of the tied teams to get the item/line count
+                    val leadingOrTied = leadingTeam ?: card.getLeadingByLines(allowTies = true)
+                    val linesScored = leadingOrTied?.let { card.countLines(it)} ?: 0
+                    add("Lines scored: $formatting$linesScored")
+                }
+
+                if (config.showLeadingTeam || config.showCompletedItems || config.showCompletedLines)
+                    add("")
             }.mapIndexed { i, str ->
                 str.ifEmpty { " ".repeat(i) }
             }

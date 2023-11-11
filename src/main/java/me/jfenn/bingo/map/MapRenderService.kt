@@ -151,7 +151,8 @@ object MapRenderService {
                     val tileTeamX = (tileX + tileY) * itemTeams.size / ((TILE_SIZE - TILE_MARGIN) * 2)
                     val itemTeam = itemTeams.getOrNull(tileTeamX)
                     if (itemTeam != null) {
-                        state.colors[i] = ((itemTeam.color*4) + 1).toUByte().toByte()
+                        val variant = if ((tileX + tileY) % 2 == 0) 2 else 3
+                        state.colors[i] = ((itemTeam.color*4) + variant).toUByte().toByte()
                         continue
                     }
                 }

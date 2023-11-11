@@ -73,11 +73,11 @@ class BingoCard(
      */
     fun countItems(team: BingoTeam): Int = entries.count { it.hasAchieved(team) }
 
-    fun getLeading(): BingoTeam? {
-        return getLeadingByLines() ?: getLeadingByItems()
+    fun getLeading(allowTies: Boolean = false): BingoTeam? {
+        return getLeadingByLines(allowTies) ?: getLeadingByItems(allowTies)
     }
 
-    fun getLeadingByLines(): BingoTeam? {
+    fun getLeadingByLines(allowTies: Boolean = false): BingoTeam? {
         var max: BingoTeam? = null
         var maxLines = 0
         for (team in BingoTeam.values()) {
@@ -86,7 +86,7 @@ class BingoCard(
             if (teamLines > maxLines) {
                 max = team
                 maxLines = teamLines
-            } else if (teamLines == maxLines) {
+            } else if (teamLines == maxLines && !allowTies) {
                 max = null
             }
         }
@@ -94,7 +94,7 @@ class BingoCard(
         return max
     }
 
-    fun getLeadingByItems(): BingoTeam? {
+    fun getLeadingByItems(allowTies: Boolean = false): BingoTeam? {
         var max: BingoTeam? = null
         var maxItems = 0
         for (team in BingoTeam.values()) {
@@ -103,7 +103,7 @@ class BingoCard(
             if (teamItems > maxItems) {
                 max = team
                 maxItems = teamItems
-            } else if (teamItems == maxItems) {
+            } else if (teamItems == maxItems && !allowTies) {
                 max = null
             }
         }
