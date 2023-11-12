@@ -2,7 +2,7 @@
 	<div>
 		<input :id="inputId" type="file" @change="onChange" accept=".txt" />
 		<label :for="inputId" aria-label="Upload" title="Upload">
-			<Icon icon="ic:baseline-upload" width="22" height="22" />
+			<Icon icon="ic:baseline-upload" width="22" height="22" /> {{props.label}}
 		</label>
 	</div>
 </template>
@@ -14,6 +14,10 @@ import { Icon } from '@iconify/vue';
 const inputId = `ID${Math.random()}`;
 
 const validItemSet = new Set(itemData);
+
+const props = defineProps<{
+	label: string;
+}>();
 
 const emit = defineEmits<{
 	(event: "itemsUploaded", items: string[]): void;
@@ -44,8 +48,13 @@ async function onChange(e: Event) {
 
 <style scoped>
 label {
-	display: block;
+	display: flex;
+	align-items: center;
+	gap: 4px;
 	padding: 4px;
+	margin-bottom: 4px;
+	border: 1px solid var(--vp-c-brand-3);
+	border-radius: 6px;
 	cursor: pointer;
 }
 

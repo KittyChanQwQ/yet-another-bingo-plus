@@ -1,23 +1,25 @@
 <template>
-	<div class="dropTarget" :data-dragged-over="isDraggedOver" ref="dropTargetRef">
-		<div v-for="(item, i) in props.items">
-			<template v-if="shouldFilter(item)">
-				<ItemGroup
-					v-if="item.includes('|')"
-					:name="item"
-					@item-changed="(newItem) => onItemChanged(i, newItem)"
-					@item-removed="onItemRemoved(i)"
-				/>
-				<Item
-					v-else
-					:can-drag="props.canDrag"
-					:can-drop="props.canGroup"
-					:name="item"
-					@item-changed="(newItem) => onItemChanged(i, newItem)"
-					@item-removed="onItemRemoved(i)"
-				/>
-			</template>
-		</div>
+	<div
+		class="dropTarget column"
+		:style="{ 'grid-template-columns': `repeat(${props.columns || 1}, minmax(0, 1fr))` }"
+		:data-dragged-over="isDraggedOver" ref="dropTargetRef"
+	>
+		<template v-for="(item, i) in props.items">
+			<ItemGroup
+				v-if="shouldFilter(item) && item.includes('|')"
+				:name="item"
+				@item-changed="(newItem) => onItemChanged(i, newItem)"
+				@item-removed="onItemRemoved(i)"
+			/>
+			<Item
+				v-if="shouldFilter(item) && !item.includes('|')"
+				:can-drag="props.canDrag"
+				:can-drop="props.canGroup"
+				:name="item"
+				@item-changed="(newItem) => onItemChanged(i, newItem)"
+				@item-removed="onItemRemoved(i)"
+			/>
+		</template>
 	</div>
 </template>
 
@@ -32,7 +34,9 @@ const props = defineProps<{
 	canDrag?: boolean,
 	canDrop?: boolean,
 	canGroup?: boolean,
+	alwaysDrop?: boolean,
 	filter?: string,
+	columns?: number,
 }>();
 
 function shouldFilter(item: string) {
@@ -50,7 +54,7 @@ if (props.canDrop) {
 	const { isDraggedOver: isDraggedOverRef, onDrop } = useDragTarget({
 		element: dropTargetRef,
 		filter(data) {
-			return !props.items.includes(data?.name);
+			return props.alwaysDrop || !props.items.includes(data?.name);
 		},
 	});
 
@@ -97,9 +101,18 @@ function onItemRemoved(i: number) {
 </script>
 
 <style scoped>
+.column {
+	display: grid;
+	grid-template-columns: repeat(1, minmax(0, 1fr));
+	grid-auto-rows: min-content;
+	gap: 0 8px;
+
+	border: 1px solid var(--vp-c-divider);
+}
+
 .dropTarget {
 	padding: 8px 16px;
-	min-height: 100vh;
+	min-height: 100px;
 
 	transition: background-color .25s, box-shadow .25s;
 }

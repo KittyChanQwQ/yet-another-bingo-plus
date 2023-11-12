@@ -1,4 +1,9 @@
 <template>
+	<div style="display: flex; align-items: center; gap: 12px; margin: 12px 0;">
+		<DownloadButton :tierlist="tierList" />
+		<UploadButton />
+	</div>
+
 	<div style="display: flex; align-items: center;">
 		<SearchInput @change="onFilterChanged" />
 		<div style="flex-grow: 1;"></div>
@@ -7,129 +12,189 @@
 			<label for="unobtainableCheckbox">Include unobtainable items</label>
 		</div>
 	</div>
-	<table>
-		<thead>
-			<tr>
-				<th v-for="tier in tiers">
-					<div style="display: flex; align-items: center; gap: 4px;">
-						<DownloadItemsInput v-if="!!tierLists[tier].length" :tier="tier" :items="tierLists[tier]" />
-						<span style="flex-grow: 1;">{{ tier.toUpperCase() }} Tier</span>
-						<UploadItemsInput @items-uploaded="(items) => onItemsChanged(tier, items)" />
-					</div>
-				</th>
-				<th>All Items</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td v-for="tier in tiers">
-					<ItemList
-						can-drag
-						can-drop
-						can-group
-						:items="tierLists[tier]"
-						:filter="filter"
-						@items-changed="(items) => onItemsChanged(tier, items)"
-					/>
-				</td>
-				<td>
-					<ItemList
-						:items="allItems"
-						:filter="filter"
-						can-drag
-						can-drop
-					/>
-				</td>
-			</tr>
-		</tbody>
-	</table>
+	<div style="max-height: 40vh; overflow: auto; margin: 12px 0;">
+		<Table
+			:columns="['all']"
+			:headers="['All Items']"
+		>
+			<template #all>
+				<ItemList
+					:items="allItems"
+					:columns="5"
+					:filter="filter"
+					can-drag
+					can-drop
+					always-drop
+				/>
+			</template>
+		</Table>
+	</div>
+	<Tabs
+		@tab="(newTab) => currentTab = newTab"
+		:tabs="['tiers', 'groups']"
+		:headers="['Tier Lists', 'Item Groups']"
+	>
+		<template #tiers>
+			<div style="max-height: 40vh; overflow: auto; margin: 12px 0;">
+				<Table
+					:columns="[...tiers]"
+					:headers="tiers.map(tier => `${tier} Tier`)"
+				>
+					<template v-for="tier in tiers" v-slot:[tier]>
+						<ItemList
+							can-drag
+							can-drop
+							:items="tierList[tier]"
+							:filter="filter"
+							@items-changed="(items) => onItemsChanged(tier, items)"
+						/>
+					</template>
+				</Table>
+			</div>
+		</template>
+		<template #groups>
+			<div style="max-height: 40vh; overflow: auto; margin: 12px 0;">
+				<Table
+					:columns="['groups']"
+					:headers="['Item Groups']"
+				>
+					<template #groups>
+						<ItemList
+							can-drag
+							can-drop
+							can-group
+							:items="tierList.groups"
+							:columns="5"
+							:filter="filter"
+							@items-changed="(items) => onItemsChanged('groups', items)"
+						/>
+					</template>
+				</Table>
+			</div>
+		</template>
+	</Tabs>
+
+	<button class="button danger" @click="onReset">Reset</button>
+
+	<details>
+		<summary>Legacy tier list upload (.txt)</summary>
+		<LegacyUploadItemsInput
+			v-for="tier in tiers"
+			:label="tier.toLowerCase() + '_tier.txt'"
+			@items-uploaded="(items) => onLegacyItems(tier, items)"
+		/>
+	</details>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, Ref, onMounted } from "vue";
 import ItemList from './ItemList.vue';
 import itemData from "../../scripts/data/items.json";
-import UploadItemsInput from "./UploadItemsInput.vue";
-import DownloadItemsInput from "./DownloadItemsInput.vue";
+import LegacyUploadItemsInput from "./LegacyUploadItemsInput.vue";
+import DownloadButton from "./DownloadButton.vue";
 import SearchInput from "./SearchInput.vue";
+import Table from "./Table.vue";
+import Tabs from "./Tabs.vue";
+import { TierList } from "./types";
+import UploadButton from "./UploadButton.vue";
 
-const validItemSet = new Set(itemData);
+const TIERLIST_KEY = "tierlist";
 
+const currentTab = ref("tiers");
 const shouldIncludeUnobtainable = ref(false);
 
 const unobtainableItems = [
-	"air",
-	"barrier",
-	"bedrock",
+	"minecraft:air",
+	"minecraft:barrier",
+	"minecraft:bedrock",
 	/_spawn_egg$/,
-	"bundle",
+	"minecraft:bundle",
 	/command_block/,
-	"chorus_plant",
-	"debug_stick",
-	"dirt_path",
-	"end_portal_frame",
-	"farmland",
-	"frogspawn",
-	"jigsaw",
-	"knowledge_book",
-	"light",
-	"petrified_oak_slab",
-	"reinforced_deepslate",
-	"spawner",
+	"minecraft:chorus_plant",
+	"minecraft:debug_stick",
+	"minecraft:dirt_path",
+	"minecraft:end_portal_frame",
+	"minecraft:farmland",
+	"minecraft:frogspawn",
+	"minecraft:jigsaw",
+	"minecraft:knowledge_book",
+	"minecraft:light",
+	"minecraft:petrified_oak_slab",
+	"minecraft:reinforced_deepslate",
+	"minecraft:spawner",
 	/structure/,
 ];
 
-const tiers = ['s', 'a', 'b', 'c', 'd'] as const;
+const tiers = ['S', 'A', 'B', 'C', 'D'] as const;
 
-const tierLists: Ref<{ [K in typeof tiers[number]]: string[] }> = ref({
-	s: [], a: [], b: [], c: [], d: [],
+const tierList: Ref<TierList> = ref({
+	S: [], A: [], B: [], C: [], D: [],
+	groups: [],
 });
 
 onMounted(() => {
 	// load saved items from localStorage when mounted
-	for (const tier of tiers) {
-		const storedItems = localStorage.getItem(`bingo_${tier}`);
-		if (storedItems) {
-			tierLists.value[tier] = [...JSON.parse(storedItems)]
-				.map(s => {
-					return s.trim()
-						.toLowerCase()
-						.split("|")
-						.map(item => item.replace(/^minecraft\:/, ""))
-						.filter(item => validItemSet.has(`minecraft:${item}`))
-						.join("|");
-				})
-				.filter(s => !!s.length)
-		}
+	const storedItems = localStorage.getItem(TIERLIST_KEY);
+	if (storedItems) {
+		tierList.value = JSON.parse(storedItems);
 	}
 });
 
 const allItems = computed(() => {
 	// the "allItems" column should only show items that aren't included in any other tiers
 	const items = itemData
-		.map(item => item.replace(/^minecraft\:/, ""))
-		.filter(item => !Object.values(tierLists.value).some(list => list.some(items => items.split("|").includes(item))))
+		.filter(item => currentTab.value === "tiers" ? !tiers.some(tier => tierList.value[tier].includes(item)) : !tierList.value.groups.some(group => group.split("|").includes(item)))
 		.filter(item => shouldIncludeUnobtainable.value || !unobtainableItems.some(unobtainable => typeof unobtainable === "string" ? unobtainable === item : new RegExp(unobtainable).test(item)));
 	return items;
 });
 
-function onItemsChanged(tier: typeof tiers[number], newItems: string[]) {
+function onItemsChanged(tier: keyof TierList, newItems: string[]) {
 	// update the tierLists ref
-	tierLists.value[tier] = newItems;
+	tierList.value[tier] = [...new Set(newItems)];
 	// write items to localStorage
-	localStorage.setItem(`bingo_${tier}`, JSON.stringify(newItems));
+	localStorage.setItem(TIERLIST_KEY, JSON.stringify(tierList.value));
 }
 
 const filter = ref<string>();
 
+function onLegacyItems(tier: keyof TierList, upload: string[]) {
+	const groups = upload.filter(row => row.includes("|"));
+	const items = upload.filter(row => !row.includes("|"));
+
+	onItemsChanged(tier, [
+		...items,
+		...groups.flatMap(group => group.split("|")),
+	].map(item => "minecraft:" + item.toLowerCase()));
+
+	onItemsChanged("groups", [
+		...tierList.value.groups,
+		...groups.map(group => {
+			return group.split("|")
+				.map(item => "minecraft:" + item.toLowerCase())
+				.join("|");
+		}),
+	]);
+}
+
 function onFilterChanged(value: string) {
 	filter.value = !!value.trim() ? value : undefined;
+}
+
+function onReset() {
+	if (!confirm("This will delete all configured item tiers and groups. Are you sure?"))
+		return;
+
+	for (const tier of tiers) {
+		onItemsChanged(tier, []);
+	}
+	onItemsChanged("groups", []);
 }
 </script>
 
 <style scoped lang="scss">
 table {
 	overflow-x: auto;
+	margin: 0;
 }
 
 th, td {
@@ -141,5 +206,15 @@ td {
 	// this is a hack to get a <div style="height: 100%;"> to fill the table cell
 	height: 1px;
 	padding: 0;
+}
+
+.button {
+	padding: 4px 8px;
+	border-radius: 6px;
+}
+
+.button.danger {
+	background-color: #83261a;
+	color: #fff;
 }
 </style>

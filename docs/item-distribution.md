@@ -11,13 +11,11 @@ card. These values must add up to 25.
 
 ## Item Groups
 
-In the tier list editor, dragging an item into another item will create an "item group":
+In the "Item Groups" tab in the tier list editor, dragging multiple items into each other will create an item group:
 
 <div style="max-width: 280px;" inert>
     <ItemGroup name="pointed_dripstone|dripstone_block" />
 </div>
 
-In the text file, this will split the items with a "|" character on the same line - for example: `POINTED_DRIPSTONE|DRIPSTONE_BLOCK`.
-
-When generating a card, only one item from each line can be chosen at a time. This means that, with a group of e.g.
+When generating a card, only one item from each group can be chosen at a time. This means that, with a group of e.g.
 "pointed dripstone" and "dripstone block", you will never see a card contain both items at once.

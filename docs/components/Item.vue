@@ -3,10 +3,11 @@
 		class="item"
 		:draggable="props.canDrag"
 		:data-dragged-over="isDraggedOver"
+		:data-item="props.name"
 		ref="itemRef"
 	>
 		<span class="itemName">
-			{{ props.name.replace(/^minecraft\:/, "").replace(/_/g, " ").toLowerCase() }}
+			{{ props.name.replace(/^minecraft\:/, "").replace(/_/g, " ") }}
 		</span>
 		<span class="itemDropTarget" ref="itemDropTargetRef" v-if="props.canDrop">
 			+
@@ -71,11 +72,11 @@ if (props.canDrop) {
 	align-items: center;
 
 	padding: 4px 8px;
-	margin: 8px 0;
+	margin: 4px 0;
 
 	background-color: var(--vp-c-bg-soft);
 	border: 1px solid var(--vp-c-divider);
-	border-radius: 4px;;
+	border-radius: 4px;
 
 	transition: border .25s;
 
