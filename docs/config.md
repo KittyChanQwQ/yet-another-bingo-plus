@@ -5,7 +5,7 @@ The BINGO mod creates several config files the first time you start it up:
 ```txt{3-5}
 🗀 config/
  └ 🗀 bingo/
-   ├ ... _tier.txt
+   ├ ... .tierlist.json
    ├ config.json
    └ players.json
 🗀 mods/
@@ -23,7 +23,9 @@ A few [additional config options](./config-extra) _can_ be changed in `config.js
 
 `players.json` contains player-specific settings, such as whether to display info in a bossbar or scoreboard. These options can be changed by each player in the pre-game lobby.
 
-## `*_tier.txt`
+## `*.tierlist.json`
 
 The tier list files are used to generate the BINGO card from a set of [tier lists](./tier-editor). These are randomized for each game according to the configured [item distribution](./item-distribution).
+
+Multiple tier lists can be used at once! Any file ending with `.tierlist.json` will be shown as an option in the game.
 

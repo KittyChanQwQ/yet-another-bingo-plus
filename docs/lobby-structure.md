@@ -14,11 +14,8 @@ config directory, under `./config/bingo/lobby/lobby.nbt`.
    ├ 🗀 images/
    ├ 🗀 lobby/
    │ └ lobby.nbt
-   ├ a_tier.txt
-   ├ b_tier.txt
-   ├ c_tier.txt
-   ├ d_tier.txt
-   └ s_tier.txt
+   ├ config.json
+   └ players.json
 🗀 mods/
 🗀 world/
 server.properties

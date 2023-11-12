@@ -14,7 +14,7 @@ card. These values must add up to 25.
 In the "Item Groups" tab in the tier list editor, dragging multiple items into each other will create an item group:
 
 <div style="max-width: 280px;" inert>
-    <ItemGroup name="pointed_dripstone|dripstone_block" />
+    <ItemGroup :items="['minecraft:pointed_dripstone', 'minecraft:dripstone_block']" />
 </div>
 
 When generating a card, only one item from each group can be chosen at a time. This means that, with a group of e.g.

@@ -66,6 +66,7 @@ can be turned off by setting `"overwrite": false`.
 
 Global commands:
 - `/coords` prints the current player coordinates in the team chat
+- `/coords list` displays a list of the team's previous "/coords" messages
 - `/all` or `/g` sends a message to the global chat (sending a regular chat message defaults to team chat when in-game)
 
 BINGO commands (operator-only):

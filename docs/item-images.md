@@ -15,11 +15,8 @@ These are packaged with the mod by default. However, they can be overridden by p
  └ 🗀 bingo/
    ├ 🗀 images/
    │ └ acacia_trapdoor.png
-   ├ a_tier.txt
-   ├ b_tier.txt
-   ├ c_tier.txt
-   ├ d_tier.txt
-   └ s_tier.txt
+   ├ config.json
+   └ players.json
 🗀 mods/
 🗀 world/
 server.properties
