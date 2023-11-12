@@ -1,9 +1,6 @@
 package me.jfenn.bingo
 
-import me.jfenn.bingo.card.BingoCard
-import me.jfenn.bingo.card.BingoCardEntry
-import me.jfenn.bingo.card.BingoTeam
-import me.jfenn.bingo.card.CardService
+import me.jfenn.bingo.card.*
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.ConfigService
@@ -347,7 +344,7 @@ object BingoGame {
         // if BingoMode.INVENTORY, we need to check that each team still has all their items
         // and mark them as lost if not
         if (config.gameMode == BingoMode.INVENTORY) {
-            for (item in card.entries) {
+            for (item in card.entries.filterIsInstance<ItemEntry>()) {
                 for (team in item.teams.toSet()) {
                     val teamInstance = team.team()
                     val hasTeamItem = minecraftServer.playerManager.playerList
@@ -435,7 +432,7 @@ object BingoGame {
     private fun markTileCollected(tile: BingoCardEntry, team: BingoTeam): Boolean {
         if (state != GameState.PLAYING) return false
         // if the gamemode is lockout, tiles cannot be collected by >1 team
-        if (config.gameMode == BingoMode.LOCKOUT && tile.teams.isNotEmpty())
+        if (config.gameMode == BingoMode.LOCKOUT && tile.hasAnyAchieved())
             return false
         // if the team has already achieved the tile, there is nothing to change
         if (tile.hasAchieved(team))

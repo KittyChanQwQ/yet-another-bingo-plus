@@ -24,8 +24,9 @@ class CardInventory(
 
         if (slotX in 0 until 5 && slotY in 0 until 5) {
             val entry = card.entry(slotX, slotY)
-            val item = entry.item()
-            return ItemStack(item, 1)
+            entry.visualItem?.let {
+                return ItemStack(it, 1)
+            }
         }
 
         return ItemStack.EMPTY

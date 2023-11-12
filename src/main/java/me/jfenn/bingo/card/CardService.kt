@@ -17,7 +17,7 @@ object CardService {
     fun generate(config: BingoConfig): BingoCard {
         val dist = config.itemDistribution
         assert(dist.size == TierList.entries.size) { "Item distribution does not match the number of tiers (${TierList.entries.size})!" }
-        assert(dist.sum() == 25) { "Item distribution does not add up to 25!" }
+        assert(dist.sum() <= 25) { "Item distribution exceeds 25!" }
 
         // Exclude any items from the card that the player might spawn with
         // (e.g. elytra mode, player/team kits...)
@@ -35,11 +35,21 @@ object CardService {
         } else emptySet()
 
         val tiers = TierListService.getTierLists(config.tierLists)
-        val items = tiers.pick(dist, excludedItems)
+        val items: MutableList<BingoCardEntry> = tiers.pick(dist, excludedItems)
             .mapNotNull { parseIdentifier(it) }
-            .map { BingoCardEntry(it) }
-            .shuffled()
+            .map { ItemEntry(it) }
+            .toMutableList()
 
+        if (items.size < dist.sum()) {
+            log.error("Card has generated with ${items.size} entries, when the item distribution needed ${dist.sum()}!")
+            log.error("This might be caused by a small tier list or too many item groups in the configuration...")
+        }
+
+        // if the card has less than 25 entries, add free spaces until it is full
+        while (items.size < 25)
+            items.add(FreeSpaceEntry)
+
+        items.shuffle()
         return BingoCard(items)
     }
 

@@ -57,10 +57,15 @@ fun MenuComponent.registerItemDistribution(
         registerEntity(EntityType.TEXT_DISPLAY) {
             put("Pos", position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0).toNbt())
 
-            val isValid = itemDistribution.sum() == 25
+            val color = when {
+                itemDistribution.sum() == 25 -> Formatting.WHITE
+                itemDistribution.sum() < 25 -> Formatting.YELLOW
+                else -> Formatting.RED
+            }
+
             putString("text", Text.Serializer.toJson(
                 Text.literal(itemDistribution[i].toString())
-                    .formatted(if (isValid) Formatting.WHITE else Formatting.RED)
+                    .formatted(color)
             ))
 
             putString("billboard", "fixed")

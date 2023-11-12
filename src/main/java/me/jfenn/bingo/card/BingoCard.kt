@@ -14,7 +14,11 @@ class BingoCard(
     /**
      * Index the card entries on their item for faster querying.
      */
-    val itemIndex by lazy { entries.associateBy { it.item() } }
+    val itemIndex by lazy {
+        entries
+            .filterIsInstance<ItemEntry>()
+            .associateBy { it.item() }
+    }
 
     /**
      * Gets the card entry at the provided x/y index.
@@ -131,7 +135,7 @@ class BingoCard(
         // if any team can capture a line, it is not a stalemate
         for (team in BingoTeam.entries) {
             // count number of lines that the team can achieve
-            val possibleLines = countLines { entry -> entry.teams.isEmpty() || entry.hasAchieved(team) }
+            val possibleLines = countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
             if (possibleLines >= 1) return false
         }
 

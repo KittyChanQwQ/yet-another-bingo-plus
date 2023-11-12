@@ -7,6 +7,7 @@ import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.minecraftServer
+import net.minecraft.item.Item
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
@@ -40,7 +41,7 @@ object MapRenderService {
         val achieved: Array<Byte> = Array(16*16) { 0 },
     )
 
-    private val imageMap = mutableMapOf<Identifier, BingoTileImage?>()
+    private val imageMap = mutableMapOf<Item, BingoTileImage?>()
 
     fun validateItems() {
         for (item in Registries.ITEM.keys) {
@@ -59,11 +60,14 @@ object MapRenderService {
         }
     }
 
-    private fun getTileImage(item: BingoCardEntry): BingoTileImage? {
-        imageMap[item.identifier]?.let { return it }
+    private fun getTileImage(entry: BingoCardEntry): BingoTileImage? {
+        val item = entry.visualItem ?: return null
+        if (imageMap.containsKey(item))
+            return imageMap[item]
 
         try {
-            val image = readTileImage(item.identifier).use { ImageIO.read(it) }
+            val identifier = Registries.ITEM.getId(item)
+            val image = readTileImage(identifier).use { ImageIO.read(it) }
             val tileImage = BingoTileImage()
 
             for (x in 0 until TILE_IMAGE) {
@@ -81,11 +85,11 @@ object MapRenderService {
                 }
             }
 
-            imageMap[item.identifier] = tileImage
+            imageMap[item] = tileImage
             return tileImage
         } catch (e: Throwable) {
-            log.error("Error reading item image: ${item.identifier}", e)
-            imageMap[item.identifier] = null
+            log.error("Error reading item image: ${item.translationKey}", e)
+            imageMap[item] = null
             return null
         }
     }
@@ -139,7 +143,7 @@ object MapRenderService {
 
                 if (
                     config.drawOtherTeamCompletions
-                    && item.teams.isNotEmpty()
+                    && item.hasAnyAchieved()
                     && (
                         tileX == 0
                         || tileX == TILE_SIZE - TILE_MARGIN - 1

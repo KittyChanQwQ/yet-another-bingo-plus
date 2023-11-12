@@ -57,7 +57,7 @@ data class BingoConfig(
 ) {
 
     fun isValid(): Boolean {
-        return itemDistribution.sum() == 25
+        return itemDistribution.sum() <= 25
     }
 
 }
