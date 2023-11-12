@@ -46,16 +46,24 @@ const { isDraggedOver, onDrop } = useDragTarget({
 	element: itemRef,
 	action: "move",
 	filter(data) {
-		return data?.type === "group" && data?.items && !data.items.every(value => props.items.includes(value));
+		console.log("<ItemGroup> filter", data);
+		return (data?.type === "group" && data?.items && !data.items.every(value => props.items.includes(value)))
+			|| (data?.type === "item" && data.name && !props.items.includes(data.name));
 	},
 });
 
 onDrop((data) => {
 	console.log("<ItemGroup> on drop", data);
-	// add new items to the group item
-	const dataItems = [...data.items] as string[];
-	const newItems = [...new Set([...props.items, ...dataItems])];
-	emit("itemChanged", newItems);
+	if (data.type === "group") {
+		// add new items to the group item
+		const dataItems = [...data.items] as string[];
+		const newItems = [...new Set([...props.items, ...dataItems])];
+		emit("itemChanged", newItems);
+	}
+	if (data.type === "item") {
+		const newItems = [...new Set([...props.items, data.name])];
+		emit("itemChanged", newItems);
+	}
 });
 
 /**

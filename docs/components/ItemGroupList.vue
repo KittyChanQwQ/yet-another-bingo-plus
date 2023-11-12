@@ -26,7 +26,6 @@ const props = defineProps<{
 	canDrag?: boolean,
 	canDrop?: boolean,
 	canGroup?: boolean,
-	alwaysDrop?: boolean,
 	filter?: string,
 	columns?: number,
 }>();
@@ -46,7 +45,7 @@ if (props.canDrop) {
 	const { isDraggedOver: isDraggedOverRef, onDrop } = useDragTarget({
 		element: dropTargetRef,
 		filter(data) {
-			return props.alwaysDrop || !props.items.includes(data?.name);
+			return data?.type === "item";
 		},
 	});
 
@@ -67,7 +66,7 @@ if (props.canDrop) {
 		}
 
 		const newItems = props.items.slice();
-		newItems.splice(index, 0, data.name);
+		newItems.splice(index, 0, [data.name]);
 		emit("itemsChanged", [...new Set(newItems)]);
 	});
 }
