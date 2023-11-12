@@ -13,7 +13,8 @@ object TierListService {
 
     init {
         // initialize default tier lists
-        Config.readStream("default.tierlist.json").close()
+        Config.readStream("overworld.tierlist.json").close()
+        Config.readStream("nether.tierlist.json").close()
     }
 
     val tierLists = Config.configDir

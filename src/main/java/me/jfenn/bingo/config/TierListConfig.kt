@@ -6,25 +6,25 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TierListConfig(
     @SerialName("S")
-    val s: List<String>,
+    val s: Set<String>,
     @SerialName("A")
-    val a: List<String>,
+    val a: Set<String>,
     @SerialName("B")
-    val b: List<String>,
+    val b: Set<String>,
     @SerialName("C")
-    val c: List<String>,
+    val c: Set<String>,
     @SerialName("D")
-    val d: List<String>,
+    val d: Set<String>,
     val groups: List<Set<String>>,
 ) {
 
     companion object {
         val EMPTY = TierListConfig(
-            s = emptyList(),
-            a = emptyList(),
-            b = emptyList(),
-            c = emptyList(),
-            d = emptyList(),
+            s = emptySet(),
+            a = emptySet(),
+            b = emptySet(),
+            c = emptySet(),
+            d = emptySet(),
             groups = emptyList(),
         )
     }
@@ -56,13 +56,15 @@ data class TierListConfig(
                 // skip excluded items
                 if (excluding.contains(item)) continue
 
+                // add the item to the list
+                ret.add(item)
+                countAdded++
+
                 // if the chosen item is in any item groups, exclude all of those groups
+                excluding.add(item)
                 for (group in groups.filter { it.contains(item) }) {
                     excluding.addAll(group)
                 }
-
-                ret.add(item)
-                countAdded++
             }
         }
 
