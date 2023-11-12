@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PlayerSettings(
-    var bossbar: Boolean = true,
-    var scoreboard: Boolean = false,
+    var bossbar: Boolean = false,
+    var scoreboard: Boolean = true,
     var leadingMessages: Boolean = true,
     var scoreMessages: Boolean = true,
 )

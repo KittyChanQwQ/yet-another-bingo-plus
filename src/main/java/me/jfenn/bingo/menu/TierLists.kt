@@ -23,19 +23,20 @@ fun MenuComponent.registerTierLists(
         putBoolean("shadow", true)
     }
 
-    TierListService.tierLists.forEachIndexed { i, tierlist ->
+    TierListService.tierLists.forEachIndexed { i, listName ->
         val toggleProp = DelegatedProperty(
-            getter = { config.tierLists.contains(tierlist) },
-            setter = {
-                if (it) config.tierLists += tierlist
-                else config.tierLists -= tierlist
+            getter = { config.tierLists.contains(listName) },
+            setter = { isEnabled ->
+                val lists = config.tierLists.filter { TierListService.tierLists.contains(it) }
+                if (isEnabled) config.tierLists = lists + listName
+                else config.tierLists = lists - listName
                 markDirty()
             }
         )
 
         registerToggleButton(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
-            text = tierlist.formatTitle(),
+            text = listName.formatTitle(),
             toggleProp = toggleProp,
         )
     }

@@ -377,13 +377,15 @@ object BingoGame {
         }
 
         // check if a team has won the game
-        if (card.getWinner(config) != null) {
+        card.getWinner(config)?.let { winner ->
+            leadingTeam = winner
             end()
             return
         }
 
         // check if the game is in a stalemate
         if (card.isStalemate(config)) {
+            leadingTeam = null
             end("Stalemate!")
             return
         }

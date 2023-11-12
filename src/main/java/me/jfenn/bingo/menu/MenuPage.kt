@@ -21,18 +21,22 @@ fun MenuComponent.registerMenuPage(
             registerEnumMenu(
                 title = "Game Mode",
                 valueProp = propertyRef(config::gameMode),
-                position = position.add(-3.0, 0.0, 0.0),
+                position = position.add(-3.5, 0.0, 0.0),
             )
-            registerFeatures(position.add(-1.0, 0.0, 0.0), config)
+            registerFeatures(position.add(-1.5, 0.0, 0.0), config)
             registerEnumMenu(
                 title = "Win Condition",
                 valueProp = propertyRef(config::winCondition),
-                position = position.add(1.2, 0.0, 0.0),
+                position = position.add(0.6, 0.0, 0.0),
             )
             registerTimer(
                 title = "Time Limit",
                 timerMinutesProp = propertyRef(config::timerMinutes),
-                position = position.add(3.0, 0.0, 0.0),
+                position = position.add(2.3, 0.0, 0.0),
+            )
+            registerTeams(
+                title = "Teams",
+                position = position.add(3.6, 0.0, 0.0),
             )
         },
         component {
@@ -45,7 +49,7 @@ fun MenuComponent.registerMenuPage(
                 config = config,
             )
             registerTierLists(
-                position = position.add(0.75, 0.0, 0.0),
+                position = position.add(0.6, 0.0, 0.0),
                 config = config,
             )
             registerItemDistribution(
@@ -55,23 +59,19 @@ fun MenuComponent.registerMenuPage(
         },
         component {
             registerScoreInfo(
-                position = position.add(-3.0, 0.0, 0.0),
+                position = position.add(-1.5, 0.0, 0.0),
                 config = config,
             )
             registerCardInfo(
-                position = position.add(0.0, 0.0, 0.0),
+                position = position.add(1.5, 0.0, 0.0),
                 config = config,
-            )
-            registerTeams(
-                title = "Teams",
-                position = position.add(2.5, 0.0, 0.0),
             )
         },
     )
 
     for (i in pages.indices) {
         registerButton(
-            position = position.add(-2.0 + (i*2.0), 0.5, 0.0),
+            position = position.add(-((pages.size-1) * 0.7) + (i*1.4), 0.5, 0.0),
             text = "Page ${i+1}",
             isActiveProp = computedProperty { page == i },
         ) {
