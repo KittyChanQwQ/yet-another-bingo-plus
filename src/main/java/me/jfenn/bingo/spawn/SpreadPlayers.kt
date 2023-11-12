@@ -200,7 +200,7 @@ class SpreadPlayers(
     }
 
     fun spread(distance: Int): Map<BingoTeam, BlockPos> {
-        val teams = BingoTeam.values()
+        val teams = BingoTeam.entries
             .filter { it.team().playerList.isNotEmpty() }
 
         val groups = spreadGroups(teams.size, distance)

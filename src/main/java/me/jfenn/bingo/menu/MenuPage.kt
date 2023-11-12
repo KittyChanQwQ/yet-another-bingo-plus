@@ -37,19 +37,19 @@ fun MenuComponent.registerMenuPage(
         },
         component {
             registerDimensionMenu(
-                position = position.add(-3.0, 0.0, 0.0),
+                position = position.add(-3.5, 0.0, 0.0),
                 dimensionProperty = propertyRef(config::spawnDimension),
             )
             registerSpawnKit(
-                position = position.add(-1.0, 0.0, 0.0),
+                position = position.add(-1.5, 0.0, 0.0),
                 config = config,
             )
-            registerTeams(
-                title = "Teams",
-                position = position.add(0.7, 0.0, 0.0),
+            registerTierLists(
+                position = position.add(0.75, 0.0, 0.0),
+                config = config,
             )
             registerItemDistribution(
-                position = position.add(2.7, 0.0, 0.0),
+                position = position.add(3.0, 0.0, 0.0),
                 itemDistributionProp = itemDistributionProp,
             )
         },
@@ -59,8 +59,12 @@ fun MenuComponent.registerMenuPage(
                 config = config,
             )
             registerCardInfo(
-                position = position.add(1.0, 0.0, 0.0),
+                position = position.add(0.0, 0.0, 0.0),
                 config = config,
+            )
+            registerTeams(
+                title = "Teams",
+                position = position.add(2.5, 0.0, 0.0),
             )
         },
     )
@@ -87,7 +91,7 @@ fun MenuComponent.registerMenuPage(
         }
 
         val isEveryPlayerOnATeam = minecraftServer.playerManager.playerList
-            .all { teamPlayer -> BingoTeam.values().any { team -> teamPlayer.isTeamPlayer(team.team()) } }
+            .all { teamPlayer -> BingoTeam.entries.any { team -> teamPlayer.isTeamPlayer(team.team()) } }
 
         if (!isEveryPlayerOnATeam && !player.isSneaking) {
             player.sendWarningMessage("Some players have not picked a team! Run '/bingo shuffleteams' or sneak+click to ignore.")

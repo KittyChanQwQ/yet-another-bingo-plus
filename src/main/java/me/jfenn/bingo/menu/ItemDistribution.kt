@@ -1,6 +1,6 @@
 package me.jfenn.bingo.menu
 
-import me.jfenn.bingo.card.GeneratorTier
+import me.jfenn.bingo.config.TierList
 import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.text.Text
@@ -19,7 +19,7 @@ fun MenuComponent.registerItemDistribution(
 
     fun createTier(
         i: Int,
-        tier: GeneratorTier,
+        tier: TierList,
     ) {
         registerButton(
             position = position.add(i*TIER_WIDTH + TIER_OFFSET, -MENU_ITEM_OFFSET, 0.0),
@@ -81,5 +81,5 @@ fun MenuComponent.registerItemDistribution(
         putBoolean("shadow", true)
     }
 
-    GeneratorTier.values().forEachIndexed { i, tier -> createTier(i, tier) }
+    TierList.entries.forEachIndexed { i, tier -> createTier(i, tier) }
 }

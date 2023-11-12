@@ -1,17 +1,22 @@
 package me.jfenn.bingo.card
 
 import me.jfenn.bingo.config.BingoConfig
+import me.jfenn.bingo.config.TierList
+import me.jfenn.bingo.config.TierListService
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Items
 import net.minecraft.registry.Registries
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
+import org.slf4j.LoggerFactory
 
 object CardService {
 
+    private val log = LoggerFactory.getLogger(this::class.java)
+
     fun generate(config: BingoConfig): BingoCard {
         val dist = config.itemDistribution
-        assert(dist.size == GeneratorTier.values().size ) { "Item distribution does not match the number of tiers (${GeneratorTier.values().size})!" }
+        assert(dist.size == TierList.entries.size) { "Item distribution does not match the number of tiers (${TierList.entries.size})!" }
         assert(dist.sum() == 25) { "Item distribution does not add up to 25!" }
 
         // Exclude any items from the card that the player might spawn with
@@ -19,23 +24,19 @@ object CardService {
         val excludedItems = if (config.excludeSpawnKitItemsFromCards) {
             buildSet {
                 if (config.isPlayerKit)
-                    addAll(config.playerKitItems.mapNotNull { it.toIdentifier() })
+                    addAll(config.playerKitItems.map { it.id })
                 if (config.isTeamKit)
-                    addAll(config.teamKitItems.mapNotNull { it.toIdentifier() })
+                    addAll(config.teamKitItems.map { it.id })
                 if (config.isElytra) {
-                    add(Registries.ITEM.getId(Items.ELYTRA))
-                    add(Registries.ITEM.getId(Items.FIREWORK_ROCKET))
+                    add("minecraft:elytra")
+                    add("minecraft:firework_rocket")
                 }
             }
         } else emptySet()
 
-        val items = buildList {
-            GeneratorTier.values()
-                .withIndex()
-                .forEach { (index, value) ->
-                    addAll(value.pick(dist[index], excludedItems))
-                }
-        }
+        val tiers = TierListService.getTierLists(config.tierLists)
+        val items = tiers.pick(dist, excludedItems)
+            .mapNotNull { parseIdentifier(it) }
             .map { BingoCardEntry(it) }
             .shuffled()
 
@@ -49,6 +50,28 @@ object CardService {
             },
             Text.literal("BINGO Card")
         ))
+    }
+
+    private fun parseIdentifier(str: String): Identifier? {
+        val name = str.trim()
+            .lowercase()
+            .let {
+                if (it.contains(":"))
+                    it
+                else "minecraft:$it"
+            }
+
+        val identifier = Identifier.tryParse(name) ?: run {
+            log.error("Could not parse item identifier '${name}'")
+            return null
+        }
+
+        if (!Registries.ITEM.containsId(identifier)) {
+            log.error("Item identifier '${name}' does not exist")
+            return null
+        }
+
+        return identifier
     }
 
 }

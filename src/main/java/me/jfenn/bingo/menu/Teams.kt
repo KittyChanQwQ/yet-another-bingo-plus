@@ -20,7 +20,7 @@ fun MenuComponent.registerTeams(
         text = "+",
         requiredPermissionLevel = requiredPermissionLevel,
     ) {
-        teamCount = (teamCount + 1).coerceIn(1, BingoTeam.values().size)
+        teamCount = (teamCount + 1).coerceIn(1, BingoTeam.entries.size)
         markDirty()
     }
 
@@ -29,7 +29,7 @@ fun MenuComponent.registerTeams(
         text = "-",
         requiredPermissionLevel = requiredPermissionLevel,
     ) {
-        teamCount = (teamCount - 1).coerceIn(1, BingoTeam.values().size)
+        teamCount = (teamCount - 1).coerceIn(1, BingoTeam.entries.size)
         markDirty()
     }
 

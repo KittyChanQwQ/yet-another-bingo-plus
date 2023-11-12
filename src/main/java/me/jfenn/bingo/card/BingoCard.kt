@@ -7,6 +7,10 @@ class BingoCard(
     val entries: List<BingoCardEntry>,
 ) {
 
+    init {
+        assert(entries.size == 25) { "BINGO card was created with less than 25 entries! (${entries.size})" }
+    }
+
     /**
      * Index the card entries on their item for faster querying.
      */
@@ -80,7 +84,7 @@ class BingoCard(
     fun getLeadingByLines(allowTies: Boolean = false): BingoTeam? {
         var max: BingoTeam? = null
         var maxLines = 0
-        for (team in BingoTeam.values()) {
+        for (team in BingoTeam.entries) {
             val teamLines = countLines(team)
 
             if (teamLines > maxLines) {
@@ -97,7 +101,7 @@ class BingoCard(
     fun getLeadingByItems(allowTies: Boolean = false): BingoTeam? {
         var max: BingoTeam? = null
         var maxItems = 0
-        for (team in BingoTeam.values()) {
+        for (team in BingoTeam.entries) {
             val teamItems = countItems(team)
 
             if (teamItems > maxItems) {
@@ -112,7 +116,7 @@ class BingoCard(
     }
 
     fun getWinner(config: BingoConfig): BingoTeam? {
-        for (team in BingoTeam.values()) {
+        for (team in BingoTeam.entries) {
             val lines = countLines(team)
             if (lines >= config.winCondition.numLines) return team
         }
@@ -125,7 +129,7 @@ class BingoCard(
 
         // check all teams for the number of capture-able lines
         // if any team can capture a line, it is not a stalemate
-        for (team in BingoTeam.values()) {
+        for (team in BingoTeam.entries) {
             // count number of lines that the team can achieve
             val possibleLines = countLines { entry -> entry.teams.isEmpty() || entry.hasAchieved(team) }
             if (possibleLines >= 1) return false

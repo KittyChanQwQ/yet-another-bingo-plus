@@ -10,6 +10,7 @@ data class BingoConfig(
     var winCondition: WinCondition = WinCondition.THREE_LINES,
     var timerMinutes: Int? = 60,
     var itemDistribution: List<Int> = listOf(2, 6, 9, 6, 2),
+    var tierLists: List<String> = listOf("default"),
 
     // game feature settings
     var isElytra: Boolean = false,

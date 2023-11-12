@@ -20,7 +20,7 @@ object TeamService {
     }
 
     fun shuffleTeams(numTeams: Int) {
-        val teams = BingoTeam.values()
+        val teams = BingoTeam.entries
 
         val players = minecraftServer.playerManager.playerList
         val playersPerTeam = ceil(players.size / numTeams.coerceIn(1, teams.size).toDouble()).toInt()

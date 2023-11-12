@@ -10,11 +10,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import me.jfenn.bingo.card.BingoTeam
-import me.jfenn.bingo.card.GeneratorTier
 import me.jfenn.bingo.card.TeamService
 import me.jfenn.bingo.commands.Coords
 import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.config.PlayerSettings
+import me.jfenn.bingo.config.TierList
 import me.jfenn.bingo.config.WinCondition
 import me.jfenn.bingo.menu.MenuService
 import me.jfenn.bingo.utils.allHeldStacks
@@ -88,12 +88,12 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
             literal<ServerCommandSource>("itemdist")
                 .requires { it.hasPermissionLevel(2) }
                 .then(run {
-                    val args = GeneratorTier.values()
+                    val args = TierList.entries
                         .map { tier -> argument<ServerCommandSource, Int>(tier.name, integer(0, 25)) }
                         .toMutableList()
 
                     var last = args.removeLast().executes { ctx ->
-                        val itemDist = GeneratorTier.values()
+                        val itemDist = TierList.entries
                             .map { getInteger(ctx, it.name) }
 
                         if (itemDist.size == 5 && itemDist.sum() != 25) {
@@ -146,7 +146,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
             literal<ServerCommandSource>("wincon")
                 .requires { it.hasPermissionLevel(2) }
                 .let {
-                    val options = WinCondition.values()
+                    val options = WinCondition.entries
                         .map {  wincon ->
                             literal<ServerCommandSource>(wincon.name)
                                 .executes { ctx ->
@@ -175,7 +175,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                             val minutes = getInteger(ctx, "minutes")
                             BingoGame.config.timerMinutes = minutes
                             MenuService.markDirty()
-                            ctx.source.player?.sendInfoMessage("Time limit: ${minutes} minutes")
+                            ctx.source.player?.sendInfoMessage("Time limit: $minutes minutes")
                             1
                         }
                 )
@@ -195,7 +195,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                 .requires { it.hasPermissionLevel(2) }
                 .requires { BingoGame.state == GameState.PREGAME }
                 .then(
-                    argument<ServerCommandSource?, Int?>("teams", integer(1, BingoTeam.values().size))
+                    argument<ServerCommandSource?, Int?>("teams", integer(1, BingoTeam.entries.size))
                         .executes { ctx ->
                             val teams = getInteger(ctx, "teams")
                             TeamService.shuffleTeams(teams)

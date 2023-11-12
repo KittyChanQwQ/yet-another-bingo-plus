@@ -21,7 +21,7 @@ object Config {
         FabricLoader.getInstance().configDir
     } catch (e: Exception) {
         Path.of("").toAbsolutePath()
-    }
+    }!!
 
     @OptIn(InternalSerializationApi::class)
     fun <T: Any> read(clazz: KClass<T>, file: String): T {
@@ -74,8 +74,8 @@ object Config {
 }
 
 class ConfigDelegate<T: Any>(
-    val clazz: KClass<T>,
-    val file: String,
+    private val clazz: KClass<T>,
+    private val file: String,
 ) : ReadWriteProperty<Any, T> {
     var value: T? = null
 

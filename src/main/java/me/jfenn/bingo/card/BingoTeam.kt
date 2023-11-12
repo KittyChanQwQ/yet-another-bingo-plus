@@ -56,7 +56,7 @@ enum class BingoTeam(
 
     companion object {
 
-        private val TEAM_ID_INDEX = BingoTeam.values().associateBy { it.id }
+        private val TEAM_ID_INDEX = entries.associateBy { it.id }
 
         fun fromPlayer(player: PlayerEntity): BingoTeam? {
             val team = player.scoreboardTeam ?: return null

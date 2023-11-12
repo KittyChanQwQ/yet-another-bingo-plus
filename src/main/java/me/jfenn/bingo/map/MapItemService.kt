@@ -33,7 +33,7 @@ object MapItemService {
      * Returns true if the item stack is a team's map card
      */
     fun isMapItem(stack: ItemStack): Boolean {
-        return stack.item == Items.FILLED_MAP && BingoTeam.values().any { FilledMapItem.getMapId(stack) == it.mapId }
+        return stack.item == Items.FILLED_MAP && BingoTeam.entries.any { FilledMapItem.getMapId(stack) == it.mapId }
     }
 
 }

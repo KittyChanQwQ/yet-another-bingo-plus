@@ -75,7 +75,7 @@ object BingoGame {
         card = CardService.generate(config)
 
         // update the card map images
-        for (team in BingoTeam.values()) {
+        for (team in BingoTeam.entries) {
             MapRenderService.update(team, card, config)
         }
     }
@@ -226,7 +226,7 @@ object BingoGame {
     }
 
     fun updateGameMode(player: ServerPlayerEntity) {
-        val isOnTeam = BingoTeam.values()
+        val isOnTeam = BingoTeam.entries
             .any { player.isTeamPlayer(it.team()) }
 
         val gameMode = when {
@@ -264,12 +264,12 @@ object BingoGame {
     fun giveSpectatorMapItems(player: ServerPlayerEntity) {
         if (state == GameState.PREGAME) return
 
-        val isOnTeam = BingoTeam.values()
+        val isOnTeam = BingoTeam.entries
             .any { player.isTeamPlayer(it.team()) }
 
         if (isOnTeam && state != GameState.POSTGAME) return
 
-        BingoTeam.values()
+        BingoTeam.entries
             .filter { it.team().playerList.isNotEmpty() }
             .map { MapItemService.createMapItem(it) }
             .forEachIndexed { i, stack ->
@@ -371,7 +371,7 @@ object BingoGame {
         // update the team map(s)
         if (config.gameMode == BingoMode.LOCKOUT || config.drawOtherTeamCompletions) {
             // if the mode is LOCKOUT, all team cards need to be updated (to redraw locked items)
-            for (team in BingoTeam.values())
+            for (team in BingoTeam.entries)
                 MapRenderService.update(team, card, config)
         } else {
             // otherwise, only redraw maps for the updated teams
@@ -510,7 +510,7 @@ object BingoGame {
     }
 
     private val teamScoreboards by lazy {
-        BingoTeam.values()
+        BingoTeam.entries
             .toMutableList<BingoTeam?>()
             .apply { add(null) }
             .associateWith { team ->
