@@ -5,8 +5,6 @@ import me.jfenn.bingo.card.BingoTeam
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.block.FluidBlock
-import net.minecraft.fluid.WaterFluid
-import net.minecraft.registry.Registries
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
@@ -17,10 +15,11 @@ import net.minecraft.world.biome.BiomeKeys
 import net.minecraft.world.chunk.Chunk
 import net.minecraft.world.chunk.ChunkStatus
 import org.slf4j.LoggerFactory
-import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sign
 import kotlin.math.sin
+import kotlin.random.Random
+import kotlin.system.measureTimeMillis
 
 class SpreadPlayers(
     private val world: ServerWorld = minecraftServer.overworld,
@@ -104,6 +103,22 @@ class SpreadPlayers(
 
         return true
     }
+    private fun everyChunkIndex(margin: Int) = sequence {
+        for (x in margin until 16 - margin) {
+            for (z in margin until 16 - margin) {
+                yield(x + z * 16)
+            }
+        }
+    }
+
+    private fun adjacentBlocks(pos: BlockPos, range: Int) = sequence {
+        for (x in -range..range) {
+            for (z in -range..range) {
+                if (x == 0 && z == 0) continue
+                yield(BlockPos(pos.x + x, pos.y, pos.z + z))
+            }
+        }
+    }
 
     private fun selectChunkPosition(chunk: Chunk): BlockPos? {
         // if world.dimension.hasCeiling, this needs to find a spawnpoint without using heightmaps
@@ -111,17 +126,10 @@ class SpreadPlayers(
 
         if (world.dimension.hasCeiling) {
             // choose random positions in the chunk until a valid one is found
-            val spawnBlockPos = buildList {
-                for (x in 2..13) {
-                    for (z in 2..13) {
-                        add(Pair(x, z))
-                    }
-                }
-            }
+            val spawnBlockPos = everyChunkIndex(2)
                 .shuffled()
-                .asSequence()
-                .map { (x, z) ->
-                    chunk.pos.getBlockPos(x, world.logicalHeight - 2, z).mutableCopy()
+                .map {
+                    chunk.pos.getBlockPos(it % 16, world.logicalHeight - 2, it / 16).mutableCopy()
                 }
                 .map { pos ->
                     // iterate until these match (false, false, true)
@@ -144,18 +152,8 @@ class SpreadPlayers(
                         return@map null
 
                     // ensure that there is space on each side of the spawn
-                    val isSpace = (1..2)
-                        .flatMap {
-                            listOf(
-                                BlockPos(pos.x + it, pos.y, pos.z),
-                                BlockPos(pos.x - it, pos.y, pos.z),
-                                BlockPos(pos.x, pos.y, pos.z + it),
-                                BlockPos(pos.x, pos.y, pos.z - it),
-                            )
-                        }
-                        .all {
-                            isValidSpawn(chunk, it)
-                        }
+                    val isSpace = adjacentBlocks(pos, 2)
+                        .all { isValidSpawn(chunk, it) }
 
                     if (!isSpace)
                         return@map null
@@ -167,35 +165,24 @@ class SpreadPlayers(
             return spawnBlockPos?.toImmutable()
         } else {
             // otherwise, use heightmaps to spawn players near the world surface
-            val heightmapWG = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG)
-            val heightmap = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE)
-
-            // get the highest worldgen heightmap value
-            val maxHeight = (0..255)
-                .maxOf {
-                    heightmapWG.get(it % 16, it / 16)
-                }
-
-            // get the heightmap index closest to the chunk's worldgen height
             // this hopefully finds a reasonable actual spawn location without placing the player in a cave or on a tree
-            val closestIndex = (0..255)
-                .minByOrNull {
-                    val height = heightmap.get(it % 16, it / 16)
-                    (maxHeight - height).absoluteValue
+            val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES)
+
+            return everyChunkIndex(1)
+                .shuffled()
+                .map {
+                    val x = it % 16
+                    val z = it / 16
+                    val height = heightmap.get(x, z)
+                    chunk.pos.getBlockPos(x, height - 1, z)
                 }
-                ?: 0
-
-            val height = heightmap.get(closestIndex % 16, closestIndex / 16)
-
-            log.debug("chunk at (${chunk.pos.x}, ${chunk.pos.z}) height: $height")
-
-            val spawnX = closestIndex % 16
-            val spawnZ = closestIndex / 16
-            val spawnBlockPos = chunk.pos.getBlockPos(spawnX, height-1, spawnZ)
-            if (!isValidSpawn(chunk, spawnBlockPos))
-                return null
-
-            return spawnBlockPos
+                .filter {
+                    // if the block is below sea level, skip it!
+                    !(world.registryKey == World.OVERWORLD && it.y <= world.seaLevel)
+                }
+                .find { pos ->
+                    isValidSpawn(chunk, pos) && adjacentBlocks(pos, 1).all { isValidSpawn(chunk, it) }
+                }
         }
     }
 
@@ -214,33 +201,37 @@ class SpreadPlayers(
 
             log.info("Spawning team ${team.name} near chunk ($x, $z)")
 
-            findChunk@ while (true) {
-                // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
-                val biomeTest = world.getBiome(BlockPos(x*16 + 8, world.logicalHeight, z*16 + 8))
-                if (invalidSpawnBiomes.contains(biomeTest.key.get())) {
-                    x += 4 * xSign
-                    continue@findChunk
+            val chunkLocatorMs = measureTimeMillis {
+                findChunk@ while (true) {
+                    // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
+                    val biomeTest = world.getBiome(BlockPos(x*16 + 8, world.logicalHeight, z*16 + 8))
+                    if (invalidSpawnBiomes.contains(biomeTest.key.get())) {
+                        x += 4 * xSign
+                        continue@findChunk
+                    }
+
+                    // This "!!" looks unsafe. but maybe it isn't though? (it should actually be fine)
+                    val chunk = world.getChunk(x, z, ChunkStatus.FULL, true)!!
+
+                    val spawnBlockPos = selectChunkPosition(chunk)
+                    if (spawnBlockPos == null) {
+                        log.info("Skipping chunk ($x, $z) which contains no valid spawn locations")
+                        x += 1 * xSign
+                        continue@findChunk
+                    }
+
+                    if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
+                        log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
+                        x += 4 * xSign
+                        continue@findChunk
+                    }
+
+                    spawns[team] = BlockPos(spawnBlockPos.x, spawnBlockPos.y + 1, spawnBlockPos.z)
+                    break@findChunk
                 }
-
-                // This "!!" looks unsafe. but maybe it isn't though? (it should actually be fine)
-                val chunk = world.getChunk(x, z, ChunkStatus.FULL, true)!!
-
-                val spawnBlockPos = selectChunkPosition(chunk)
-                if (spawnBlockPos == null) {
-                    log.info("Skipping chunk ($x, $z) which contains no valid spawn locations")
-                    x += 1 * xSign
-                    continue@findChunk
-                }
-
-                if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
-                    log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
-                    x += 4 * xSign
-                    continue@findChunk
-                }
-
-                spawns[team] = BlockPos(spawnBlockPos.x, spawnBlockPos.y + 1, spawnBlockPos.z)
-                break@findChunk
             }
+
+            log.info("Found a spawn location for ${team.name} in ${chunkLocatorMs}ms")
         }
 
         return spawns
@@ -257,7 +248,8 @@ class SpreadPlayers(
             BlockPos(0, 100, 0)
         }
 
-        player.teleport(world, spawn.x + 0.5, spawn.y + 1.0, spawn.z + 0.5, 0f, 0f)
+        // random offset for each player to prevent collision grouping
+        player.teleport(world, spawn.x + Random.nextDouble(), spawn.y.toDouble(), spawn.z + Random.nextDouble(), 0f, 0f)
         player.setSpawnPoint(
             world.registryKey,
             spawn,
@@ -269,8 +261,6 @@ class SpreadPlayers(
         for (player in minecraftServer.playerManager.playerList) {
             teleportPlayer(spawnpoints, player)
         }
-
-        // TODO: add a 1-chunk load ticket for each spawnpoint?
     }
 
 }
