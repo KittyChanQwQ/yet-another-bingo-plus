@@ -4,5 +4,5 @@ export type TierList = {
 	B: string[],
 	C: string[],
 	D: string[],
-	groups: string[],
+	groups: string[][],
 };

@@ -5,14 +5,8 @@
 		:data-dragged-over="isDraggedOver" ref="dropTargetRef"
 	>
 		<template v-for="(item, i) in props.items">
-			<ItemGroup
-				v-if="shouldFilter(item) && item.includes('|')"
-				:name="item"
-				@item-changed="(newItem) => onItemChanged(i, newItem)"
-				@item-removed="onItemRemoved(i)"
-			/>
 			<Item
-				v-if="shouldFilter(item) && !item.includes('|')"
+				v-if="shouldFilter(item)"
 				:can-drag="props.canDrag"
 				:can-drop="props.canGroup"
 				:name="item"
@@ -24,10 +18,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useDragTarget } from "../compositions/useDragTarget";
 import Item from "./Item.vue";
-import ItemGroup from "./ItemGroup.vue";
 
 const props = defineProps<{
 	items: string[],

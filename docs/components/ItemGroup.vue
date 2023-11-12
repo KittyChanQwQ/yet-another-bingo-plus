@@ -7,7 +7,7 @@
 	>
 		<p class="title">Item Group</p>
 		<Item
-			v-for="(item, i) in items"
+			v-for="(item, i) in props.items"
 			:name="item"
 			can-drag
 			@item-removed="onItemRemoved(i)"
@@ -22,13 +22,11 @@ import { useDragItem } from "../compositions/useDragItem";
 import { useDragTarget } from "../compositions/useDragTarget";
 
 const props = defineProps<{
-	name: string,
+	items: string[],
 }>();
 
-const items = computed(() => props.name.split("|"));
-
 const emit = defineEmits<{
-	(event: "itemChanged", item: string): void;
+	(event: "itemChanged", items: string[]): void;
 	(event: "itemRemoved"): void;
 }>();
 
@@ -36,7 +34,7 @@ const itemRef = ref<HTMLElement>();
 
 const { isDragging, onDragEnd } = useDragItem({
 	element: itemRef,
-	data: computed(() => ({ type: "group", name: props.name })),
+	data: computed(() => ({ type: "group", items: props.items })),
 });
 
 onDragEnd((isSuccessful) => {
@@ -48,26 +46,26 @@ const { isDraggedOver, onDrop } = useDragTarget({
 	element: itemRef,
 	action: "move",
 	filter(data) {
-		return !items.value.includes(data?.name) && props.name != data?.name;
+		return data?.type === "group" && data?.items && !data.items.every(value => props.items.includes(value));
 	},
 });
 
 onDrop((data) => {
 	console.log("<ItemGroup> on drop", data);
 	// add new items to the group item
-	const dataItems = data.name.split("|");
-	const newItems = [...new Set([...items.value, ...dataItems])];
-	emit("itemChanged", newItems.join("|"));
+	const dataItems = [...data.items] as string[];
+	const newItems = [...new Set([...props.items, ...dataItems])];
+	emit("itemChanged", newItems);
 });
 
 /**
  * When an item is removed from the list; e.g. being dragged to another group.
  */
 function onItemRemoved(i: number) {
-	const newItems = items.value.slice();
+	const newItems = props.items.slice();
 	newItems.splice(i, 1);
 	if (newItems.length)
-		emit("itemChanged", newItems.join("|"));
+		emit("itemChanged", newItems);
 	else emit("itemRemoved");
 }
 </script>

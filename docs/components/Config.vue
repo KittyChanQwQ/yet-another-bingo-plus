@@ -59,14 +59,14 @@
 					:headers="['Item Groups']"
 				>
 					<template #groups>
-						<ItemList
+						<ItemGroupList
 							can-drag
 							can-drop
 							can-group
 							:items="tierList.groups"
 							:columns="5"
 							:filter="filter"
-							@items-changed="(items) => onItemsChanged('groups', items)"
+							@items-changed="(items) => onGroupsChanged(items)"
 						/>
 					</template>
 				</Table>
@@ -97,6 +97,7 @@ import Table from "./Table.vue";
 import Tabs from "./Tabs.vue";
 import { TierList } from "./types";
 import UploadButton from "./UploadButton.vue";
+import ItemGroupList from "./ItemGroupList.vue";
 
 const TIERLIST_KEY = "tierlist";
 
@@ -143,14 +144,20 @@ onMounted(() => {
 const allItems = computed(() => {
 	// the "allItems" column should only show items that aren't included in any other tiers
 	const items = itemData
-		.filter(item => currentTab.value === "tiers" ? !tiers.some(tier => tierList.value[tier].includes(item)) : !tierList.value.groups.some(group => group.split("|").includes(item)))
+		.filter(item => currentTab.value === "tiers" ? !tiers.some(tier => tierList.value[tier].includes(item)) : !tierList.value.groups.some(group => group.includes(item)))
 		.filter(item => shouldIncludeUnobtainable.value || !unobtainableItems.some(unobtainable => typeof unobtainable === "string" ? unobtainable === item : new RegExp(unobtainable).test(item)));
 	return items;
 });
 
-function onItemsChanged(tier: keyof TierList, newItems: string[]) {
+function onItemsChanged(tier: string, newItems: string[]) {
 	// update the tierLists ref
 	tierList.value[tier] = [...new Set(newItems)];
+	// write items to localStorage
+	localStorage.setItem(TIERLIST_KEY, JSON.stringify(tierList.value));
+}
+
+function onGroupsChanged(newGroups: string[][]) {
+	tierList.value.groups = newGroups;
 	// write items to localStorage
 	localStorage.setItem(TIERLIST_KEY, JSON.stringify(tierList.value));
 }
@@ -166,12 +173,10 @@ function onLegacyItems(tier: keyof TierList, upload: string[]) {
 		...groups.flatMap(group => group.split("|")),
 	].map(item => "minecraft:" + item.toLowerCase()));
 
-	onItemsChanged("groups", [
+	onGroupsChanged([
 		...tierList.value.groups,
 		...groups.map(group => {
-			return group.split("|")
-				.map(item => "minecraft:" + item.toLowerCase())
-				.join("|");
+			return group.split("|").map(item => "minecraft:" + item.toLowerCase());
 		}),
 	]);
 }
