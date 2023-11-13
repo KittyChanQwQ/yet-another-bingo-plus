@@ -1,5 +1,7 @@
 package me.jfenn.bingo
 
+import io.netty.buffer.ByteBufUtil
+import io.netty.buffer.Unpooled
 import me.jfenn.bingo.card.*
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
@@ -18,12 +20,13 @@ import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.scoreboard.ScoreboardCriterion
-import net.minecraft.scoreboard.ScoreboardDisplaySlot
+import net.minecraft.scoreboard.ScoreboardObjective
 import net.minecraft.scoreboard.ServerScoreboard
 import net.minecraft.server.command.CommandOutput
 import net.minecraft.server.network.ServerPlayerEntity
@@ -599,8 +602,8 @@ object BingoGame {
 
             // Manually send the scoreboard packets to each player
             val packets = minecraftServer.scoreboard.createChangePackets(objective)
-            val displayPacket = ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, objective)
-            val hidePacket = ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, null)
+            val displayPacket = createScoreboardDisplayPacket(objective)
+            val hidePacket = createScoreboardDisplayPacket(null)
             minecraftServer.playerManager.playerList
                 .filter { BingoTeam.fromPlayer(it) == team }
                 .filter { ConfigService.getPlayer(it.uuidAsString).scoreboard }
@@ -631,8 +634,26 @@ object BingoGame {
 
         if (!config.scoreboard) {
             // send a packet remove the scoreboard sidebar if set to false
-            player.networkHandler.sendPacket(ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, null))
+            player.networkHandler.sendPacket(createScoreboardDisplayPacket(null))
         }
+    }
+
+    /**
+     * Construct a ScoreboardDisplayS2CPacket using its PacketByteBuf constructor,
+     * which is compatible across 1.20-1.20.2...
+     */
+    private fun createScoreboardDisplayPacket(objective: ScoreboardObjective?) : ScoreboardDisplayS2CPacket {
+        val b = Unpooled.buffer()
+        b.writeByte(1) // ScoreboardDisplaySlot.SIDEBAR.id
+
+        val str = objective?.name ?: ""
+        val strMax = ByteBufUtil.utf8MaxBytes(str)
+        val strBuf = b.alloc().buffer(strMax)
+        val strLen = ByteBufUtil.writeUtf8(strBuf, str)
+        b.writeByte(strLen)
+        b.writeBytes(strBuf)
+
+        return ScoreboardDisplayS2CPacket(PacketByteBuf(b))
     }
 
 }
