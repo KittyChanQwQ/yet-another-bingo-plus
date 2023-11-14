@@ -50,7 +50,7 @@ The items used to generate bingo card items at different tiers can be customized
 `b_tier.txt`, etc. The game will pick each tier item from a random line in its file when generating a card. Items can be
 placed on the same line (separated by a `|` character) to ensure that only one of them will appear at a time.
 
-> There's a nifty [configuration tool](https://horrific-tweaks.gitlab.io/bingo/config.html) I've set up that'll let you
+> There's a nifty [configuration tool](https://horrific-tweaks.gitlab.io/bingo/tier-editor.html) I've set up that'll let you
 > change these tier lists in a drag-and-drop interface rather than editing these files in text.
 >
 > It's still a bit finicky, but helps prevent typos and misclicks/etc from causing issues...
