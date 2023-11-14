@@ -70,14 +70,6 @@ class SpreadPlayers(
         }
     }
 
-    private fun isEmptyBlock(blockPos: BlockPos, blockState: BlockState): Boolean {
-        return blockState.isAir || blockState.getCollisionShape(world, blockPos).isEmpty
-    }
-
-    private fun isFluidBlock(blockState: BlockState): Boolean {
-        return blockState.block is FluidBlock
-    }
-
     private fun isValidSpawn(chunk: Chunk, groundPos: BlockPos): Boolean {
         if (world.registryKey == World.OVERWORLD && groundPos.y <= world.seaLevel) {
             log.debug("Skipping block {} to avoid spawning underwater (y <= {})", groundPos, world.seaLevel)
@@ -85,7 +77,7 @@ class SpreadPlayers(
         }
 
         val groundState = chunk.getBlockState(groundPos)
-        if (isEmptyBlock(groundPos, groundState))
+        if (isEmptyBlock(world, groundPos, groundState))
             return false
         if (isFluidBlock(groundState) || invalidSpawnBlocks.contains(groundState.block)) {
             log.debug("Skipping block {} to avoid spawning on {}", groundPos, groundState.block.translationKey)
@@ -95,7 +87,7 @@ class SpreadPlayers(
         for (y in 1..2) {
             val blockPos = BlockPos(groundPos.x, groundPos.y + y, groundPos.z)
             val blockState = chunk.getBlockState(blockPos)
-            if (!isEmptyBlock(blockPos, blockState) || isFluidBlock(blockState)) {
+            if (!isEmptyBlock(world, blockPos, blockState) || isFluidBlock(blockState)) {
                 log.debug("Skipping block {} to avoid spawning inside {}", groundPos, blockState.block.translationKey)
                 return false
             }
@@ -142,7 +134,7 @@ class SpreadPlayers(
                         isEmpty = isEmptyBelow
 
                         pos.move(Direction.DOWN)
-                        isEmptyBelow = isEmptyBlock(pos, chunk.getBlockState(pos))
+                        isEmptyBelow = isEmptyBlock(world, pos, chunk.getBlockState(pos))
                     }
 
                     if (!(isEmptyAbove && isEmpty && !isEmptyBelow))

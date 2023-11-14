@@ -17,7 +17,7 @@ object SpawnService {
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    var teamSpawnpoints = mapOf<BingoTeam, BlockPos>()
+    private var teamSpawnpoints = mapOf<BingoTeam, BlockPos>()
 
     fun getSpawnDimension(config: BingoConfig): ServerWorld {
         return minecraftServer.worlds.find {
@@ -42,6 +42,25 @@ object SpawnService {
         teamSpawnpoints.forEach { (_, blockPos) ->
             createTeamChest(config, world, blockPos)
         }
+    }
+
+    fun getTeamSpawnpoint(config: BingoConfig, team: BingoTeam): BlockPos? {
+        val spawnpoint = teamSpawnpoints[team] ?: return null
+        val world = getSpawnDimension(config)
+
+        val pos = spawnpoint.mutableCopy()
+        while (
+            !isEmptyBlock(world, pos, world.getBlockState(pos))
+            || !isEmptyBlock(world, pos.up(), world.getBlockState(pos.up()))
+        ) {
+            pos.y += 1
+            if (pos.y >= world.logicalHeight) {
+                log.error("Spawn position for team $team is obstructed up to build height...")
+                return spawnpoint
+            }
+        }
+
+        return pos
     }
 
     /**

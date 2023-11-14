@@ -70,7 +70,6 @@ public abstract class PlayerManagerMixin {
             }
             return;
         }
-        if (player.isSpawnForced()) return;
 
         // this can be null if the player's previous spawnpoint failed... so it should default to the origin
         Optional<Vec3d> targetRespawn = Optional.empty();
@@ -94,7 +93,7 @@ public abstract class PlayerManagerMixin {
             BingoTeam team = BingoTeam.Companion.fromPlayer(player);
             if (team == null) return;
 
-            BlockPos spawn = SpawnService.INSTANCE.getTeamSpawnpoints().get(team);
+            BlockPos spawn = SpawnService.INSTANCE.getTeamSpawnpoint(BingoGame.INSTANCE.getConfig(), team);
             if (spawn == null) return;
 
             // change the player's spawnpoint back to the team spawn location
