@@ -46,14 +46,13 @@ lines to win the game. (the "win condition" can be set to a number of lines, or 
 On the first startup, the mod will create its initial config files in `./config/bingo/...`. No initial setup is needed
 to use the mod; it should run out of the box.
 
-The items used to generate bingo card items at different tiers can be customized in `d_tier.txt`, `c_tier.txt`,
-`b_tier.txt`, etc. The game will pick each tier item from a random line in its file when generating a card. Items can be
-placed on the same line (separated by a `|` character) to ensure that only one of them will appear at a time.
+The items used to generate bingo card items at different tiers can be customized in the `*.tierlist.json` files. Once
+placed in the `./config/bingo/` directory, they can be enabled in-game using the "Tier List" menu.
 
 > There's a nifty [configuration tool](https://horrific-tweaks.gitlab.io/bingo/tier-editor.html) I've set up that'll let you
-> change these tier lists in a drag-and-drop interface rather than editing these files in text.
+> change these tier lists in a drag-and-drop interface rather than editing the files in text.
 >
-> It's still a bit finicky, but helps prevent typos and misclicks/etc from causing issues...
+> It's still a bit finicky, but helps prevent typos and misclicks/etc...
 
 The item images used to render the BINGO map can be overridden by placing a lowercase named 16x16 PNG file for each item
 in the `./config/bingo/images/...` folder. For example, `./config/bingo/images/birch_trapdoor.png`.
