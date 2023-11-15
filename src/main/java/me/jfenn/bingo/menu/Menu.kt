@@ -1,9 +1,9 @@
 package me.jfenn.bingo.menu
 
-import me.jfenn.bingo.lobbyWorld
-import me.jfenn.bingo.minecraftServer
+import me.jfenn.bingo.LOBBY_WORLD_ID
 import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
+import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 
@@ -62,12 +62,13 @@ inline fun <reified E : Enum<E>> MenuComponent.registerEnumMenu(
 }
 
 fun MenuComponent.registerDimensionMenu(
+    server: MinecraftServer,
     position: Vec3d,
     dimensionProperty: MutableProperty<String>,
 ) {
-    val dimensions = minecraftServer.worlds
-        .filter { it != lobbyWorld }
+    val dimensions = server.worlds
         .map { it.registryKey.value }
+        .filter { it != LOBBY_WORLD_ID }
         .sortedBy { it.toString() }
 
     var dimension by dimensionProperty

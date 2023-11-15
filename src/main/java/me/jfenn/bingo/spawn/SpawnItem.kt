@@ -70,15 +70,6 @@ data class SpawnItem(
             }
         }
 
-        if (BingoGame.config.preventScoringSpawnKitItems) {
-            for (itemStack in itemStacks) {
-                // set BINGO_IGNORE flag so that spawn items do not count on the bingo card
-                itemStack.getOrCreateNbt().apply {
-                    putBoolean(NBT_BINGO_IGNORE, true)
-                }
-            }
-        }
-
         return itemStacks
     }
 

@@ -2,7 +2,6 @@ package me.jfenn.bingo
 
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.LoggerFactory
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 /**
@@ -28,7 +27,6 @@ object WorldDeleter {
         "world/level.dat_old",
     )
 
-    @OptIn(ExperimentalTime::class)
     fun invoke() {
         val gameDir = FabricLoader.getInstance().gameDir
         log.info("Deleting world files in dir: ${gameDir.toAbsolutePath()}")

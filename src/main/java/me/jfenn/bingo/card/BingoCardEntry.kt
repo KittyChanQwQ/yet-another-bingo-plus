@@ -1,12 +1,15 @@
 package me.jfenn.bingo.card
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import me.jfenn.bingo.NBT_BINGO_IGNORE
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 
-abstract class BingoCardEntry {
+@Serializable
+sealed class BingoCardEntry {
 
     val teams = HashSet<BingoTeam>()
 
@@ -30,39 +33,41 @@ abstract class BingoCardEntry {
     fun hasAnyAchieved() = teams.isNotEmpty()
     fun hasNoneAchieved() = teams.isEmpty()
 
-}
+    @Serializable
+    data object FreeSpace : BingoCardEntry() {
+        init {
+            teams.addAll(BingoTeam.entries)
+        }
 
-object FreeSpaceEntry : BingoCardEntry() {
-
-    init {
-        teams.addAll(BingoTeam.entries)
+        @Transient
+        override val visualItem: Item? = null
+        override fun hasAchieved(team: BingoTeam): Boolean = true
+        override fun setAchieved(team: BingoTeam, value: Boolean): Boolean = false
     }
 
-    override val visualItem: Item? = null
-    override fun hasAchieved(team: BingoTeam): Boolean = true
-    override fun setAchieved(team: BingoTeam, value: Boolean): Boolean = false
-}
+    @Serializable
+    data class ItemEntry(
+        val identifier: String,
+    ): BingoCardEntry() {
 
-class ItemEntry(
-    identifier: Identifier,
-): BingoCardEntry() {
+        @Transient
+        override val visualItem: Item = Registries.ITEM.get(Identifier(identifier))
 
-    override val visualItem: Item = Registries.ITEM.get(identifier)
+        /**
+         * Returns true if the item can be counted to complete the bingo tile
+         *
+         * Returns false if any of:
+         * - item does not match the card item
+         * - item has a bingo card's map ID
+         * - item has a "bingo_ignore:true" NBT tag
+         */
+        fun canSatisfy(stack: ItemStack): Boolean {
+            return stack.item == item() && stack.nbt?.getBoolean(NBT_BINGO_IGNORE) != true
+        }
 
-    /**
-     * Returns true if the item can be counted to complete the bingo tile
-     *
-     * Returns false if any of:
-     * - item does not match the card item
-     * - item has a bingo card's map ID
-     * - item has a "bingo_ignore:true" NBT tag
-     */
-    fun canSatisfy(stack: ItemStack): Boolean {
-        return stack.item == item() && stack.nbt?.getBoolean(NBT_BINGO_IGNORE) != true
+        fun item(): Item {
+            return visualItem
+        }
+
     }
-
-    fun item(): Item {
-        return visualItem
-    }
-
 }

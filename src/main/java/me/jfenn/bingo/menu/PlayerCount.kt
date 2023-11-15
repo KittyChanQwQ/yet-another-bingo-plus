@@ -1,0 +1,22 @@
+package me.jfenn.bingo.menu
+
+import me.jfenn.bingo.utils.toNbt
+import net.minecraft.entity.EntityType
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
+import net.minecraft.util.math.Vec3d
+
+fun MenuComponent.registerPlayerCount(position: Vec3d) {
+    registerEntity(EntityType.TEXT_DISPLAY) { ctx ->
+        put("Pos", position.toNbt())
+        putString("text", Text.Serializer.toJson(
+            Text.empty()
+                .append("Player count: ")
+                .append(Text.literal("${ctx.server.currentPlayerCount} / ${ctx.server.maxPlayerCount}").formatted(Formatting.GREEN))
+        ))
+        putString("billboard", "fixed")
+        putString("alignment", "center")
+        putInt("background", 0)
+        putBoolean("shadow", true)
+    }
+}

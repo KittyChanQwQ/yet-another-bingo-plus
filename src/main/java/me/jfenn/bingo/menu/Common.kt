@@ -1,6 +1,7 @@
 package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.event.InteractionEntityEvents
+import me.jfenn.bingo.state.BingoContext
 import me.jfenn.bingo.utils.EventListener
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
@@ -50,7 +51,7 @@ class DelegatedProperty<T>(
 data class MenuEntityHandle<T: Entity>(
     val id: UUID = UUID.randomUUID(),
     val type: EntityType<T>,
-    val nbt: NbtCompound.() -> Unit = {},
+    val nbt: NbtCompound.(ctx: BingoContext) -> Unit = {},
     val onUpdate: EventListener<T> = EventListener(),
 )
 
@@ -62,13 +63,14 @@ fun component(setup: MenuComponent.() -> Unit): MenuComponent {
 
 open class MenuComponent {
 
-    private var tracker: MenuTracker? = null
-    val entities: MutableList<MenuEntityHandle<*>> = mutableListOf()
+    private var tracker: MenuInstance? = null
+    private val entities: MutableList<MenuEntityHandle<*>> = mutableListOf()
 
-    val onUpdate = EventListener<MenuTracker>()
+    val onTick = EventListener<MenuInstance>()
+    val onUpdate = EventListener<MenuInstance>()
     val onDespawn = EventListener<Unit>()
 
-    private var isDirty = false
+    private var isDirty = true
 
     fun markDirty() {
         isDirty = true
@@ -92,7 +94,7 @@ open class MenuComponent {
         return DelegatedProperty(getter) {}
     }
 
-    fun <T: Entity> registerEntity(type: EntityType<T>, nbt: NbtCompound.() -> Unit = {}): MenuEntityHandle<T> {
+    fun <T: Entity> registerEntity(type: EntityType<T>, nbt: NbtCompound.(BingoContext) -> Unit = {}): MenuEntityHandle<T> {
         val handle = MenuEntityHandle(
             id = UUID.randomUUID(),
             type = type,
@@ -103,17 +105,16 @@ open class MenuComponent {
         return handle
     }
 
-    init {
-        MenuService.onTick {
-            if (isDirty)
-                tracker?.let { spawn(it) }
-        }
+    fun tick(tracker: MenuInstance) {
+        onTick.invoke(tracker)
+        if (isDirty)
+            spawn(tracker)
     }
 
-    fun spawn(tracker: MenuTracker) {
+    fun spawn(tracker: MenuInstance) {
         this.tracker = tracker
         onUpdate.invoke(tracker)
-        entities.forEach { tracker.spawn(it, NbtCompound().apply(it.nbt)) }
+        entities.forEach { tracker.spawn(it, NbtCompound().apply { it.nbt(this, tracker.ctx) }) }
         isDirty = false
     }
 
@@ -122,43 +123,4 @@ open class MenuComponent {
         onDespawn.invoke(Unit)
         this.tracker = null
     }
-}
-
-data class MenuTracker(
-    val world: ServerWorld,
-) {
-
-    companion object {
-        val log = LoggerFactory.getLogger(this::class.java)!!
-    }
-
-    fun <T: Entity> spawn(info: MenuEntityHandle<T>, nbt: NbtCompound = NbtCompound()): T? {
-        var entity: T? = world.getEntity(info.id) as? T
-
-        if (entity == null) {
-            entity = info.type.create(world)!!
-            entity.uuid = info.id
-            world.spawnEntity(entity)
-        }
-
-        if (entity.type != info.type) {
-            log.error("Entity type ${info.type} does not match the entity being updated")
-            return null
-        }
-
-        entity.readNbt(nbt)
-        info.onUpdate(entity)
-        return entity
-    }
-
-    fun despawn(info: MenuEntityHandle<*>) {
-        val entity = world.getEntity(info.id)
-        if (entity != null && entity.type == info.type) {
-            InteractionEntityEvents.INTERACT_LISTENERS.remove(info.id)
-            entity.kill()
-        } else {
-            log.error("Entity type ${info.type} does not match the entity being despawned")
-        }
-    }
-
 }

@@ -1,10 +1,8 @@
 package me.jfenn.bingo.spawn
 
-import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.card.BingoTeam
-import net.minecraft.block.BlockState
+import me.jfenn.bingo.state.BingoContext
 import net.minecraft.block.Blocks
-import net.minecraft.block.FluidBlock
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
@@ -22,7 +20,7 @@ import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
 class SpreadPlayers(
-    private val world: ServerWorld = minecraftServer.overworld,
+    private val world: ServerWorld,
 ) {
 
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -180,7 +178,7 @@ class SpreadPlayers(
 
     fun spread(distance: Int): Map<BingoTeam, BlockPos> {
         val teams = BingoTeam.entries
-            .filter { it.team().playerList.isNotEmpty() }
+            .filter { it.team(world.server).playerList.isNotEmpty() }
 
         val groups = spreadGroups(teams.size, distance)
 
@@ -227,32 +225,6 @@ class SpreadPlayers(
         }
 
         return spawns
-    }
-
-    fun teleportPlayer(spawnpoints: Map<BingoTeam, BlockPos>, player: ServerPlayerEntity) {
-        val team = BingoTeam.fromPlayer(player)
-        val spawn = team?.let {
-            spawnpoints[team] ?: run {
-                log.warn("Team ${team.name} does not have a stored spawnpoint")
-                null
-            }
-        } ?: run {
-            BlockPos(0, 100, 0)
-        }
-
-        // random offset for each player to prevent collision grouping
-        player.teleport(world, spawn.x + Random.nextDouble(), spawn.y.toDouble(), spawn.z + Random.nextDouble(), 0f, 0f)
-        player.setSpawnPoint(
-            world.registryKey,
-            spawn,
-            0f, true, false,
-        )
-    }
-
-    fun teleportPlayers(spawnpoints: Map<BingoTeam, BlockPos>) {
-        for (player in minecraftServer.playerManager.playerList) {
-            teleportPlayer(spawnpoints, player)
-        }
     }
 
 }

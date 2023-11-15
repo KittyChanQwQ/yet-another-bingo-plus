@@ -17,6 +17,13 @@ fun PlayerEntity.allHeldStacks() = sequence<ItemStack> {
     yield(currentScreenHandler.cursorStack)
 }
 
+fun PlayerEntity.allInventorySlots() = sequence<Pair<Int, ItemStack>> {
+    // yield all items in inventory
+    for (i in 0 until inventory.size()) {
+        yield(Pair(i, inventory.getStack(i)))
+    }
+}
+
 /**
  * Give the player an ItemStack, equipping it in the preferred slot if armor,
  * and otherwise placing it in the inventory

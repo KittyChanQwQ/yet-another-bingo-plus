@@ -2,13 +2,15 @@ package me.jfenn.bingo.config
 
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.spawn.SpawnItem
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 @Serializable
 data class BingoConfig(
     var overwrite: Boolean = true,
     var gameMode: BingoMode = BingoMode.STANDARD,
     var winCondition: WinCondition = WinCondition.THREE_LINES,
-    var timerMinutes: Int? = 60,
+    var timeLimit: Duration? = 60.minutes,
     var itemDistribution: List<Int> = listOf(2, 6, 9, 6, 2),
     var tierLists: List<String> = listOf("overworld", "nether"),
 

@@ -1,6 +1,8 @@
 package me.jfenn.bingo.mixin;
 
-import me.jfenn.bingo.BingoGame;
+import me.jfenn.bingo.Bingo;
+import me.jfenn.bingo.WorldDeleter;
+import me.jfenn.bingo.state.GameState;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resource.LifecycledResourceManager;
 import net.minecraft.resource.ResourceManager;
@@ -11,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -50,10 +51,18 @@ public abstract class MinecraftServerMixin {
     }
 
     @Shadow @Final
-    private LevelStorage.Session session;
+    protected LevelStorage.Session session;
 
     @Inject(at = @At(value = "HEAD"), method = "shutdown", cancellable = true)
     public void shutdown(CallbackInfo ci) {
+        var ctx = Bingo.INSTANCE.getContext(this.playerManager.getServer());
+        if (ctx == null) return;
+
+        // if a game is running, the server should restart normally to save all world data
+        if (ctx.getState().getState() == GameState.PLAYING) {
+            return;
+        }
+
         // tell Fabric to invoke SERVER_STOPPING, which *might* not be the first mixin
         ServerLifecycleEvents.SERVER_STOPPING.invoker().onServerStopping(this.playerManager.getServer());
 
@@ -71,13 +80,21 @@ public abstract class MinecraftServerMixin {
             this.playerManager.disconnectAllPlayers();
         }
 
-        if (BingoGame.INSTANCE.getConfig().getUnsafeSkipWorldClose()) {
+        if (ctx.getConfig().getUnsafeSkipWorldClose()) {
             log.info("unsafeSkipWorldClose is true; skipping file closing");
             log.info("This will likely cause a crash...");
 
             this.saving = false;
-            // tell Fabric to invoke SERVER_STOPPED (otherwise this would not reach its mixin)
-            ServerLifecycleEvents.SERVER_STOPPED.invoker().onServerStopped(this.playerManager.getServer());
+
+            try {
+                // tell Fabric to invoke SERVER_STOPPED (otherwise this would not reach its mixin)
+                ServerLifecycleEvents.SERVER_STOPPED.invoker().onServerStopped(this.playerManager.getServer());
+            } catch (Throwable e) {
+                log.error("Error on SERVER_STOPPED", e);
+            }
+
+            // finally, delete the world files before restarting
+            WorldDeleter.INSTANCE.invoke();
             ci.cancel();
             return;
         }
@@ -104,8 +121,15 @@ public abstract class MinecraftServerMixin {
             log.error("Exception closing the session", e);
         }
 
-        // tell Fabric to invoke SERVER_STOPPED (otherwise this would not reach its mixin)
-        ServerLifecycleEvents.SERVER_STOPPED.invoker().onServerStopped(this.playerManager.getServer());
+        try {
+            // tell Fabric to invoke SERVER_STOPPED (otherwise this would not reach its mixin)
+            ServerLifecycleEvents.SERVER_STOPPED.invoker().onServerStopped(this.playerManager.getServer());
+        } catch (Throwable e) {
+            log.error("Error on SERVER_STOPPED", e);
+        }
+
+        // finally, delete the world files before restarting
+        WorldDeleter.INSTANCE.invoke();
         ci.cancel();
     }
 

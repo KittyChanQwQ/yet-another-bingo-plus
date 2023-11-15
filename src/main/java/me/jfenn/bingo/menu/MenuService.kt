@@ -1,15 +1,15 @@
 package me.jfenn.bingo.menu
 
+import me.jfenn.bingo.Bingo
 import me.jfenn.bingo.Sounds
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.TeamService
-import me.jfenn.bingo.config.BingoConfig
+import me.jfenn.bingo.config.BlockPosition
 import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.event.InteractionEntityEvents
-import me.jfenn.bingo.lobbyWorld
 import me.jfenn.bingo.map.Color
-import me.jfenn.bingo.minecraftServer
-import me.jfenn.bingo.utils.EventListener
+import me.jfenn.bingo.state.BingoContext
+import me.jfenn.bingo.state.GameState
 import me.jfenn.bingo.utils.toNbt
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.block.Blocks
@@ -21,12 +21,14 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
 import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.structure.StructurePlacementData
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
+import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Vec3d
 import org.joml.Vector3f
 import org.slf4j.LoggerFactory
@@ -38,64 +40,36 @@ object MenuService {
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    var spawnPos: BlockPos = BlockPos.ORIGIN
+    fun init() {
+        GameState.PREGAME.onEnter {
+            // always load the spawn chunks
+            lobbyWorld.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
 
-    private var lobbyMenu: MenuComponent? = null
+            spawnLobbyStructure(this, lobbyWorld)
+            menu = MenuInstance(this, state.lobbySpawnPos)
+        }
 
-    fun spawn(config: BingoConfig) {
-        spawnLobbyStructure()
+        Bingo.onGameTick {
+            menu?.tick()
+        }
 
-        val tracker = MenuTracker(lobbyWorld)
-        lobbyMenu = component {
-            registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.0))
-            registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.0), config)
-            registerPlayerMenu(Vec3d(-2.0, spawnPos.y + 2.0, 7.0), Direction.NORTH)
-        }.also { it.spawn(tracker) }
-    }
-
-    val onTick = EventListener<Unit>()
-
-    fun tick() {
-        onTick.invoke(Unit)
-    }
-
-    fun markDirty() {
-        lobbyMenu?.markDirty()
-    }
-
-    fun despawn() {
-        lobbyMenu?.despawn()
-        lobbyMenu = null
-    }
-
-    private fun MenuComponent.registerPlayerCount(position: Vec3d) {
-        var playerCount = 0
-
-        registerEntity(EntityType.TEXT_DISPLAY) {
-            put("Pos", position.toNbt())
-            putString("text", Text.Serializer.toJson(
-                Text.empty()
-                    .append("Player count: ")
-                    .append(Text.literal("$playerCount / ${minecraftServer.maxPlayerCount}").formatted(Formatting.GREEN))
-            ))
-            putString("billboard", "fixed")
-            putString("alignment", "center")
-            putInt("background", 0)
-            putBoolean("shadow", true)
+        GameState.PLAYING.onEnter {
+            menu?.cleanup()
+            menu = null
         }
 
         ServerPlayConnectionEvents.JOIN.register { _, _, server ->
-            playerCount = server.currentPlayerCount + 1
-            markDirty()
+            val ctx = Bingo.getContext(server)
+            ctx?.menu?.markDirty()
         }
 
         ServerPlayConnectionEvents.DISCONNECT.register { _, server ->
-            playerCount = server.currentPlayerCount - 1
-            markDirty()
+            val ctx = Bingo.getContext(server)
+            ctx?.menu?.markDirty()
         }
     }
 
-    private fun spawnTeamEntity(position: Vec3d, team: BingoTeam) {
+    private fun spawnTeamEntity(lobbyWorld: ServerWorld, position: Vec3d, team: BingoTeam) {
         DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
                 readNbt(NbtCompound().apply {
@@ -139,7 +113,7 @@ object MenuService {
             if (player is ServerPlayerEntity) {
                 val color = Color.fromInt(team.formatting.colorValue ?: 0)
                 val effect = DustParticleEffect(Vector3f(color.r / 255f, color.g / 255f, color.b / 255f), 1f)
-                lobbyWorld.spawnParticles(player, effect, true, position.x, position.y, position.z, 10, 1.0, 1.0, 1.0, 0.2)
+                (player.world as? ServerWorld)?.spawnParticles(player, effect, true, position.x, position.y, position.z, 10, 1.0, 1.0, 1.0, 0.2)
 
                 Sounds.playTeamChanged(player)
             }
@@ -148,7 +122,7 @@ object MenuService {
         }
     }
 
-    private fun spawnLobbyStructure() = measureTimeMillis {
+    private fun spawnLobbyStructure(ctx: BingoContext, lobbyWorld: ServerWorld) = measureTimeMillis {
         val lobbyDir = Config.configDir.resolve("lobby")
         if (!Files.exists(lobbyDir))
             lobbyDir.toFile().mkdirs()
@@ -186,8 +160,8 @@ object MenuService {
                     val blockPos = BlockPos(x, y, z)
                     val blockState = lobbyWorld.getBlockState(blockPos)
 
-                    val team = BingoTeam.values() .find { it.carpetBlock == blockState.block } ?: continue
-                    spawnTeamEntity(Vec3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team)
+                    val team = BingoTeam.entries.find { it.carpetBlock == blockState.block } ?: continue
+                    spawnTeamEntity(lobbyWorld, Vec3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team)
                     lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
                 }
             }
@@ -199,8 +173,8 @@ object MenuService {
             .filter { y -> lobbyWorld.getBlockState(BlockPos(0, y, 0)).isSolidBlock(lobbyWorld, BlockPos.ORIGIN) }
             .max()
 
-        spawnPos = BlockPos(0, spawnY+1, 0)
-        log.info("Set lobby spawnpoint to $spawnPos")
+        ctx.state.lobbySpawnPos = BlockPosition(0, spawnY+1, 0)
+        log.info("Set lobby spawnpoint to ${ctx.state.lobbySpawnPos}")
     }.also {
         log.info("Done (${it}ms)!")
     }

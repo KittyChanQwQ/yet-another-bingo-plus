@@ -4,14 +4,16 @@ import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
-import java.time.Duration
 import java.util.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
-const val MAX_TIMER_MINUTES = 360
+const val MAX_TIMER_MINUTES: Long = 360
+val TIMER_INCREMENT = 30.minutes
 
 fun MenuComponent.registerTimer(
     position: Vec3d,
-    timerMinutesProp: MutableProperty<Int?>,
+    timerMinutesProp: MutableProperty<Duration?>,
     requiredPermissionLevel: Int = 2,
     title: String = "Time Limit",
 ) {
@@ -22,11 +24,11 @@ fun MenuComponent.registerTimer(
         text = "+",
         requiredPermissionLevel = requiredPermissionLevel,
     ) {
-        timerMinutes = (timerMinutes ?: 0).let { mins ->
-            if (mins < MAX_TIMER_MINUTES)
-                ((mins / 30) + 1) * 30
-            else null
-        }
+        val mins = timerMinutes?.inWholeMinutes ?: 0
+        val newMins = if (mins < MAX_TIMER_MINUTES)
+            ((mins / 30) + 1) * 30
+        else null
+        timerMinutes = newMins?.minutes
     }
 
     registerButton(
@@ -34,17 +36,17 @@ fun MenuComponent.registerTimer(
         text = "-",
         requiredPermissionLevel = requiredPermissionLevel,
     ) {
-        timerMinutes = (timerMinutes ?: (MAX_TIMER_MINUTES + 30)).let { mins ->
-            if (mins > 30)
-                ((mins / 30) - 1) * 30
-            else null
-        }
+        val mins = timerMinutes?.inWholeMinutes ?: (MAX_TIMER_MINUTES + 30)
+        val newMins = if (mins < MAX_TIMER_MINUTES)
+            ((mins / 30) - 1) * 30
+        else null
+        timerMinutes = newMins?.minutes
     }
 
     registerEntity(EntityType.TEXT_DISPLAY) {
         val timerText = timerMinutes?.let {
-            val duration = Duration.ofMinutes(it.toLong())
-            String.format(Locale.US, "%dh %02dm", duration.toHoursPart(), duration.toMinutesPart())
+            val minutes = it.inWholeMinutes
+            String.format(Locale.US, "%dh %02dm", minutes / 60, minutes % 60)
         } ?: "Off"
 
         put("Pos", position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0).toNbt())

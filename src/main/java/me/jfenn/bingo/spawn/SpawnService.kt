@@ -1,8 +1,10 @@
 package me.jfenn.bingo.spawn
 
+import me.jfenn.bingo.NBT_BINGO_IGNORE
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.config.BingoConfig
-import me.jfenn.bingo.minecraftServer
+import me.jfenn.bingo.config.BlockPosition
+import me.jfenn.bingo.state.BingoContext
 import me.jfenn.bingo.utils.giveOrEquipStack
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.ChestBlockEntity
@@ -12,43 +14,63 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.Heightmap
 import org.slf4j.LoggerFactory
+import kotlin.random.Random
 
 object SpawnService {
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    private var teamSpawnpoints = mapOf<BingoTeam, BlockPos>()
-
-    fun getSpawnDimension(config: BingoConfig): ServerWorld {
-        return minecraftServer.worlds.find {
-            it.registryKey.value.toString() == config.spawnDimension
+    fun getSpawnDimension(ctx: BingoContext): ServerWorld {
+        return ctx.server.worlds.find {
+            it.registryKey.value.toString() == ctx.config.spawnDimension
         } ?: run {
-            log.error("Could not find spawnDimension '${config.spawnDimension}'; defaulting to minecraft:overworld")
-            minecraftServer.overworld
+            log.error("Could not find spawnDimension '${ctx.config.spawnDimension}'; defaulting to minecraft:overworld")
+            ctx.server.overworld
         }
     }
 
     /**
      * Create team spawnpoints and teleport teams to their spawns
      */
-    fun createSpawnpoints(config: BingoConfig) {
-        val world = getSpawnDimension(config)
+    fun createSpawnpoints(ctx: BingoContext) {
+        val world = getSpawnDimension(ctx)
 
         // spread player teams to spawnpoint
         val spread = SpreadPlayers(world)
-        teamSpawnpoints = spread.spread(config.spreadPlayersDistance)
-        spread.teleportPlayers(teamSpawnpoints)
+        ctx.state.teamSpawnpoints = spread.spread(ctx.config.spreadPlayersDistance)
+            .mapValues { (_, value) -> BlockPosition.fromBlockPos(value) }
 
-        teamSpawnpoints.forEach { (_, blockPos) ->
-            createTeamChest(config, world, blockPos)
+        ctx.state.teamSpawnpoints.forEach { (_, blockPos) ->
+            createTeamChest(ctx.config, world, blockPos)
         }
     }
 
-    fun getTeamSpawnpoint(config: BingoConfig, team: BingoTeam): BlockPos? {
-        val spawnpoint = teamSpawnpoints[team] ?: return null
-        val world = getSpawnDimension(config)
+    fun teleportPlayer(ctx: BingoContext, player: ServerPlayerEntity) {
+        val team = BingoTeam.fromPlayer(player)
+        val spawn = team?.let {
+            getTeamSpawnpoint(ctx, team)
+        } ?: run {
+            BlockPos(0, 100, 0)
+        }
 
-        val pos = spawnpoint.mutableCopy()
+        // random offset for each player to prevent collision grouping
+        val world = getSpawnDimension(ctx)
+        player.teleport(world, spawn.x + Random.nextDouble(), spawn.y.toDouble(), spawn.z + Random.nextDouble(), 0f, 0f)
+        player.setSpawnPoint(
+            world.registryKey,
+            spawn,
+            0f, true, false,
+        )
+    }
+
+    fun getTeamSpawnpoint(ctx: BingoContext, team: BingoTeam): BlockPos? {
+        val spawnpoint = ctx.state.teamSpawnpoints[team] ?: run {
+            log.warn("Team ${team.name} does not have a stored spawnpoint")
+            return null
+        }
+        val world = getSpawnDimension(ctx)
+
+        val pos = spawnpoint.toBlockPos().mutableCopy()
         while (
             !isEmptyBlock(world, pos, world.getBlockState(pos))
             || !isEmptyBlock(world, pos.up(), world.getBlockState(pos.up()))
@@ -56,7 +78,7 @@ object SpawnService {
             pos.y += 1
             if (pos.y >= world.logicalHeight) {
                 log.error("Spawn position for team $team is obstructed up to build height...")
-                return spawnpoint
+                return spawnpoint.toBlockPos()
             }
         }
 
@@ -67,10 +89,10 @@ object SpawnService {
      * Place a team kit chest in the world, nearby the provided [spawnpoint]
      * Similar behavior to the BonusChestFeature
      */
-    private fun createTeamChest(config: BingoConfig, world: ServerWorld, spawnpoint: BlockPos) {
+    private fun createTeamChest(config: BingoConfig, world: ServerWorld, spawnpoint: BlockPosition) {
         if (!config.isTeamKit) return
 
-        val chunk = world.getChunk(spawnpoint)
+        val chunk = world.getChunk(spawnpoint.toBlockPos())
         // if the dimension has a ceiling, we can't use heightmaps...
         val chestBlockPos: BlockPos? = if (world.dimension.hasCeiling) {
             // spawn the chest directly next to the player
@@ -120,6 +142,13 @@ object SpawnService {
         config.teamKitItems
             .flatMap { it.toItemStacks() }
             .forEachIndexed { i, itemStack ->
+                if (config.preventScoringSpawnKitItems) {
+                    // set BINGO_IGNORE flag so that spawn items do not count on the bingo card
+                    itemStack.getOrCreateNbt().apply {
+                        putBoolean(NBT_BINGO_IGNORE, true)
+                    }
+                }
+
                 entity.setStack(i, itemStack)
             }
     }
@@ -132,6 +161,15 @@ object SpawnService {
 
         val itemStacks = config.playerKitItems
             .flatMap { it.toItemStacks() }
+
+        if (config.preventScoringSpawnKitItems) {
+            for (itemStack in itemStacks) {
+                // set BINGO_IGNORE flag so that spawn items do not count on the bingo card
+                itemStack.getOrCreateNbt().apply {
+                    putBoolean(NBT_BINGO_IGNORE, true)
+                }
+            }
+        }
 
         for (stack in itemStacks) {
             for (player in players) {

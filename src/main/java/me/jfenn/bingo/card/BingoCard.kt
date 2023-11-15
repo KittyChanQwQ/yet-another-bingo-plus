@@ -1,8 +1,10 @@
 package me.jfenn.bingo.card
 
+import kotlinx.serialization.Serializable
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
 
+@Serializable
 class BingoCard(
     val entries: List<BingoCardEntry>,
 ) {
@@ -16,7 +18,7 @@ class BingoCard(
      */
     val itemIndex by lazy {
         entries
-            .filterIsInstance<ItemEntry>()
+            .filterIsInstance<BingoCardEntry.ItemEntry>()
             .associateBy { it.item() }
     }
 
@@ -81,51 +83,11 @@ class BingoCard(
      */
     fun countItems(team: BingoTeam): Int = entries.count { it.hasAchieved(team) }
 
-    fun getLeading(allowTies: Boolean = false): BingoTeam? {
-        return getLeadingByLines(allowTies) ?: getLeadingByItems(allowTies)
-    }
-
-    fun getLeadingByLines(allowTies: Boolean = false): BingoTeam? {
-        var max: BingoTeam? = null
-        var maxLines = 0
-        for (team in BingoTeam.entries) {
-            val teamLines = countLines(team)
-
-            if (teamLines > maxLines) {
-                max = team
-                maxLines = teamLines
-            } else if (teamLines == maxLines && !allowTies) {
-                max = null
-            }
-        }
-
-        return max
-    }
-
-    fun getLeadingByItems(allowTies: Boolean = false): BingoTeam? {
-        var max: BingoTeam? = null
-        var maxItems = 0
-        for (team in BingoTeam.entries) {
-            val teamItems = countItems(team)
-
-            if (teamItems > maxItems) {
-                max = team
-                maxItems = teamItems
-            } else if (teamItems == maxItems && !allowTies) {
-                max = null
-            }
-        }
-
-        return max
-    }
-
-    fun getWinner(config: BingoConfig): BingoTeam? {
-        for (team in BingoTeam.entries) {
-            val lines = countLines(team)
-            if (lines >= config.winCondition.numLines) return team
-        }
-
-        return null
+    fun getTeamScore(team: BingoTeam): TeamScore {
+        return TeamScore(
+            items = countItems(team),
+            lines = countLines(team),
+        )
     }
 
     fun isStalemate(config: BingoConfig): Boolean {

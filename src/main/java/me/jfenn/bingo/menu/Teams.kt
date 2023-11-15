@@ -1,5 +1,6 @@
 package me.jfenn.bingo.menu
 
+import me.jfenn.bingo.Bingo
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.TeamService
 import me.jfenn.bingo.utils.sendInfoMessage
@@ -38,7 +39,8 @@ fun MenuComponent.registerTeams(
         text = "Shuffle!",
         requiredPermissionLevel = requiredPermissionLevel,
     ) { player ->
-        TeamService.shuffleTeams(teamCount)
+        val ctx = player.server?.let { Bingo.getContext(it) } ?: return@registerButton
+        TeamService.shuffleTeams(ctx, teamCount)
         player.sendInfoMessage("Teams have been shuffled!")
     }
 

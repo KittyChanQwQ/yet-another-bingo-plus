@@ -37,7 +37,7 @@ object CardService {
         val tiers = TierListService.getTierLists(config.tierLists)
         val items: MutableList<BingoCardEntry> = tiers.pick(dist, excludedItems)
             .mapNotNull { parseIdentifier(it) }
-            .map { ItemEntry(it) }
+            .map { BingoCardEntry.ItemEntry(it) }
             .toMutableList()
 
         if (items.size < dist.sum()) {
@@ -47,7 +47,7 @@ object CardService {
 
         // if the card has less than 25 entries, add free spaces until it is full
         while (items.size < 25)
-            items.add(FreeSpaceEntry)
+            items.add(BingoCardEntry.FreeSpace)
 
         items.shuffle()
         return BingoCard(items)
@@ -62,7 +62,7 @@ object CardService {
         ))
     }
 
-    private fun parseIdentifier(str: String): Identifier? {
+    private fun parseIdentifier(str: String): String? {
         val name = str.trim()
             .lowercase()
             .let {
@@ -81,7 +81,7 @@ object CardService {
             return null
         }
 
-        return identifier
+        return identifier.toString()
     }
 
 }

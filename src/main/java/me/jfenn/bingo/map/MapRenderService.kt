@@ -1,12 +1,10 @@
 package me.jfenn.bingo.map
 
-import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.card.BingoCardEntry
 import me.jfenn.bingo.card.BingoTeam
-import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.Config
-import me.jfenn.bingo.minecraftServer
+import me.jfenn.bingo.state.BingoContext
 import net.minecraft.item.Item
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
@@ -94,8 +92,10 @@ object MapRenderService {
         }
     }
 
-    fun update(team: BingoTeam, card: BingoCard, config: BingoConfig) = measureTimeMillis {
-        val state = MapState.of(1, true, minecraftServer.overworld.registryKey)
+    fun update(ctx: BingoContext, team: BingoTeam) = measureTimeMillis {
+        val state = MapState.of(1, true, ctx.server.overworld.registryKey)
+        val card = ctx.state.card
+        val config = ctx.state.config
 
         val borderLight = (team.color*4) + 2
         val borderMid = (team.color*4) + 1
@@ -196,7 +196,7 @@ object MapRenderService {
         }
 
         state.isDirty = false
-        minecraftServer.overworld.putMapState(team.mapName, state)
+        ctx.server.overworld.putMapState(team.getMapName(ctx), state)
     }.also {
         log.info("Re-drawing map for team ${team.name} (${it}ms)")
     }

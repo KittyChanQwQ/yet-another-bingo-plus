@@ -1,10 +1,11 @@
 package me.jfenn.bingo.card
 
-import me.jfenn.bingo.minecraftServer
+import me.jfenn.bingo.state.BingoContext
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.scoreboard.Team
+import net.minecraft.server.MinecraftServer
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -27,32 +28,46 @@ enum class BingoTeam(
 
     val id = this.name.lowercase()
 
-    fun team(): Team {
-        return minecraftServer.scoreboard.getTeam(id)
-            ?: minecraftServer.scoreboard.addTeam(id).apply {
+    fun includesPlayer(player: PlayerEntity): Boolean {
+        return fromPlayer(player) == this
+    }
+
+    fun team(server: MinecraftServer): Team {
+        return server.scoreboard.getTeam(id)
+            ?: server.scoreboard.addTeam(id).apply {
                 color = formatting
                 displayName = Text.of(name.substring(0, 1) + name.substring(1).lowercase())
             }
     }
 
-    fun text(): Text {
+    fun text(server: MinecraftServer): Text {
         val text = Text.empty()
             .append("[")
             .append(Text.literal("$name team").formatted(formatting))
             .append("]")
 
-        text.style = Style.EMPTY.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(team().playerList.joinToString(", "))))
+        text.style = Style.EMPTY.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(team(server).playerList.joinToString(", "))))
         return text
     }
 
-    fun broadcastMessage(text: Text) {
-        minecraftServer.playerManager.playerList
-            .filter { it.isTeamPlayer(team()) }
+    fun broadcastMessage(server: MinecraftServer, text: Text) {
+        server.playerManager.playerList
+            .filter { includesPlayer(it) }
             .forEach { it.sendMessage(text) }
     }
 
-    val mapId by lazy { minecraftServer.overworld.nextMapId }
-    val mapName by lazy { "map_${mapId}" }
+    private var mapId: Int = -1
+
+    fun getMapId(ctx: BingoContext): Int {
+        if (mapId == -1) {
+            mapId = ctx.server.overworld.nextMapId
+        }
+        return mapId
+    }
+
+    fun getMapName(ctx: BingoContext): String {
+        return "map_${getMapId(ctx)}"
+    }
 
     companion object {
 

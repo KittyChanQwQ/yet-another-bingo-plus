@@ -1,9 +1,9 @@
-package me.jfenn.bingo.map
+package me.jfenn.bingo.integrations
 
-import me.jfenn.bingo.BingoGame
+import me.jfenn.bingo.Bingo
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.CardService
-import me.jfenn.bingo.minecraftServer
+import me.jfenn.bingo.map.MapItemService
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
@@ -53,15 +53,16 @@ object MapItemHandler {
         return isUsable
     }
 
-    fun registerCallbacks() {
+    fun init() {
         UseItemCallback.EVENT.register { player, world, hand ->
+            val ctx = player.server?.let { Bingo.getContext(it) } ?: return@register TypedActionResult.pass(null)
             val itemStack = player.getStackInHand(hand)
             val team = BingoTeam.fromPlayer(player) ?: return@register TypedActionResult.pass(itemStack)
 
             usedAnyItem.add(player.uuid)
 
             // if the item is the player's bingo map, open the item details chest
-            if (itemStack.item == Items.FILLED_MAP && itemStack.nbt?.getInt("map") == team.mapId) {
+            if (itemStack.item == Items.FILLED_MAP && itemStack.nbt?.getInt("map") == team.getMapId(ctx)) {
                 val otherItemStack = player.getStackInHand(when (hand) {
                     Hand.MAIN_HAND -> Hand.OFF_HAND
                     else -> Hand.MAIN_HAND
@@ -113,17 +114,19 @@ object MapItemHandler {
         }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->
+            val ctx = Bingo.getContext(server) ?: return@register
+
             for (player in server.playerManager.playerList) {
                 // ensure the player waits at least 10 ticks before using the map
                 // - if the use button is held, this will continually update the cooldown, and never exit this state until released
-                val isInCooldown = minecraftServer.ticks < (itemCooldown[player.uuid] ?: 0) + 10
+                val isInCooldown = server.ticks < (itemCooldown[player.uuid] ?: 0) + 10
 
                 if (usedBingoMap.contains(player.uuid) && !isInCooldown && !player.isSneaking) {
-                    CardService.showInventory(player, BingoGame.card)
+                    CardService.showInventory(player, ctx.state.card)
                 }
 
                 if (usedAnyItem.contains(player.uuid) || player.itemUseTimeLeft > 0)
-                    itemCooldown[player.uuid] = minecraftServer.ticks
+                    itemCooldown[player.uuid] = server.ticks
             }
 
             usedBingoMap.clear()

@@ -12,11 +12,12 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.TeamService
 import me.jfenn.bingo.commands.Coords
+import me.jfenn.bingo.commands.requireState
 import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.config.PlayerSettings
 import me.jfenn.bingo.config.TierList
 import me.jfenn.bingo.config.WinCondition
-import me.jfenn.bingo.menu.MenuService
+import me.jfenn.bingo.state.GameState
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.formatTitle
 import me.jfenn.bingo.utils.sendInfoMessage
@@ -24,6 +25,7 @@ import me.jfenn.bingo.utils.sendWarningMessage
 import net.minecraft.item.Items
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * Return a sequence of commands related to the game
@@ -41,13 +43,13 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                         val player = ctx.source.player ?: return@executes 0
                         val message = getString(ctx, "message")
 
-                        minecraftServer.playerManager.broadcast(
+                        ctx.source.server?.playerManager?.broadcast(
                             Text.empty()
                                 .append(Text.literal("<"))
                                 .append(player.name)
                                 .append(Text.literal("> $message")),
                             false,
-                        )
+                        ) ?: return@executes 0
                         1
                     }
             )
@@ -93,6 +95,7 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                         .toMutableList()
 
                     var last = args.removeLast().executes { ctx ->
+                        val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
                         val itemDist = TierList.entries
                             .map { getInteger(ctx, it.name) }
 
@@ -101,8 +104,8 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                             return@executes 0
                         }
 
-                        BingoGame.config.itemDistribution = itemDist
-                        MenuService.markDirty()
+                        context.config.itemDistribution = itemDist
+                        context.menu?.markDirty()
                         ctx.source.player?.sendInfoMessage("Item distribution changed: $itemDist")
                         1
                     }
@@ -120,12 +123,13 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                 .then(
                     argument<ServerCommandSource, Boolean>("true/false", bool())
                         .executes { ctx ->
+                            val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
                             val isElytra = getBool(ctx, "true/false")
-                            BingoGame.config.isElytra = isElytra
-                            MenuService.markDirty()
+                            context.config.isElytra = isElytra
+                            context.menu?.markDirty()
 
                             // if Elytra mode is turned off during a game, remove all players' elytra
-                            if (BingoGame.state == GameState.PLAYING && !isElytra) {
+                            if (context.state.state == GameState.PLAYING && !isElytra) {
                                 ctx.source.server.playerManager.playerList.forEach { player ->
                                     player.allHeldStacks()
                                         .filter { it.item == Items.ELYTRA || it.item == Items.FIREWORK_ROCKET }
@@ -150,8 +154,9 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                         .map {  wincon ->
                             literal<ServerCommandSource>(wincon.name)
                                 .executes { ctx ->
-                                    BingoGame.config.winCondition = wincon
-                                    MenuService.markDirty()
+                                    val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                                    context.config.winCondition = wincon
+                                    context.menu?.markDirty()
                                     ctx.source.player?.sendInfoMessage("Win condition: ${wincon.name}")
                                     1
                                 }
@@ -172,9 +177,10 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                 .then(
                     argument<ServerCommandSource, Int>("minutes", integer())
                         .executes { ctx ->
+                            val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
                             val minutes = getInteger(ctx, "minutes")
-                            BingoGame.config.timerMinutes = minutes
-                            MenuService.markDirty()
+                            context.config.timeLimit = minutes.minutes
+                            context.menu?.markDirty()
                             ctx.source.player?.sendInfoMessage("Time limit: $minutes minutes")
                             1
                         }
@@ -182,8 +188,9 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
                 .then(
                     literal<ServerCommandSource?>("off")
                         .executes { ctx ->
-                            BingoGame.config.timerMinutes = null
-                            MenuService.markDirty()
+                            val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                            context.config.timeLimit = null
+                            context.menu?.markDirty()
                             ctx.source.player?.sendInfoMessage("Time limit: Off")
                             1
                         }
@@ -193,12 +200,13 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
             // Shuffle player teams by a number of teams
             literal<ServerCommandSource>("shuffleteams")
                 .requires { it.hasPermissionLevel(2) }
-                .requires { BingoGame.state == GameState.PREGAME }
+                .requireState(GameState.PREGAME)
                 .then(
                     argument<ServerCommandSource?, Int?>("teams", integer(1, BingoTeam.entries.size))
                         .executes { ctx ->
+                            val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
                             val teams = getInteger(ctx, "teams")
-                            TeamService.shuffleTeams(teams)
+                            TeamService.shuffleTeams(context, teams)
 
                             ctx.source.player?.sendInfoMessage("Teams have been shuffled!")
                             1
@@ -209,9 +217,10 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
             // re-roll the bingo card in a round (operator only)
             literal<ServerCommandSource>("reroll")
                 .requires { it.hasPermissionLevel(2) }
-                .requires { BingoGame.state == GameState.PLAYING }
+                .requireState(GameState.PLAYING)
                 .executes { ctx ->
-                    BingoGame.rollCard()
+                    val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                    BingoGame.rollCard(context)
                     ctx.source.player?.sendInfoMessage("Card re-rolled.")
                     1
                 }
@@ -220,9 +229,10 @@ fun commands() : Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequenc
             // End the game, if running
             literal<ServerCommandSource>("end")
                 .requires { it.hasPermissionLevel(2) }
-                .requires { BingoGame.state == GameState.PLAYING }
-                .executes { _ ->
-                    BingoGame.end()
+                .requireState(GameState.PLAYING)
+                .executes { ctx ->
+                    val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                    BingoGame.end(context, null)
                     1
                 }
         )

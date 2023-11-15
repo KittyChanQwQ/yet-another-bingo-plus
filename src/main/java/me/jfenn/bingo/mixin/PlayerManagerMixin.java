@@ -1,16 +1,14 @@
 package me.jfenn.bingo.mixin;
 
-import me.jfenn.bingo.BingoGame;
-import me.jfenn.bingo.GameState;
+import me.jfenn.bingo.Bingo;
+import me.jfenn.bingo.state.GameState;
 import me.jfenn.bingo.card.BingoTeam;
-import me.jfenn.bingo.menu.MenuService;
 import me.jfenn.bingo.spawn.SpawnService;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtFloat;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -35,12 +33,15 @@ public abstract class PlayerManagerMixin {
 
     @Inject(at = @At(value = "RETURN"), method = "loadPlayerData", cancellable = true)
     private void loadPlayerData(ServerPlayerEntity player, CallbackInfoReturnable<NbtCompound> ci) {
+        var ctx = Bingo.INSTANCE.getContext(player.server);
+        if (ctx == null) return;
+
         // Provide default player data (for the lobby dimension / spawnpoint) if null
-        if (ci.getReturnValue() == null && BingoGame.INSTANCE.getState() == GameState.PREGAME) {
+        if (ci.getReturnValue() == null && ctx.getState().getState() == GameState.PREGAME) {
             NbtCompound nbt = new NbtCompound();
             nbt.putString("Dimension", "bingo:lobby");
 
-            BlockPos spawnPos = MenuService.INSTANCE.getSpawnPos();
+            BlockPos spawnPos = ctx.getState().getLobbySpawnPos().toBlockPos();
 
             NbtList position = new NbtList();
             position.add(NbtDouble.of(spawnPos.getX() + 0.5));
@@ -60,12 +61,15 @@ public abstract class PlayerManagerMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "respawnPlayer")
     private void respawnPlayer(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> info) {
+        var ctx = Bingo.INSTANCE.getContext(player.server);
+        if (ctx == null) return;
+
         if (alive) {
             // the player is exiting through the end portal...
-            var dimension = SpawnService.INSTANCE.getSpawnDimension(BingoGame.INSTANCE.getConfig());
+            var dimension = SpawnService.INSTANCE.getSpawnDimension(ctx);
             // if the spawnpoint is also in the end, then respawn them in the overworld
             if (dimension.getRegistryKey().getValue().getPath().equals("the_end")) {
-                var overworld = player.getServer().getOverworld();
+                var overworld = player.server.getOverworld();
                 player.setSpawnPoint(overworld.getRegistryKey(), overworld.getSpawnPos(), overworld.getSpawnAngle(), false, false);
             }
             return;
@@ -93,11 +97,11 @@ public abstract class PlayerManagerMixin {
             BingoTeam team = BingoTeam.Companion.fromPlayer(player);
             if (team == null) return;
 
-            BlockPos spawn = SpawnService.INSTANCE.getTeamSpawnpoint(BingoGame.INSTANCE.getConfig(), team);
+            BlockPos spawn = SpawnService.INSTANCE.getTeamSpawnpoint(ctx, team);
             if (spawn == null) return;
 
             // change the player's spawnpoint back to the team spawn location
-            var dimension = SpawnService.INSTANCE.getSpawnDimension(BingoGame.INSTANCE.getConfig());
+            var dimension = SpawnService.INSTANCE.getSpawnDimension(ctx);
             player.setSpawnPoint(dimension.getRegistryKey(), spawn, 0f, true, false);
         }
     }

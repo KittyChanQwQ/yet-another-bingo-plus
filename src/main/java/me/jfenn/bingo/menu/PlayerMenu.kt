@@ -2,8 +2,6 @@ package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.config.PlayerSettings
-import me.jfenn.bingo.lobbyWorld
-import me.jfenn.bingo.minecraftServer
 import me.jfenn.bingo.utils.formatTitle
 import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
@@ -11,6 +9,7 @@ import net.minecraft.nbt.NbtFloat
 import net.minecraft.nbt.NbtList
 import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
@@ -57,16 +56,16 @@ fun MenuComponent.registerPlayerMenu(
             ConfigService.setPlayerConfig(player, field, !value)
         }
 
-        MenuService.onTick {
-            if (minecraftServer.ticks % 4 != 0) return@onTick
-            for (player in minecraftServer.playerManager.playerList) {
+        onTick {
+            if (it.ctx.server.ticks % 4 != 0) return@onTick
+            for (player in it.ctx.server.playerManager.playerList) {
                 if (player.z > fieldPosition.z || player.pos.distanceTo(fieldPosition) > 8.0) continue
 
                 val config = ConfigService.getPlayer(player.uuidAsString)
                 val value = field.get(config)
                 val color = if (value) Vector3f(0f, 1f, 0f) else Vector3f(1f, 0f, 0f)
                 val effect = DustParticleEffect(color, 1f)
-                lobbyWorld.spawnParticles(player, effect, false, fieldPosition.x + 1.2, fieldPosition.y + 0.2, fieldPosition.z, 1, 0.0, 0.0, 0.0, 1.0)
+                it.ctx.lobbyWorld.spawnParticles(player, effect, false, fieldPosition.x + 1.2, fieldPosition.y + 0.2, fieldPosition.z, 1, 0.0, 0.0, 0.0, 1.0)
             }
         }
     }

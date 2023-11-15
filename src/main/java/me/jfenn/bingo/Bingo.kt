@@ -1,95 +1,97 @@
 package me.jfenn.bingo
 
-import me.jfenn.bingo.map.MapItemHandler
+import kotlinx.datetime.Clock
+import me.jfenn.bingo.integrations.*
+import me.jfenn.bingo.integrations.MapItemHandler
 import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.menu.MenuService
-import me.jfenn.bingo.spawn.SpawnService
+import me.jfenn.bingo.state.BingoContext
+import me.jfenn.bingo.state.BingoState
+import me.jfenn.bingo.state.GameState
+import me.jfenn.bingo.state.SerializedPersistentState
+import me.jfenn.bingo.utils.ContextEventListener
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.world.ChunkTicketType
-import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.util.Unit
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.GameRules
 import org.slf4j.LoggerFactory
 
 const val MOD_ID = "bingo"
 
-lateinit var minecraftServer: MinecraftServer
-
 val LOBBY_WORLD_ID = Identifier.of("bingo", "lobby")
-val lobbyWorld: ServerWorld by lazy {
-    minecraftServer.worlds
-        .find { it.registryKey.value == LOBBY_WORLD_ID }!!
-        .also { world ->
-            // always load the spawn chunks
-            world.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
-
-            // this doesn't work because world border settings only take effect when applied to the overworld
-            // world.worldBorder.apply {
-            //     setCenter(0.0, 0.0)
-            //     size = 48.0
-            // }
-        }
-}
 
 object Bingo : ModInitializer {
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    init {
-        WorldDeleter.invoke()
+    // States are stored by the identity hash code of the MinecraftServer instance which they relate to
+    // - this ensures no cross-server pollution when running the mod client-side
+    private val contexts = mutableMapOf<Int, BingoContext>()
+
+    fun getContext(server: MinecraftServer): BingoContext? = contexts[System.identityHashCode(server)]
+
+    private fun setContext(server: MinecraftServer, state: BingoState): BingoContext {
+        val ctx = BingoContext(server, state)
+        contexts[System.identityHashCode(server)] = ctx
+        return ctx
     }
+
+    val onGameTick = ContextEventListener<BingoContext, Unit>()
+    val onUpdateTick = ContextEventListener<BingoContext, Unit>()
 
     override fun onInitialize() {
         log.info("$MOD_ID mod initialized (main)")
         MapRenderService.validateItems()
 
+        MenuService.init()
+        MotdManager.init()
+        BingoBossBar.init()
+        BingoScoreboard.init()
+        PlayerManager.init()
+        GameRuleManager.init()
+        ScoreManager.init()
+        TimerCheck.init()
+        MapItemHandler.init()
+        BingoCardManager.init()
+
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
-            minecraftServer = server
-            // remove overworld spawn tickets
-            minecraftServer.overworld.chunkManager.removePersistentTickets()
+            val lobbyWorld = server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID } ?: run {
+                log.error("Lobby world dimension $LOBBY_WORLD_ID not found, exiting...")
+                return@register
+            }
 
-            // hide spammy messages in the lobby
-            minecraftServer.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(false, minecraftServer)
-            minecraftServer.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(false, minecraftServer)
+            // obtain the bingo game state from the save file
+            val state: BingoState = SerializedPersistentState.fromWorld(lobbyWorld)
 
-            MenuService.spawn(BingoGame.config)
+            // if the game was previously running, increment its updated timestamp by the time spent offline
+            // (this is so that the timer only counts the amount of time spent in-game or with the server running)
+            state.updatedAt?.let { lastUpdate ->
+                state.timeOffline += (Clock.System.now() - lastUpdate)
+            }
 
-            // boss bar needs to be initialized here, to fix client desync
-            // - where are these stored? previous bossbars are somehow persisted, even though world data isn't
-            BingoGame.timeBar
-            BingoGame.state = GameState.PREGAME
+            val ctx = setContext(server, state)
+
+            // re-run state entry listeners
+            state.state.onEnter(ctx, state.state)
         }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->
-            if (BingoGame.state == GameState.PREGAME)
-                MenuService.tick()
-
-            BingoGame.updateInventory()
+            val ctx = getContext(server) ?: return@register
+            onGameTick(ctx, Unit)
 
             if (server.ticks % 20 == 0) {
-                BingoGame.updateTimer()
-                BingoGame.updateSidebars()
-            }
-
-            for (player in server.playerManager.playerList) {
-                BingoGame.giveMapCardItem(player)
-                BingoGame.giveElytra(player)
-                BingoGame.giveSpectatorMapItems(player)
+                onUpdateTick(ctx, Unit)
             }
         }
 
         ServerMessageEvents.ALLOW_CHAT_MESSAGE.register { message, player, type ->
-            if (BingoGame.state != GameState.PLAYING) return@register true
+            val (server, state) = getContext(player.server) ?: return@register true
+            if (state.state != GameState.PLAYING) return@register true
             val team = player.scoreboardTeam ?: return@register true
 
             val messageText = Text.empty()
@@ -98,51 +100,12 @@ object Bingo : ModInitializer {
                 .append(message.content)
 
             // broadcast message to team
-            for (otherPlayer in minecraftServer.playerManager.playerList) {
+            for (otherPlayer in server.playerManager.playerList) {
                 if (otherPlayer.isTeamPlayer(team)) otherPlayer.sendMessage(messageText)
             }
 
             false
         }
-
-        ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
-            val player = handler.player
-            BingoGame.updateSettings(player)
-            BingoGame.updateGameMode(player)
-            BingoGame.giveMapCardItem(player)
-
-            // if in pregame, move to the lobby world
-            if (BingoGame.state == GameState.PREGAME) {
-                val spawnPos = MenuService.spawnPos
-                player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
-                player.teleport(lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
-            }
-
-        }
-
-        ServerPlayerEvents.AFTER_RESPAWN.register { _, player, _ ->
-            // give player a new map, if they don't have one?
-            BingoGame.giveMapCardItem(player)
-
-            // if in pregame, move to the lobby world
-            if (BingoGame.state == GameState.PREGAME) {
-                val spawnPos = MenuService.spawnPos
-                player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
-                player.teleport(lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
-            }
-
-            // if playing, give the player new spawn equipment
-            if (
-                BingoGame.state == GameState.PLAYING
-                && BingoGame.config.refillPlayerKitOnRespawn
-                // if KEEP_INVENTORY is on, we don't need to replace these items
-                && !minecraftServer.gameRules.get(GameRules.KEEP_INVENTORY).get()
-            ) {
-                SpawnService.giveSpawnEquipment(BingoGame.config, listOf(player))
-            }
-        }
-
-        MapItemHandler.registerCallbacks()
 
         CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
             for (command in commands()) {
@@ -150,11 +113,12 @@ object Bingo : ModInitializer {
             }
         }
 
-        ServerPlayConnectionEvents.DISCONNECT.register { _, _ ->
+        ServerPlayConnectionEvents.DISCONNECT.register { _, server ->
+            val (_, state) = getContext(server) ?: return@register
             // if the last player is disconnecting after a bingo game, shut down the server
-            if (BingoGame.config.autoShutDownInPostgame && BingoGame.state == GameState.POSTGAME && minecraftServer.currentPlayerCount <= 1) {
+            if (state.config.autoShutDownInPostgame && state.state == GameState.POSTGAME && server.currentPlayerCount <= 1) {
                 log.info("Last player has disconnected and 'autoShutDownInPostgame' is true; Shutting down the server...")
-                minecraftServer.stop(false)
+                server.stop(false)
             }
         }
     }

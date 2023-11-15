@@ -2,36 +2,35 @@ package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.BingoGame
 import me.jfenn.bingo.card.BingoTeam
-import me.jfenn.bingo.config.BingoConfig
-import me.jfenn.bingo.minecraftServer
+import me.jfenn.bingo.state.BingoContext
 import me.jfenn.bingo.utils.sendWarningMessage
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerMenuPage(
     position: Vec3d,
-    config: BingoConfig,
+    ctx: BingoContext,
 ) {
 
     var page = 0
 
-    val itemDistributionProp = propertyRef(config::itemDistribution)
+    val itemDistributionProp = propertyRef(ctx.config::itemDistribution)
 
     val pages = listOf(
         component {
             registerEnumMenu(
                 title = "Game Mode",
-                valueProp = propertyRef(config::gameMode),
+                valueProp = propertyRef(ctx.config::gameMode),
                 position = position.add(-3.5, 0.0, 0.0),
             )
-            registerFeatures(position.add(-1.5, 0.0, 0.0), config)
+            registerFeatures(position.add(-1.5, 0.0, 0.0), ctx.config)
             registerEnumMenu(
                 title = "Win Condition",
-                valueProp = propertyRef(config::winCondition),
+                valueProp = propertyRef(ctx.config::winCondition),
                 position = position.add(0.6, 0.0, 0.0),
             )
             registerTimer(
                 title = "Time Limit",
-                timerMinutesProp = propertyRef(config::timerMinutes),
+                timerMinutesProp = propertyRef(ctx.config::timeLimit),
                 position = position.add(2.3, 0.0, 0.0),
             )
             registerTeams(
@@ -42,15 +41,16 @@ fun MenuComponent.registerMenuPage(
         component {
             registerDimensionMenu(
                 position = position.add(-3.5, 0.0, 0.0),
-                dimensionProperty = propertyRef(config::spawnDimension),
+                dimensionProperty = propertyRef(ctx.config::spawnDimension),
+                server = ctx.server,
             )
             registerSpawnKit(
                 position = position.add(-1.5, 0.0, 0.0),
-                config = config,
+                config = ctx.config,
             )
             registerTierLists(
                 position = position.add(0.6, 0.0, 0.0),
-                config = config,
+                config = ctx.config,
             )
             registerItemDistribution(
                 position = position.add(3.0, 0.0, 0.0),
@@ -60,11 +60,11 @@ fun MenuComponent.registerMenuPage(
         component {
             registerScoreInfo(
                 position = position.add(-1.5, 0.0, 0.0),
-                config = config,
+                config = ctx.config,
             )
             registerCardInfo(
                 position = position.add(1.5, 0.0, 0.0),
-                config = config,
+                config = ctx.config,
             )
         },
     )
@@ -83,28 +83,36 @@ fun MenuComponent.registerMenuPage(
     registerButton(
         position = position.add(5.0, -MENU_ITEM_OFFSET, 0.0),
         text = "START",
-        isActiveProp = computedProperty { config.isValid() },
+        isActiveProp = computedProperty { ctx.config.isValid() },
     ) { player ->
-        if (!config.isValid()) {
+        if (!ctx.config.isValid()) {
             player.sendWarningMessage("Item distribution must add up to 25!")
             return@registerButton
         }
 
-        val isEveryPlayerOnATeam = minecraftServer.playerManager.playerList
-            .all { teamPlayer -> BingoTeam.entries.any { team -> teamPlayer.isTeamPlayer(team.team()) } }
+        val isEveryPlayerOnATeam = ctx.server.playerManager.playerList
+            .all { teamPlayer -> BingoTeam.fromPlayer(teamPlayer) != null }
 
         if (!isEveryPlayerOnATeam && !player.isSneaking) {
             player.sendWarningMessage("Some players have not picked a team! Run '/bingo shuffleteams' or sneak+click to ignore.")
             return@registerButton
         }
 
-        BingoGame.start()
+        BingoGame.start(ctx)
     }
 
-    onUpdate {
+    onTick { instance ->
         for (i in pages.indices) {
             if (page == i) {
-                pages[i].spawn(it)
+                pages[i].tick(instance)
+            }
+        }
+    }
+
+    onUpdate { instance ->
+        for (i in pages.indices) {
+            if (page == i) {
+                pages[i].spawn(instance)
             } else {
                 pages[i].despawn()
             }

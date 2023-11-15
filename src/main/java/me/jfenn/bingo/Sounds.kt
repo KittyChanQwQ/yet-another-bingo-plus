@@ -1,6 +1,7 @@
 package me.jfenn.bingo
 
 import me.jfenn.bingo.card.BingoTeam
+import me.jfenn.bingo.state.BingoContext
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -15,9 +16,9 @@ object Sounds {
         )
     }
 
-    fun playTileCollected(team: BingoTeam) {
-        val teamInstance = team.team()
-        for (player in minecraftServer.playerManager.playerList) {
+    fun playTileCollected(ctx: BingoContext, team: BingoTeam) {
+        val teamInstance = team.team(ctx.server)
+        for (player in ctx.server.playerManager.playerList) {
             if (player.isTeamPlayer(teamInstance)) {
                 player.playSound(
                     SoundEvents.ENTITY_PLAYER_LEVELUP,

@@ -1,14 +1,31 @@
 package me.jfenn.bingo.config
 
-import me.jfenn.bingo.BingoGame
-import me.jfenn.bingo.utils.formatTitle
-import me.jfenn.bingo.utils.sendInfoMessage
+import me.jfenn.bingo.Bingo
+import me.jfenn.bingo.state.BingoContext
+import me.jfenn.bingo.utils.ContextEventListener
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.server.network.ServerPlayerEntity
 import kotlin.reflect.KMutableProperty1
 
 object ConfigService {
 
+    var config: BingoConfig by config("bingo/config.json")
     var playerConfig: PlayerConfig by config("bingo/players.json")
+
+    val onChangePlayerSettings = ContextEventListener<BingoContext, ServerPlayerEntity>()
+
+    init {
+        // onChangePlayerSettings should also be invoked if a player logs in
+        ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
+            val player = handler.player
+            val state = Bingo.getContext(player.server) ?: return@register
+            onChangePlayerSettings(state, player)
+        }
+    }
+
+    fun writeConfig(config: BingoConfig) {
+        this.config = config
+    }
 
     fun getPlayer(uuid: String): PlayerSettings {
         return playerConfig.players[uuid] ?: PlayerSettings()
@@ -28,7 +45,10 @@ object ConfigService {
         val config = getPlayer(player.uuidAsString)
         field.set(config, value)
         setPlayer(player.uuidAsString, config)
-        BingoGame.updateSettings(player)
+
+        Bingo.getContext(player.server)?.let {
+            onChangePlayerSettings(it, player)
+        }
     }
 
 }
