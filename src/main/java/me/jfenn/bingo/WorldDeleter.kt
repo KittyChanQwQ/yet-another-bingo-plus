@@ -1,5 +1,6 @@
 package me.jfenn.bingo
 
+import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.LoggerFactory
 import kotlin.time.measureTime
@@ -28,6 +29,11 @@ object WorldDeleter {
     )
 
     fun invoke() {
+        if (FabricLoader.getInstance().environmentType == EnvType.CLIENT) {
+            log.warn("Skipping erroneous WorldDeleter call on EnvType.CLIENT")
+            return
+        }
+
         val gameDir = FabricLoader.getInstance().gameDir
         log.info("Deleting world files in dir: ${gameDir.toAbsolutePath()}")
 

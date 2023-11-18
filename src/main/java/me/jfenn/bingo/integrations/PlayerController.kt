@@ -6,8 +6,15 @@ import me.jfenn.bingo.map.MapItemService
 import me.jfenn.bingo.spawn.SpawnService
 import me.jfenn.bingo.state.BingoContext
 import me.jfenn.bingo.state.GameState
+import me.jfenn.bingo.utils.allHeldStacks
+import me.jfenn.bingo.utils.allInventorySlots
+import me.jfenn.bingo.utils.giveOrEquipStack
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.minecraft.item.FilledMapItem
+import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.command.CommandOutput
@@ -17,7 +24,92 @@ import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
 
-object PlayerManager {
+/**
+ * Controls player gamemode, status, and inventory setup.
+ *
+ * Ensures that players are put in their correct gamemode on certain events:
+ * - in pre-game -> ADVENTURE
+ * - when the game starts -> SURVIVAL & clear inventory
+ * - if spectating -> SPECTATOR
+ * - in post-game -> CREATIVE
+ *
+ * Needs to additionally ensure that the state is re-applied on
+ * login, as players could miss game state transitions by logging out.
+ */
+object PlayerController {
+
+    /**
+     * Ensure that the player has their team's bingo map card.
+     * Has no effect if the player already has a card
+     */
+    fun giveMapCardItem(ctx: BingoContext, player: ServerPlayerEntity) {
+        val team = BingoTeam.fromPlayer(player) ?: return
+        val hasMap = player.allHeldStacks().any { MapItemService.isMapTeamItem(ctx, it, team) }
+
+        if (!hasMap) {
+            // if the player has another team's map item, remove it!
+            for ((slot, item) in player.allInventorySlots()) {
+                if (MapItemService.isMapItem(item))
+                    player.inventory.removeStack(slot)
+            }
+
+            // give the player a new map item
+            val mapItem = MapItemService.createMapItem(ctx, team)
+            player.giveItemStack(mapItem)
+        }
+    }
+
+    /**
+     * Ensure that the player has every team's bingo map card
+     * in their hotbar slots. Indiscriminately replaces any existing
+     * hotbar items.
+     */
+    fun giveSpectatorMapItems(ctx: BingoContext, player: ServerPlayerEntity) {
+        BingoTeam.entries
+            .filter { it.team(player.server).playerList.isNotEmpty() }
+            .map { MapItemService.createMapItem(ctx, it) }
+            .forEachIndexed { i, stack ->
+                val mapId = FilledMapItem.getMapId(stack)
+                val hasMap = player.allHeldStacks().any { FilledMapItem.getMapId(it) == mapId }
+                if (!hasMap) player.getStackReference(i).set(stack)
+            }
+    }
+
+    /**
+     * Equip the player with elytra and firework rockets.
+     * Only runs if config.isElytra is true
+     */
+    fun giveElytra(player: ServerPlayerEntity) {
+        val hasElytra = player.allHeldStacks().any { it.item == Items.ELYTRA && it.nbt?.getBoolean(NBT_BINGO_VANISH) == true }
+        if (!hasElytra) {
+            // insert elytra in armor slot
+            player.giveOrEquipStack(ItemStack(Items.ELYTRA, 1).also {
+                it.getOrCreateNbt().apply {
+                    // unbreakable (should not take damage)
+                    putBoolean("Unbreakable", true)
+                    putBoolean(NBT_BINGO_IGNORE, true)
+                    putBoolean(NBT_BINGO_VANISH, true)
+                }
+            })
+        }
+
+        // also give rocket
+        val rocketStack = player.allHeldStacks().find { it.item == Items.FIREWORK_ROCKET }
+
+        if (rocketStack != null && rocketStack.count < 2) {
+            rocketStack.count = 2
+        }
+
+        if (rocketStack == null) {
+            player.giveItemStack(ItemStack(Items.FIREWORK_ROCKET, 2).also {
+                it.getOrCreateNbt().apply {
+                    putBoolean(NBT_BINGO_IGNORE, true)
+                    putBoolean(NBT_BINGO_VANISH, true)
+                    put("Fireworks", NbtCompound())
+                }
+            })
+        }
+    }
 
     fun updateGameMode(ctx: BingoContext, player: ServerPlayerEntity) {
         val isOnTeam = BingoTeam.entries.any { it.includesPlayer(player) }
@@ -71,7 +163,7 @@ object PlayerManager {
         SpawnService.teleportPlayer(ctx, player)
 
         // give each player their team's card
-        BingoGame.giveMapCardItem(ctx, player)
+        giveMapCardItem(ctx, player)
 
         val team = BingoTeam.fromPlayer(player)
         player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
@@ -146,7 +238,7 @@ object PlayerManager {
                 }
 
                 // give all maps for active teams to the player
-                BingoGame.giveSpectatorMapItems(this, player)
+                giveSpectatorMapItems(this, player)
             }
         }
 
@@ -154,15 +246,15 @@ object PlayerManager {
             for (player in server.playerManager.playerList) {
                 if (state.state == GameState.PLAYING && player.isAlive) {
                     // give player a new map, if they don't have one?
-                    BingoGame.giveMapCardItem(this, player)
+                    giveMapCardItem(this, player)
 
                     // if elytra mode is configured, give the player an elytra
                     if (config.isElytra)
-                        BingoGame.giveElytra(player)
+                        giveElytra(player)
                 }
 
                 if (player.isSpectator || state.state == GameState.POSTGAME)
-                    BingoGame.giveSpectatorMapItems(this, player)
+                    giveSpectatorMapItems(this, player)
             }
         }
     }

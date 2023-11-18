@@ -13,7 +13,11 @@ import me.jfenn.bingo.utils.allHeldStacks
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-object ScoreManager {
+/**
+ * Searches for items in each player's inventory that can
+ * satisfy a tile on the card, and updates the score if found.
+ */
+object ScoredItemCheck {
 
     fun updateInventory(ctx: BingoContext) {
         val prevLeadingTeam = ScoreService.getLeading(ctx.state)
@@ -79,7 +83,7 @@ object ScoreManager {
         }
 
         // check if the game is in a stalemate
-        if (ctx.state.card.isStalemate(ctx.config)) {
+        if (ScoreService.isStalemate(ctx.state)) {
             BingoGame.end(ctx, "Stalemate!")
             return
         }

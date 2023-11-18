@@ -20,7 +20,10 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 
-object BingoScoreboard {
+/**
+ * Displays scoreboard score/timer information for all players.
+ */
+object ScoreboardController {
 
     fun getScoreboards(server: MinecraftServer): Map<BingoTeam?, ScoreboardObjective> {
         return BingoTeam.entries

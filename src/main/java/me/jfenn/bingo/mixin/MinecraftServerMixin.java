@@ -58,6 +58,11 @@ public abstract class MinecraftServerMixin {
         var ctx = Bingo.INSTANCE.getContext(this.playerManager.getServer());
         if (ctx == null) return;
 
+        // if this is running client-side, just shut down normally
+        if (!this.playerManager.getServer().isDedicated()) {
+            return;
+        }
+
         // if a game is running, the server should restart normally to save all world data
         if (ctx.getState().getState() == GameState.PLAYING) {
             return;

@@ -6,7 +6,15 @@ import me.jfenn.bingo.Bingo
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.state.GameState
 import me.jfenn.bingo.utils.hasPermission
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.server.command.ServerCommandSource
+
+fun registerCommands(commands: suspend SequenceScope<LiteralArgumentBuilder<ServerCommandSource>>.() -> Unit) {
+    CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
+        for (command in sequence(commands))
+            dispatcher.register(command)
+    }
+}
 
 fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requireState(requiredState: GameState): T {
     return this.requires { source ->
@@ -28,8 +36,4 @@ fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requirePermission(requiredPe
         val player = source?.player ?: return@requires false
         player.hasPermission(requiredPermissionLevel)
     }
-}
-
-interface CommandProvider {
-    fun commands(): Sequence<LiteralArgumentBuilder<ServerCommandSource>>
 }

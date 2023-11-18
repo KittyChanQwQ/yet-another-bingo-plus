@@ -3,17 +3,25 @@ package me.jfenn.bingo
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.ScoreService
 import me.jfenn.bingo.config.ConfigService
-import me.jfenn.bingo.map.MapItemService
 import me.jfenn.bingo.state.BingoContext
 import me.jfenn.bingo.utils.formatString
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import kotlin.time.Duration
 
 object ChatMessages {
+
+    fun broadcastJoinedTeam(player: ServerPlayerEntity, team: BingoTeam) {
+        player.sendMessage(
+            Text.empty()
+                .append(Text.literal("➾  You have been moved to ").formatted(Formatting.YELLOW))
+                .append(team.text(player.server))
+        )
+    }
 
     fun broadcastEnd(ctx: BingoContext, reason: String?) {
         val winMessage = ScoreService.getWinner(ctx.state)?.let { winner ->

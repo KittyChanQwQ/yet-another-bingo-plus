@@ -5,6 +5,10 @@ import me.jfenn.bingo.Bingo
 import me.jfenn.bingo.BingoGame
 import me.jfenn.bingo.state.GameState
 
+/**
+ * Checks when the game time exceeds its time limit, and
+ * ends the game when it does.
+ */
 object TimerCheck {
 
     fun init() {

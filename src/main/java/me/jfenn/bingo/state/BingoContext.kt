@@ -1,10 +1,9 @@
 package me.jfenn.bingo.state
 
 import me.jfenn.bingo.LOBBY_WORLD_ID
-import me.jfenn.bingo.integrations.BingoBossBar
-import me.jfenn.bingo.integrations.BingoScoreboard
+import me.jfenn.bingo.integrations.BossBarController
+import me.jfenn.bingo.integrations.ScoreboardController
 import me.jfenn.bingo.menu.MenuInstance
-import me.jfenn.bingo.menu.MenuService
 import net.minecraft.server.MinecraftServer
 
 class BingoContext(
@@ -18,9 +17,9 @@ class BingoContext(
         server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID }!!
     }
 
-    val bossBar by lazy { BingoBossBar.getBossbar(server) }
+    val bossBar by lazy { BossBarController.getBossbar(server) }
 
-    val scoreboards by lazy { BingoScoreboard.getScoreboards(server) }
+    val scoreboards by lazy { ScoreboardController.getScoreboards(server) }
 
     var menu: MenuInstance? = null
 

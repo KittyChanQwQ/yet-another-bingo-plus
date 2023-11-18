@@ -1,8 +1,7 @@
 package me.jfenn.bingo.card
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.config.BingoConfig
-import me.jfenn.bingo.config.BingoMode
+import me.jfenn.bingo.state.TeamScore
 
 @Serializable
 class BingoCard(
@@ -88,20 +87,6 @@ class BingoCard(
             items = countItems(team),
             lines = countLines(team),
         )
-    }
-
-    fun isStalemate(config: BingoConfig): Boolean {
-        if (config.gameMode != BingoMode.LOCKOUT) return false
-
-        // check all teams for the number of capture-able lines
-        // if any team can capture a line, it is not a stalemate
-        for (team in BingoTeam.entries) {
-            // count number of lines that the team can achieve
-            val possibleLines = countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
-            if (possibleLines >= 1) return false
-        }
-
-        return true
     }
 
 }

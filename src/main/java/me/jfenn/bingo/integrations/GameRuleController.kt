@@ -3,7 +3,12 @@ package me.jfenn.bingo.integrations
 import me.jfenn.bingo.state.GameState
 import net.minecraft.world.GameRules
 
-object GameRuleManager {
+/**
+ * Controls server setting and gamerule changes:
+ * - Hides advancements/death messages in PREGAME
+ * - Applies game configuration (pvp, keepinv) when PLAYING
+ */
+object GameRuleController {
 
     fun init() {
         GameState.PREGAME.onEnter {

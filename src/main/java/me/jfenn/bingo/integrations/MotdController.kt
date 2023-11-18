@@ -3,7 +3,7 @@ package me.jfenn.bingo.integrations
 import me.jfenn.bingo.state.BingoContext
 import me.jfenn.bingo.state.GameState
 
-object MotdManager {
+object MotdController {
 
     fun updateMotd(ctx: BingoContext) {
         val state = ctx.state.state

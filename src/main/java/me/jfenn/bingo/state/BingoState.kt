@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.CardService
-import me.jfenn.bingo.card.TeamScore
 import me.jfenn.bingo.commands.CoordsCommand
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BlockPosition

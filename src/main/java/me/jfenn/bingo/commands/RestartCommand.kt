@@ -3,8 +3,8 @@ package me.jfenn.bingo.commands
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import net.minecraft.server.command.ServerCommandSource
 
-object RestartCommand : CommandProvider {
-    override fun commands() = sequence {
+object RestartCommand {
+    fun init() = registerCommands {
         // Stop (restart) the server
         LiteralArgumentBuilder.literal<ServerCommandSource>("restart")
             .requirePermission(2)

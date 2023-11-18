@@ -1,23 +1,20 @@
 package me.jfenn.bingo.card
 
+import me.jfenn.bingo.ChatMessages
 import me.jfenn.bingo.state.BingoContext
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import kotlin.math.ceil
 
 object TeamService {
 
-    fun joinTeam(player: PlayerEntity, team: BingoTeam) {
+    fun joinTeam(player: ServerPlayerEntity, team: BingoTeam) {
         if (BingoTeam.fromPlayer(player) == team) return
         val server = player.server ?: return
         server.scoreboard.addPlayerToTeam(player.entityName, team.team(server))
-
-        player.sendMessage(
-            Text.empty()
-                .append(Text.literal("➾  You have been moved to ").formatted(Formatting.YELLOW))
-                .append(team.text(server))
-        )
+        ChatMessages.broadcastJoinedTeam(player, team)
     }
 
     fun shuffleTeams(ctx: BingoContext, numTeams: Int) {

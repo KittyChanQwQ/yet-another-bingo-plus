@@ -1,6 +1,10 @@
 package me.jfenn.bingo
 
 import kotlinx.datetime.Clock
+import me.jfenn.bingo.commands.BingoCommands
+import me.jfenn.bingo.commands.ChatCommand
+import me.jfenn.bingo.commands.CoordsCommand
+import me.jfenn.bingo.commands.RestartCommand
 import me.jfenn.bingo.integrations.*
 import me.jfenn.bingo.integrations.MapItemHandler
 import me.jfenn.bingo.map.MapRenderService
@@ -49,15 +53,22 @@ object Bingo : ModInitializer {
         MapRenderService.validateItems()
 
         MenuService.init()
-        MotdManager.init()
-        BingoBossBar.init()
-        BingoScoreboard.init()
-        PlayerManager.init()
-        GameRuleManager.init()
-        ScoreManager.init()
+        MotdController.init()
+        BossBarController.init()
+        ScoreboardController.init()
+        PlayerController.init()
+        GameRuleController.init()
+        BingoCardController.init()
+
+        ScoredItemCheck.init()
         TimerCheck.init()
+
         MapItemHandler.init()
-        BingoCardManager.init()
+
+        BingoCommands.init()
+        ChatCommand.init()
+        CoordsCommand.init()
+        RestartCommand.init()
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             val lobbyWorld = server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID } ?: run {
@@ -86,30 +97,6 @@ object Bingo : ModInitializer {
 
             if (server.ticks % 20 == 0) {
                 onUpdateTick(ctx, Unit)
-            }
-        }
-
-        ServerMessageEvents.ALLOW_CHAT_MESSAGE.register { message, player, type ->
-            val (server, state) = getContext(player.server) ?: return@register true
-            if (state.state != GameState.PLAYING) return@register true
-            val team = player.scoreboardTeam ?: return@register true
-
-            val messageText = Text.empty()
-                .append(Text.literal("TEAM ${player.entityName}").formatted(team.color))
-                .append(Text.literal(": "))
-                .append(message.content)
-
-            // broadcast message to team
-            for (otherPlayer in server.playerManager.playerList) {
-                if (otherPlayer.isTeamPlayer(team)) otherPlayer.sendMessage(messageText)
-            }
-
-            false
-        }
-
-        CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
-            for (command in commands()) {
-                dispatcher.register(command)
             }
         }
 

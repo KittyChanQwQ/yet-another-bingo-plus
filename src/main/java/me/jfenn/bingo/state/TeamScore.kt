@@ -1,4 +1,4 @@
-package me.jfenn.bingo.card
+package me.jfenn.bingo.state
 
 import kotlinx.serialization.Serializable
 

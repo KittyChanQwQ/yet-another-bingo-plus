@@ -10,7 +10,10 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 
-object BingoBossBar {
+/**
+ * Displays bossbar score/timer information for all players.
+ */
+object BossBarController {
 
     private val ID = Identifier.of("fennifith", "bingo")
 

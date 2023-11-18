@@ -13,6 +13,7 @@ import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.config.PlayerSettings
 import me.jfenn.bingo.config.TierList
 import me.jfenn.bingo.config.WinCondition
+import me.jfenn.bingo.integrations.BingoCardController
 import me.jfenn.bingo.state.GameState
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.formatTitle
@@ -22,8 +23,8 @@ import net.minecraft.item.Items
 import net.minecraft.server.command.ServerCommandSource
 import kotlin.time.Duration.Companion.minutes
 
-object BingoCommands : CommandProvider {
-    override fun commands() = sequence {
+object BingoCommands {
+    fun init() = registerCommands {
         LiteralArgumentBuilder.literal<ServerCommandSource>("bingo")
             .then(
                 run {
@@ -205,7 +206,7 @@ object BingoCommands : CommandProvider {
                     .requireState(GameState.PLAYING)
                     .executes { ctx ->
                         val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
-                        BingoGame.rollCard(context)
+                        BingoCardController.rollCard(context)
                         ctx.source.player?.sendInfoMessage("Card re-rolled.")
                         1
                     }
