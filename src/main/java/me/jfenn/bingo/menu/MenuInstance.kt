@@ -2,13 +2,11 @@ package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.LOBBY_WORLD_ID
 import me.jfenn.bingo.config.BlockPosition
-import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.event.InteractionEntityEvents
 import me.jfenn.bingo.state.BingoContext
 import net.minecraft.entity.Entity
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.util.math.Direction
-import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.*
 import org.slf4j.LoggerFactory
 
 class MenuInstance(
@@ -44,6 +42,10 @@ class MenuInstance(
 
     fun <T: Entity> spawn(info: MenuEntityHandle<T>, nbt: NbtCompound = NbtCompound()): T? {
         var entity: T? = world.getEntity(info.id) as? T
+
+        val chunkPos = ChunkPos.toLong(BlockPos(info.pos.x.toInt(), 0, info.pos.z.toInt()))
+        val isLoaded = world.isChunkLoaded(chunkPos)
+        if (!isLoaded) return null
 
         if (entity == null) {
             entity = info.type.create(world)!!

@@ -3,7 +3,6 @@ package me.jfenn.bingo.menu
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.TierListService
 import me.jfenn.bingo.utils.formatTitle
-import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
@@ -12,8 +11,7 @@ fun MenuComponent.registerTierLists(
     position: Vec3d,
     config: BingoConfig,
 ) {
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        put("Pos", position.toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", Text.Serializer.toJson(
             Text.literal("Tier Lists")
         ))

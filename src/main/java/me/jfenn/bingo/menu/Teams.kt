@@ -4,7 +4,6 @@ import me.jfenn.bingo.Bingo
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.TeamService
 import me.jfenn.bingo.utils.sendInfoMessage
-import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
@@ -44,8 +43,7 @@ fun MenuComponent.registerTeams(
         player.sendInfoMessage("Teams have been shuffled!")
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        put("Pos", position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0).toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY, position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
         putString(
             "text", Text.Serializer.toJson(
                 Text.literal("$teamCount teams")
@@ -57,8 +55,7 @@ fun MenuComponent.registerTeams(
         putBoolean("shadow", true)
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        put("Pos", position.toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString(
             "text", Text.Serializer.toJson(
                 Text.literal(title)

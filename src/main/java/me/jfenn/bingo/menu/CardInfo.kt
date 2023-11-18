@@ -10,8 +10,7 @@ fun MenuComponent.registerCardInfo(
     position: Vec3d,
     config: BingoConfig,
 ) {
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        put("Pos", position.toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", Text.Serializer.toJson(
             Text.literal("BINGO Card")
         ))

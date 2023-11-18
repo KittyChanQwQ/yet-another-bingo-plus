@@ -18,7 +18,7 @@ sealed class SerializedPersistentState: PersistentState() {
         fun nbtToJson(nbt: NbtElement?): JsonElement {
             if (nbt == null) return JsonNull
             return when (nbt) {
-                is NbtString -> JsonPrimitive(nbt.asString())
+                is NbtString -> if (nbt.asString() == "null") JsonNull else JsonPrimitive(nbt.asString())
                 is NbtInt -> JsonPrimitive(nbt.intValue())
                 is NbtFloat -> JsonPrimitive(nbt.floatValue())
                 is NbtByte -> JsonPrimitive(nbt.byteValue() != 0.toByte())

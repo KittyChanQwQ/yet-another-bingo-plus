@@ -1,6 +1,5 @@
 package me.jfenn.bingo.menu
 
-import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
@@ -9,7 +8,6 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 const val MAX_TIMER_MINUTES: Long = 360
-val TIMER_INCREMENT = 30.minutes
 
 fun MenuComponent.registerTimer(
     position: Vec3d,
@@ -43,13 +41,12 @@ fun MenuComponent.registerTimer(
         timerMinutes = newMins?.minutes
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY) {
+    registerEntity(EntityType.TEXT_DISPLAY, position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
         val timerText = timerMinutes?.let {
             val minutes = it.inWholeMinutes
             String.format(Locale.US, "%dh %02dm", minutes / 60, minutes % 60)
         } ?: "Off"
 
-        put("Pos", position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0).toNbt())
         putString(
             "text", Text.Serializer.toJson(
                 Text.literal(timerText)
@@ -61,8 +58,7 @@ fun MenuComponent.registerTimer(
         putBoolean("shadow", true)
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        put("Pos", position.toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString(
             "text", Text.Serializer.toJson(
                 Text.literal(title)

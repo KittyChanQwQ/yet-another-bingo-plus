@@ -59,8 +59,8 @@ enum class BingoTeam(
     private var mapId: Int = -1
 
     fun getMapId(ctx: BingoContext): Int {
-        if (mapId == -1) {
-            mapId = ctx.server.overworld.nextMapId
+        ctx.state.teamMapIds.getOrPut(this) {
+            ctx.server.overworld.nextMapId
         }
         return mapId
     }

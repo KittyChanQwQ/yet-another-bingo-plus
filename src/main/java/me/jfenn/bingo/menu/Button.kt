@@ -1,10 +1,9 @@
 package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.event.InteractionEntityEvents
-import me.jfenn.bingo.utils.toNbt
+import me.jfenn.bingo.utils.hasPermission
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtFloat
 import net.minecraft.nbt.NbtList
 import net.minecraft.sound.SoundEvents
@@ -25,22 +24,20 @@ fun MenuComponent.registerButton(
 ) {
     val isActive by isActiveProp
 
-    registerEntity(EntityType.INTERACTION) {
-        val offset = -width / 2.0
-        put("Pos", position.add(facing.vector.x * offset, 0.0, facing.vector.z * offset).toNbt())
+    val offset = -width / 2.0
+    registerEntity(EntityType.INTERACTION, position.add(facing.vector.x * offset, 0.0, facing.vector.z * offset)) {
         putFloat("width", width)
         putFloat("height", height)
     }.onUpdate { entity ->
         InteractionEntityEvents.onInteract(entity) { player ->
-            if (player.hasPermissionLevel(requiredPermissionLevel)) {
+            if (player.hasPermission(requiredPermissionLevel)) {
                 onClick(player)
                 entity.playSound(SoundEvents.BLOCK_LEVER_CLICK, 1f, 1f)
             }
         }
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        put("Pos", position.toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY, position) {
         put("Rotation", NbtList().apply {
             add(NbtFloat.of(facing.asRotation()))
             add(NbtFloat.of(0f))

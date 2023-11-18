@@ -2,7 +2,6 @@ package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.spawn.SpawnItem
-import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.text.Text
@@ -12,8 +11,7 @@ fun MenuComponent.registerSpawnKit(
     position: Vec3d,
     config: BingoConfig,
 ) {
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        put("Pos", position.toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString(
             "text", Text.Serializer.toJson(
                 Text.literal("Spawn Kit")

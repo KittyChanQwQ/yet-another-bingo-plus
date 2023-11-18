@@ -3,13 +3,11 @@ package me.jfenn.bingo.menu
 import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.config.PlayerSettings
 import me.jfenn.bingo.utils.formatTitle
-import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtFloat
 import net.minecraft.nbt.NbtList
 import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
@@ -19,8 +17,7 @@ fun MenuComponent.registerPlayerMenu(
     pos: Vec3d,
     facing: Direction,
 ) {
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        put("Pos", pos.toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY, pos) {
         put("Rotation", NbtList().apply {
             add(NbtFloat.of(facing.asRotation()))
             add(NbtFloat.of(0f))

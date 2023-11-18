@@ -12,6 +12,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket
 import net.minecraft.scoreboard.ScoreboardCriterion
+import net.minecraft.scoreboard.ScoreboardDisplaySlot
 import net.minecraft.scoreboard.ScoreboardObjective
 import net.minecraft.scoreboard.ServerScoreboard
 import net.minecraft.server.MinecraftServer
@@ -120,9 +121,12 @@ object BingoScoreboard {
                 for (score in server.scoreboard.getAllPlayerScores(objective)) {
                     if (!scoreboardText.contains(score.playerName)) {
                         server.scoreboard.resetPlayerScore(score.playerName, objective)
-                        // The server sometimes fails to send this packet, so we're adding it manually. I don't know why.
-                        // - yes, this does need to be sent to all players, otherwise it may cause desync
-                        server.playerManager.sendToAll(ScoreboardPlayerUpdateS2CPacket(ServerScoreboard.UpdateMode.REMOVE, objective.name, score.playerName, 0))
+
+                        if (!server.isSingleplayer) {
+                            // The server sometimes fails to send this packet, so we're adding it manually. I don't know why.
+                            // - yes, this does need to be sent to all players, otherwise it may cause desync
+                            server.playerManager.sendToAll(ScoreboardPlayerUpdateS2CPacket(ServerScoreboard.UpdateMode.REMOVE, objective.name, score.playerName, 0))
+                        }
                     }
                 }
 
@@ -145,7 +149,13 @@ object BingoScoreboard {
                                 || MapItemService.isMapItem(player.mainHandStack)
                                 || MapItemService.isMapItem(player.offHandStack)
 
+                        if (server.isSingleplayer) {
+                            server.scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, if (isHoldingMapItem) objective else null)
+                            return@forEach
+                        }
+
                         if (isHoldingMapItem) {
+                            // change packets only need to be sent if clients are on a separate machine
                             for (packet in packets)
                                 player.networkHandler.sendPacket(packet)
 

@@ -1,7 +1,6 @@
 package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.config.TierList
-import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -43,8 +42,7 @@ fun MenuComponent.registerItemDistribution(
             }
         }
 
-        registerEntity(EntityType.TEXT_DISPLAY) {
-            put("Pos", position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0).toNbt())
+        registerEntity(EntityType.TEXT_DISPLAY, position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
             putString("text", Text.Serializer.toJson(
                 Text.literal(tier.name).formatted(tier.formatting, Formatting.BOLD)
             ))
@@ -54,9 +52,7 @@ fun MenuComponent.registerItemDistribution(
             putBoolean("shadow", true)
         }
 
-        registerEntity(EntityType.TEXT_DISPLAY) {
-            put("Pos", position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0).toNbt())
-
+        registerEntity(EntityType.TEXT_DISPLAY, position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0)) {
             val color = when {
                 itemDistribution.sum() == 25 -> Formatting.WHITE
                 itemDistribution.sum() < 25 -> Formatting.YELLOW
@@ -75,8 +71,7 @@ fun MenuComponent.registerItemDistribution(
         }
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        put("Pos", position.toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", Text.Serializer.toJson(
             Text.literal("Item Distribution")
         ))

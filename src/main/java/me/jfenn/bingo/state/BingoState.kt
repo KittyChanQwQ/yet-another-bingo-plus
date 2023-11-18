@@ -3,19 +3,17 @@ package me.jfenn.bingo.state
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.BingoGame
 import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.CardService
 import me.jfenn.bingo.card.TeamScore
-import me.jfenn.bingo.commands.Coords
+import me.jfenn.bingo.commands.CoordsCommand
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BlockPosition
 import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.utils.formatString
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.math.BlockPos
 import kotlin.time.Duration
 
 @Serializable
@@ -28,7 +26,8 @@ data class BingoState(
     var config: BingoConfig = ConfigService.config,
     val teamScores: MutableMap<BingoTeam, TeamScore> = mutableMapOf(),
     var teamSpawnpoints: Map<BingoTeam, BlockPosition> = mapOf(),
-    val teamChatCoordinates: MutableMap<BingoTeam, MutableList<Coords.CoordinatesEntry>> = mutableMapOf(),
+    val teamChatCoordinates: MutableMap<BingoTeam, MutableList<CoordsCommand.CoordinatesEntry>> = mutableMapOf(),
+    val teamMapIds: MutableMap<BingoTeam, Int> = mutableMapOf(),
     var card: BingoCard = CardService.generate(config),
 ) : SerializedPersistentState() {
 

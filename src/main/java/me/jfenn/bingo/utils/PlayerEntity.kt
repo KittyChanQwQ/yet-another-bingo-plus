@@ -56,3 +56,7 @@ fun PlayerEntity.sendWarningMessage(text: String) {
         false,
     )
 }
+
+fun PlayerEntity.hasPermission(level: Int = 2): Boolean {
+    return hasPermissionLevel(level) || server?.isSingleplayer == true
+}

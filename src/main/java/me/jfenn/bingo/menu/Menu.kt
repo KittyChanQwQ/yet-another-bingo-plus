@@ -1,7 +1,6 @@
 package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.LOBBY_WORLD_ID
-import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
@@ -28,8 +27,7 @@ fun MenuComponent.registerMenu(
         }
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        put("Pos", position.toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", Text.Serializer.toJson(
             Text.literal(title)
         ))

@@ -17,7 +17,7 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-object Coords {
+object CoordsCommand: CommandProvider {
 
     @Serializable
     data class CoordinatesEntry(
@@ -65,7 +65,7 @@ object Coords {
         }
     }
 
-    fun register(): Sequence<LiteralArgumentBuilder<ServerCommandSource>> = sequence {
+    override fun commands() = sequence {
         // send current player coordinates to other team members
         LiteralArgumentBuilder.literal<ServerCommandSource?>("coords")
             .requireState(GameState.PLAYING)

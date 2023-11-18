@@ -1,14 +1,13 @@
 package me.jfenn.bingo.menu
 
-import me.jfenn.bingo.event.InteractionEntityEvents
 import me.jfenn.bingo.state.BingoContext
 import me.jfenn.bingo.utils.EventListener
+import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.server.world.ServerWorld
-import org.slf4j.LoggerFactory
-import java.util.UUID
+import net.minecraft.util.math.Vec3d
+import java.util.*
 import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
 
@@ -51,6 +50,7 @@ class DelegatedProperty<T>(
 data class MenuEntityHandle<T: Entity>(
     val id: UUID = UUID.randomUUID(),
     val type: EntityType<T>,
+    val pos: Vec3d,
     val nbt: NbtCompound.(ctx: BingoContext) -> Unit = {},
     val onUpdate: EventListener<T> = EventListener(),
 )
@@ -94,10 +94,11 @@ open class MenuComponent {
         return DelegatedProperty(getter) {}
     }
 
-    fun <T: Entity> registerEntity(type: EntityType<T>, nbt: NbtCompound.(BingoContext) -> Unit = {}): MenuEntityHandle<T> {
+    fun <T: Entity> registerEntity(type: EntityType<T>, pos: Vec3d, nbt: NbtCompound.(BingoContext) -> Unit = {}): MenuEntityHandle<T> {
         val handle = MenuEntityHandle(
             id = UUID.randomUUID(),
             type = type,
+            pos = pos,
             nbt = nbt,
         )
 
@@ -114,8 +115,13 @@ open class MenuComponent {
     fun spawn(tracker: MenuInstance) {
         this.tracker = tracker
         onUpdate.invoke(tracker)
-        entities.forEach { tracker.spawn(it, NbtCompound().apply { it.nbt(this, tracker.ctx) }) }
-        isDirty = false
+        val spawned = entities.map {
+            tracker.spawn(it, NbtCompound().apply {
+                put("Pos", it.pos.toNbt())
+                it.nbt(this, tracker.ctx)
+            })
+        }
+        isDirty = spawned.any { it == null }
     }
 
     fun despawn() {
