@@ -42,6 +42,12 @@ object MenuService {
 
     fun init() {
         GameState.PREGAME.onEnter {
+            // this *shouldn't* happen... just being safe to prevent double-entities
+            if (menu != null) {
+                log.error("BUG: GameState.PREGAME onEnter handler has been invoked already!")
+                return@onEnter
+            }
+
             // always load the spawn chunks
             lobbyWorld.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
 

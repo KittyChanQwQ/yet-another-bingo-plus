@@ -3,9 +3,9 @@ package me.jfenn.bingo.menu
 import me.jfenn.bingo.event.InteractionEntityEvents
 import me.jfenn.bingo.utils.hasPermission
 import net.minecraft.entity.EntityType
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtFloat
 import net.minecraft.nbt.NbtList
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -20,7 +20,7 @@ fun MenuComponent.registerButton(
     height: Float = MENU_HITBOX_HEIGHT,
     facing: Direction = Direction.SOUTH,
     requiredPermissionLevel: Int = 2,
-    onClick: (player: PlayerEntity) -> Unit,
+    onClick: (player: ServerPlayerEntity) -> Unit,
 ) {
     val isActive by isActiveProp
 
