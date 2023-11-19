@@ -22,9 +22,9 @@ class MenuInstance(
     val world = ctx.server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID }!!
 
     val menuComponent = component {
-        registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.0))
-        registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.0), ctx)
-        registerPlayerMenu(Vec3d(-2.0, spawnPos.y + 2.0, 7.0), Direction.NORTH)
+        registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.45))
+        registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.45), ctx)
+        registerPlayerMenu(Vec3d(4.0, spawnPos.y + 3.0, 4.45), Direction.NORTH)
     }
 
     fun tick() {
