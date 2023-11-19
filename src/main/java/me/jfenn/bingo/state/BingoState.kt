@@ -60,7 +60,7 @@ data class BingoState(
         val duration = ingameDuration() ?: return Text.literal(timeLimit.formatString())
         val secondsRemaining = timeLimit - duration
 
-        if (duration > timeLimit || state == GameState.POSTGAME)
+        if (duration >= timeLimit || state == GameState.POSTGAME)
             return Text.literal("(Game Over)").formatted(Formatting.BOLD)
 
         return Text.literal(secondsRemaining.formatString())

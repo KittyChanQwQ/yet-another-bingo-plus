@@ -26,7 +26,7 @@ object TimerCheck {
             // set the last updated timestamp
             state.updatedAt = Clock.System.now()
 
-            if (duration > timeLimit) {
+            if (duration >= timeLimit) {
                 // end the game!
                 BingoGame.end(this, "Out of time!")
             }
