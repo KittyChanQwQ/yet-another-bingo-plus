@@ -22,6 +22,7 @@ object JoinCommand {
                         }
                 )
             }
+            yield(joinCommand)
         }
     }
 
