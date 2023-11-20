@@ -1,10 +1,7 @@
 package me.jfenn.bingo
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.commands.BingoCommands
-import me.jfenn.bingo.commands.ChatCommand
-import me.jfenn.bingo.commands.CoordsCommand
-import me.jfenn.bingo.commands.RestartCommand
+import me.jfenn.bingo.commands.*
 import me.jfenn.bingo.integrations.*
 import me.jfenn.bingo.integrations.MapItemHandler
 import me.jfenn.bingo.map.MapRenderService
@@ -66,6 +63,7 @@ object Bingo : ModInitializer {
         MapItemHandler.init()
 
         BingoCommands.init()
+        JoinCommand.init()
         ChatCommand.init()
         CoordsCommand.init()
         RestartCommand.init()
