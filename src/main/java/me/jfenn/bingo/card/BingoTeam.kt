@@ -56,13 +56,10 @@ enum class BingoTeam(
             .forEach { it.sendMessage(text) }
     }
 
-    private var mapId: Int = -1
-
     fun getMapId(ctx: BingoContext): Int {
-        ctx.state.teamMapIds.getOrPut(this) {
+        return ctx.state.teamMapIds.getOrPut(this) {
             ctx.server.overworld.nextMapId
         }
-        return mapId
     }
 
     fun getMapName(ctx: BingoContext): String {

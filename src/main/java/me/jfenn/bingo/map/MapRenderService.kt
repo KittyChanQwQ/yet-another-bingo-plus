@@ -198,7 +198,7 @@ object MapRenderService {
         state.isDirty = false
         ctx.server.overworld.putMapState(team.getMapName(ctx), state)
     }.also {
-        log.info("Re-drawing map for team ${team.name} (${it}ms)")
+        log.info("Re-drawing ${team.getMapName(ctx)} for team ${team.name} (${it}ms)")
     }
 
 }
