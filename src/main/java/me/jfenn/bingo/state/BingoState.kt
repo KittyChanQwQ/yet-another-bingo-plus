@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import me.jfenn.bingo.card.BingoCard
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.CardService
+import me.jfenn.bingo.card.ScoreService
 import me.jfenn.bingo.commands.CoordsCommand
 import me.jfenn.bingo.config.BingoConfig
 import me.jfenn.bingo.config.BlockPosition
@@ -24,6 +25,7 @@ data class BingoState(
     var timeOffline: Duration = Duration.ZERO,
     var config: BingoConfig = ConfigService.config,
     val teamScores: MutableMap<BingoTeam, TeamScore> = mutableMapOf(),
+    val teamWinners: MutableMap<BingoTeam, TeamWinner> = mutableMapOf(),
     var teamSpawnpoints: Map<BingoTeam, BlockPosition> = mapOf(),
     val teamChatCoordinates: MutableMap<BingoTeam, MutableList<CoordsCommand.CoordinatesEntry>> = mutableMapOf(),
     val teamMapIds: MutableMap<BingoTeam, Int> = mutableMapOf(),
@@ -46,6 +48,29 @@ data class BingoState(
         return teamScores[team] ?: TeamScore.ZERO
     }
 
+    /**
+     * @return true if the team is now a winner (and was not before)
+     */
+    fun updateWinner(team: BingoTeam): Boolean {
+        val score = getTeamScore(team)
+        val isWinner = score.lines >= config.winCondition.numLines
+
+        if (isWinner && !teamWinners.containsKey(team)) {
+            teamWinners[team] = TeamWinner(
+                instant = Clock.System.now()
+            )
+            return true
+        }
+
+        return false
+    }
+
+    fun getWinner(team: BingoTeam): TeamWinner? {
+        return teamWinners[team]
+    }
+
+    fun isWinner(team: BingoTeam) = getWinner(team) != null
+
     fun ingameDuration(): Duration? {
         val started = startedAt ?: return null
         val duration = Clock.System.now() - started
@@ -65,6 +90,18 @@ data class BingoState(
 
         return Text.literal(secondsRemaining.formatString())
             .formatted(Formatting.BOLD, if (secondsRemaining.inWholeSeconds <= 30 && secondsRemaining.inWholeSeconds % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
+    }
+
+    fun formatWinners(): List<Text> {
+        return teamWinners.entries
+            .sortedBy { (_, win) -> win.instant }
+            .mapIndexed { index, (team, win) ->
+                val duration = win.instant - (startedAt ?: Clock.System.now())
+                Text.empty()
+                    .append(Text.literal("${index+1}. ").formatted(Formatting.GRAY))
+                    .append(team.text())
+                    .append(" - ${duration.formatString()}")
+            }
     }
 
 }

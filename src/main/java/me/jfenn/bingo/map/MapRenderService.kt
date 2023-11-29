@@ -2,7 +2,6 @@ package me.jfenn.bingo.map
 
 import me.jfenn.bingo.card.BingoCardEntry
 import me.jfenn.bingo.card.BingoTeam
-import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.state.BingoContext
 import net.minecraft.item.Item
@@ -167,7 +166,7 @@ object MapRenderService {
 
                 // draw an X if the item is locked (if BingoMode.LOCKOUT)
                 if (imgX in imgY..imgY+1 || (TILE_IMAGE - imgY) in imgX..imgX+1) {
-                    if (config.gameMode == BingoMode.LOCKOUT && item.teams.isNotEmpty() && !item.hasAchieved(team)) {
+                    if (config.isLockoutMode && item.teams.isNotEmpty() && !item.hasAchieved(team)) {
                         state.colors[i] = COLOR_LOCKED.asByte
                         continue
                     }

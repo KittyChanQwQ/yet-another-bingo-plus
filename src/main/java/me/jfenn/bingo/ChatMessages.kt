@@ -24,11 +24,16 @@ object ChatMessages {
     }
 
     fun broadcastEnd(ctx: BingoContext, reason: String?) {
-        val winMessage = ScoreService.getWinner(ctx.state)?.let { winner ->
-            Text.empty()
-                .append(winner.text(ctx.server))
-                .append(Text.literal(" completed their card!").formatted(Formatting.YELLOW))
-        }
+        val winningTeam = BingoTeam.entries
+            .find { ctx.state.isWinner(it) }
+
+        val winMessage = Text.literal(reason ?: "Game over!")
+            .takeIf { ctx.config.isRankedMode }
+            ?: winningTeam?.let { winner ->
+                Text.empty()
+                    .append(winner.text(ctx.server))
+                    .append(Text.literal(" completed their card!").formatted(Formatting.YELLOW))
+            }
             ?: ScoreService.getLeadingByLines(ctx.state)?.let { leader ->
                 Text.empty()
                     .append(Text.literal(reason?.plus(" ") ?: "").formatted(Formatting.YELLOW))
@@ -62,6 +67,9 @@ object ChatMessages {
                 .also { yield(it) }
 
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
+
+            if (ctx.config.isRankedMode)
+                yieldAll(ctx.state.formatWinners())
         }.forEach {
             ctx.server.playerManager.broadcast(it, false)
         }
@@ -73,6 +81,15 @@ object ChatMessages {
 
             Sounds.playGameOver(player)
         }
+    }
+
+    fun broadcastTeamCompleted(ctx: BingoContext, team: BingoTeam) {
+        val message = Text.empty()
+            .append(team.text(ctx.server))
+            .append(Text.literal(" has completed their card!").formatted(Formatting.YELLOW))
+
+        ctx.server.playerManager.playerList
+            .forEach { it.sendMessage(message, false) }
     }
 
     fun broadcastScoreLeadingTeam(ctx: BingoContext, team: BingoTeam) {

@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.scoreboard.Team
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.HoverEvent
+import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -40,12 +41,15 @@ enum class BingoTeam(
             }
     }
 
-    fun text(server: MinecraftServer): Text {
-        val text = Text.empty()
+    fun text(): MutableText {
+        return Text.empty()
             .append("[")
             .append(Text.literal("$name team").formatted(formatting))
             .append("]")
+    }
 
+    fun text(server: MinecraftServer): Text {
+        val text = this.text()
         text.style = Style.EMPTY.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(team(server).playerList.joinToString(", "))))
         return text
     }

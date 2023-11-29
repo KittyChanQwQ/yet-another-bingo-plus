@@ -1,10 +1,12 @@
 package me.jfenn.bingo.integrations
 
-import me.jfenn.bingo.*
+import me.jfenn.bingo.Bingo
+import me.jfenn.bingo.BingoGame
+import me.jfenn.bingo.ChatMessages
+import me.jfenn.bingo.Sounds
 import me.jfenn.bingo.card.BingoCardEntry
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.ScoreService
-import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.state.BingoContext
@@ -26,6 +28,9 @@ object ScoredItemCheck {
         for (player in ctx.server.playerManager.playerList) {
             val team = BingoTeam.fromPlayer(player) ?: continue
 
+            // don't update teams that have already won
+            if (ctx.state.isWinner(team)) continue
+
             // check inventory for new collected items
             for (stack in player.allHeldStacks()) {
                 // get the item tile, if it is on the card
@@ -41,11 +46,14 @@ object ScoredItemCheck {
             }
         }
 
-        // if BingoMode.INVENTORY, we need to check that each team still has all their items
+        // if isInventoryMode, we need to check that each team still has all their items
         // and mark them as lost if not
-        if (ctx.config.gameMode == BingoMode.INVENTORY) {
+        if (ctx.config.isInventoryMode) {
             for (item in ctx.state.card.entries.filterIsInstance<BingoCardEntry.ItemEntry>()) {
                 for (team in item.teams.toSet()) {
+                    // don't update teams that have already won
+                    if (ctx.state.isWinner(team)) continue
+
                     val teamInstance = team.team(ctx.server)
                     val hasTeamItem = ctx.server.playerManager.playerList
                         .filter { it.isTeamPlayer(teamInstance) }
@@ -66,7 +74,7 @@ object ScoredItemCheck {
         if (updatedTeams.isEmpty()) return
 
         // update the team map(s)
-        if (ctx.config.gameMode == BingoMode.LOCKOUT || ctx.config.drawOtherTeamCompletions) {
+        if (ctx.config.isLockoutMode || ctx.config.drawOtherTeamCompletions) {
             // if the mode is LOCKOUT, all team cards need to be updated (to redraw locked items)
             for (team in BingoTeam.entries)
                 MapRenderService.update(ctx, team)
@@ -77,9 +85,19 @@ object ScoredItemCheck {
         }
 
         // check if a team has won the game
-        ScoreService.getWinner(ctx.state)?.let {
-            BingoGame.end(ctx, null)
-            return
+        for (team in updatedTeams) {
+            val isWinner = ctx.state.updateWinner(team)
+
+            if (isWinner && ctx.config.isRankedMode) {
+                // announce that another team has completed their card
+                ChatMessages.broadcastTeamCompleted(ctx, team)
+            }
+
+            if (isWinner && !ctx.config.isRankedMode) {
+                // end the game, since a team has won
+                BingoGame.end(ctx, null)
+                return
+            }
         }
 
         // check if the game is in a stalemate
@@ -107,7 +125,7 @@ object ScoredItemCheck {
      */
     private fun markTileCollected(ctx: BingoContext, tile: BingoCardEntry, team: BingoTeam): Boolean {
         // if the gamemode is lockout, tiles cannot be collected by >1 team
-        if (ctx.config.gameMode == BingoMode.LOCKOUT && tile.hasAnyAchieved())
+        if (ctx.config.isLockoutMode && tile.hasAnyAchieved())
             return false
         // if the team has already achieved the tile, there is nothing to change
         if (tile.hasAchieved(team))

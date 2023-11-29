@@ -3,7 +3,6 @@ package me.jfenn.bingo
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.commands.*
 import me.jfenn.bingo.integrations.*
-import me.jfenn.bingo.integrations.MapItemHandler
 import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.menu.MenuService
 import me.jfenn.bingo.state.BingoContext
@@ -12,14 +11,12 @@ import me.jfenn.bingo.state.GameState
 import me.jfenn.bingo.state.SerializedPersistentState
 import me.jfenn.bingo.utils.ContextEventListener
 import net.fabricmc.api.ModInitializer
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.world.gen.WorldPresets
 import org.slf4j.LoggerFactory
 
 const val MOD_ID = "bingo"

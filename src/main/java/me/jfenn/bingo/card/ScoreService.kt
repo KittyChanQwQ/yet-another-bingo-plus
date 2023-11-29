@@ -1,22 +1,11 @@
 package me.jfenn.bingo.card
 
-import me.jfenn.bingo.config.BingoConfig
-import me.jfenn.bingo.config.BingoMode
 import me.jfenn.bingo.state.BingoState
 
 object ScoreService {
 
-    fun getWinner(state: BingoState): BingoTeam? {
-        for (team in BingoTeam.entries) {
-            val score = state.getTeamScore(team)
-            if (score.lines >= state.config.winCondition.numLines) return team
-        }
-
-        return null
-    }
-
     fun isStalemate(state: BingoState): Boolean {
-        if (state.config.gameMode != BingoMode.LOCKOUT) return false
+        if (!state.config.isLockoutMode) return false
 
         // check all teams for the number of capture-able lines
         // if any team can capture a line, it is not a stalemate

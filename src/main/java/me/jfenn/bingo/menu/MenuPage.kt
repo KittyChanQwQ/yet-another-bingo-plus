@@ -17,11 +17,7 @@ fun MenuComponent.registerMenuPage(
 
     val pages = listOf(
         component {
-            registerEnumMenu(
-                title = "Game Mode",
-                valueProp = propertyRef(ctx.config::gameMode),
-                position = position.add(-3.5, 0.0, 0.0),
-            )
+            registerGameModes(position.add(-3.5, 0.0, 0.0), ctx.config)
             registerFeatures(position.add(-1.5, 0.0, 0.0), ctx.config)
             registerEnumMenu(
                 title = "Win Condition",

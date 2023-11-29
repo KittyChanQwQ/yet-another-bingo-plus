@@ -8,11 +8,15 @@ import kotlin.time.Duration.Companion.minutes
 @Serializable
 data class BingoConfig(
     var overwrite: Boolean = true,
-    var gameMode: BingoMode = BingoMode.STANDARD,
     var winCondition: WinCondition = WinCondition.THREE_LINES,
     var timeLimit: Duration? = 60.minutes,
     var itemDistribution: List<Int> = listOf(2, 6, 9, 6, 2),
     var tierLists: List<String> = listOf("overworld", "nether"),
+
+    // game mode settings
+    var isLockoutMode: Boolean = false,
+    var isInventoryMode: Boolean = false,
+    var isRankedMode: Boolean = false,
 
     // game feature settings
     var isElytra: Boolean = false,
@@ -60,6 +64,26 @@ data class BingoConfig(
 
     fun isValid(): Boolean {
         return itemDistribution.sum() <= 25
+    }
+
+    fun formatGameMode(): String {
+        val gameMode = buildList {
+            if (isLockoutMode) add("Lockout")
+            if (isInventoryMode) add("Inventory")
+            if (isRankedMode) add("Ranked")
+        }
+
+        return gameMode.joinToString(", ").ifEmpty { "Standard" }
+    }
+
+    fun formatFeatures(): String {
+        val features = buildList {
+            if (isElytra) add("Elytra")
+            if (isKeepInventory) add("KeepInv")
+            if (isPvpEnabled) add("PvP")
+        }
+
+        return features.joinToString(", ").ifEmpty { "None" }
     }
 
 }

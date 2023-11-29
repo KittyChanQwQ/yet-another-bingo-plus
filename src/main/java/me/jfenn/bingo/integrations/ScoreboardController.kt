@@ -74,7 +74,8 @@ object ScoreboardController {
             for ((team, objective) in scoreboards) {
                 val scoreboardText = buildList {
                     add("")
-                    add("Game mode: ${Formatting.YELLOW}${config.gameMode.name.formatTitle()}")
+                    add("Game mode: ${Formatting.YELLOW}${config.formatGameMode()}")
+                    add("Features: ${Formatting.YELLOW}${config.formatFeatures()}")
                     add("Win condition: ${Formatting.YELLOW}${config.winCondition.name.formatTitle()}")
                     if (config.showRemainingTime) {
                         add("Time left: ${Formatting.YELLOW}${state.formatTimeRemaining().string}")
