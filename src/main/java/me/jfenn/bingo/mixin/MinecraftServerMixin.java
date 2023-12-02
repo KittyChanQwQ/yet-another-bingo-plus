@@ -100,6 +100,9 @@ public abstract class MinecraftServerMixin {
 
             // finally, delete the world files before restarting
             WorldDeleter.INSTANCE.invoke();
+
+            // immediately halt the JVM (like System.exit(0) but *worse!*)
+            Runtime.getRuntime().halt(0);
             ci.cancel();
             return;
         }
