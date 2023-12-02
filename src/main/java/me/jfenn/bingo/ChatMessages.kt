@@ -23,6 +23,35 @@ object ChatMessages {
         )
     }
 
+    fun broadcastStart(ctx: BingoContext) {
+        sequence {
+            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
+            yield(Text.literal("  BINGO Start!").formatted(Formatting.GREEN))
+
+            Text.empty()
+                .append("  Game mode: ")
+                .append(ctx.config.formatGameMode())
+                .formatted(Formatting.GRAY)
+                .also { yield(it) }
+
+            Text.empty()
+                .append("  Features: ")
+                .append(ctx.config.formatFeatures())
+                .formatted(Formatting.GRAY)
+                .also { yield(it) }
+
+            Text.empty()
+                .append("  Win condition: ")
+                .append(ctx.config.winCondition.formatName())
+                .formatted(Formatting.GRAY)
+                .also { yield(it) }
+
+            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
+        }.forEach {
+            ctx.server.playerManager.broadcast(it, false)
+        }
+    }
+
     fun broadcastEnd(ctx: BingoContext, reason: String?) {
         val winningTeam = BingoTeam.entries
             .find { ctx.state.isWinner(it) }
@@ -66,10 +95,13 @@ object ChatMessages {
                 .append(Texts.bracketedCopyable(ctx.server.overworld.seed.toString()))
                 .also { yield(it) }
 
-            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
+            if (ctx.config.isRankedMode) {
+                yield(Text.empty())
+                for (text in ctx.state.formatWinners())
+                    yield(Text.empty().append("  ").append(text))
+            }
 
-            if (ctx.config.isRankedMode)
-                yieldAll(ctx.state.formatWinners())
+            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
         }.forEach {
             ctx.server.playerManager.broadcast(it, false)
         }

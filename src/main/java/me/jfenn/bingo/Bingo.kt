@@ -98,7 +98,7 @@ object Bingo : ModInitializer {
         ServerPlayConnectionEvents.DISCONNECT.register { _, server ->
             val (_, state) = getContext(server) ?: return@register
             // if the last player is disconnecting after a bingo game, shut down the server
-            if (state.config.autoShutDownInPostgame && state.state == GameState.POSTGAME && server.currentPlayerCount <= 1) {
+            if (server.isRunning && state.config.autoShutDownInPostgame && state.state == GameState.POSTGAME && server.currentPlayerCount <= 1) {
                 log.info("Last player has disconnected and 'autoShutDownInPostgame' is true; Shutting down the server...")
                 server.stop(false)
             }

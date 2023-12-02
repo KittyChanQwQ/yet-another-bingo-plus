@@ -1,5 +1,7 @@
 package me.jfenn.bingo.config
 
+import me.jfenn.bingo.utils.formatTitle
+
 enum class WinCondition(val numLines: Int) {
     ONE_LINE(1),
     TWO_LINES(2),
@@ -8,6 +10,6 @@ enum class WinCondition(val numLines: Int) {
     FULL_CARD(12);
 
     fun formatName(): String {
-        return name.lowercase().replace('_', ' ')
+        return name.formatTitle()
     }
 }

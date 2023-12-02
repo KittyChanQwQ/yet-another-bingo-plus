@@ -74,9 +74,23 @@ object ScoreboardController {
             for ((team, objective) in scoreboards) {
                 val scoreboardText = buildList {
                     add("")
-                    add("Game mode: ${Formatting.YELLOW}${config.formatGameMode()}")
-                    add("Features: ${Formatting.YELLOW}${config.formatFeatures()}")
-                    add("Win condition: ${Formatting.YELLOW}${config.winCondition.name.formatTitle()}")
+                    config.formatGameMode().let {
+                        if (it.length > 18) {
+                            add("Game mode:")
+                            add("  ${Formatting.YELLOW}$it")
+                        } else {
+                            add("Game mode: ${Formatting.YELLOW}$it")
+                        }
+                    }
+                    config.formatFeatures().let {
+                        if (it.length > 18) {
+                            add("Features:")
+                            add("  ${Formatting.YELLOW}$it")
+                        } else {
+                            add("Features: ${Formatting.YELLOW}$it")
+                        }
+                    }
+                    add("Win condition: ${Formatting.YELLOW}${config.winCondition.formatName()}")
                     if (config.showRemainingTime) {
                         add("Time left: ${Formatting.YELLOW}${state.formatTimeRemaining().string}")
                     }

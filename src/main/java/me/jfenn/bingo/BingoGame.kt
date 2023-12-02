@@ -29,9 +29,10 @@ object BingoGame {
             Sounds.playGameStarted(player)
         }
 
-
         // spread player teams to spawnpoint
         SpawnService.createSpawnpoints(ctx)
+
+        ChatMessages.broadcastStart(ctx)
 
         // change to the playing state
         ctx.state.changeState(ctx, GameState.PLAYING)
