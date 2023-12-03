@@ -92,15 +92,26 @@ data class BingoState(
             .formatted(Formatting.BOLD, if (secondsRemaining.inWholeSeconds <= 30 && secondsRemaining.inWholeSeconds % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
     }
 
-    fun formatWinners(): List<Text> {
-        return teamWinners.entries
+    fun formatWinners(): List<Text> = buildList {
+        // List all teams that have completed the card
+        teamWinners.entries
             .sortedBy { (_, win) -> win.instant }
-            .mapIndexed { index, (team, win) ->
+            .forEachIndexed { index, (team, win) ->
                 val duration = win.instant - (startedAt ?: Clock.System.now())
                 Text.empty()
                     .append(Text.literal("${index+1}. ").formatted(Formatting.GRAY))
                     .append(team.text())
                     .append(" - ${duration.formatString()}")
+                    .also { add(it) }
+            }
+
+        // List any teams that started the card but did not finish
+        (teamScores.keys - teamWinners.keys)
+            .forEach { team ->
+                Text.empty()
+                    .append(Text.literal("DNF - ").formatted(Formatting.GRAY))
+                    .append(team.text())
+                    .also { add(it) }
             }
     }
 
