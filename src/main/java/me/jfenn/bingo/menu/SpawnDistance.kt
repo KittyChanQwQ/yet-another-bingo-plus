@@ -1,0 +1,57 @@
+package me.jfenn.bingo.menu
+
+import net.minecraft.entity.EntityType
+import net.minecraft.text.Text
+import net.minecraft.util.math.Vec3d
+
+const val MAX_SPAWN_DISTANCE = 500
+
+fun MenuComponent.registerSpawnDistance(
+    position: Vec3d,
+    spawnDistanceProp: MutableProperty<Int>,
+    requiredPermissionLevel: Int = 2,
+) {
+    var spawnDistance by spawnDistanceProp
+
+    registerButton(
+        position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
+        text = "+",
+        requiredPermissionLevel = requiredPermissionLevel,
+    ) {
+        spawnDistance = (spawnDistance + 10).coerceIn(0, MAX_SPAWN_DISTANCE)
+        markDirty()
+    }
+
+    registerButton(
+        position = position.add(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
+        text = "-",
+        requiredPermissionLevel = requiredPermissionLevel,
+    ) {
+        spawnDistance = (spawnDistance - 10).coerceIn(0, MAX_SPAWN_DISTANCE)
+        markDirty()
+    }
+
+    registerEntity(EntityType.TEXT_DISPLAY, position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
+        putString(
+            "text", Text.Serializer.toJson(
+                Text.literal("$spawnDistance chunks")
+            )
+        )
+        putString("billboard", "fixed")
+        putString("alignment", "center")
+        putInt("background", 0)
+        putBoolean("shadow", true)
+    }
+
+    registerEntity(EntityType.TEXT_DISPLAY, position) {
+        putString(
+            "text", Text.Serializer.toJson(
+                Text.literal("Spawn Distance")
+            )
+        )
+        putString("billboard", "fixed")
+        putString("alignment", "center")
+        putInt("background", 0)
+        putBoolean("shadow", true)
+    }
+}

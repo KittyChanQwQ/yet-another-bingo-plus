@@ -55,12 +55,16 @@ fun MenuComponent.registerMenuPage(
         },
         component {
             registerScoreInfo(
-                position = position.add(-1.5, 0.0, 0.0),
+                position = position.add(-3.0, 0.0, 0.0),
                 config = ctx.config,
             )
             registerCardInfo(
-                position = position.add(1.5, 0.0, 0.0),
+                position = position.add(0.0, 0.0, 0.0),
                 config = ctx.config,
+            )
+            registerSpawnDistance(
+                position = position.add(3.0, 0.0, 0.0),
+                spawnDistanceProp = propertyRef(ctx.config::spreadPlayersDistance),
             )
         },
     )

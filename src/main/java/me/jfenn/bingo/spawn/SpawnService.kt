@@ -30,15 +30,25 @@ object SpawnService {
     }
 
     /**
-     * Create team spawnpoints and teleport teams to their spawns
+     * Create team spawnpoints
      */
     fun createSpawnpoints(ctx: BingoContext) {
         val world = getSpawnDimension(ctx)
-
-        // spread player teams to spawnpoint
         val spread = SpreadPlayers(world)
-        ctx.state.teamSpawnpoints = spread.spread(ctx.config.spreadPlayersDistance)
-            .mapValues { (_, value) -> BlockPosition.fromBlockPos(value) }
+
+        val distance = ctx.config.spreadPlayersDistance
+        if (distance <= 0) {
+            // if the distance is 0, find one spawn point for all teams
+            val spawnPos = spread.findSpawnPos(Pair(0, 0))
+                .let { BlockPosition.fromBlockPos(it) }
+
+            ctx.state.teamSpawnpoints = BingoTeam.entries
+                .associateWith { spawnPos }
+        } else {
+            // spread player teams to spawnpoint
+            ctx.state.teamSpawnpoints = spread.spread(distance)
+                .mapValues { (_, value) -> BlockPosition.fromBlockPos(value) }
+        }
 
         ctx.state.teamSpawnpoints.forEach { (_, blockPos) ->
             createTeamChest(ctx.config, world, blockPos)
@@ -77,7 +87,7 @@ object SpawnService {
         ) {
             pos.y += 1
             if (pos.y >= world.logicalHeight) {
-                log.error("Spawn position for team $team is obstructed up to build height...")
+                log.warn("Spawn position for team $team is obstructed up to build height...")
                 return spawnpoint.toBlockPos()
             }
         }

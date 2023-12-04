@@ -1,9 +1,7 @@
 package me.jfenn.bingo.spawn
 
 import me.jfenn.bingo.card.BingoTeam
-import me.jfenn.bingo.state.BingoContext
 import net.minecraft.block.Blocks
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -16,7 +14,6 @@ import org.slf4j.LoggerFactory
 import kotlin.math.cos
 import kotlin.math.sign
 import kotlin.math.sin
-import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
 class SpreadPlayers(
@@ -176,6 +173,42 @@ class SpreadPlayers(
         }
     }
 
+    /**
+     * Searches for a valid spawn position, starting at the provided chunk and iterating
+     * outwards on the X axis.
+     */
+    fun findSpawnPos(startChunk: Pair<Int, Int>): BlockPos {
+        var (x, z) = startChunk
+        val xSign = x.sign.takeIf { it != 0 } ?: 1
+
+        while (true) {
+            // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
+            val biomeTest = world.getBiome(BlockPos(x*16 + 8, world.logicalHeight, z*16 + 8))
+            if (invalidSpawnBiomes.contains(biomeTest.key.get())) {
+                x += 4 * xSign
+                continue
+            }
+
+            // This "!!" looks unsafe. but maybe it isn't though? (it should actually be fine)
+            val chunk = world.getChunk(x, z, ChunkStatus.FULL, true)!!
+
+            val spawnBlockPos = selectChunkPosition(chunk)
+            if (spawnBlockPos == null) {
+                log.info("Skipping chunk ($x, $z) which contains no valid spawn locations")
+                x += 1 * xSign
+                continue
+            }
+
+            if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
+                log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
+                x += 4 * xSign
+                continue
+            }
+
+            return BlockPos(spawnBlockPos.x, spawnBlockPos.y + 1, spawnBlockPos.z)
+        }
+    }
+
     fun spread(distance: Int): Map<BingoTeam, BlockPos> {
         val teams = BingoTeam.entries
             .filter { it.team(world.server).playerList.isNotEmpty() }
@@ -186,39 +219,12 @@ class SpreadPlayers(
 
         for (i in teams.indices) {
             val team = teams[i]
-            var (x, z) = groups[i]
-            val xSign = x.sign.takeIf { it != 0 } ?: 1
+            val startChunk = groups[i]
 
-            log.info("Spawning team ${team.name} near chunk ($x, $z)")
+            log.info("Spawning team ${team.name} near chunk $startChunk")
 
             val chunkLocatorMs = measureTimeMillis {
-                findChunk@ while (true) {
-                    // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
-                    val biomeTest = world.getBiome(BlockPos(x*16 + 8, world.logicalHeight, z*16 + 8))
-                    if (invalidSpawnBiomes.contains(biomeTest.key.get())) {
-                        x += 4 * xSign
-                        continue@findChunk
-                    }
-
-                    // This "!!" looks unsafe. but maybe it isn't though? (it should actually be fine)
-                    val chunk = world.getChunk(x, z, ChunkStatus.FULL, true)!!
-
-                    val spawnBlockPos = selectChunkPosition(chunk)
-                    if (spawnBlockPos == null) {
-                        log.info("Skipping chunk ($x, $z) which contains no valid spawn locations")
-                        x += 1 * xSign
-                        continue@findChunk
-                    }
-
-                    if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
-                        log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
-                        x += 4 * xSign
-                        continue@findChunk
-                    }
-
-                    spawns[team] = BlockPos(spawnBlockPos.x, spawnBlockPos.y + 1, spawnBlockPos.z)
-                    break@findChunk
-                }
+                spawns[team] = findSpawnPos(startChunk)
             }
 
             log.info("Found a spawn location for ${team.name} in ${chunkLocatorMs}ms")
