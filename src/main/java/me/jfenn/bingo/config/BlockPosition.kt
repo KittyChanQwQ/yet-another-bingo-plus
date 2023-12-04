@@ -17,6 +17,8 @@ data class BlockPosition(
 
     fun toBlockPos() = BlockPos(x, y, z)
 
+    fun toChunkPos() = Pair(x / 16, y / 16)
+
     override fun toString(): String {
         return "[$x, $y, $z]"
     }

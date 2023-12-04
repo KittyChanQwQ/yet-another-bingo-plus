@@ -26,7 +26,7 @@ data class BingoState(
     var config: BingoConfig = ConfigService.config,
     val teamScores: MutableMap<BingoTeam, TeamScore> = mutableMapOf(),
     val teamWinners: MutableMap<BingoTeam, TeamWinner> = mutableMapOf(),
-    var teamSpawnpoints: Map<BingoTeam, BlockPosition> = mapOf(),
+    var teamSpawnpoints: MutableMap<BingoTeam, BlockPosition> = mutableMapOf(),
     val teamChatCoordinates: MutableMap<BingoTeam, MutableList<CoordsCommand.CoordinatesEntry>> = mutableMapOf(),
     val teamMapIds: MutableMap<BingoTeam, Int> = mutableMapOf(),
     var card: BingoCard = CardService.generate(config),

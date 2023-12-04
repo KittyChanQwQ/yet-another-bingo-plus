@@ -11,9 +11,12 @@ import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.Heightmap
 import org.slf4j.LoggerFactory
+import kotlin.math.absoluteValue
+import kotlin.math.sign
 import kotlin.random.Random
 
 object SpawnService {
@@ -44,10 +47,12 @@ object SpawnService {
 
             ctx.state.teamSpawnpoints = BingoTeam.entries
                 .associateWith { spawnPos }
+                .toMutableMap()
         } else {
             // spread player teams to spawnpoint
             ctx.state.teamSpawnpoints = spread.spread(distance)
                 .mapValues { (_, value) -> BlockPosition.fromBlockPos(value) }
+                .toMutableMap()
         }
 
         ctx.state.teamSpawnpoints.forEach { (_, blockPos) ->
@@ -74,11 +79,27 @@ object SpawnService {
     }
 
     fun getTeamSpawnpoint(ctx: BingoContext, team: BingoTeam): BlockPos? {
-        val spawnpoint = ctx.state.teamSpawnpoints[team] ?: run {
-            log.warn("Team ${team.name} does not have a stored spawnpoint")
-            return null
-        }
         val world = getSpawnDimension(ctx)
+        val spawnpoint = ctx.state.teamSpawnpoints[team] ?: run {
+            log.warn("Team ${team.name} does not have a stored spawn point!")
+            log.warn("Finding a new spawn position...")
+
+            // Get the chunk of an existing spawnpoint
+            val (x, y) = ctx.state.teamSpawnpoints.values
+                .maxByOrNull { it.x.absoluteValue }
+                ?.toChunkPos()
+                ?: Pair(0, 0)
+
+            // Move "spreadPlayersDistance" away from the existing chunk on the x-axis
+            val xSign = x.sign.takeIf { it != 0 } ?: 1
+            val newSpawnChunk = Pair(x + (ctx.config.spreadPlayersDistance * xSign), y)
+
+            // Store the team's new spawn position & return
+            val spread = SpreadPlayers(world)
+            val newSpawnPos = spread.findSpawnPos(newSpawnChunk)
+            ctx.state.teamSpawnpoints[team] = BlockPosition.fromBlockPos(newSpawnPos)
+            return newSpawnPos
+        }
 
         val pos = spawnpoint.toBlockPos().mutableCopy()
         while (
@@ -87,8 +108,14 @@ object SpawnService {
         ) {
             pos.y += 1
             if (pos.y >= world.logicalHeight) {
-                log.warn("Spawn position for team $team is obstructed up to build height...")
-                return spawnpoint.toBlockPos()
+                log.warn("Spawn position for team $team is obstructed up to build height!")
+                log.warn("Finding a new spawn position...")
+
+                val spread = SpreadPlayers(world)
+                val newSpawnPos = spread.findSpawnPos(spawnpoint.toChunkPos())
+                ctx.state.teamSpawnpoints[team] = BlockPosition.fromBlockPos(newSpawnPos)
+
+                return newSpawnPos
             }
         }
 
