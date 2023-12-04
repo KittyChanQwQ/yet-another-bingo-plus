@@ -11,7 +11,6 @@ import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.Heightmap
 import org.slf4j.LoggerFactory
@@ -39,7 +38,7 @@ object SpawnService {
         val world = getSpawnDimension(ctx)
         val spread = SpreadPlayers(world)
 
-        val distance = ctx.config.spreadPlayersDistance
+        val distance = ctx.config.spawnDistance
         if (distance <= 0) {
             // if the distance is 0, find one spawn point for all teams
             val spawnPos = spread.findSpawnPos(Pair(0, 0))
@@ -92,7 +91,7 @@ object SpawnService {
 
             // Move "spreadPlayersDistance" away from the existing chunk on the x-axis
             val xSign = x.sign.takeIf { it != 0 } ?: 1
-            val newSpawnChunk = Pair(x + (ctx.config.spreadPlayersDistance * xSign), y)
+            val newSpawnChunk = Pair(x + (ctx.config.spawnDistance * xSign), y)
 
             // Store the team's new spawn position & return
             val spread = SpreadPlayers(world)

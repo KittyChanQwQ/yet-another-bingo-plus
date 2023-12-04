@@ -64,7 +64,7 @@ fun MenuComponent.registerMenuPage(
             )
             registerSpawnDistance(
                 position = position.add(3.0, 0.0, 0.0),
-                spawnDistanceProp = propertyRef(ctx.config::spreadPlayersDistance),
+                spawnDistanceProp = propertyRef(ctx.config::spawnDistance),
             )
         },
     )

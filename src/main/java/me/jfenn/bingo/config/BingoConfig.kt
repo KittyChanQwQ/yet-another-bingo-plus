@@ -1,6 +1,8 @@
 package me.jfenn.bingo.config
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.spawn.SpawnItem
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -26,7 +28,9 @@ data class BingoConfig(
 
     // team spawnpoint settings
     var spawnDimension: String = "minecraft:overworld",
-    var spreadPlayersDistance: Int = 100,
+    @OptIn(ExperimentalSerializationApi::class)
+    @JsonNames("spreadPlayersDistance")
+    var spawnDistance: Int = 100,
 
     // score info settings
     var showRemainingTime: Boolean = true,
