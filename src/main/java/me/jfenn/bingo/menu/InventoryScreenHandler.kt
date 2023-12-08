@@ -89,7 +89,7 @@ class InventoryScreenHandler(
     override fun onClosed(player: PlayerEntity?) {
         super.onClosed(player)
         onClose(
-            inventory.stacks.toList()
+            inventory.heldStacks.toList()
                 .filter { !it.isEmpty }
         )
     }

@@ -10,9 +10,7 @@ fun MenuComponent.registerScoreInfo(
     config: BingoConfig,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", Text.Serializer.toJson(
-            Text.literal("Score Info")
-        ))
+        putString("text", "\"Score Info\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)

@@ -19,6 +19,7 @@ import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
+import net.minecraft.nbt.NbtTagSizeTracker
 import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ChunkTicketType
@@ -80,7 +81,7 @@ object MenuService {
             .apply {
                 readNbt(NbtCompound().apply {
                     put("Pos", position.add(0.0, 1.5, 0.0).toNbt())
-                    putString("text", Text.Serializer.toJson(
+                    putString("text", Text.Serialization.toJsonString(
                         Text.literal("${team.name} Team")
                             .formatted(team.formatting, Formatting.BOLD)
                     ))
@@ -96,7 +97,7 @@ object MenuService {
             .apply {
                 readNbt(NbtCompound().apply {
                     put("Pos", position.add(0.0, 1.0, 0.0).toNbt())
-                    putString("text", Text.Serializer.toJson(
+                    putString("text", Text.Serialization.toJsonString(
                         Text.literal("Click to join!")
                     ))
                     putString("billboard", "vertical")
@@ -153,7 +154,7 @@ object MenuService {
                     ?: throw RuntimeException("Unable to obtain lobby.nbt resource")
             }
 
-        val lobbyNbt = lobbyFileStream.use { NbtIo.readCompressed(it) }
+        val lobbyNbt = lobbyFileStream.use { NbtIo.readCompressed(it, NbtTagSizeTracker(Long.MAX_VALUE, 512)) }
         placeStructure(lobbyWorld, BlockPos(0, 24, 0), lobbyNbt)
 
         // Search for team join entities

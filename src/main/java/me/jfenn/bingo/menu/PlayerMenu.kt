@@ -22,9 +22,7 @@ fun MenuComponent.registerPlayerMenu(
             add(NbtFloat.of(facing.asRotation()))
             add(NbtFloat.of(0f))
         })
-        putString("text", Text.Serializer.toJson(
-            Text.literal("Player Settings")
-        ))
+        putString("text", "\"Player Settings\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)

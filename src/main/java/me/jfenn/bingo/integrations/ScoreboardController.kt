@@ -7,14 +7,15 @@ import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.ScoreService
 import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.map.MapItemService
-import me.jfenn.bingo.utils.formatTitle
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
-import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket
+import net.minecraft.network.packet.s2c.play.ScoreboardScoreResetS2CPacket
+import net.minecraft.scoreboard.ScoreHolder
 import net.minecraft.scoreboard.ScoreboardCriterion
 import net.minecraft.scoreboard.ScoreboardDisplaySlot
 import net.minecraft.scoreboard.ScoreboardObjective
-import net.minecraft.scoreboard.ServerScoreboard
+import net.minecraft.scoreboard.number.BlankNumberFormat
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -37,6 +38,8 @@ object ScoreboardController {
                         ScoreboardCriterion.DUMMY,
                         Text.literal("Minecraft BINGO"),
                         ScoreboardCriterion.RenderType.INTEGER,
+                        false,
+                        BlankNumberFormat.INSTANCE,
                     )
                 }
             }
@@ -58,6 +61,12 @@ object ScoreboardController {
         b.writeBytes(strBuf)
 
         return ScoreboardDisplayS2CPacket(PacketByteBuf(b))
+    }
+
+    class NumberedScoreHolder(val num: Int) : ScoreHolder {
+        override fun getNameForScoreboard(): String {
+            return "line_$num"
+        }
     }
 
     fun init() {
@@ -116,13 +125,13 @@ object ScoreboardController {
                         else -> leadingTeam?.formatting ?: Formatting.WHITE
                     }
 
-                    if (config.showCompletedItems) {
+                    if (config.showCompletedItems && team != leadingTeam) {
                         // if the leading team is a tie, find one of the tied teams to get the item/line count
                         val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByItems(state, allowTies = true)
                         val itemsScored = leadingOrTied?.let { state.getTeamScore(it).items } ?: 0
                         add("Items scored: $formatting$itemsScored")
                     }
-                    if (config.showCompletedLines) {
+                    if (config.showCompletedLines && team != leadingTeam) {
                         // if the leading team is a tie, find one of the tied teams to get the item/line count
                         val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByLines(state, allowTies = true)
                         val linesScored = leadingOrTied?.let { state.getTeamScore(it).lines } ?: 0
@@ -136,21 +145,24 @@ object ScoreboardController {
                 }
 
                 // Remove any previous sidebar lines that have been changed
-                for (score in server.scoreboard.getAllPlayerScores(objective)) {
-                    if (!scoreboardText.contains(score.playerName)) {
-                        server.scoreboard.resetPlayerScore(score.playerName, objective)
+                for (score in server.scoreboard.getScoreboardEntries(objective)) {
+                    if (!scoreboardText.contains(score.owner)) {
+                        server.scoreboard.removeScore({ score.owner }, objective)
 
                         if (!server.isSingleplayer) {
                             // The server sometimes fails to send this packet, so we're adding it manually. I don't know why.
-                            // - yes, this does need to be sent to all players, otherwise it may cause desync
-                            server.playerManager.sendToAll(ScoreboardPlayerUpdateS2CPacket(ServerScoreboard.UpdateMode.REMOVE, objective.name, score.playerName, 0))
+                            // - yes, this does need to be sent to all players on the team, otherwise it may cause desync
+                            server.playerManager.playerList
+                                .filter { BingoTeam.fromPlayer(it) == team }
+                                .forEach {
+                                    it.networkHandler.sendPacket(ScoreboardScoreResetS2CPacket(score.owner, null))
+                                }
                         }
                     }
                 }
 
-                // Set the score of any new sidebar lines to the list index
                 scoreboardText.forEachIndexed { i, text ->
-                    val score = server.scoreboard.getPlayerScore(text, objective)
+                    val score = server.scoreboard.getOrCreateScore({ text }, objective, true)
                     score.score = scoreboardText.size - i - 1
                 }
 

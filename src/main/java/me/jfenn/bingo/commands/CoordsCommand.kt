@@ -7,13 +7,13 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.Bingo
-import me.jfenn.bingo.state.GameState
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.config.BlockPosition
 import me.jfenn.bingo.state.BingoContext
+import me.jfenn.bingo.state.GameState
 import me.jfenn.bingo.utils.formatStringSmall
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -33,9 +33,9 @@ object CoordsCommand {
 
     }
 
-    fun storeCoordinates(context: BingoContext, player: PlayerEntity, team: BingoTeam, message: String?) {
+    fun storeCoordinates(context: BingoContext, player: ServerPlayerEntity, team: BingoTeam, message: String?) {
         val entry = CoordinatesEntry(
-            player = player.entityName,
+            player = player.nameForScoreboard,
             pos = BlockPosition.fromBlockPos(player.blockPos),
             message = message,
             created = Clock.System.now(),
@@ -46,15 +46,10 @@ object CoordsCommand {
         list.add(entry)
 
         // send coordinates to the team
-        team.broadcastMessage(
-            player.server!!,
-            Text.empty()
-                .append(Text.literal("TEAM ${player.entityName}").formatted(team.formatting))
-                .append(Text.literal(": ${entry.formatText()}"))
-        )
+        ChatCommand.sendTeamMessage(player, team, Text.literal(entry.formatText()))
     }
 
-    fun listCoordinates(context: BingoContext, player: PlayerEntity, team: BingoTeam) {
+    fun listCoordinates(context: BingoContext, player: ServerPlayerEntity, team: BingoTeam) {
         val coordMessages = context.state.teamChatCoordinates[team] ?: emptyList()
         if (coordMessages.isEmpty()) return
 

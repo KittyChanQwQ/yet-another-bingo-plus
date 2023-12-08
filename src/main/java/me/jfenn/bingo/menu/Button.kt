@@ -42,7 +42,7 @@ fun MenuComponent.registerButton(
             add(NbtFloat.of(facing.asRotation()))
             add(NbtFloat.of(0f))
         })
-        putString("text", Text.Serializer.toJson(
+        putString("text", Text.Serialization.toJsonString(
             Text.empty()
                 .append(if (isActive) Text.literal("✔ ") else Text.empty())
                 .append(Text.literal(text))

@@ -28,7 +28,7 @@ fun MenuComponent.registerMenu(
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", Text.Serializer.toJson(
+        putString("text", Text.Serialization.toJsonString(
             Text.literal(title)
         ))
         putString("billboard", "fixed")

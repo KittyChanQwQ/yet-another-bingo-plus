@@ -9,6 +9,7 @@ import me.jfenn.bingo.state.GameState
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.allInventorySlots
 import me.jfenn.bingo.utils.giveOrEquipStack
+import me.jfenn.bingo.utils.runSilentCommand
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.item.FilledMapItem
@@ -154,10 +155,7 @@ object PlayerController {
         //         player.advancementTracker.revokeCriterion(advancement, criteria)
         //     }
         // }
-        ctx.server.commandManager.executeWithPrefix(
-            ctx.server.commandSource.withOutput(CommandOutput.DUMMY),
-            "advancement revoke ${player.entityName} everything"
-        )
+        ctx.server.runSilentCommand("advancement revoke ${player.nameForScoreboard} everything")
 
         // teleport the player to their spawnpoint
         SpawnService.teleportPlayer(ctx, player)

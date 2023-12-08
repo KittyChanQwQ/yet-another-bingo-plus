@@ -12,11 +12,7 @@ fun MenuComponent.registerSpawnKit(
     config: BingoConfig,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString(
-            "text", Text.Serializer.toJson(
-                Text.literal("Spawn Kit")
-            )
-        )
+        putString("text", "\"Spawn Kit\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)

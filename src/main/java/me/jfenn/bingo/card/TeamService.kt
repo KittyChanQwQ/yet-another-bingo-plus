@@ -2,10 +2,8 @@ package me.jfenn.bingo.card
 
 import me.jfenn.bingo.ChatMessages
 import me.jfenn.bingo.state.BingoContext
-import net.minecraft.entity.player.PlayerEntity
+import me.jfenn.bingo.utils.runSilentCommand
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import kotlin.math.ceil
 
 object TeamService {
@@ -13,7 +11,9 @@ object TeamService {
     fun joinTeam(player: ServerPlayerEntity, team: BingoTeam) {
         if (BingoTeam.fromPlayer(player) == team) return
         val server = player.server ?: return
-        server.scoreboard.addPlayerToTeam(player.entityName, team.team(server))
+
+        val teamName = team.team(server).name
+        server.runSilentCommand("team join $teamName ${player.nameForScoreboard}")
         ChatMessages.broadcastJoinedTeam(player, team)
     }
 

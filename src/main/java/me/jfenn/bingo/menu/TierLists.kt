@@ -12,9 +12,7 @@ fun MenuComponent.registerTierLists(
     config: BingoConfig,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", Text.Serializer.toJson(
-            Text.literal("Tier Lists")
-        ))
+        putString("text", "\"Tier Lists\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)

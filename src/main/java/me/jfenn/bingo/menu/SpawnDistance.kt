@@ -32,11 +32,7 @@ fun MenuComponent.registerSpawnDistance(
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
-        putString(
-            "text", Text.Serializer.toJson(
-                Text.literal("$spawnDistance chunks")
-            )
-        )
+        putString("text", "\"$spawnDistance chunks\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)
@@ -44,11 +40,7 @@ fun MenuComponent.registerSpawnDistance(
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString(
-            "text", Text.Serializer.toJson(
-                Text.literal("Spawn Distance")
-            )
-        )
+        putString("text", "\"Spawn Distance\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)

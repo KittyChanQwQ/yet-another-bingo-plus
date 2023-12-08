@@ -4,12 +4,30 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.Bingo
+import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.state.GameState
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 
 object ChatCommand {
+
+    fun sendTeamMessage(
+        player: ServerPlayerEntity,
+        team: BingoTeam,
+        message: Text,
+    ) {
+        val server = player.server
+
+        val messageText = Text.empty()
+            .append(Text.empty().append("TEAM ").append(player.displayName).formatted(team.formatting))
+            .append(Text.literal(": "))
+            .append(message)
+
+        // broadcast message to team
+        team.broadcastMessage(server, messageText)
+    }
 
     fun init() {
         registerCommands {
@@ -42,19 +60,11 @@ object ChatCommand {
 
         // override default chat to only send team-specific messages
         ServerMessageEvents.ALLOW_CHAT_MESSAGE.register { message, player, type ->
-            val (server, state) = Bingo.getContext(player.server) ?: return@register true
+            val (_, state) = Bingo.getContext(player.server) ?: return@register true
             if (state.state != GameState.PLAYING) return@register true
-            val team = player.scoreboardTeam ?: return@register true
+            val team = BingoTeam.fromPlayer(player) ?: return@register true
 
-            val messageText = Text.empty()
-                .append(Text.literal("TEAM ${player.entityName}").formatted(team.color))
-                .append(Text.literal(": "))
-                .append(message.content)
-
-            // broadcast message to team
-            for (otherPlayer in server.playerManager.playerList) {
-                if (otherPlayer.isTeamPlayer(team)) otherPlayer.sendMessage(messageText)
-            }
+            sendTeamMessage(player, team, message.content)
 
             false
         }

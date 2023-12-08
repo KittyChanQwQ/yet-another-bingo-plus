@@ -10,9 +10,7 @@ fun MenuComponent.registerGameModes(
     config: BingoConfig,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", Text.Serializer.toJson(
-            Text.literal("Game Mode")
-        ))
+        putString("text", "\"Game Mode\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)

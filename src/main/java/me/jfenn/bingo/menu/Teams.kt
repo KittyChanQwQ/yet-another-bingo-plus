@@ -44,11 +44,7 @@ fun MenuComponent.registerTeams(
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
-        putString(
-            "text", Text.Serializer.toJson(
-                Text.literal("$teamCount teams")
-            )
-        )
+        putString("text", "\"$teamCount teams\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)
@@ -57,7 +53,7 @@ fun MenuComponent.registerTeams(
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString(
-            "text", Text.Serializer.toJson(
+            "text", Text.Serialization.toJsonString(
                 Text.literal(title)
             )
         )

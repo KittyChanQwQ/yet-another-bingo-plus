@@ -20,7 +20,7 @@ object MapItemService {
             putBoolean(NBT_BINGO_IGNORE, true)
             putBoolean(NBT_BINGO_VANISH, true)
             put("display", NbtCompound().apply {
-                putString("Name", Text.Serializer.toJson(
+                putString("Name", Text.Serialization.toJsonString(
                     Text.literal("Bingo Card (${team.name.lowercase()})")
                         .formatted(team.formatting, Formatting.ITALIC)
                 ))

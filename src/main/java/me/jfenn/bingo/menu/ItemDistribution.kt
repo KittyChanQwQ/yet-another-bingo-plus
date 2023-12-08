@@ -43,7 +43,7 @@ fun MenuComponent.registerItemDistribution(
         }
 
         registerEntity(EntityType.TEXT_DISPLAY, position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
-            putString("text", Text.Serializer.toJson(
+            putString("text", Text.Serialization.toJsonString(
                 Text.literal(tier.name).formatted(tier.formatting, Formatting.BOLD)
             ))
             putString("billboard", "fixed")
@@ -59,7 +59,7 @@ fun MenuComponent.registerItemDistribution(
                 else -> Formatting.RED
             }
 
-            putString("text", Text.Serializer.toJson(
+            putString("text", Text.Serialization.toJsonString(
                 Text.literal(itemDistribution[i].toString())
                     .formatted(color)
             ))
@@ -72,9 +72,7 @@ fun MenuComponent.registerItemDistribution(
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", Text.Serializer.toJson(
-            Text.literal("Item Distribution")
-        ))
+        putString("text", "\"Item Distribution\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)

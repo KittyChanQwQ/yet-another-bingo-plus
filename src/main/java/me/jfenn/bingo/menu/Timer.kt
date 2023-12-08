@@ -48,7 +48,7 @@ fun MenuComponent.registerTimer(
         } ?: "Off"
 
         putString(
-            "text", Text.Serializer.toJson(
+            "text", Text.Serialization.toJsonString(
                 Text.literal(timerText)
             )
         )
@@ -60,7 +60,7 @@ fun MenuComponent.registerTimer(
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString(
-            "text", Text.Serializer.toJson(
+            "text", Text.Serialization.toJsonString(
                 Text.literal(title)
             )
         )

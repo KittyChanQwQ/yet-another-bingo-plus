@@ -1,7 +1,6 @@
 package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.config.BingoConfig
-import me.jfenn.bingo.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
@@ -11,9 +10,7 @@ fun MenuComponent.registerCardInfo(
     config: BingoConfig,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", Text.Serializer.toJson(
-            Text.literal("BINGO Card")
-        ))
+        putString("text", "\"BINGO Card\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)
