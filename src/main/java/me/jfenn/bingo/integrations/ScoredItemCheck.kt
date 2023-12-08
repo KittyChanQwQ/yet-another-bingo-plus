@@ -11,6 +11,7 @@ import me.jfenn.bingo.config.ConfigService
 import me.jfenn.bingo.map.MapRenderService
 import me.jfenn.bingo.state.BingoContext
 import me.jfenn.bingo.state.GameState
+import me.jfenn.bingo.state.TeamScore
 import me.jfenn.bingo.utils.allHeldStacks
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -21,8 +22,7 @@ import net.minecraft.util.Formatting
  */
 object ScoredItemCheck {
 
-    fun updateInventory(ctx: BingoContext) {
-        val prevLeadingTeam = ScoreService.getLeading(ctx.state)
+    fun updateInventory(ctx: BingoContext): Set<BingoTeam> {
         val updatedTeams = mutableSetOf<BingoTeam>()
 
         for (player in ctx.server.playerManager.playerList) {
@@ -38,9 +38,12 @@ object ScoredItemCheck {
 
                 // if the item hasn't been achieved and can be satisfied, mark it as collected
                 if (!tile.canSatisfy(stack)) continue
-                if (tile.hasAchieved(team)) continue
 
-                markTileCollected(ctx, tile, team)
+                // if the gamemode is lockout, tiles cannot be collected by >1 team
+                if (ctx.config.isLockoutMode && tile.hasAnyAchieved())
+                    continue
+
+                tile.setAchieved(team, true)
                     // if the tile has changed, mark updatedTeams
                     .also { isChanged -> if (isChanged) updatedTeams.add(team) }
             }
@@ -62,7 +65,7 @@ object ScoredItemCheck {
 
                     // if noone on the team has the item anymore, mark it lost
                     if (!hasTeamItem) {
-                        markTileLost(item, team)
+                        item.setAchieved(team, false)
                             // if the tile has changed, mark updatedTeams
                             .also { isChanged -> if (isChanged) updatedTeams.add(team) }
                     }
@@ -70,8 +73,47 @@ object ScoredItemCheck {
             }
         }
 
+        // update the stored score for each team
+        for (team in updatedTeams) {
+            ctx.state.updateScore(team)
+        }
+
+        return updatedTeams
+    }
+
+    fun updateScores(ctx: BingoContext) {
+        val prevLeadingTeam = ScoreService.getLeading(ctx.state)
+        val prevTeamScores = ctx.state.teamScores.toMap()
+
+        val updatedTeams = updateInventory(ctx)
+
         // if there are no updated teams, we can skip the remaining checks...
         if (updatedTeams.isEmpty()) return
+
+        for (team in updatedTeams) {
+            // update the score for each modified team
+            val scoreBefore = prevTeamScores[team] ?: TeamScore.ZERO
+            val scoreAfter = ctx.state.getTeamScore(team)
+
+            // if the team has scored a line, post a message
+            if (scoreAfter.lines > scoreBefore.lines && ctx.config.showCompletedLines) {
+                val message = Text.empty()
+                    .append(team.text(ctx.server))
+                    .append(
+                        Text.literal(" has scored ${scoreAfter.lines} line${if (scoreAfter.lines > 1) "s" else ""}!")
+                            .formatted(Formatting.YELLOW)
+                    )
+
+                ctx.server.playerManager.playerList
+                    .filter { ConfigService.getPlayer(it.uuidAsString).scoreMessages }
+                    .forEach { it.sendMessage(message, false) }
+            }
+
+            if (scoreAfter.items > scoreBefore.items) {
+                // play the doink sound
+                Sounds.playTileCollected(ctx, team)
+            }
+        }
 
         // update the team map(s)
         if (ctx.config.isLockoutMode || ctx.config.drawOtherTeamCompletions) {
@@ -120,58 +162,10 @@ object ScoredItemCheck {
         }
     }
 
-    /**
-     * @return if the given tile has been changed
-     */
-    private fun markTileCollected(ctx: BingoContext, tile: BingoCardEntry, team: BingoTeam): Boolean {
-        // if the gamemode is lockout, tiles cannot be collected by >1 team
-        if (ctx.config.isLockoutMode && tile.hasAnyAchieved())
-            return false
-        // if the team has already achieved the tile, there is nothing to change
-        if (tile.hasAchieved(team))
-            return false
-
-        // unlock the collected item
-        val linesBefore = ctx.state.getTeamScore(team).lines
-        tile.setAchieved(team, true)
-        val linesAfter = ctx.state.updateScore(team).lines
-
-        if (linesAfter > linesBefore && ctx.config.showCompletedLines) {
-            val message = Text.empty()
-                .append(team.text(ctx.server))
-                .append(
-                    Text.literal(" has scored $linesAfter line${if (linesAfter > 1) "s" else ""}!")
-                        .formatted(Formatting.YELLOW)
-                )
-
-            ctx.server.playerManager.playerList
-                .filter { ConfigService.getPlayer(it.uuidAsString).scoreMessages }
-                .forEach { it.sendMessage(message, false) }
-        }
-
-        // play the doink sound
-        Sounds.playTileCollected(ctx, team)
-        return true
-    }
-
-    /**
-     * This is only used in BingoMode.INVENTORY to un-mark a tile if
-     * the item is no longer in a player's inventory
-     *
-     * @return if the given tile has been changed
-     */
-    private fun markTileLost(tile: BingoCardEntry, team: BingoTeam): Boolean {
-        // if the team doesn't have the tile, there is nothing to change
-        if (!tile.hasAchieved(team)) return false
-
-        tile.setAchieved(team, false)
-        return true
-    }
-
     fun init() {
         Bingo.onGameTick {
             if (state.state == GameState.PLAYING) {
-                updateInventory(this)
+                updateScores(this)
             }
         }
     }
