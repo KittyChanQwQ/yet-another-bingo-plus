@@ -1,6 +1,9 @@
 package me.jfenn.bingo.integrations
 
-import me.jfenn.bingo.*
+import me.jfenn.bingo.Bingo
+import me.jfenn.bingo.NBT_BINGO_IGNORE
+import me.jfenn.bingo.NBT_BINGO_VANISH
+import me.jfenn.bingo.Sounds
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.map.MapItemService
 import me.jfenn.bingo.spawn.SpawnService
@@ -18,7 +21,6 @@ import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
-import net.minecraft.server.command.CommandOutput
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
