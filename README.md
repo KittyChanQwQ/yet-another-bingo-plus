@@ -32,6 +32,8 @@ lines to win the game. (the "win condition" can be set to a number of lines, or 
 - **Lockout**: Once an item is collected by any team, that tile is locked and no other teams can collect it.
 - **Inventory**: Items must remain in a team member's inventory to hold a tile. Losing an item un-marks its tile on the
   card (meaning you need to stay alive with your items in order to win).
+- **Ranked**: The game does not end when a team wins. Instead, it keeps going until the time limit and lists the winners
+  when it ends.
 
 ### Extra Options:
 
@@ -67,6 +69,7 @@ Global commands:
 - `/coords` prints the current player coordinates in the team chat
 - `/coords list` displays a list of the team's previous "/coords" messages
 - `/all` or `/g` sends a message to the global chat (sending a regular chat message defaults to team chat when in-game)
+- `/join <team>` (when in the lobby) allows a player to join the specified team
 
 BINGO commands (operator-only):
 - `/bingo elytra <true/false>` changes the elytra mode setting
@@ -76,8 +79,7 @@ BINGO commands (operator-only):
 - `/bingo reroll` rerolls for a new BINGO card with different items
 - `/bingo shuffleteams <number>` randomly sorts all players onto the given number of teams
 - `/bingo end` ends the current game and displays the winner (or a draw)
-
-(operators can also move specific players to different teams using the vanilla `/team join <team> <player>` command)
+- `/join <team> <player>` assigns a player to a different team - will respawn them if in-game
 
 ## Credits
 
