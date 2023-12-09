@@ -1,24 +1,28 @@
 #!/bin/bash
 set -e
 
+ANSI_RED='\033[0;31m'
+ANSI_YELLOW='\033[0;33m'
+ANSI_RESET='\033[0m'
+
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")
 TMP_DIR=$SCRIPT_DIR/tmp
 
 mkdir -p $TMP_DIR
 pushd $TMP_DIR
 
-# https://mcversions.net; 1.20.1
-[ -f client.jar ] || wget https://piston-data.mojang.com/v1/objects/0c3ec587af28e5a785c0b4a7b8a30f9a8f78f838/client.jar
+# https://mcversions.net; 1.20.4
+[ -f client.jar ] || wget https://piston-data.mojang.com/v1/objects/fd19469fed4a4b4c15b2d5133985f0e3e7816a8a/client.jar
 JAR_FILE="$(realpath client.jar)"
 
 [ -f $JAR_FILE ] || {
-  echo "Error: minecraft jar for $VERSION not found."
+  echo -e "${ANSI_RED}Error: minecraft jar for $VERSION not found."
   exit 1
 }
 
 ITEMS_FILE="$(realpath $SCRIPT_DIR/data/items.json)"
 [ -f $ITEMS_FILE ] || {
-  echo "Error: items.json missing. Run scripts/generate-reports.sh first!"
+  echo -e "${ANSI_RED}Error: items.json missing. Run scripts/generate-reports.sh first!"
   exit 1
 }
 
@@ -35,7 +39,7 @@ function get_texture_file {
   texture_file=$(realpath ./assets/minecraft/textures/$texture_id.png)
 
   [ -f $texture_file ] || {
-    echo "Error: texture file for $texture_file does not exist!"
+    echo -e "${ANSI_RED}Error: texture file for $texture_file does not exist!"
     exit 1
   }
 
@@ -78,7 +82,7 @@ jar -xf $JAR_FILE assets
 # loop over items registry
 for item in $(jq -r ".[]" $ITEMS_FILE); do
   item_id="$(echo $item | cut -d ':' -f2)"
-  echo -n "${item_id}: "
+  echo -ne "${ANSI_RESET}${item_id}: "
 
   item_out_file=$OUT_DIR/$(echo $item_id | xargs).png
 
@@ -91,7 +95,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
 
   item_model_file=./assets/minecraft/models/item/"${item_id}.json"
   [ -f $item_model_file ] || {
-    echo "Warning: item model for $item_id not found"
+    echo -e "${ANSI_YELLOW}Warning: item model for $item_id not found"
     continue
   }
 
@@ -107,7 +111,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     item_parent_id=$(echo $item_parent | cut -d ':' -f2)
     item_parent_file=./assets/minecraft/models/${item_parent_id}.json
     [ -f $item_parent_file ] || {
-      echo "Warning: parent model for $item_parent not found"
+      echo -e "${ANSI_YELLOW}Warning: parent model for $item_parent not found"
       exit 1
     }
 
@@ -116,7 +120,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
 
     # merge the model with its parent
     item_model_json="$(jq -s '.[0] * .[1]' tmp.json $item_parent_file)" || {
-      echo "Error: could not resolve model parent $item_parent_id from $item_id"
+      echo -e "${ANSI_YELLOW}Error: could not resolve model parent $item_parent_id from $item_id"
       exit 1
     }
 
@@ -134,7 +138,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     block_texture=$(jq ".textures | (.end_rod // .beacon // .pattern // .wool // .wall // .texture // .all // .front // .side // .west // .top // .up // .flower)" tmp.json)
 
     [ "$block_texture" == "null" ] && {
-      echo "Error: block texture is null"
+      echo -e "${ANSI_RED}Error: block texture is null"
       echo $item_models
       cat tmp.json
       exit 1
@@ -202,7 +206,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     item_texture=$(jq ".textures.layer0" tmp.json)
 
     [ "$item_texture" == "null" ] && {
-      echo "Error: item texture is null"
+      echo -e "${ANSI_RED}Error: item texture is null"
       echo $item_models
       cat tmp.json
       exit 1
@@ -316,7 +320,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     continue
   fi
 
-  echo "NO IMAGE FOUND"
+  echo -e "${ANSI_RED}Error: NO IMAGE FOUND"
   # TODO:
   # - player_head
   # - piglin_head
