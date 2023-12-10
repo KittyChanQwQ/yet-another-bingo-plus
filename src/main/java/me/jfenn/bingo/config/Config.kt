@@ -3,6 +3,7 @@ package me.jfenn.bingo.config
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.serializer
+import me.jfenn.bingo.MOD_ID
 import me.jfenn.bingo.utils.json
 import net.fabricmc.loader.api.FabricLoader
 import org.apache.commons.io.IOUtils
@@ -51,10 +52,10 @@ object Config {
         file: String,
         shouldWriteDefault: Boolean = true,
         default: () -> InputStream = {
-            javaClass.getResourceAsStream("/bingo/$file")!!
+            javaClass.getResourceAsStream("/$MOD_ID/$file")!!
         },
     ): InputStream {
-        val filePath = configDir.resolve("bingo/$file")
+        val filePath = configDir.resolve("$MOD_ID/$file")
         if (!Files.exists(filePath)) {
             if (!shouldWriteDefault)
                 return default()
