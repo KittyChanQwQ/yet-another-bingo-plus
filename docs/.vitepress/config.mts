@@ -30,7 +30,14 @@ export default defineConfig({
 
     sidebar: [
       {
-        text: 'Configuration',
+        text: 'Installation',
+        collapsed: false,
+        items: [
+          { text: 'Server Optimization', link: '/optimization' },
+        ],
+      },
+      {
+        text: 'Bingo Configuration',
         collapsed: false,
         items: [
           { text: 'Config Files', link: '/config', items: [
