@@ -1,0 +1,9 @@
+[versions]
+insert-koin = "3.5.0"
+
+[libraries]
+insert-koin-core = { module = "io.insert-koin:koin-core", version.ref = "insert-koin" }
+insert-koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "insert-koin" }
+
+[bundles]
+insert-koin = ["insert-koin-core", "insert-koin-logger-slf4j"]
