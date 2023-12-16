@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
 }
 
-version = project.mod_version + "+mc1.20.4"
+version = project.mod_version + "-mc1.20.4"
 group = project.maven_group
 
 base {
