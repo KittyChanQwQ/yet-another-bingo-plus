@@ -1,7 +1,7 @@
 <template>
 	<div style="display: flex; align-items: center; gap: 12px; margin: 12px 0;">
 		<DownloadButton :tierlist="tierList" />
-		<UploadButton />
+		<UploadButton @list-uploaded="handleListUploaded" />
 	</div>
 
 	<div style="display: flex; align-items: center;">
@@ -148,6 +148,13 @@ const allItems = computed(() => {
 		.filter(item => shouldIncludeUnobtainable.value || !unobtainableItems.some(unobtainable => typeof unobtainable === "string" ? unobtainable === item : new RegExp(unobtainable).test(item)));
 	return items;
 });
+
+function handleListUploaded(list: TierList) {
+	for (const tier of tiers) {
+		onItemsChanged(tier, list[tier]);
+	}
+	onGroupsChanged(list.groups);
+}
 
 function onItemsChanged(tier: string, newItems: string[]) {
 	// update the tierLists ref
