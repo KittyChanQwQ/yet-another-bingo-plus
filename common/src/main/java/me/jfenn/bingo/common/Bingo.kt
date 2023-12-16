@@ -1,15 +1,15 @@
 package me.jfenn.bingo.common
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.commands.*
-import me.jfenn.bingo.integrations.*
-import me.jfenn.bingo.map.MapRenderService
-import me.jfenn.bingo.menu.MenuService
-import me.jfenn.bingo.state.BingoContext
-import me.jfenn.bingo.state.BingoState
-import me.jfenn.bingo.state.GameState
-import me.jfenn.bingo.state.SerializedPersistentState
-import me.jfenn.bingo.utils.ContextEventListener
+import me.jfenn.bingo.common.commands.*
+import me.jfenn.bingo.common.integrations.*
+import me.jfenn.bingo.common.map.MapRenderService
+import me.jfenn.bingo.common.menu.MenuService
+import me.jfenn.bingo.common.state.BingoContext
+import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.state.SerializedPersistentState
+import me.jfenn.bingo.common.utils.ContextEventListener
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents

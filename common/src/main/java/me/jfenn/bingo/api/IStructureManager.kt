@@ -1,6 +1,6 @@
 package me.jfenn.bingo.api
 
-import me.jfenn.bingo.config.BlockPosition
+import me.jfenn.bingo.common.config.BlockPosition
 import net.minecraft.server.world.ServerWorld
 import java.io.InputStream
 

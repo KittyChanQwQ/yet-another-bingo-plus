@@ -1,7 +1,7 @@
 package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.api.IStructureManager
-import me.jfenn.bingo.config.BlockPosition
+import me.jfenn.bingo.common.config.BlockPosition
 import net.minecraft.block.entity.StructureBlockBlockEntity
 import net.minecraft.nbt.NbtIo
 import net.minecraft.nbt.NbtTagSizeTracker

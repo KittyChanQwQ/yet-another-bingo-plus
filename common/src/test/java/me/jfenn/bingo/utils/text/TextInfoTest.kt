@@ -1,5 +1,7 @@
 package me.jfenn.bingo.utils.text
 
+import me.jfenn.bingo.common.utils.text.TextColor
+import me.jfenn.bingo.common.utils.text.TextInfo
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
