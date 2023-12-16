@@ -9,27 +9,22 @@
 # https://gradle.org/
 # https://github.com/gradle/gradle
 
-build:
+Test:
   stage: build
   image: gradle:alpine
   script:
     - GRADLE_USER_HOME="$(pwd)/.gradle"
     - export GRADLE_USER_HOME
-    - gradle --build-cache assemble
+    - gradle --build-cache test
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
       - build
       - .gradle
-  artifacts:
-    paths:
-      - bingo-*/build/libs/*.jar
-  rules:
-    - allow_failure: true
 
-pages:
-  stage: deploy
+GitLab Pages:
+  stage: build
   image: node:18.12.1
   cache:
     key: npm
@@ -52,3 +47,39 @@ pages:
         - docs/**/*
         - .gitlab-ci.yml
       allow_failure: true
+
+Sync README:
+  stage: deploy
+  image: gradle:alpine
+  script:
+    - GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export GRADLE_USER_HOME
+    - gradle --build-cache modrinthSyncBody
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - build
+      - .gradle
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+Build and Deploy:
+  stage: deploy
+  image: gradle:alpine
+  script:
+    - GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export GRADLE_USER_HOME
+    - gradle --build-cache modrinth
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - build
+      - .gradle
+  rules:
+    - if: '$CI_COMMIT_TAG' # Any tag is created
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  artifacts:
+    paths:
+      - mc*/build/libs/*.jar

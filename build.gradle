@@ -3,3 +3,19 @@ allprojects {
 		mavenCentral()
 	}
 }
+
+tasks.register("modrinth") {
+	dependsOn(
+			subprojects.collect {
+				it.tasks.find { it.name == "modrinth" }
+			}
+	)
+}
+
+tasks.register("modrinthSyncBody") {
+	dependsOn(
+			subprojects.collect {
+				it.tasks.find { it.name == "modrinthSyncBody" }
+			}.find { it != null }
+	)
+}

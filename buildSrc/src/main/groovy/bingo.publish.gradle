@@ -1,0 +1,22 @@
+plugins {
+    id "com.modrinth.minotaur"
+}
+
+version = project.mod_version + "-" + project.name
+group = project.maven_group + "-" + project.name
+
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "yet-another-minecraft-bingo"
+    versionNumber = version
+    versionName = "BINGO ${project.mod_version} for Minecraft ${project.minecraft_version}"
+    versionType = "release"
+    changelog = rootProject.file("CHANGELOG.md").text
+    uploadFile = remapJar
+    gameVersions = [project.minecraft_version]
+    loaders = ["fabric", "quilt"]
+    dependencies {
+        required.project "fabric-api"
+    }
+    syncBodyFrom = rootProject.file("README.md").text
+}
