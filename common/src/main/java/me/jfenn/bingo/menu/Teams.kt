@@ -1,11 +1,11 @@
 package me.jfenn.bingo.menu
 
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.TeamService
+import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.utils.sendInfoMessage
+import me.jfenn.bingo.utils.text.TextInfo
 import net.minecraft.entity.EntityType
-import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerTeams(
@@ -53,8 +53,8 @@ fun MenuComponent.registerTeams(
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString(
-            "text", Text.Serialization.toJsonString(
-                Text.literal(title)
+            "text", TextInfo.toJsonString(
+                TextInfo.literal(title)
             )
         )
         putString("billboard", "fixed")

@@ -57,9 +57,8 @@ object ScoredItemCheck {
                     // don't update teams that have already won
                     if (ctx.state.isWinner(team)) continue
 
-                    val teamInstance = team.team(ctx.server)
                     val hasTeamItem = ctx.server.playerManager.playerList
-                        .filter { it.isTeamPlayer(teamInstance) }
+                        .filter { team.includesPlayer(it) }
                         .any { player -> player.inventory.containsAny { item.canSatisfy(it) }
                                 || item.canSatisfy(player.currentScreenHandler.cursorStack) }
 

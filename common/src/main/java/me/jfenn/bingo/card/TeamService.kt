@@ -1,24 +1,27 @@
 package me.jfenn.bingo.card
 
 import me.jfenn.bingo.ChatMessages
+import me.jfenn.bingo.api.ITeamManager
 import me.jfenn.bingo.state.BingoContext
-import me.jfenn.bingo.utils.runSilentCommand
 import net.minecraft.server.network.ServerPlayerEntity
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import kotlin.math.ceil
 
-object TeamService {
+object TeamService : KoinComponent {
+
+    private val teamManager by inject<ITeamManager>()
 
     fun joinTeam(player: ServerPlayerEntity, team: BingoTeam) {
         if (BingoTeam.fromPlayer(player) == team) return
         val server = player.server ?: return
 
-        val teamName = team.team(server).name
-        server.runSilentCommand("team join $teamName ${player.nameForScoreboard}")
+        teamManager.setPlayerTeam(player, team.team(server))
         ChatMessages.broadcastJoinedTeam(player, team)
     }
 
     fun shuffleTeams(ctx: BingoContext, numTeams: Int) {
-        val teams = BingoTeam.entries
+        val teams = BingoTeam.entries.shuffled()
 
         val players = ctx.server.playerManager.playerList
         val playersPerTeam = ceil(players.size / numTeams.coerceIn(1, teams.size).toDouble()).toInt()

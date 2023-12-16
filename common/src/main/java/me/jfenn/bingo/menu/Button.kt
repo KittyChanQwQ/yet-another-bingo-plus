@@ -2,13 +2,13 @@ package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.event.InteractionEntityEvents
 import me.jfenn.bingo.utils.hasPermission
+import me.jfenn.bingo.utils.text.TextColor
+import me.jfenn.bingo.utils.text.TextInfo
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtFloat
 import net.minecraft.nbt.NbtList
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvents
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 
@@ -42,11 +42,11 @@ fun MenuComponent.registerButton(
             add(NbtFloat.of(facing.asRotation()))
             add(NbtFloat.of(0f))
         })
-        putString("text", Text.Serialization.toJsonString(
-            Text.empty()
-                .append(if (isActive) Text.literal("✔ ") else Text.empty())
-                .append(Text.literal(text))
-                .formatted(if (isActive) Formatting.BLACK else Formatting.GRAY)
+        putString("text", TextInfo.toJsonString(
+            TextInfo.empty()
+                .append(if (isActive) TextInfo.literal("✔ ") else TextInfo.empty())
+                .append(TextInfo.literal(text))
+                .formatted(if (isActive) TextColor.BLACK else TextColor.GRAY)
         ))
         putString("billboard", "fixed")
         putString("alignment", "center")

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
+import me.jfenn.bingo.utils.text.TextInfo
 import net.minecraft.entity.EntityType
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerMenu(
@@ -28,8 +28,8 @@ fun MenuComponent.registerMenu(
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", Text.Serialization.toJsonString(
-            Text.literal(title)
+        putString("text", TextInfo.toJsonString(
+            TextInfo.literal(title)
         ))
         putString("billboard", "fixed")
         putString("alignment", "center")

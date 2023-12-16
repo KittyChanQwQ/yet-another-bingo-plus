@@ -14,6 +14,8 @@ interface IScoreboardManager {
 
     fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle)
 
+    fun getPlayerName(player: ServerPlayerEntity): String
+
 }
 
 interface IObjectiveHandle {

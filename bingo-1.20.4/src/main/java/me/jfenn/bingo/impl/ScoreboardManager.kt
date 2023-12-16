@@ -64,6 +64,10 @@ class ScoreboardManager : IScoreboardManager {
             player.networkHandler.sendPacket(packet)
         }
     }
+
+    override fun getPlayerName(player: ServerPlayerEntity): String {
+        return player.nameForScoreboard
+    }
 }
 
 class ObjectiveHandle(

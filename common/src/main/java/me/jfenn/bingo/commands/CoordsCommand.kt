@@ -6,8 +6,9 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.card.BingoTeam
+import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.config.BlockPosition
 import me.jfenn.bingo.state.BingoContext
 import me.jfenn.bingo.state.GameState
@@ -16,8 +17,12 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-object CoordsCommand {
+object CoordsCommand : KoinComponent {
+
+    private val scoreboardManager by inject<IScoreboardManager>()
 
     @Serializable
     data class CoordinatesEntry(
@@ -35,7 +40,7 @@ object CoordsCommand {
 
     fun storeCoordinates(context: BingoContext, player: ServerPlayerEntity, team: BingoTeam, message: String?) {
         val entry = CoordinatesEntry(
-            player = player.nameForScoreboard,
+            player = scoreboardManager.getPlayerName(player),
             pos = BlockPosition.fromBlockPos(player.blockPos),
             message = message,
             created = Clock.System.now(),
@@ -64,7 +69,6 @@ object CoordsCommand {
         // send current player coordinates to other team members
         LiteralArgumentBuilder.literal<ServerCommandSource?>("coords")
             .requireState(GameState.PLAYING)
-            .requireBingoTeam()
             .then(
                 LiteralArgumentBuilder.literal<ServerCommandSource?>("list")
                     .executes { ctx ->

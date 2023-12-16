@@ -1,7 +1,7 @@
 package me.jfenn.bingo.menu
 
+import me.jfenn.bingo.utils.text.TextInfo
 import net.minecraft.entity.EntityType
-import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 import java.util.*
 import kotlin.time.Duration
@@ -48,8 +48,8 @@ fun MenuComponent.registerTimer(
         } ?: "Off"
 
         putString(
-            "text", Text.Serialization.toJsonString(
-                Text.literal(timerText)
+            "text", TextInfo.toJsonString(
+                TextInfo.literal(timerText)
             )
         )
         putString("billboard", "fixed")
@@ -60,8 +60,8 @@ fun MenuComponent.registerTimer(
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString(
-            "text", Text.Serialization.toJsonString(
-                Text.literal(title)
+            "text", TextInfo.toJsonString(
+                TextInfo.literal(title)
             )
         )
         putString("billboard", "fixed")

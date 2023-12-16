@@ -17,14 +17,12 @@ object Sounds {
     }
 
     fun playTileCollected(ctx: BingoContext, team: BingoTeam) {
-        val teamInstance = team.team(ctx.server)
         for (player in ctx.server.playerManager.playerList) {
-            if (player.isTeamPlayer(teamInstance)) {
+            if (team.includesPlayer(player)) {
                 player.playSound(
                     SoundEvents.ENTITY_PLAYER_LEVELUP,
                     SoundCategory.BLOCKS,
                     1f, 2f
-
                 )
             } else {
                 player.playSound(

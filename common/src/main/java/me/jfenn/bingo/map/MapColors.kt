@@ -1,8 +1,7 @@
 package me.jfenn.bingo.map
 
 import net.minecraft.block.MapColor
-import org.apache.commons.imaging.color.ColorConversions
-import kotlin.math.*
+import kotlin.math.pow
 
 fun rgb(r: Int, g: Int, b: Int): Int {
     return -0x1000000 or (r shl 16 and 0x00FF0000) or (g shl 8 and 0x0000FF00) or (b and 0x000000FF)
@@ -88,7 +87,7 @@ fun Int.colorDistanceEuclidian(other: Int): Double {
  * using the CDIDE2000 formula:
  * https://en.wikipedia.org/wiki/Color_difference#CIEDE2000
  */
-fun Int.colorDistanceCDIDE2000(other: Int): Double {
+/*fun Int.colorDistanceCDIDE2000(other: Int): Double {
     val color1Lab = ColorConversions.convertRGBtoXYZ(this)
         .let { ColorConversions.convertXYZtoCIELab(it) }
     val color1Lch = ColorConversions.convertCIELabtoCIELCH(color1Lab)
@@ -148,14 +147,14 @@ fun Int.colorDistanceCDIDE2000(other: Int): Double {
     )
 
     return deltaE
-}
+}*/
 
 /**
  * Computes the visual "distance" between two color int values
  * using the CMC l:c algorithm:
  * https://en.wikipedia.org/wiki/Color_difference#CMC_l:c_(1984)
  */
-fun Int.colorDistanceCMC1984(other: Int): Double {
+/*fun Int.colorDistanceCMC1984(other: Int): Double {
     val color1Lab = ColorConversions.convertRGBtoXYZ(this)
         .let { ColorConversions.convertXYZtoCIELab(it) }
     val color1Lch = ColorConversions.convertCIELabtoCIELCH(color1Lab)
@@ -197,7 +196,7 @@ fun Int.colorDistanceCMC1984(other: Int): Double {
     )
 
     return deltaE
-}
+}*/
 
 fun Int.closestColorByte(): Byte {
     // colorDistanceCMC1984 fails on comparisons to #000... so we're doing this manually

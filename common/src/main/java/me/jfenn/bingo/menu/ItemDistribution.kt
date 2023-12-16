@@ -1,9 +1,9 @@
 package me.jfenn.bingo.menu
 
 import me.jfenn.bingo.config.TierList
+import me.jfenn.bingo.utils.text.TextColor
+import me.jfenn.bingo.utils.text.TextInfo
 import net.minecraft.entity.EntityType
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.util.math.Vec3d
 
 const val TIER_WIDTH = 0.5
@@ -43,8 +43,10 @@ fun MenuComponent.registerItemDistribution(
         }
 
         registerEntity(EntityType.TEXT_DISPLAY, position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
-            putString("text", Text.Serialization.toJsonString(
-                Text.literal(tier.name).formatted(tier.formatting, Formatting.BOLD)
+            putString("text", TextInfo.toJsonString(
+                TextInfo.literal(tier.name)
+                    .formatted(tier.formatting)
+                    .apply { bold = true }
             ))
             putString("billboard", "fixed")
             putString("alignment", "center")
@@ -54,13 +56,13 @@ fun MenuComponent.registerItemDistribution(
 
         registerEntity(EntityType.TEXT_DISPLAY, position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0)) {
             val color = when {
-                itemDistribution.sum() == 25 -> Formatting.WHITE
-                itemDistribution.sum() < 25 -> Formatting.YELLOW
-                else -> Formatting.RED
+                itemDistribution.sum() == 25 -> TextColor.WHITE
+                itemDistribution.sum() < 25 -> TextColor.YELLOW
+                else -> TextColor.RED
             }
 
-            putString("text", Text.Serialization.toJsonString(
-                Text.literal(itemDistribution[i].toString())
+            putString("text", TextInfo.toJsonString(
+                TextInfo.literal(itemDistribution[i].toString())
                     .formatted(color)
             ))
 

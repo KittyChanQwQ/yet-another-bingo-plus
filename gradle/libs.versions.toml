@@ -4,6 +4,12 @@ insert-koin = "3.5.0"
 [libraries]
 insert-koin-core = { module = "io.insert-koin:koin-core", version.ref = "insert-koin" }
 insert-koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "insert-koin" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.0" }
 
 [bundles]
 insert-koin = ["insert-koin-core", "insert-koin-logger-slf4j"]
+
+[plugins]
+fabric-loom = { id = "fabric-loom", version = "1.4-SNAPSHOT" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "1.9.20" }
+kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "1.9.0" }

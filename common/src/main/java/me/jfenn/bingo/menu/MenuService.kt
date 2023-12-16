@@ -1,15 +1,17 @@
 package me.jfenn.bingo.menu
 
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.Sounds
+import me.jfenn.bingo.api.IStructureManager
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.card.TeamService
+import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.config.BlockPosition
 import me.jfenn.bingo.config.Config
 import me.jfenn.bingo.event.InteractionEntityEvents
 import me.jfenn.bingo.map.Color
 import me.jfenn.bingo.state.BingoContext
 import me.jfenn.bingo.state.GameState
+import me.jfenn.bingo.utils.text.TextInfo
 import me.jfenn.bingo.utils.toNbt
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.block.Blocks
@@ -18,28 +20,28 @@ import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.NbtIo
-import net.minecraft.nbt.NbtTagSizeTracker
 import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.structure.StructurePlacementData
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Vec3d
 import org.joml.Vector3f
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import kotlin.io.path.name
 import kotlin.system.measureTimeMillis
 
-object MenuService {
+object MenuService : KoinComponent {
 
     private val log = LoggerFactory.getLogger(this::class.java)
+
+    private val structureManager by inject<IStructureManager>()
 
     fun init() {
         GameState.PREGAME.onEnter {
@@ -81,9 +83,10 @@ object MenuService {
             .apply {
                 readNbt(NbtCompound().apply {
                     put("Pos", position.add(0.0, 1.5, 0.0).toNbt())
-                    putString("text", Text.Serialization.toJsonString(
-                        Text.literal("${team.name} Team")
-                            .formatted(team.formatting, Formatting.BOLD)
+                    putString("text", TextInfo.toJsonString(
+                        TextInfo.literal("${team.name} Team")
+                            .formatted(team.textColor)
+                            .bold()
                     ))
                     putString("billboard", "vertical")
                     putString("alignment", "center")
@@ -97,8 +100,8 @@ object MenuService {
             .apply {
                 readNbt(NbtCompound().apply {
                     put("Pos", position.add(0.0, 1.0, 0.0).toNbt())
-                    putString("text", Text.Serialization.toJsonString(
-                        Text.literal("Click to join!")
+                    putString("text", TextInfo.toJsonString(
+                        TextInfo.literal("Click to join!")
                     ))
                     putString("billboard", "vertical")
                     putString("alignment", "center")
@@ -154,8 +157,7 @@ object MenuService {
                     ?: throw RuntimeException("Unable to obtain lobby.nbt resource")
             }
 
-        val lobbyNbt = lobbyFileStream.use { NbtIo.readCompressed(it, NbtTagSizeTracker(Long.MAX_VALUE, 512)) }
-        placeStructure(lobbyWorld, BlockPos(0, 24, 0), lobbyNbt)
+        structureManager.placeStructure(lobbyWorld, BlockPosition(0, 25, 0), lobbyFileStream)
 
         // Search for team join entities
         for (x in -24..24) {

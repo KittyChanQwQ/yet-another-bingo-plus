@@ -4,12 +4,10 @@ import me.jfenn.bingo.NBT_BINGO_IGNORE
 import me.jfenn.bingo.NBT_BINGO_VANISH
 import me.jfenn.bingo.card.BingoTeam
 import me.jfenn.bingo.state.BingoContext
-import net.minecraft.item.FilledMapItem
+import me.jfenn.bingo.utils.text.TextInfo
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 
 object MapItemService {
 
@@ -20,9 +18,10 @@ object MapItemService {
             putBoolean(NBT_BINGO_IGNORE, true)
             putBoolean(NBT_BINGO_VANISH, true)
             put("display", NbtCompound().apply {
-                putString("Name", Text.Serialization.toJsonString(
-                    Text.literal("Bingo Card (${team.name.lowercase()})")
-                        .formatted(team.formatting, Formatting.ITALIC)
+                putString("Name", TextInfo.toJsonString(
+                    TextInfo.literal("Bingo Card (${team.name.lowercase()})")
+                        .formatted(team.textColor)
+                        .apply { italic = true }
                 ))
             })
         }

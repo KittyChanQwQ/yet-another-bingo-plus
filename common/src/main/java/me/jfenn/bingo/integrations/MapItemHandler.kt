@@ -13,6 +13,7 @@ import net.minecraft.item.BlockItem
 import net.minecraft.item.BoatItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
@@ -55,6 +56,7 @@ object MapItemHandler {
 
     fun init() {
         UseItemCallback.EVENT.register { player, world, hand ->
+            if (player !is ServerPlayerEntity) return@register TypedActionResult.pass(null)
             val ctx = player.server?.let { Bingo.getContext(it) } ?: return@register TypedActionResult.pass(null)
             val itemStack = player.getStackInHand(hand)
             val team = BingoTeam.fromPlayer(player) ?: return@register TypedActionResult.pass(itemStack)

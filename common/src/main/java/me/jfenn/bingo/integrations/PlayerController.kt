@@ -1,10 +1,11 @@
 package me.jfenn.bingo.integrations
 
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.NBT_BINGO_IGNORE
 import me.jfenn.bingo.NBT_BINGO_VANISH
 import me.jfenn.bingo.Sounds
+import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.card.BingoTeam
+import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.map.MapItemService
 import me.jfenn.bingo.spawn.SpawnService
 import me.jfenn.bingo.state.BingoContext
@@ -12,7 +13,6 @@ import me.jfenn.bingo.state.GameState
 import me.jfenn.bingo.utils.allHeldStacks
 import me.jfenn.bingo.utils.allInventorySlots
 import me.jfenn.bingo.utils.giveOrEquipStack
-import me.jfenn.bingo.utils.runSilentCommand
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.item.FilledMapItem
@@ -26,6 +26,8 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 /**
  * Controls player gamemode, status, and inventory setup.
@@ -39,7 +41,9 @@ import net.minecraft.world.GameRules
  * Needs to additionally ensure that the state is re-applied on
  * login, as players could miss game state transitions by logging out.
  */
-object PlayerController {
+object PlayerController : KoinComponent {
+
+    private val advancementManager by inject<IAdvancementManager>()
 
     /**
      * Ensure that the player has their team's bingo map card.
@@ -150,14 +154,7 @@ object PlayerController {
             player.unlockRecipes(ctx.server.recipeManager.values())
 
         // reset advancements state
-        // The yarn mappings for these APIs conflict between versions, so we're using the command for this instead
-        // for (advancement in minecraftServer.advancementLoader.advancements) {
-        //     val progress = player.advancementTracker
-        //     for (criteria in progress.obtainedCriteria) {
-        //         player.advancementTracker.revokeCriterion(advancement, criteria)
-        //     }
-        // }
-        ctx.server.runSilentCommand("advancement revoke ${player.nameForScoreboard} everything")
+        advancementManager.clearAdvancements(player)
 
         // teleport the player to their spawnpoint
         SpawnService.teleportPlayer(ctx, player)

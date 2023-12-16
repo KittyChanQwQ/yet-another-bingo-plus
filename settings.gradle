@@ -24,3 +24,5 @@ dependencyResolutionManagement {
 rootProject.name = "bingo"
 include 'common'
 include 'bingo-1.20.4'
+include 'bingo-1.20.2'
+
