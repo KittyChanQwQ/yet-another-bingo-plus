@@ -8,7 +8,7 @@ tasks.register("modrinth") {
 	dependsOn(
 			subprojects.collect {
 				it.tasks.find { it.name == "modrinth" }
-			}
+			}.findAll { it != null }
 	)
 }
 

@@ -15,13 +15,23 @@ Test:
   script:
     - GRADLE_USER_HOME="$(pwd)/.gradle"
     - export GRADLE_USER_HOME
-    - gradle --build-cache test
+    - gradle --build-cache build
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
       - build
       - .gradle
+  rules:
+    - changes:
+        - '**/*.kt'
+        - '**/*.java'
+        - '**/*.gradle'
+        - '**/*.json'
+        - .gitlab-ci.yml
+  artifacts:
+    paths:
+      - mc*/build/libs/*.jar
 
 GitLab Pages:
   stage: test
@@ -48,23 +58,6 @@ GitLab Pages:
         - .gitlab-ci.yml
       allow_failure: true
 
-Build:
-  stage: build
-  image: gradle:alpine
-  script:
-    - GRADLE_USER_HOME="$(pwd)/.gradle"
-    - export GRADLE_USER_HOME
-    - gradle --build-cache build
-  cache:
-    key: "$CI_COMMIT_REF_NAME"
-    policy: push
-    paths:
-      - build
-      - .gradle
-  artifacts:
-    paths:
-      - mc*/build/libs/*.jar
-
 Sync README:
   stage: deploy
   image: gradle:alpine
@@ -80,6 +73,8 @@ Sync README:
       - .gradle
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - README.md
 
 Build and Deploy:
   stage: deploy
@@ -95,8 +90,7 @@ Build and Deploy:
       - build
       - .gradle
   rules:
-    - if: '$CI_COMMIT_TAG' # Any tag is created
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_BRANCH == "main"' # Any tag is created
   artifacts:
     paths:
       - mc*/build/libs/*.jar
