@@ -4,6 +4,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.spawn.SpawnItem
+import net.minecraft.server.MinecraftServer
+import net.minecraft.world.GameRules
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 

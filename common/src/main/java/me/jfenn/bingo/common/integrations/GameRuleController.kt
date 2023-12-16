@@ -1,6 +1,9 @@
 package me.jfenn.bingo.common.integrations
 
+import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.state.GameState
+import net.minecraft.server.MinecraftServer
 import net.minecraft.world.GameRules
 
 /**
@@ -10,6 +13,16 @@ import net.minecraft.world.GameRules
  */
 object GameRuleController {
 
+    fun readFromServer(server: MinecraftServer, config: BingoConfig) {
+        config.isPvpEnabled = server.isPvpEnabled
+        config.isKeepInventory = server.gameRules.get(GameRules.KEEP_INVENTORY).get()
+    }
+
+    fun writeToServer(server: MinecraftServer, config: BingoConfig) {
+        server.isPvpEnabled = config.isPvpEnabled
+        server.gameRules.get(GameRules.KEEP_INVENTORY).set(config.isKeepInventory, server)
+    }
+
     fun init() {
         GameState.PREGAME.onEnter {
             // remove overworld spawn tickets
@@ -18,6 +31,16 @@ object GameRuleController {
             // hide spammy messages in the lobby
             server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(false, server)
             server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(false, server)
+
+            // set up server with the initial config game rules
+            writeToServer(server, config)
+        }
+
+        Bingo.onUpdateTick {
+            if (state.state == GameState.PLAYING) {
+                // update config with the current game rules (in case /gamerule is used mid-game)
+                readFromServer(server, config)
+            }
         }
 
         GameState.PLAYING.onEnter { prevState ->
