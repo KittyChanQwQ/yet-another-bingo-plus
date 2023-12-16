@@ -10,12 +10,13 @@ import net.minecraft.item.ItemStack
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.Slot
+import org.koin.core.component.KoinComponent
 
 class InventoryScreenHandler(
     syncId: Int,
     stacks: List<ItemStack>,
     playerInventory: PlayerInventory,
-) : ScreenHandler(ScreenHandlerType.GENERIC_9X3, syncId) {
+) : ScreenHandler(ScreenHandlerType.GENERIC_9X3, syncId), KoinComponent {
 
     val inventory = SimpleInventory(9*3)
 
@@ -88,7 +89,8 @@ class InventoryScreenHandler(
     override fun onClosed(player: PlayerEntity?) {
         super.onClosed(player)
         onClose(
-            inventory.heldStacks.toList()
+            (0 until inventory.size())
+                .map { inventory.getStack(it) }
                 .filter { !it.isEmpty }
         )
     }

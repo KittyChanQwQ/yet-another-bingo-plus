@@ -1,0 +1,22 @@
+plugins {
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    maven {
+        name = 'Fabric'
+        url = 'https://maven.fabricmc.net/'
+    }
+    maven {
+        name = 'Modrinth'
+        url = "https://api.modrinth.com/maven"
+    }
+    gradlePluginPortal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:1.9.20"
+    implementation "fabric-loom:fabric-loom.gradle.plugin:1.4-SNAPSHOT"
+    implementation "com.modrinth.minotaur:com.modrinth.minotaur.gradle.plugin:2.8.7"
+}

@@ -1,14 +1,15 @@
 # Yet Another Minecraft BINGO
 
-[![Available on Modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/modrinth_vector.svg)](https://modrinth.com/mod/yet-another-minecraft-bingo)
 [![Requires Fabric API](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/requires/fabric-api_vector.svg)](https://modrinth.com/mod/fabric-api)
+[![Available on GitLab](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/gitlab_vector.svg)](https://gitlab.com/horrific-tweaks/bingo)
+[![Available on Modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/modrinth_vector.svg)](https://modrinth.com/mod/yet-another-minecraft-bingo)
 
 This is a server-side BINGO item hunt mod + lobby, intended for use with vanilla clients. Clients do not need to install
 any mods or resource packs to join; this only needs to be installed on the server (along with [fabric-api](https://modrinth.com/mod/fabric-api)).
 
-> ⚠⚠⚠ **WARNING** ⚠⚠⚠
+> ⚠️⚠️⚠️ **WARNING** ⚠️⚠️⚠️
 >
-> This mod **deletes the world folder on startup**! It is meant to be hosted on a dedicated server for short, temporary
+> This mod **deletes the world folder** when installed! It is meant to be hosted on a dedicated server for short, temporary
 games. Make sure this is not installed on an existing world or you _will_ lose your data!
 
 Recommended mods (optional, but have been tested for compatibility):

@@ -1,11 +1,6 @@
 pluginManagement {
     repositories {
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
         gradlePluginPortal()
-        mavenCentral()
     }
 }
 
@@ -15,14 +10,12 @@ plugins {
 
 dependencyResolutionManagement {
     versionCatalogs {
-        libs {
-            // from(files("./gradle/libs.versions.toml"))
-        }
+        libs
     }
 }
 
 rootProject.name = "bingo"
 include 'common'
-include 'bingo-1.20.4'
-include 'bingo-1.20.2'
+include 'mc1.20.2'
+include 'mc1.20.4'
 
