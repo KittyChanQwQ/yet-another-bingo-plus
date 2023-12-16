@@ -9,3 +9,11 @@ dependencies {
     implementation libs.kotlinx.serialization.json
     include libs.kotlinx.serialization.json
 }
+
+tasks.register('unzipImages', Copy) {
+    from zipTree(file("images.zip"))
+    into file("src/main/resources/bingo/images")
+}
+
+tasks.processResources.dependsOn(tasks.unzipImages)
+tasks.sourcesJar.dependsOn(tasks.unzipImages)
