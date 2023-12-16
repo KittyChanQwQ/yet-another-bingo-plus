@@ -28,12 +28,15 @@ object CoordsCommand : KoinComponent {
     data class CoordinatesEntry(
         val player: String,
         val pos: BlockPosition,
+        val dimension: String,
         val message: String?,
         val created: Instant,
     ) {
 
         fun formatText(): String {
-            return with(pos) { "[$x, $y, $z] " } + (message ?: "")
+            return with(pos) { "[$x, $y, $z] " } +
+                    ("($dimension) ".takeIf { dimension != "overworld" } ?: "") +
+                    (message ?: "")
         }
 
     }
@@ -42,6 +45,7 @@ object CoordsCommand : KoinComponent {
         val entry = CoordinatesEntry(
             player = scoreboardManager.getPlayerName(player),
             pos = BlockPosition.fromBlockPos(player.blockPos),
+            dimension = player.world.registryKey.value.path.removePrefix("the_"),
             message = message,
             created = Clock.System.now(),
         )
