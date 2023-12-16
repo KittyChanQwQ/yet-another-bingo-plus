@@ -10,7 +10,7 @@
 # https://github.com/gradle/gradle
 
 Test:
-  stage: build
+  stage: test
   image: gradle:alpine
   script:
     - GRADLE_USER_HOME="$(pwd)/.gradle"
@@ -24,7 +24,7 @@ Test:
       - .gradle
 
 GitLab Pages:
-  stage: build
+  stage: test
   image: node:18.12.1
   cache:
     key: npm
@@ -47,6 +47,23 @@ GitLab Pages:
         - docs/**/*
         - .gitlab-ci.yml
       allow_failure: true
+
+Build:
+  stage: build
+  image: gradle:alpine
+  script:
+    - GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export GRADLE_USER_HOME
+    - gradle --build-cache build
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - build
+      - .gradle
+  artifacts:
+    paths:
+      - mc*/build/libs/*.jar
 
 Sync README:
   stage: deploy
