@@ -327,4 +327,6 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   # - zombified_piglin_head
 done
 
+zip -j $(realpath $SCRIPT_DIR/../common/images.zip) $OUT_DIR/*.png
+
 popd

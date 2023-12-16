@@ -26,11 +26,7 @@ build:
     paths:
       - bingo-*/build/libs/*.jar
   rules:
-    - changes:
-        - ./*.*
-        - src/**/*
-        - .gitlab-ci.yml
-      allow_failure: true
+    - allow_failure: true
 
 pages:
   stage: deploy
