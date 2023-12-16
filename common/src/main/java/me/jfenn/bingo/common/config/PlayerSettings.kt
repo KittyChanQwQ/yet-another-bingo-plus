@@ -1,0 +1,11 @@
+package me.jfenn.bingo.common.config
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class PlayerSettings(
+    var bossbar: Boolean = false,
+    var scoreboard: Boolean = true,
+    var leadingMessages: Boolean = true,
+    var scoreMessages: Boolean = true,
+)

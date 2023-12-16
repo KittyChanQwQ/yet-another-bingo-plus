@@ -29,7 +29,7 @@ ITEMS_FILE="$(realpath $SCRIPT_DIR/data/items.json)"
 IMAGE_MASK_DIR="$(realpath $SCRIPT_DIR/data/masks)"
 IMAGE_OVERRIDE_DIR="$(realpath $SCRIPT_DIR/data/images)"
 
-OUT_DIR="$(realpath $SCRIPT_DIR/../src/main/resources/bingo/images)"
+OUT_DIR="$(realpath $SCRIPT_DIR/../common/src/main/resources/bingo/images)"
 mkdir -p $OUT_DIR
 
 # get a file path to an image from the provided texture id
