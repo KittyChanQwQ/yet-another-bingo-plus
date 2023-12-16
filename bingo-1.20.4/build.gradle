@@ -34,7 +34,10 @@ dependencies {
     include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    implementation libs.bundles.insert.koin
+    implementation libs.insert.koin.core
+    include libs.insert.koin.core
+    implementation libs.insert.koin.logger.slf4j
+    include libs.insert.koin.logger.slf4j
 
     api project(path: ":common", configuration: "namedElements")
     include project(':common')

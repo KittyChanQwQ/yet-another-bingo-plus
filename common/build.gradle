@@ -39,8 +39,10 @@ dependencies {
     include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
+    implementation libs.insert.koin.core
+
     implementation libs.kotlinx.serialization.json
-    implementation libs.bundles.insert.koin
+    include libs.kotlinx.serialization.json
 }
 
 test {
