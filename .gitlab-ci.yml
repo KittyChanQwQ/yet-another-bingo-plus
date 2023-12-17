@@ -9,6 +9,10 @@
 # https://gradle.org/
 # https://github.com/gradle/gradle
 
+stages:
+  - test
+  - deploy
+
 Test:
   stage: test
   image: gradle:alpine
@@ -33,29 +37,13 @@ Test:
     paths:
       - mc*/build/libs/*.jar
 
-GitLab Pages:
+minecraft.horrific.dev:
   stage: test
-  image: node:18.12.1
-  cache:
-    key: npm
-    policy: pull-push
-    paths:
-      - .npm/
-  script:
-    - pushd docs
-    - npm ci --cache ../.npm --prefer-offline
-    - npm run docs:build
-    - popd
-    - rm -rf public
-    - mv docs/.vitepress/dist public
-  artifacts:
-    paths:
-      - public
+  trigger: horrific-tweaks/minecraft.horrific.dev
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - docs/**/*
-        - .gitlab-ci.yml
       allow_failure: true
 
 Sync README:
@@ -90,7 +78,7 @@ Build and Deploy:
       - build
       - .gradle
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG =~ /^release\/.*/
   artifacts:
     paths:
       - mc*/build/libs/*.jar

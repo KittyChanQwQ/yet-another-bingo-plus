@@ -18,7 +18,7 @@ export default defineConfig({
       pattern: "https://gitlab.com/horrific-tweaks/bingo/-/blob/main/docs/:path",
     },
     nav: [
-      { text: 'Documentation', link: '/config' },
+      { text: "Modrinth", link: "https://modrinth.com/mod/yet-another-minecraft-bingo" },
       {
         text: 'Links',
         items: [
