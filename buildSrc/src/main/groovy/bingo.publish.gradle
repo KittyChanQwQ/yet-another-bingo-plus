@@ -9,7 +9,7 @@ modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = "yet-another-minecraft-bingo"
     versionNumber = version
-    versionName = "BINGO ${project.mod_version} for Minecraft ${project.minecraft_version}"
+    versionName = "[${project.minecraft_version}] Yet Another BINGO ${project.mod_version}"
     versionType = "release"
     changelog = rootProject.file("CHANGELOG.md").text
     uploadFile = remapJar

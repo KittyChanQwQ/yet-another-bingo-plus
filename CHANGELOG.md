@@ -1,6 +1,7 @@
 ### New Features:
 
-- I've added split versions for 1.20.2 and 1.20.4, so both will continue to get new updates!
+- I've added split versions for 1.20.2 and 1.20.4 so that both can continue to get new updates.
+  If you're upgrading from the last 1.20.2 version, check the previous release notes for all the changes!
 
 - The `/coords` command now also prints the dimension if used in the nether/end.
 
