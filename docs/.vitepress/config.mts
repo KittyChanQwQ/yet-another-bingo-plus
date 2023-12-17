@@ -57,7 +57,4 @@ export default defineConfig({
         { icon: "discord", link: "https://discord.horrific.dev" },
     ],
   },
-  markdown: {
-    math: true,
-  },
 })

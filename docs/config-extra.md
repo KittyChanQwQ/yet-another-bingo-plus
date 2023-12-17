@@ -22,7 +22,7 @@ Specifies whether changes to the game configuration should persist in the file. 
 
 Determines the minimum blocks apart that team spawns should be placed from each other. (which is usually much greater than whatever value it's set to)
 
-This is approximated by placing each team in a circle with a radius of $distance \times count \times \frac{1}{2\pi}$ from the origin, and then finding an appropriate spawn outwards from that point.
+This is approximated by placing each team in a circle with a radius of `distance * count * 0.5 * PI` from the origin, and then finding an appropriate spawn outwards from that point.
 
 ## `"excludeSpawnKitItemsFromCards"`
 (default: true)
