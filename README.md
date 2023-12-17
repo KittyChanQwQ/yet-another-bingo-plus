@@ -52,7 +52,7 @@ to use the mod; it should run out of the box.
 The items used to generate bingo card items at different tiers can be customized in the `*.tierlist.json` files. Once
 placed in the `./config/bingo/` directory, they can be enabled in-game using the "Tier List" menu.
 
-> There's a nifty [configuration tool](https://horrific-tweaks.gitlab.io/bingo/tier-editor.html) I've set up that'll let you
+> There's a nifty [configuration tool](https://minecraft.horrific.dev/bingo/tier-editor.html) I've set up that'll let you
 > change these tier lists in a drag-and-drop interface rather than editing the files in text.
 >
 > It's still a bit finicky, but helps prevent typos and misclicks/etc...
