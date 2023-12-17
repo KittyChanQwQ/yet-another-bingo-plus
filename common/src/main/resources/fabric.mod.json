@@ -20,9 +20,9 @@
     "fabric-api": "*"
   },
   "contact": {
-    "homepage": "https://horrific-tweaks.gitlab.io/bingo/",
+    "homepage": "https://minecraft.horrific.dev/bingo/",
     "sources": "https://gitlab.com/horrific-tweaks/bingo/",
-    "issues": "https://gitlab.com/horrific-tweaks/bingo/issues/"
+    "issues": "https://gitlab.com/horrific-tweaks/bingo/-/issues/"
   },
   "authors": [
     "fennifith"
