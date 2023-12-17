@@ -72,7 +72,7 @@ Sync README:
       - build
       - .gradle
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - README.md
 
@@ -90,7 +90,7 @@ Build and Deploy:
       - build
       - .gradle
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^release\/\d+\.\d+\.\d+.*/' # Any tag is created matching "release/#.#.#"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   artifacts:
     paths:
       - mc*/build/libs/*.jar
