@@ -30,7 +30,7 @@ object JoinCommand {
 
                                     if (context.state.state == GameState.PLAYING) {
                                         // if a player's team is changed in-game, move them to their new spawnpoint
-                                        PlayerController.resetPlayer(context, player)
+                                        PlayerController.updateGameMode(context, player, forceReset = true)
                                     }
                                     1
                                 }

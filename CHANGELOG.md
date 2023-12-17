@@ -9,3 +9,5 @@
 - Fixed the inventory desync issues when a player drops another team's map after the game has ended. 
 
 - Fixed the "KeepInv" feature not showing up on the scoreboard if turned on with the `/gamerule` command.
+
+- Fixed the `/join` command not updating a player's gamemode when used in-game.
