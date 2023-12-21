@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.common.Bingo
@@ -21,6 +22,9 @@ import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.item.Items
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.text.Text
+import net.minecraft.text.Texts
+import net.minecraft.util.Formatting
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.minutes
 
@@ -197,6 +201,42 @@ object BingoCommands {
                                 TeamService.shuffleTeams(context, teams)
 
                                 ctx.source.player?.sendInfoMessage("Teams have been shuffled!")
+                                1
+                            }
+                    )
+            )
+            .then(
+                // show or set the current BINGO card seed
+                LiteralArgumentBuilder.literal<ServerCommandSource>("seed")
+                    .requirePermission(2)
+                    .executes { ctx ->
+                        val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+
+                        ctx.source.sendMessage(
+                            Text.empty()
+                                .append("ℹ  The current Bingo Card seed is: ")
+                                .append(Texts.bracketedCopyable(context.state.seed.toString()))
+                                .formatted(Formatting.AQUA)
+                        )
+                        1
+                    }
+                    .then(
+                        RequiredArgumentBuilder.argument<ServerCommandSource, Long>(
+                            "seed",
+                            LongArgumentType.longArg(),
+                        )
+                            .requireState(GameState.PREGAME, GameState.PLAYING)
+                            .executes { ctx ->
+                                val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                                context.state.seed = LongArgumentType.getLong(ctx, "seed")
+                                BingoCardController.rollCard(context)
+
+                                ctx.source.sendMessage(
+                                    Text.empty()
+                                        .append("ℹ  Changed the Bingo Card seed to: ")
+                                        .append(Texts.bracketedCopyable(context.state.seed.toString()))
+                                        .formatted(Formatting.AQUA)
+                                )
                                 1
                             }
                     )
