@@ -42,6 +42,10 @@ sealed class SerializedPersistentState: PersistentState() {
         }
     }
 
+    override fun isDirty(): Boolean {
+        return true
+    }
+
     override fun writeNbt(nbt: NbtCompound): NbtCompound {
         val string = json.encodeToString(this)
         val compound = StringNbtReader(StringReader(string)).parseCompound()
