@@ -173,7 +173,7 @@ object MapRenderService {
 
                 // draw an X if the item is locked (if BingoMode.LOCKOUT)
                 if (imgX in imgY..imgY+1 || (TILE_IMAGE - imgY) in imgX..imgX+1) {
-                    if (config.isLockoutMode && item.teams.isNotEmpty() && (team ==  null || !item.hasAchieved(team))) {
+                    if (config.isLockoutMode && item.teams.isNotEmpty() && team != null && !item.hasAchieved(team)) {
                         state.colors[i] = COLOR_LOCKED.asByte
                         continue
                     }
