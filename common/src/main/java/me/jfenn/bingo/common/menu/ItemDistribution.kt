@@ -13,6 +13,7 @@ fun MenuComponent.registerItemDistribution(
     position: Vec3d,
     itemDistributionProp: MutableProperty<List<Int>>,
     requiredPermissionLevel: Int = 2,
+    onUpdate: () -> Unit,
 ) {
     var itemDistribution by itemDistributionProp
 
@@ -29,6 +30,7 @@ fun MenuComponent.registerItemDistribution(
             itemDistribution = itemDistribution.toMutableList().apply {
                 set(i, (itemDistribution[i] + 1).coerceAtMost(25))
             }
+            onUpdate()
         }
 
         registerButton(
@@ -40,6 +42,7 @@ fun MenuComponent.registerItemDistribution(
             itemDistribution = itemDistribution.toMutableList().apply {
                 set(i, (itemDistribution[i] - 1).coerceAtLeast(0))
             }
+            onUpdate()
         }
 
         registerEntity(EntityType.TEXT_DISPLAY, position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {

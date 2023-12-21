@@ -17,15 +17,14 @@ Test:
   stage: test
   image: gradle:alpine
   script:
-    - GRADLE_USER_HOME="$(pwd)/.gradle"
-    - export GRADLE_USER_HOME
+    - export GRADLE_USER_HOME="$(pwd)/.gradle"
     - gradle --build-cache build
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: push
+    policy: pull-push
     paths:
-      - build
-      - .gradle
+      - .gradle/wrapper
+      - .gradle/caches
   rules:
     - changes:
         - '**/*.kt'
@@ -50,15 +49,14 @@ Sync README:
   stage: deploy
   image: gradle:alpine
   script:
-    - GRADLE_USER_HOME="$(pwd)/.gradle"
-    - export GRADLE_USER_HOME
+    - export GRADLE_USER_HOME="$(pwd)/.gradle"
     - gradle --build-cache modrinthSyncBody
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: push
+    policy: pull-push
     paths:
-      - build
-      - .gradle
+      - .gradle/wrapper
+      - .gradle/caches
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
@@ -68,15 +66,14 @@ Build and Deploy:
   stage: deploy
   image: gradle:alpine
   script:
-    - GRADLE_USER_HOME="$(pwd)/.gradle"
-    - export GRADLE_USER_HOME
+    - export GRADLE_USER_HOME="$(pwd)/.gradle"
     - gradle --build-cache modrinth
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: push
+    policy: pull-push
     paths:
-      - build
-      - .gradle
+      - .gradle/wrapper
+      - .gradle/caches
   rules:
     - if: $CI_COMMIT_TAG =~ /^release\/.*/
   artifacts:

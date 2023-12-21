@@ -4,8 +4,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.spawn.SpawnItem
-import net.minecraft.server.MinecraftServer
-import net.minecraft.world.GameRules
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -41,7 +39,10 @@ data class BingoConfig(
     var showLeadingTeam: Boolean = true,
 
     // bingo card settings
-    var drawOtherTeamCompletions: Boolean = false,
+    @OptIn(ExperimentalSerializationApi::class)
+    @JsonNames("drawOtherTeamCompletions")
+    var showOtherTeamCompletions: Boolean = false,
+    var showPreviewCard: Boolean = false,
 
     // adds BINGO_IGNORE to spawn kit items, preventing them from being scored
     var preventScoringSpawnKitItems: Boolean = false,

@@ -47,7 +47,8 @@ object TierListService {
     fun getTierLists(names: List<String>): TierListConfig {
         var config = TierListConfig.EMPTY
 
-        names.mapNotNull { getTierList(it) }
+        names.sorted()
+            .mapNotNull { getTierList(it) }
             .forEach { config = config.combine(it) }
 
         return config

@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.random.Random
 
 @Serializable
 data class TierListConfig(
@@ -40,7 +41,7 @@ data class TierListConfig(
         )
     }
 
-    fun pick(distribution: List<Int>, excludingItems: Set<String>): List<String> {
+    fun pick(distribution: List<Int>, excludingItems: Set<String>, random: Random): List<String> {
         val excluding = excludingItems.toMutableSet()
         val ret = mutableListOf<String>()
 
@@ -51,7 +52,7 @@ data class TierListConfig(
 
             // choose random items up to the expected count...
             var countAdded = 0
-            for (item in items.shuffled()) {
+            for (item in items.shuffled(random)) {
                 if (countAdded >= count) break
                 // skip excluded items
                 if (excluding.contains(item)) continue

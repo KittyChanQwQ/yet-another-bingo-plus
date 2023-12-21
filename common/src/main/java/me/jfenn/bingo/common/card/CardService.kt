@@ -3,18 +3,20 @@ package me.jfenn.bingo.common.card
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.TierList
 import me.jfenn.bingo.common.config.TierListService
+import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.Registries
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
+import kotlin.random.Random
 
 object CardService {
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    fun generate(config: BingoConfig): BingoCard {
+    fun generate(config: BingoConfig, seed: Long): BingoCard {
         val dist = config.itemDistribution
         assert(dist.size == TierList.entries.size) { "Item distribution does not match the number of tiers (${TierList.entries.size})!" }
         assert(dist.sum() <= 25) { "Item distribution exceeds 25!" }
@@ -34,8 +36,11 @@ object CardService {
             }
         } else emptySet()
 
+        val random = Random(seed)
+        log.info("Using random BINGO card seed: $seed")
+
         val tiers = TierListService.getTierLists(config.tierLists)
-        val items: MutableList<BingoCardEntry> = tiers.pick(dist, excludedItems)
+        val items: MutableList<BingoCardEntry> = tiers.pick(dist, excludedItems, random)
             .mapNotNull { parseIdentifier(it) }
             .map { BingoCardEntry.ItemEntry(it) }
             .toMutableList()
@@ -49,7 +54,7 @@ object CardService {
         while (items.size < 25)
             items.add(BingoCardEntry.FreeSpace)
 
-        items.shuffle()
+        items.shuffle(random)
         return BingoCard(items)
     }
 

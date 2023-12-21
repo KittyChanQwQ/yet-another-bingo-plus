@@ -13,10 +13,12 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.utils.formatString
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import kotlin.random.Random
 import kotlin.time.Duration
 
 @Serializable
 data class BingoState(
+    var seed: Long = Random.nextLong(),
     var state: GameState = GameState.PREGAME,
     var startedAt: Instant? = null,
     var updatedAt: Instant? = null,
@@ -28,8 +30,17 @@ data class BingoState(
     var teamSpawnpoints: MutableMap<BingoTeam, BlockPosition> = mutableMapOf(),
     val teamChatCoordinates: MutableMap<BingoTeam, MutableList<CoordsCommand.CoordinatesEntry>> = mutableMapOf(),
     val teamMapIds: MutableMap<BingoTeam, Int> = mutableMapOf(),
-    var card: BingoCard = CardService.generate(config),
+    var previewMapId: Int? = null,
+    var card: BingoCard = CardService.generate(config, seed),
 ) : SerializedPersistentState() {
+
+    fun getPreviewMapId(ctx: BingoContext): Int {
+        return previewMapId ?: run {
+            val id = ctx.server.overworld.nextMapId
+            previewMapId = id
+            id
+        }
+    }
 
     fun changeState(ctx: BingoContext, newState: GameState) {
         val prevState = this.state

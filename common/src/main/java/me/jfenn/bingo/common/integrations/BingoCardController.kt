@@ -12,26 +12,34 @@ import me.jfenn.bingo.common.state.GameState
 object BingoCardController {
 
     fun rollCard(ctx: BingoContext) {
-        ctx.state.card = CardService.generate(ctx.config)
+        if (!ctx.config.isValid()) return
 
-        // update the card map images
-        for (team in BingoTeam.entries) {
-            MapRenderService.update(ctx, team)
+        ctx.state.card = CardService.generate(ctx.config, ctx.state.seed)
+
+        if (ctx.state.state == GameState.PREGAME) {
+            // if in pregame, update the preview card!
+            MapRenderService.update(ctx, team = null, teamMapId = ctx.state.getPreviewMapId(ctx))
+        }
+
+        if (ctx.state.state == GameState.PLAYING) {
+            // update the card map images
+            for (team in BingoTeam.entries) {
+                MapRenderService.update(ctx, team)
+            }
         }
     }
 
     fun init() {
-        GameState.PLAYING.onEnter { prevState ->
-            // set up the BINGO card items / initial map render
-            if (prevState == GameState.PREGAME) {
-                rollCard(this)
-            } else {
-                // update all card map images
-                for (team in BingoTeam.entries) {
-                    MapRenderService.update(this, team)
-                }
-            }
+        GameState.PREGAME.onEnter {
+            // if in pregame, update the preview card!
+            MapRenderService.update(this, team = null, teamMapId = state.getPreviewMapId(this))
+        }
 
+        GameState.PLAYING.onEnter {
+            // update all card map images
+            for (team in BingoTeam.entries) {
+                MapRenderService.update(this, team)
+            }
         }
     }
 

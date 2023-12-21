@@ -11,6 +11,23 @@ import net.minecraft.nbt.NbtCompound
 
 object MapItemService {
 
+    fun createPreviewMapItem(ctx: BingoContext): ItemStack {
+        val item = ItemStack(Items.FILLED_MAP, 1)
+        item.getOrCreateNbt().apply {
+            putInt("map", ctx.state.getPreviewMapId(ctx))
+            putBoolean(NBT_BINGO_IGNORE, true)
+            putBoolean(NBT_BINGO_VANISH, true)
+            put("display", NbtCompound().apply {
+                putString("Name", TextInfo.toJsonString(
+                    TextInfo.literal("Preview Bingo Card")
+                        .apply { italic = true }
+                ))
+            })
+        }
+
+        return item
+    }
+
     fun createMapItem(ctx: BingoContext, team: BingoTeam): ItemStack {
         val item = ItemStack(Items.FILLED_MAP, 1)
         item.getOrCreateNbt().apply {

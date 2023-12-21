@@ -115,7 +115,7 @@ object ScoredItemCheck {
         }
 
         // update the team map(s)
-        if (ctx.config.isLockoutMode || ctx.config.drawOtherTeamCompletions) {
+        if (ctx.config.isLockoutMode || ctx.config.showOtherTeamCompletions) {
             // if the mode is LOCKOUT, all team cards need to be updated (to redraw locked items)
             for (team in BingoTeam.entries)
                 MapRenderService.update(ctx, team)

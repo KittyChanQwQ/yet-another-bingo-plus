@@ -19,6 +19,12 @@ fun MenuComponent.registerCardInfo(
     registerToggleButton(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
         text = "Team Outlines",
-        toggleProp = propertyRef(config::drawOtherTeamCompletions),
+        toggleProp = propertyRef(config::showOtherTeamCompletions),
+    )
+
+    registerToggleButton(
+        position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
+        text = "Preview Card",
+        toggleProp = propertyRef(config::showPreviewCard),
     )
 }

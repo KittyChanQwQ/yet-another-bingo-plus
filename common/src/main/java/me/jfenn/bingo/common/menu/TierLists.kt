@@ -9,6 +9,7 @@ import net.minecraft.util.math.Vec3d
 fun MenuComponent.registerTierLists(
     position: Vec3d,
     config: BingoConfig,
+    onUpdate: () -> Unit,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", "\"Tier Lists\"")
@@ -26,6 +27,7 @@ fun MenuComponent.registerTierLists(
                 if (isEnabled) config.tierLists = lists + listName
                 else config.tierLists = lists - listName
                 markDirty()
+                onUpdate()
             }
         )
 

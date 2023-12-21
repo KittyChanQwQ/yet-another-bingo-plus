@@ -4,12 +4,14 @@ import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.state.BingoContext
+import net.minecraft.item.FilledMapItem
 import net.minecraft.item.Item
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
 import java.io.InputStream
+import java.util.WeakHashMap
 import javax.imageio.ImageIO
 import kotlin.system.measureTimeMillis
 
@@ -38,7 +40,7 @@ object MapRenderService {
         val achieved: Array<Byte> = Array(16*16) { 0 },
     )
 
-    private val imageMap = mutableMapOf<Item, BingoTileImage?>()
+    private val imageMap = WeakHashMap<Item, BingoTileImage?>()
 
     fun validateItems() {
         for (item in Registries.ITEM.keys) {
@@ -91,14 +93,19 @@ object MapRenderService {
         }
     }
 
-    fun update(ctx: BingoContext, team: BingoTeam) = measureTimeMillis {
+    fun update(
+        ctx: BingoContext,
+        team: BingoTeam?,
+        teamColor: Byte = team?.color ?: 22,
+        teamMapId: Int = team?.getMapId(ctx) ?: ctx.state.getPreviewMapId(ctx),
+    ) = measureTimeMillis {
         val state = MapState.of(1, true, ctx.server.overworld.registryKey)
         val card = ctx.state.card
         val config = ctx.state.config
 
-        val borderLight = (team.color*4) + 2
-        val borderMid = (team.color*4) + 1
-        val borderDark = (team.color*4) + 3
+        val borderLight = (teamColor*4) + 2
+        val borderMid = (teamColor*4) + 1
+        val borderDark = (teamColor*4) + 3
 
         for (x in 0 until MAP_SIZE) {
             for (y in 0 until MAP_SIZE) {
@@ -124,7 +131,7 @@ object MapRenderService {
                 val item = card.entry(itemX, itemY)
 
                 // if the item has been captured, give it a different color
-                if (item.hasAchieved(team)) {
+                if (team != null && item.hasAchieved(team)) {
                     state.colors[i] = COLOR_ACHIEVED.asByte
                 }
 
@@ -141,7 +148,7 @@ object MapRenderService {
                 }
 
                 if (
-                    config.drawOtherTeamCompletions
+                    config.showOtherTeamCompletions
                     && item.hasAnyAchieved()
                     && (
                         tileX == 0
@@ -166,7 +173,7 @@ object MapRenderService {
 
                 // draw an X if the item is locked (if BingoMode.LOCKOUT)
                 if (imgX in imgY..imgY+1 || (TILE_IMAGE - imgY) in imgX..imgX+1) {
-                    if (config.isLockoutMode && item.teams.isNotEmpty() && !item.hasAchieved(team)) {
+                    if (config.isLockoutMode && item.teams.isNotEmpty() && (team ==  null || !item.hasAchieved(team))) {
                         state.colors[i] = COLOR_LOCKED.asByte
                         continue
                     }
@@ -174,15 +181,22 @@ object MapRenderService {
 
                 if (imgX in 0..TILE_IMAGE && imgY in 0..TILE_IMAGE) {
                     val tileImage = getTileImage(item) ?: continue
-                    val tileImageArray = if (item.hasAchieved(team)) tileImage.achieved else tileImage.regular
+                    val tileImageArray = when {
+                        team != null && item.hasAchieved(team) -> tileImage.achieved
+                        else -> tileImage.regular
+                    }
                     val tileImageIndex = imgX + imgY * TILE_IMAGE
 
                     if (imgX >= TILE_IMAGE || imgY >= TILE_IMAGE || tileImageArray[tileImageIndex] == 0.toByte()) {
                         if (imgX > 0 && imgY > 0) {
                             // image shadow
                             val prevIndex = (imgX-1) + (imgY-1) * TILE_IMAGE
-                            if (prevIndex in tileImageArray.indices && tileImageArray[prevIndex] != 0.toByte())
-                                state.colors[i] = if (item.hasAchieved(team)) COLOR_ACHIEVED_SHADOW.asByte else COLOR_ITEM_SHADOW.asByte
+                            if (prevIndex in tileImageArray.indices && tileImageArray[prevIndex] != 0.toByte()) {
+                                state.colors[i] = when {
+                                    team != null && item.hasAchieved(team) -> COLOR_ACHIEVED_SHADOW.asByte
+                                    else -> COLOR_ITEM_SHADOW.asByte
+                                }
+                            }
                         }
 
                         continue
@@ -195,9 +209,9 @@ object MapRenderService {
         }
 
         state.isDirty = false
-        ctx.server.overworld.putMapState(team.getMapName(ctx), state)
+        ctx.server.overworld.putMapState(FilledMapItem.getMapName(teamMapId), state)
     }.also {
-        log.info("Re-drawing ${team.getMapName(ctx)} for team ${team.name} (${it}ms)")
+        log.info("Re-drawing map_$teamMapId for team ${team?.name} (${it}ms)")
     }
 
 }

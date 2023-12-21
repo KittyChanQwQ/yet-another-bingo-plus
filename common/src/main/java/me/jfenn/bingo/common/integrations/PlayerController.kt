@@ -45,6 +45,22 @@ object PlayerController : KoinComponent {
 
     private val advancementManager by inject<IAdvancementManager>()
 
+    fun givePreviewCardItem(ctx: BingoContext, player: ServerPlayerEntity) {
+        val hasMap = player.allHeldStacks().any { MapItemService.isMapItem(it) }
+
+        if (!hasMap) {
+            val mapItem = MapItemService.createPreviewMapItem(ctx)
+            player.giveItemStack(mapItem)
+        }
+    }
+
+    fun removePreviewCardItem(ctx: BingoContext, player: ServerPlayerEntity) {
+        for ((slot, item) in player.allInventorySlots()) {
+            if (MapItemService.isMapItem(item) && FilledMapItem.getMapId(item) == ctx.state.getPreviewMapId(ctx))
+                player.inventory.removeStack(slot)
+        }
+    }
+
     /**
      * Ensure that the player has their team's bingo map card.
      * Has no effect if the player already has a card
@@ -245,6 +261,14 @@ object PlayerController : KoinComponent {
 
         Bingo.onGameTick {
             for (player in server.playerManager.playerList) {
+                if (state.state == GameState.PREGAME && player.isAlive) {
+                    if (config.showPreviewCard) {
+                        givePreviewCardItem(this, player)
+                    } else {
+                        removePreviewCardItem(this, player)
+                    }
+                }
+
                 if (state.state == GameState.PLAYING && player.isAlive) {
                     // give player a new map, if they don't have one?
                     giveMapCardItem(this, player)

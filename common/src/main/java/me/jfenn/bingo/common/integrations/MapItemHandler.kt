@@ -59,12 +59,11 @@ object MapItemHandler {
             if (player !is ServerPlayerEntity) return@register TypedActionResult.pass(null)
             val ctx = player.server?.let { Bingo.getContext(it) } ?: return@register TypedActionResult.pass(null)
             val itemStack = player.getStackInHand(hand)
-            val team = BingoTeam.fromPlayer(player) ?: return@register TypedActionResult.pass(itemStack)
 
             usedAnyItem.add(player.uuid)
 
             // if the item is the player's bingo map, open the item details chest
-            if (itemStack.item == Items.FILLED_MAP && itemStack.nbt?.getInt("map") == team.getMapId(ctx)) {
+            if (MapItemService.isMapItem(itemStack)) {
                 val otherItemStack = player.getStackInHand(when (hand) {
                     Hand.MAIN_HAND -> Hand.OFF_HAND
                     else -> Hand.MAIN_HAND

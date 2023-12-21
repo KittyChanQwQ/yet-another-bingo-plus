@@ -21,6 +21,7 @@ import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.item.Items
 import net.minecraft.server.command.ServerCommandSource
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.minutes
 
 object BingoCommands {
@@ -83,6 +84,7 @@ object BingoCommands {
 
                             context.config.itemDistribution = itemDist
                             context.menu?.markDirty()
+                            BingoCardController.rollCard(context)
                             ctx.source.player?.sendInfoMessage("Item distribution changed: $itemDist")
                             1
                         }
@@ -203,9 +205,12 @@ object BingoCommands {
                 // re-roll the bingo card in a round (operator only)
                 LiteralArgumentBuilder.literal<ServerCommandSource>("reroll")
                     .requirePermission(2)
-                    .requireState(GameState.PLAYING)
+                    .requireState(GameState.PREGAME, GameState.PLAYING)
                     .executes { ctx ->
                         val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                        // Change the BINGO seed to a new value
+                        context.state.seed = Random.nextLong()
+                        // Re-roll the card
                         BingoCardController.rollCard(context)
                         ctx.source.player?.sendInfoMessage("Card re-rolled.")
                         1

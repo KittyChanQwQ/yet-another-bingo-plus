@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.BingoGame
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.integrations.BingoCardController
 import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.util.math.Vec3d
@@ -47,11 +48,17 @@ fun MenuComponent.registerMenuPage(
             registerTierLists(
                 position = position.add(0.6, 0.0, 0.0),
                 config = ctx.config,
-            )
+            ) {
+                // when changed, re-roll the bingo card
+                BingoCardController.rollCard(ctx)
+            }
             registerItemDistribution(
                 position = position.add(3.0, 0.0, 0.0),
                 itemDistributionProp = itemDistributionProp,
-            )
+            ) {
+                // when changed, re-roll the bingo card
+                BingoCardController.rollCard(ctx)
+            }
         },
         component {
             registerScoreInfo(
