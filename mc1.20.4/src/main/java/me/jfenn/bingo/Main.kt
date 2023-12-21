@@ -14,6 +14,7 @@ object Main : ModInitializer {
 
     val mainModule = module {
         singleOf(::AdvancementManager) bind IAdvancementManager::class
+        singleOf(::PersistentStateManager) bind IPersistentStateManager::class
         singleOf(::ScoreboardManager) bind IScoreboardManager::class
         singleOf(::StructureManager) bind IStructureManager::class
         singleOf(::TeamManager) bind ITeamManager::class

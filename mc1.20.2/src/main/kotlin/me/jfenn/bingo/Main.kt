@@ -1,13 +1,7 @@
 package me.jfenn.bingo
 
-import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.api.IScoreboardManager
-import me.jfenn.bingo.api.IStructureManager
-import me.jfenn.bingo.api.ITeamManager
-import me.jfenn.bingo.impl.AdvancementManager
-import me.jfenn.bingo.impl.ScoreboardManager
-import me.jfenn.bingo.impl.StructureManager
-import me.jfenn.bingo.impl.TeamManager
+import me.jfenn.bingo.api.*
+import me.jfenn.bingo.impl.*
 import net.fabricmc.api.ModInitializer
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
@@ -20,6 +14,7 @@ object Main : ModInitializer {
 
     val mainModule = module {
         singleOf(::AdvancementManager) bind IAdvancementManager::class
+        singleOf(::PersistentStateManager) bind IPersistentStateManager::class
         singleOf(::ScoreboardManager) bind IScoreboardManager::class
         singleOf(::StructureManager) bind IStructureManager::class
         singleOf(::TeamManager) bind ITeamManager::class

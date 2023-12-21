@@ -4,16 +4,19 @@ import com.mojang.brigadier.StringReader
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import me.jfenn.bingo.api.IPersistentStateManager
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.utils.json
 import net.minecraft.nbt.*
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.PersistentState
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 @Serializable
 sealed class SerializedPersistentState: PersistentState() {
 
-    companion object {
+    companion object : KoinComponent {
 
         fun nbtToJson(nbt: NbtElement?): JsonElement {
             if (nbt == null) return JsonNull
@@ -32,20 +35,10 @@ sealed class SerializedPersistentState: PersistentState() {
             }
         }
 
-        inline fun <reified T: SerializedPersistentState> getType() = Type<T>(
-            { json.decodeFromString("{}") },
-            { nbt ->
-                val obj = nbtToJson(nbt)
-                json.decodeFromJsonElement(obj)
-            },
-            null,
-        )
+        val persistentStateManager by inject<IPersistentStateManager>()
 
         inline fun <reified T: SerializedPersistentState> fromWorld(world: ServerWorld): T {
-            val stateManager = world.persistentStateManager
-            val state = stateManager.getOrCreate(getType<T>(), MOD_ID)
-            state.markDirty()
-            return state
+            return persistentStateManager.getFromWorld(world, T::class, MOD_ID)
         }
     }
 
