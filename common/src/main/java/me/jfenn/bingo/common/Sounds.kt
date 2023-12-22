@@ -19,10 +19,11 @@ object Sounds {
     fun playTileCollected(ctx: BingoContext, team: BingoTeam) {
         for (player in ctx.server.playerManager.playerList) {
             if (team.includesPlayer(player)) {
+                val score = ctx.state.getTeamScore(team).items
                 player.playSound(
                     SoundEvents.ENTITY_PLAYER_LEVELUP,
                     SoundCategory.BLOCKS,
-                    1f, 2f
+                    1f, 1f + (score / 25f)
                 )
             } else {
                 player.playSound(
