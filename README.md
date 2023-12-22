@@ -77,7 +77,9 @@ BINGO commands (operator-only):
 - `/bingo timelimit <minutes>` sets the time limit of the game, in minutes (or "off")
 - `/bingo wincon <option>` sets the condition for a team to win
 - `/bingo itemdist <distribution...>` changes the item distribution used to generate the card
-- `/bingo reroll` rerolls for a new BINGO card with different items
+- `/bingo reroll` rerolls for a new Bingo Card with different items
+- `/bingo seed` shows the random seed used to generate the current Bingo Card
+- `/bingo seed <number>` sets the Bingo Card seed to a specific value (which will generate the same card as long as the settings are not changed)
 - `/bingo shuffleteams <number>` randomly sorts all players onto the given number of teams
 - `/bingo end` ends the current game and displays the winner (or a draw)
 - `/join <team> <player>` assigns a player to a different team - will respawn them if in-game

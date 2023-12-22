@@ -1,14 +1,13 @@
 ### New Features:
 
-- I've added split versions for 1.20.2 and 1.20.4 so that both can continue to get new updates.
-  If you're upgrading from the last 1.20.2 version, check the previous release notes for all the changes!
+- Added a 1.20.1 version!
 
-- The `/coords` command now also prints the dimension if used in the nether/end.
+- Created a "Preview Card" option (menu page 3) that, if enabled, allows players to see the current Bingo Card in the lobby before starting the game.
+
+- The Bingo Card is now generated from a random "Bingo Card seed"! (not to be confused with the Minecraft world seed)
+  
+  This seed can be viewed or changed using the `/bingo seed` command. As long as you're using the same tier lists and settings, applying a seed should generate the same bingo card.
 
 ### Bugs Squashed:
 
-- Fixed the inventory desync issues when a player drops another team's map after the game has ended. 
-
-- Fixed the "KeepInv" feature not showing up on the scoreboard if turned on with the `/gamerule` command.
-
-- Fixed the `/join` command not updating a player's gamemode when used in-game.
+- Fixed an issue that was preventing the BINGO game state from saving properly. This caused some confusing behavior whenever server restarts after crashing during a game.
