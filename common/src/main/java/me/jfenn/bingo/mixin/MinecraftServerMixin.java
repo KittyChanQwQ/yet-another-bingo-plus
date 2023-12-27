@@ -1,6 +1,7 @@
 package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.Bingo;
+import me.jfenn.bingo.common.ConstantsKt;
 import me.jfenn.bingo.common.WorldDeleter;
 import me.jfenn.bingo.common.state.GameState;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -29,8 +30,11 @@ public abstract class MinecraftServerMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "prepareStartRegion", cancellable = true)
     private void prepareStartRegion(WorldGenerationProgressListener worldGenerationProgressListener, CallbackInfo ci) {
-        // The start region worldgen isn't all that useful, since the game starts at random coords anyway. So it doesn't really help.
-        ci.cancel();
+        MinecraftServer server = (MinecraftServer) (Object) this;
+        if (server.isDedicated() || server.getSaveProperties().getLevelName().startsWith(ConstantsKt.getBINGO_WORLD_PREFIX())) {
+            // The start region worldgen isn't all that useful in bingo, since the game starts at random coords anyway. So it doesn't really help.
+            ci.cancel();
+        }
     }
 
     @Shadow
