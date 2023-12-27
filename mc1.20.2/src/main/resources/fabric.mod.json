@@ -3,7 +3,7 @@
   "id": "bingo",
   "name": "BINGO (Fabric)",
   "version": "$version",
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "main": [
       {
