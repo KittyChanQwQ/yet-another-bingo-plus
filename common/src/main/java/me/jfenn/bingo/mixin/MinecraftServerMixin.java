@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,7 +24,8 @@ import java.io.IOException;
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin {
 
-    Logger log = LoggerFactory.getLogger(MinecraftServerMixin.class);
+    @Unique
+    private final Logger log = LoggerFactory.getLogger(MinecraftServerMixin.class);
 
     @Inject(at = @At(value = "HEAD"), method = "prepareStartRegion", cancellable = true)
     private void prepareStartRegion(WorldGenerationProgressListener worldGenerationProgressListener, CallbackInfo ci) {

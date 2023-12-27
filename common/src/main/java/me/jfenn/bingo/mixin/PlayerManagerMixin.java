@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -30,7 +31,9 @@ import java.util.Optional;
 public abstract class PlayerManagerMixin {
 
     @Shadow @Final private MinecraftServer server;
-    Logger log = LoggerFactory.getLogger(PlayerManagerMixin.class);
+
+    @Unique
+    private final Logger log = LoggerFactory.getLogger(PlayerManagerMixin.class);
 
     @Inject(at = @At(value = "RETURN"), method = "loadPlayerData", cancellable = true)
     private void loadPlayerData(ServerPlayerEntity player, CallbackInfoReturnable<NbtCompound> ci) {
