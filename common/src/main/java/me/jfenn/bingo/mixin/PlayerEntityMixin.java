@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.mixin;
+package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.ConstantsKt;
 import net.minecraft.entity.ItemEntity;

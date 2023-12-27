@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.mixin;
+package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.Bingo;
 import me.jfenn.bingo.common.WorldDeleter;
@@ -55,11 +55,12 @@ public abstract class MinecraftServerMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "shutdown", cancellable = true)
     public void shutdown(CallbackInfo ci) {
-        var ctx = Bingo.INSTANCE.getContext(this.playerManager.getServer());
+        MinecraftServer server = (MinecraftServer) (Object) this;
+        var ctx = Bingo.INSTANCE.getContext(server);
         if (ctx == null) return;
 
         // if this is running client-side, just shut down normally
-        if (!this.playerManager.getServer().isDedicated()) {
+        if (!server.isDedicated()) {
             return;
         }
 

@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.mixin;
+package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.Bingo;
 import me.jfenn.bingo.common.card.BingoTeam;

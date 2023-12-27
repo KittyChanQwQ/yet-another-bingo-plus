@@ -11,6 +11,12 @@
         "adapter": "kotlin",
         "value": "me.jfenn.bingo.common.Bingo"
       }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.client.Main"
+      }
     ]
   },
   "depends": {
@@ -31,6 +37,7 @@
   "mixins": [
     "mixins.bingo.json"
   ],
+  "accessWidener": "bingo.accesswidener",
   "custom": {
     "modmenu": {
       "parent": "bingo"

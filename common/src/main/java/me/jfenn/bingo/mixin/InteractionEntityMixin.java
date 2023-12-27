@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.mixin;
+package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.event.InteractionEntityEvents;
 import net.minecraft.entity.Entity;

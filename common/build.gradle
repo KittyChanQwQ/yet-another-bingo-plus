@@ -3,6 +3,8 @@ plugins {
     id 'bingo.mod'
 }
 
+loom.accessWidenerPath = file("src/main/resources/bingo.accesswidener")
+
 dependencies {
     implementation libs.insert.koin.core
 
@@ -10,10 +12,20 @@ dependencies {
     include libs.kotlinx.serialization.json
 }
 
-tasks.register('unzipImages', Copy) {
+tasks.register('bingoDatapack', Zip) {
+    from 'datapack'
+    include '**/*'
+    archiveFileName.set('datapack.zip')
+    destinationDirectory.set(file('src/main/resources/bingo'))
+}
+
+tasks.processResources.dependsOn(tasks.bingoDatapack)
+tasks.sourcesJar.dependsOn(tasks.bingoDatapack)
+
+tasks.register('bingoImages', Copy) {
     from zipTree(file("images.zip"))
     into file("src/main/resources/bingo/images")
 }
 
-tasks.processResources.dependsOn(tasks.unzipImages)
-tasks.sourcesJar.dependsOn(tasks.unzipImages)
+tasks.processResources.dependsOn(tasks.bingoImages)
+tasks.sourcesJar.dependsOn(tasks.bingoImages)

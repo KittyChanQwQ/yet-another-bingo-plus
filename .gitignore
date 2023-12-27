@@ -33,6 +33,7 @@
 
 # generated image files
 /common/src/main/resources/bingo/images/*.png
+/common/src/main/resources/bingo/datapack.zip
 
 # test run/config files
 /bingo
