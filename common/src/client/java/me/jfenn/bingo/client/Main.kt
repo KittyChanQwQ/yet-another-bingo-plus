@@ -6,6 +6,7 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.ConfirmScreen
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.world.CreateWorldScreen
@@ -47,6 +48,12 @@ object Main : ClientModInitializer {
 
     private var isOpeningBingoWorld = false
 
+    private fun resetFlags() {
+        isCreatingBingoWorld = false
+        isApplyingLobbyDataPack = false
+        isOpeningBingoWorld = false
+    }
+
     override fun onInitializeClient() {
         ScreenEvents.BEFORE_INIT.register { client, screen, width, height ->
             if (screen is CreateWorldScreen && !isApplyingLobbyDataPack) {
@@ -59,6 +66,8 @@ object Main : ClientModInitializer {
 
         ScreenEvents.AFTER_INIT.register { client, screen, width, height ->
             if (screen is TitleScreen) {
+                resetFlags()
+
                 val buttons = Screens.getButtons(screen)
                 buttons.add(
                     BingoButtonWidget(
@@ -79,7 +88,6 @@ object Main : ClientModInitializer {
                 if (isOpeningBingoWorld) {
                     // Once the world creation screen is reached, immediately press the
                     // create world button
-                    isOpeningBingoWorld = false
 
                     val createWorldButton = Screens.getButtons(screen)
                         .find {
@@ -90,6 +98,7 @@ object Main : ClientModInitializer {
                     createWorldButton?.onClick(0.0, 0.0)
                         ?: log.error("Error: could not find create world button")
 
+                    isOpeningBingoWorld = false
                     return@register
                 }
 
@@ -125,6 +134,21 @@ object Main : ClientModInitializer {
                     isOpeningBingoWorld = true
                     screen.validateDataPacks(pair.second, dataConfiguration) {}
                 }
+            }
+
+            if (screen is ConfirmScreen && isOpeningBingoWorld) {
+                // If there is a prompt to confirm the experimental datapack usage,
+                // click yes automatically
+                log.warn("Bypassing experimental warnings for a BINGO world")
+
+                val confirmButton = Screens.getButtons(screen)
+                        .find {
+                            val content = it.message.content as? TranslatableTextContent
+                            content?.key == "gui.yes"
+                        }
+
+                confirmButton?.onClick(0.0, 0.0)
+                        ?: log.error("Error: could not find the experimental world features confirm button")
             }
         }
     }

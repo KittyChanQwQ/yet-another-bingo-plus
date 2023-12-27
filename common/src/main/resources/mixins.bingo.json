@@ -4,12 +4,10 @@
   "package": "me.jfenn.bingo.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "CreateWorldScreenMixin",
     "InteractionEntityMixin",
     "MinecraftServerMixin",
     "PlayerEntityMixin",
-    "PlayerManagerMixin",
-    "WorldListWidgetMixin"
+    "PlayerManagerMixin"
   ],
   "client": [
   ],
