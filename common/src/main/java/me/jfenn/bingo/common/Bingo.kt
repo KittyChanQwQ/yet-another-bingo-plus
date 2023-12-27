@@ -30,7 +30,8 @@ object Bingo : ModInitializer {
     // - this ensures no cross-server pollution when running the mod client-side
     private val contexts = mutableMapOf<Int, BingoContext>()
 
-    fun getContext(server: MinecraftServer): BingoContext? = contexts[System.identityHashCode(server)]
+    fun getContext(server: MinecraftServer?): BingoContext? =
+        server?.let { contexts[System.identityHashCode(it)] }
 
     private fun setContext(server: MinecraftServer, state: BingoState): BingoContext {
         val ctx = BingoContext(server, state)
