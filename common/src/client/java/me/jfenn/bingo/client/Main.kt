@@ -2,9 +2,12 @@ package me.jfenn.bingo.client
 
 import com.google.common.collect.ImmutableList
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
+import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.common.state.GameState
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ConfirmScreen
 import net.minecraft.client.gui.screen.Screen
@@ -14,11 +17,13 @@ import net.minecraft.resource.DataConfiguration
 import net.minecraft.resource.DataPackSettings
 import net.minecraft.text.Text
 import net.minecraft.text.TranslatableTextContent
+import net.minecraft.util.WorldSavePath
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 import java.io.FileOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.name
 
 object Main : ClientModInitializer {
 
@@ -42,6 +47,10 @@ object Main : ClientModInitializer {
         CreateWorldScreen.create(client, parent)
     }
 
+    fun cleanupBingoWorlds(client: MinecraftClient) {
+
+    }
+
     private var isCreatingBingoWorld = false
     // this flag prevents infinite recursion, as there is a setScreen call in applyDataPacks
     private var isApplyingLobbyDataPack = false
@@ -55,6 +64,21 @@ object Main : ClientModInitializer {
     }
 
     override fun onInitializeClient() {
+        ServerLifecycleEvents.SERVER_STOPPED.register { server ->
+            val ctx = Bingo.getContext(server) ?: return@register
+
+            if (ctx.state.state != GameState.PLAYING) {
+                // If the game is not in progress, delete it!
+                log.info("Deleting closed BINGO world save")
+
+                val dirName = server.getSavePath(WorldSavePath.ROOT).parent.name
+                val client = MinecraftClient.getInstance()
+                client.levelStorage.createSessionWithoutSymlinkCheck(dirName).use {
+                    it.deleteSessionLock()
+                }
+            }
+        }
+
         ScreenEvents.BEFORE_INIT.register { client, screen, width, height ->
             if (screen is CreateWorldScreen && !isApplyingLobbyDataPack) {
                 // Add a prefix to the names of bingo worlds
