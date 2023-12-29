@@ -31,6 +31,7 @@ import kotlin.time.Duration.Companion.minutes
 object BingoCommands {
     fun init() = registerCommands {
         LiteralArgumentBuilder.literal<ServerCommandSource>("bingo")
+            .requireBingoInstance()
             .then(
                 run {
                     var setCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("set")

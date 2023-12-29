@@ -16,6 +16,13 @@ fun registerCommands(commands: suspend SequenceScope<LiteralArgumentBuilder<Serv
     }
 }
 
+fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requireBingoInstance(): T {
+    return this.requires { source ->
+        if (source == null) return@requires false
+        Bingo.getContext(source.server) != null
+    }
+}
+
 fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requireState(vararg requiredState: GameState): T {
     return this.requires { source ->
         if (source == null) return@requires false
