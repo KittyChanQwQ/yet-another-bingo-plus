@@ -55,6 +55,11 @@ class ScoreboardManager : IScoreboardManager {
     override fun sendScoreboardDisplay(player: ServerPlayerEntity, handle: IObjectiveHandle?) {
         require(handle is ObjectiveHandle?)
         player.networkHandler.sendPacket(ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, handle?.objective))
+
+        // If the server is in singleplayer, the display packet is not handled
+        if (player.server.isSingleplayer) {
+            player.server.scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, handle?.objective)
+        }
     }
 
     override fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle) {

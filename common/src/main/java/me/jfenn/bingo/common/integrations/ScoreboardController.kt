@@ -1,13 +1,11 @@
 package me.jfenn.bingo.common.integrations
 
-import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.ScoreService
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.map.MapItemService
-import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
@@ -21,16 +19,6 @@ object ScoreboardController : KoinComponent {
 
     val scoreboardManager by inject<IScoreboardManager>()
 
-    fun getScoreboards(server: MinecraftServer): Map<BingoTeam?, IObjectiveHandle> {
-        return BingoTeam.entries
-            .toMutableList<BingoTeam?>()
-            .apply { add(null) }
-            .associateWith { team ->
-                val name = "bingo_sidebar_" + team?.name
-                scoreboardManager.createDummyObjective(server, name, Text.literal("Minecraft BINGO"))
-            }
-    }
-
     fun init() {
         ConfigService.onChangePlayerSettings { player ->
             val settings = ConfigService.getPlayer(player.uuidAsString)
@@ -42,7 +30,10 @@ object ScoreboardController : KoinComponent {
         }
 
         Bingo.onUpdateTick {
-            for ((team, objective) in scoreboards) {
+            for (team in BingoTeam.entries + null) {
+                val objectiveName = "bingo_sidebar_" + team?.name
+                val objective = scoreboardManager.createDummyObjective(server, objectiveName, Text.literal("Minecraft BINGO"))
+
                 val scoreboardText = buildList {
                     add("")
                     config.formatGameMode().let {

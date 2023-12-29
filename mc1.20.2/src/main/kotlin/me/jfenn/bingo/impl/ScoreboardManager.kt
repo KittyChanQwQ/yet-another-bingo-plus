@@ -8,6 +8,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket
 import net.minecraft.scoreboard.ScoreboardCriterion
+import net.minecraft.scoreboard.ScoreboardDisplaySlot
 import net.minecraft.scoreboard.ScoreboardObjective
 import net.minecraft.scoreboard.ServerScoreboard
 import net.minecraft.server.MinecraftServer
@@ -73,6 +74,11 @@ class ScoreboardManager : IScoreboardManager {
     override fun sendScoreboardDisplay(player: ServerPlayerEntity, handle: IObjectiveHandle?) {
         require(handle is ObjectiveHandle?)
         player.networkHandler.sendPacket(createScoreboardDisplayPacket(handle?.objective))
+
+        // If the server is in singleplayer, the display packet is not handled
+        if (player.server.isSingleplayer) {
+            player.server.scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, handle?.objective)
+        }
     }
 
     override fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle) {

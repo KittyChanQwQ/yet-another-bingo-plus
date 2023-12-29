@@ -36,6 +36,7 @@ class ScoreboardManager : IScoreboardManager {
 
     override fun createDummyObjective(server: MinecraftServer, name: String, displayName: Text): IObjectiveHandle {
         val objective = server.scoreboard.getNullableObjective(name) ?: run {
+            println("Creating objective $name")
             server.scoreboard.addObjective(
                 name,
                 ScoreboardCriterion.DUMMY,
@@ -73,6 +74,11 @@ class ScoreboardManager : IScoreboardManager {
     override fun sendScoreboardDisplay(player: ServerPlayerEntity, handle: IObjectiveHandle?) {
         require(handle is ObjectiveHandle?)
         player.networkHandler.sendPacket(createScoreboardDisplayPacket(handle?.objective))
+
+        // If the server is in singleplayer, the display packet is not handled
+        if (player.server.isSingleplayer) {
+            player.server.scoreboard.setObjectiveSlot(1, handle?.objective)
+        }
     }
 
     override fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle) {
