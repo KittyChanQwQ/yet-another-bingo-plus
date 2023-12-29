@@ -3,6 +3,7 @@ package me.jfenn.bingo.client
 import com.google.common.collect.ImmutableList
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
 import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.common.datapack.DatapackService
 import me.jfenn.bingo.common.state.GameState
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
@@ -18,30 +19,12 @@ import net.minecraft.resource.DataPackSettings
 import net.minecraft.text.Text
 import net.minecraft.text.TranslatableTextContent
 import net.minecraft.util.WorldSavePath
-import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
-import java.io.FileOutputStream
-import java.nio.file.Files
-import java.nio.file.Path
 import kotlin.io.path.name
 
 object Main : ClientModInitializer {
 
     private val log = LoggerFactory.getLogger(this::class.java);
-
-    fun copyDataPack(toPath: Path) {
-        toPath.toFile().mkdirs()
-
-        val datapackPath = toPath.resolve("bingo-lobby.zip")
-        Files.deleteIfExists(datapackPath)
-        Files.createFile(datapackPath)
-
-        this::class.java.getResourceAsStream("/bingo/datapack.zip").use { input ->
-            FileOutputStream(datapackPath.toFile()).use { output ->
-                IOUtils.copy(input, output)
-            }
-        }
-    }
 
     fun createBingoWorld(client: MinecraftClient, parent: Screen) {
         CreateWorldScreen.create(client, parent)
@@ -126,7 +109,7 @@ object Main : ClientModInitializer {
                 // - we want this to happen on every world creation, so that the pack is available
                 //   even if the user has not specifically pressed the "BINGO!" button.
                 screen.dataPackTempDir?.let {
-                    copyDataPack(it)
+                    DatapackService.copyDataPack(it.resolve("bingo-lobby.zip"))
                 }
 
                 val pair = screen.getScannedPack(screen.worldCreator.generatorOptionsHolder.dataConfiguration)

@@ -2,6 +2,7 @@ package me.jfenn.bingo.common
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.commands.*
+import me.jfenn.bingo.common.datapack.DatapackService
 import me.jfenn.bingo.common.integrations.*
 import me.jfenn.bingo.common.map.MapRenderService
 import me.jfenn.bingo.common.menu.MenuService
@@ -10,10 +11,12 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.state.SerializedPersistentState
 import me.jfenn.bingo.common.utils.ContextEventListener
+import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
@@ -64,6 +67,15 @@ object Bingo : ModInitializer {
         ChatCommand.init()
         CoordsCommand.init()
         RestartCommand.init()
+
+        // If the env is on a dedicated server, we need to install the datapack manually
+        val loader = FabricLoader.getInstance()
+        if (loader.environmentType == EnvType.SERVER) {
+            val datapackPath = loader.gameDir.resolve("world/datapacks/bingo-lobby.zip")
+
+            log.info("Installing the bingo lobby dimension datapack in $datapackPath")
+            DatapackService.copyDataPack(datapackPath)
+        }
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             val lobbyWorld = server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID } ?: run {

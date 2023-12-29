@@ -36,7 +36,6 @@ class ScoreboardManager : IScoreboardManager {
 
     override fun createDummyObjective(server: MinecraftServer, name: String, displayName: Text): IObjectiveHandle {
         val objective = server.scoreboard.getNullableObjective(name) ?: run {
-            println("Creating objective $name")
             server.scoreboard.addObjective(
                 name,
                 ScoreboardCriterion.DUMMY,
