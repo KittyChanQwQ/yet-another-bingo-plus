@@ -16,7 +16,6 @@ import me.jfenn.bingo.common.utils.toNbt
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.block.Blocks
-import net.minecraft.block.entity.StructureBlockBlockEntity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
@@ -24,7 +23,6 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.structure.StructurePlacementData
 import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
@@ -54,8 +52,12 @@ object MenuService : KoinComponent {
             // always load the spawn chunks
             lobbyWorld.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
 
-            spawnLobbyStructure(this, lobbyWorld)
-            menu = MenuInstance(this, state.lobbySpawnPos)
+            spawnLobbyStructure(this)
+            val lobbySpawnPos = getLobbySpawnPosition(this)
+            state.lobbySpawnPos = lobbySpawnPos
+            menu = MenuInstance(this, lobbySpawnPos)
+                .also { spawnTeamEntities(this, it) }
+
         }
 
         ServerEntityEvents.ENTITY_LOAD.register { entity, world ->
@@ -89,58 +91,9 @@ object MenuService : KoinComponent {
         }
     }
 
-    private fun spawnTeamEntity(lobbyWorld: ServerWorld, position: Vec3d, team: BingoTeam) {
-        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
-            .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.add(0.0, 1.5, 0.0).toNbt())
-                    putString("text", TextInfo.toJsonString(
-                        TextInfo.literal("${team.name} Team")
-                            .formatted(team.textColor)
-                            .bold()
-                    ))
-                    putString("billboard", "vertical")
-                    putString("alignment", "center")
-                    putInt("background", 0)
-                    putBoolean("shadow", true)
-                })
-            }
-            .also { lobbyWorld.spawnEntity(it) }
+    private fun spawnLobbyStructure(ctx: BingoContext) = measureTimeMillis {
+        val lobbyWorld = ctx.lobbyWorld
 
-        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
-            .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.add(0.0, 1.0, 0.0).toNbt())
-                    putString("text", TextInfo.toJsonString(
-                        TextInfo.literal("Click to join!")
-                    ))
-                    putString("billboard", "vertical")
-                    putString("alignment", "center")
-                })
-            }
-            .also { lobbyWorld.spawnEntity(it) }
-
-        val interactionListenerEntity = InteractionEntity(EntityType.INTERACTION, lobbyWorld)
-            .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.add(0.0, -1.0, 0.0).toNbt())
-                    putFloat("width", 2f)
-                    putFloat("height", 4f)
-                })
-            }
-            .also { lobbyWorld.spawnEntity(it) }
-
-        InteractionEntityEvents.onInteract(interactionListenerEntity) { player ->
-            val color = Color.fromInt(team.formatting.colorValue ?: 0)
-            val effect = DustParticleEffect(Vector3f(color.r / 255f, color.g / 255f, color.b / 255f), 1f)
-            (player.world as? ServerWorld)?.spawnParticles(player, effect, true, position.x, position.y, position.z, 10, 1.0, 1.0, 1.0, 0.2)
-
-            Sounds.playTeamChanged(player)
-            TeamService.joinTeam(player, team)
-        }
-    }
-
-    private fun spawnLobbyStructure(ctx: BingoContext, lobbyWorld: ServerWorld) = measureTimeMillis {
         val lobbyDir = Config.configDir.resolve("lobby")
         if (!Files.exists(lobbyDir))
             lobbyDir.toFile().mkdirs()
@@ -166,6 +119,25 @@ object MenuService : KoinComponent {
             }
 
         structureManager.placeStructure(lobbyWorld, BlockPosition(0, 25, 0), lobbyFileStream)
+    }.also {
+        log.info("Done (${it}ms)!")
+    }
+
+    fun getLobbySpawnPosition(ctx: BingoContext): BlockPosition {
+        val lobbyWorld = ctx.lobbyWorld
+
+        // Search for spawnpoint
+        val spawnY = (0..24)
+            .asSequence()
+            .filter { y -> lobbyWorld.getBlockState(BlockPos(0, y, 0)).isSolidBlock(lobbyWorld, BlockPos.ORIGIN) }
+            .max()
+
+        return BlockPosition(0, spawnY+1, 0)
+            .also { log.info("Set lobby spawnpoint to $it") }
+    }
+
+    private fun spawnTeamEntities(ctx: BingoContext, menu: MenuInstance) {
+        val lobbyWorld = ctx.lobbyWorld
 
         // Search for team join entities
         for (x in -24..24) {
@@ -178,22 +150,70 @@ object MenuService : KoinComponent {
                     val blockState = lobbyWorld.getBlockState(blockPos)
 
                     val team = BingoTeam.entries.find { it.carpetBlock == blockState.block } ?: continue
-                    spawnTeamEntity(lobbyWorld, Vec3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team)
+                    spawnTeamEntity(lobbyWorld, Vec3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team, menu.instanceTag)
                     lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
                 }
             }
         }
+    }
 
-        // Search for spawnpoint
-        val spawnY = (0..24)
-            .asSequence()
-            .filter { y -> lobbyWorld.getBlockState(BlockPos(0, y, 0)).isSolidBlock(lobbyWorld, BlockPos.ORIGIN) }
-            .max()
+    private fun spawnTeamEntity(
+        lobbyWorld: ServerWorld,
+        position: Vec3d,
+        team: BingoTeam,
+        instanceTag: String,
+    ) {
+        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+            .apply {
+                readNbt(NbtCompound().apply {
+                    put("Pos", position.add(0.0, 1.5, 0.0).toNbt())
+                    putString("text", TextInfo.toJsonString(
+                        TextInfo.literal("${team.name} Team")
+                            .formatted(team.textColor)
+                            .bold()
+                    ))
+                    putString("billboard", "vertical")
+                    putString("alignment", "center")
+                    putInt("background", 0)
+                    putBoolean("shadow", true)
+                })
+            }
+            .also { it.addCommandTag(instanceTag) }
+            .also { lobbyWorld.spawnEntity(it) }
 
-        ctx.state.lobbySpawnPos = BlockPosition(0, spawnY+1, 0)
-        log.info("Set lobby spawnpoint to ${ctx.state.lobbySpawnPos}")
-    }.also {
-        log.info("Done (${it}ms)!")
+        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+            .apply {
+                readNbt(NbtCompound().apply {
+                    put("Pos", position.add(0.0, 1.0, 0.0).toNbt())
+                    putString("text", TextInfo.toJsonString(
+                        TextInfo.literal("Click to join!")
+                    ))
+                    putString("billboard", "vertical")
+                    putString("alignment", "center")
+                })
+            }
+            .also { it.addCommandTag(instanceTag) }
+            .also { lobbyWorld.spawnEntity(it) }
+
+        val interactionListenerEntity = InteractionEntity(EntityType.INTERACTION, lobbyWorld)
+            .apply {
+                readNbt(NbtCompound().apply {
+                    put("Pos", position.add(0.0, -1.0, 0.0).toNbt())
+                    putFloat("width", 2f)
+                    putFloat("height", 4f)
+                })
+            }
+            .also { it.addCommandTag(instanceTag) }
+            .also { lobbyWorld.spawnEntity(it) }
+
+        InteractionEntityEvents.onInteract(interactionListenerEntity) { player ->
+            val color = Color.fromInt(team.formatting.colorValue ?: 0)
+            val effect = DustParticleEffect(Vector3f(color.r / 255f, color.g / 255f, color.b / 255f), 1f)
+            (player.world as? ServerWorld)?.spawnParticles(player, effect, true, position.x, position.y, position.z, 10, 1.0, 1.0, 1.0, 0.2)
+
+            Sounds.playTeamChanged(player)
+            TeamService.joinTeam(player, team)
+        }
     }
 
 }
