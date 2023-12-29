@@ -6,13 +6,19 @@ import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.state.BingoContext
 import net.minecraft.entity.Entity
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.util.math.*
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.ChunkPos
+import net.minecraft.util.math.Direction
+import net.minecraft.util.math.Vec3d
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 class MenuInstance(
     val ctx: BingoContext,
     val spawnPos: BlockPosition,
 ) {
+
+    val instanceTag = "bingo-${UUID.randomUUID()}"
 
     companion object {
         val log = LoggerFactory.getLogger(this::class.java)!!
@@ -50,7 +56,15 @@ class MenuInstance(
         if (entity == null) {
             entity = info.type.create(world)!!
             entity.uuid = info.id
-            world.spawnEntity(entity)
+            // Try to spawn the entity into the world...
+            val isSuccess = world.spawnEntity(entity)
+            // If the entity cannot be spawned, discard it and return null
+            // (the MenuComponent should then be marked dirty, and will try again on the next tick)
+            if (!isSuccess) {
+                log.error("Unable to spawn ${info.type} menu entity - discarding...")
+                entity.discard()
+                return null
+            }
         }
 
         if (entity.type != info.type) {
@@ -59,6 +73,7 @@ class MenuInstance(
         }
 
         entity.readNbt(nbt)
+        entity.addCommandTag(instanceTag)
         info.onUpdate(entity)
         return entity
     }

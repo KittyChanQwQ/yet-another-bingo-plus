@@ -47,10 +47,6 @@ object Main : ClientModInitializer {
         CreateWorldScreen.create(client, parent)
     }
 
-    fun cleanupBingoWorlds(client: MinecraftClient) {
-
-    }
-
     private var isCreatingBingoWorld = false
     // this flag prevents infinite recursion, as there is a setScreen call in applyDataPacks
     private var isApplyingLobbyDataPack = false
@@ -67,7 +63,7 @@ object Main : ClientModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
             val ctx = Bingo.getContext(server) ?: return@register
 
-            if (ctx.state.state != GameState.PLAYING) {
+            if (ctx.state.state != GameState.PLAYING && server.saveProperties.levelName.startsWith(BINGO_WORLD_PREFIX)) {
                 // If the game is not in progress, delete it!
                 log.info("Deleting closed BINGO world save")
 

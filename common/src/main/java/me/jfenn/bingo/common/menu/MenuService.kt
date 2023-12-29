@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.api.IStructureManager
+import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.event.InteractionEntityEvents
@@ -13,6 +13,7 @@ import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.text.TextInfo
 import me.jfenn.bingo.common.utils.toNbt
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.StructureBlockBlockEntity
@@ -21,7 +22,6 @@ import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.particle.DustParticleEffect
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.structure.StructurePlacementData
@@ -56,6 +56,17 @@ object MenuService : KoinComponent {
 
             spawnLobbyStructure(this, lobbyWorld)
             menu = MenuInstance(this, state.lobbySpawnPos)
+        }
+
+        ServerEntityEvents.ENTITY_LOAD.register { entity, world ->
+            val ctx = Bingo.getContext(world.server) ?: return@register
+            val bingoTag = entity.commandTags.find { it.startsWith("bingo-") }
+                ?: return@register
+
+            if (world == ctx.lobbyWorld && !entity.isPlayer && bingoTag != ctx.menu?.instanceTag) {
+                log.warn("Discarding an existing lobby world entity: ${entity.type}")
+                entity.discard()
+            }
         }
 
         Bingo.onGameTick {
@@ -183,22 +194,6 @@ object MenuService : KoinComponent {
         log.info("Set lobby spawnpoint to ${ctx.state.lobbySpawnPos}")
     }.also {
         log.info("Done (${it}ms)!")
-    }
-
-    private fun placeStructure(world: ServerWorld, pos: BlockPos, nbt: NbtCompound) {
-        val template = world.structureTemplateManager.createTemplate(nbt)
-        val placement = StructurePlacementData()
-
-        val posOffset = template.size.run { pos.add(-x/2, -y/2, -z/2) }
-
-        template.place(
-            world,
-            posOffset,
-            posOffset,
-            placement,
-            StructureBlockBlockEntity.createRandom(world.seed),
-            2
-        )
     }
 
 }
