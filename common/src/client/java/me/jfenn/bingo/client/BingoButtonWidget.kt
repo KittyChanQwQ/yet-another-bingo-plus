@@ -1,7 +1,9 @@
 package me.jfenn.bingo.client
 
 import net.minecraft.client.gui.widget.ButtonWidget
+import net.minecraft.client.gui.widget.TexturedButtonWidget
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 
 class BingoButtonWidget(
     x: Int,
@@ -10,12 +12,17 @@ class BingoButtonWidget(
     height: Int,
     message: Text,
     onClick: (ButtonWidget) -> Unit,
-) : ButtonWidget(
+) : TexturedButtonWidget(
     x,
     y,
     width,
     height,
-    message,
+    0,
+    0,
+    0,
+    Identifier.of("bingo", "textures/gui/button.png"),
+    80,
+    50,
     onClick,
-    DEFAULT_NARRATION_SUPPLIER,
+    message,
 )

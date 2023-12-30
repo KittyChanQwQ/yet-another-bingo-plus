@@ -75,9 +75,9 @@ object Main : ClientModInitializer {
                 buttons.add(
                     BingoButtonWidget(
                         10,
-                        height - 80,
-                        60,
-                        60,
+                        height - 70,
+                        80,
+                        50,
                         Text.literal("BINGO!")
                     ) {
                         isCreatingBingoWorld = true
