@@ -19,10 +19,10 @@ class BingoButtonWidget(
     height,
     0,
     0,
-    0,
+    50,
     Identifier.of("bingo", "textures/gui/button.png"),
     80,
-    50,
+    150,
     onClick,
     message,
 )
