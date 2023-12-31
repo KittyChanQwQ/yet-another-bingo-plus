@@ -15,7 +15,7 @@
     "client": [
       {
         "adapter": "kotlin",
-        "value": "me.jfenn.bingo.client.Main"
+        "value": "me.jfenn.bingo.client.common.Main"
       }
     ]
   },

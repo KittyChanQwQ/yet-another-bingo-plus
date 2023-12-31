@@ -1,6 +1,7 @@
-package me.jfenn.bingo.client
+package me.jfenn.bingo.client.common
 
 import com.google.common.collect.ImmutableList
+import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
 import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.datapack.DatapackService
@@ -18,13 +19,17 @@ import net.minecraft.resource.DataConfiguration
 import net.minecraft.resource.DataPackSettings
 import net.minecraft.text.Text
 import net.minecraft.text.TranslatableTextContent
+import net.minecraft.util.Identifier
 import net.minecraft.util.WorldSavePath
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
 import kotlin.io.path.name
 
-object Main : ClientModInitializer {
+object Main : ClientModInitializer, KoinComponent {
 
-    private val log = LoggerFactory.getLogger(this::class.java);
+    private val log = LoggerFactory.getLogger(this::class.java)
+    private val buttonService by inject<IButtonService>()
 
     fun createBingoWorld(client: MinecraftClient, parent: Screen) {
         CreateWorldScreen.create(client, parent)
@@ -73,17 +78,20 @@ object Main : ClientModInitializer {
 
                 val buttons = Screens.getButtons(screen)
                 buttons.add(
-                    BingoButtonWidget(
-                        10,
-                        height - 70,
-                        80,
-                        50,
-                        Text.literal("BINGO!")
-                    ) {
-                        isCreatingBingoWorld = true
-                        createBingoWorld(client, screen)
-                        isCreatingBingoWorld = false
-                    }
+                    buttonService.createButton(
+                        x = 10,
+                        y = height - 70,
+                        width = 80,
+                        height = 50,
+                        texture = Identifier.of("minecraft", "bingo/button"),
+                        focusedTexture = Identifier.of("minecraft", "bingo/button_focused"),
+                        onClick = {
+                            isCreatingBingoWorld = true
+                            createBingoWorld(client, screen)
+                            isCreatingBingoWorld = false
+                        },
+                        message = Text.literal("BINGO!"),
+                    )
                 )
             }
 

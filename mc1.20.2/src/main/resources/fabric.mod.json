@@ -5,10 +5,16 @@
   "version": "$version",
   "environment": "*",
   "entrypoints": {
-    "main": [
+    "server": [
       {
         "adapter": "kotlin",
-        "value": "me.jfenn.bingo.Main"
+        "value": "me.jfenn.bingo.server.Main"
+      }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.client.Main"
       }
     ]
   },
