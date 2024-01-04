@@ -1,13 +1,8 @@
 ### New Features:
 
-- Added a 1.20.1 version!
+- The mod can now be installed on the client for single-player bingo games!
+  (it adds a big "BINGO!" button for starting a bingo game from the start screen)
 
-- Created a "Preview Card" option (menu page 3) that, if enabled, allows players to see the current Bingo Card in the lobby before starting the game.
+  This has [a known issue](https://gitlab.com/horrific-tweaks/bingo/-/issues/48) with LAN games hosted from the client, but should work fine in singleplayer.
 
-- The Bingo Card is now generated from a random "Bingo Card seed"! (not to be confused with the Minecraft world seed)
-  
-  This seed can be viewed or changed using the `/bingo seed` command. As long as you're using the same tier lists and settings, applying a seed should generate the same bingo card.
-
-### Bugs Squashed:
-
-- Fixed an issue that was preventing the BINGO game state from saving properly. This caused some confusing behavior whenever server restarts after crashing during a game.
+- If there is only one player in the lobby, the game now auto-assigns a team when "Start" is pressed.
