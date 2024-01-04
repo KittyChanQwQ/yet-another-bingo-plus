@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.BingoGame
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.integrations.BingoCardController
 import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.utils.sendWarningMessage
@@ -101,8 +102,13 @@ fun MenuComponent.registerMenuPage(
             .all { teamPlayer -> BingoTeam.fromPlayer(teamPlayer) != null }
 
         if (!isEveryPlayerOnATeam && !player.isSneaking) {
-            player.sendWarningMessage("Some players have not picked a team! Run '/bingo shuffleteams' or sneak+click to ignore.")
-            return@registerButton
+            // If there's more than one player, teams need to be set up manually!
+            if (ctx.server.playerManager.playerList.size > 1) {
+                player.sendWarningMessage("Some players have not picked a team! Run '/bingo shuffleteams' or sneak+click to ignore.")
+                return@registerButton
+            }
+            // Otherwise, we can just auto-assign a team
+            TeamService.joinTeam(player, BingoTeam.entries.random())
         }
 
         BingoGame.start(ctx)
