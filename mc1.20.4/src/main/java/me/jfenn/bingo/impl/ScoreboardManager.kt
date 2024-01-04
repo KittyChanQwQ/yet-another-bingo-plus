@@ -57,7 +57,7 @@ class ScoreboardManager : IScoreboardManager {
         player.networkHandler.sendPacket(ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, handle?.objective))
 
         // If the server is in singleplayer, the display packet is not handled
-        if (player.server.isSingleplayer) {
+        if (player.server.isSingleplayer && player.uuid == player.server.hostProfile?.id) {
             player.server.scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, handle?.objective)
         }
     }
