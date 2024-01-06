@@ -4,6 +4,12 @@ plugins {
     id 'bingo.publish'
 }
 
+processResources {
+    from("../common/src/main/resources") {
+        include "bingo/icon.png"
+    }
+}
+
 dependencies {
     implementation libs.insert.koin.core
     include libs.insert.koin.core

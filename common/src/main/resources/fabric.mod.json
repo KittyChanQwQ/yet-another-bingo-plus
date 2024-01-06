@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "bingo-common",
-  "name": "BINGO (Fabric)",
+  "id": "yet-another-minecraft-bingo-common",
+  "name": "Yet Another Minecraft BINGO",
   "version": "$version",
   "environment": "*",
-  "icon": "icon.png",
+  "icon": "bingo/icon.png",
   "entrypoints": {
     "main": [
       {
@@ -33,14 +33,18 @@
   "authors": [
     "fennifith"
   ],
-  "description": "BINGO",
+  "description": "Common cross-version functionality for the BINGO mod",
   "mixins": [
     "mixins.bingo.json"
   ],
   "accessWidener": "bingo.accesswidener",
   "custom": {
     "modmenu": {
-      "parent": "bingo"
+      "parent": "yet-another-minecraft-bingo",
+      "badges": ["library"],
+      "links": {
+        "Discord": "https://discord.horrific.dev"
+      }
     }
   }
 }

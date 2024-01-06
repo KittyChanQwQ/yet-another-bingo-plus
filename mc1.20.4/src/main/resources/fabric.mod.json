@@ -1,9 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "bingo",
-  "name": "BINGO (Fabric)",
+  "id": "yet-another-minecraft-bingo",
+  "name": "Yet Another Minecraft BINGO",
   "version": "$version",
   "environment": "*",
+  "icon": "bingo/icon.png",
   "entrypoints": {
     "server": [
       {
@@ -32,6 +33,13 @@
   "authors": [
     "fennifith"
   ],
-  "description": "BINGO",
-  "mixins": []
+  "description": "A multiplayer BINGO item hunt mod + lobby",
+  "mixins": [],
+  "custom": {
+    "modmenu": {
+      "links": {
+        "Discord": "https://discord.horrific.dev"
+      }
+    }
+  }
 }
