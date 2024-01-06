@@ -35,7 +35,7 @@ fun MenuComponent.registerTimer(
         requiredPermissionLevel = requiredPermissionLevel,
     ) {
         val mins = timerMinutes?.inWholeMinutes ?: (MAX_TIMER_MINUTES + 30)
-        val newMins = if (mins < MAX_TIMER_MINUTES)
+        val newMins = if (mins > 30)
             ((mins / 30) - 1) * 30
         else null
         timerMinutes = newMins?.minutes
