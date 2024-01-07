@@ -8,12 +8,14 @@ import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.state.BingoContext
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import java.util.UUID
 
 /**
  * Displays scoreboard score/timer information for all players.
@@ -21,6 +23,15 @@ import org.koin.core.component.inject
 object ScoreboardController : KoinComponent {
 
     val scoreboardManager by inject<IScoreboardManager>()
+
+    private val playersWithObjectives = mutableMapOf<UUID, MutableSet<String>>()
+
+    private fun playerHasObjective(playerEntity: PlayerEntity, objective: IObjectiveHandle) : Boolean {
+        val set = playersWithObjectives.getOrPut(playerEntity.uuid) { mutableSetOf() }
+        val hasObjective = set.contains(objective.name)
+        set.add(objective.name)
+        return hasObjective
+    }
 
     fun getScoreboardObjective(ctx: BingoContext, team: BingoTeam?) : IObjectiveHandle {
         val objectiveName = "bingo_sidebar_" + team?.name
@@ -127,13 +138,21 @@ object ScoreboardController : KoinComponent {
                     .forEach { player ->
                         // if the player is holding the map item, show the scoreboard; otherwise, hide it
                         if (shouldDisplayScoreboard(this, player)) {
-                            scoreboardManager.sendScoreboardUpdates(player, objective)
+                            scoreboardManager.sendScoreboardUpdates(
+                                player, objective,
+                                sendCreate = !playerHasObjective(player, objective),
+                            )
                             scoreboardManager.sendScoreboardDisplay(player, objective)
                         } else {
                             scoreboardManager.sendScoreboardDisplay(player, null)
                         }
                     }
             }
+        }
+
+        ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
+            // When a player disconnects, they need to be re-sent the objective if they reconnect
+            playersWithObjectives.remove(handler.player.uuid)
         }
     }
 

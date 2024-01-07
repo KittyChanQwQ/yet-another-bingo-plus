@@ -3,6 +3,7 @@ package me.jfenn.bingo.impl
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
+import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardScoreResetS2CPacket
 import net.minecraft.scoreboard.ScoreboardCriterion
 import net.minecraft.scoreboard.ScoreboardDisplaySlot
@@ -57,7 +58,7 @@ class ScoreboardManager : IScoreboardManager {
         player.networkHandler.sendPacket(ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, handle?.objective))
     }
 
-    override fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle) {
+    override fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle, sendCreate: Boolean) {
         require(handle is ObjectiveHandle)
         // If the server is in singleplayer, the scoreboard packets are not handled
         // - sending these to the host (client) player will cause a bunch of error log spam
@@ -65,10 +66,18 @@ class ScoreboardManager : IScoreboardManager {
             return
 
         val packets = player.server.scoreboard.createChangePackets(handle.objective)
-        for (packet in packets) {
-            if (packet is ScoreboardDisplayS2CPacket && packet.slot == ScoreboardDisplaySlot.SIDEBAR)
-                continue
+            .filterNot { it is ScoreboardObjectiveUpdateS2CPacket }
+            .filterNot { it is ScoreboardDisplayS2CPacket && it.slot == ScoreboardDisplaySlot.SIDEBAR }
 
+        player.networkHandler.sendPacket(
+            ScoreboardObjectiveUpdateS2CPacket(
+                handle.objective,
+                if (sendCreate) ScoreboardObjectiveUpdateS2CPacket.ADD_MODE
+                else ScoreboardObjectiveUpdateS2CPacket.UPDATE_MODE,
+            )
+        )
+
+        for (packet in packets) {
             player.networkHandler.sendPacket(packet)
         }
     }

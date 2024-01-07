@@ -12,7 +12,7 @@ interface IScoreboardManager {
 
     fun sendScoreboardDisplay(player: ServerPlayerEntity, handle: IObjectiveHandle?)
 
-    fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle)
+    fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle, sendCreate: Boolean)
 
     fun getPlayerName(player: ServerPlayerEntity): String
 

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 
 object Main : DedicatedServerModInitializer {
 
-    private val log = LoggerFactory.getLogger(this::class.java)
+    val log = LoggerFactory.getLogger(this::class.java)
 
     init {
         log.info("Starting Bingo Server koin application")
