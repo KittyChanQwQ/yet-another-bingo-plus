@@ -41,14 +41,19 @@ object ScoreboardController : KoinComponent {
 
     fun shouldDisplayScoreboard(ctx: BingoContext, playerEntity: PlayerEntity) : Boolean {
         val isScoreboardEnabled = ConfigService.getPlayer(playerEntity.uuidAsString).scoreboard
+        if (!isScoreboardEnabled) return false
         val player = ctx.server.playerManager.getPlayer(playerEntity.uuid) ?: return false
+
+        val settings = ConfigService.getPlayer(playerEntity.uuidAsString)
+        if (!settings.scoreboardAutoHide)
+            return true
 
         // if the player is holding the map item, show the scoreboard; otherwise, hide it
         val isHoldingMapItem = player.interactionManager.gameMode != GameMode.SURVIVAL
                 || MapItemService.isMapItem(playerEntity.mainHandStack)
                 || MapItemService.isMapItem(playerEntity.offHandStack)
 
-        return isScoreboardEnabled && isHoldingMapItem
+        return isHoldingMapItem
     }
 
     fun init() {

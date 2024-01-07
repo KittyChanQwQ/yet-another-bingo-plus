@@ -30,7 +30,7 @@ class MenuInstance(
     val menuComponent = component {
         registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.45))
         registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.45), ctx)
-        registerPlayerMenu(Vec3d(4.0, spawnPos.y + 3.0, 4.45), Direction.NORTH)
+        registerPlayerMenu(Vec3d(4.0, spawnPos.y + 3.5, 4.45), Direction.NORTH)
     }
 
     fun tick() {

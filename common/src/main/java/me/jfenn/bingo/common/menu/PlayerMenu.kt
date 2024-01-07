@@ -29,8 +29,9 @@ fun MenuComponent.registerPlayerMenu(
     }
 
     val fields = listOf(
-        PlayerSettings::scoreboard,
         PlayerSettings::bossbar,
+        PlayerSettings::scoreboard,
+        PlayerSettings::scoreboardAutoHide,
         PlayerSettings::leadingMessages,
         PlayerSettings::scoreMessages,
     )
