@@ -1,12 +1,15 @@
 ### New Features:
 
-- The mod can now be installed on the client for single-player bingo games!
-  (it adds a big "BINGO!" button for starting a bingo game from the start screen)
+- Scoreboard "auto-hide" behavior is now configurable as a player setting!
+  (defaults to false, to reduce confusion when the scoreboard disappears)
 
-  This has [a known issue](https://gitlab.com/horrific-tweaks/bingo/-/issues/48) with LAN games hosted from the client, but should work fine in singleplayer.
+### Bugs Squashed:
 
-- If there is only one player in the lobby, the game now auto-assigns a team when "Start" is pressed.
+- Fixed scoreboards misbehaving on client-side LAN multiplayer
 
-### Credits
+- Fixed intermittent lag spikes on clients connecting to a server game
+  (caused by scoreboard update errors)
 
-Thanks to Xenia725 and [Dewlan](https://www.youtube.com/@Dewlan) for help with early testing!
+- Fixed the timer menu allowing negative values for some reason
+
+- Updated the fabric loader version requirement (now requires at least 0.15.0)
