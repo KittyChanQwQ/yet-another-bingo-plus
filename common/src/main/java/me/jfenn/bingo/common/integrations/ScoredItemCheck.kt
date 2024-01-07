@@ -117,12 +117,16 @@ object ScoredItemCheck {
         // update the team map(s)
         if (ctx.config.isLockoutMode || ctx.config.showOtherTeamCompletions) {
             // if the mode is LOCKOUT, all team cards need to be updated (to redraw locked items)
-            for (team in BingoTeam.entries)
-                MapRenderService.update(ctx, team)
+            for (team in BingoTeam.entries) {
+                val teamMap = ctx.state.getMap(ctx, team)
+                MapRenderService.update(ctx, teamMap)
+            }
         } else {
             // otherwise, only redraw maps for the updated teams
-            for (team in updatedTeams)
-                MapRenderService.update(ctx, team)
+            for (team in updatedTeams) {
+                val teamMap = ctx.state.getMap(ctx, team)
+                MapRenderService.update(ctx, teamMap)
+            }
         }
 
         // check if a team has won the game

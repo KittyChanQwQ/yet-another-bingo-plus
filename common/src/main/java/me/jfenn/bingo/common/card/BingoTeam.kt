@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.card
 
 import me.jfenn.bingo.api.ITeamHandle
 import me.jfenn.bingo.api.ITeamManager
-import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.utils.text.TextColor
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
@@ -65,16 +64,6 @@ enum class BingoTeam(
         server.playerManager.playerList
             .filter { includesPlayer(it) }
             .forEach { it.sendMessage(text) }
-    }
-
-    fun getMapId(ctx: BingoContext): Int {
-        return ctx.state.teamMapIds.getOrPut(this) {
-            ctx.server.overworld.nextMapId
-        }
-    }
-
-    fun getMapName(ctx: BingoContext): String {
-        return "map_${getMapId(ctx)}"
     }
 
     companion object : KoinComponent {

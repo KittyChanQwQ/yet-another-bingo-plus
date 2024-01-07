@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.utils.formatString
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -29,16 +30,18 @@ data class BingoState(
     val teamWinners: MutableMap<BingoTeam, TeamWinner> = mutableMapOf(),
     var teamSpawnpoints: MutableMap<BingoTeam, BlockPosition> = mutableMapOf(),
     val teamChatCoordinates: MutableMap<BingoTeam, MutableList<CoordsCommand.CoordinatesEntry>> = mutableMapOf(),
-    val teamMapIds: MutableMap<BingoTeam, Int> = mutableMapOf(),
-    var previewMapId: Int? = null,
+    val teamMaps: MutableMap<BingoTeam?, BingoMap> = mutableMapOf(),
     var card: BingoCard = CardService.generate(config, seed),
 ) : SerializedPersistentState() {
 
-    fun getPreviewMapId(ctx: BingoContext): Int {
-        return previewMapId ?: run {
-            val id = ctx.server.overworld.nextMapId
-            previewMapId = id
-            id
+    fun getPreviewMap(ctx: BingoContext) = getMap(ctx, null)
+
+    fun getMap(ctx: BingoContext, team: BingoTeam?) : BingoMap {
+        return teamMaps.getOrPut(team) {
+            BingoMap(
+                mapId = ctx.server.overworld.nextMapId,
+                team = team,
+            )
         }
     }
 

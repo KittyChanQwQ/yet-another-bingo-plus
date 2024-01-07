@@ -12,9 +12,11 @@ import net.minecraft.nbt.NbtCompound
 object MapItemService {
 
     fun createPreviewMapItem(ctx: BingoContext): ItemStack {
+        val previewMap = ctx.state.getPreviewMap(ctx)
+
         val item = ItemStack(Items.FILLED_MAP, 1)
         item.getOrCreateNbt().apply {
-            putInt("map", ctx.state.getPreviewMapId(ctx))
+            putInt("map", previewMap.mapId)
             putBoolean(NBT_BINGO_IGNORE, true)
             putBoolean(NBT_BINGO_VANISH, true)
             put("display", NbtCompound().apply {
@@ -29,9 +31,11 @@ object MapItemService {
     }
 
     fun createMapItem(ctx: BingoContext, team: BingoTeam): ItemStack {
+        val teamMap = ctx.state.getMap(ctx, team)
+
         val item = ItemStack(Items.FILLED_MAP, 1)
         item.getOrCreateNbt().apply {
-            putInt("map", team.getMapId(ctx))
+            putInt("map", teamMap.mapId)
             putBoolean(NBT_BINGO_IGNORE, true)
             putBoolean(NBT_BINGO_VANISH, true)
             put("display", NbtCompound().apply {
@@ -56,7 +60,8 @@ object MapItemService {
     }
 
     fun isMapTeamItem(ctx: BingoContext, stack: ItemStack, team: BingoTeam): Boolean {
-        return isMapItem(stack) && stack.nbt?.getInt("map") == team.getMapId(ctx)
+        val teamMap = ctx.state.getMap(ctx, team)
+        return isMapItem(stack) && stack.nbt?.getInt("map") == teamMap.mapId
     }
 
 }

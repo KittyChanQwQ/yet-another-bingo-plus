@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.card
 
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
@@ -28,15 +29,22 @@ sealed class BingoCardEntry {
      * @return true if the tile state has changed
      */
     open fun setAchieved(team: BingoTeam, value: Boolean): Boolean {
-        return if (value) {
-            teams.add(team)
-        } else {
-            teams.remove(team)
+        return when {
+            value -> teams.add(team)
+            else -> teams.remove(team)
+        }.also { changed ->
+            if (changed) markDirty()
         }
     }
 
     fun hasAnyAchieved() = teams.isNotEmpty()
     fun hasNoneAchieved() = teams.isEmpty()
+
+    var updatedAt = Clock.System.now()
+
+    fun markDirty() {
+        updatedAt = Clock.System.now()
+    }
 
     @Serializable
     data object FreeSpace : BingoCardEntry() {

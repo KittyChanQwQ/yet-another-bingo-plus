@@ -10,6 +10,7 @@ class BingoContext(
     val state: BingoState,
 ) {
 
+    val ctx get() = this
     val config get() = state.config
 
     val lobbyWorld by lazy {

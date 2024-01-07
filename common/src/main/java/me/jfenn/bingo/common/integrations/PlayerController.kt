@@ -56,7 +56,7 @@ object PlayerController : KoinComponent {
 
     fun removePreviewCardItem(ctx: BingoContext, player: ServerPlayerEntity) {
         for ((slot, item) in player.allInventorySlots()) {
-            if (MapItemService.isMapItem(item) && FilledMapItem.getMapId(item) == ctx.state.getPreviewMapId(ctx))
+            if (MapItemService.isMapItem(item) && FilledMapItem.getMapId(item) == ctx.state.getPreviewMap(ctx).mapId)
                 player.inventory.removeStack(slot)
         }
     }

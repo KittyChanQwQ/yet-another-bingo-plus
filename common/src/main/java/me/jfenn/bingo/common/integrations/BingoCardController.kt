@@ -18,13 +18,15 @@ object BingoCardController {
 
         if (ctx.state.state == GameState.PREGAME) {
             // if in pregame, update the preview card!
-            MapRenderService.update(ctx, team = null, teamMapId = ctx.state.getPreviewMapId(ctx))
+            val previewMap = ctx.state.getPreviewMap(ctx)
+            MapRenderService.update(ctx, previewMap)
         }
 
         if (ctx.state.state == GameState.PLAYING) {
             // update the card map images
             for (team in BingoTeam.entries) {
-                MapRenderService.update(ctx, team)
+                val teamMap = ctx.state.getMap(ctx, team)
+                MapRenderService.update(ctx, teamMap)
             }
         }
     }
@@ -32,13 +34,15 @@ object BingoCardController {
     fun init() {
         GameState.PREGAME.onEnter {
             // if in pregame, update the preview card!
-            MapRenderService.update(this, team = null, teamMapId = state.getPreviewMapId(this))
+            val previewMap = state.getPreviewMap(ctx)
+            MapRenderService.update(ctx, previewMap)
         }
 
         GameState.PLAYING.onEnter {
             // update all card map images
             for (team in BingoTeam.entries) {
-                MapRenderService.update(this, team)
+                val teamMap = state.getMap(ctx, team)
+                MapRenderService.update(ctx, teamMap)
             }
         }
     }
