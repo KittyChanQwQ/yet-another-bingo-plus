@@ -5,6 +5,8 @@ plugins {
 
 loom.accessWidenerPath = file("src/main/resources/bingo.accesswidener")
 
+base.archivesName.set("${project.archives_base_name}-common")
+
 dependencies {
     implementation libs.insert.koin.core
 

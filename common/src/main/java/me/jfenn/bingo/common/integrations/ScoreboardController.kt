@@ -1,11 +1,14 @@
 package me.jfenn.bingo.common.integrations
 
+import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.map.MapItemService
+import me.jfenn.bingo.common.state.BingoContext
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
@@ -19,6 +22,24 @@ object ScoreboardController : KoinComponent {
 
     val scoreboardManager by inject<IScoreboardManager>()
 
+    fun getScoreboardObjective(ctx: BingoContext, team: BingoTeam?) : IObjectiveHandle {
+        val objectiveName = "bingo_sidebar_" + team?.name
+        val objective = scoreboardManager.createDummyObjective(ctx.server, objectiveName, Text.literal("Minecraft BINGO"))
+        return objective
+    }
+
+    fun shouldDisplayScoreboard(ctx: BingoContext, playerEntity: PlayerEntity) : Boolean {
+        val isScoreboardEnabled = ConfigService.getPlayer(playerEntity.uuidAsString).scoreboard
+        val player = ctx.server.playerManager.getPlayer(playerEntity.uuid) ?: return false
+
+        // if the player is holding the map item, show the scoreboard; otherwise, hide it
+        val isHoldingMapItem = player.interactionManager.gameMode != GameMode.SURVIVAL
+                || MapItemService.isMapItem(playerEntity.mainHandStack)
+                || MapItemService.isMapItem(playerEntity.offHandStack)
+
+        return isScoreboardEnabled && isHoldingMapItem
+    }
+
     fun init() {
         ConfigService.onChangePlayerSettings { player ->
             val settings = ConfigService.getPlayer(player.uuidAsString)
@@ -31,8 +52,7 @@ object ScoreboardController : KoinComponent {
 
         Bingo.onUpdateTick {
             for (team in BingoTeam.entries + null) {
-                val objectiveName = "bingo_sidebar_" + team?.name
-                val objective = scoreboardManager.createDummyObjective(server, objectiveName, Text.literal("Minecraft BINGO"))
+                val objective = getScoreboardObjective(this, team)
 
                 val scoreboardText = buildList {
                     add("")
@@ -106,16 +126,8 @@ object ScoreboardController : KoinComponent {
                     .filter { ConfigService.getPlayer(it.uuidAsString).scoreboard }
                     .forEach { player ->
                         // if the player is holding the map item, show the scoreboard; otherwise, hide it
-                        val isHoldingMapItem = player.interactionManager.gameMode != GameMode.SURVIVAL
-                                || MapItemService.isMapItem(player.mainHandStack)
-                                || MapItemService.isMapItem(player.offHandStack)
-
-                        if (isHoldingMapItem) {
-                            // change packets only need to be sent if clients are on a separate machine
-                            if (!server.isSingleplayer) {
-                                scoreboardManager.sendScoreboardUpdates(player, objective)
-                            }
-
+                        if (shouldDisplayScoreboard(this, player)) {
+                            scoreboardManager.sendScoreboardUpdates(player, objective)
                             scoreboardManager.sendScoreboardDisplay(player, objective)
                         } else {
                             scoreboardManager.sendScoreboardDisplay(player, null)

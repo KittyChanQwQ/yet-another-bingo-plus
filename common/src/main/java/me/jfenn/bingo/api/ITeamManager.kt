@@ -1,5 +1,6 @@
 package me.jfenn.bingo.api
 
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text

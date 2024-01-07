@@ -35,7 +35,7 @@
   ],
   "description": "Common cross-version functionality for the BINGO mod",
   "mixins": [
-    "mixins.bingo.json"
+    "mixins.bingo-common.json"
   ],
   "accessWidener": "bingo.accesswidener",
   "custom": {

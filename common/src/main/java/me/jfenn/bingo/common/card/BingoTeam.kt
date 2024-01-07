@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.utils.text.TextColor
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.HoverEvent
@@ -85,6 +86,11 @@ enum class BingoTeam(
         fun fromPlayer(player: ServerPlayerEntity): BingoTeam? {
             val team = teamManager.getPlayerTeam(player) ?: return null
             return TEAM_ID_INDEX[team.name]
+        }
+
+        fun fromPlayer(server: MinecraftServer, player: PlayerEntity): BingoTeam? {
+            return server.playerManager.getPlayer(player.uuid)
+                ?.let { fromPlayer(it) }
         }
     }
 

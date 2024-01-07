@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.card
 
-import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.api.ITeamManager
+import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.state.BingoContext
 import net.minecraft.server.network.ServerPlayerEntity
 import org.koin.core.component.KoinComponent

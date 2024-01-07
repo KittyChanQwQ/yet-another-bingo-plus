@@ -34,7 +34,12 @@
     "fennifith"
   ],
   "description": "A multiplayer BINGO item hunt mod + lobby",
-  "mixins": [],
+  "mixins": [
+    {
+      "config": "mixins.bingo.json",
+      "environment": "client"
+    }
+  ],
   "custom": {
     "modmenu": {
       "links": {

@@ -34,7 +34,9 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
-    include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
+    if (!project.name.equals("common")) {
+        include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
+    }
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
@@ -71,7 +73,7 @@ test {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}"}
+        rename { "${it}_${project.archives_base_name}"}
     }
 }
 

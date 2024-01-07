@@ -73,17 +73,20 @@ class ScoreboardManager : IScoreboardManager {
     override fun sendScoreboardDisplay(player: ServerPlayerEntity, handle: IObjectiveHandle?) {
         require(handle is ObjectiveHandle?)
         player.networkHandler.sendPacket(createScoreboardDisplayPacket(handle?.objective))
-
-        // If the server is in singleplayer, the display packet is not handled
-        if (player.server.isSingleplayer && player.uuid == player.server.hostProfile?.id) {
-            player.server.scoreboard.setObjectiveSlot(1, handle?.objective)
-        }
     }
 
     override fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle) {
         require(handle is ObjectiveHandle)
+        // If the server is in singleplayer, the scoreboard packets are not handled
+        // - sending these to the host (client) player will cause a bunch of error log spam
+        if (player.server.isSingleplayer && player.uuid == player.server.hostProfile?.id)
+            return
+
         val packets = player.server.scoreboard.createChangePackets(handle.objective)
         for (packet in packets) {
+            if (packet is ScoreboardDisplayS2CPacket && packet.slot == 1)
+                continue
+
             player.networkHandler.sendPacket(packet)
         }
     }
