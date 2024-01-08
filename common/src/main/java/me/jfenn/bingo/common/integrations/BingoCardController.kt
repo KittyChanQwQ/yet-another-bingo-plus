@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.integrations
 
+import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.map.MapRenderService
@@ -15,34 +16,20 @@ object BingoCardController {
         if (!ctx.config.isValid()) return
 
         ctx.state.card = CardService.generate(ctx.config, ctx.state.seed)
-
-        if (ctx.state.state == GameState.PREGAME) {
-            // if in pregame, update the preview card!
-            val previewMap = ctx.state.getPreviewMap(ctx)
-            MapRenderService.update(ctx, previewMap)
-        }
-
-        if (ctx.state.state == GameState.PLAYING) {
-            // update the card map images
-            for (team in BingoTeam.entries) {
-                val teamMap = ctx.state.getMap(ctx, team)
-                MapRenderService.update(ctx, teamMap)
-            }
-        }
     }
 
     fun init() {
-        GameState.PREGAME.onEnter {
-            // if in pregame, update the preview card!
-            val previewMap = state.getPreviewMap(ctx)
-            MapRenderService.update(ctx, previewMap)
-        }
-
-        GameState.PLAYING.onEnter {
+        Bingo.onGameTick {
             // update all card map images
-            for (team in BingoTeam.entries) {
-                val teamMap = state.getMap(ctx, team)
-                MapRenderService.update(ctx, teamMap)
+            if (state.state == GameState.PREGAME) {
+                // if in pregame, update the preview card!
+                val previewMap = state.getPreviewMap(ctx)
+                MapRenderService.update(ctx, previewMap)
+            } else {
+                for (team in BingoTeam.entries) {
+                    val teamMap = state.getMap(ctx, team)
+                    MapRenderService.update(ctx, teamMap)
+                }
             }
         }
     }

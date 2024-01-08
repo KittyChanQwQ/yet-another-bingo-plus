@@ -14,8 +14,10 @@ import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.util.WeakHashMap
 import javax.imageio.ImageIO
+import kotlin.math.roundToInt
 import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 object MapRenderService {
@@ -150,19 +152,24 @@ object MapRenderService {
     }
 
     private fun drawMapTile(
+        ctx: BingoContext,
         state: MapState,
         map: BingoMap,
-        config: BingoConfig,
         item: BingoCardEntry,
         itemX: Int,
         itemY: Int,
     ) {
-        println("Drawing tile $itemX, $itemY")
         require(itemX in 0 until 5)
         require(itemY in 0 until 5)
 
-        val isAchieved = map.team != null && item.hasAchieved(map.team)
-        val isLocked = config.isLockoutMode && item.teams.isNotEmpty() && map.team != null && !item.hasAchieved(map.team)
+        val isAchieved = map.team != null && item.hasAchieved(map.team) && when {
+            isFlashing(map, item) && Clock.System.now() - item.updatedAt < 4.seconds -> {
+                (ctx.server.ticks / 10) % 2 == 0
+            }
+            else -> true
+        }
+
+        val isLocked = ctx.config.isLockoutMode && item.teams.isNotEmpty() && map.team != null && !item.hasAchieved(map.team)
         val tileImage = getTileImage(item)
 
         val tileX = MAP_BORDER + TILE_SIZE*itemX
@@ -181,7 +188,7 @@ object MapRenderService {
                 })
 
                 if (
-                    config.showOtherTeamCompletions &&
+                    ctx.config.showOtherTeamCompletions &&
                     item.hasAnyAchieved() &&
                     (innerX == 0 || innerX == innerMax || innerY == 0 || innerY == innerMax)
                 ) {
@@ -237,6 +244,10 @@ object MapRenderService {
         }
     }
 
+    fun isFlashing(map: BingoMap, entry: BingoCardEntry) : Boolean {
+        return map.team?.let { entry.hasAchieved(it) } == true && Clock.System.now() - entry.updatedAt < 5.seconds
+    }
+
     fun update(
         ctx: BingoContext,
         map: BingoMap,
@@ -255,11 +266,14 @@ object MapRenderService {
         for (x in 0 until 5) {
             for (y in 0 until 5) {
                 val entry = card.entry(x, y)
-                if (entry.updatedAt > map.updatedAt) {
+                if (
+                    entry.updatedAt > map.updatedAt ||
+                    (isFlashing(map, entry) && ctx.server.ticks % 10 == 0)
+                ) {
                     drawMapTile(
+                        ctx = ctx,
                         state = state,
                         map = map,
-                        config = ctx.state.config,
                         item = entry,
                         itemX = x,
                         itemY = y,
@@ -270,9 +284,9 @@ object MapRenderService {
 
         map.updatedAt = Clock.System.now()
     }.also {
-        //if (it >= 1.milliseconds) {
-        log.info("Re-drawing map_${map.mapId} for team ${map.team?.name} ($it)")
-        //}
+        if (it >= 1.milliseconds) {
+            log.info("Re-drawing map_${map.mapId} for team ${map.team?.name} ($it)")
+        }
     }
 
 }
