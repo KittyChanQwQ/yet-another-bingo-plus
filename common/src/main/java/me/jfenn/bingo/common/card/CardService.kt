@@ -52,7 +52,7 @@ object CardService {
 
         // if the card has less than 25 entries, add free spaces until it is full
         while (items.size < 25)
-            items.add(BingoCardEntry.FreeSpace)
+            items.add(BingoCardEntry.FreeSpace())
 
         items.shuffle(random)
         return BingoCard(items)

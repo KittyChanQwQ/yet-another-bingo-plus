@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.map
 
+import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.card.BingoCardEntry
-import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.state.BingoContext
 import net.minecraft.item.FilledMapItem
@@ -14,6 +15,8 @@ import java.io.InputStream
 import java.util.WeakHashMap
 import javax.imageio.ImageIO
 import kotlin.system.measureTimeMillis
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.measureTime
 
 object MapRenderService {
 
@@ -93,96 +96,123 @@ object MapRenderService {
         }
     }
 
-    fun update(
-        ctx: BingoContext,
+    private fun drawMapBorders(
+        state: MapState,
         map: BingoMap,
-    ) = measureTimeMillis {
-        val state = MapState.of(1, true, ctx.server.overworld.registryKey)
-        val card = ctx.state.card
-        val config = ctx.state.config
+    ) {
+        val borderLight = ((map.teamColor*4) + 2).toUByte().toByte()
+        val borderMid = ((map.teamColor*4) + 1).toUByte().toByte()
+        val borderDark = ((map.teamColor*4) + 3).toUByte().toByte()
 
-        val borderLight = (map.teamColor*4) + 2
-        val borderMid = (map.teamColor*4) + 1
-        val borderDark = (map.teamColor*4) + 3
-
+        // Outer edge borders
         for (x in 0 until MAP_SIZE) {
-            for (y in 0 until MAP_SIZE) {
-                val i = x + y * MAP_SIZE
+            state.setColor(x, 0, borderLight)
+            state.setColor(0, x, borderLight)
+
+            state.setColor(x, MAP_SIZE-1, borderDark)
+            state.setColor(MAP_SIZE-1, x, borderDark)
+        }
+
+        // Middle borders
+        for (x in 1 until MAP_SIZE-1) {
+            for (y in 1 until MAP_BORDER-1) {
+                val yInv = MAP_SIZE - y - 1
+                state.setColor(x, y, borderMid)
+                state.setColor(y, x, borderMid)
+                state.setColor(x, yInv, borderMid)
+                state.setColor(yInv, x, borderMid)
+            }
+        }
+
+        // Inner borders
+        for (x in MAP_BORDER-1..MAP_SIZE-MAP_BORDER) {
+            state.setColor(x, MAP_BORDER-1, borderDark)
+            state.setColor(MAP_BORDER-1, x, borderDark)
+            state.setColor(x, MAP_SIZE-MAP_BORDER, borderLight)
+            state.setColor(MAP_SIZE-MAP_BORDER, x, borderLight)
+        }
+
+        // Cell borders
+        for (x in MAP_BORDER until MAP_SIZE-MAP_BORDER) {
+            for (y in 1..4) {
+                val yActual = MAP_BORDER + y*TILE_SIZE - TILE_MARGIN + 1
+                state.setColor(x, yActual, COLOR_SHADOW.asByte)
+                state.setColor(yActual, x, COLOR_SHADOW.asByte)
+            }
+        }
+        for (x in MAP_BORDER until MAP_SIZE-MAP_BORDER) {
+            for (y in 1..4) {
+                val yActual = MAP_BORDER + y*TILE_SIZE - TILE_MARGIN
+                state.setColor(x, yActual, COLOR_MARGIN.asByte)
+                state.setColor(yActual, x, COLOR_MARGIN.asByte)
+            }
+        }
+    }
+
+    private fun drawMapTile(
+        state: MapState,
+        map: BingoMap,
+        config: BingoConfig,
+        item: BingoCardEntry,
+        itemX: Int,
+        itemY: Int,
+    ) {
+        println("Drawing tile $itemX, $itemY")
+        require(itemX in 0 until 5)
+        require(itemY in 0 until 5)
+
+        val isAchieved = map.team != null && item.hasAchieved(map.team)
+        val isLocked = config.isLockoutMode && item.teams.isNotEmpty() && map.team != null && !item.hasAchieved(map.team)
+        val tileImage = getTileImage(item)
+
+        val tileX = MAP_BORDER + TILE_SIZE*itemX
+        val tileY = MAP_BORDER + TILE_SIZE*itemY
+
+        val innerMax = TILE_SIZE - TILE_MARGIN - 1
+        for (innerX in 0..innerMax) {
+            val x = tileX + innerX
+            for (innerY in 0..innerMax) {
+                val y = tileY + innerY
+
                 // default to background color
-                state.colors[i] = COLOR_BACKGROUND.asByte
-
-                // if x is within a map border
-                if (x < MAP_BORDER || y < MAP_BORDER || x >= MAP_SIZE - MAP_BORDER || y >= MAP_SIZE - MAP_BORDER) {
-                    state.colors[i] = when {
-                        x == 0 || y == 0 -> borderLight
-                        x == MAP_SIZE-1 || y == MAP_SIZE-1 -> borderDark
-                        x in 1 until MAP_BORDER-1 || y in 1 until MAP_BORDER-1 -> borderMid
-                        x in MAP_SIZE - MAP_BORDER + 1 until MAP_SIZE-1 || y in MAP_SIZE - MAP_BORDER + 1 until MAP_SIZE-1 -> borderMid
-                        x == MAP_SIZE - MAP_BORDER || y == MAP_SIZE - MAP_BORDER -> borderLight
-                        else -> borderDark
-                    }.toUByte().toByte()
-                    continue
-                }
-
-                val itemX = (x - MAP_BORDER) / TILE_SIZE
-                val itemY = (y - MAP_BORDER) / TILE_SIZE
-                val item = card.entry(itemX, itemY)
-
-                // if the item has been captured, give it a different color
-                if (map.team != null && item.hasAchieved(map.team)) {
-                    state.colors[i] = COLOR_ACHIEVED.asByte
-                }
-
-                val tileX = (x - MAP_BORDER) % TILE_SIZE
-                val tileY = (y - MAP_BORDER) % TILE_SIZE
-
-                if (tileX >= TILE_SIZE - TILE_MARGIN || tileY >= TILE_SIZE - TILE_MARGIN) {
-                    if (tileX == TILE_SIZE - TILE_MARGIN || tileY == TILE_SIZE - TILE_MARGIN) {
-                        state.colors[i] = COLOR_MARGIN.asByte
-                    } else {
-                        state.colors[i] = COLOR_SHADOW.asByte
-                    }
-                    continue
-                }
+                state.setColor(x, y, when {
+                    isAchieved -> COLOR_ACHIEVED.asByte
+                    else -> COLOR_BACKGROUND.asByte
+                })
 
                 if (
-                    config.showOtherTeamCompletions
-                    && item.hasAnyAchieved()
-                    && (
-                        tileX == 0
-                        || tileX == TILE_SIZE - TILE_MARGIN - 1
-                        || tileY == 0
-                        || tileY == TILE_SIZE - TILE_MARGIN - 1
-                    )
+                    config.showOtherTeamCompletions &&
+                    item.hasAnyAchieved() &&
+                    (innerX == 0 || innerX == innerMax || innerY == 0 || innerY == innerMax)
                 ) {
                     val itemTeams = item.teams.filter { it != map.team }
-                    val tileTeamX = (tileX + tileY) * itemTeams.size / ((TILE_SIZE - TILE_MARGIN) * 2)
+                    val tileTeamX = (innerX + innerY) * itemTeams.size / ((TILE_SIZE - TILE_MARGIN) * 2)
                     val itemTeam = itemTeams.getOrNull(tileTeamX)
                     if (itemTeam != null) {
-                        val variant = if ((tileX + tileY) % 2 == 0) 2 else 3
-                        state.colors[i] = ((itemTeam.color*4) + variant).toUByte().toByte()
+                        val variant = if ((innerX + innerY) % 2 == 0) 2 else 3
+                        state.setColor(x, y, ((itemTeam.color*4) + variant).toUByte().toByte())
                         continue
                     }
                 }
 
                 // draw the item image in the tile (offset by tile padding)
-                val imgX = tileX - TILE_PADDING
-                val imgY = tileY - TILE_PADDING
+                val imgX = innerX - TILE_PADDING
+                val imgY = innerY - TILE_PADDING
 
                 // draw an X if the item is locked (if BingoMode.LOCKOUT)
                 if (imgX in imgY..imgY+1 || (TILE_IMAGE - imgY) in imgX..imgX+1) {
-                    if (config.isLockoutMode && item.teams.isNotEmpty() && map.team != null && !item.hasAchieved(map.team)) {
-                        state.colors[i] = COLOR_LOCKED.asByte
+                    if (isLocked) {
+                        state.setColor(x, y, COLOR_LOCKED.asByte)
                         continue
                     }
                 }
 
-                if (imgX in 0..TILE_IMAGE && imgY in 0..TILE_IMAGE) {
-                    val tileImage = getTileImage(item) ?: continue
+                if (imgX in 0..TILE_IMAGE && imgY in 0..TILE_IMAGE && tileImage != null) {
                     val tileImageArray = when {
-                        map.team != null && item.hasAchieved(map.team) -> tileImage.achieved
+                        isAchieved -> tileImage.achieved
                         else -> tileImage.regular
                     }
+
                     val tileImageIndex = imgX + imgY * TILE_IMAGE
 
                     if (imgX >= TILE_IMAGE || imgY >= TILE_IMAGE || tileImageArray[tileImageIndex] == 0.toByte()) {
@@ -190,26 +220,59 @@ object MapRenderService {
                             // image shadow
                             val prevIndex = (imgX-1) + (imgY-1) * TILE_IMAGE
                             if (prevIndex in tileImageArray.indices && tileImageArray[prevIndex] != 0.toByte()) {
-                                state.colors[i] = when {
-                                    map.team != null && item.hasAchieved(map.team) -> COLOR_ACHIEVED_SHADOW.asByte
+                                state.setColor(x, y, when {
+                                    isAchieved -> COLOR_ACHIEVED_SHADOW.asByte
                                     else -> COLOR_ITEM_SHADOW.asByte
-                                }
+                                })
                             }
                         }
 
                         continue
                     }
 
-                    state.colors[i] = tileImageArray[tileImageIndex]
+                    state.setColor(x, y, tileImageArray[tileImageIndex])
                     continue
                 }
             }
         }
+    }
 
-        state.isDirty = false
-        ctx.server.overworld.putMapState(FilledMapItem.getMapName(map.mapId), state)
+    fun update(
+        ctx: BingoContext,
+        map: BingoMap,
+    ) = measureTime {
+        val card = ctx.state.card
+
+        val state = map.mapState ?: kotlin.run {
+            val state = MapState.of(1, true, ctx.server.overworld.registryKey)
+            drawMapBorders(state, map)
+
+            ctx.server.overworld.putMapState(FilledMapItem.getMapName(map.mapId), state)
+            map.mapState = state
+            state
+        }
+
+        for (x in 0 until 5) {
+            for (y in 0 until 5) {
+                val entry = card.entry(x, y)
+                if (entry.updatedAt > map.updatedAt) {
+                    drawMapTile(
+                        state = state,
+                        map = map,
+                        config = ctx.state.config,
+                        item = entry,
+                        itemX = x,
+                        itemY = y,
+                    )
+                }
+            }
+        }
+
+        map.updatedAt = Clock.System.now()
     }.also {
-        log.info("Re-drawing map_${map.mapId} for team ${map.team?.name} (${it}ms)")
+        //if (it >= 1.milliseconds) {
+        log.info("Re-drawing map_${map.mapId} for team ${map.team?.name} ($it)")
+        //}
     }
 
 }

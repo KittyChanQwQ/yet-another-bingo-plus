@@ -47,7 +47,7 @@ sealed class BingoCardEntry {
     }
 
     @Serializable
-    data object FreeSpace : BingoCardEntry() {
+    class FreeSpace : BingoCardEntry() {
         init {
             teams.addAll(BingoTeam.entries)
         }
