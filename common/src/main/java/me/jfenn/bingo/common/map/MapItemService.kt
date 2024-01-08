@@ -44,6 +44,7 @@ object MapItemService {
                         .formatted(team.textColor)
                         .apply { italic = true }
                 ))
+                putInt("MapColor", team.formatting.colorValue ?: 0)
             })
         }
 
