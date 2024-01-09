@@ -271,7 +271,8 @@ object MapRenderService {
             for (y in 0 until 5) {
                 val entry = card.entry(x, y)
                 if (
-                    entry.updatedAt > map.updatedAt ||
+                    entry.updatedAt(map.team) > map.updatedAt ||
+                    (ctx.config.showOtherTeamCompletions && entry.updatedAt > map.updatedAt) ||
                     (isFlashing(map, entry) && ctx.server.ticks % 10 == 0)
                 ) {
                     drawMapTile(
