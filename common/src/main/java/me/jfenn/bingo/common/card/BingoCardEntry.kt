@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.card
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
@@ -33,17 +34,24 @@ sealed class BingoCardEntry {
             value -> teams.add(team)
             else -> teams.remove(team)
         }.also { changed ->
-            if (changed) markDirty()
+            if (changed) markDirty(team)
         }
     }
 
     fun hasAnyAchieved() = teams.isNotEmpty()
     fun hasNoneAchieved() = teams.isEmpty()
 
-    var updatedAt = Clock.System.now()
+    private val updatedAtMap = mutableMapOf<BingoTeam?, Instant>()
 
-    fun markDirty() {
-        updatedAt = Clock.System.now()
+    val updatedAt: Instant get() = updatedAt(null)
+
+    fun updatedAt(team: BingoTeam?): Instant = updatedAtMap.getOrPut(team) { Clock.System.now() }
+
+    fun markDirty(team: BingoTeam) {
+        Clock.System.now().let {
+            updatedAtMap[team] = it
+            updatedAtMap[null] = it
+        }
     }
 
     @Serializable

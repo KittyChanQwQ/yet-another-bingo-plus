@@ -29,6 +29,7 @@ object MapRenderService {
     private val COLOR_MARGIN = Color(199, 199, 199)
     private val COLOR_SHADOW = Color(20, 20, 20)
     private val COLOR_ACHIEVED = Color(100, 255, 100)
+    private val COLOR_FLASHING = Color(178, 76, 216)
     private val COLOR_ACHIEVED_SHADOW = Color(80, 120, 80)
     private val COLOR_LOCKED = Color(150, 0, 0)
 
@@ -39,6 +40,8 @@ object MapRenderService {
     private const val TILE_PADDING = 3
     private const val TILE_MARGIN = 2
     private const val TILE_SIZE = TILE_IMAGE + TILE_PADDING*2 + TILE_MARGIN
+
+    private val FLASHING_DURATION = 4.seconds
 
     class BingoTileImage(
         val regular: Array<Byte> = Array(16*16) { 0 },
@@ -162,15 +165,18 @@ object MapRenderService {
         require(itemX in 0 until 5)
         require(itemY in 0 until 5)
 
-        val isAchieved = map.team != null && item.hasAchieved(map.team) && when {
-            isFlashing(map, item) && Clock.System.now() - item.updatedAt < 4.seconds -> {
-                (ctx.server.ticks / 10) % 2 == 0
-            }
-            else -> true
-        }
+        val isAchieved = map.team != null && item.hasAchieved(map.team)
+        val isFlashing = isFlashing(map, item)
+                && map.team != null
+                && Clock.System.now() - item.updatedAt(map.team) < 4.seconds
+                && (ctx.server.ticks / 10) % 2 == 0
 
         val isLocked = ctx.config.isLockoutMode && item.teams.isNotEmpty() && map.team != null && !item.hasAchieved(map.team)
         val tileImage = getTileImage(item)
+        val tileImageArray = when {
+            isAchieved && !isFlashing -> tileImage?.achieved
+            else -> tileImage?.regular
+        }
 
         val tileX = MAP_BORDER + TILE_SIZE*itemX
         val tileY = MAP_BORDER + TILE_SIZE*itemY
@@ -183,6 +189,7 @@ object MapRenderService {
 
                 // default to background color
                 state.setColor(x, y, when {
+                    isFlashing -> COLOR_FLASHING.asByte
                     isAchieved -> COLOR_ACHIEVED.asByte
                     else -> COLOR_BACKGROUND.asByte
                 })
@@ -214,12 +221,7 @@ object MapRenderService {
                     }
                 }
 
-                if (imgX in 0..TILE_IMAGE && imgY in 0..TILE_IMAGE && tileImage != null) {
-                    val tileImageArray = when {
-                        isAchieved -> tileImage.achieved
-                        else -> tileImage.regular
-                    }
-
+                if (imgX in 0..TILE_IMAGE && imgY in 0..TILE_IMAGE && tileImageArray != null) {
                     val tileImageIndex = imgX + imgY * TILE_IMAGE
 
                     if (imgX >= TILE_IMAGE || imgY >= TILE_IMAGE || tileImageArray[tileImageIndex] == 0.toByte()) {
@@ -228,7 +230,7 @@ object MapRenderService {
                             val prevIndex = (imgX-1) + (imgY-1) * TILE_IMAGE
                             if (prevIndex in tileImageArray.indices && tileImageArray[prevIndex] != 0.toByte()) {
                                 state.setColor(x, y, when {
-                                    isAchieved -> COLOR_ACHIEVED_SHADOW.asByte
+                                    isAchieved && !isFlashing -> COLOR_ACHIEVED_SHADOW.asByte
                                     else -> COLOR_ITEM_SHADOW.asByte
                                 })
                             }
@@ -245,7 +247,9 @@ object MapRenderService {
     }
 
     fun isFlashing(map: BingoMap, entry: BingoCardEntry) : Boolean {
-        return map.team?.let { entry.hasAchieved(it) } == true && Clock.System.now() - entry.updatedAt < 5.seconds
+        return map.team != null
+                && entry.hasAchieved(map.team)
+                && Clock.System.now() - entry.updatedAt(map.team) < (FLASHING_DURATION + 1.seconds)
     }
 
     fun update(
