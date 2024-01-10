@@ -89,7 +89,7 @@ object BingoCommands {
 
                             context.config.itemDistribution = itemDist
                             context.menu?.markDirty()
-                            BingoCardController.rollCard(context)
+                            BingoCardController.generateCard(context)
                             ctx.source.player?.sendInfoMessage("Item distribution changed: $itemDist")
                             1
                         }
@@ -230,7 +230,7 @@ object BingoCommands {
                             .executes { ctx ->
                                 val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
                                 context.state.seed = LongArgumentType.getLong(ctx, "seed")
-                                BingoCardController.rollCard(context)
+                                BingoCardController.generateCard(context)
 
                                 ctx.source.sendMessage(
                                     Text.empty()
@@ -249,10 +249,7 @@ object BingoCommands {
                     .requireState(GameState.PREGAME, GameState.PLAYING)
                     .executes { ctx ->
                         val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
-                        // Change the BINGO seed to a new value
-                        context.state.seed = Random.nextLong()
-                        // Re-roll the card
-                        BingoCardController.rollCard(context)
+                        BingoCardController.shuffleCard(context)
                         ctx.source.player?.sendInfoMessage("Card re-rolled.")
                         1
                     }

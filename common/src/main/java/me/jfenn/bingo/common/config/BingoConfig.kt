@@ -42,6 +42,7 @@ data class BingoConfig(
     @OptIn(ExperimentalSerializationApi::class)
     @JsonNames("drawOtherTeamCompletions")
     var showOtherTeamCompletions: Boolean = false,
+    var hiddenItems: Boolean = false,
     var showPreviewCard: Boolean = false,
 
     // adds BINGO_IGNORE to spawn kit items, preventing them from being scored

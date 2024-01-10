@@ -174,6 +174,7 @@ object MapRenderService {
         val isLocked = ctx.config.isLockoutMode && item.teams.isNotEmpty() && map.team != null && !item.hasAchieved(map.team)
         val tileImage = getTileImage(item)
         val tileImageArray = when {
+            ctx.config.hiddenItems && !item.teamsSeen.contains(map.team) -> null
             isAchieved && !isFlashing -> tileImage?.achieved
             else -> tileImage?.regular
         }

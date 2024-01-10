@@ -59,6 +59,7 @@ fun MenuComponent.registerToggleButton(
     position: Vec3d,
     text: String,
     toggleProp: MutableProperty<Boolean>,
+    onClick: (player: ServerPlayerEntity) -> Unit = {},
 ) {
     registerButton(
         position = position,
@@ -67,5 +68,6 @@ fun MenuComponent.registerToggleButton(
     ) {
         var toggle by toggleProp
         toggle = !toggle
+        onClick(it)
     }
 }

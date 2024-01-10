@@ -51,14 +51,14 @@ fun MenuComponent.registerMenuPage(
                 config = ctx.config,
             ) {
                 // when changed, re-roll the bingo card
-                BingoCardController.rollCard(ctx)
+                BingoCardController.generateCard(ctx)
             }
             registerItemDistribution(
                 position = position.add(3.0, 0.0, 0.0),
                 itemDistributionProp = itemDistributionProp,
             ) {
                 // when changed, re-roll the bingo card
-                BingoCardController.rollCard(ctx)
+                BingoCardController.generateCard(ctx)
             }
         },
         component {
@@ -68,7 +68,7 @@ fun MenuComponent.registerMenuPage(
             )
             registerCardInfo(
                 position = position.add(0.0, 0.0, 0.0),
-                config = ctx.config,
+                ctx = ctx,
             )
             registerSpawnDistance(
                 position = position.add(3.0, 0.0, 0.0),

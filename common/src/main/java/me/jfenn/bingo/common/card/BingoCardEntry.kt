@@ -15,6 +15,7 @@ import net.minecraft.util.Identifier
 sealed class BingoCardEntry {
 
     val teams = HashSet<BingoTeam>()
+    val teamsSeen = HashSet<BingoTeam>()
 
     abstract val visualItem: Item?
 
@@ -31,7 +32,10 @@ sealed class BingoCardEntry {
      */
     open fun setAchieved(team: BingoTeam, value: Boolean): Boolean {
         return when {
-            value -> teams.add(team)
+            value -> {
+                teamsSeen.add(team)
+                teams.add(team)
+            }
             else -> teams.remove(team)
         }.also { changed ->
             if (changed) markDirty(team)
