@@ -60,7 +60,7 @@ fun MenuComponent.registerPlayerMenu(
                 val value = field.get(config)
                 val color = if (value) Vector3f(0f, 1f, 0f) else Vector3f(1f, 0f, 0f)
                 val effect = DustParticleEffect(color, 1f)
-                it.ctx.lobbyWorld.spawnParticles(player, effect, false, fieldPosition.x + 1.2, fieldPosition.y + 0.2, fieldPosition.z, 1, 0.0, 0.0, 0.0, 1.0)
+                it.ctx.lobbyWorld.spawnParticles(player, effect, false, fieldPosition.x + 1.6, fieldPosition.y + 0.2, fieldPosition.z, 1, 0.0, 0.0, 0.0, 1.0)
             }
         }
     }

@@ -11,12 +11,13 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvents
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
+import kotlin.math.max
 
 fun MenuComponent.registerButton(
     position: Vec3d,
     text: String,
     isActiveProp: Property<Boolean> = ConstantProperty(false),
-    width: Float = MENU_HITBOX_WIDTH,
+    width: Float = max(MENU_HITBOX_WIDTH, text.length * 0.15f),
     height: Float = MENU_HITBOX_HEIGHT,
     facing: Direction = Direction.SOUTH,
     requiredPermissionLevel: Int = 2,
