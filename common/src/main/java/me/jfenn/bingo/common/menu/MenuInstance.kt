@@ -46,7 +46,7 @@ class MenuInstance(
         world.chunkManager.removePersistentTickets()
     }
 
-    fun <T: Entity> spawn(info: MenuEntityHandle<T>, nbt: NbtCompound = NbtCompound()): T? {
+    fun <T: Entity> spawn(info: MenuEntityHandle<T>, nbt: NbtCompound): T? {
         var entity: T? = world.getEntity(info.id) as? T
 
         val chunkPos = ChunkPos.toLong(BlockPos(info.pos.x.toInt(), 0, info.pos.z.toInt()))
@@ -56,6 +56,8 @@ class MenuInstance(
         if (entity == null) {
             entity = info.type.create(world)!!
             entity.uuid = info.id
+            entity.readNbt(nbt)
+            entity.addCommandTag(instanceTag)
             // Try to spawn the entity into the world...
             val isSuccess = world.spawnEntity(entity)
             // If the entity cannot be spawned, discard it and return null
@@ -65,6 +67,9 @@ class MenuInstance(
                 entity.discard()
                 return null
             }
+        } else {
+            entity.readNbt(nbt)
+            entity.addCommandTag(instanceTag)
         }
 
         if (entity.type != info.type) {
@@ -72,8 +77,6 @@ class MenuInstance(
             return null
         }
 
-        entity.readNbt(nbt)
-        entity.addCommandTag(instanceTag)
         info.onUpdate(entity)
         return entity
     }
