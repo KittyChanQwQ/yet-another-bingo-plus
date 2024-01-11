@@ -51,15 +51,14 @@ object CoordsCommand : KoinComponent {
         )
 
         // add the coordinates message to the stored list
-        val list = context.state.teamChatCoordinates.getOrPut(team) { mutableListOf() }
-        list.add(entry)
+        team.chatCoordinates.add(entry)
 
         // send coordinates to the team
         ChatCommand.sendTeamMessage(player, team, Text.literal(entry.formatText()))
     }
 
     fun listCoordinates(context: BingoContext, player: ServerPlayerEntity, team: BingoTeam) {
-        val coordMessages = context.state.teamChatCoordinates[team] ?: emptyList()
+        val coordMessages = team.chatCoordinates
         if (coordMessages.isEmpty()) return
 
         player.sendMessage(Text.literal("Coordinates:").formatted(Formatting.GRAY, Formatting.BOLD))

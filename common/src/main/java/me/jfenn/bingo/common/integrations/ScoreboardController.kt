@@ -67,7 +67,7 @@ object ScoreboardController : KoinComponent {
         }
 
         Bingo.onUpdateTick {
-            for (team in BingoTeam.entries + null) {
+            for (team in ctx.state.getRegisteredTeams() + null) {
                 val objective = getScoreboardObjective(this, team)
 
                 val scoreboardText = buildList {
@@ -94,7 +94,7 @@ object ScoreboardController : KoinComponent {
                     }
                     add("")
                     if (team != null) {
-                        val score = state.getTeamScore(team)
+                        val score = team.score
 
                         add("Team: ${team.formatting}${team.name}")
                         add("Items scored: ${team.formatting}${score.items}")
@@ -117,13 +117,13 @@ object ScoreboardController : KoinComponent {
                     if (config.showCompletedItems && team != leadingTeam) {
                         // if the leading team is a tie, find one of the tied teams to get the item/line count
                         val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByItems(state, allowTies = true)
-                        val itemsScored = leadingOrTied?.let { state.getTeamScore(it).items } ?: 0
+                        val itemsScored = leadingOrTied?.score?.items ?: 0
                         add("Items scored: $formatting$itemsScored")
                     }
                     if (config.showCompletedLines && team != leadingTeam) {
                         // if the leading team is a tie, find one of the tied teams to get the item/line count
                         val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByLines(state, allowTies = true)
-                        val linesScored = leadingOrTied?.let { state.getTeamScore(it).lines } ?: 0
+                        val linesScored = leadingOrTied?.score?.lines ?: 0
                         add("Lines scored: $formatting$linesScored")
                     }
 

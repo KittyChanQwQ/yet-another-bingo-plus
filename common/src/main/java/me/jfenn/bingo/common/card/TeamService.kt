@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.card
 
 import me.jfenn.bingo.api.ITeamManager
+import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.state.BingoContext
 import net.minecraft.server.network.ServerPlayerEntity
@@ -12,16 +13,24 @@ object TeamService : KoinComponent {
 
     private val teamManager by inject<ITeamManager>()
 
-    fun joinTeam(player: ServerPlayerEntity, team: BingoTeam) {
-        if (BingoTeam.fromPlayer(player) == team) return
+    fun joinTeam(player: ServerPlayerEntity, teamTemplate: BingoTeam) {
+        val ctx = Bingo.getContext(player.server) ?: return
+        if (BingoTeam.fromPlayer(player)?.key == teamTemplate.key) return
         val server = player.server ?: return
+        val team = ctx.state.registerTeam(teamTemplate)
+
+        // Remove player from their existing team
+        BingoTeam.fromPlayer(player)
+            ?.playerUuids
+            ?.remove(player.uuidAsString)
 
         teamManager.setPlayerTeam(player, team.team(server))
+        team.playerUuids.add(player.uuidAsString)
         ChatMessages.broadcastJoinedTeam(player, team)
     }
 
     fun shuffleTeams(ctx: BingoContext, numTeams: Int) {
-        val teams = BingoTeam.entries.shuffled()
+        val teams = BingoTeam.TEAM_BLOCKS.values.shuffled()
 
         val players = ctx.server.playerManager.playerList
         val playersPerTeam = ceil(players.size / numTeams.coerceIn(1, teams.size).toDouble()).toInt()
@@ -29,9 +38,9 @@ object TeamService : KoinComponent {
         players.shuffled()
             .chunked(playersPerTeam)
             .forEachIndexed { i, teamPlayers ->
-                val team = teams[i % teams.size]
+                val teamTemplate = teams[i % teams.size]
                 for (teamPlayer in teamPlayers)
-                    joinTeam(teamPlayer, team)
+                    joinTeam(teamPlayer, teamTemplate)
             }
     }
 

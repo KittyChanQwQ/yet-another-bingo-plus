@@ -5,8 +5,8 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
@@ -26,22 +26,26 @@ data class BingoState(
     var lobbySpawnPos: BlockPosition = BlockPosition(0, 0, 0),
     var timeOffline: Duration = Duration.ZERO,
     var config: BingoConfig = ConfigService.config,
-    val teamScores: MutableMap<BingoTeam, TeamScore> = mutableMapOf(),
-    val teamWinners: MutableMap<BingoTeam, TeamWinner> = mutableMapOf(),
-    var teamSpawnpoints: MutableMap<BingoTeam, BlockPosition> = mutableMapOf(),
-    val teamChatCoordinates: MutableMap<BingoTeam, MutableList<CoordsCommand.CoordinatesEntry>> = mutableMapOf(),
-    val teamMaps: MutableMap<BingoTeam?, BingoMap> = mutableMapOf(),
+    val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
+    var previewMap: BingoMap? = null,
     var card: BingoCard = CardService.generate(config, seed),
 ) : SerializedPersistentState() {
 
-    fun getPreviewMap(ctx: BingoContext) = getMap(ctx, null)
+    fun getRegisteredTeams(): List<BingoTeam> {
+        return teams.values.filter { it.playerUuids.isNotEmpty() }
+    }
 
-    fun getMap(ctx: BingoContext, team: BingoTeam?) : BingoMap {
-        return teamMaps.getOrPut(team) {
-            BingoMap(
+    fun registerTeam(team: BingoTeam): BingoTeam {
+        return teams.getOrPut(team.key) { team }
+    }
+
+    fun getPreviewMap(ctx: BingoContext): BingoMap {
+        return previewMap ?: run {
+            val map = BingoMap(
                 mapId = ctx.server.overworld.nextMapId,
-                team = team,
             )
+            previewMap = map
+            return@run map
         }
     }
 
@@ -53,23 +57,19 @@ data class BingoState(
 
     fun updateScore(team: BingoTeam): TeamScore {
         val score = card.getTeamScore(team)
-        teamScores[team] = score
+        team.score = score
         return score
-    }
-
-    fun getTeamScore(team: BingoTeam): TeamScore {
-        return teamScores[team] ?: TeamScore.ZERO
     }
 
     /**
      * @return true if the team is now a winner (and was not before)
      */
     fun updateWinner(team: BingoTeam): Boolean {
-        val score = getTeamScore(team)
+        val score = team.score
         val isWinner = score.lines >= config.winCondition.numLines
 
-        if (isWinner && !teamWinners.containsKey(team)) {
-            teamWinners[team] = TeamWinner(
+        if (isWinner && team.winner == null) {
+            team.winner = TeamWinner(
                 instant = Clock.System.now()
             )
             return true
@@ -77,12 +77,6 @@ data class BingoState(
 
         return false
     }
-
-    fun getWinner(team: BingoTeam): TeamWinner? {
-        return teamWinners[team]
-    }
-
-    fun isWinner(team: BingoTeam) = getWinner(team) != null
 
     fun ingameDuration(): Duration? {
         val started = startedAt ?: return null
@@ -107,7 +101,11 @@ data class BingoState(
 
     fun formatWinners(): List<Text> = buildList {
         // List all teams that have completed the card
-        teamWinners.entries
+        getRegisteredTeams()
+            .filter { it.isWinner() }
+            .mapNotNull { team ->
+                team.winner?.let { team to it }
+            }
             .sortedBy { (_, win) -> win.instant }
             .forEachIndexed { index, (team, win) ->
                 val duration = win.instant - (startedAt ?: Clock.System.now())
@@ -119,7 +117,8 @@ data class BingoState(
             }
 
         // List any teams that started the card but did not finish
-        (teamScores.keys - teamWinners.keys)
+        getRegisteredTeams()
+            .filter { !it.isWinner() }
             .forEach { team ->
                 Text.empty()
                     .append(Text.literal("DNF - ").formatted(Formatting.GRAY))

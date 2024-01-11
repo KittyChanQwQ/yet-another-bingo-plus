@@ -149,7 +149,7 @@ object MenuService : KoinComponent {
                     val blockPos = BlockPos(x, y, z)
                     val blockState = lobbyWorld.getBlockState(blockPos)
 
-                    val team = BingoTeam.entries.find { it.carpetBlock == blockState.block } ?: continue
+                    val team = BingoTeam.TEAM_BLOCKS[blockState.block] ?: continue
                     spawnTeamEntity(lobbyWorld, Vec3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team, menu.instanceTag)
                     lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
                 }

@@ -194,7 +194,7 @@ object BingoCommands {
                     .then(
                         RequiredArgumentBuilder.argument<ServerCommandSource?, Int?>(
                             "teams",
-                            IntegerArgumentType.integer(1, BingoTeam.entries.size)
+                            IntegerArgumentType.integer(1, BingoTeam.TEAM_BLOCKS.size)
                         )
                             .executes { ctx ->
                                 val context = Bingo.getContext(ctx.source.server) ?: return@executes 0

@@ -14,8 +14,8 @@ import net.minecraft.util.Identifier
 @Serializable
 sealed class BingoCardEntry {
 
-    val teams = HashSet<BingoTeam>()
-    val teamsSeen = HashSet<BingoTeam>()
+    val teams = HashSet<BingoTeamKey>()
+    val teamsSeen = HashSet<BingoTeamKey>()
 
     abstract val visualItem: Item?
 
@@ -24,7 +24,7 @@ sealed class BingoCardEntry {
     }
 
     open fun hasAchieved(team: BingoTeam): Boolean {
-        return teams.contains(team)
+        return teams.contains(team.key)
     }
 
     /**
@@ -32,42 +32,48 @@ sealed class BingoCardEntry {
      */
     open fun setAchieved(team: BingoTeam, value: Boolean): Boolean {
         return when {
-            value -> {
-                teamsSeen.add(team)
-                teams.add(team)
-            }
-            else -> teams.remove(team)
+            value -> teams.add(team.key)
+            else -> teams.remove(team.key)
         }.also { changed ->
             if (changed) markDirty(team)
         }
     }
 
-    fun hasAnyAchieved() = teams.isNotEmpty()
-    fun hasNoneAchieved() = teams.isEmpty()
+    open fun hasAnyAchieved() = teams.isNotEmpty()
+    fun hasNoneAchieved() = !hasAnyAchieved()
 
-    private val updatedAtMap = mutableMapOf<BingoTeam?, Instant>()
+    open fun hasSeen(team: BingoTeam): Boolean {
+        return teamsSeen.contains(team.key)
+    }
+
+    open fun markSeen(team: BingoTeam) {
+        if (teamsSeen.add(team.key)) {
+            markDirty(team)
+        }
+    }
+
+    @Transient
+    private val updatedAtMap = mutableMapOf<BingoTeamKey?, Instant>()
 
     val updatedAt: Instant get() = updatedAt(null)
 
-    fun updatedAt(team: BingoTeam?): Instant = updatedAtMap.getOrPut(team) { Clock.System.now() }
+    fun updatedAt(team: BingoTeam?): Instant = updatedAtMap.getOrPut(team?.key) { Clock.System.now() }
 
     fun markDirty(team: BingoTeam) {
         Clock.System.now().let {
-            updatedAtMap[team] = it
+            updatedAtMap[team.key] = it
             updatedAtMap[null] = it
         }
     }
 
     @Serializable
     class FreeSpace : BingoCardEntry() {
-        init {
-            teams.addAll(BingoTeam.entries)
-        }
-
         @Transient
         override val visualItem: Item? = null
+        override fun hasAnyAchieved(): Boolean = true
         override fun hasAchieved(team: BingoTeam): Boolean = true
         override fun setAchieved(team: BingoTeam, value: Boolean): Boolean = false
+
         override fun formatName(): Text? {
             return Text.literal("Free Space")
         }

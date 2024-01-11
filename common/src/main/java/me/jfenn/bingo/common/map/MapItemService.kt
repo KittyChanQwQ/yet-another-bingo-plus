@@ -31,7 +31,7 @@ object MapItemService {
     }
 
     fun createMapItem(ctx: BingoContext, team: BingoTeam): ItemStack {
-        val teamMap = ctx.state.getMap(ctx, team)
+        val teamMap = team.getMap(ctx)
 
         val item = ItemStack(Items.FILLED_MAP, 1)
         item.getOrCreateNbt().apply {
@@ -61,7 +61,7 @@ object MapItemService {
     }
 
     fun isMapTeamItem(ctx: BingoContext, stack: ItemStack, team: BingoTeam): Boolean {
-        val teamMap = ctx.state.getMap(ctx, team)
+        val teamMap = team.getMap(ctx)
         return isMapItem(stack) && stack.nbt?.getInt("map") == teamMap.mapId
     }
 

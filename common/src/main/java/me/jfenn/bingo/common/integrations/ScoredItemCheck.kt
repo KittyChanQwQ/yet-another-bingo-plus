@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.integrations
 
+import com.mojang.authlib.GameProfile
 import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.BingoGame
 import me.jfenn.bingo.common.ChatMessages
@@ -13,14 +14,22 @@ import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.utils.allHeldStacks
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.util.UUID
 
 /**
  * Searches for items in each player's inventory that can
  * satisfy a tile on the card, and updates the score if found.
  */
 object ScoredItemCheck {
+
+    fun getOfflinePlayer(ctx: BingoContext, uuid: UUID): ServerPlayerEntity {
+        val player = ServerPlayerEntity(ctx.server, ctx.server.overworld, GameProfile(uuid, null))
+        ctx.server.playerManager.loadPlayerData(player)
+        return player
+    }
 
     fun updateInventory(ctx: BingoContext): Set<BingoTeam> {
         val updatedTeams = mutableSetOf<BingoTeam>()
@@ -29,7 +38,7 @@ object ScoredItemCheck {
             val team = BingoTeam.fromPlayer(player) ?: continue
 
             // don't update teams that have already won
-            if (ctx.state.isWinner(team)) continue
+            if (team.isWinner()) continue
 
             // check inventory for new collected items
             for (stack in player.allHeldStacks()) {
@@ -37,7 +46,11 @@ object ScoredItemCheck {
                 val tile = ctx.state.card.itemIndex[stack.item] ?: continue
 
                 // if the item hasn't been achieved and can be satisfied, mark it as collected
-                if (!tile.canSatisfy(stack)) continue
+                if (tile.canSatisfy(stack)) {
+                    tile.markSeen(team)
+                } else {
+                    continue
+                }
 
                 // if the gamemode is lockout, tiles cannot be collected by >1 team
                 if (ctx.config.isLockoutMode && tile.hasAnyAchieved())
@@ -53,9 +66,10 @@ object ScoredItemCheck {
         // and mark them as lost if not
         if (ctx.config.isInventoryMode) {
             for (item in ctx.state.card.entries.filterIsInstance<BingoCardEntry.ItemEntry>()) {
-                for (team in item.teams.toSet()) {
+                for (teamKey in item.teams.toSet()) {
+                    val team = ctx.state.teams[teamKey] ?: continue
                     // don't update teams that have already won
-                    if (ctx.state.isWinner(team)) continue
+                    if (team.isWinner()) continue
 
                     val hasTeamItem = ctx.server.playerManager.playerList
                         .filter { team.includesPlayer(it) }
@@ -82,7 +96,7 @@ object ScoredItemCheck {
 
     fun updateScores(ctx: BingoContext) {
         val prevLeadingTeam = ScoreService.getLeading(ctx.state)
-        val prevTeamScores = ctx.state.teamScores.toMap()
+        val prevTeamScores = ctx.state.teams.mapValues { (_, team) -> team.score }
 
         val updatedTeams = updateInventory(ctx)
 
@@ -91,8 +105,8 @@ object ScoredItemCheck {
 
         for (team in updatedTeams) {
             // update the score for each modified team
-            val scoreBefore = prevTeamScores[team] ?: TeamScore.ZERO
-            val scoreAfter = ctx.state.getTeamScore(team)
+            val scoreBefore = prevTeamScores[team.key] ?: TeamScore.ZERO
+            val scoreAfter = team.score
 
             // if the team has scored a line, post a message
             if (scoreAfter.lines > scoreBefore.lines && ctx.config.showCompletedLines) {

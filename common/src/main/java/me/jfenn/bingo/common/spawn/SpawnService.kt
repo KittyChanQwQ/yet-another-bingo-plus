@@ -44,18 +44,18 @@ object SpawnService {
             val spawnPos = spread.findSpawnPos(Pair(0, 0))
                 .let { BlockPosition.fromBlockPos(it) }
 
-            ctx.state.teamSpawnpoints = BingoTeam.entries
-                .associateWith { spawnPos }
-                .toMutableMap()
+            for (team in ctx.state.getRegisteredTeams()) {
+                team.spawnpoint = spawnPos
+            }
         } else {
             // spread player teams to spawnpoint
-            ctx.state.teamSpawnpoints = spread.spread(distance)
-                .mapValues { (_, value) -> BlockPosition.fromBlockPos(value) }
-                .toMutableMap()
+            spread.spread(ctx.state.getRegisteredTeams(), distance)
         }
 
-        ctx.state.teamSpawnpoints.forEach { (_, blockPos) ->
-            createTeamChest(ctx.config, world, blockPos)
+        for (team in ctx.state.getRegisteredTeams()) {
+            team.spawnpoint?.let {
+                createTeamChest(ctx.config, world, it)
+            }
         }
     }
 
@@ -79,12 +79,13 @@ object SpawnService {
 
     fun getTeamSpawnpoint(ctx: BingoContext, team: BingoTeam): BlockPos? {
         val world = getSpawnDimension(ctx)
-        val spawnpoint = ctx.state.teamSpawnpoints[team] ?: run {
+        val spawnpoint = team.spawnpoint ?: run {
             log.warn("Team ${team.name} does not have a stored spawn point!")
             log.warn("Finding a new spawn position...")
 
             // Get the chunk of an existing spawnpoint
-            val (x, y) = ctx.state.teamSpawnpoints.values
+            val (x, y) = ctx.state.getRegisteredTeams()
+                .mapNotNull { it.spawnpoint }
                 .maxByOrNull { it.x.absoluteValue }
                 ?.toChunkPos()
                 ?: Pair(0, 0)
@@ -96,7 +97,7 @@ object SpawnService {
             // Store the team's new spawn position & return
             val spread = SpreadPlayers(world)
             val newSpawnPos = spread.findSpawnPos(newSpawnChunk)
-            ctx.state.teamSpawnpoints[team] = BlockPosition.fromBlockPos(newSpawnPos)
+            team.spawnpoint = BlockPosition.fromBlockPos(newSpawnPos)
             return newSpawnPos
         }
 
@@ -112,7 +113,7 @@ object SpawnService {
 
                 val spread = SpreadPlayers(world)
                 val newSpawnPos = spread.findSpawnPos(spawnpoint.toChunkPos())
-                ctx.state.teamSpawnpoints[team] = BlockPosition.fromBlockPos(newSpawnPos)
+                team.spawnpoint = BlockPosition.fromBlockPos(newSpawnPos)
 
                 return newSpawnPos
             }

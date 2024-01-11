@@ -9,12 +9,10 @@ import net.minecraft.item.map.MapState
 @Serializable
 data class BingoMap(
     val mapId: Int,
-    val team: BingoTeam?,
-    var updatedAt: Instant = Instant.fromEpochMilliseconds(0L),
 ) {
 
     @Transient
-    val teamColor = team?.color ?: 22
+    var updatedAt: Instant = Instant.fromEpochMilliseconds(0L)
 
     @Transient
     var mapState: MapState? = null

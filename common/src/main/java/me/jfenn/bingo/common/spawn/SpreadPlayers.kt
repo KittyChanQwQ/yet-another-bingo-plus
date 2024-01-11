@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.spawn
 
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.config.BlockPosition
 import net.minecraft.block.Blocks
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
@@ -209,13 +210,11 @@ class SpreadPlayers(
         }
     }
 
-    fun spread(distance: Int): Map<BingoTeam, BlockPos> {
-        val teams = BingoTeam.entries
-            .filter { it.team(world.server).playerList.isNotEmpty() }
-
+    fun spread(
+        teams: List<BingoTeam>,
+        distance: Int
+    ) {
         val groups = spreadGroups(teams.size, distance)
-
-        val spawns = mutableMapOf<BingoTeam, BlockPos>()
 
         for (i in teams.indices) {
             val team = teams[i]
@@ -224,13 +223,13 @@ class SpreadPlayers(
             log.info("Spawning team ${team.name} near chunk $startChunk")
 
             val chunkLocatorMs = measureTimeMillis {
-                spawns[team] = findSpawnPos(startChunk)
+                team.spawnpoint = BlockPosition.fromBlockPos(
+                    findSpawnPos(startChunk)
+                )
             }
 
             log.info("Found a spawn location for ${team.name} in ${chunkLocatorMs}ms")
         }
-
-        return spawns
     }
 
 }

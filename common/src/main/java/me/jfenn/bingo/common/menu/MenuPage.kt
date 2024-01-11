@@ -108,7 +108,7 @@ fun MenuComponent.registerMenuPage(
                 return@registerButton
             }
             // Otherwise, we can just auto-assign a team
-            TeamService.joinTeam(player, BingoTeam.entries.random())
+            TeamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
         }
 
         BingoGame.start(ctx)

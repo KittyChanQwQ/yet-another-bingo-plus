@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.map
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.card.BingoCardEntry
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.state.BingoContext
 import net.minecraft.item.FilledMapItem
@@ -12,10 +12,8 @@ import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
 import java.io.InputStream
-import java.util.WeakHashMap
+import java.util.*
 import javax.imageio.ImageIO
-import kotlin.math.roundToInt
-import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
@@ -101,13 +99,17 @@ object MapRenderService {
         }
     }
 
+    fun getMapColor(team: BingoTeam?): Byte {
+        return team?.mapColor ?: 22
+    }
+
     private fun drawMapBorders(
         state: MapState,
-        map: BingoMap,
+        team: BingoTeam?,
     ) {
-        val borderLight = ((map.teamColor*4) + 2).toUByte().toByte()
-        val borderMid = ((map.teamColor*4) + 1).toUByte().toByte()
-        val borderDark = ((map.teamColor*4) + 3).toUByte().toByte()
+        val borderLight = (getMapColor(team)*4 + 2).toUByte().toByte()
+        val borderMid = (getMapColor(team)*4 + 1).toUByte().toByte()
+        val borderDark = (getMapColor(team)*4 + 3).toUByte().toByte()
 
         // Outer edge borders
         for (x in 0 until MAP_SIZE) {
@@ -156,8 +158,8 @@ object MapRenderService {
 
     private fun drawMapTile(
         ctx: BingoContext,
+        team: BingoTeam?,
         state: MapState,
-        map: BingoMap,
         item: BingoCardEntry,
         itemX: Int,
         itemY: Int,
@@ -165,19 +167,22 @@ object MapRenderService {
         require(itemX in 0 until 5)
         require(itemY in 0 until 5)
 
-        val isAchieved = map.team != null && item.hasAchieved(map.team)
-        val isFlashing = isFlashing(map, item)
-                && map.team != null
-                && Clock.System.now() - item.updatedAt(map.team) < 4.seconds
+        val isAchieved = team != null && item.hasAchieved(team)
+        val isFlashing = isFlashing(team, item)
+                && team != null
+                && Clock.System.now() - item.updatedAt(team) < 4.seconds
                 && (ctx.server.ticks / 10) % 2 == 0
 
-        val isLocked = ctx.config.isLockoutMode && item.teams.isNotEmpty() && map.team != null && !item.hasAchieved(map.team)
+        val isLocked = ctx.config.isLockoutMode && item.teams.isNotEmpty() && team != null && !item.hasAchieved(team)
         val tileImage = getTileImage(item)
         val tileImageArray = when {
-            ctx.config.hiddenItems && !item.teamsSeen.contains(map.team) -> null
+            ctx.config.hiddenItems && (team == null || !item.hasSeen(team)) -> null
             isAchieved && !isFlashing -> tileImage?.achieved
             else -> tileImage?.regular
         }
+
+        val itemTeams = item.teams.mapNotNull { ctx.state.teams[it] }
+            .filter { it.key != team?.key }
 
         val tileX = MAP_BORDER + TILE_SIZE*itemX
         val tileY = MAP_BORDER + TILE_SIZE*itemY
@@ -200,12 +205,11 @@ object MapRenderService {
                     item.hasAnyAchieved() &&
                     (innerX == 0 || innerX == innerMax || innerY == 0 || innerY == innerMax)
                 ) {
-                    val itemTeams = item.teams.filter { it != map.team }
                     val tileTeamX = (innerX + innerY) * itemTeams.size / ((TILE_SIZE - TILE_MARGIN) * 2)
                     val itemTeam = itemTeams.getOrNull(tileTeamX)
                     if (itemTeam != null) {
                         val variant = if ((innerX + innerY) % 2 == 0) 2 else 3
-                        state.setColor(x, y, ((itemTeam.color*4) + variant).toUByte().toByte())
+                        state.setColor(x, y, (getMapColor(itemTeam)*4 + variant).toUByte().toByte())
                         continue
                     }
                 }
@@ -247,21 +251,22 @@ object MapRenderService {
         }
     }
 
-    fun isFlashing(map: BingoMap, entry: BingoCardEntry) : Boolean {
-        return map.team != null
-                && entry.hasAchieved(map.team)
-                && Clock.System.now() - entry.updatedAt(map.team) < (FLASHING_DURATION + 1.seconds)
+    fun isFlashing(team: BingoTeam?, entry: BingoCardEntry) : Boolean {
+        return team != null
+                && entry.hasAchieved(team)
+                && Clock.System.now() - entry.updatedAt(team) < (FLASHING_DURATION + 1.seconds)
     }
 
     fun update(
         ctx: BingoContext,
-        map: BingoMap,
+        team: BingoTeam?,
     ) = measureTime {
         val card = ctx.state.card
+        val map = team?.getMap(ctx) ?: ctx.state.getPreviewMap(ctx)
 
         val state = map.mapState ?: kotlin.run {
             val state = MapState.of(1, true, ctx.server.overworld.registryKey)
-            drawMapBorders(state, map)
+            drawMapBorders(state, team)
 
             ctx.server.overworld.putMapState(FilledMapItem.getMapName(map.mapId), state)
             map.mapState = state
@@ -272,14 +277,14 @@ object MapRenderService {
             for (y in 0 until 5) {
                 val entry = card.entry(x, y)
                 if (
-                    entry.updatedAt(map.team) > map.updatedAt ||
+                    entry.updatedAt(team) > map.updatedAt ||
                     (ctx.config.showOtherTeamCompletions && entry.updatedAt > map.updatedAt) ||
-                    (isFlashing(map, entry) && ctx.server.ticks % 10 == 0)
+                    (isFlashing(team, entry) && ctx.server.ticks % 10 == 0)
                 ) {
                     drawMapTile(
                         ctx = ctx,
                         state = state,
-                        map = map,
+                        team = team,
                         item = entry,
                         itemX = x,
                         itemY = y,
@@ -291,7 +296,7 @@ object MapRenderService {
         map.updatedAt = Clock.System.now()
     }.also {
         if (it >= 1.milliseconds) {
-            log.info("Re-drawing map_${map.mapId} for team ${map.team?.name} ($it)")
+            log.info("Re-drawing map_${team?.map?.mapId} for team ${team?.name} ($it)")
         }
     }
 

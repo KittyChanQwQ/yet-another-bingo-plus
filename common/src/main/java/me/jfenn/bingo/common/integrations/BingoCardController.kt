@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.integrations
 
 import me.jfenn.bingo.common.Bingo
-import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.map.MapRenderService
 import me.jfenn.bingo.common.state.BingoContext
@@ -31,12 +30,10 @@ object BingoCardController {
             // update all card map images
             if (state.state == GameState.PREGAME) {
                 // if in pregame, update the preview card!
-                val previewMap = state.getPreviewMap(ctx)
-                MapRenderService.update(ctx, previewMap)
+                MapRenderService.update(ctx, null)
             } else {
-                for (team in BingoTeam.entries) {
-                    val teamMap = state.getMap(ctx, team)
-                    MapRenderService.update(ctx, teamMap)
+                for (team in state.getRegisteredTeams()) {
+                    MapRenderService.update(ctx, team)
                 }
             }
         }

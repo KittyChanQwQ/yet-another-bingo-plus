@@ -18,7 +18,7 @@ object JoinCommand {
             var joinCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("join")
                 .requireBingoInstance()
 
-            for (team in BingoTeam.entries) {
+            for (team in BingoTeam.TEAM_BLOCKS.values) {
                 joinCommand = joinCommand.then(
                     LiteralArgumentBuilder.literal<ServerCommandSource>(team.name)
                         .then(

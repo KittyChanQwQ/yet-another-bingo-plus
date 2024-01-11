@@ -53,8 +53,13 @@ object ChatMessages {
     }
 
     fun broadcastEnd(ctx: BingoContext, reason: String?) {
-        val winningTeam = BingoTeam.entries
-            .find { ctx.state.isWinner(it) }
+        val winningTeams = ctx.state.getRegisteredTeams()
+            .filter { it.isWinner() }
+
+        // The winning team, if there is only one winner
+        val winningTeam = winningTeams
+            .takeIf { it.size == 1 }
+            ?.firstOrNull()
 
         val winMessage = Text.literal(reason ?: "Game over!")
             .takeIf { ctx.config.isRankedMode }
@@ -125,7 +130,7 @@ object ChatMessages {
     }
 
     fun broadcastScoreLeadingTeam(ctx: BingoContext, team: BingoTeam) {
-        val score = ctx.state.getTeamScore(team)
+        val score = team.score
         val message = Text.empty()
             .append(team.text(ctx.server))
             .append(Text.literal(
@@ -140,7 +145,7 @@ object ChatMessages {
     }
 
     fun broadcastScoreTiedTeam(ctx: BingoContext, team: BingoTeam) {
-        val score = ctx.state.getTeamScore(team)
+        val score = team.score
         val message = Text.empty()
             .append(team.text(ctx.server))
             .append(Text.literal(

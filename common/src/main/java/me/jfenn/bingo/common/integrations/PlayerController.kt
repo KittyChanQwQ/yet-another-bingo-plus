@@ -1,11 +1,11 @@
 package me.jfenn.bingo.common.integrations
 
+import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoContext
@@ -88,7 +88,7 @@ object PlayerController : KoinComponent {
      * hotbar items.
      */
     fun giveSpectatorMapItems(ctx: BingoContext, player: ServerPlayerEntity) {
-        BingoTeam.entries
+        ctx.state.getRegisteredTeams()
             .filter { it.team(player.server).playerList.isNotEmpty() }
             .map { MapItemService.createMapItem(ctx, it) }
             .forEachIndexed { i, stack ->
@@ -139,7 +139,7 @@ object PlayerController : KoinComponent {
         player: ServerPlayerEntity,
         forceReset: Boolean = false,
     ) {
-        val isOnTeam = BingoTeam.entries.any { it.includesPlayer(player) }
+        val isOnTeam = ctx.state.teams.values.any { it.includesPlayer(player) }
 
         val gameMode = when (ctx.state.state) {
             GameState.PREGAME -> GameMode.ADVENTURE
@@ -280,6 +280,17 @@ object PlayerController : KoinComponent {
 
                 if (player.isSpectator || state.state == GameState.POSTGAME)
                     giveSpectatorMapItems(this, player)
+
+                // If the player has switched teams, update the player UUID sets...
+                // (this is necessary because teams could be changed without us knowing, using /team join)
+                val playerTeam = BingoTeam.fromPlayer(player)
+                for (team in ctx.state.teams.values) {
+                    if (playerTeam?.key == team.key) {
+                        team.playerUuids.add(player.uuidAsString)
+                    } else {
+                        team.playerUuids.remove(player.uuidAsString)
+                    }
+                }
             }
         }
     }

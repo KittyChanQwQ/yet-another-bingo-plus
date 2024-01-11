@@ -9,7 +9,7 @@ object ScoreService {
 
         // check all teams for the number of capture-able lines
         // if any team can capture a line, it is not a stalemate
-        for (team in BingoTeam.entries) {
+        for (team in state.getRegisteredTeams()) {
             // count number of lines that the team can achieve
             val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
             if (possibleLines >= 1) return false
@@ -25,8 +25,8 @@ object ScoreService {
     fun getLeadingByLines(state: BingoState, allowTies: Boolean = false): BingoTeam? {
         var max: BingoTeam? = null
         var maxLines = 0
-        for (team in BingoTeam.entries) {
-            val teamLines = state.getTeamScore(team).lines
+        for (team in state.getRegisteredTeams()) {
+            val teamLines = team.score.lines
 
             if (teamLines > maxLines) {
                 max = team
@@ -42,8 +42,8 @@ object ScoreService {
     fun getLeadingByItems(state: BingoState, allowTies: Boolean = false): BingoTeam? {
         var max: BingoTeam? = null
         var maxItems = 0
-        for (team in BingoTeam.entries) {
-            val teamItems = state.getTeamScore(team).items
+        for (team in state.getRegisteredTeams()) {
+            val teamItems = team.score.items
 
             if (teamItems > maxItems) {
                 max = team

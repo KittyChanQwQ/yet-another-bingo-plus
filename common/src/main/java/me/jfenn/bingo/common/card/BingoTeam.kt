@@ -1,9 +1,16 @@
 package me.jfenn.bingo.common.card
 
+import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.ITeamHandle
 import me.jfenn.bingo.api.ITeamManager
+import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.common.commands.CoordsCommand
+import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.common.map.BingoMap
+import me.jfenn.bingo.common.state.BingoContext
+import me.jfenn.bingo.common.state.TeamScore
+import me.jfenn.bingo.common.state.TeamWinner
 import me.jfenn.bingo.common.utils.text.TextColor
-import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
@@ -16,23 +23,52 @@ import net.minecraft.util.Formatting
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-enum class BingoTeam(
-    val formatting: Formatting,
-    val textColor: TextColor,
-    val color: Byte,
-    val carpetBlock: Block,
-) {
-    BLUE(Formatting.BLUE, TextColor.BLUE, 12, Blocks.BLUE_CARPET),
-    RED(Formatting.RED, TextColor.RED, 4, Blocks.RED_CARPET),
-    GREEN(Formatting.GREEN, TextColor.GREEN, 33, Blocks.GREEN_CARPET),
-    YELLOW(Formatting.YELLOW, TextColor.YELLOW, 30, Blocks.YELLOW_CARPET),
-    PINK(Formatting.LIGHT_PURPLE, TextColor.LIGHT_PURPLE, 20, Blocks.PINK_CARPET),
-    AQUA(Formatting.AQUA, TextColor.AQUA, 31, Blocks.CYAN_CARPET),
-    ORANGE(Formatting.GOLD, TextColor.GOLD, 15, Blocks.ORANGE_CARPET),
-    GRAY(Formatting.GRAY, TextColor.GRAY, 21, Blocks.LIGHT_GRAY_CARPET),
-    ;
+@Serializable
+@JvmInline
+value class BingoTeamKey(
+    val id: String,
+)
 
-    val id = this.name.lowercase()
+@Serializable
+class BingoTeam(
+    private val id: String,
+    val name: String,
+    val textColor: TextColor,
+    var score: TeamScore = TeamScore.ZERO,
+    var winner: TeamWinner? = null,
+    var spawnpoint: BlockPosition? = null,
+    val chatCoordinates: MutableList<CoordsCommand.CoordinatesEntry> = mutableListOf(),
+    var map: BingoMap? = null,
+    val playerUuids: MutableSet<String> = mutableSetOf(),
+) {
+
+    val key get() = BingoTeamKey(id)
+
+    val formatting get() = Formatting.valueOf(textColor.name)
+
+    val mapColor: Byte get() = when (textColor) {
+        TextColor.BLUE -> 12
+        TextColor.RED -> 4
+        TextColor.GREEN -> 33
+        TextColor.YELLOW -> 30
+        TextColor.LIGHT_PURPLE -> 20
+        TextColor.AQUA -> 31
+        TextColor.GOLD -> 15
+        TextColor.GRAY -> 21
+        else -> 22
+    }
+
+    fun getMap(ctx: BingoContext): BingoMap {
+        return this.map ?: run {
+            val map = BingoMap(
+                mapId = ctx.server.overworld.nextMapId,
+            )
+            this.map = map
+            return@run map
+        }
+    }
+
+    fun isWinner(): Boolean = this.winner != null
 
     fun includesPlayer(player: ServerPlayerEntity): Boolean {
         return fromPlayer(player) == this
@@ -68,13 +104,32 @@ enum class BingoTeam(
 
     companion object : KoinComponent {
 
-        private val TEAM_ID_INDEX = entries.associateBy { it.id }
+        val BLUE = BingoTeam("bingo_blue", "BLUE", TextColor.BLUE)
+        val RED = BingoTeam("bingo_red", "RED", TextColor.RED)
+        val GREEN = BingoTeam("bingo_green", "GREEN", TextColor.GREEN)
+        val YELLOW = BingoTeam("bingo_yellow", "YELLOW", TextColor.YELLOW)
+        val PINK = BingoTeam("bingo_pink", "PINK", TextColor.LIGHT_PURPLE)
+        val AQUA = BingoTeam("bingo_aqua", "AQUA", TextColor.AQUA)
+        val ORANGE = BingoTeam("bingo_gold", "GOLD", TextColor.GOLD)
+        val GRAY = BingoTeam("bingo_gray", "GRAY", TextColor.GRAY)
+
+        val TEAM_BLOCKS = mapOf(
+            Blocks.BLUE_CARPET to BLUE,
+            Blocks.RED_CARPET to RED,
+            Blocks.GREEN_CARPET to GREEN,
+            Blocks.YELLOW_CARPET to YELLOW,
+            Blocks.PINK_CARPET to PINK,
+            Blocks.CYAN_CARPET to AQUA,
+            Blocks.ORANGE_CARPET to ORANGE,
+            Blocks.GRAY_CARPET to GRAY,
+        )
 
         private val teamManager by inject<ITeamManager>()
 
         fun fromPlayer(player: ServerPlayerEntity): BingoTeam? {
+            val ctx = Bingo.getContext(player.server) ?: return null
             val team = teamManager.getPlayerTeam(player) ?: return null
-            return TEAM_ID_INDEX[team.name]
+            return ctx.state.teams[BingoTeamKey(team.name)]
         }
 
         fun fromPlayer(server: MinecraftServer, player: PlayerEntity): BingoTeam? {
