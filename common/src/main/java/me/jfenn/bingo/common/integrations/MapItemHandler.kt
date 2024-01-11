@@ -57,7 +57,7 @@ object MapItemHandler {
     fun init() {
         UseItemCallback.EVENT.register { player, _, hand ->
             if (player !is ServerPlayerEntity) return@register TypedActionResult.pass(null)
-            val ctx = player.server?.let { Bingo.getContext(it) } ?: return@register TypedActionResult.pass(null)
+            player.server?.let { Bingo.getContext(it) } ?: return@register TypedActionResult.pass(null)
             val itemStack = player.getStackInHand(hand)
 
             usedAnyItem.add(player.uuid)

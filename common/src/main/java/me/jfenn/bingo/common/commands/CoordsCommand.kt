@@ -41,7 +41,7 @@ object CoordsCommand : KoinComponent {
 
     }
 
-    fun storeCoordinates(context: BingoContext, player: ServerPlayerEntity, team: BingoTeam, message: String?) {
+    fun storeCoordinates(player: ServerPlayerEntity, team: BingoTeam, message: String?) {
         val entry = CoordinatesEntry(
             player = scoreboardManager.getPlayerName(player),
             pos = BlockPosition.fromBlockPos(player.blockPos),
@@ -57,7 +57,7 @@ object CoordsCommand : KoinComponent {
         ChatCommand.sendTeamMessage(player, team, Text.literal(entry.formatText()))
     }
 
-    fun listCoordinates(context: BingoContext, player: ServerPlayerEntity, team: BingoTeam) {
+    fun listCoordinates(player: ServerPlayerEntity, team: BingoTeam) {
         val coordMessages = team.chatCoordinates
         if (coordMessages.isEmpty()) return
 
@@ -75,10 +75,9 @@ object CoordsCommand : KoinComponent {
             .then(
                 LiteralArgumentBuilder.literal<ServerCommandSource?>("list")
                     .executes { ctx ->
-                        val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
                         val player = ctx.source.player ?: return@executes 0
                         val team = BingoTeam.fromPlayer(player) ?: return@executes 0
-                        listCoordinates(context, player, team)
+                        listCoordinates(player, team)
                         1
                     }
             )
@@ -88,20 +87,18 @@ object CoordsCommand : KoinComponent {
                     StringArgumentType.greedyString()
                 )
                     .executes { ctx ->
-                        val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
                         val player = ctx.source.player ?: return@executes 0
                         val team = BingoTeam.fromPlayer(player) ?: return@executes 0
                         val message = StringArgumentType.getString(ctx, "message")
 
-                        storeCoordinates(context, player, team, message)
+                        storeCoordinates(player, team, message)
                         1
                     }
             )
             .executes { ctx ->
-                val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
                 val player = ctx.source.player ?: return@executes 0
                 val team = BingoTeam.fromPlayer(player) ?: return@executes 0
-                storeCoordinates(context, player, team, null)
+                storeCoordinates(player, team, null)
                 1
             }
             .also { yield(it) }
