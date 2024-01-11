@@ -27,7 +27,7 @@ val LOBBY_WORLD_ID = Identifier.of("bingo", "lobby")!!
 
 object Bingo : ModInitializer {
 
-    private val log = LoggerFactory.getLogger(this::class.java)
+    val log = LoggerFactory.getLogger(this::class.java)
 
     // States are stored by the identity hash code of the MinecraftServer instance which they relate to
     // - this ensures no cross-server pollution when running the mod client-side

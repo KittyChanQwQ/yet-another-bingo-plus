@@ -32,7 +32,7 @@ data class BingoState(
 ) : SerializedPersistentState() {
 
     fun getRegisteredTeams(): List<BingoTeam> {
-        return teams.values.filter { it.playerUuids.isNotEmpty() }
+        return teams.values.filter { it.players.isNotEmpty() }
     }
 
     fun registerTeam(team: BingoTeam): BingoTeam {

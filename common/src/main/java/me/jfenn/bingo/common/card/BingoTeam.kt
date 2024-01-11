@@ -39,7 +39,7 @@ class BingoTeam(
     var spawnpoint: BlockPosition? = null,
     val chatCoordinates: MutableList<CoordsCommand.CoordinatesEntry> = mutableListOf(),
     var map: BingoMap? = null,
-    val playerUuids: MutableSet<String> = mutableSetOf(),
+    val players: MutableSet<BingoPlayerProfile> = mutableSetOf(),
 ) {
 
     val key get() = BingoTeamKey(id)

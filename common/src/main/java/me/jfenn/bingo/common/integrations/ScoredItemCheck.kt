@@ -1,11 +1,13 @@
 package me.jfenn.bingo.common.integrations
 
 import com.mojang.authlib.GameProfile
+import me.jfenn.bingo.api.IOfflinePlayerAccessor
 import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.BingoGame
 import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoCardEntry
+import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.config.ConfigService
@@ -17,17 +19,45 @@ import me.jfenn.bingo.common.utils.allHeldStacks
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.UUID
+import kotlin.system.measureTimeMillis
+import kotlin.time.measureTime
 
 /**
  * Searches for items in each player's inventory that can
  * satisfy a tile on the card, and updates the score if found.
  */
-object ScoredItemCheck {
+object ScoredItemCheck : KoinComponent {
 
-    fun getOfflinePlayer(ctx: BingoContext, uuid: UUID): ServerPlayerEntity {
-        val player = ServerPlayerEntity(ctx.server, ctx.server.overworld, GameProfile(uuid, null))
-        ctx.server.playerManager.loadPlayerData(player)
+    private val offlinePlayerAccessor by inject<IOfflinePlayerAccessor>()
+    private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, ServerPlayerEntity>()
+
+    private fun getOfflinePlayer(ctx: BingoContext, profile: BingoPlayerProfile): ServerPlayerEntity {
+        // If the player is online, return the current player entity
+        val onlinePlayer = ctx.server.playerManager.getPlayer(UUID.fromString(profile.uuid))
+        if (onlinePlayer != null) {
+            // and remove any offline cache entry, if they have one
+            offlinePlayerCache.remove(profile)
+            return onlinePlayer
+        }
+
+        // If the player is in the offline cache, return it
+        val cachedPlayer = offlinePlayerCache[profile]
+        if (cachedPlayer != null) {
+            return cachedPlayer
+        }
+
+        // Otherwise, load their player data from the save (this can take a few ms...)
+        val player: ServerPlayerEntity
+        measureTime {
+            player = offlinePlayerAccessor.getOfflinePlayer(ctx.server, profile)
+        }.also {
+            Bingo.log.info("Loading offline player data for ${profile.name} ($it)")
+        }
+
+        offlinePlayerCache[profile] = player
         return player
     }
 
@@ -71,10 +101,11 @@ object ScoredItemCheck {
                     // don't update teams that have already won
                     if (team.isWinner()) continue
 
-                    val hasTeamItem = ctx.server.playerManager.playerList
-                        .filter { team.includesPlayer(it) }
-                        .any { player -> player.inventory.containsAny { item.canSatisfy(it) }
-                                || item.canSatisfy(player.currentScreenHandler.cursorStack) }
+                    val teamPlayers = team.players.map { getOfflinePlayer(ctx, it) }
+                    val hasTeamItem = teamPlayers.any { player ->
+                        player.inventory.containsAny { item.canSatisfy(it) }
+                                || item.canSatisfy(player.currentScreenHandler.cursorStack)
+                    }
 
                     // if noone on the team has the item anymore, mark it lost
                     if (!hasTeamItem) {

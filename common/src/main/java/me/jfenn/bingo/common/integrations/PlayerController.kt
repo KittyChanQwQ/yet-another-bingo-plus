@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Sounds
+import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.spawn.SpawnService
@@ -284,11 +285,12 @@ object PlayerController : KoinComponent {
                 // If the player has switched teams, update the player UUID sets...
                 // (this is necessary because teams could be changed without us knowing, using /team join)
                 val playerTeam = BingoTeam.fromPlayer(player)
+                val playerProfile = BingoPlayerProfile.fromPlayer(player)
                 for (team in ctx.state.teams.values) {
                     if (playerTeam?.key == team.key) {
-                        team.playerUuids.add(player.uuidAsString)
+                        team.players.add(playerProfile)
                     } else {
-                        team.playerUuids.remove(player.uuidAsString)
+                        team.players.remove(playerProfile)
                     }
                 }
             }

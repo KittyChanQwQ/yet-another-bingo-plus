@@ -18,14 +18,15 @@ object TeamService : KoinComponent {
         if (BingoTeam.fromPlayer(player)?.key == teamTemplate.key) return
         val server = player.server ?: return
         val team = ctx.state.registerTeam(teamTemplate)
+        val playerProfile = BingoPlayerProfile.fromPlayer(player)
 
         // Remove player from their existing team
         BingoTeam.fromPlayer(player)
-            ?.playerUuids
-            ?.remove(player.uuidAsString)
+            ?.players
+            ?.remove(playerProfile)
 
         teamManager.setPlayerTeam(player, team.team(server))
-        team.playerUuids.add(player.uuidAsString)
+        team.players.add(playerProfile)
         ChatMessages.broadcastJoinedTeam(player, team)
     }
 
