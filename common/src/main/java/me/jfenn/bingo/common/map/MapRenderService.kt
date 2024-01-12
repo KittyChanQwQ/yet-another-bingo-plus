@@ -168,9 +168,7 @@ object MapRenderService {
         require(itemY in 0 until 5)
 
         val isAchieved = team != null && item.hasAchieved(team)
-        val isFlashing = isFlashing(team, item)
-                && team != null
-                && Clock.System.now() - item.updatedAt(team) < 4.seconds
+        val isFlashing = item.isFlashing(team, FLASHING_DURATION)
                 && (ctx.server.ticks / 10) % 2 == 0
 
         val isLocked = ctx.config.isLockoutMode && item.teams.isNotEmpty() && team != null && !item.hasAchieved(team)
@@ -251,12 +249,6 @@ object MapRenderService {
         }
     }
 
-    fun isFlashing(team: BingoTeam?, entry: BingoCardEntry) : Boolean {
-        return team != null
-                && entry.hasAchieved(team)
-                && Clock.System.now() - entry.updatedAt(team) < (FLASHING_DURATION + 1.seconds)
-    }
-
     fun update(
         ctx: BingoContext,
         team: BingoTeam?,
@@ -279,7 +271,7 @@ object MapRenderService {
                 if (
                     entry.updatedAt(team) > map.updatedAt ||
                     (ctx.config.showOtherTeamCompletions && entry.updatedAt > map.updatedAt) ||
-                    (isFlashing(team, entry) && ctx.server.ticks % 10 == 0)
+                    (entry.isFlashing(team, FLASHING_DURATION + 1.seconds) && ctx.server.ticks % 10 == 0)
                 ) {
                     drawMapTile(
                         ctx = ctx,

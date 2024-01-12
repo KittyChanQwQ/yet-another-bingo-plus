@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import kotlin.time.Duration
 
 @Serializable
 sealed class BingoCardEntry {
@@ -42,10 +43,17 @@ sealed class BingoCardEntry {
     open fun hasAnyAchieved() = teams.isNotEmpty()
     fun hasNoneAchieved() = !hasAnyAchieved()
 
+    /**
+     * Checks if the [team] has seen the item on
+     * the current tile (regardless of whether it can be scored)
+     */
     open fun hasSeen(team: BingoTeam): Boolean {
         return teamsSeen.contains(team.key)
     }
 
+    /**
+     * Marks the tile as seen by the provided [team].
+     */
     open fun markSeen(team: BingoTeam) {
         if (teamsSeen.add(team.key)) {
             markDirty(team)
@@ -57,13 +65,32 @@ sealed class BingoCardEntry {
 
     val updatedAt: Instant get() = updatedAt(null)
 
+    /**
+     * Determines the last time that the tile was changed at.
+     * If [team] is not null, this returns the last changed time
+     * for the specified team.
+     */
     fun updatedAt(team: BingoTeam?): Instant = updatedAtMap.getOrPut(team?.key) { Clock.System.now() }
 
+    /**
+     * Marks the tile as changed, indicating that it needs to be redrawn on
+     * the bingo map
+     */
     fun markDirty(team: BingoTeam) {
         Clock.System.now().let {
             updatedAtMap[team.key] = it
             updatedAtMap[null] = it
         }
+    }
+
+    /**
+     * Returns when the tile is flashing on the map, based on its update time
+     * - i.e. if the item has been updated within [duration]
+     */
+    open fun isFlashing(team: BingoTeam?, duration: Duration): Boolean {
+        return team != null &&
+                hasAchieved(team) &&
+                Clock.System.now() - updatedAt(team) < duration
     }
 
     @Serializable
@@ -73,6 +100,7 @@ sealed class BingoCardEntry {
         override fun hasAnyAchieved(): Boolean = true
         override fun hasAchieved(team: BingoTeam): Boolean = true
         override fun setAchieved(team: BingoTeam, value: Boolean): Boolean = false
+        override fun isFlashing(team: BingoTeam?, duration: Duration): Boolean = false
 
         override fun formatName(): Text? {
             return Text.literal("Free Space")
