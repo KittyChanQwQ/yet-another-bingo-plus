@@ -270,7 +270,7 @@ object PlayerController : KoinComponent {
                     }
                 }
 
-                if (state.state == GameState.PLAYING && player.isAlive) {
+                if (state.state == GameState.PLAYING && player.isAlive && !player.isSpectator) {
                     // give player a new map, if they don't have one?
                     giveMapCardItem(this, player)
 
@@ -279,7 +279,7 @@ object PlayerController : KoinComponent {
                         giveElytra(player)
                 }
 
-                if (player.isSpectator || state.state == GameState.POSTGAME)
+                if (state.state != GameState.PREGAME && (player.isSpectator || state.state == GameState.POSTGAME))
                     giveSpectatorMapItems(this, player)
 
                 // If the player has switched teams, update the player UUID sets...

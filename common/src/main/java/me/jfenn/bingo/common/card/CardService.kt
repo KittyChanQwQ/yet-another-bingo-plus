@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.card
 
+import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.TierList
 import me.jfenn.bingo.common.config.TierListService
@@ -7,6 +8,7 @@ import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.Registries
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
@@ -58,10 +60,17 @@ object CardService {
         return BingoCard(items)
     }
 
-    fun showInventory(player: PlayerEntity, card: BingoCard) {
+    fun showInventory(player: ServerPlayerEntity, card: BingoCard) {
+        val ctx = Bingo.getContext(player.server) ?: return
         player.openHandledScreen(SimpleNamedScreenHandlerFactory(
             { syncId, inv, _ ->
-                CardScreenHandler(syncId, card, inv)
+                CardScreenHandler(
+                    syncId = syncId,
+                    ctx = ctx,
+                    team = BingoTeam.fromPlayer(player),
+                    card = card,
+                    playerInventory = inv,
+                )
             },
             Text.literal("BINGO Card")
         ))

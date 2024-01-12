@@ -110,7 +110,7 @@ class BingoTeam(
         val YELLOW = BingoTeam("bingo_yellow", "YELLOW", TextColor.YELLOW)
         val PINK = BingoTeam("bingo_pink", "PINK", TextColor.LIGHT_PURPLE)
         val AQUA = BingoTeam("bingo_aqua", "AQUA", TextColor.AQUA)
-        val ORANGE = BingoTeam("bingo_gold", "GOLD", TextColor.GOLD)
+        val ORANGE = BingoTeam("bingo_orange", "ORANGE", TextColor.GOLD)
         val GRAY = BingoTeam("bingo_gray", "GRAY", TextColor.GRAY)
 
         val TEAM_BLOCKS = mapOf(
@@ -121,7 +121,7 @@ class BingoTeam(
             Blocks.PINK_CARPET to PINK,
             Blocks.CYAN_CARPET to AQUA,
             Blocks.ORANGE_CARPET to ORANGE,
-            Blocks.GRAY_CARPET to GRAY,
+            Blocks.LIGHT_GRAY_CARPET to GRAY,
         )
 
         private val teamManager by inject<ITeamManager>()
