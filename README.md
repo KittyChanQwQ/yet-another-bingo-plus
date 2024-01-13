@@ -43,6 +43,7 @@ lines to win the game. (the "win condition" can be set to a number of lines, or 
 - **Elytra**: Gives all players an elytra and infinite rockets throughout the game.
 - **Allow PvP**: Toggles whether players can attack each other.
 - **Spawn Kit**: Give teams or players a configurable set of starting gear.
+- **Hidden Items**: Items are not shown on the bingo card until a player discovers them.
 
 ## 📖 Configuration
 

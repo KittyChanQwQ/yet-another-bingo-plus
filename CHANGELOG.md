@@ -1,15 +1,20 @@
 ### New Features:
 
-- Scoreboard "auto-hide" behavior is now configurable as a player setting!
-  (defaults to false, to reduce confusion when the scoreboard disappears)
+- Added a "Hidden Items" card option (page 3) to hide all items on the card until they're found
+  by the team
+
+- Make items on the bingo card "blink" for a brief period when captured
+
+- If the mod is installed client-side, any bingo map now renders at full brightness!
+  (might not work with shaders)
+
+- Bingo cards now show the team color in their item texture to make them easier to distinguish
 
 ### Bugs Squashed:
 
-- Fixed scoreboards misbehaving on client-side LAN multiplayer
+- "Inventory" mode now tracks players' saved inventory if they log out,
+  so the team does not lose items if a player loses connection
 
-- Fixed intermittent lag spikes on clients connecting to a server game
-  (caused by scoreboard update errors)
+- Fixed lobby menu entities occasionally spawning in the wrong position
 
-- Fixed the timer menu allowing negative values for some reason
-
-- Updated the fabric loader version requirement (now requires at least 0.15.0)
+- Improved the player settings menu hitboxes/alignment
