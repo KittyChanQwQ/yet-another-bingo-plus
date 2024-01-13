@@ -17,7 +17,7 @@
 | `/bingo elytra <true/false>` | Changes whether players have elytra/rockets during the game. |
 | `/bingo timelimit #` | Sets the time limit of the game, in minutes (or "off" for no timer) |
 | `/bingo wincon <option>` | Changes the number of Bingo lines needed for a team to win the game. |
-| `/bingo itemdist # # # # #` | Changes the [item distribution](/item-distribution) used to generate the card. |
+| `/bingo itemdist # # # # #` | Changes the [item distribution](./item-distribution) used to generate the card. |
 | `/bingo reroll` | Re-rolls the card for completely new random items. |
 | `/bingo end` | Immediately ends the current game and displays the winner. |
 | `/bingo seed` | Shows the random seed used to generate the current Bingo Card. |

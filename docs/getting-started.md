@@ -33,7 +33,7 @@ For example, if you're running Minecraft 1.20.4, you'll need to use the `fabric-
 
 This mod aims to be compatible with most other Quilt or Fabric mods and datapacks, provided they don't directly interfere with its behavior. If something doesn't work as expected, feel free to [report an issue](https://gitlab.com/horrific-tweaks/bingo/-/issues) or let me know [on Discord](https://discord.horrific.dev/)!
 
-Check out [Server Optimization](/optimization#optimization-mods) for a list of additional mods I recommend installing for performance.
+Check out [Server Optimization](./optimization#optimization-mods) for a list of additional mods I recommend installing for performance.
 
 ## Starting a game
 
