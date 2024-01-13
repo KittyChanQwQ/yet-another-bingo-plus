@@ -36,8 +36,9 @@ object BingoCommands {
                 run {
                     var setCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("set")
                     val fields = listOf(
-                        PlayerSettings::scoreboard,
                         PlayerSettings::bossbar,
+                        PlayerSettings::scoreboard,
+                        PlayerSettings::scoreboardAutoHide,
                         PlayerSettings::leadingMessages,
                         PlayerSettings::scoreMessages,
                     )
