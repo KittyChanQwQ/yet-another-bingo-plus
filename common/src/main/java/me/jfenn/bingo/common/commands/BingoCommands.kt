@@ -82,7 +82,7 @@ object BingoCommands {
                             val itemDist = TierList.entries
                                 .map { IntegerArgumentType.getInteger(ctx, it.name) }
 
-                            if (itemDist.size == 5 && itemDist.sum() != 25) {
+                            if (itemDist.size == 5 && itemDist.sum() > 25) {
                                 ctx.source.player?.sendWarningMessage("Item distribution must add up to 25!")
                                 return@executes 0
                             }
@@ -164,7 +164,7 @@ object BingoCommands {
                     .then(
                         RequiredArgumentBuilder.argument<ServerCommandSource, Int>(
                             "minutes",
-                            IntegerArgumentType.integer()
+                            IntegerArgumentType.integer(1)
                         )
                             .executes { ctx ->
                                 val context = Bingo.getContext(ctx.source.server) ?: return@executes 0

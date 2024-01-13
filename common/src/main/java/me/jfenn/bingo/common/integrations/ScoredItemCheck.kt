@@ -38,8 +38,8 @@ object ScoredItemCheck : KoinComponent {
         // If the player is online, return the current player entity
         val onlinePlayer = ctx.server.playerManager.getPlayer(UUID.fromString(profile.uuid))
         if (onlinePlayer != null) {
-            // and remove any offline cache entry, if they have one
-            offlinePlayerCache.remove(profile)
+            // and set their offline cache entry
+            offlinePlayerCache[profile] = onlinePlayer
             return onlinePlayer
         }
 
