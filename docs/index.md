@@ -14,7 +14,7 @@ hero:
       link: https://modrinth.com/mod/yet-another-minecraft-bingo
     - theme: alt
       text: Read the Docs
-      link: /config
+      link: /what-is-bingo
 
 features:
   - icon: ⚙️

@@ -4,28 +4,40 @@
 [![Available on GitLab](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/gitlab_vector.svg)](https://gitlab.com/horrific-tweaks/bingo)
 [![Available on Modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/modrinth_vector.svg)](https://modrinth.com/mod/yet-another-minecraft-bingo)
 
-This is a multiplayer BINGO item hunt mod + lobby, compatible with vanilla clients.
-When installed on a server (along with [fabric-api](https://modrinth.com/mod/fabric-api)), players do not need any mods or resource packs to join.
+*For an introduction to Minecraft BINGO, read "[What is Minecraft BINGO?](https://minecraft.horrific.dev/bingo/what-is-bingo.html)" on the wiki!*
 
-> ⚠️⚠️⚠️ **WARNING** ⚠️⚠️⚠️
->
-> This mod **deletes the world folder** when installed on a server! It is meant to be hosted on a dedicated server for short, temporary
-games. Make sure this is not installed on an existing world or you _will_ lose your data!
+This is a multiplayer BINGO item hunt mod + lobby, which works on the client or on a dedicated server.
 
-Recommended mods (optional, but have been tested for compatibility):
-- [Lithium](https://modrinth.com/mod/lithium)
-- [Krypton](https://modrinth.com/mod/krypton)
-- [MC-249136 Fix](https://modrinth.com/mod/mc-249136-fix)
-- [Third Person Maps](https://modrinth.com/mod/third-person-maps) (client-side)
+- When installed on a server, players do not need any mods or resource packs to join.
+- When installed on the client, it provides additional functionality for server games, and can run games in singleplayer or on LAN.
+
+```txt
+⚠️⚠️⚠️ WARNING ⚠️⚠️⚠️
+
+This mod **deletes the world folder** when installed on a server!
+It is meant to be hosted on a dedicated server for short, temporary games.
+Make sure this is not installed on an existing world or you will lose your data!
+```
+
+<table>
+<tbody>
+<tr>
+<td>
+<img alt="A screenshot of Minecraft plains/ocean with a BINGO card in the corner" src="https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot.png" />
+</td>
+<td>
 
 Up to 8 teams can compete to collect items on the BINGO card. Teams can score items in horizontal, vertical, or diagonal
-lines to win the game. (the "win condition" can be set to a number of lines, or the full card).
+lines to win the game.
 
-![A screenshot of Minecraft plains/ocean with a BINGO card in the corner](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot.png)
+---
 
-> **Note:** When in-game, you can right-click to "use" the card when it's in your main hand,
-> which will display the card items in an inventory menu. This can help if any of the
-> images drawn on the card are unclear.
+🖱️ Right-click when holding the map to see the items in an inventory view!
+
+</td>
+</tr>
+</tbody>
+</table>
 
 ### Gamemodes:
 
@@ -55,15 +67,8 @@ placed in the `./config/bingo/` directory, they can be enabled in-game using the
 
 > There's a nifty [configuration tool](https://minecraft.horrific.dev/bingo/tier-editor.html) I've set up that'll let you
 > change these tier lists in a drag-and-drop interface rather than editing the files in text.
->
-> It's still a bit finicky, but helps prevent typos and misclicks/etc...
 
-The item images used to render the BINGO map can be overridden by placing a lowercase named 16x16 PNG file for each item
-in the `./config/bingo/images/...` folder. For example, `./config/bingo/images/birch_trapdoor.png`.
-
-The configured game rules (win condition, item distribution) will be saved in `./config/bingo/config.json`. By default,
-changing these in-game will overwrite this file. If you'd prefer to have the same default rules on each startup, this
-can be turned off by setting `"overwrite": false`.
+You can find more info about configuring this mod [on the wiki](https://minecraft.horrific.dev/bingo/config.html)!
 
 ## ⌨️ Commands
 
@@ -87,24 +92,5 @@ BINGO commands (operator-only):
 
 ## Credits
 
-Parts of this mod are derived/inspired/ported from [Extremelyd1/minecraft-bingo](https://github.com/Extremelyd1/minecraft-bingo),
+Parts of this mod are inspired from [Extremelyd1/minecraft-bingo](https://github.com/Extremelyd1/minecraft-bingo),
 the awesome Spigot/Paper version of this gamemode.
-
-## License
-
-```
-    Copyright (C) 2023 James Fenn
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-```

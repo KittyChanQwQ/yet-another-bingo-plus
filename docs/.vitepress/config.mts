@@ -4,7 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   lang: "en-US",
   title: "Yet Another MC BINGO",
-  description: "A server-side BINGO item hunt mod + lobby, compatible with vanilla clients.",
+  description: "A multiplayer BINGO item hunt mod + lobby, compatible with vanilla clients.",
   base: "/bingo/",
   head: [
     ["meta", { name: "theme-color", content: "#0f5e2f" }],
@@ -30,14 +30,17 @@ export default defineConfig({
 
     sidebar: [
       {
-        text: 'Installation',
+        text: 'Introduction',
         collapsed: false,
         items: [
+          { text: 'What is Minecraft BINGO?', link: '/what-is-bingo' },
+          { text: 'Getting Started', link: '/getting-started' },
+          { text: 'Command Cheatsheet', link: '/command-cheatsheet' },
           { text: 'Server Optimization', link: '/optimization' },
         ],
       },
       {
-        text: 'Bingo Configuration',
+        text: 'Configuration',
         collapsed: false,
         items: [
           { text: 'Config Files', link: '/config', items: [
