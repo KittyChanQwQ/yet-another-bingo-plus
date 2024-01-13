@@ -12,7 +12,7 @@
 
 - Each team receives the same random Bingo Card at the start of the game.
 - Teams are teleported to a random location in the world.
-- The first team to complete a number of lines (row, column, or diagonal) wins the game!
+- The first team to complete the required number of lines (row, column, or diagonal) wins the game!
 
 </figure>
 </div>
@@ -47,7 +47,7 @@ Operators can also shuffle teams or assign a player to a specific team using `/j
 </figure>
 <figure>
 
-![](./what-is-bingo-team.png)
+![Floating text above a block that says "Green Team, Click to join!"](./what-is-bingo-team.png)
 
 </figure>
 </div>
@@ -58,7 +58,7 @@ During the game, players can use the chat to communicate with their team. Chat m
 
 Players can also use the `/coords` command to share their current coordinates, and `/coords list` will show a list of the recent coordinates recorded by the team.
 
-![](./what-is-bingo-coordinates.png)
+![A list of coordinate messages in the game chat](./what-is-bingo-coordinates.png)
 
 ## After the game...
 

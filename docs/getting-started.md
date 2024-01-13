@@ -39,7 +39,7 @@ Check out [Server Optimization](./optimization#optimization-mods) for a list of 
 
 If you've installed the mod on the client, you should see a "BINGO!" button in the bottom right of the Minecraft title screen. Clicking this will launch directly into a bingo world.
 
-![](./getting-started-bingo-button.png)
+![A "BINGO!" button on the title screen](./getting-started-bingo-button.png)
 
 If you leave the world mid-game, it should show up as a singleplayer world entry. However, any save files will be automatically removed once the game is completed.
 
