@@ -7,7 +7,7 @@ hero:
   image:
     src: /logo.svg
     alt: BINGO
-  tagline: A server-side BINGO item hunt mod + lobby, compatible with vanilla clients.
+  tagline: A multiplayer BINGO item hunt mod + lobby, compatible with vanilla clients, Quilt, and Fabric.
   actions:
     - theme: brand
       text: Get it on Modrinth
