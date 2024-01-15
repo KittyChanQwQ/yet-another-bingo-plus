@@ -98,6 +98,10 @@ object Bingo : ModInitializer {
             state.state.onEnter(ctx, state.state)
         }
 
+        ServerLifecycleEvents.SERVER_STOPPED.register { server ->
+            contexts.remove(System.identityHashCode(server))
+        }
+
         ServerTickEvents.START_SERVER_TICK.register { server ->
             val ctx = getContext(server) ?: return@register
             onGameTick(ctx, Unit)
