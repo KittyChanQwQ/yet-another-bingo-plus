@@ -36,7 +36,7 @@ data class BingoState(
     }
 
     fun registerTeam(team: BingoTeam): BingoTeam {
-        return teams.getOrPut(team.key) { team }
+        return teams.getOrPut(team.key) { team.copy() }
     }
 
     fun getPreviewMap(ctx: BingoContext): BingoMap {

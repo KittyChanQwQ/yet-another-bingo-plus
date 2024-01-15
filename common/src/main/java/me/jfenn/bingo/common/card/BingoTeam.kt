@@ -30,7 +30,7 @@ value class BingoTeamKey(
 )
 
 @Serializable
-class BingoTeam(
+data class BingoTeam(
     private val id: String,
     val name: String,
     val textColor: TextColor,
@@ -104,16 +104,16 @@ class BingoTeam(
 
     companion object : KoinComponent {
 
-        val BLUE = BingoTeam("bingo_blue", "BLUE", TextColor.BLUE)
-        val RED = BingoTeam("bingo_red", "RED", TextColor.RED)
-        val GREEN = BingoTeam("bingo_green", "GREEN", TextColor.GREEN)
-        val YELLOW = BingoTeam("bingo_yellow", "YELLOW", TextColor.YELLOW)
-        val PINK = BingoTeam("bingo_pink", "PINK", TextColor.LIGHT_PURPLE)
-        val AQUA = BingoTeam("bingo_aqua", "AQUA", TextColor.AQUA)
-        val ORANGE = BingoTeam("bingo_orange", "ORANGE", TextColor.GOLD)
-        val GRAY = BingoTeam("bingo_gray", "GRAY", TextColor.GRAY)
+        val BLUE get() = BingoTeam("bingo_blue", "BLUE", TextColor.BLUE)
+        val RED get() = BingoTeam("bingo_red", "RED", TextColor.RED)
+        val GREEN get() = BingoTeam("bingo_green", "GREEN", TextColor.GREEN)
+        val YELLOW get() = BingoTeam("bingo_yellow", "YELLOW", TextColor.YELLOW)
+        val PINK get() = BingoTeam("bingo_pink", "PINK", TextColor.LIGHT_PURPLE)
+        val AQUA get() = BingoTeam("bingo_aqua", "AQUA", TextColor.AQUA)
+        val ORANGE get() = BingoTeam("bingo_orange", "ORANGE", TextColor.GOLD)
+        val GRAY get() = BingoTeam("bingo_gray", "GRAY", TextColor.GRAY)
 
-        val TEAM_BLOCKS = mapOf(
+        val TEAM_BLOCKS get() = mapOf(
             Blocks.BLUE_CARPET to BLUE,
             Blocks.RED_CARPET to RED,
             Blocks.GREEN_CARPET to GREEN,
