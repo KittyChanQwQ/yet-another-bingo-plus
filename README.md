@@ -23,7 +23,7 @@ Make sure this is not installed on an existing world or you will lose your data!
 <tbody>
 <tr>
 <td>
-<img alt="A screenshot of Minecraft plains/ocean with a BINGO card in the corner" src="https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot.png" />
+<img alt="A screenshot of Minecraft plains/taiga with a BINGO card in the corner" src="https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot1.png" />
 </td>
 <td>
 
