@@ -85,13 +85,17 @@ export default defineConfig({
       head.push(['link', { rel: 'canonical', canonicalUrl }]);
       head.push(['meta', { property: 'og:url', canonicalUrl }]);
 
-      const formattedTitle = canonicalUrl.endsWith("/")
-        ? pageData.title
-        : `${pageData.title} | ${constants.shortName}`;
+      const formattedTitle = pageData.title != null
+        ? (
+          canonicalUrl.endsWith("/")
+            ? pageData.title
+            : `${pageData.title} | ${constants.name}`
+        )
+        : constants.name;
       const description = pageData.description || constants.description;
 
       head.push(['meta', { name: 'description', content: description }]);
-      head.push(['meta', { property: 'og:title', content: pageData.title }]);
+      head.push(['meta', { property: 'og:title', content: pageData.title || constants.name }]);
       head.push(['meta', { property: 'og:description', content: description }]);
       head.push(['meta', { property: 'og:type', content: canonicalUrl.endsWith("/") ? "website" : "article" }]);
       head.push(['meta', { property: 'twitter:title', content: formattedTitle }]);
