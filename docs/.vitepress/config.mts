@@ -82,10 +82,10 @@ export default defineConfig({
         .replace(/\.md$/, '')
         .replace(/\/index$/, '/');
 
-      head.push(['link', { rel: 'canonical', canonicalUrl }]);
-      head.push(['meta', { property: 'og:url', canonicalUrl }]);
+      head.push(['link', { rel: 'canonical', href: canonicalUrl }]);
+      head.push(['meta', { property: 'og:url', content: canonicalUrl }]);
 
-      const formattedTitle = pageData.title != null
+      const formattedTitle = pageData.title
         ? (
           canonicalUrl.endsWith("/")
             ? pageData.title
