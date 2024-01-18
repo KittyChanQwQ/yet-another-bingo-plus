@@ -24,7 +24,7 @@ export default defineConfig({
     ["meta", { property: "twitter:card", content: "summary_large_image" }],
     ["meta", { property: "twitter:image", content: "https://minecraft.horrific.dev/bingo/screenshot.png" }],
   ],
-  cleanUrls: false,
+  cleanUrls: true,
   themeConfig: {
     logo: "/logo.svg",
     // https://vitepress.dev/reference/default-theme-config
@@ -79,8 +79,8 @@ export default defineConfig({
 
     if (!pageData.isNotFound) {
       const canonicalUrl = `https://minecraft.horrific.dev/bingo/${pageData.relativePath}`
-        .replace(/\.md$/, '.html')
-        .replace(/\/index\.html$/, '/');
+        .replace(/\.md$/, '')
+        .replace(/\/index$/, '/');
 
       head.push(['link', { rel: 'canonical', canonicalUrl }]);
       head.push(['meta', { property: 'og:url', canonicalUrl }]);
