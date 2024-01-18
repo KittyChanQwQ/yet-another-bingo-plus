@@ -47,10 +47,10 @@ export default defineConfig({
         text: 'Introduction',
         collapsed: false,
         items: [
-          { text: 'What is Minecraft BINGO?', link: '/what-is-bingo.html' },
-          { text: 'Getting Started', link: '/getting-started.html' },
-          { text: 'Command Cheatsheet', link: '/command-cheatsheet.html' },
-          { text: 'Server Optimization', link: '/optimization.html' },
+          { text: 'What is Minecraft BINGO?', link: '/what-is-bingo' },
+          { text: 'Getting Started', link: '/getting-started' },
+          { text: 'Command Cheatsheet', link: '/command-cheatsheet' },
+          { text: 'Server Optimization', link: '/optimization' },
         ],
       },
       {
