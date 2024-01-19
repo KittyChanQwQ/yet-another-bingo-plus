@@ -10,8 +10,10 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.utils.formatString
+import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import kotlin.random.Random
@@ -39,20 +41,20 @@ data class BingoState(
         return teams.getOrPut(team.key) { team.copy() }
     }
 
-    fun getPreviewMap(ctx: BingoContext): BingoMap {
+    fun getPreviewMap(server: MinecraftServer): BingoMap {
         return previewMap ?: run {
             val map = BingoMap(
-                mapId = ctx.server.overworld.nextMapId,
+                mapId = server.overworld.nextMapId,
             )
             previewMap = map
             return@run map
         }
     }
 
-    fun changeState(ctx: BingoContext, newState: GameState) {
+    fun changeState(events: ScopedEvents, newState: GameState) {
         val prevState = this.state
         this.state = newState
-        newState.onEnter(ctx, prevState)
+        events.onStateChange(prevState to newState)
     }
 
     fun updateScore(team: BingoTeam): TeamScore {

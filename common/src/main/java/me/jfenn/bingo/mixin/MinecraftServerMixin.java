@@ -1,13 +1,17 @@
 package me.jfenn.bingo.mixin;
 
-import me.jfenn.bingo.common.Bingo;
+import me.jfenn.bingo.common.BingoKoin;
 import me.jfenn.bingo.common.ConstantsKt;
 import me.jfenn.bingo.common.WorldDeleter;
-import me.jfenn.bingo.common.state.GameState;
+import me.jfenn.bingo.common.config.ConfigService;
+import me.jfenn.bingo.mixinhandler.MinecraftServerMixinHandler;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resource.LifecycledResourceManager;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.server.*;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerManager;
+import net.minecraft.server.ServerNetworkIo;
+import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.level.storage.LevelStorage;
 import org.slf4j.Logger;
@@ -62,8 +66,7 @@ public abstract class MinecraftServerMixin {
     @Inject(at = @At(value = "HEAD"), method = "shutdown", cancellable = true)
     public void shutdown(CallbackInfo ci) {
         MinecraftServer server = (MinecraftServer) (Object) this;
-        var ctx = Bingo.INSTANCE.getContext(server);
-        if (ctx == null) return;
+        if (BingoKoin.INSTANCE.getScope(server) == null) return;
 
         // if this is running client-side, just shut down normally
         if (!server.isDedicated()) {
@@ -71,7 +74,7 @@ public abstract class MinecraftServerMixin {
         }
 
         // if a game is running, the server should restart normally to save all world data
-        if (ctx.getState().getState() == GameState.PLAYING) {
+        if (MinecraftServerMixinHandler.INSTANCE.isGamePlaying(server)) {
             return;
         }
 
@@ -92,7 +95,7 @@ public abstract class MinecraftServerMixin {
             this.playerManager.disconnectAllPlayers();
         }
 
-        if (ctx.getConfig().getUnsafeSkipWorldClose()) {
+        if (ConfigService.INSTANCE.getConfig().getUnsafeSkipWorldClose()) {
             log.info("unsafeSkipWorldClose is true; skipping file closing");
             log.info("This will likely cause a crash...");
 

@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.integrations
 
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.world.GameRules
@@ -11,7 +12,12 @@ import net.minecraft.world.GameRules
  * - Hides advancements/death messages in PREGAME
  * - Applies game configuration (pvp, keepinv) when PLAYING
  */
-object GameRuleController {
+class GameRuleController(
+    events: ScopedEvents,
+    private val server: MinecraftServer,
+    private val config: BingoConfig,
+    private val state: BingoState,
+) {
 
     fun readFromServer(server: MinecraftServer, config: BingoConfig) {
         config.isPvpEnabled = server.isPvpEnabled
@@ -23,8 +29,8 @@ object GameRuleController {
         server.gameRules.get(GameRules.KEEP_INVENTORY).set(config.isKeepInventory, server)
     }
 
-    fun init() {
-        GameState.PREGAME.onEnter {
+    init {
+        events.onEnter(GameState.PREGAME) {
             // remove overworld spawn tickets
             server.overworld.chunkManager.removePersistentTickets()
 
@@ -36,14 +42,14 @@ object GameRuleController {
             writeToServer(server, config)
         }
 
-        Bingo.onUpdateTick {
+        events.onUpdateTick {
             if (state.state == GameState.PLAYING) {
                 // update config with the current game rules (in case /gamerule is used mid-game)
                 readFromServer(server, config)
             }
         }
 
-        GameState.PLAYING.onEnter { prevState ->
+        events.onEnter(GameState.PLAYING) { prevState ->
             // revert the lobby gamerule changes
             server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(true, server)
             server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(true, server)

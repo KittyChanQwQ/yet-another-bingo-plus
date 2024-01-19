@@ -17,7 +17,6 @@ import org.koin.core.component.inject
 sealed class SerializedPersistentState: PersistentState() {
 
     companion object : KoinComponent {
-
         fun nbtToJson(nbt: NbtElement?): JsonElement {
             if (nbt == null) return JsonNull
             return when (nbt) {
@@ -34,12 +33,6 @@ sealed class SerializedPersistentState: PersistentState() {
                 else -> JsonNull
             }
         }
-
-        val persistentStateManager by inject<IPersistentStateManager>()
-
-        inline fun <reified T: SerializedPersistentState> fromWorld(world: ServerWorld): T {
-            return persistentStateManager.getFromWorld(world, T::class, MOD_ID)
-        }
     }
 
     override fun isDirty(): Boolean {
@@ -50,6 +43,16 @@ sealed class SerializedPersistentState: PersistentState() {
         val string = json.encodeToString(this)
         val compound = StringNbtReader(StringReader(string)).parseCompound()
         return nbt.copyFrom(compound)
+    }
+
+}
+
+class SerializedPersistentStateFactory(
+    val persistentStateManager: IPersistentStateManager,
+) {
+
+    inline fun <reified T: SerializedPersistentState> fromWorld(world: ServerWorld): T {
+        return persistentStateManager.getFromWorld(world, T::class, MOD_ID)
     }
 
 }

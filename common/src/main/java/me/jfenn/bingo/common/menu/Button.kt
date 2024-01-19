@@ -21,6 +21,7 @@ fun MenuComponent.registerButton(
     height: Float = MENU_HITBOX_HEIGHT,
     facing: Direction = Direction.SOUTH,
     requiredPermissionLevel: Int = 2,
+    interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
     onClick: (player: ServerPlayerEntity) -> Unit,
 ) {
     val isActive by isActiveProp
@@ -30,7 +31,7 @@ fun MenuComponent.registerButton(
         putFloat("width", width)
         putFloat("height", height)
     }.onUpdate { entity ->
-        InteractionEntityEvents.onInteract(entity) { player ->
+        interactionEntityEvents.onInteract(entity) { player ->
             if (player.hasPermission(requiredPermissionLevel)) {
                 onClick(player)
                 entity.playSound(SoundEvents.BLOCK_LEVER_CLICK, 1f, 1f)

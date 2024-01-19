@@ -1,34 +1,34 @@
 package me.jfenn.bingo.common.integrations
 
 import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.spawn.SpawnService
-import me.jfenn.bingo.common.state.BingoContext
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.allInventorySlots
 import me.jfenn.bingo.common.utils.giveOrEquipStack
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 /**
  * Controls player gamemode, status, and inventory setup.
@@ -42,22 +42,29 @@ import org.koin.core.component.inject
  * Needs to additionally ensure that the state is re-applied on
  * login, as players could miss game state transitions by logging out.
  */
-object PlayerController : KoinComponent {
+class PlayerController(
+    events: ScopedEvents,
+    private val server: MinecraftServer,
+    private val state: BingoState,
+    private val config: BingoConfig,
+    private val mapItemService: MapItemService,
+    private val spawnService: SpawnService,
+    private val teamService: TeamService,
+    private val advancementManager: IAdvancementManager,
+) {
 
-    private val advancementManager by inject<IAdvancementManager>()
-
-    fun givePreviewCardItem(ctx: BingoContext, player: ServerPlayerEntity) {
+    fun givePreviewCardItem(player: ServerPlayerEntity) {
         val hasMap = player.allHeldStacks().any { MapItemService.isMapItem(it) }
 
         if (!hasMap) {
-            val mapItem = MapItemService.createPreviewMapItem(ctx)
+            val mapItem = mapItemService.createPreviewMapItem()
             player.giveItemStack(mapItem)
         }
     }
 
-    fun removePreviewCardItem(ctx: BingoContext, player: ServerPlayerEntity) {
+    fun removePreviewCardItem(player: ServerPlayerEntity) {
         for ((slot, item) in player.allInventorySlots()) {
-            if (MapItemService.isMapItem(item) && FilledMapItem.getMapId(item) == ctx.state.getPreviewMap(ctx).mapId)
+            if (MapItemService.isMapItem(item) && FilledMapItem.getMapId(item) == state.getPreviewMap(server).mapId)
                 player.inventory.removeStack(slot)
         }
     }
@@ -66,9 +73,9 @@ object PlayerController : KoinComponent {
      * Ensure that the player has their team's bingo map card.
      * Has no effect if the player already has a card
      */
-    fun giveMapCardItem(ctx: BingoContext, player: ServerPlayerEntity) {
-        val team = BingoTeam.fromPlayer(player) ?: return
-        val hasMap = player.allHeldStacks().any { MapItemService.isMapTeamItem(ctx, it, team) }
+    fun giveMapCardItem(player: ServerPlayerEntity) {
+        val team = teamService.getPlayerTeam(player) ?: return
+        val hasMap = player.allHeldStacks().any { mapItemService.isMapTeamItem(it, team) }
 
         if (!hasMap) {
             // if the player has another team's map item, remove it!
@@ -78,7 +85,7 @@ object PlayerController : KoinComponent {
             }
 
             // give the player a new map item
-            val mapItem = MapItemService.createMapItem(ctx, team)
+            val mapItem = mapItemService.createMapItem(team)
             player.giveItemStack(mapItem)
         }
     }
@@ -88,10 +95,9 @@ object PlayerController : KoinComponent {
      * in their hotbar slots. Indiscriminately replaces any existing
      * hotbar items.
      */
-    fun giveSpectatorMapItems(ctx: BingoContext, player: ServerPlayerEntity) {
-        ctx.state.getRegisteredTeams()
-            .filter { it.team(player.server).playerList.isNotEmpty() }
-            .map { MapItemService.createMapItem(ctx, it) }
+    fun giveSpectatorMapItems(player: ServerPlayerEntity) {
+        state.getRegisteredTeams()
+            .map { mapItemService.createMapItem(it) }
             .forEachIndexed { i, stack ->
                 val mapId = FilledMapItem.getMapId(stack)
                 val hasMap = player.allHeldStacks().any { FilledMapItem.getMapId(it) == mapId }
@@ -136,13 +142,12 @@ object PlayerController : KoinComponent {
     }
 
     fun updateGameMode(
-        ctx: BingoContext,
         player: ServerPlayerEntity,
         forceReset: Boolean = false,
     ) {
-        val isOnTeam = ctx.state.teams.values.any { it.includesPlayer(player) }
+        val isOnTeam = state.teams.values.any { it.includesPlayer(player) }
 
-        val gameMode = when (ctx.state.state) {
+        val gameMode = when (state.state) {
             GameState.PREGAME -> GameMode.ADVENTURE
             GameState.PLAYING -> if (isOnTeam) GameMode.SURVIVAL else GameMode.SPECTATOR
             GameState.POSTGAME -> GameMode.CREATIVE
@@ -152,14 +157,14 @@ object PlayerController : KoinComponent {
             // This indicates that a player is starting the game, or has logged back on after a game has started
             // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
             if (gameMode == GameMode.SURVIVAL) {
-                resetPlayer(ctx, player)
+                resetPlayer(player)
             }
 
             player.changeGameMode(gameMode)
         }
     }
 
-    fun resetPlayer(ctx: BingoContext, player: ServerPlayerEntity) {
+    fun resetPlayer(player: ServerPlayerEntity) {
         // reset player info
         player.clearStatusEffects()
         player.inventory.clear()
@@ -171,83 +176,78 @@ object PlayerController : KoinComponent {
         player.hungerManager.exhaustion = 0f
 
         // unlock all crafting recipes, if set
-        if (ctx.config.isUnlockRecipes)
-            player.unlockRecipes(ctx.server.recipeManager.values())
+        if (config.isUnlockRecipes)
+            player.unlockRecipes(server.recipeManager.values())
 
         // reset advancements state
         advancementManager.clearAdvancements(player)
 
         // teleport the player to their spawnpoint
-        SpawnService.teleportPlayer(ctx, player)
+        spawnService.teleportPlayer(player)
 
         // give each player their team's card
-        giveMapCardItem(ctx, player)
+        giveMapCardItem(player)
 
-        val team = BingoTeam.fromPlayer(player)
+        val team = teamService.getPlayerTeam(player)
         player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
         player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game has started!")))
         Sounds.playGameStarted(player)
 
         // give spawn equipment to the player if they are on a team
         if (team != null) {
-            SpawnService.giveSpawnEquipment(ctx.config, listOf(player))
+            spawnService.giveSpawnEquipment(listOf(player))
         }
     }
 
-    fun init() {
-        ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
-            val player = handler.player
-            val ctx = Bingo.getContext(player.server)
+    // TODO: Move this prop elsewhere!
+    val lobbyWorld = server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID }!!
 
-            if (ctx != null) {
-                updateGameMode(ctx, player)
+    init {
+        events.onPlayerJoin { player ->
+            updateGameMode(player)
 
-                // if in pregame, move to the lobby world
-                if (ctx.state.state == GameState.PREGAME) {
-                    val spawnPos = ctx.state.lobbySpawnPos.toBlockPos()
-                    player.setSpawnPoint(ctx.lobbyWorld.registryKey, spawnPos, 180f, true, false)
-                    player.teleport(ctx.lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
-                }
+            // if in pregame, move to the lobby world
+            if (state.state == GameState.PREGAME) {
+                val spawnPos = state.lobbySpawnPos.toBlockPos()
+                player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
+                player.teleport(lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
             }
         }
 
-        ServerPlayerEvents.AFTER_RESPAWN.register { _, player, _ ->
-            val ctx = Bingo.getContext(player.server)
-
+        events.onPlayerRespawn { player ->
             // if in pregame, move to the lobby world
-            if (ctx != null && ctx.state.state == GameState.PREGAME) {
-                val spawnPos = ctx.state.lobbySpawnPos.toBlockPos()
-                player.setSpawnPoint(ctx.lobbyWorld.registryKey, spawnPos, 180f, true, false)
-                player.teleport(ctx.lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
+            if (state.state == GameState.PREGAME) {
+                val spawnPos = state.lobbySpawnPos.toBlockPos()
+                player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
+                player.teleport(lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
             }
 
             // if playing, give the player new spawn equipment
             if (
-                ctx != null
-                && ctx.state.state == GameState.PLAYING
-                && ctx.config.refillPlayerKitOnRespawn
+                state.state == GameState.PLAYING
+                && config.refillPlayerKitOnRespawn
                 // if KEEP_INVENTORY is on, we don't need to replace these items
-                && !ctx.server.gameRules.get(GameRules.KEEP_INVENTORY).get()
+                && !server.gameRules.get(GameRules.KEEP_INVENTORY).get()
             ) {
-                SpawnService.giveSpawnEquipment(ctx.config, listOf(player))
+                spawnService.giveSpawnEquipment(listOf(player))
             }
         }
 
         // Transition from PREGAME -> PLAYING
-        GameState.PLAYING.onEnter { prevState ->
+        events.onEnter(GameState.PLAYING) { prevState ->
             if (prevState != GameState.PREGAME) return@onEnter
 
             for (player in server.playerManager.playerList) {
-                updateGameMode(this, player)
+                updateGameMode(player, forceReset = true)
             }
         }
 
         // Transition from PLAYING -> POSTGAME
-        GameState.POSTGAME.onEnter { prevState ->
+        events.onEnter(GameState.POSTGAME) { prevState ->
             if (prevState != GameState.PLAYING) return@onEnter
 
             for (player in server.playerManager.playerList) {
-                updateGameMode(this, player)
+                updateGameMode(player)
 
                 // remove any existing maps in the player's inventory
                 for (i in 0 until player.inventory.size()) {
@@ -256,23 +256,23 @@ object PlayerController : KoinComponent {
                 }
 
                 // give all maps for active teams to the player
-                giveSpectatorMapItems(this, player)
+                giveSpectatorMapItems(player)
             }
         }
 
-        Bingo.onGameTick {
+        events.onGameTick {
             for (player in server.playerManager.playerList) {
                 if (state.state == GameState.PREGAME && player.isAlive) {
                     if (config.showPreviewCard) {
-                        givePreviewCardItem(this, player)
+                        givePreviewCardItem(player)
                     } else {
-                        removePreviewCardItem(this, player)
+                        removePreviewCardItem(player)
                     }
                 }
 
                 if (state.state == GameState.PLAYING && player.isAlive && !player.isSpectator) {
                     // give player a new map, if they don't have one?
-                    giveMapCardItem(this, player)
+                    giveMapCardItem(player)
 
                     // if elytra mode is configured, give the player an elytra
                     if (config.isElytra)
@@ -280,13 +280,13 @@ object PlayerController : KoinComponent {
                 }
 
                 if (state.state != GameState.PREGAME && (player.isSpectator || state.state == GameState.POSTGAME))
-                    giveSpectatorMapItems(this, player)
+                    giveSpectatorMapItems(player)
 
                 // If the player has switched teams, update the player UUID sets...
                 // (this is necessary because teams could be changed without us knowing, using /team join)
-                val playerTeam = BingoTeam.fromPlayer(player)
+                val playerTeam = teamService.getPlayerTeam(player)
                 val playerProfile = BingoPlayerProfile.fromPlayer(player)
-                for (team in ctx.state.teams.values) {
+                for (team in state.teams.values) {
                     if (playerTeam?.key == team.key) {
                         team.players.add(playerProfile)
                     } else {

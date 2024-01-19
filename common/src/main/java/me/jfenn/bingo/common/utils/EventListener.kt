@@ -2,26 +2,29 @@ package me.jfenn.bingo.common.utils
 
 import org.slf4j.LoggerFactory
 
-class EventListener<T> {
+class ReturnEventListener<T, R> {
 
     private val log = LoggerFactory.getLogger(this::class.java)
-    private val listeners = mutableListOf<(T) -> Unit>()
+    private val listeners = mutableListOf<(T) -> R>()
 
-    operator fun invoke(event: T) {
-        listeners.forEach {
+    operator fun invoke(event: T): List<R?> {
+        return listeners.map {
             try {
                 it(event)
             } catch (e: Throwable) {
                 log.error("Exception in event handler:", e)
+                null
             }
         }
     }
 
-    operator fun invoke(callback: (T) -> Unit) {
+    operator fun invoke(callback: (T) -> R) {
         listeners.add(callback)
     }
 
 }
+
+typealias EventListener<T> = ReturnEventListener<T, Unit>
 
 class ContextEventListener<C, T> {
 

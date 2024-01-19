@@ -1,21 +1,29 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.state.BingoContext
 import net.minecraft.entity.Entity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.server.MinecraftServer
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
+import org.koin.core.scope.Scope
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class MenuInstance(
-    val ctx: BingoContext,
-    val spawnPos: BlockPosition,
+    private val log: Logger,
+    private val koinScope: Scope,
+    private val server: MinecraftServer,
+    private val interactionEntityEvents: InteractionEntityEvents,
+    private val spawnPos: BlockPosition,
 ) {
 
     val instanceTag = "bingo-${UUID.randomUUID()}"
@@ -25,11 +33,11 @@ class MenuInstance(
     }
 
     // if the lobby world doesn't exist, the mod should error before this point!
-    val world = ctx.server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID }!!
+    val world = server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID }!!
 
-    val menuComponent = component {
+    val menuComponent = component(koinScope) {
         registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.45))
-        registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.45), ctx)
+        registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.45))
         registerPlayerMenu(Vec3d(4.0, spawnPos.y + 3.5, 4.45), Direction.NORTH)
     }
 
@@ -84,7 +92,7 @@ class MenuInstance(
     fun despawn(info: MenuEntityHandle<*>) {
         val entity = world.getEntity(info.id)
         if (entity != null && entity.type == info.type) {
-            InteractionEntityEvents.INTERACT_LISTENERS.remove(info.id)
+            interactionEntityEvents.INTERACT_LISTENERS.remove(info.id)
             entity.kill()
         } else {
             log.error("Entity type ${info.type} does not match the entity being despawned")

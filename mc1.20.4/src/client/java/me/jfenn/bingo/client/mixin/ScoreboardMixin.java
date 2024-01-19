@@ -1,11 +1,9 @@
 package me.jfenn.bingo.client.mixin;
 
 import me.jfenn.bingo.api.IObjectiveHandle;
-import me.jfenn.bingo.common.Bingo;
 import me.jfenn.bingo.common.card.BingoTeam;
-import me.jfenn.bingo.common.integrations.ScoreboardController;
-import me.jfenn.bingo.common.state.BingoContext;
 import me.jfenn.bingo.impl.ObjectiveHandle;
+import me.jfenn.bingo.mixinhandler.ScoreboardMixinHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.scoreboard.Scoreboard;
@@ -32,15 +30,13 @@ public abstract class ScoreboardMixin {
         if (player == null) return;
         IntegratedServer server = client.getServer();
         if (server == null) return;
-        BingoContext context = Bingo.INSTANCE.getContext(server);
-        if (context == null) return;
 
         BingoTeam team = BingoTeam.Companion.fromPlayer(server, player);
-        IObjectiveHandle handle = ScoreboardController.INSTANCE.getScoreboardObjective(context, team);
+        IObjectiveHandle handle = ScoreboardMixinHandler.INSTANCE.getScoreboardObjective(server, team);
         if (handle instanceof ObjectiveHandle) {
             ScoreboardObjective objective = ((ObjectiveHandle) handle).getObjective();
 
-            boolean shouldDisplay = ScoreboardController.INSTANCE.shouldDisplayScoreboard(context, player);
+            boolean shouldDisplay = ScoreboardMixinHandler.INSTANCE.shouldDisplayScoreboard(server, player);
             if (shouldDisplay) {
                 ci.setReturnValue(objective);
                 ci.cancel();

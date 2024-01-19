@@ -2,62 +2,36 @@ package me.jfenn.bingo.common.integrations
 
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.ScoreService
+import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.MapItemService
-import me.jfenn.bingo.common.state.BingoContext
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import java.util.UUID
+import java.util.*
 
 /**
  * Displays scoreboard score/timer information for all players.
  */
-object ScoreboardController : KoinComponent {
+class ScoreboardController(
+    events: ScopedEvents,
+    private val server: MinecraftServer,
+    private val config: BingoConfig,
+    private val state: BingoState,
+    private val teamService: TeamService,
+    private val scoreboardHandler: ScoreboardHandler,
+    private val scoreboardManager: IScoreboardManager,
+) {
 
-    val scoreboardManager by inject<IScoreboardManager>()
-
-    private val playersWithObjectives = mutableMapOf<UUID, MutableSet<String>>()
-
-    private fun playerHasObjective(playerEntity: PlayerEntity, objective: IObjectiveHandle) : Boolean {
-        val set = playersWithObjectives.getOrPut(playerEntity.uuid) { mutableSetOf() }
-        val hasObjective = set.contains(objective.name)
-        set.add(objective.name)
-        return hasObjective
-    }
-
-    fun getScoreboardObjective(ctx: BingoContext, team: BingoTeam?) : IObjectiveHandle {
-        val objectiveName = "bingo_sidebar_" + team?.name
-        val objective = scoreboardManager.createDummyObjective(ctx.server, objectiveName, Text.literal("Minecraft BINGO"))
-        return objective
-    }
-
-    fun shouldDisplayScoreboard(ctx: BingoContext, playerEntity: PlayerEntity) : Boolean {
-        val isScoreboardEnabled = ConfigService.getPlayer(playerEntity.uuidAsString).scoreboard
-        if (!isScoreboardEnabled) return false
-        val player = ctx.server.playerManager.getPlayer(playerEntity.uuid) ?: return false
-
-        val settings = ConfigService.getPlayer(playerEntity.uuidAsString)
-        if (!settings.scoreboardAutoHide)
-            return true
-
-        // if the player is holding the map item, show the scoreboard; otherwise, hide it
-        val isHoldingMapItem = player.interactionManager.gameMode != GameMode.SURVIVAL
-                || MapItemService.isMapItem(playerEntity.mainHandStack)
-                || MapItemService.isMapItem(playerEntity.offHandStack)
-
-        return isHoldingMapItem
-    }
-
-    fun init() {
-        ConfigService.onChangePlayerSettings { player ->
+    init {
+        events.onChangePlayerSettings { player ->
             val settings = ConfigService.getPlayer(player.uuidAsString)
 
             if (!settings.scoreboard) {
@@ -66,9 +40,9 @@ object ScoreboardController : KoinComponent {
             }
         }
 
-        Bingo.onUpdateTick {
-            for (team in ctx.state.getRegisteredTeams() + null) {
-                val objective = getScoreboardObjective(this, team)
+        events.onUpdateTick {
+            for (team in state.getRegisteredTeams() + null) {
+                val objective = scoreboardHandler.getScoreboardObjective(team)
 
                 val scoreboardText = buildList {
                     add("")
@@ -138,14 +112,14 @@ object ScoreboardController : KoinComponent {
 
                 // Manually send the scoreboard update packets to each player
                 server.playerManager.playerList
-                    .filter { BingoTeam.fromPlayer(it) == team }
+                    .filter { teamService.getPlayerTeam(it)?.key == team?.key }
                     .filter { ConfigService.getPlayer(it.uuidAsString).scoreboard }
                     .forEach { player ->
                         // if the player is holding the map item, show the scoreboard; otherwise, hide it
-                        if (shouldDisplayScoreboard(this, player)) {
+                        if (scoreboardHandler.shouldDisplayScoreboard(player)) {
                             scoreboardManager.sendScoreboardUpdates(
                                 player, objective,
-                                sendCreate = !playerHasObjective(player, objective),
+                                sendCreate = !scoreboardHandler.playerHasObjective(player, objective),
                             )
                             scoreboardManager.sendScoreboardDisplay(player, objective)
                         } else {
@@ -155,9 +129,9 @@ object ScoreboardController : KoinComponent {
             }
         }
 
-        ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
+        events.onPlayerLeave { player ->
             // When a player disconnects, they need to be re-sent the objective if they reconnect
-            playersWithObjectives.remove(handler.player.uuid)
+            scoreboardHandler.playersWithObjectives.remove(player.uuid)
         }
     }
 

@@ -2,23 +2,31 @@ package me.jfenn.bingo.common.integrations
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.Bingo
-import me.jfenn.bingo.common.BingoGame
+import me.jfenn.bingo.common.GameService
+import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 
 /**
  * Checks when the game time exceeds its time limit, and
  * ends the game when it does.
  */
-object TimerCheck {
+class TimerCheck(
+    events: ScopedEvents,
+    private val state: BingoState,
+    private val config: BingoConfig,
+    private val gameService: GameService,
+) {
 
-    fun init() {
-        GameState.PLAYING.onEnter { prevState ->
+    init {
+        events.onEnter(GameState.PLAYING) { prevState ->
             if (prevState != GameState.PREGAME) return@onEnter
 
             state.startedAt = Clock.System.now()
         }
 
-        Bingo.onUpdateTick {
+        events.onUpdateTick {
             if (state.state != GameState.PLAYING) return@onUpdateTick
             val duration = state.ingameDuration() ?: return@onUpdateTick
             val timeLimit = config.timeLimit ?: return@onUpdateTick
@@ -28,7 +36,7 @@ object TimerCheck {
 
             if (duration >= timeLimit) {
                 // end the game!
-                BingoGame.end(this, "Out of time!")
+                gameService.end("Out of time!")
             }
         }
     }

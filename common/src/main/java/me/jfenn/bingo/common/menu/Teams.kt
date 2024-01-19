@@ -12,6 +12,7 @@ fun MenuComponent.registerTeams(
     position: Vec3d,
     requiredPermissionLevel: Int = 2,
     title: String = "Teams",
+    teamService: TeamService = koinScope.get(),
 ) {
     var teamCount = 3
 
@@ -38,8 +39,7 @@ fun MenuComponent.registerTeams(
         text = "Shuffle!",
         requiredPermissionLevel = requiredPermissionLevel,
     ) { player ->
-        val ctx = player.server?.let { Bingo.getContext(it) } ?: return@registerButton
-        TeamService.shuffleTeams(ctx, teamCount)
+        teamService.shuffleTeams(teamCount)
         player.sendInfoMessage("Teams have been shuffled!")
     }
 

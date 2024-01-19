@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.integrations.PlayerController
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.command.argument.EntityArgumentType
@@ -20,32 +20,37 @@ object JoinCommand {
 
             for (team in BingoTeam.TEAM_BLOCKS.values) {
                 joinCommand = joinCommand.then(
-                    LiteralArgumentBuilder.literal<ServerCommandSource>(team.name)
+                    LiteralArgumentBuilder.literal<ServerCommandSource>(team.name.lowercase())
                         .then(
                             CommandManager.argument("player", EntityArgumentType.player())
                                 .requirePermission()
-                                .executes { ctx ->
-                                    val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
-                                    val player = EntityArgumentType.getPlayer(ctx, "player")
-                                    TeamService.joinTeam(player, team)
+                                .executesInScope { ctx ->
+                                    val state = get<BingoState>()
+                                    val teamService = get<TeamService>()
+                                    val playerController = get<PlayerController>()
 
-                                    if (context.state.state == GameState.PLAYING) {
+                                    val player = EntityArgumentType.getPlayer(ctx, "player")
+                                    teamService.joinTeam(player, team)
+
+                                    if (state.state == GameState.PLAYING) {
                                         // if a player's team is changed in-game, move them to their new spawnpoint
-                                        PlayerController.updateGameMode(context, player, forceReset = true)
+                                        playerController.updateGameMode(player, forceReset = true)
                                     }
                                     1
                                 }
                         )
-                        .executes { ctx ->
-                            val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
-                            val player = ctx.source.player ?: return@executes 0
+                        .executesInScope { ctx ->
+                            val state = get<BingoState>()
+                            val teamService = get<TeamService>()
 
-                            if (context.state.state != GameState.PREGAME) {
+                            val player = ctx.source.player ?: return@executesInScope 0
+
+                            if (state.state != GameState.PREGAME) {
                                 player.sendWarningMessage("Cannot join a team - The game has already started!")
-                                return@executes 0
+                                return@executesInScope 0
                             }
 
-                            TeamService.joinTeam(player, team)
+                            teamService.joinTeam(player, team)
                             1
                         }
                 )

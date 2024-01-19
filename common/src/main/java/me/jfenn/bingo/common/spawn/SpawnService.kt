@@ -2,73 +2,79 @@ package me.jfenn.bingo.common.spawn
 
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BlockPosition
-import me.jfenn.bingo.common.state.BingoContext
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.giveOrEquipStack
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.ChestBlockEntity
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.Heightmap
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 import kotlin.random.Random
 
-object SpawnService {
+class SpawnService(
+    private val log: Logger,
+    private val server: MinecraftServer,
+    private val config: BingoConfig,
+    private val state: BingoState,
+    private val teamService: TeamService,
+) {
 
-    private val log = LoggerFactory.getLogger(this::class.java)
-
-    fun getSpawnDimension(ctx: BingoContext): ServerWorld {
-        return ctx.server.worlds.find {
-            it.registryKey.value.toString() == ctx.config.spawnDimension
+    fun getSpawnDimension(): ServerWorld {
+        return server.worlds.find {
+            it.registryKey.value.toString() == config.spawnDimension
         } ?: run {
-            log.error("Could not find spawnDimension '${ctx.config.spawnDimension}'; defaulting to minecraft:overworld")
-            ctx.server.overworld
+            log.error("Could not find spawnDimension '${config.spawnDimension}'; defaulting to minecraft:overworld")
+            server.overworld
         }
     }
 
     /**
      * Create team spawnpoints
      */
-    fun createSpawnpoints(ctx: BingoContext) {
-        val world = getSpawnDimension(ctx)
+    fun createSpawnpoints() {
+        val world = getSpawnDimension()
         val spread = SpreadPlayers(world)
 
-        val distance = ctx.config.spawnDistance
+        val distance = config.spawnDistance
         if (distance <= 0) {
             // if the distance is 0, find one spawn point for all teams
             val spawnPos = spread.findSpawnPos(Pair(0, 0))
                 .let { BlockPosition.fromBlockPos(it) }
 
-            for (team in ctx.state.getRegisteredTeams()) {
+            for (team in state.getRegisteredTeams()) {
                 team.spawnpoint = spawnPos
             }
         } else {
             // spread player teams to spawnpoint
-            spread.spread(ctx.state.getRegisteredTeams(), distance)
+            spread.spread(state.getRegisteredTeams(), distance)
         }
 
-        for (team in ctx.state.getRegisteredTeams()) {
+        for (team in state.getRegisteredTeams()) {
             team.spawnpoint?.let {
-                createTeamChest(ctx.config, world, it)
+                createTeamChest(world, it)
             }
         }
     }
 
-    fun teleportPlayer(ctx: BingoContext, player: ServerPlayerEntity) {
-        val team = BingoTeam.fromPlayer(player)
+    fun teleportPlayer(player: ServerPlayerEntity) {
+        val team = teamService.getPlayerTeam(player)
         val spawn = team?.let {
-            getTeamSpawnpoint(ctx, team)
+            getTeamSpawnpoint(team)
         } ?: run {
             BlockPos(0, 100, 0)
         }
 
         // random offset for each player to prevent collision grouping
-        val world = getSpawnDimension(ctx)
+        val world = getSpawnDimension()
         player.teleport(world, spawn.x + Random.nextDouble(), spawn.y.toDouble(), spawn.z + Random.nextDouble(), 0f, 0f)
         player.setSpawnPoint(
             world.registryKey,
@@ -77,14 +83,14 @@ object SpawnService {
         )
     }
 
-    fun getTeamSpawnpoint(ctx: BingoContext, team: BingoTeam): BlockPos? {
-        val world = getSpawnDimension(ctx)
+    fun getTeamSpawnpoint(team: BingoTeam): BlockPos? {
+        val world = getSpawnDimension()
         val spawnpoint = team.spawnpoint ?: run {
             log.warn("Team ${team.name} does not have a stored spawn point!")
             log.warn("Finding a new spawn position...")
 
             // Get the chunk of an existing spawnpoint
-            val (x, y) = ctx.state.getRegisteredTeams()
+            val (x, y) = state.getRegisteredTeams()
                 .mapNotNull { it.spawnpoint }
                 .maxByOrNull { it.x.absoluteValue }
                 ?.toChunkPos()
@@ -92,7 +98,7 @@ object SpawnService {
 
             // Move "spreadPlayersDistance" away from the existing chunk on the x-axis
             val xSign = x.sign.takeIf { it != 0 } ?: 1
-            val newSpawnChunk = Pair(x + (ctx.config.spawnDistance * xSign), y)
+            val newSpawnChunk = Pair(x + (config.spawnDistance * xSign), y)
 
             // Store the team's new spawn position & return
             val spread = SpreadPlayers(world)
@@ -126,7 +132,7 @@ object SpawnService {
      * Place a team kit chest in the world, nearby the provided [spawnpoint]
      * Similar behavior to the BonusChestFeature
      */
-    private fun createTeamChest(config: BingoConfig, world: ServerWorld, spawnpoint: BlockPosition) {
+    private fun createTeamChest(world: ServerWorld, spawnpoint: BlockPosition) {
         if (!config.isTeamKit) return
 
         val chunk = world.getChunk(spawnpoint.toBlockPos())
@@ -193,7 +199,7 @@ object SpawnService {
     /**
      * Equip the player with any configured spawn equipment
      */
-    fun giveSpawnEquipment(config: BingoConfig, players: List<ServerPlayerEntity>) {
+    fun giveSpawnEquipment(players: List<ServerPlayerEntity>) {
         if (!config.isPlayerKit) return
 
         val itemStacks = config.playerKitItems

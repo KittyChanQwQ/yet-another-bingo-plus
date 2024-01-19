@@ -6,7 +6,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-val commonModule = module {
+val sharedModule = module {
     singleOf(::AdvancementManager) bind IAdvancementManager::class
     singleOf(::OfflinePlayerAccessor) bind IOfflinePlayerAccessor::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class

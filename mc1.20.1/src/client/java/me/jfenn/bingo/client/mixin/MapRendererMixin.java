@@ -36,7 +36,7 @@ public abstract class MapRendererMixin {
         PlayerInventory inventory = player.getInventory();
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack stack = inventory.getStack(i);
-            if (MapItemService.INSTANCE.isMapItem(stack)) {
+            if (MapItemService.Companion.isMapItem(stack)) {
                 // If the map being drawn is a bingo map item...
                 Integer mapId = FilledMapItem.getMapId(stack);
                 if (mapId != null && mapId == id) {

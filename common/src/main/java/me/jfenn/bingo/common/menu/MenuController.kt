@@ -1,26 +1,27 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.api.IStructureManager
-import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.common.LOBBY_WORLD_ID
+import me.jfenn.bingo.common.ScopeManager
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.event.InteractionEntityEvents
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.Color
-import me.jfenn.bingo.common.state.BingoContext
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.text.TextInfo
 import me.jfenn.bingo.common.utils.toNbt
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.particle.DustParticleEffect
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Unit
@@ -29,20 +30,28 @@ import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Vec3d
 import org.joml.Vector3f
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 import java.nio.file.Files
 import kotlin.io.path.name
 import kotlin.system.measureTimeMillis
 
-object MenuService : KoinComponent {
+class MenuController(
+    events: ScopedEvents,
+    scopeManager: ScopeManager,
+    private val log: Logger,
+    private val server: MinecraftServer,
+    private val interactionEntityEvents: InteractionEntityEvents,
+    private val structureManager: IStructureManager,
+    private val state: BingoState,
+    private val teamService: TeamService,
+) : KoinComponent {
 
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private var menu: MenuInstance? = null
+    private val lobbyWorld = server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID }!!
+    private val koinScope = scopeManager.getScope(server)!!
 
-    private val structureManager by inject<IStructureManager>()
-
-    fun init() {
-        GameState.PREGAME.onEnter {
+    init {
+        events.onEnter(GameState.PREGAME)  {
             // this *shouldn't* happen... just being safe to prevent double-entities
             if (menu != null) {
                 log.error("BUG: GameState.PREGAME onEnter handler has been invoked already!")
@@ -52,48 +61,54 @@ object MenuService : KoinComponent {
             // always load the spawn chunks
             lobbyWorld.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
 
-            spawnLobbyStructure(this)
-            val lobbySpawnPos = getLobbySpawnPosition(this)
+            spawnLobbyStructure()
+            val lobbySpawnPos = getLobbySpawnPosition()
             state.lobbySpawnPos = lobbySpawnPos
-            menu = MenuInstance(this, lobbySpawnPos)
-                .also { spawnTeamEntities(this, it) }
 
+            menu = MenuInstance(
+                log = log,
+                koinScope = koinScope,
+                server = server,
+                interactionEntityEvents = interactionEntityEvents,
+                spawnPos = lobbySpawnPos,
+            ).also {
+                spawnTeamEntities(it)
+            }
         }
 
-        ServerEntityEvents.ENTITY_LOAD.register { entity, world ->
-            val ctx = Bingo.getContext(world.server) ?: return@register
+        events.onEntityLoad { (entity, world) ->
             val bingoTag = entity.commandTags.find { it.startsWith("bingo-") }
-                ?: return@register
+                ?: return@onEntityLoad
 
-            if (world == ctx.lobbyWorld && !entity.isPlayer && bingoTag != ctx.menu?.instanceTag) {
+            if (world == lobbyWorld && !entity.isPlayer && bingoTag != menu?.instanceTag) {
                 log.warn("Discarding an existing lobby world entity: ${entity.type}")
                 entity.discard()
             }
         }
 
-        Bingo.onGameTick {
+        events.onGameTick {
             menu?.tick()
         }
 
-        GameState.PLAYING.onEnter {
+        events.onEnter(GameState.PLAYING) {
             menu?.cleanup()
             menu = null
         }
 
-        ServerPlayConnectionEvents.JOIN.register { _, _, server ->
-            val ctx = Bingo.getContext(server)
-            ctx?.menu?.markDirty()
+        events.onChangeConfig {
+            menu?.markDirty()
         }
 
-        ServerPlayConnectionEvents.DISCONNECT.register { _, server ->
-            val ctx = Bingo.getContext(server)
-            ctx?.menu?.markDirty()
+        events.onPlayerJoin {
+            menu?.markDirty()
+        }
+
+        events.onPlayerLeave {
+            menu?.markDirty()
         }
     }
 
-    private fun spawnLobbyStructure(ctx: BingoContext) = measureTimeMillis {
-        val lobbyWorld = ctx.lobbyWorld
-
+    private fun spawnLobbyStructure() = measureTimeMillis {
         val lobbyDir = Config.configDir.resolve("lobby")
         if (!Files.exists(lobbyDir))
             lobbyDir.toFile().mkdirs()
@@ -123,9 +138,7 @@ object MenuService : KoinComponent {
         log.info("Done (${it}ms)!")
     }
 
-    fun getLobbySpawnPosition(ctx: BingoContext): BlockPosition {
-        val lobbyWorld = ctx.lobbyWorld
-
+    fun getLobbySpawnPosition(): BlockPosition {
         // Search for spawnpoint
         val spawnY = (0..24)
             .asSequence()
@@ -136,9 +149,7 @@ object MenuService : KoinComponent {
             .also { log.info("Set lobby spawnpoint to $it") }
     }
 
-    private fun spawnTeamEntities(ctx: BingoContext, menu: MenuInstance) {
-        val lobbyWorld = ctx.lobbyWorld
-
+    private fun spawnTeamEntities(menu: MenuInstance) {
         // Search for team join entities
         for (x in -24..24) {
             for (y in -24..24) {
@@ -206,13 +217,13 @@ object MenuService : KoinComponent {
             .also { it.addCommandTag(instanceTag) }
             .also { lobbyWorld.spawnEntity(it) }
 
-        InteractionEntityEvents.onInteract(interactionListenerEntity) { player ->
+        interactionEntityEvents.onInteract(interactionListenerEntity) { player ->
             val color = Color.fromInt(team.formatting.colorValue ?: 0)
             val effect = DustParticleEffect(Vector3f(color.r / 255f, color.g / 255f, color.b / 255f), 1f)
             (player.world as? ServerWorld)?.spawnParticles(player, effect, true, position.x, position.y, position.z, 10, 1.0, 1.0, 1.0, 0.2)
 
             Sounds.playTeamChanged(player)
-            TeamService.joinTeam(player, team)
+            teamService.joinTeam(player, team)
         }
     }
 

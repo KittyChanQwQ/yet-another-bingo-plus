@@ -2,43 +2,35 @@ package me.jfenn.bingo.common.integrations
 
 import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.MapRenderService
 import me.jfenn.bingo.common.state.BingoContext
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import kotlin.random.Random
 
 /**
  * Handles re-rolling or generating new BINGO card layouts.
  */
-object BingoCardController {
-
-    fun shuffleCard(ctx: BingoContext) {
-        // Change the BINGO seed to a new value
-        ctx.state.seed = Random.nextLong()
-        // Re-generate the card
-        generateCard(ctx)
-    }
-
-    fun generateCard(ctx: BingoContext) {
-        if (!ctx.config.isValid()) return
-
-        ctx.state.card = CardService.generate(ctx.config, ctx.state.seed)
-    }
-
-    fun init() {
-        Bingo.onGameTick {
+class BingoCardController(
+    events: ScopedEvents,
+    private val state: BingoState,
+    private val mapRenderService: MapRenderService,
+) {
+    init {
+        events.onGameTick {
             // update all card map images
             if (state.state == GameState.PREGAME) {
                 // if in pregame, update the preview card!
-                MapRenderService.update(ctx, null)
+                mapRenderService.update(null)
             } else {
                 for (team in state.getRegisteredTeams()) {
-                    MapRenderService.update(ctx, team)
+                    mapRenderService.update(team)
                 }
             }
         }
 
-        GameState.POSTGAME.onEnter {
+        events.onEnter(GameState.POSTGAME) {
             // Mark all items as "seen" when game ends
             // (if hidden items is true, players should see all items after the game)
             for (team in state.getRegisteredTeams()) {
@@ -48,5 +40,4 @@ object BingoCardController {
             }
         }
     }
-
 }

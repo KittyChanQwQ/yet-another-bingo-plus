@@ -1,18 +1,14 @@
 package me.jfenn.bingo.common.integrations
 
-import me.jfenn.bingo.common.Bingo
-import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.MapItemService
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.fabricmc.fabric.api.event.player.UseEntityCallback
-import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
 import net.minecraft.item.BoatItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
@@ -21,7 +17,11 @@ import net.minecraft.util.UseAction
 import net.minecraft.util.hit.HitResult
 import java.util.*
 
-object MapItemHandler {
+class MapItemHandler(
+    events: ScopedEvents,
+    private val server: MinecraftServer,
+    private val cardService: CardService,
+) {
 
     // set of players for which the bingo map item was used in the current tick
     private val usedBingoMap = mutableSetOf<UUID>()
@@ -54,10 +54,9 @@ object MapItemHandler {
         return isUsable
     }
 
-    fun init() {
-        UseItemCallback.EVENT.register { player, _, hand ->
-            if (player !is ServerPlayerEntity) return@register TypedActionResult.pass(null)
-            player.server?.let { Bingo.getContext(it) } ?: return@register TypedActionResult.pass(null)
+    init {
+        events.onUseItem { (player, _, hand) ->
+            if (player !is ServerPlayerEntity) return@onUseItem TypedActionResult.pass(null)
             val itemStack = player.getStackInHand(hand)
 
             usedAnyItem.add(player.uuid)
@@ -70,13 +69,13 @@ object MapItemHandler {
                 })
 
                 if (hand == Hand.OFF_HAND && !otherItemStack.isEmpty)
-                    return@register TypedActionResult.pass(itemStack)
+                    return@onUseItem TypedActionResult.pass(itemStack)
 
                 if (hand == Hand.MAIN_HAND && isItemUsable(otherItemStack, player))
-                    return@register TypedActionResult.pass(itemStack)
+                    return@onUseItem TypedActionResult.pass(itemStack)
 
                 usedBingoMap.add(player.uuid)
-                return@register TypedActionResult.success(itemStack, false)
+                return@onUseItem TypedActionResult.success(itemStack, false)
             }
 
             // if the item *can* be used, and *isn't* a bingo map, it should prevent the bingo map from being used
@@ -88,7 +87,7 @@ object MapItemHandler {
             TypedActionResult.pass(itemStack)
         }
 
-        UseBlockCallback.EVENT.register { player, _, hand, _ ->
+        events.onUseBlock { (player, _, hand) ->
             usedAnyItem.add(player.uuid)
 
             val itemStack = player.getStackInHand(hand)
@@ -101,7 +100,7 @@ object MapItemHandler {
             ActionResult.PASS
         }
 
-        UseEntityCallback.EVENT.register { player, _, hand, _, _ ->
+        events.onUseEntity { (player, _, hand) ->
             usedAnyItem.add(player.uuid)
 
             val itemStack = player.getStackInHand(hand)
@@ -114,16 +113,14 @@ object MapItemHandler {
             ActionResult.PASS
         }
 
-        ServerTickEvents.START_SERVER_TICK.register { server ->
-            val ctx = Bingo.getContext(server) ?: return@register
-
+        events.onGameTick {
             for (player in server.playerManager.playerList) {
                 // ensure the player waits at least 10 ticks before using the map
                 // - if the use button is held, this will continually update the cooldown, and never exit this state until released
                 val isInCooldown = server.ticks < (itemCooldown[player.uuid] ?: 0) + 10
 
                 if (usedBingoMap.contains(player.uuid) && !isInCooldown && !player.isSneaking) {
-                    CardService.showInventory(player, ctx.state.card)
+                    cardService.showInventory(player)
                 }
 
                 if (usedAnyItem.contains(player.uuid) || player.itemUseTimeLeft > 0)

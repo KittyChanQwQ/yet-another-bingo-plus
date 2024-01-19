@@ -1,6 +1,8 @@
 package me.jfenn.bingo.common.card
 
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.state.BingoContext
+import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
@@ -12,14 +14,15 @@ import net.minecraft.screen.slot.SlotActionType
 
 class CardScreenHandler(
     syncId: Int,
-    ctx: BingoContext,
+    config: BingoConfig,
+    state: BingoState,
     team: BingoTeam?,
     card: BingoCard,
     playerInventory: PlayerInventory,
 ) : ScreenHandler(ScreenHandlerType.GENERIC_9X5, syncId) {
 
     init {
-        val inventory = CardInventory(ctx, team, card)
+        val inventory = CardInventory(config, state, team, card)
 
         // bingo card slots
         for (row in 0 until 5) {

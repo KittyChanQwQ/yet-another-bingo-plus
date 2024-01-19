@@ -1,34 +1,41 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.BingoGame
+import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.integrations.BingoCardController
 import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.utils.sendWarningMessage
+import net.minecraft.server.MinecraftServer
 import net.minecraft.util.math.Vec3d
+import org.koin.core.scope.Scope
 
 fun MenuComponent.registerMenuPage(
     position: Vec3d,
-    ctx: BingoContext,
+    server: MinecraftServer = koinScope.get(),
+    config: BingoConfig = koinScope.get(),
+    gameService: GameService = koinScope.get(),
+    cardService: CardService = koinScope.get(),
+    teamService: TeamService = koinScope.get(),
 ) {
-
     var page = 0
 
-    val itemDistributionProp = propertyRef(ctx.config::itemDistribution)
+    val itemDistributionProp = propertyRef(config::itemDistribution)
 
     val pages = listOf(
-        component {
-            registerGameModes(position.add(-3.5, 0.0, 0.0), ctx.config)
-            registerFeatures(position.add(-1.5, 0.0, 0.0), ctx.config)
+        component(koinScope) {
+            registerGameModes(position.add(-3.5, 0.0, 0.0), config)
+            registerFeatures(position.add(-1.5, 0.0, 0.0), config)
             registerEnumMenu(
                 title = "Win Condition",
-                valueProp = propertyRef(ctx.config::winCondition),
+                valueProp = propertyRef(config::winCondition),
                 position = position.add(0.6, 0.0, 0.0),
             )
             registerTimer(
                 title = "Time Limit",
-                timerMinutesProp = propertyRef(ctx.config::timeLimit),
+                timerMinutesProp = propertyRef(config::timeLimit),
                 position = position.add(2.3, 0.0, 0.0),
             )
             registerTeams(
@@ -36,43 +43,43 @@ fun MenuComponent.registerMenuPage(
                 position = position.add(3.6, 0.0, 0.0),
             )
         },
-        component {
+        component(koinScope) {
             registerDimensionMenu(
                 position = position.add(-3.5, 0.0, 0.0),
-                dimensionProperty = propertyRef(ctx.config::spawnDimension),
-                server = ctx.server,
+                dimensionProperty = propertyRef(config::spawnDimension),
+                server = server,
             )
             registerSpawnKit(
                 position = position.add(-1.5, 0.0, 0.0),
-                config = ctx.config,
+                config = config,
             )
             registerTierLists(
                 position = position.add(0.6, 0.0, 0.0),
-                config = ctx.config,
+                config = config,
             ) {
                 // when changed, re-roll the bingo card
-                BingoCardController.generateCard(ctx)
+                cardService.generateCard()
             }
             registerItemDistribution(
                 position = position.add(3.0, 0.0, 0.0),
                 itemDistributionProp = itemDistributionProp,
             ) {
                 // when changed, re-roll the bingo card
-                BingoCardController.generateCard(ctx)
+                cardService.generateCard()
             }
         },
-        component {
+        component(koinScope) {
             registerScoreInfo(
                 position = position.add(-3.0, 0.0, 0.0),
-                config = ctx.config,
+                config = config,
             )
             registerCardInfo(
                 position = position.add(0.0, 0.0, 0.0),
-                ctx = ctx,
+                config = config,
             )
             registerSpawnDistance(
                 position = position.add(3.0, 0.0, 0.0),
-                spawnDistanceProp = propertyRef(ctx.config::spawnDistance),
+                spawnDistanceProp = propertyRef(config::spawnDistance),
             )
         },
     )
@@ -91,27 +98,27 @@ fun MenuComponent.registerMenuPage(
     registerButton(
         position = position.add(5.0, -MENU_ITEM_OFFSET, 0.0),
         text = "START",
-        isActiveProp = computedProperty { ctx.config.isValid() },
+        isActiveProp = computedProperty { config.isValid() },
     ) { player ->
-        if (!ctx.config.isValid()) {
+        if (!config.isValid()) {
             player.sendWarningMessage("Item distribution must add up to 25!")
             return@registerButton
         }
 
-        val isEveryPlayerOnATeam = ctx.server.playerManager.playerList
-            .all { teamPlayer -> BingoTeam.fromPlayer(teamPlayer) != null }
+        val isEveryPlayerOnATeam = server.playerManager.playerList
+            .all { teamPlayer -> teamService.getPlayerTeam(teamPlayer) != null }
 
         if (!isEveryPlayerOnATeam && !player.isSneaking) {
             // If there's more than one player, teams need to be set up manually!
-            if (ctx.server.playerManager.playerList.size > 1) {
+            if (server.playerManager.playerList.size > 1) {
                 player.sendWarningMessage("Some players have not picked a team! Run '/bingo shuffleteams' or sneak+click to ignore.")
                 return@registerButton
             }
             // Otherwise, we can just auto-assign a team
-            TeamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
+            teamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
         }
 
-        BingoGame.start(ctx)
+        gameService.start()
     }
 
     onTick { instance ->

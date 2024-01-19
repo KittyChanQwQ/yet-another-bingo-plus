@@ -1,7 +1,9 @@
 package me.jfenn.bingo.common.integrations
 
-import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.formatTitle
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.entity.boss.CommandBossBar
@@ -13,11 +15,16 @@ import net.minecraft.util.Identifier
 /**
  * Displays bossbar score/timer information for all players.
  */
-object BossBarController {
+class BossBarController(
+    events: ScopedEvents,
+    private val server: MinecraftServer,
+    private val config: BingoConfig,
+    private val state: BingoState,
+) {
 
     private val ID = Identifier.of("fennifith", "bingo")
 
-    fun getBossbar(server: MinecraftServer): CommandBossBar {
+    fun getBossbar(): CommandBossBar {
         // if the boss bar already exists, recreate it
         server.bossBarManager.get(ID)
             ?.also { server.bossBarManager.remove(it) }
@@ -31,8 +38,10 @@ object BossBarController {
             }
     }
 
-    fun init() {
-        ConfigService.onChangePlayerSettings { player ->
+    private val bossBar by lazy { getBossbar() }
+
+    init {
+        events.onChangePlayerSettings { player ->
             val settings = ConfigService.getPlayer(player.uuidAsString)
 
             if (settings.bossbar)
@@ -40,7 +49,7 @@ object BossBarController {
             else bossBar.removePlayer(player)
         }
 
-        Bingo.onUpdateTick {
+        events.onUpdateTick {
             if (config.showRemainingTime) {
                 val timeLimit = config.timeLimit
                 val duration = state.ingameDuration()

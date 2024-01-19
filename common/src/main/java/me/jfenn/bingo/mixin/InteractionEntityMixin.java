@@ -1,6 +1,6 @@
 package me.jfenn.bingo.mixin;
 
-import me.jfenn.bingo.common.Bingo;
+import me.jfenn.bingo.common.ConstantsKt;
 import me.jfenn.bingo.common.event.InteractionEntityEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -24,26 +24,20 @@ abstract class InteractionEntityMixin extends Entity {
 
     @Inject(at = @At(value = "HEAD"), method = "handleAttack")
     public void handleAttack(Entity attacker, CallbackInfoReturnable<Boolean> ci) {
-        var ctx = Bingo.INSTANCE.getContext(attacker.getServer());
-        if (ctx == null) return;
-
-        var callback = InteractionEntityEvents.INSTANCE.getINTERACT_LISTENERS().get(uuid);
-        if (callback != null && attacker instanceof ServerPlayerEntity player) {
-            callback.invoke(player);
+        if (attacker instanceof ServerPlayerEntity player) {
+            InteractionEntityEvents.Companion.triggerInteract((InteractionEntity) (Object) this, player);
         }
     }
 
     @Inject(at = @At(value = "HEAD"), method = "interact", cancellable = true)
     public void interact(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> ci) {
-        var ctx = Bingo.INSTANCE.getContext(player.getServer());
-        if (ctx == null) return;
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+            boolean success = InteractionEntityEvents.Companion.triggerInteract((InteractionEntity) (Object) this, serverPlayer);
 
-        var callback = InteractionEntityEvents.INSTANCE.getINTERACT_LISTENERS().get(uuid);
-        if (callback != null && player instanceof ServerPlayerEntity serverPlayer) {
-            callback.invoke(serverPlayer);
-            ci.setReturnValue(ActionResult.SUCCESS);
-            ci.cancel();
+            if (success) {
+                ci.setReturnValue(ActionResult.SUCCESS);
+                ci.cancel();
+            }
         }
     }
-
 }

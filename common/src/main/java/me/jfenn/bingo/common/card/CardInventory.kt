@@ -1,13 +1,16 @@
 package me.jfenn.bingo.common.card
 
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.state.BingoContext
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 
 class CardInventory(
-    val ctx: BingoContext,
+    val config: BingoConfig,
+    val state: BingoState,
     val team: BingoTeam?,
     val card: BingoCard,
 ) : Inventory {
@@ -30,9 +33,9 @@ class CardInventory(
             val entry = card.entry(slotX, slotY)
             if (
                 // If the items are hidden, don't show them in the card inventory!
-                !ctx.config.hiddenItems ||
+                !config.hiddenItems ||
                 (team != null && entry.hasSeen(team)) ||
-                ctx.state.state == GameState.POSTGAME
+                state.state == GameState.POSTGAME
             ) {
                 entry.visualItem?.let {
                     return ItemStack(it, 1)

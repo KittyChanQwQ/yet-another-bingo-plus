@@ -6,15 +6,16 @@ import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.common.Bingo
-import me.jfenn.bingo.common.BingoGame
+import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.config.PlayerSettings
-import me.jfenn.bingo.common.config.TierList
-import me.jfenn.bingo.common.config.WinCondition
+import me.jfenn.bingo.common.config.*
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.integrations.BingoCardController
+import me.jfenn.bingo.common.menu.MenuController
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.formatTitle
@@ -25,7 +26,6 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
-import kotlin.random.Random
 import kotlin.time.Duration.Companion.minutes
 
 object BingoCommands {
@@ -51,10 +51,11 @@ object BingoCommands {
                                         "value",
                                         BoolArgumentType.bool()
                                     )
-                                        .executes { ctx ->
-                                            val player = ctx.source.player ?: return@executes 0
+                                        .executesInScope { ctx ->
+                                            val events = get<ScopedEvents>()
+                                            val player = ctx.source.player ?: return@executesInScope 0
                                             val value = BoolArgumentType.getBool(ctx, "value")
-                                            ConfigService.setPlayerConfig(player, field, value)
+                                            ConfigService.setPlayerConfig(events, player, field, value)
                                             player.sendInfoMessage("${field.name.formatTitle()}: $value")
                                             1
                                         }
@@ -78,19 +79,22 @@ object BingoCommands {
                             }
                             .toMutableList()
 
-                        var last = args.removeLast().executes { ctx ->
-                            val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                        var last = args.removeLast().executesInScope { ctx ->
+                            val config = get<BingoConfig>()
+                            val events = get<ScopedEvents>()
+                            val cardService = get<CardService>()
+
                             val itemDist = TierList.entries
                                 .map { IntegerArgumentType.getInteger(ctx, it.name) }
 
                             if (itemDist.size == 5 && itemDist.sum() > 25) {
                                 ctx.source.player?.sendWarningMessage("Item distribution must add up to 25!")
-                                return@executes 0
+                                return@executesInScope 0
                             }
 
-                            context.config.itemDistribution = itemDist
-                            context.menu?.markDirty()
-                            BingoCardController.generateCard(context)
+                            config.itemDistribution = itemDist
+                            events.onChangeConfig(Unit)
+                            cardService.generateCard()
                             ctx.source.player?.sendInfoMessage("Item distribution changed: $itemDist")
                             1
                         }
@@ -110,14 +114,17 @@ object BingoCommands {
                             "true/false",
                             BoolArgumentType.bool()
                         )
-                            .executes { ctx ->
-                                val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                            .executesInScope { ctx ->
+                                val state = get<BingoState>()
+                                val config = get<BingoConfig>()
+                                val events = get<ScopedEvents>()
+
                                 val isElytra = BoolArgumentType.getBool(ctx, "true/false")
-                                context.config.isElytra = isElytra
-                                context.menu?.markDirty()
+                                config.isElytra = isElytra
+                                events.onChangeConfig(Unit)
 
                                 // if Elytra mode is turned off during a game, remove all players' elytra
-                                if (context.state.state == GameState.PLAYING && !isElytra) {
+                                if (state.state == GameState.PLAYING && !isElytra) {
                                     ctx.source.server.playerManager.playerList.forEach { player ->
                                         player.allHeldStacks()
                                             .filter { it.item == Items.ELYTRA || it.item == Items.FIREWORK_ROCKET }
@@ -141,10 +148,12 @@ object BingoCommands {
                         val options = WinCondition.entries
                             .map {  wincon ->
                                 LiteralArgumentBuilder.literal<ServerCommandSource>(wincon.name)
-                                    .executes { ctx ->
-                                        val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
-                                        context.config.winCondition = wincon
-                                        context.menu?.markDirty()
+                                    .executesInScope { ctx ->
+                                        val config = get<BingoConfig>()
+                                        val events = get<ScopedEvents>()
+
+                                        config.winCondition = wincon
+                                        events.onChangeConfig(Unit)
                                         ctx.source.player?.sendInfoMessage("Win condition: ${wincon.name}")
                                         1
                                     }
@@ -167,21 +176,25 @@ object BingoCommands {
                             "minutes",
                             IntegerArgumentType.integer(1)
                         )
-                            .executes { ctx ->
-                                val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                            .executesInScope { ctx ->
+                                val config = get<BingoConfig>()
+                                val events = get<ScopedEvents>()
+
                                 val minutes = IntegerArgumentType.getInteger(ctx, "minutes")
-                                context.config.timeLimit = minutes.minutes
-                                context.menu?.markDirty()
+                                config.timeLimit = minutes.minutes
+                                events.onChangeConfig(Unit)
                                 ctx.source.player?.sendInfoMessage("Time limit: $minutes minutes")
                                 1
                             }
                     )
                     .then(
                         LiteralArgumentBuilder.literal<ServerCommandSource?>("off")
-                            .executes { ctx ->
-                                val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
-                                context.config.timeLimit = null
-                                context.menu?.markDirty()
+                            .executesInScope { ctx ->
+                                val config = get<BingoConfig>()
+                                val events = get<ScopedEvents>()
+
+                                config.timeLimit = null
+                                events.onChangeConfig(Unit)
                                 ctx.source.player?.sendInfoMessage("Time limit: Off")
                                 1
                             }
@@ -197,10 +210,10 @@ object BingoCommands {
                             "teams",
                             IntegerArgumentType.integer(1, BingoTeam.TEAM_BLOCKS.size)
                         )
-                            .executes { ctx ->
-                                val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                            .executesInScope { ctx ->
+                                val teamService = get<TeamService>()
                                 val teams = IntegerArgumentType.getInteger(ctx, "teams")
-                                TeamService.shuffleTeams(context, teams)
+                                teamService.shuffleTeams(teams)
 
                                 ctx.source.player?.sendInfoMessage("Teams have been shuffled!")
                                 1
@@ -211,13 +224,13 @@ object BingoCommands {
                 // show or set the current BINGO card seed
                 LiteralArgumentBuilder.literal<ServerCommandSource>("seed")
                     .requirePermission(2)
-                    .executes { ctx ->
-                        val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
+                    .executesInScope { ctx ->
+                        val state = get<BingoState>()
 
                         ctx.source.sendMessage(
                             Text.empty()
                                 .append("ℹ  The current Bingo Card seed is: ")
-                                .append(Texts.bracketedCopyable(context.state.seed.toString()))
+                                .append(Texts.bracketedCopyable(state.seed.toString()))
                                 .formatted(Formatting.AQUA)
                         )
                         1
@@ -228,15 +241,17 @@ object BingoCommands {
                             LongArgumentType.longArg(),
                         )
                             .requireState(GameState.PREGAME, GameState.PLAYING)
-                            .executes { ctx ->
-                                val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
-                                context.state.seed = LongArgumentType.getLong(ctx, "seed")
-                                BingoCardController.generateCard(context)
+                            .executesInScope { ctx ->
+                                val state = get<BingoState>()
+                                val cardService = get<CardService>()
+
+                                state.seed = LongArgumentType.getLong(ctx, "seed")
+                                cardService.generateCard()
 
                                 ctx.source.sendMessage(
                                     Text.empty()
                                         .append("ℹ  Changed the Bingo Card seed to: ")
-                                        .append(Texts.bracketedCopyable(context.state.seed.toString()))
+                                        .append(Texts.bracketedCopyable(state.seed.toString()))
                                         .formatted(Formatting.AQUA)
                                 )
                                 1
@@ -248,9 +263,9 @@ object BingoCommands {
                 LiteralArgumentBuilder.literal<ServerCommandSource>("reroll")
                     .requirePermission(2)
                     .requireState(GameState.PREGAME, GameState.PLAYING)
-                    .executes { ctx ->
-                        val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
-                        BingoCardController.shuffleCard(context)
+                    .executesInScope { ctx ->
+                        val cardService = get<CardService>()
+                        cardService.shuffleCard()
                         ctx.source.player?.sendInfoMessage("Card re-rolled.")
                         1
                     }
@@ -260,9 +275,9 @@ object BingoCommands {
                 LiteralArgumentBuilder.literal<ServerCommandSource>("end")
                     .requirePermission(2)
                     .requireState(GameState.PLAYING)
-                    .executes { ctx ->
-                        val context = Bingo.getContext(ctx.source.server) ?: return@executes 0
-                        BingoGame.end(context, null)
+                    .executesInScope {
+                        val gameService = get<GameService>()
+                        gameService.end(null)
                         1
                     }
             )

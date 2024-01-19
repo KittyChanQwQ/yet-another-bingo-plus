@@ -1,12 +1,12 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.common.utils.toNbt
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.math.Vec3d
+import org.koin.core.scope.Scope
 import java.util.*
 import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
@@ -51,17 +51,19 @@ data class MenuEntityHandle<T: Entity>(
     val id: UUID = UUID.randomUUID(),
     val type: EntityType<T>,
     val pos: Vec3d,
-    val nbt: NbtCompound.(ctx: BingoContext) -> Unit = {},
+    val nbt: NbtCompound.() -> Unit = {},
     val onUpdate: EventListener<T> = EventListener(),
 )
 
-fun component(setup: MenuComponent.() -> Unit): MenuComponent {
-    val component = MenuComponent()
+fun component(koinScope: Scope, setup: MenuComponent.() -> Unit): MenuComponent {
+    val component = MenuComponent(koinScope)
     component.setup()
     return component
 }
 
-open class MenuComponent {
+open class MenuComponent(
+    val koinScope: Scope,
+) {
 
     private var tracker: MenuInstance? = null
     private val entities: MutableList<MenuEntityHandle<*>> = mutableListOf()
@@ -94,7 +96,7 @@ open class MenuComponent {
         return DelegatedProperty(getter) {}
     }
 
-    fun <T: Entity> registerEntity(type: EntityType<T>, pos: Vec3d, nbt: NbtCompound.(BingoContext) -> Unit = {}): MenuEntityHandle<T> {
+    fun <T: Entity> registerEntity(type: EntityType<T>, pos: Vec3d, nbt: NbtCompound.() -> Unit = {}): MenuEntityHandle<T> {
         val handle = MenuEntityHandle(
             id = UUID.randomUUID(),
             type = type,
@@ -118,7 +120,7 @@ open class MenuComponent {
         val spawned = entities.map {
             tracker.spawn(it, NbtCompound().apply {
                 put("Pos", it.pos.toNbt())
-                it.nbt(this, tracker.ctx)
+                it.nbt(this)
             })
         }
         isDirty = spawned.any { it == null }

@@ -2,6 +2,7 @@ package me.jfenn.bingo.common
 
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.state.BingoContext
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -16,8 +17,8 @@ object Sounds {
         )
     }
 
-    fun playTileCollected(ctx: BingoContext, team: BingoTeam) {
-        for (player in ctx.server.playerManager.playerList) {
+    fun playTileCollected(server: MinecraftServer, team: BingoTeam) {
+        for (player in server.playerManager.playerList) {
             if (team.includesPlayer(player)) {
                 val score = team.score.items
                 player.playSound(

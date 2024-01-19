@@ -1,13 +1,10 @@
 package me.jfenn.bingo.common.card
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.api.ITeamHandle
-import me.jfenn.bingo.api.ITeamManager
-import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.common.BingoKoin
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
-import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.state.TeamWinner
 import me.jfenn.bingo.common.utils.text.TextColor
@@ -16,12 +13,9 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.HoverEvent
-import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 @Serializable
 @JvmInline
@@ -31,7 +25,7 @@ value class BingoTeamKey(
 
 @Serializable
 data class BingoTeam(
-    private val id: String,
+    val id: String,
     val name: String,
     val textColor: TextColor,
     var score: TeamScore = TeamScore.ZERO,
@@ -58,10 +52,10 @@ data class BingoTeam(
         else -> 22
     }
 
-    fun getMap(ctx: BingoContext): BingoMap {
+    fun getMap(server: MinecraftServer): BingoMap {
         return this.map ?: run {
             val map = BingoMap(
-                mapId = ctx.server.overworld.nextMapId,
+                mapId = server.overworld.nextMapId,
             )
             this.map = map
             return@run map
@@ -74,25 +68,21 @@ data class BingoTeam(
         return fromPlayer(player) == this
     }
 
-    fun team(server: MinecraftServer): ITeamHandle {
-        return teamManager.createTeam(
-            server,
-            teamName = id,
-            displayName = Text.of(name.substring(0, 1) + name.substring(1).lowercase()),
-            color = formatting,
-        )
-    }
-
-    fun text(): MutableText {
-        return Text.empty()
+    fun text(): Text {
+        val text = Text.empty()
             .append("[")
             .append(Text.literal("$name team").formatted(formatting))
             .append("]")
-    }
 
-    fun text(server: MinecraftServer): Text {
-        val text = this.text()
-        text.style = Style.EMPTY.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(team(server).playerList.joinToString(", "))))
+        text.style = Style.EMPTY.withHoverEvent(
+            HoverEvent(
+                HoverEvent.Action.SHOW_TEXT,
+                Text.literal(
+                    players.joinToString(", ") { it.name }
+                )
+            )
+        )
+
         return text
     }
 
@@ -102,7 +92,7 @@ data class BingoTeam(
             .forEach { it.sendMessage(text) }
     }
 
-    companion object : KoinComponent {
+    companion object {
 
         val BLUE get() = BingoTeam("bingo_blue", "BLUE", TextColor.BLUE)
         val RED get() = BingoTeam("bingo_red", "RED", TextColor.RED)
@@ -124,12 +114,10 @@ data class BingoTeam(
             Blocks.LIGHT_GRAY_CARPET to GRAY,
         )
 
-        private val teamManager by inject<ITeamManager>()
-
         fun fromPlayer(player: ServerPlayerEntity): BingoTeam? {
-            val ctx = Bingo.getContext(player.server) ?: return null
-            val team = teamManager.getPlayerTeam(player) ?: return null
-            return ctx.state.teams[BingoTeamKey(team.name)]
+            val scope = BingoKoin.getScope(player.server) ?: return null
+            val teamService = scope.get<TeamService>()
+            return teamService.getPlayerTeam(player)
         }
 
         fun fromPlayer(server: MinecraftServer, player: PlayerEntity): BingoTeam? {
