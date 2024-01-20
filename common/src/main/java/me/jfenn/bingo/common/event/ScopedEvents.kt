@@ -22,9 +22,9 @@ class ScopedEvents {
     val onPlayerRespawn = EventListener<ServerPlayerEntity>()
 
     val onEntityLoad = EventListener<Pair<Entity, ServerWorld>>()
-    val onUseBlock = ReturnEventListener<UseBlockEvent, ActionResult>()
-    val onUseEntity = ReturnEventListener<UseEntityEvent, ActionResult>()
-    val onUseItem = ReturnEventListener<UseItemEvent, TypedActionResult<ItemStack>>()
+    val onUseBlock = ReturnEventListener<UseBlockEvent, ActionResult?>()
+    val onUseEntity = ReturnEventListener<UseEntityEvent, ActionResult?>()
+    val onUseItem = ReturnEventListener<UseItemEvent, TypedActionResult<ItemStack>?>()
 
     val onStateChange = EventListener<Pair<GameState, GameState>>()
 

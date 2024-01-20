@@ -42,12 +42,12 @@ fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requirePermission(requiredPe
     }
 }
 
-fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.executesInScope(callback: Scope.(CommandContext<ServerCommandSource>) -> Int): T {
+fun <T: ArgumentBuilder<ServerCommandSource, T>> T.executesInScope(callback: Scope.(CommandContext<ServerCommandSource>) -> Int): T {
     return this.executes { ctx ->
         val scope = ctx.source?.server
             ?.let { BingoKoin.getScope(it) }
             ?: return@executes 0
 
-        callback.invoke(scope, ctx as CommandContext<ServerCommandSource>)
+        callback.invoke(scope, ctx)
     }
 }

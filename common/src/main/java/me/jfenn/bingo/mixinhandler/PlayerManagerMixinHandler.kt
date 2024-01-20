@@ -1,9 +1,10 @@
 package me.jfenn.bingo.mixinhandler
 
-import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -17,6 +18,15 @@ import net.minecraft.util.math.BlockPos
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 
 object PlayerManagerMixinHandler {
+
+    fun shouldPreventLobbyChaos(server: MinecraftServer): Boolean {
+        val scope = BingoKoin.getScope(server) ?: return false
+        val config = scope.get<BingoConfig>()
+        val state = scope.get<BingoState>()
+
+        return config.preventLobbyChaos &&
+                state.state == GameState.PREGAME
+    }
 
     fun setPregameSpawnData(player: ServerPlayerEntity, ci: CallbackInfoReturnable<NbtCompound>) {
         val scope = BingoKoin.getScope(player.server) ?: return

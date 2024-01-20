@@ -21,7 +21,7 @@ import net.minecraft.util.TypedActionResult
  * Must be initialized only once!
  */
 class EventManager(
-    val scopeManager: ScopeManager,
+    private val scopeManager: ScopeManager,
 ) {
 
     private fun getEvents(server: MinecraftServer?) : ScopedEvents? {
@@ -61,21 +61,43 @@ class EventManager(
         }
 
         UseBlockCallback.EVENT.register { player, world, hand, hit ->
-            getEvents(world.server)?.onUseBlock?.invoke(
+            val results = getEvents(world.server)?.onUseBlock?.invoke(
                 UseBlockEvent(player, world, hand, hit)
-            )?.first() ?: ActionResult.PASS
+            ) ?: emptyList()
+
+            when {
+                ActionResult.FAIL in results -> ActionResult.FAIL
+                ActionResult.SUCCESS in results -> ActionResult.SUCCESS
+                else -> ActionResult.PASS
+            }
         }
 
         UseEntityCallback.EVENT.register { player, world, hand, entity, hit ->
-            getEvents(world.server)?.onUseEntity?.invoke(
+            val results = getEvents(world.server)?.onUseEntity?.invoke(
                 UseEntityEvent(player, world, hand, entity, hit)
-            )?.first() ?: ActionResult.PASS
+            ) ?: emptyList()
+
+            when {
+                ActionResult.FAIL in results -> ActionResult.FAIL
+                ActionResult.SUCCESS in results -> ActionResult.SUCCESS
+                else -> ActionResult.PASS
+            }
         }
 
         UseItemCallback.EVENT.register { player, world, hand ->
-            getEvents(world.server)?.onUseItem?.invoke(
+            val results = getEvents(world.server)?.onUseItem?.invoke(
                 UseItemEvent(player, world, hand)
-            )?.first() ?: TypedActionResult.pass(null)
+            ) ?: emptyList()
+
+            results.find { it?.result == ActionResult.FAIL }
+                ?.let { return@register it }
+
+            results.find { it?.result == ActionResult.SUCCESS }
+                ?.let { return@register it }
+
+            // Otherwise, return a PASS result (preferring a returned value)
+            results.find { it?.result == ActionResult.PASS }
+                ?: TypedActionResult.pass(null)
         }
     }
 

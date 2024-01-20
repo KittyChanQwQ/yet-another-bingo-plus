@@ -4,11 +4,16 @@ import me.jfenn.bingo.common.scope.BingoKoin;
 import me.jfenn.bingo.mixinhandler.PlayerManagerMixinHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Final;
@@ -17,6 +22,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
@@ -28,6 +34,14 @@ public abstract class PlayerManagerMixin {
 
     @Unique
     private final Logger log = LoggerFactory.getLogger(PlayerManagerMixin.class);
+
+    @Inject(at = @At(value = "HEAD"), method = "sendToAround", cancellable = true)
+    private void sendToAround(@Nullable PlayerEntity player, double x, double y, double z, double distance, RegistryKey<World> worldKey, Packet<?> packet, CallbackInfo ci) {
+        // If the game is in PREGAME, prevent chaos by cancelling sound packets while in the lobby
+        if (packet instanceof PlaySoundS2CPacket && PlayerManagerMixinHandler.INSTANCE.shouldPreventLobbyChaos(server)) {
+            ci.cancel();
+        }
+    }
 
     @Inject(at = @At(value = "RETURN"), method = "loadPlayerData", cancellable = true)
     private void loadPlayerData(ServerPlayerEntity player, CallbackInfoReturnable<NbtCompound> ci) {

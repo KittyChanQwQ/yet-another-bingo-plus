@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.utils.hasPermission
 import me.jfenn.bingo.common.utils.text.TextColor
@@ -34,7 +35,7 @@ fun MenuComponent.registerButton(
         interactionEntityEvents.onInteract(entity) { player ->
             if (player.hasPermission(requiredPermissionLevel)) {
                 onClick(player)
-                entity.playSound(SoundEvents.BLOCK_LEVER_CLICK, 1f, 1f)
+                Sounds.playButtonSound(player, entity.pos)
             }
         }
     }
