@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.*
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
@@ -28,7 +28,7 @@ class ScoredItemCheck(
     events: ScopedEvents,
     private val log: Logger,
     private val server: MinecraftServer,
-    private val config: BingoConfig,
+    private val options: BingoOptions,
     private val state: BingoState,
     private val gameService: GameService,
     private val teamService: TeamService,
@@ -86,7 +86,7 @@ class ScoredItemCheck(
                 }
 
                 // if the gamemode is lockout, tiles cannot be collected by >1 team
-                if (config.isLockoutMode && tile.hasAnyAchieved())
+                if (options.isLockoutMode && tile.hasAnyAchieved())
                     continue
 
                 tile.setAchieved(team, true)
@@ -97,7 +97,7 @@ class ScoredItemCheck(
 
         // if isInventoryMode, we need to check that each team still has all their items
         // and mark them as lost if not
-        if (config.isInventoryMode) {
+        if (options.isInventoryMode) {
             for (item in state.card.entries.filterIsInstance<BingoCardEntry.ItemEntry>()) {
                 for (teamKey in item.teams.toSet()) {
                     val team = state.teams[teamKey] ?: continue
@@ -143,7 +143,7 @@ class ScoredItemCheck(
             val scoreAfter = team.score
 
             // if the team has scored a line, post a message
-            if (scoreAfter.lines > scoreBefore.lines && config.showCompletedLines) {
+            if (scoreAfter.lines > scoreBefore.lines && options.showCompletedLines) {
                 val message = Text.empty()
                     .append(team.text())
                     .append(
@@ -166,12 +166,12 @@ class ScoredItemCheck(
         for (team in updatedTeams) {
             val isWinner = state.updateWinner(team)
 
-            if (isWinner && config.isRankedMode) {
+            if (isWinner && options.isRankedMode) {
                 // announce that another team has completed their card
                 ChatMessages.broadcastTeamCompleted(server, team)
             }
 
-            if (isWinner && !config.isRankedMode) {
+            if (isWinner && !options.isRankedMode) {
                 // end the game, since a team has won
                 gameService.end( null)
                 return
@@ -186,13 +186,13 @@ class ScoredItemCheck(
 
         // check if the leading team has changed, and announce the leader
         val leadingTeam = ScoreService.getLeading(state)
-        if (prevLeadingTeam != leadingTeam && config.showLeadingTeam) {
+        if (prevLeadingTeam != leadingTeam && options.showLeadingTeam) {
             // if the leading team should be shown, announce the new leader
             if (leadingTeam != null) {
-                ChatMessages.broadcastScoreLeadingTeam(server, config, leadingTeam)
+                ChatMessages.broadcastScoreLeadingTeam(server, options, leadingTeam)
             } else {
                 updatedTeams.firstOrNull()?.let {
-                    ChatMessages.broadcastScoreTiedTeam(server, config, it)
+                    ChatMessages.broadcastScoreTiedTeam(server, options, it)
                 }
             }
         }

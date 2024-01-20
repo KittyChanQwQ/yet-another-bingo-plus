@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.spawn.SpawnItem
 import net.minecraft.entity.EntityType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
@@ -9,7 +9,7 @@ import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerSpawnKit(
     position: Vec3d,
-    config: BingoConfig,
+    options: BingoOptions,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", "\"Spawn Kit\"")
@@ -22,7 +22,7 @@ fun MenuComponent.registerSpawnKit(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
         text = "Player Items",
-        toggleProp = propertyRef(config::isPlayerKit)
+        toggleProp = propertyRef(options::isPlayerKit)
     )
 
     registerButton(
@@ -32,9 +32,9 @@ fun MenuComponent.registerSpawnKit(
         player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
                 { syncId, inv, _ ->
-                    InventoryScreenHandler(syncId, config.playerKitItems.flatMap { it.toItemStacks() }, inv).apply {
+                    InventoryScreenHandler(syncId, options.playerKitItems.flatMap { it.toItemStacks() }, inv).apply {
                         onClose { stacks ->
-                            config.playerKitItems = stacks.map { SpawnItem.fromItemStack(it) }
+                            options.playerKitItems = stacks.map { SpawnItem.fromItemStack(it) }
                         }
                     }
                 },
@@ -46,7 +46,7 @@ fun MenuComponent.registerSpawnKit(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 3), 0.0),
         text = "Team Chest",
-        toggleProp = propertyRef(config::isTeamKit)
+        toggleProp = propertyRef(options::isTeamKit)
     )
 
     registerButton(
@@ -56,9 +56,9 @@ fun MenuComponent.registerSpawnKit(
         player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
                 { syncId, inv, _ ->
-                    InventoryScreenHandler(syncId, config.teamKitItems.flatMap { it.toItemStacks() }, inv).apply {
+                    InventoryScreenHandler(syncId, options.teamKitItems.flatMap { it.toItemStacks() }, inv).apply {
                         onClose { stacks ->
-                            config.teamKitItems = stacks.map { SpawnItem.fromItemStack(it) }
+                            options.teamKitItems = stacks.map { SpawnItem.fromItemStack(it) }
                         }
                     }
                 },

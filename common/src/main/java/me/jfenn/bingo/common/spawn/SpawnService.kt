@@ -3,8 +3,9 @@ package me.jfenn.bingo.common.spawn
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.giveOrEquipStack
 import net.minecraft.block.Blocks
@@ -23,16 +24,16 @@ import kotlin.random.Random
 class SpawnService(
     private val log: Logger,
     private val server: MinecraftServer,
-    private val config: BingoConfig,
+    private val options: BingoOptions,
     private val state: BingoState,
     private val teamService: TeamService,
 ) {
 
     fun getSpawnDimension(): ServerWorld {
         return server.worlds.find {
-            it.registryKey.value.toString() == config.spawnDimension
+            it.registryKey.value.toString() == options.spawnDimension
         } ?: run {
-            log.error("Could not find spawnDimension '${config.spawnDimension}'; defaulting to minecraft:overworld")
+            log.error("Could not find spawnDimension '${options.spawnDimension}'; defaulting to minecraft:overworld")
             server.overworld
         }
     }
@@ -44,7 +45,7 @@ class SpawnService(
         val world = getSpawnDimension()
         val spread = SpreadPlayers(world)
 
-        val distance = config.spawnDistance
+        val distance = options.spawnDistance
         if (distance <= 0) {
             // if the distance is 0, find one spawn point for all teams
             val spawnPos = spread.findSpawnPos(Pair(0, 0))
@@ -98,7 +99,7 @@ class SpawnService(
 
             // Move "spreadPlayersDistance" away from the existing chunk on the x-axis
             val xSign = x.sign.takeIf { it != 0 } ?: 1
-            val newSpawnChunk = Pair(x + (config.spawnDistance * xSign), y)
+            val newSpawnChunk = Pair(x + (options.spawnDistance * xSign), y)
 
             // Store the team's new spawn position & return
             val spread = SpreadPlayers(world)
@@ -133,7 +134,7 @@ class SpawnService(
      * Similar behavior to the BonusChestFeature
      */
     private fun createTeamChest(world: ServerWorld, spawnpoint: BlockPosition) {
-        if (!config.isTeamKit) return
+        if (!options.isTeamKit) return
 
         val chunk = world.getChunk(spawnpoint.toBlockPos())
         // if the dimension has a ceiling, we can't use heightmaps...
@@ -182,10 +183,10 @@ class SpawnService(
             .forEach { blockPos -> world.setBlockState(blockPos, torchState) }
 
         // Fill the chest with the configured item stacks
-        config.teamKitItems
+        options.teamKitItems
             .flatMap { it.toItemStacks() }
             .forEachIndexed { i, itemStack ->
-                if (config.preventScoringSpawnKitItems) {
+                if (ConfigService.config.preventScoringSpawnKitItems) {
                     // set BINGO_IGNORE flag so that spawn items do not count on the bingo card
                     itemStack.getOrCreateNbt().apply {
                         putBoolean(NBT_BINGO_IGNORE, true)
@@ -200,12 +201,12 @@ class SpawnService(
      * Equip the player with any configured spawn equipment
      */
     fun giveSpawnEquipment(players: List<ServerPlayerEntity>) {
-        if (!config.isPlayerKit) return
+        if (!options.isPlayerKit) return
 
-        val itemStacks = config.playerKitItems
+        val itemStacks = options.playerKitItems
             .flatMap { it.toItemStacks() }
 
-        if (config.preventScoringSpawnKitItems) {
+        if (ConfigService.config.preventScoringSpawnKitItems) {
             for (itemStack in itemStacks) {
                 // set BINGO_IGNORE flag so that spawn items do not count on the bingo card
                 itemStack.getOrCreateNbt().apply {

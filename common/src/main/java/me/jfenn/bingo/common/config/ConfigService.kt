@@ -6,11 +6,12 @@ import kotlin.reflect.KMutableProperty1
 
 object ConfigService {
 
-    var config: BingoConfig by config("bingo/config.json")
-    var playerConfig: PlayerConfig by config("bingo/players.json")
+    val config: BingoConfig by config("bingo/config.json")
+    var options: BingoOptions by config("bingo/game-options.json")
+    var playerConfig: PlayerConfig by config("bingo/player-settings.json")
 
-    fun writeConfig(config: BingoConfig) {
-        this.config = config
+    fun writeOptions(options: BingoOptions) {
+        this.options = options
     }
 
     fun getPlayer(uuid: String): PlayerSettings {

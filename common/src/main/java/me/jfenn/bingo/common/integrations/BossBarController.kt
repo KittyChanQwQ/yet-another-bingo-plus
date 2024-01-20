@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.integrations
 
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
@@ -18,7 +18,7 @@ import net.minecraft.util.Identifier
 class BossBarController(
     events: ScopedEvents,
     private val server: MinecraftServer,
-    private val config: BingoConfig,
+    private val options: BingoOptions,
     private val state: BingoState,
 ) {
 
@@ -50,8 +50,8 @@ class BossBarController(
         }
 
         events.onUpdateTick {
-            if (config.showRemainingTime) {
-                val timeLimit = config.timeLimit
+            if (options.showRemainingTime) {
+                val timeLimit = options.timeLimit
                 val duration = state.ingameDuration()
                 if (timeLimit != null && duration != null) {
                     bossBar.value = ((1f - (duration.inWholeSeconds / timeLimit.inWholeSeconds.toFloat())) * bossBar.maxValue).toInt()
@@ -60,14 +60,14 @@ class BossBarController(
 
             bossBar.name = Text.empty()
                 .let {
-                    if (config.showRemainingTime) {
+                    if (options.showRemainingTime) {
                         it.append(Text.literal("Time Remaining: "))
                             .append(state.formatTimeRemaining())
                             .append(Text.literal(" or "))
                     } else it
                 }
                 .append(
-                    Text.literal(config.winCondition.name.formatTitle())
+                    Text.literal(options.winCondition.name.formatTitle())
                         .formatted(Formatting.BOLD)
                 )
         }

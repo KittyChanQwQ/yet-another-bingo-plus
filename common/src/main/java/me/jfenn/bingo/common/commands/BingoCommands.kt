@@ -77,7 +77,7 @@ class BingoCommands : BaseCommand() {
                             .toMutableList()
 
                         var last = args.removeLast().executesInScope { ctx ->
-                            val config = get<BingoConfig>()
+                            val options = get<BingoOptions>()
                             val events = get<ScopedEvents>()
                             val cardService = get<CardService>()
 
@@ -89,7 +89,7 @@ class BingoCommands : BaseCommand() {
                                 return@executesInScope 0
                             }
 
-                            config.itemDistribution = itemDist
+                            options.itemDistribution = itemDist
                             events.onChangeConfig(Unit)
                             cardService.generateCard()
                             ctx.source.player?.sendInfoMessage("Item distribution changed: $itemDist")
@@ -113,11 +113,11 @@ class BingoCommands : BaseCommand() {
                         )
                             .executesInScope { ctx ->
                                 val state = get<BingoState>()
-                                val config = get<BingoConfig>()
+                                val options = get<BingoOptions>()
                                 val events = get<ScopedEvents>()
 
                                 val isElytra = BoolArgumentType.getBool(ctx, "true/false")
-                                config.isElytra = isElytra
+                                options.isElytra = isElytra
                                 events.onChangeConfig(Unit)
 
                                 // if Elytra mode is turned off during a game, remove all players' elytra
@@ -146,10 +146,10 @@ class BingoCommands : BaseCommand() {
                             .map { wincon ->
                                 LiteralArgumentBuilder.literal<ServerCommandSource>(wincon.name)
                                     .executesInScope { ctx ->
-                                        val config = get<BingoConfig>()
+                                        val options = get<BingoOptions>()
                                         val events = get<ScopedEvents>()
 
-                                        config.winCondition = wincon
+                                        options.winCondition = wincon
                                         events.onChangeConfig(Unit)
                                         ctx.source.player?.sendInfoMessage("Win condition: ${wincon.name}")
                                         1
@@ -174,11 +174,11 @@ class BingoCommands : BaseCommand() {
                             IntegerArgumentType.integer(1)
                         )
                             .executesInScope { ctx ->
-                                val config = get<BingoConfig>()
+                                val options = get<BingoOptions>()
                                 val events = get<ScopedEvents>()
 
                                 val minutes = IntegerArgumentType.getInteger(ctx, "minutes")
-                                config.timeLimit = minutes.minutes
+                                options.timeLimit = minutes.minutes
                                 events.onChangeConfig(Unit)
                                 ctx.source.player?.sendInfoMessage("Time limit: $minutes minutes")
                                 1
@@ -187,10 +187,10 @@ class BingoCommands : BaseCommand() {
                     .then(
                         LiteralArgumentBuilder.literal<ServerCommandSource?>("off")
                             .executesInScope { ctx ->
-                                val config = get<BingoConfig>()
+                                val options = get<BingoOptions>()
                                 val events = get<ScopedEvents>()
 
-                                config.timeLimit = null
+                                options.timeLimit = null
                                 events.onChangeConfig(Unit)
                                 ctx.source.player?.sendInfoMessage("Time limit: Off")
                                 1

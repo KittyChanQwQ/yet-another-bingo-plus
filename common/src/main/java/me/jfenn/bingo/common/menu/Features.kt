@@ -1,12 +1,12 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import net.minecraft.entity.EntityType
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerFeatures(
     position: Vec3d,
-    config: BingoConfig,
+    options: BingoOptions,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", "\"Features\"")
@@ -19,24 +19,24 @@ fun MenuComponent.registerFeatures(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
         text = "Unlock Recipes",
-        toggleProp = propertyRef(config::isUnlockRecipes),
+        toggleProp = propertyRef(options::isUnlockRecipes),
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
         text = "Keep Inventory",
-        toggleProp = propertyRef(config::isKeepInventory),
+        toggleProp = propertyRef(options::isKeepInventory),
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0),
         text = "Elytra",
-        toggleProp = propertyRef(config::isElytra),
+        toggleProp = propertyRef(options::isElytra),
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
         text = "Allow PvP",
-        toggleProp = propertyRef(config::isPvpEnabled),
+        toggleProp = propertyRef(options::isPvpEnabled),
     )
 }

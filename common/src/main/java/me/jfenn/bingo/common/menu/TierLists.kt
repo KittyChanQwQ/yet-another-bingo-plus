@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.TierListService
 import me.jfenn.bingo.common.utils.formatTitle
 import net.minecraft.entity.EntityType
@@ -8,7 +8,7 @@ import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerTierLists(
     position: Vec3d,
-    config: BingoConfig,
+    options: BingoOptions,
     onUpdate: () -> Unit,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
@@ -21,11 +21,11 @@ fun MenuComponent.registerTierLists(
 
     TierListService.tierLists.forEachIndexed { i, listName ->
         val toggleProp = DelegatedProperty(
-            getter = { config.tierLists.contains(listName) },
+            getter = { options.tierLists.contains(listName) },
             setter = { isEnabled ->
-                val lists = config.tierLists.filter { TierListService.tierLists.contains(it) }
-                if (isEnabled) config.tierLists = lists + listName
-                else config.tierLists = lists - listName
+                val lists = options.tierLists.filter { TierListService.tierLists.contains(it) }
+                if (isEnabled) options.tierLists = lists + listName
+                else options.tierLists = lists - listName
                 markDirty()
                 onUpdate()
             }

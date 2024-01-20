@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.integrations
 
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -15,18 +15,18 @@ import net.minecraft.world.GameRules
 class GameRuleController(
     events: ScopedEvents,
     private val server: MinecraftServer,
-    private val config: BingoConfig,
+    private val options: BingoOptions,
     private val state: BingoState,
 ) {
 
-    fun readFromServer(server: MinecraftServer, config: BingoConfig) {
-        config.isPvpEnabled = server.isPvpEnabled
-        config.isKeepInventory = server.gameRules.get(GameRules.KEEP_INVENTORY).get()
+    fun readFromServer(server: MinecraftServer, options: BingoOptions) {
+        options.isPvpEnabled = server.isPvpEnabled
+        options.isKeepInventory = server.gameRules.get(GameRules.KEEP_INVENTORY).get()
     }
 
-    fun writeToServer(server: MinecraftServer, config: BingoConfig) {
-        server.isPvpEnabled = config.isPvpEnabled
-        server.gameRules.get(GameRules.KEEP_INVENTORY).set(config.isKeepInventory, server)
+    fun writeToServer(server: MinecraftServer, options: BingoOptions) {
+        server.isPvpEnabled = options.isPvpEnabled
+        server.gameRules.get(GameRules.KEEP_INVENTORY).set(options.isKeepInventory, server)
     }
 
     init {
@@ -39,13 +39,13 @@ class GameRuleController(
             server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(false, server)
 
             // set up server with the initial config game rules
-            writeToServer(server, config)
+            writeToServer(server, options)
         }
 
         events.onUpdateTick {
             if (state.state == GameState.PLAYING) {
                 // update config with the current game rules (in case /gamerule is used mid-game)
-                readFromServer(server, config)
+                readFromServer(server, options)
             }
         }
 
@@ -55,8 +55,8 @@ class GameRuleController(
             server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(true, server)
 
             // update server to match config choices
-            server.isPvpEnabled = config.isPvpEnabled
-            server.gameRules.get(GameRules.KEEP_INVENTORY).set(config.isKeepInventory, server)
+            server.isPvpEnabled = options.isPvpEnabled
+            server.gameRules.get(GameRules.KEEP_INVENTORY).set(options.isKeepInventory, server)
 
             if (prevState == GameState.PREGAME) {
                 // reset overworld time

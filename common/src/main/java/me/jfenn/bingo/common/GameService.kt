@@ -2,7 +2,7 @@ package me.jfenn.bingo.common
 
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.spawn.SpawnService
@@ -16,7 +16,7 @@ import net.minecraft.util.Formatting
 
 class GameService(
     private val state: BingoState,
-    private val config: BingoConfig,
+    private val options: BingoOptions,
     private val server: MinecraftServer,
     private val events: ScopedEvents,
     private val spawnService: SpawnService,
@@ -49,14 +49,14 @@ class GameService(
             return false
         }
 
-        if (!config.isValid()) {
+        if (!options.isValid()) {
             sendFeedback("Item distribution must add up to 25!")
             return false
         }
 
         // save the current config, if overwrite option is set
-        if (config.overwrite) {
-            ConfigService.writeConfig(config)
+        if (ConfigService.config.overwriteOptions) {
+            ConfigService.writeOptions(options)
         }
 
         for (player in server.playerManager.playerList) {
@@ -69,7 +69,7 @@ class GameService(
         // spread player teams to spawnpoint
         spawnService.createSpawnpoints()
 
-        ChatMessages.broadcastStart(server, config)
+        ChatMessages.broadcastStart(server, options)
 
         // change to the playing state
         state.changeState(events, GameState.PLAYING)
@@ -77,7 +77,7 @@ class GameService(
     }
 
     fun end(reason: String?) {
-        ChatMessages.broadcastEnd(server, config, state, reason)
+        ChatMessages.broadcastEnd(server, options, state, reason)
         state.changeState(events, GameState.POSTGAME)
     }
 

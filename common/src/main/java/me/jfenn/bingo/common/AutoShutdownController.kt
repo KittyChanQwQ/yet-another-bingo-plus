@@ -1,5 +1,7 @@
 package me.jfenn.bingo.common
 
+import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -10,6 +12,7 @@ import org.slf4j.Logger
 
 class AutoShutdownController(
     private val log: Logger,
+    private val config: BingoConfig,
 ) {
     init {
         ServerPlayConnectionEvents.DISCONNECT.register { _, server ->
@@ -19,7 +22,7 @@ class AutoShutdownController(
             val state = scope.get<BingoState>()
 
             // if the last player is disconnecting after a bingo game, shut down the server
-            if (server.isRunning && state.config.autoShutDownInPostgame && state.state == GameState.POSTGAME && server.currentPlayerCount <= 1) {
+            if (server.isRunning && config.autoShutDownInPostgame && state.state == GameState.POSTGAME && server.currentPlayerCount <= 1) {
                 log.info("Last player has disconnected and 'autoShutDownInPostgame' is true; Shutting down the server...")
                 server.stop(false)
             }

@@ -3,6 +3,7 @@ package me.jfenn.bingo.common
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.commands.*
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
@@ -29,6 +30,7 @@ val commonModule = module {
     single { getKoin() }
     single { LoggerFactory.getLogger(MOD_ID) }
     single { SerializedPersistentStateFactory(get()) }
+    single { ConfigService.config }
 
     singleOf(::ServerDatapackManager) withOptions { createdAtStart() }
     singleOf(::EventManager) withOptions { createdAtStart() }
@@ -51,7 +53,7 @@ val commonModule = module {
             val world = get<MinecraftServer>().overworld
             get<SerializedPersistentStateFactory>().fromWorld<BingoState>(world)
         }
-        scoped { get<BingoState>().config }
+        scoped { get<BingoState>().options }
 
         scopedOf(::GameService)
         scopedOf(::SpawnService)

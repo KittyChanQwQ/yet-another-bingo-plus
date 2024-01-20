@@ -2,7 +2,7 @@ package me.jfenn.bingo.common
 
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.ScoreService
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.formatString
@@ -25,26 +25,26 @@ object ChatMessages {
         )
     }
 
-    fun broadcastStart(server: MinecraftServer, config: BingoConfig) {
+    fun broadcastStart(server: MinecraftServer, options: BingoOptions) {
         sequence {
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
             yield(Text.literal("  BINGO Start!").formatted(Formatting.GREEN))
 
             Text.empty()
                 .append("  Game mode: ")
-                .append(config.formatGameMode())
+                .append(options.formatGameMode())
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
             Text.empty()
                 .append("  Features: ")
-                .append(config.formatFeatures())
+                .append(options.formatFeatures())
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
             Text.empty()
                 .append("  Win condition: ")
-                .append(config.winCondition.formatName())
+                .append(options.winCondition.formatName())
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
@@ -54,7 +54,7 @@ object ChatMessages {
         }
     }
 
-    fun broadcastEnd(server: MinecraftServer, config: BingoConfig, state: BingoState, reason: String?) {
+    fun broadcastEnd(server: MinecraftServer, options: BingoOptions, state: BingoState, reason: String?) {
         val winningTeams = state.getRegisteredTeams()
             .filter { it.isWinner() }
 
@@ -64,7 +64,7 @@ object ChatMessages {
             ?.firstOrNull()
 
         val winMessage = Text.literal(reason ?: "Game over!")
-            .takeIf { config.isRankedMode }
+            .takeIf { options.isRankedMode }
             ?: winningTeam?.let { winner ->
                 Text.empty()
                     .append(winner.text())
@@ -102,7 +102,7 @@ object ChatMessages {
                 .append(Texts.bracketedCopyable(server.overworld.seed.toString()))
                 .also { yield(it) }
 
-            if (config.isRankedMode) {
+            if (options.isRankedMode) {
                 yield(Text.empty())
                 for (text in state.formatWinners())
                     yield(Text.empty().append("  ").append(text))
@@ -131,13 +131,13 @@ object ChatMessages {
             .forEach { it.sendMessage(message, false) }
     }
 
-    fun broadcastScoreLeadingTeam(server: MinecraftServer, config: BingoConfig, team: BingoTeam) {
+    fun broadcastScoreLeadingTeam(server: MinecraftServer, options: BingoOptions, team: BingoTeam) {
         val score = team.score
         val message = Text.empty()
             .append(team.text())
             .append(Text.literal(
                 " is in the lead"
-                        + (if (config.showCompletedItems) " with ${score.items} item${"s".takeIf { score.items != 1 }.orEmpty()}" else "")
+                        + (if (options.showCompletedItems) " with ${score.items} item${"s".takeIf { score.items != 1 }.orEmpty()}" else "")
                         + "!"
             ).formatted(Formatting.YELLOW))
 
@@ -146,13 +146,13 @@ object ChatMessages {
             .forEach { it.sendMessage(message, false) }
     }
 
-    fun broadcastScoreTiedTeam(server: MinecraftServer, config: BingoConfig, team: BingoTeam) {
+    fun broadcastScoreTiedTeam(server: MinecraftServer, options: BingoOptions, team: BingoTeam) {
         val score = team.score
         val message = Text.empty()
             .append(team.text())
             .append(Text.literal(
                 " is tied in the lead"
-                        + (if (config.showCompletedItems) " with ${score.items} item${"s".takeIf { score.items != 1 } ?: ""}" else "")
+                        + (if (options.showCompletedItems) " with ${score.items} item${"s".takeIf { score.items != 1 } ?: ""}" else "")
                         + "!"
             ).formatted(Formatting.YELLOW))
 

@@ -7,7 +7,7 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -27,10 +27,10 @@ data class BingoState(
     var updatedAt: Instant? = null,
     var lobbySpawnPos: BlockPosition = BlockPosition(0, 0, 0),
     var timeOffline: Duration = Duration.ZERO,
-    val config: BingoConfig = ConfigService.config.copy(),
+    val options: BingoOptions = ConfigService.options.copy(),
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
     var previewMap: BingoMap? = null,
-    var card: BingoCard = CardService.generate(config, seed),
+    var card: BingoCard = CardService.generate(options, seed),
 ) : SerializedPersistentState() {
 
     fun getRegisteredTeams(): List<BingoTeam> {
@@ -68,7 +68,7 @@ data class BingoState(
      */
     fun updateWinner(team: BingoTeam): Boolean {
         val score = team.score
-        val isWinner = score.lines >= config.winCondition.numLines
+        val isWinner = score.lines >= options.winCondition.numLines
 
         if (isWinner && team.winner == null) {
             team.winner = TeamWinner(
@@ -88,7 +88,7 @@ data class BingoState(
     }
 
     fun formatTimeRemaining(): Text {
-        val timeLimit = config.timeLimit
+        val timeLimit = options.timeLimit
             ?: return Text.literal("(No Time Limit)").formatted(Formatting.BOLD)
 
         val duration = ingameDuration() ?: return Text.literal(timeLimit.formatString())

@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.state.BingoState
 object ScoreService {
 
     fun isStalemate(state: BingoState): Boolean {
-        if (!state.config.isLockoutMode) return false
+        if (!state.options.isLockoutMode) return false
 
         // check all teams for the number of capture-able lines
         // if any team can capture a line, it is not a stalemate

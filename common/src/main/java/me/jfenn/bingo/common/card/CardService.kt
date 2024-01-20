@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.card
 
 import me.jfenn.bingo.common.MOD_ID
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.TierList
 import me.jfenn.bingo.common.config.TierListService
 import me.jfenn.bingo.common.state.BingoState
@@ -15,7 +16,7 @@ import kotlin.random.Random
 
 class CardService(
     private val state: BingoState,
-    private val config: BingoConfig,
+    private val options: BingoOptions,
     private val teamService: TeamService,
 ) {
     fun shuffleCard() {
@@ -26,9 +27,9 @@ class CardService(
     }
 
     fun generateCard() {
-        if (!config.isValid()) return
+        if (!options.isValid()) return
 
-        state.card = generate(config, state.seed)
+        state.card = generate(options, state.seed)
     }
 
     fun showInventory(player: ServerPlayerEntity) {
@@ -36,7 +37,7 @@ class CardService(
             { syncId, inv, _ ->
                 CardScreenHandler(
                     syncId = syncId,
-                    config = config,
+                    options = options,
                     state = state,
                     team = teamService.getPlayerTeam(player),
                     card = state.card,
@@ -51,20 +52,20 @@ class CardService(
 
         private val log = LoggerFactory.getLogger(MOD_ID)
 
-        fun generate(config: BingoConfig, seed: Long): BingoCard {
-            val dist = config.itemDistribution
+        fun generate(options: BingoOptions, seed: Long): BingoCard {
+            val dist = options.itemDistribution
             assert(dist.size == TierList.entries.size) { "Item distribution does not match the number of tiers (${TierList.entries.size})!" }
             assert(dist.sum() <= 25) { "Item distribution exceeds 25!" }
 
             // Exclude any items from the card that the player might spawn with
             // (e.g. elytra mode, player/team kits...)
-            val excludedItems = if (config.excludeSpawnKitItemsFromCards) {
+            val excludedItems = if (ConfigService.config.excludeSpawnKitItemsFromCards) {
                 buildSet {
-                    if (config.isPlayerKit)
-                        addAll(config.playerKitItems.map { it.id })
-                    if (config.isTeamKit)
-                        addAll(config.teamKitItems.map { it.id })
-                    if (config.isElytra) {
+                    if (options.isPlayerKit)
+                        addAll(options.playerKitItems.map { it.id })
+                    if (options.isTeamKit)
+                        addAll(options.teamKitItems.map { it.id })
+                    if (options.isElytra) {
                         add("minecraft:elytra")
                         add("minecraft:firework_rocket")
                     }
@@ -74,7 +75,7 @@ class CardService(
             val random = Random(seed)
             log.info("Using random BINGO card seed: $seed")
 
-            val tiers = TierListService.getTierLists(config.tierLists)
+            val tiers = TierListService.getTierLists(options.tierLists)
             val items: MutableList<BingoCardEntry> = tiers.pick(dist, excludedItems, random)
                 .mapNotNull { parseIdentifier(it) }
                 .map { BingoCardEntry.ItemEntry(it) }

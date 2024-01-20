@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.integrations
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.GameService
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -14,7 +14,7 @@ import me.jfenn.bingo.common.state.GameState
 class TimerCheck(
     events: ScopedEvents,
     private val state: BingoState,
-    private val config: BingoConfig,
+    private val options: BingoOptions,
     private val gameService: GameService,
 ) {
 
@@ -28,7 +28,7 @@ class TimerCheck(
         events.onUpdateTick {
             if (state.state != GameState.PLAYING) return@onUpdateTick
             val duration = state.ingameDuration() ?: return@onUpdateTick
-            val timeLimit = config.timeLimit ?: return@onUpdateTick
+            val timeLimit = options.timeLimit ?: return@onUpdateTick
 
             // set the last updated timestamp
             state.updatedAt = Clock.System.now()

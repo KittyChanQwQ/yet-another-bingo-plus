@@ -1,10 +1,8 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.GameService
-import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.math.Vec3d
@@ -12,27 +10,26 @@ import net.minecraft.util.math.Vec3d
 fun MenuComponent.registerMenuPage(
     position: Vec3d,
     server: MinecraftServer = koinScope.get(),
-    config: BingoConfig = koinScope.get(),
+    options: BingoOptions = koinScope.get(),
     gameService: GameService = koinScope.get(),
     cardService: CardService = koinScope.get(),
-    teamService: TeamService = koinScope.get(),
 ) {
     var page = 0
 
-    val itemDistributionProp = propertyRef(config::itemDistribution)
+    val itemDistributionProp = propertyRef(options::itemDistribution)
 
     val pages = listOf(
         component(koinScope) {
-            registerGameModes(position.add(-3.5, 0.0, 0.0), config)
-            registerFeatures(position.add(-1.5, 0.0, 0.0), config)
+            registerGameModes(position.add(-3.5, 0.0, 0.0), options)
+            registerFeatures(position.add(-1.5, 0.0, 0.0), options)
             registerEnumMenu(
                 title = "Win Condition",
-                valueProp = propertyRef(config::winCondition),
+                valueProp = propertyRef(options::winCondition),
                 position = position.add(0.6, 0.0, 0.0),
             )
             registerTimer(
                 title = "Time Limit",
-                timerMinutesProp = propertyRef(config::timeLimit),
+                timerMinutesProp = propertyRef(options::timeLimit),
                 position = position.add(2.3, 0.0, 0.0),
             )
             registerTeams(
@@ -43,16 +40,16 @@ fun MenuComponent.registerMenuPage(
         component(koinScope) {
             registerDimensionMenu(
                 position = position.add(-3.5, 0.0, 0.0),
-                dimensionProperty = propertyRef(config::spawnDimension),
+                dimensionProperty = propertyRef(options::spawnDimension),
                 server = server,
             )
             registerSpawnKit(
                 position = position.add(-1.5, 0.0, 0.0),
-                config = config,
+                options = options,
             )
             registerTierLists(
                 position = position.add(0.6, 0.0, 0.0),
-                config = config,
+                options = options,
             ) {
                 // when changed, re-roll the bingo card
                 cardService.generateCard()
@@ -68,15 +65,15 @@ fun MenuComponent.registerMenuPage(
         component(koinScope) {
             registerScoreInfo(
                 position = position.add(-3.0, 0.0, 0.0),
-                config = config,
+                options = options,
             )
             registerCardInfo(
                 position = position.add(0.0, 0.0, 0.0),
-                config = config,
+                options = options,
             )
             registerSpawnDistance(
                 position = position.add(3.0, 0.0, 0.0),
-                spawnDistanceProp = propertyRef(config::spawnDistance),
+                spawnDistanceProp = propertyRef(options::spawnDistance),
             )
         },
     )
@@ -95,7 +92,7 @@ fun MenuComponent.registerMenuPage(
     registerButton(
         position = position.add(5.0, -MENU_ITEM_OFFSET, 0.0),
         text = "START",
-        isActiveProp = computedProperty { config.isValid() },
+        isActiveProp = computedProperty { options.isValid() },
     ) { player ->
         // Start the game!
         gameService.start(

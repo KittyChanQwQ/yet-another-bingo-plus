@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import net.minecraft.entity.EntityType
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerCardInfo(
     position: Vec3d,
-    config: BingoConfig = koinScope.get(),
+    options: BingoOptions = koinScope.get(),
     cardService: CardService = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
@@ -21,13 +21,13 @@ fun MenuComponent.registerCardInfo(
     registerToggleButton(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
         text = "Team Outlines",
-        toggleProp = propertyRef(config::showOtherTeamCompletions),
+        toggleProp = propertyRef(options::showOtherTeamCompletions),
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
         text = "Hidden Items",
-        toggleProp = propertyRef(config::hiddenItems),
+        toggleProp = propertyRef(options::hiddenItems),
     ) {
         // when changed, re-roll the bingo card
         cardService.shuffleCard()
@@ -36,7 +36,7 @@ fun MenuComponent.registerCardInfo(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT*2), 0.0),
         text = "Preview Card",
-        toggleProp = propertyRef(config::showPreviewCard),
+        toggleProp = propertyRef(options::showPreviewCard),
     ) {
         // when changed, re-roll the bingo card
         cardService.shuffleCard()

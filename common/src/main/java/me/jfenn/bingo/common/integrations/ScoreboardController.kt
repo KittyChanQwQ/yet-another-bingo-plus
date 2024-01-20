@@ -1,21 +1,14 @@
 package me.jfenn.bingo.common.integrations
 
-import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
-import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.state.BingoState
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.world.GameMode
-import java.util.*
 
 /**
  * Displays scoreboard score/timer information for all players.
@@ -23,7 +16,7 @@ import java.util.*
 class ScoreboardController(
     events: ScopedEvents,
     private val server: MinecraftServer,
-    private val config: BingoConfig,
+    private val options: BingoOptions,
     private val state: BingoState,
     private val teamService: TeamService,
     private val scoreboardHandler: ScoreboardHandler,
@@ -46,7 +39,7 @@ class ScoreboardController(
 
                 val scoreboardText = buildList {
                     add("")
-                    config.formatGameMode().let {
+                    options.formatGameMode().let {
                         if (it.length > 18) {
                             add("Game mode:")
                             add("  ${Formatting.YELLOW}$it")
@@ -54,7 +47,7 @@ class ScoreboardController(
                             add("Game mode: ${Formatting.YELLOW}$it")
                         }
                     }
-                    config.formatFeatures().let {
+                    options.formatFeatures().let {
                         if (it.length > 18) {
                             add("Features:")
                             add("  ${Formatting.YELLOW}$it")
@@ -62,8 +55,8 @@ class ScoreboardController(
                             add("Features: ${Formatting.YELLOW}$it")
                         }
                     }
-                    add("Win condition: ${Formatting.YELLOW}${config.winCondition.formatName()}")
-                    if (config.showRemainingTime) {
+                    add("Win condition: ${Formatting.YELLOW}${options.winCondition.formatName()}")
+                    if (options.showRemainingTime) {
                         add("Time left: ${Formatting.YELLOW}${state.formatTimeRemaining().string}")
                     }
                     add("")
@@ -77,31 +70,31 @@ class ScoreboardController(
                     }
 
                     val leadingTeam = ScoreService.getLeading(state)
-                    if (config.showLeadingTeam) {
+                    if (options.showLeadingTeam) {
                         add("Leading team: ${leadingTeam?.let { it.formatting.toString() + it.name } ?: "${Formatting.WHITE}Tie"}")
                     }
 
                     val formatting = when {
                         // if the leading team should be hidden, don't use its formatting
-                        !config.showLeadingTeam -> Formatting.WHITE
+                        !options.showLeadingTeam -> Formatting.WHITE
                         // otherwise, default to WHITE if the team is tied
                         else -> leadingTeam?.formatting ?: Formatting.WHITE
                     }
 
-                    if (config.showCompletedItems && team != leadingTeam) {
+                    if (options.showCompletedItems && team != leadingTeam) {
                         // if the leading team is a tie, find one of the tied teams to get the item/line count
                         val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByItems(state, allowTies = true)
                         val itemsScored = leadingOrTied?.score?.items ?: 0
                         add("Items scored: $formatting$itemsScored")
                     }
-                    if (config.showCompletedLines && team != leadingTeam) {
+                    if (options.showCompletedLines && team != leadingTeam) {
                         // if the leading team is a tie, find one of the tied teams to get the item/line count
                         val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByLines(state, allowTies = true)
                         val linesScored = leadingOrTied?.score?.lines ?: 0
                         add("Lines scored: $formatting$linesScored")
                     }
 
-                    if (config.showLeadingTeam || config.showCompletedItems || config.showCompletedLines)
+                    if (options.showLeadingTeam || options.showCompletedItems || options.showCompletedLines)
                         add("")
                 }.mapIndexed { i, str ->
                     str.ifEmpty { " ".repeat(i) }

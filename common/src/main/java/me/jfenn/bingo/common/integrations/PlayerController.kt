@@ -6,9 +6,8 @@ import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoPlayerProfile
-import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.spawn.SpawnService
@@ -46,7 +45,7 @@ class PlayerController(
     events: ScopedEvents,
     private val server: MinecraftServer,
     private val state: BingoState,
-    private val config: BingoConfig,
+    private val options: BingoOptions,
     private val mapItemService: MapItemService,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
@@ -176,7 +175,7 @@ class PlayerController(
         player.hungerManager.exhaustion = 0f
 
         // unlock all crafting recipes, if set
-        if (config.isUnlockRecipes)
+        if (options.isUnlockRecipes)
             player.unlockRecipes(server.recipeManager.values())
 
         // reset advancements state
@@ -225,7 +224,7 @@ class PlayerController(
             // if playing, give the player new spawn equipment
             if (
                 state.state == GameState.PLAYING
-                && config.refillPlayerKitOnRespawn
+                && options.refillPlayerKitOnRespawn
                 // if KEEP_INVENTORY is on, we don't need to replace these items
                 && !server.gameRules.get(GameRules.KEEP_INVENTORY).get()
             ) {
@@ -263,7 +262,7 @@ class PlayerController(
         events.onGameTick {
             for (player in server.playerManager.playerList) {
                 if (state.state == GameState.PREGAME && player.isAlive) {
-                    if (config.showPreviewCard) {
+                    if (options.showPreviewCard) {
                         givePreviewCardItem(player)
                     } else {
                         removePreviewCardItem(player)
@@ -275,7 +274,7 @@ class PlayerController(
                     giveMapCardItem(player)
 
                     // if elytra mode is configured, give the player an elytra
-                    if (config.isElytra)
+                    if (options.isElytra)
                         giveElytra(player)
                 }
 

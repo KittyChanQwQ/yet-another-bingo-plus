@@ -1,12 +1,12 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import net.minecraft.entity.EntityType
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerGameModes(
     position: Vec3d,
-    config: BingoConfig,
+    options: BingoOptions,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", "\"Game Mode\"")
@@ -19,18 +19,18 @@ fun MenuComponent.registerGameModes(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
         text = "Lockout",
-        toggleProp = propertyRef(config::isLockoutMode),
+        toggleProp = propertyRef(options::isLockoutMode),
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
         text = "Inventory",
-        toggleProp = propertyRef(config::isInventoryMode),
+        toggleProp = propertyRef(options::isInventoryMode),
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0),
         text = "Ranked",
-        toggleProp = propertyRef(config::isRankedMode),
+        toggleProp = propertyRef(options::isRankedMode),
     )
 }

@@ -4,7 +4,7 @@ import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.item.FilledMapItem
@@ -25,7 +25,7 @@ import kotlin.time.measureTime
 class MapRenderService(
     private val log: Logger,
     private val server: MinecraftServer,
-    private val config: BingoConfig,
+    private val options: BingoOptions,
     private val state: BingoState,
 ) {
 
@@ -184,10 +184,10 @@ class MapRenderService(
         val isFlashing = item.isFlashing(team, FLASHING_DURATION)
                 && (server.ticks / 10) % 2 == 0
 
-        val isLocked = config.isLockoutMode && item.teams.isNotEmpty() && team != null && !item.hasAchieved(team)
+        val isLocked = options.isLockoutMode && item.teams.isNotEmpty() && team != null && !item.hasAchieved(team)
         val tileImage = getTileImage(item)
         val tileImageArray = when {
-            config.hiddenItems && (team == null || !item.hasSeen(team)) -> null
+            options.hiddenItems && (team == null || !item.hasSeen(team)) -> null
             isAchieved && !isFlashing -> tileImage?.achieved
             else -> tileImage?.regular
         }
@@ -212,7 +212,7 @@ class MapRenderService(
                 })
 
                 if (
-                    config.showOtherTeamCompletions &&
+                    options.showOtherTeamCompletions &&
                     item.hasAnyAchieved() &&
                     (innerX == 0 || innerX == innerMax || innerY == 0 || innerY == innerMax)
                 ) {
@@ -282,7 +282,7 @@ class MapRenderService(
                 val entry = card.entry(x, y)
                 if (
                     entry.updatedAt(team) > map.updatedAt ||
-                    (config.showOtherTeamCompletions && entry.updatedAt > map.updatedAt) ||
+                    (options.showOtherTeamCompletions && entry.updatedAt > map.updatedAt) ||
                     (entry.isFlashing(team, FLASHING_DURATION + 1.seconds) && server.ticks % 10 == 0)
                 ) {
                     drawMapTile(
