@@ -23,6 +23,7 @@ import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.withOptions
 import org.koin.core.scope.Scope
+import org.koin.core.scope.get
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 
@@ -66,6 +67,7 @@ val commonModule = module {
         scopedOf(::BingoCardController)
         scopedOf(::BossBarController)
         scopedOf(::GameRuleController)
+        scopedOf(::LobbyChaosController)
         scopedOf(::MapItemHandler)
         scopedOf(::MotdController)
         scopedOf(::PlayerController)
@@ -81,6 +83,7 @@ fun Scope.commonInit() {
     get<BingoCardController>()
     get<BossBarController>()
     get<GameRuleController>()
+    get<LobbyChaosController>()
     get<MapItemHandler>()
     get<MotdController>()
     get<PlayerController>()
