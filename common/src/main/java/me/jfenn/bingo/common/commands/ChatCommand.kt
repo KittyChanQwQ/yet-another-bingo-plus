@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.commands
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
-import me.jfenn.bingo.common.BingoKoin
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.state.BingoState

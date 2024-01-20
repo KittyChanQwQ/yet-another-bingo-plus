@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common
+package me.jfenn.bingo.common.scope
 
 import net.minecraft.server.MinecraftServer
 import org.koin.core.KoinApplication

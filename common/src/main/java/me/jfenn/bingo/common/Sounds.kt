@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common
 
 import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.state.BingoContext
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory

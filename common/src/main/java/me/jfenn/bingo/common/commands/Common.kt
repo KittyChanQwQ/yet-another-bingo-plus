@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import me.jfenn.bingo.common.BingoKoin
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState

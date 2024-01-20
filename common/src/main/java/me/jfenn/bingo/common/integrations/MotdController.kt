@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.integrations
 
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.server.MinecraftServer
 

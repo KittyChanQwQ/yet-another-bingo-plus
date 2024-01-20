@@ -1,6 +1,6 @@
 package me.jfenn.bingo.server
 
-import me.jfenn.bingo.common.BingoKoin
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.commonModule
 import me.jfenn.bingo.sharedModule
 import net.fabricmc.api.DedicatedServerModInitializer

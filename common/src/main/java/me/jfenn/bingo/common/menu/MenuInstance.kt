@@ -1,11 +1,8 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
-import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.event.InteractionEntityEvents
-import me.jfenn.bingo.common.state.BingoContext
 import net.minecraft.entity.Entity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.MinecraftServer

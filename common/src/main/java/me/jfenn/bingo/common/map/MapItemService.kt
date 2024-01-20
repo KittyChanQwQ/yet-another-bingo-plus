@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.item.ItemStack

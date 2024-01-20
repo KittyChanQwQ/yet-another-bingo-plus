@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common
 
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.fabricmc.api.EnvType

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.card
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.common.BingoKoin
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap

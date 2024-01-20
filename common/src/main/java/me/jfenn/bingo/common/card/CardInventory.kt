@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.card
 
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.entity.player.PlayerEntity

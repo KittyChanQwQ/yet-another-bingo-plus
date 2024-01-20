@@ -1,6 +1,6 @@
 package me.jfenn.bingo.mixin;
 
-import me.jfenn.bingo.common.BingoKoin;
+import me.jfenn.bingo.common.scope.BingoKoin;
 import me.jfenn.bingo.mixinhandler.PlayerManagerMixinHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;

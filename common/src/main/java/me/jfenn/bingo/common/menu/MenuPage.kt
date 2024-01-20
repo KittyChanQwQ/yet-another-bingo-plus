@@ -5,12 +5,9 @@ import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.integrations.BingoCardController
-import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.math.Vec3d
-import org.koin.core.scope.Scope
 
 fun MenuComponent.registerMenuPage(
     position: Vec3d,

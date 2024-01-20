@@ -2,8 +2,6 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.integrations.BingoCardController
-import me.jfenn.bingo.common.state.BingoContext
 import net.minecraft.entity.EntityType
 import net.minecraft.util.math.Vec3d
 

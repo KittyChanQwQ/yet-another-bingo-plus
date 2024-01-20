@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.common.ScopeManager
+import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.event.model.UseBlockEvent
 import me.jfenn.bingo.common.event.model.UseEntityEvent
 import me.jfenn.bingo.common.event.model.UseItemEvent

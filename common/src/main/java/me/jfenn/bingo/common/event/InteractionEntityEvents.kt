@@ -1,11 +1,10 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.common.BingoKoin
-import me.jfenn.bingo.common.ScopeManager
+import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.utils.EventListener
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.server.network.ServerPlayerEntity
-import org.slf4j.LoggerFactory
 import java.util.*
 
 class InteractionEntityEvents {

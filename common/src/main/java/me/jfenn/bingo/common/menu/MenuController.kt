@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.api.IStructureManager
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
-import me.jfenn.bingo.common.ScopeManager
+import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService

@@ -26,7 +26,7 @@ import net.minecraft.util.Formatting
 import kotlin.time.Duration.Companion.minutes
 
 class BingoCommands : BaseCommand() {
-    fun init() {
+    init {
         LiteralArgumentBuilder.literal<ServerCommandSource>("bingo")
             .requireBingoInstance()
             .then(

@@ -3,7 +3,7 @@ package me.jfenn.bingo.client.common
 import com.google.common.collect.ImmutableList
 import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
-import me.jfenn.bingo.common.BingoKoin
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.datapack.DatapackService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState

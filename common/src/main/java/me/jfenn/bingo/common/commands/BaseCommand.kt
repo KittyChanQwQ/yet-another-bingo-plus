@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
-import me.jfenn.bingo.common.BingoKoin
+import me.jfenn.bingo.common.scope.BingoKoin
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.server.command.ServerCommandSource
 import org.koin.core.Koin

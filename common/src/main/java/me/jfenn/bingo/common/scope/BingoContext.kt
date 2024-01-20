@@ -1,5 +1,6 @@
-package me.jfenn.bingo.common.state
+package me.jfenn.bingo.common.scope
 
+import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.server.MinecraftServer
 
 data class BingoContext(

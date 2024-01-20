@@ -1,12 +1,13 @@
-package me.jfenn.bingo.common
+package me.jfenn.bingo.common.scope
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.common.datapack.DatapackService
+import me.jfenn.bingo.common.LOBBY_WORLD_ID
+import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.state.*
-import net.fabricmc.api.EnvType
+import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.MinecraftServer
 import org.koin.core.Koin
 import org.koin.core.error.ScopeNotCreatedException
