@@ -97,25 +97,13 @@ fun MenuComponent.registerMenuPage(
         text = "START",
         isActiveProp = computedProperty { config.isValid() },
     ) { player ->
-        if (!config.isValid()) {
-            player.sendWarningMessage("Item distribution must add up to 25!")
-            return@registerButton
-        }
-
-        val isEveryPlayerOnATeam = server.playerManager.playerList
-            .all { teamPlayer -> teamService.getPlayerTeam(teamPlayer) != null }
-
-        if (!isEveryPlayerOnATeam && !player.isSneaking) {
-            // If there's more than one player, teams need to be set up manually!
-            if (server.playerManager.playerList.size > 1) {
-                player.sendWarningMessage("Some players have not picked a team! Run '/bingo shuffleteams' or sneak+click to ignore.")
-                return@registerButton
-            }
-            // Otherwise, we can just auto-assign a team
-            teamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
-        }
-
-        gameService.start()
+        // Start the game!
+        gameService.start(
+            sendFeedback = {
+                player.sendWarningMessage(it)
+            },
+            allowSpectators = player.isSneaking,
+        )
     }
 
     onTick { instance ->

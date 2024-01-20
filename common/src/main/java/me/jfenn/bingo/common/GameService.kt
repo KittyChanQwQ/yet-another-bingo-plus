@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common
 
+import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.ConfigService
@@ -22,10 +23,36 @@ class GameService(
     private val teamService: TeamService,
 ) {
 
-    fun start() {
+    fun start(
+        sendFeedback: (String) -> Unit = {},
+        allowSpectators: Boolean = false,
+    ): Boolean {
+        val playersWithoutATeam = server.playerManager.playerList
+            .filter { teamService.getPlayerTeam(it) == null }
+
+        if (playersWithoutATeam.isNotEmpty() && !allowSpectators) {
+            // If there's more than one player, teams need to be set up manually!
+            if (server.playerManager.playerList.size > 1) {
+                sendFeedback("Some players have not picked a team! Run '/bingo shuffleteams' or sneak+click to ignore.")
+                return false
+            }
+
+            // Otherwise, we can just auto-assign a team
+            for (player in playersWithoutATeam) {
+                teamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
+            }
+        }
+
         // if the game has already been started, ignore
-        if (state.startedAt != null) return
-        if (!config.isValid()) return
+        if (state.startedAt != null) {
+            sendFeedback("The game has already been started! (if this is a bug, try restarting the server...)")
+            return false
+        }
+
+        if (!config.isValid()) {
+            sendFeedback("Item distribution must add up to 25!")
+            return false
+        }
 
         // save the current config, if overwrite option is set
         if (config.overwrite) {
@@ -46,6 +73,7 @@ class GameService(
 
         // change to the playing state
         state.changeState(events, GameState.PLAYING)
+        return true
     }
 
     fun end(reason: String?) {
