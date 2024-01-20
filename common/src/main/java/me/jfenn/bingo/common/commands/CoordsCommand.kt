@@ -8,9 +8,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.config.BlockPosition
-import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.formatStringSmall
 import net.minecraft.server.command.ServerCommandSource

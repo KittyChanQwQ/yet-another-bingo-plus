@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.entity.EntityType

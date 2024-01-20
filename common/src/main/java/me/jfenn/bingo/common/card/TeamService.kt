@@ -2,15 +2,11 @@ package me.jfenn.bingo.common.card
 
 import me.jfenn.bingo.api.ITeamHandle
 import me.jfenn.bingo.api.ITeamManager
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.ChatMessages
-import me.jfenn.bingo.common.state.BingoContext
 import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import kotlin.math.ceil
 
 class TeamService(

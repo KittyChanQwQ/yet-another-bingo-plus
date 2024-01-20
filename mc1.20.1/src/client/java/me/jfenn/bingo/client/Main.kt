@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client
 
 import me.jfenn.bingo.client.api.IButtonService
+import me.jfenn.bingo.client.common.commonClientModule
 import me.jfenn.bingo.client.impl.ButtonService
 import me.jfenn.bingo.common.BingoKoin
 import me.jfenn.bingo.common.commonModule
@@ -26,7 +27,7 @@ object Main : ClientModInitializer {
         log.info("Starting Bingo Client koin application")
         koinApplication {
             logger(SLF4JLogger(level = Level.DEBUG))
-            modules(sharedModule, commonModule, clientModule)
+            modules(sharedModule, commonModule, clientModule, commonClientModule)
         }.also {
             BingoKoin.koinApp = it
         }

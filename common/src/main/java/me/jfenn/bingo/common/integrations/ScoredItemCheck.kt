@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.integrations
 
 import me.jfenn.bingo.api.IOfflinePlayerAccessor
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.Sounds
@@ -17,6 +16,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import org.slf4j.Logger
 import java.util.*
 import kotlin.time.measureTime
 
@@ -26,6 +26,7 @@ import kotlin.time.measureTime
  */
 class ScoredItemCheck(
     events: ScopedEvents,
+    private val log: Logger,
     private val server: MinecraftServer,
     private val config: BingoConfig,
     private val state: BingoState,
@@ -56,7 +57,7 @@ class ScoredItemCheck(
         measureTime {
             player = offlinePlayerAccessor.getOfflinePlayer(server, profile)
         }.also {
-            Bingo.log.info("Loading offline player data for ${profile.name} ($it)")
+            log.info("Loading offline player data for ${profile.name} ($it)")
         }
 
         offlinePlayerCache[profile] = player

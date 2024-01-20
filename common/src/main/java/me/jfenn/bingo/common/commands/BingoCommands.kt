@@ -5,7 +5,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.card.BingoTeam
@@ -13,8 +12,6 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.integrations.BingoCardController
-import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks

@@ -3,10 +3,10 @@ package me.jfenn.bingo.client.common
 import com.google.common.collect.ImmutableList
 import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
-import me.jfenn.bingo.common.Bingo
+import me.jfenn.bingo.common.BingoKoin
 import me.jfenn.bingo.common.datapack.DatapackService
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -21,15 +21,13 @@ import net.minecraft.text.Text
 import net.minecraft.text.TranslatableTextContent
 import net.minecraft.util.Identifier
 import net.minecraft.util.WorldSavePath
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 import kotlin.io.path.name
 
-object Main : ClientModInitializer, KoinComponent {
-
-    private val log = LoggerFactory.getLogger(this::class.java)
-    private val buttonService by inject<IButtonService>()
+class BingoWorldManager(
+    private val log: Logger,
+    private val buttonService: IButtonService,
+) {
 
     fun createBingoWorld(client: MinecraftClient, parent: Screen) {
         CreateWorldScreen.create(client, parent)
@@ -47,11 +45,12 @@ object Main : ClientModInitializer, KoinComponent {
         isOpeningBingoWorld = false
     }
 
-    override fun onInitializeClient() {
+    init {
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
-            val ctx = Bingo.getContext(server) ?: return@register
+            val scope = BingoKoin.getScope(server) ?: return@register
+            val state = scope.get<BingoState>()
 
-            if (ctx.state.state != GameState.PLAYING && server.saveProperties.levelName.startsWith(BINGO_WORLD_PREFIX)) {
+            if (state.state != GameState.PLAYING && server.saveProperties.levelName.startsWith(BINGO_WORLD_PREFIX)) {
                 // If the game is not in progress, delete it!
                 log.info("Deleting closed BINGO world save")
 

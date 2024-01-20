@@ -2,6 +2,7 @@ package me.jfenn.bingo.common
 
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.commands.CommandManager
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
@@ -32,6 +33,9 @@ val commonModule = module {
     singleOf(::ServerDatapackManager) withOptions { createdAtStart() }
     singleOf(::EventManager) withOptions { createdAtStart() }
     singleOf(::ScopeManager) withOptions { createdAtStart() }
+    singleOf(::CommandManager) withOptions { createdAtStart() }
+
+    singleOf(::AutoShutdownController) withOptions { createdAtStart() }
 
     scope<BingoContext> {
         scoped { ScopedEvents() }
@@ -42,7 +46,7 @@ val commonModule = module {
             val world = get<MinecraftServer>().overworld
             get<SerializedPersistentStateFactory>().fromWorld<BingoState>(world)
         }
-        scoped { ConfigService.config.copy() }
+        scoped { get<BingoState>().config }
 
         scopedOf(::GameService)
         scopedOf(::SpawnService)

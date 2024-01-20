@@ -68,6 +68,10 @@ class MapRenderService(
         }
     }
 
+    init {
+        validateItems()
+    }
+
     class BingoTileImage(
         val regular: Array<Byte> = Array(16*16) { 0 },
         val achieved: Array<Byte> = Array(16*16) { 0 },

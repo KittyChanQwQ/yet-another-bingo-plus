@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.integrations
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.common.Bingo
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents

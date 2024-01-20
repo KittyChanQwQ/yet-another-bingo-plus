@@ -27,7 +27,7 @@ data class BingoState(
     var updatedAt: Instant? = null,
     var lobbySpawnPos: BlockPosition = BlockPosition(0, 0, 0),
     var timeOffline: Duration = Duration.ZERO,
-    var config: BingoConfig = ConfigService.config,
+    val config: BingoConfig = ConfigService.config.copy(),
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
     var previewMap: BingoMap? = null,
     var card: BingoCard = CardService.generate(config, seed),
