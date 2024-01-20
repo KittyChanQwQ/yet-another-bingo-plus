@@ -3,7 +3,7 @@
   "generator": {
     "type": "minecraft:flat",
     "settings": {
-      "biome": "minecraft:mushroom_fields",
+      "biome": "bingo:lobby",
       "lakes": false,
       "features": false,
       "layers": [],
