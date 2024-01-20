@@ -11,53 +11,50 @@ import net.minecraft.command.argument.EntityArgumentType
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 
-object JoinCommand {
+class JoinCommand : BaseCommand() {
 
-    fun init() {
-        registerCommands {
-            var joinCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("join")
-                .requireBingoInstance()
+    init {
+        var joinCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("join")
+            .requireBingoInstance()
 
-            for (team in BingoTeam.TEAM_BLOCKS.values) {
-                joinCommand = joinCommand.then(
-                    LiteralArgumentBuilder.literal<ServerCommandSource>(team.name.lowercase())
-                        .then(
-                            CommandManager.argument("player", EntityArgumentType.player())
-                                .requirePermission()
-                                .executesInScope { ctx ->
-                                    val state = get<BingoState>()
-                                    val teamService = get<TeamService>()
-                                    val playerController = get<PlayerController>()
+        for (team in BingoTeam.TEAM_BLOCKS.values) {
+            joinCommand = joinCommand.then(
+                LiteralArgumentBuilder.literal<ServerCommandSource>(team.name.lowercase())
+                    .then(
+                        CommandManager.argument("player", EntityArgumentType.player())
+                            .requirePermission()
+                            .executesInScope { ctx ->
+                                val state = get<BingoState>()
+                                val teamService = get<TeamService>()
+                                val playerController = get<PlayerController>()
 
-                                    val player = EntityArgumentType.getPlayer(ctx, "player")
-                                    teamService.joinTeam(player, team)
+                                val player = EntityArgumentType.getPlayer(ctx, "player")
+                                teamService.joinTeam(player, team)
 
-                                    if (state.state == GameState.PLAYING) {
-                                        // if a player's team is changed in-game, move them to their new spawnpoint
-                                        playerController.updateGameMode(player, forceReset = true)
-                                    }
-                                    1
+                                if (state.state == GameState.PLAYING) {
+                                    // if a player's team is changed in-game, move them to their new spawnpoint
+                                    playerController.updateGameMode(player, forceReset = true)
                                 }
-                        )
-                        .executesInScope { ctx ->
-                            val state = get<BingoState>()
-                            val teamService = get<TeamService>()
-
-                            val player = ctx.source.player ?: return@executesInScope 0
-
-                            if (state.state != GameState.PREGAME) {
-                                player.sendWarningMessage("Cannot join a team - The game has already started!")
-                                return@executesInScope 0
+                                1
                             }
+                    )
+                    .executesInScope { ctx ->
+                        val state = get<BingoState>()
+                        val teamService = get<TeamService>()
 
-                            teamService.joinTeam(player, team)
-                            1
+                        val player = ctx.source.player ?: return@executesInScope 0
+
+                        if (state.state != GameState.PREGAME) {
+                            player.sendWarningMessage("Cannot join a team - The game has already started!")
+                            return@executesInScope 0
                         }
-                )
-            }
 
-            yield(joinCommand)
+                        teamService.joinTeam(player, team)
+                        1
+                    }
+            )
         }
-    }
 
+        joinCommand.register()
+    }
 }

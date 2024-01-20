@@ -25,8 +25,8 @@ import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import kotlin.time.Duration.Companion.minutes
 
-object BingoCommands {
-    fun init() = registerCommands {
+class BingoCommands : BaseCommand() {
+    fun init() {
         LiteralArgumentBuilder.literal<ServerCommandSource>("bingo")
             .requireBingoInstance()
             .then(
@@ -143,7 +143,7 @@ object BingoCommands {
                     .requirePermission(2)
                     .let {
                         val options = WinCondition.entries
-                            .map {  wincon ->
+                            .map { wincon ->
                                 LiteralArgumentBuilder.literal<ServerCommandSource>(wincon.name)
                                     .executesInScope { ctx ->
                                         val config = get<BingoConfig>()
@@ -278,6 +278,6 @@ object BingoCommands {
                         1
                     }
             )
-            .also { yield(it) }
+            .register()
     }
 }

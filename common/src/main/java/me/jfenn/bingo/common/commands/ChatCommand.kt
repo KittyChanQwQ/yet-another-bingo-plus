@@ -13,53 +13,53 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 
-object ChatCommand {
+class ChatCommand : BaseCommand() {
 
-    fun sendTeamMessage(
-        player: ServerPlayerEntity,
-        team: BingoTeam,
-        message: Text,
-    ) {
-        val server = player.server
+    companion object {
+        fun sendTeamMessage(
+            player: ServerPlayerEntity,
+            team: BingoTeam,
+            message: Text,
+        ) {
+            val server = player.server
 
-        val messageText = Text.empty()
-            .append(Text.empty().append("TEAM ").append(player.displayName).formatted(team.formatting))
-            .append(Text.literal(": "))
-            .append(message)
+            val messageText = Text.empty()
+                .append(Text.empty().append("TEAM ").append(player.displayName).formatted(team.formatting))
+                .append(Text.literal(": "))
+                .append(message)
 
-        // broadcast message to team
-        team.broadcastMessage(server, messageText)
+            // broadcast message to team
+            team.broadcastMessage(server, messageText)
+        }
     }
 
-    fun init() {
-        registerCommands {
-            // send a message to all teams, outside of the team-local chat
-            listOf("all", "g", "global")
-                .map { LiteralArgumentBuilder.literal<ServerCommandSource?>(it) }
-                .map { it.requireBingoInstance() }
-                .forEach { command ->
-                    command.then(
-                        RequiredArgumentBuilder.argument<ServerCommandSource?, String?>(
-                            "message",
-                            StringArgumentType.greedyString()
-                        )
-                            .executes { ctx ->
-                                val player = ctx.source.player ?: return@executes 0
-                                val message = StringArgumentType.getString(ctx, "message")
-
-                                ctx.source.server?.playerManager?.broadcast(
-                                    Text.empty()
-                                        .append(Text.literal("<"))
-                                        .append(player.name)
-                                        .append(Text.literal("> $message")),
-                                    false,
-                                ) ?: return@executes 0
-                                1
-                            }
+    init {
+        // send a message to all teams, outside of the team-local chat
+        listOf("all", "g", "global")
+            .map { LiteralArgumentBuilder.literal<ServerCommandSource?>(it) }
+            .map { it.requireBingoInstance() }
+            .forEach { command ->
+                command.then(
+                    RequiredArgumentBuilder.argument<ServerCommandSource?, String?>(
+                        "message",
+                        StringArgumentType.greedyString()
                     )
-                        .also { yield(it) }
-                }
-        }
+                        .executes { ctx ->
+                            val player = ctx.source.player ?: return@executes 0
+                            val message = StringArgumentType.getString(ctx, "message")
+
+                            ctx.source.server?.playerManager?.broadcast(
+                                Text.empty()
+                                    .append(Text.literal("<"))
+                                    .append(player.name)
+                                    .append(Text.literal("> $message")),
+                                false,
+                            ) ?: return@executes 0
+                            1
+                        }
+                )
+                    .register()
+            }
 
         // override default chat to only send team-specific messages
         ServerMessageEvents.ALLOW_CHAT_MESSAGE.register { message, player, _ ->

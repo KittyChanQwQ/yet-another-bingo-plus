@@ -2,8 +2,7 @@ package me.jfenn.bingo.common
 
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.commands.CommandManager
-import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
@@ -33,9 +32,14 @@ val commonModule = module {
     singleOf(::ServerDatapackManager) withOptions { createdAtStart() }
     singleOf(::EventManager) withOptions { createdAtStart() }
     singleOf(::ScopeManager) withOptions { createdAtStart() }
-    singleOf(::CommandManager) withOptions { createdAtStart() }
 
     singleOf(::AutoShutdownController) withOptions { createdAtStart() }
+
+    singleOf(::BingoCommands) withOptions { createdAtStart() }
+    singleOf(::ChatCommand) withOptions { createdAtStart() }
+    singleOf(::CoordsCommand) withOptions { createdAtStart() }
+    singleOf(::JoinCommand) withOptions { createdAtStart() }
+    singleOf(::RestartCommand) withOptions { createdAtStart() }
 
     scope<BingoContext> {
         scoped { ScopedEvents() }

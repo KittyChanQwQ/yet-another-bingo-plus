@@ -18,9 +18,9 @@ import net.minecraft.util.Formatting
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-object CoordsCommand : KoinComponent {
-
-    private val scoreboardManager by inject<IScoreboardManager>()
+class CoordsCommand(
+    private val scoreboardManager: IScoreboardManager,
+) : BaseCommand() {
 
     @Serializable
     data class CoordinatesEntry(
@@ -62,11 +62,14 @@ object CoordsCommand : KoinComponent {
         player.sendMessage(Text.literal("Coordinates:").formatted(Formatting.GRAY, Formatting.BOLD))
         for (entry in coordMessages) {
             val duration = Clock.System.now() - entry.created
-            player.sendMessage(Text.literal("  • ${entry.player} (${duration.formatStringSmall()} ago): ${entry.formatText()}").formatted(Formatting.GRAY))
+            player.sendMessage(
+                Text.literal("  • ${entry.player} (${duration.formatStringSmall()} ago): ${entry.formatText()}")
+                    .formatted(Formatting.GRAY)
+            )
         }
     }
 
-    fun init() = registerCommands {
+    init {
         // send current player coordinates to other team members
         LiteralArgumentBuilder.literal<ServerCommandSource?>("coords")
             .requireState(GameState.PLAYING)
@@ -99,7 +102,7 @@ object CoordsCommand : KoinComponent {
                 storeCoordinates(player, team, null)
                 1
             }
-            .also { yield(it) }
+            .register()
     }
 
 }

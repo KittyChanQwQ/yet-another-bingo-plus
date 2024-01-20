@@ -3,8 +3,8 @@ package me.jfenn.bingo.common.commands
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import net.minecraft.server.command.ServerCommandSource
 
-object RestartCommand {
-    fun init() = registerCommands {
+class RestartCommand : BaseCommand() {
+    init {
         // Stop (restart) the server
         // Only on dedicated server instances
         LiteralArgumentBuilder.literal<ServerCommandSource>("restart")
@@ -15,6 +15,6 @@ object RestartCommand {
                 ctx.source.server.stop(false)
                 1
             }
-            .also { yield(it) }
+            .register()
     }
 }

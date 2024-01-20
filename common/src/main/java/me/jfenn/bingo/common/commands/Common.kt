@@ -1,23 +1,14 @@
 package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.builder.ArgumentBuilder
-import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import me.jfenn.bingo.common.BingoKoin
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.hasPermission
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.server.command.ServerCommandSource
 import org.koin.core.scope.Scope
-
-fun registerCommands(commands: suspend SequenceScope<LiteralArgumentBuilder<ServerCommandSource>>.() -> Unit) {
-    CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
-        for (command in sequence(commands))
-            dispatcher.register(command)
-    }
-}
 
 fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requireBingoInstance(): T {
     return this.requires { source ->
