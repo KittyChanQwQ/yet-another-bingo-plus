@@ -17,6 +17,14 @@ import kotlin.time.Duration
 
 object ChatMessages {
 
+    fun broadcastLobbyMuted(player: ServerPlayerEntity, overlay: Boolean = false) {
+        player.sendMessage(
+            Text.literal("Certain sounds in this lobby may be muted to avoid spam.")
+                .formatted(Formatting.GRAY, Formatting.ITALIC),
+            overlay
+        )
+    }
+
     fun broadcastJoinedTeam(player: ServerPlayerEntity, team: BingoTeam) {
         player.sendMessage(
             Text.empty()

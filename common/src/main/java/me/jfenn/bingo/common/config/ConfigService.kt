@@ -6,9 +6,16 @@ import kotlin.reflect.KMutableProperty1
 
 object ConfigService {
 
-    val config: BingoConfig by config("bingo/config.json")
+    var config: BingoConfig by config("bingo/config.json")
     var options: BingoOptions by config("bingo/game-options.json")
     var playerConfig: PlayerConfig by config("bingo/player-settings.json")
+
+    init {
+        // Write the parsed config files on startup
+        this.config = this.config.copy()
+        this.options = this.options.copy()
+        this.playerConfig = this.playerConfig.copy()
+    }
 
     fun writeOptions(options: BingoOptions) {
         this.options = options
