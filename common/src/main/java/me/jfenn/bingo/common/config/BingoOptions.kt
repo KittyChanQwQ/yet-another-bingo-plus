@@ -44,7 +44,6 @@ data class BingoOptions(
     var hiddenItems: Boolean = false,
     var showPreviewCard: Boolean = false,
 
-    var refillPlayerKitOnRespawn: Boolean = true,
     var isPlayerKit: Boolean = false,
     var playerKitItems: List<SpawnItem> = listOf(
         SpawnItem("minecraft:iron_chestplate"),

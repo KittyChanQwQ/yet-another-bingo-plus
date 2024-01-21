@@ -220,7 +220,6 @@ class PlayerController(
             // if playing, give the player new spawn equipment
             if (
                 state.state == GameState.PLAYING
-                && options.refillPlayerKitOnRespawn
                 // if KEEP_INVENTORY is on, we don't need to replace these items
                 && !server.gameRules.get(GameRules.KEEP_INVENTORY).get()
             ) {
