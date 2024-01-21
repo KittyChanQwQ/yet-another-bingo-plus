@@ -6,8 +6,7 @@
   "mixins": [
   ],
   "client": [
-    "MapRendererMixin",
-    "ScoreboardMixin"
+    "MapRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
