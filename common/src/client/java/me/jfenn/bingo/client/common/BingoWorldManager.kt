@@ -5,8 +5,11 @@ import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.datapack.DatapackService
+import me.jfenn.bingo.common.lobbyWorld
+import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -17,6 +20,7 @@ import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.world.CreateWorldScreen
 import net.minecraft.resource.DataConfiguration
 import net.minecraft.resource.DataPackSettings
+import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.text.TranslatableTextContent
 import net.minecraft.util.Identifier
@@ -27,6 +31,7 @@ import kotlin.io.path.name
 class BingoWorldManager(
     private val log: Logger,
     private val buttonService: IButtonService,
+    private val persistentStateFactory: SerializedPersistentStateFactory,
 ) {
 
     fun createBingoWorld(client: MinecraftClient, parent: Screen) {
@@ -46,9 +51,9 @@ class BingoWorldManager(
     }
 
     init {
-        ServerLifecycleEvents.SERVER_STOPPED.register { server ->
-            val scope = BingoKoin.getScope(server) ?: return@register
+        ScopeManager.onCleanup { scope ->
             val state = scope.get<BingoState>()
+            val server = scope.get<MinecraftServer>()
 
             if (state.state != GameState.PLAYING && server.saveProperties.levelName.startsWith(BINGO_WORLD_PREFIX)) {
                 // If the game is not in progress, delete it!

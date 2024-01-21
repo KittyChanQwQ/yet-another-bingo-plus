@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -47,7 +48,7 @@ class MenuController(
 ) : KoinComponent {
 
     private var menu: MenuInstance? = null
-    private val lobbyWorld = server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID }!!
+    private val lobbyWorld get() = server.lobbyWorld!!
     private val koinScope = scopeManager.getScope(server)!!
 
     init {

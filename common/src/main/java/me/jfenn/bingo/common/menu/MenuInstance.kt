@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.event.InteractionEntityEvents
+import me.jfenn.bingo.common.lobbyWorld
 import net.minecraft.entity.Entity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.MinecraftServer
@@ -30,7 +31,7 @@ class MenuInstance(
     }
 
     // if the lobby world doesn't exist, the mod should error before this point!
-    val world = server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID }!!
+    val world get() = server.lobbyWorld!!
 
     val menuComponent = component(koinScope) {
         registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.45))

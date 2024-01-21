@@ -1,10 +1,7 @@
 package me.jfenn.bingo.common.integrations
 
 import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.common.LOBBY_WORLD_ID
-import me.jfenn.bingo.common.NBT_BINGO_IGNORE
-import me.jfenn.bingo.common.NBT_BINGO_VANISH
-import me.jfenn.bingo.common.Sounds
+import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
@@ -198,8 +195,7 @@ class PlayerController(
         }
     }
 
-    // TODO: Move this prop elsewhere!
-    val lobbyWorld = server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID }!!
+    private val lobbyWorld get() = server.lobbyWorld!!
 
     init {
         events.onPlayerJoin { player ->

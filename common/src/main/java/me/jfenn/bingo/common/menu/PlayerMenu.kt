@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.utils.formatTitle
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtFloat
@@ -56,9 +56,6 @@ fun MenuComponent.registerPlayerMenu(
             ConfigService.setPlayerConfig(events, player, field, !value)
         }
 
-        // TODO: move this reference elsewhere
-        val lobbyWorld = server.worlds.find { it.registryKey.value == LOBBY_WORLD_ID }
-
         onTick {
             if (server.ticks % 4 != 0) return@onTick
             for (player in server.playerManager.playerList) {
@@ -69,7 +66,7 @@ fun MenuComponent.registerPlayerMenu(
                 val color = if (value) Vector3f(0f, 1f, 0f) else Vector3f(1f, 0f, 0f)
                 val effect = DustParticleEffect(color, 1f)
 
-                lobbyWorld?.spawnParticles(player, effect, false, fieldPosition.x + 1.6, fieldPosition.y + 0.2, fieldPosition.z, 1, 0.0, 0.0, 0.0, 1.0)
+                server.lobbyWorld?.spawnParticles(player, effect, false, fieldPosition.x + 1.6, fieldPosition.y + 0.2, fieldPosition.z, 1, 0.0, 0.0, 0.0, 1.0)
             }
         }
     }

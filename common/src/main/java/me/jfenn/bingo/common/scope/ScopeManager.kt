@@ -5,8 +5,10 @@ import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
+import me.jfenn.bingo.common.utils.EventListener
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
 import org.koin.core.Koin
@@ -35,7 +37,7 @@ class ScopeManager(
 
     init {
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
-            val packExists = server.worlds.any { it.registryKey.value == LOBBY_WORLD_ID }
+            val packExists = server.lobbyWorld != null
             if (!packExists) {
                 log.error("$MOD_ID datapack not found, exiting...")
             }
@@ -59,8 +61,14 @@ class ScopeManager(
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
+            val scope = getScope(server) ?: return@register
+            onCleanup(scope)
             koin.deleteScope(getScopeId(server))
         }
+    }
+
+    companion object {
+        val onCleanup = EventListener<Scope>()
     }
 
 }
