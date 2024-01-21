@@ -4,7 +4,8 @@
 🗀 config/
  └ 🗀 bingo/
    ├ config.json
-   └ players.json
+   ├ game-options.json
+   └ player-settings.json
 🗀 mods/
 🗀 world/
 server.properties
