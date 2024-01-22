@@ -29,7 +29,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
-import org.slf4j.Logger
+import java.util.*
 
 /**
  * Controls player gamemode, status, and inventory setup.
@@ -45,7 +45,6 @@ import org.slf4j.Logger
  */
 class PlayerController(
     events: ScopedEvents,
-    private val log: Logger,
     private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
@@ -60,7 +59,6 @@ class PlayerController(
         val hasMap = player.allHeldStacks().any { MapItemService.isMapItem(it) }
 
         if (!hasMap) {
-            log.info("Giving item to player")
             val mapItem = mapItemService.createPreviewMapItem()
             player.giveItemStack(mapItem)
         }
@@ -164,7 +162,10 @@ class PlayerController(
         if (player.interactionManager.gameMode != gameMode || forceReset) {
             // This indicates that a player is starting the game, or has logged back on after a game has started
             // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
-            resetPlayer(player)
+            if (state.state == GameState.PLAYING) {
+                resetPlayer(player)
+            }
+
             player.changeGameMode(gameMode)
         }
 
@@ -198,9 +199,12 @@ class PlayerController(
         giveMapCardItem(player)
 
         val team = teamService.getPlayerTeam(player)
-        player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
-        player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game has started!")))
-        Sounds.playGameStarted(player)
+
+        if (state.state == GameState.PLAYING) {
+            player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
+            player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game has started!")))
+            Sounds.playGameStarted(player)
+        }
 
         // give spawn equipment to the player if they are on a team
         if (team != null) {
@@ -209,17 +213,18 @@ class PlayerController(
     }
 
     private val lobbyWorld get() = server.lobbyWorld!!
+    private val playersJoinedIds = mutableSetOf<UUID>()
 
     init {
         events.onPlayerJoin { player ->
-            updateGameMode(player)
-
             // if in pregame, move to the lobby world
             if (state.state == GameState.PREGAME) {
                 val spawnPos = state.lobbySpawnPos.toBlockPos()
                 player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
-                player.teleport(lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
             }
+
+            // schedule an updateGameMode (handled in the next onGameTick)
+            playersJoinedIds.add(player.uuid)
         }
 
         events.onPlayerRespawn { player ->
@@ -271,7 +276,13 @@ class PlayerController(
             for (player in server.playerManager.playerList) {
                 val playerTeam = teamService.getPlayerTeam(player)
 
-                if (state.state == GameState.PREGAME && player.health > 0f) {
+                // If the player has just joined, update their gamemode
+                if (player.uuid in playersJoinedIds) {
+                    playersJoinedIds.remove(player.uuid)
+                    updateGameMode(player)
+                }
+
+                if (state.state == GameState.PREGAME && player.isAlive) {
                     if (options.showPreviewCard) {
                         givePreviewCardItem(player)
                     } else {
