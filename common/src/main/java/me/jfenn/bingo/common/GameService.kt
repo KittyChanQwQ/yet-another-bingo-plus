@@ -75,6 +75,14 @@ class GameService(
 
         // change to the playing state
         state.changeState(events, GameState.PLAYING)
+
+        for (player in server.playerManager.playerList) {
+            val team = teamService.getPlayerTeam(player)
+            player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
+            player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game has started!")))
+            Sounds.playGameStarted(player)
+        }
+
         return true
     }
 

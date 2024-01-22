@@ -231,7 +231,7 @@ class MapRenderService(
             val mapStateStart = tileX + y * MAP_SIZE
             val tileImageStart = innerY * IMAGE_SIZE
             // Uses System.arraycopy, which is a lot faster than manually setting each byte
-            tileImageArray?.copyInto(mapState.colors, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
+            tileImageArray.copyInto(mapState.colors, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
         }
 
         if (isLocked) {
@@ -255,7 +255,7 @@ class MapRenderService(
             item.hasAnyAchieved()
         ) {
             for (innerT in 0..innerMax*2 + 1) {
-                val tileTeamX = innerT * itemTeams.size / (innerMax * 2)
+                val tileTeamX = innerT * itemTeams.size / (innerMax*2 + 1)
                 val itemTeam = itemTeams.getOrNull(tileTeamX) ?: continue
                 val variant = if (innerT % 2 == 0) 2 else 3
                 val color = (getMapColor(itemTeam)*4 + variant).toUByte().toByte()

@@ -200,12 +200,6 @@ class PlayerController(
 
         val team = teamService.getPlayerTeam(player)
 
-        if (state.state == GameState.PLAYING) {
-            player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
-            player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game has started!")))
-            Sounds.playGameStarted(player)
-        }
-
         // give spawn equipment to the player if they are on a team
         if (team != null) {
             spawnService.giveSpawnEquipment(listOf(player))
