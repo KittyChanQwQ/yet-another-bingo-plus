@@ -18,6 +18,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import javax.imageio.ImageIO
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
@@ -277,8 +278,6 @@ class MapRenderService(
         }
     }
 
-    var hasChanges = false
-
     fun update(
         team: BingoTeam?,
     ) = measureTime {
@@ -302,7 +301,6 @@ class MapRenderService(
                     (options.showOtherTeamCompletions && entry.updatedAt > map.updatedAt) ||
                     (entry.isFlashing(team, FLASHING_DURATION + 1.seconds) && server.ticks % 10 == 0)
                 ) {
-                    hasChanges = true
                     drawMapTile(
                         mapState = state,
                         team = team,
@@ -316,10 +314,9 @@ class MapRenderService(
 
         map.updatedAt = Clock.System.now()
     }.also {
-        if (hasChanges) {
+        if (it >= 1.milliseconds) {
             log.info("Re-drawing map_${team?.map?.mapId} for team ${team?.name} ($it)")
         }
-        hasChanges = false
     }
 
 }
