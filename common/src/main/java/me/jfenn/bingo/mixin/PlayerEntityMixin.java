@@ -2,6 +2,7 @@ package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.scope.BingoKoin;
 import me.jfenn.bingo.common.ConstantsKt;
+import me.jfenn.bingo.mixinhandler.PlayerEntityMixinHandler;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -38,6 +39,14 @@ public abstract class PlayerEntityMixin {
 
             ci.setReturnValue(null);
             ci.cancel();
+        }
+
+        if (playerEntity instanceof ServerPlayerEntity serverPlayer) {
+            // If the player is not on any team during a game, all their items should be voided when dropped
+            if (PlayerEntityMixinHandler.INSTANCE.shouldVoidDroppedItems(serverPlayer)) {
+                ci.setReturnValue(null);
+                ci.cancel();
+            }
         }
     }
 

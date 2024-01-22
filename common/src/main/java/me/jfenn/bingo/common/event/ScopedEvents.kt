@@ -1,8 +1,6 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.common.event.model.UseBlockEvent
-import me.jfenn.bingo.common.event.model.UseEntityEvent
-import me.jfenn.bingo.common.event.model.UseItemEvent
+import me.jfenn.bingo.common.event.model.*
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.common.utils.ReturnEventListener
@@ -25,6 +23,8 @@ class ScopedEvents {
     val onUseBlock = ReturnEventListener<UseBlockEvent, ActionResult?>()
     val onUseEntity = ReturnEventListener<UseEntityEvent, ActionResult?>()
     val onUseItem = ReturnEventListener<UseItemEvent, TypedActionResult<ItemStack>?>()
+    val onAttackEntity = ReturnEventListener<AttackEntityEvent, ActionResult?>()
+    val onAttackBlock = ReturnEventListener<AttackBlockEvent, ActionResult?>()
 
     val onStateChange = EventListener<Pair<GameState, GameState>>()
 

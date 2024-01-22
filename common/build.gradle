@@ -11,7 +11,8 @@ dependencies {
     implementation libs.insert.koin.core
 
     implementation libs.kotlinx.serialization.json
-    include libs.kotlinx.serialization.json
+
+    modCompileOnly libs.vanish
 }
 
 tasks.register('bingoDatapack', Zip) {

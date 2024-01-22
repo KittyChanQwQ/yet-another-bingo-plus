@@ -1,15 +1,11 @@
 package me.jfenn.bingo.common.event
 
+import me.jfenn.bingo.common.event.model.*
 import me.jfenn.bingo.common.scope.ScopeManager
-import me.jfenn.bingo.common.event.model.UseBlockEvent
-import me.jfenn.bingo.common.event.model.UseEntityEvent
-import me.jfenn.bingo.common.event.model.UseItemEvent
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.fabricmc.fabric.api.event.player.UseEntityCallback
-import net.fabricmc.fabric.api.event.player.UseItemCallback
+import net.fabricmc.fabric.api.event.player.*
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.ActionResult
@@ -98,6 +94,30 @@ class EventManager(
             // Otherwise, return a PASS result (preferring a returned value)
             results.find { it?.result == ActionResult.PASS }
                 ?: TypedActionResult.pass(null)
+        }
+
+        AttackEntityCallback.EVENT.register { player, world, hand, entity, hit ->
+            val results = getEvents(world.server)?.onAttackEntity?.invoke(
+                AttackEntityEvent(player, world, hand, entity, hit)
+            ) ?: emptyList()
+
+            when {
+                ActionResult.FAIL in results -> ActionResult.FAIL
+                ActionResult.SUCCESS in results -> ActionResult.SUCCESS
+                else -> ActionResult.PASS
+            }
+        }
+
+        AttackBlockCallback.EVENT.register { player, world, hand, blockPos, direction ->
+            val results = getEvents(world.server)?.onAttackBlock?.invoke(
+                AttackBlockEvent(player, world, hand, blockPos, direction)
+            ) ?: emptyList()
+
+            when {
+                ActionResult.FAIL in results -> ActionResult.FAIL
+                ActionResult.SUCCESS in results -> ActionResult.SUCCESS
+                else -> ActionResult.PASS
+            }
         }
     }
 

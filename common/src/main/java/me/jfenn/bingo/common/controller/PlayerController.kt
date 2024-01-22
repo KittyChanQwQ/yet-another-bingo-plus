@@ -1,11 +1,14 @@
 package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.common.*
+import me.jfenn.bingo.common.NBT_BINGO_IGNORE
+import me.jfenn.bingo.common.NBT_BINGO_VANISH
+import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
@@ -13,6 +16,8 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.allInventorySlots
 import me.jfenn.bingo.common.utils.giveOrEquipStack
+import me.jfenn.bingo.integrations.VanishIntegration
+import net.minecraft.block.Blocks
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -22,6 +27,7 @@ import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
@@ -47,6 +53,7 @@ class PlayerController(
     private val spawnService: SpawnService,
     private val teamService: TeamService,
     private val advancementManager: IAdvancementManager,
+    private val vanishIntegration: VanishIntegration,
 ) {
 
     fun givePreviewCardItem(player: ServerPlayerEntity) {
@@ -145,19 +152,24 @@ class PlayerController(
 
         val gameMode = when (state.state) {
             GameState.PREGAME -> GameMode.ADVENTURE
-            GameState.PLAYING -> if (isOnTeam) GameMode.SURVIVAL else GameMode.SPECTATOR
+            GameState.PLAYING -> when {
+                isOnTeam -> GameMode.SURVIVAL
+                vanishIntegration.isInstalled() -> GameMode.CREATIVE
+                else -> GameMode.SPECTATOR
+            }
             GameState.POSTGAME -> GameMode.CREATIVE
         }
 
         if (player.interactionManager.gameMode != gameMode || forceReset) {
             // This indicates that a player is starting the game, or has logged back on after a game has started
             // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
-            if (gameMode == GameMode.SURVIVAL) {
-                resetPlayer(player)
-            }
-
+            resetPlayer(player)
             player.changeGameMode(gameMode)
         }
+
+        // if the player is not on a team, they should be vanished
+        val isVanished = !isOnTeam && state.state == GameState.PLAYING
+        vanishIntegration.setVanish(player, isVanished)
     }
 
     fun resetPlayer(player: ServerPlayerEntity) {
@@ -256,6 +268,8 @@ class PlayerController(
 
         events.onGameTick {
             for (player in server.playerManager.playerList) {
+                val playerTeam = teamService.getPlayerTeam(player)
+
                 if (state.state == GameState.PREGAME && player.isAlive) {
                     if (options.showPreviewCard) {
                         givePreviewCardItem(player)
@@ -271,14 +285,19 @@ class PlayerController(
                     // if elytra mode is configured, give the player an elytra
                     if (options.isElytra)
                         giveElytra(player)
+
+                    // if the player enters creative mode during a game,
+                    // prevent them from modifying the world
+                    if (player.isCreative) {
+                        player.abilities.allowModifyWorld = false
+                    }
                 }
 
-                if (state.state != GameState.PREGAME && (player.isSpectator || state.state == GameState.POSTGAME))
+                if (state.state != GameState.PREGAME && (playerTeam == null || state.state == GameState.POSTGAME))
                     giveSpectatorMapItems(player)
 
                 // If the player has switched teams, update the player UUID sets...
                 // (this is necessary because teams could be changed without us knowing, using /team join)
-                val playerTeam = teamService.getPlayerTeam(player)
                 val playerProfile = BingoPlayerProfile.fromPlayer(player)
                 for (team in state.teams.values) {
                     if (playerTeam?.key == team.key) {

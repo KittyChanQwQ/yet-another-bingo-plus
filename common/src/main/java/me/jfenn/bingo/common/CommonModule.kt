@@ -4,11 +4,11 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.map.MapRenderService
 import me.jfenn.bingo.common.menu.MenuController
@@ -17,11 +17,9 @@ import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
+import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.server.MinecraftServer
-import org.koin.core.module.dsl.createdAtStart
-import org.koin.core.module.dsl.scopedOf
-import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.withOptions
+import org.koin.core.module.dsl.*
 import org.koin.core.scope.Scope
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
@@ -37,6 +35,7 @@ val commonModule = module {
     singleOf(::ScopeManager) withOptions { createdAtStart() }
 
     singleOf(::AutoShutdownController) withOptions { createdAtStart() }
+    factoryOf(VanishIntegration::create)
 
     singleOf(::BingoCommands) withOptions { createdAtStart() }
     singleOf(::ChatCommand) withOptions { createdAtStart() }
@@ -70,6 +69,7 @@ val commonModule = module {
         scopedOf(::MapItemHandler)
         scopedOf(::MotdController)
         scopedOf(::PlayerController)
+        scopedOf(::PlayerSpectatorController)
         scopedOf(::ScoreboardHandler)
         scopedOf(::ScoreboardController)
         scopedOf(::ScoredItemCheck)
@@ -86,6 +86,7 @@ fun Scope.commonInit() {
     get<MapItemHandler>()
     get<MotdController>()
     get<PlayerController>()
+    get<PlayerSpectatorController>()
     get<ScoreboardController>()
     get<ScoredItemCheck>()
     get<TimerCheck>()
