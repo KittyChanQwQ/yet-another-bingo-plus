@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.utils.LruHashMap
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.Item
 import net.minecraft.item.map.MapState
@@ -16,9 +17,7 @@ import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.InputStream
-import java.util.*
 import javax.imageio.ImageIO
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
@@ -46,6 +45,7 @@ class MapRenderService(
         private const val TILE_PADDING = 3
         private const val TILE_MARGIN = 2
         private const val TILE_SIZE = TILE_IMAGE + TILE_PADDING*2 + TILE_MARGIN
+        private const val IMAGE_SIZE = TILE_IMAGE + TILE_PADDING*2
 
         private val FLASHING_DURATION = 4.seconds
 
@@ -73,11 +73,17 @@ class MapRenderService(
     }
 
     class BingoTileImage(
-        val regular: Array<Byte> = Array(16*16) { 0 },
-        val achieved: Array<Byte> = Array(16*16) { 0 },
-    )
+        val regular: ByteArray = ByteArray(IMAGE_SIZE*IMAGE_SIZE).apply { fill(COLOR_BACKGROUND.asByte) },
+        val flashing: ByteArray = ByteArray(IMAGE_SIZE*IMAGE_SIZE).apply { fill(COLOR_FLASHING.asByte) },
+        val achieved: ByteArray = ByteArray(IMAGE_SIZE*IMAGE_SIZE).apply { fill(COLOR_ACHIEVED.asByte) },
+    ) {
+        companion object {
+            val EMPTY = BingoTileImage()
+        }
+    }
 
-    private val imageMap = WeakHashMap<Item, BingoTileImage?>()
+    // keep a full card of 25 items in-memory, using LRU eviction
+    private val imageMap = LruHashMap<Item, BingoTileImage?>(25)
 
     private fun getTileImage(entry: BingoCardEntry): BingoTileImage? {
         val item = entry.visualItem ?: return null
@@ -89,16 +95,35 @@ class MapRenderService(
             val image = readTileImage(identifier).use { ImageIO.read(it) }
             val tileImage = BingoTileImage()
 
-            for (x in 0 until TILE_IMAGE) {
-                for (y in 0 until TILE_IMAGE) {
-                    val i = x + y * TILE_IMAGE
-                    var color = Color.fromInt(image.getRGB(x, y))
-                    if (color.a == 0) continue
+            for (x in 0 until IMAGE_SIZE) {
+                for (y in 0 until IMAGE_SIZE) {
+                    val i = x + y * IMAGE_SIZE
+
+                    val imgX = x - TILE_PADDING
+                    val imgY = y - TILE_PADDING
+
+                    var color = if (imgX in 0 until TILE_IMAGE && imgY in 0 until TILE_IMAGE) {
+                        Color.fromInt(image.getRGB(imgX, imgY))
+                    } else Color.fromInt(0)
+
+                    val prevColor = if (imgX-1 in 0 until TILE_IMAGE && imgY-1 in 0 until TILE_IMAGE) {
+                        Color.fromInt(image.getRGB(imgX-1, imgY-1))
+                    } else Color.fromInt(0)
+
+                    if (color.a == 0) {
+                        if (prevColor.a != 0) {
+                            tileImage.regular[i] = COLOR_ITEM_SHADOW.asByte
+                            tileImage.flashing[i] = COLOR_ITEM_SHADOW.asByte
+                            tileImage.achieved[i] = COLOR_ACHIEVED_SHADOW.asByte
+                        }
+                        continue
+                    }
 
                     // if the image is transparent (glass), blend with the card background
                     if (color.a < 255) color = COLOR_BACKGROUND.mix(color.copy(a = (color.a * 2).coerceAtMost(255)))
 
                     tileImage.regular[i] = color.asByte
+                    tileImage.flashing[i] = color.asByte
                     // make the item image slightly transparent when achieved
                     tileImage.achieved[i] = COLOR_ACHIEVED.mix(color.copy(a = 200)).asByte
                 }
@@ -185,11 +210,12 @@ class MapRenderService(
                 && (server.ticks / 10) % 2 == 0
 
         val isLocked = options.isLockoutMode && item.teams.isNotEmpty() && team != null && !item.hasAchieved(team)
-        val tileImage = getTileImage(item)
+        val tileImage = getTileImage(item) ?: BingoTileImage.EMPTY
         val tileImageArray = when {
-            options.hiddenItems && (team == null || !item.hasSeen(team)) -> null
-            isAchieved && !isFlashing -> tileImage?.achieved
-            else -> tileImage?.regular
+            options.hiddenItems && (team == null || !item.hasSeen(team)) -> BingoTileImage.EMPTY.regular
+            isFlashing -> tileImage.flashing
+            isAchieved -> tileImage.achieved
+            else -> tileImage.regular
         }
 
         val itemTeams = item.teams.mapNotNull { state.teams[it] }
@@ -199,68 +225,59 @@ class MapRenderService(
         val tileY = MAP_BORDER + TILE_SIZE*itemY
 
         val innerMax = TILE_SIZE - TILE_MARGIN - 1
-        for (innerX in 0..innerMax) {
-            val x = tileX + innerX
-            for (innerY in 0..innerMax) {
-                val y = tileY + innerY
+        for (innerY in 0..innerMax) {
+            val y = tileY + innerY
+            val mapStateStart = tileX + y * MAP_SIZE
+            val tileImageStart = innerY * IMAGE_SIZE
+            // Uses System.arraycopy, which is a lot faster than manually setting each byte
+            tileImageArray?.copyInto(mapState.colors, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
+        }
 
-                // default to background color
-                mapState.setColor(x, y, when {
-                    isFlashing -> COLOR_FLASHING.asByte
-                    isAchieved -> COLOR_ACHIEVED.asByte
-                    else -> COLOR_BACKGROUND.asByte
-                })
+        if (isLocked) {
+            for (innerT in 0..innerMax) {
+                val x = tileX + innerT
+                val y = tileY + innerT
+                mapState.setColor(x, y, COLOR_LOCKED.asByte)
 
-                if (
-                    options.showOtherTeamCompletions &&
-                    item.hasAnyAchieved() &&
-                    (innerX == 0 || innerX == innerMax || innerY == 0 || innerY == innerMax)
-                ) {
-                    val tileTeamX = (innerX + innerY) * itemTeams.size / ((TILE_SIZE - TILE_MARGIN) * 2)
-                    val itemTeam = itemTeams.getOrNull(tileTeamX)
-                    if (itemTeam != null) {
-                        val variant = if ((innerX + innerY) % 2 == 0) 2 else 3
-                        mapState.setColor(x, y, (getMapColor(itemTeam)*4 + variant).toUByte().toByte())
-                        continue
-                    }
-                }
+                val yInv = tileY + innerMax - innerT
+                mapState.setColor(x, yInv, COLOR_LOCKED.asByte)
 
-                // draw the item image in the tile (offset by tile padding)
-                val imgX = innerX - TILE_PADDING
-                val imgY = innerY - TILE_PADDING
-
-                // draw an X if the item is locked (if BingoMode.LOCKOUT)
-                if (imgX in imgY..imgY+1 || (TILE_IMAGE - imgY) in imgX..imgX+1) {
-                    if (isLocked) {
-                        mapState.setColor(x, y, COLOR_LOCKED.asByte)
-                        continue
-                    }
-                }
-
-                if (imgX in 0..TILE_IMAGE && imgY in 0..TILE_IMAGE && tileImageArray != null) {
-                    val tileImageIndex = imgX + imgY * TILE_IMAGE
-
-                    if (imgX >= TILE_IMAGE || imgY >= TILE_IMAGE || tileImageArray[tileImageIndex] == 0.toByte()) {
-                        if (imgX > 0 && imgY > 0) {
-                            // image shadow
-                            val prevIndex = (imgX-1) + (imgY-1) * TILE_IMAGE
-                            if (prevIndex in tileImageArray.indices && tileImageArray[prevIndex] != 0.toByte()) {
-                                mapState.setColor(x, y, when {
-                                    isAchieved && !isFlashing -> COLOR_ACHIEVED_SHADOW.asByte
-                                    else -> COLOR_ITEM_SHADOW.asByte
-                                })
-                            }
-                        }
-
-                        continue
-                    }
-
-                    mapState.setColor(x, y, tileImageArray[tileImageIndex])
-                    continue
+                if (innerT > 0) {
+                    mapState.setColor(x-1, y, COLOR_LOCKED.asByte)
+                    mapState.setColor(x-1, yInv, COLOR_LOCKED.asByte)
                 }
             }
         }
+
+        if (
+            options.showOtherTeamCompletions &&
+            item.hasAnyAchieved()
+        ) {
+            for (innerT in 0..innerMax*2 + 1) {
+                val tileTeamX = innerT * itemTeams.size / (innerMax * 2)
+                val itemTeam = itemTeams.getOrNull(tileTeamX) ?: continue
+                val variant = if (innerT % 2 == 0) 2 else 3
+                val color = (getMapColor(itemTeam)*4 + variant).toUByte().toByte()
+
+                if (innerT < innerMax) {
+                    mapState.setColor(tileX + innerT, tileY, color)
+                    mapState.setColor(tileX, tileY + innerT, color)
+                } else {
+                    mapState.setColor(tileX + innerT - innerMax, tileY + innerMax, color)
+                    mapState.setColor(tileX + innerMax, tileY + innerT - innerMax, color)
+                }
+            }
+        }
+
+        for (x in tileX..tileX + innerMax) {
+            for (y in tileY..tileY + innerMax) {
+                // mark every pixel in the tile as dirty
+                mapState.markDirty(x, y)
+            }
+        }
     }
+
+    var hasChanges = false
 
     fun update(
         team: BingoTeam?,
@@ -285,6 +302,7 @@ class MapRenderService(
                     (options.showOtherTeamCompletions && entry.updatedAt > map.updatedAt) ||
                     (entry.isFlashing(team, FLASHING_DURATION + 1.seconds) && server.ticks % 10 == 0)
                 ) {
+                    hasChanges = true
                     drawMapTile(
                         mapState = state,
                         team = team,
@@ -298,9 +316,10 @@ class MapRenderService(
 
         map.updatedAt = Clock.System.now()
     }.also {
-        if (it >= 1.milliseconds) {
+        if (hasChanges) {
             log.info("Re-drawing map_${team?.map?.mapId} for team ${team?.name} ($it)")
         }
+        hasChanges = false
     }
 
 }

@@ -45,7 +45,12 @@ public abstract class PlayerManagerMixin {
 
     @Inject(at = @At(value = "RETURN"), method = "loadPlayerData", cancellable = true)
     private void loadPlayerData(ServerPlayerEntity player, CallbackInfoReturnable<NbtCompound> ci) {
-        PlayerManagerMixinHandler.INSTANCE.setPregameSpawnData(player, ci);
+        // Provide default player data (for the lobby dimension / spawnpoint) if null
+        if (ci.getReturnValue() == null && PlayerManagerMixinHandler.INSTANCE.isPregame(server)) {
+            NbtCompound nbt = PlayerManagerMixinHandler.INSTANCE.getPregameSpawnData(server);
+            player.readNbt(nbt);
+            ci.setReturnValue(nbt);
+        }
     }
 
     @Inject(at = @At(value = "HEAD"), method = "respawnPlayer")

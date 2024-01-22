@@ -26,6 +26,8 @@ object WorldDeleter {
         "world/stats",
         "world/level.dat",
         "world/level.dat_old",
+        // Vanish config folder
+        "world/player-mod-data",
     )
 
     fun invoke() {

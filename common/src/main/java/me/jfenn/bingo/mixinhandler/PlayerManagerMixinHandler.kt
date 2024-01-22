@@ -1,6 +1,7 @@
 package me.jfenn.bingo.mixinhandler
 
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
+import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
@@ -15,9 +16,13 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.BlockPos
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 
 object PlayerManagerMixinHandler {
+
+    private val log: Logger = LoggerFactory.getLogger(MOD_ID)
 
     fun shouldPreventLobbyChaos(server: MinecraftServer): Boolean {
         val scope = BingoKoin.getScope(server) ?: return false
@@ -28,31 +33,32 @@ object PlayerManagerMixinHandler {
                 state.state == GameState.PREGAME
     }
 
-    fun setPregameSpawnData(player: ServerPlayerEntity, ci: CallbackInfoReturnable<NbtCompound>) {
-        val scope = BingoKoin.getScope(player.server) ?: return
+    fun isPregame(server: MinecraftServer): Boolean {
+        val scope = BingoKoin.getScope(server) ?: return false
+        val state = scope.get<BingoState>()
+        return state.state == GameState.PREGAME
+    }
+
+    fun getPregameSpawnData(server: MinecraftServer): NbtCompound? {
+        val scope = BingoKoin.getScope(server) ?: return null
         val state = scope.get<BingoState>()
 
-        // Provide default player data (for the lobby dimension / spawnpoint) if null
-        if (ci.returnValue == null && state.state == GameState.PREGAME) {
-            val nbt = NbtCompound()
-            nbt.putString("Dimension", LOBBY_WORLD_ID.toString())
+        val nbt = NbtCompound()
+        nbt.putString("Dimension", LOBBY_WORLD_ID.toString())
 
-            val spawnPos: BlockPos = state.lobbySpawnPos.toBlockPos()
+        val spawnPos: BlockPos = state.lobbySpawnPos.toBlockPos()
 
-            val position = NbtList()
-            position.add(NbtDouble.of(spawnPos.x + 0.5))
-            position.add(NbtDouble.of(spawnPos.y.toDouble()))
-            position.add(NbtDouble.of(spawnPos.z + 0.5))
-            nbt.put("Pos", position)
+        val position = NbtList()
+        position.add(NbtDouble.of(spawnPos.x + 0.5))
+        position.add(NbtDouble.of(spawnPos.y.toDouble()))
+        position.add(NbtDouble.of(spawnPos.z + 0.5))
+        nbt.put("Pos", position)
 
-            val rotation = NbtList()
-            rotation.add(NbtFloat.of(180f)) // yaw
-            rotation.add(NbtFloat.of(0f)) // pitch
-            nbt.put("Rotation", rotation)
-
-            player.readNbt(nbt)
-            ci.setReturnValue(nbt)
-        }
+        val rotation = NbtList()
+        rotation.add(NbtFloat.of(180f)) // yaw
+        rotation.add(NbtFloat.of(0f)) // pitch
+        nbt.put("Rotation", rotation)
+        return nbt
     }
 
     fun isEndSpawnDimension(server: MinecraftServer): Boolean {

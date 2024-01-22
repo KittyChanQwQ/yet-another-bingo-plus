@@ -12,7 +12,7 @@ dependencies {
 
     implementation libs.kotlinx.serialization.json
 
-    modCompileOnly libs.vanish
+    modImplementation libs.vanish
 }
 
 tasks.register('bingoDatapack', Zip) {

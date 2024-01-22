@@ -61,19 +61,23 @@ class MenuController(
 
             // always load the spawn chunks
             lobbyWorld.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
+        }
 
-            spawnLobbyStructure()
-            val lobbySpawnPos = getLobbySpawnPosition()
-            state.lobbySpawnPos = lobbySpawnPos
+        events.onGameTick {
+            if (server.ticks > 10 && menu == null && state.state == GameState.PREGAME) {
+                spawnLobbyStructure()
+                val lobbySpawnPos = getLobbySpawnPosition()
+                state.lobbySpawnPos = lobbySpawnPos
 
-            menu = MenuInstance(
-                log = log,
-                koinScope = koinScope,
-                server = server,
-                interactionEntityEvents = interactionEntityEvents,
-                spawnPos = lobbySpawnPos,
-            ).also {
-                spawnTeamEntities(it)
+                menu = MenuInstance(
+                    log = log,
+                    koinScope = koinScope,
+                    server = server,
+                    interactionEntityEvents = interactionEntityEvents,
+                    spawnPos = lobbySpawnPos,
+                ).also {
+                    spawnTeamEntities(it)
+                }
             }
         }
 

@@ -17,7 +17,6 @@ import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.allInventorySlots
 import me.jfenn.bingo.common.utils.giveOrEquipStack
 import me.jfenn.bingo.integrations.VanishIntegration
-import net.minecraft.block.Blocks
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -27,10 +26,10 @@ import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
+import org.slf4j.Logger
 
 /**
  * Controls player gamemode, status, and inventory setup.
@@ -46,6 +45,7 @@ import net.minecraft.world.GameRules
  */
 class PlayerController(
     events: ScopedEvents,
+    private val log: Logger,
     private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
@@ -60,6 +60,7 @@ class PlayerController(
         val hasMap = player.allHeldStacks().any { MapItemService.isMapItem(it) }
 
         if (!hasMap) {
+            log.info("Giving item to player")
             val mapItem = mapItemService.createPreviewMapItem()
             player.giveItemStack(mapItem)
         }
@@ -270,7 +271,7 @@ class PlayerController(
             for (player in server.playerManager.playerList) {
                 val playerTeam = teamService.getPlayerTeam(player)
 
-                if (state.state == GameState.PREGAME && player.isAlive) {
+                if (state.state == GameState.PREGAME && player.health > 0f) {
                     if (options.showPreviewCard) {
                         givePreviewCardItem(player)
                     } else {
@@ -278,7 +279,7 @@ class PlayerController(
                     }
                 }
 
-                if (state.state == GameState.PLAYING && player.isAlive && !player.isSpectator) {
+                if (state.state == GameState.PLAYING && player.health > 0f && !player.isSpectator) {
                     // give player a new map, if they don't have one?
                     giveMapCardItem(player)
 
