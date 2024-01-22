@@ -8,7 +8,7 @@ import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.integrations.*
+import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.map.MapRenderService
 import me.jfenn.bingo.common.menu.MenuController
@@ -23,7 +23,6 @@ import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.withOptions
 import org.koin.core.scope.Scope
-import org.koin.core.scope.get
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 

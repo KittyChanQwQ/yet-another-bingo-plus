@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.integrations
+package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.GameState

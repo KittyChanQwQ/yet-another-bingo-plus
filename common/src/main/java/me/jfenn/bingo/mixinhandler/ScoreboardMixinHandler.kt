@@ -3,7 +3,7 @@ package me.jfenn.bingo.mixinhandler
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.integrations.ScoreboardHandler
+import me.jfenn.bingo.common.controller.ScoreboardHandler
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
 

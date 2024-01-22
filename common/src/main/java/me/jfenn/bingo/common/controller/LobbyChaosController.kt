@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.integrations
+package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.config.BingoConfig

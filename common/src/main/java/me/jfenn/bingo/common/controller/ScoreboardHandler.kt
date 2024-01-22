@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.integrations
+package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
