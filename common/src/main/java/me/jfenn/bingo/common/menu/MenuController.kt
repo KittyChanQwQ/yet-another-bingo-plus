@@ -1,8 +1,6 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.api.IStructureManager
-import me.jfenn.bingo.common.LOBBY_WORLD_ID
-import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
@@ -12,6 +10,7 @@ import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.Color
+import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.text.TextInfo
@@ -61,23 +60,19 @@ class MenuController(
 
             // always load the spawn chunks
             lobbyWorld.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
-        }
 
-        events.onGameTick {
-            if (server.ticks > 10 && menu == null && state.state == GameState.PREGAME) {
-                spawnLobbyStructure()
-                val lobbySpawnPos = getLobbySpawnPosition()
-                state.lobbySpawnPos = lobbySpawnPos
+            spawnLobbyStructure()
+            val lobbySpawnPos = getLobbySpawnPosition()
+            state.lobbySpawnPos = lobbySpawnPos
 
-                menu = MenuInstance(
-                    log = log,
-                    koinScope = koinScope,
-                    server = server,
-                    interactionEntityEvents = interactionEntityEvents,
-                    spawnPos = lobbySpawnPos,
-                ).also {
-                    spawnTeamEntities(it)
-                }
+            menu = MenuInstance(
+                log = log,
+                koinScope = koinScope,
+                server = server,
+                interactionEntityEvents = interactionEntityEvents,
+                spawnPos = lobbySpawnPos,
+            ).also {
+                spawnTeamEntities(it)
             }
         }
 

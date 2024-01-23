@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.map
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
@@ -278,6 +279,16 @@ class MapRenderService(
         }
     }
 
+    private fun shouldUpdate(
+        entry: BingoCardEntry,
+        team: BingoTeam?,
+        updatedAt: Instant,
+    ): Boolean {
+        return entry.updatedAt(team) > updatedAt
+                || ((options.showOtherTeamCompletions || options.isLockoutMode) && entry.updatedAt > updatedAt)
+                || (entry.isFlashing(team, FLASHING_DURATION + 1.seconds) && server.ticks % 10 == 0)
+    }
+
     fun update(
         team: BingoTeam?,
     ) = measureTime {
@@ -296,11 +307,7 @@ class MapRenderService(
         for (x in 0 until 5) {
             for (y in 0 until 5) {
                 val entry = card.entry(x, y)
-                if (
-                    entry.updatedAt(team) > map.updatedAt ||
-                    (options.showOtherTeamCompletions && entry.updatedAt > map.updatedAt) ||
-                    (entry.isFlashing(team, FLASHING_DURATION + 1.seconds) && server.ticks % 10 == 0)
-                ) {
+                if (shouldUpdate(entry, team, map.updatedAt)) {
                     drawMapTile(
                         mapState = state,
                         team = team,
