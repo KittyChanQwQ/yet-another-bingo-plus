@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.hasPermission
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.network.ServerPlayerEntity
 import org.koin.core.scope.Scope
 
 fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requireBingoInstance(): T {
@@ -28,17 +29,10 @@ fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requireState(vararg required
     }
 }
 
-fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requireBingoTeam(): T {
+fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requirePermission(getter: (ServerPlayerEntity) -> Boolean): T {
     return this.requires { source ->
         val player = source?.player ?: return@requires false
-        BingoTeam.fromPlayer(player) != null
-    }
-}
-
-fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requirePermission(requiredPermissionLevel: Int = 2): T {
-    return this.requires { source ->
-        val player = source?.player ?: return@requires false
-        player.hasPermission(requiredPermissionLevel)
+        getter(player)
     }
 }
 

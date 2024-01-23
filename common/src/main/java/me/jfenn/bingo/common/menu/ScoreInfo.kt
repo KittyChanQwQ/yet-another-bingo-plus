@@ -2,11 +2,13 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.config.BingoOptions
 import net.minecraft.entity.EntityType
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerScoreInfo(
     position: Vec3d,
     options: BingoOptions,
+    permissionGetter: (ServerPlayerEntity) -> Boolean,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", "\"Score Info\"")
@@ -20,23 +22,27 @@ fun MenuComponent.registerScoreInfo(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
         text = "Remaining Time",
         toggleProp = propertyRef(options::showRemainingTime),
+        permissionGetter = permissionGetter,
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
         text = "Completed Items",
         toggleProp = propertyRef(options::showCompletedItems),
+        permissionGetter = permissionGetter,
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0),
         text = "Completed Lines",
         toggleProp = propertyRef(options::showCompletedLines),
+        permissionGetter = permissionGetter,
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
         text = "Leading Team",
         toggleProp = propertyRef(options::showLeadingTeam),
+        permissionGetter = permissionGetter,
     )
 }

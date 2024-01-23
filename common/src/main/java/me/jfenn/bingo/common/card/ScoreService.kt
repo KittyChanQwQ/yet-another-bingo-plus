@@ -7,6 +7,10 @@ object ScoreService {
     fun isStalemate(state: BingoState): Boolean {
         if (!state.options.isLockoutMode) return false
 
+        // max lines
+
+        //
+
         // check all teams for the number of capture-able lines
         // if any team can capture a line, it is not a stalemate
         for (team in state.getRegisteredTeams()) {

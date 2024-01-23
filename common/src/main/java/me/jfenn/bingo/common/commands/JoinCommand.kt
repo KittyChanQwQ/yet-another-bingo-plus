@@ -22,7 +22,7 @@ class JoinCommand : BaseCommand() {
                 LiteralArgumentBuilder.literal<ServerCommandSource>(team.name.lowercase())
                     .then(
                         CommandManager.argument("player", EntityArgumentType.player())
-                            .requirePermission()
+                            .requirePermission(permissions::canUseJoinPlayerCommand)
                             .executesInScope { ctx ->
                                 val state = get<BingoState>()
                                 val teamService = get<TeamService>()
@@ -38,6 +38,7 @@ class JoinCommand : BaseCommand() {
                                 1
                             }
                     )
+                    .requirePermission(permissions::canUseJoinCommand)
                     .executesInScope { ctx ->
                         val state = get<BingoState>()
                         val teamService = get<TeamService>()

@@ -26,10 +26,9 @@ object Main : ClientModInitializer {
     override fun onInitializeClient() {
         log.info("Starting Bingo Client koin application")
         koinApplication {
+            BingoKoin.koinApp = this@koinApplication
             logger(SLF4JLogger(level = Level.DEBUG))
             modules(sharedModule, commonModule, clientModule, commonClientModule)
-        }.also {
-            BingoKoin.koinApp = it
         }
     }
 }

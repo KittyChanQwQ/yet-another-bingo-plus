@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
+import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.server.MinecraftServer
 import org.koin.core.module.dsl.*
@@ -35,6 +36,7 @@ val commonModule = module {
     singleOf(::ScopeManager) withOptions { createdAtStart() }
 
     singleOf(::AutoShutdownController) withOptions { createdAtStart() }
+    factoryOf(PermissionsIntegration::create)
     factoryOf(VanishIntegration::create)
 
     singleOf(::BingoCommands) withOptions { createdAtStart() }

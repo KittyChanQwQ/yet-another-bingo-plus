@@ -4,12 +4,14 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.spawn.SpawnItem
 import net.minecraft.entity.EntityType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerSpawnKit(
     position: Vec3d,
     options: BingoOptions,
+    permissionGetter: (ServerPlayerEntity) -> Boolean,
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", "\"Spawn Kit\"")
@@ -22,12 +24,14 @@ fun MenuComponent.registerSpawnKit(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
         text = "Player Items",
-        toggleProp = propertyRef(options::isPlayerKit)
+        toggleProp = propertyRef(options::isPlayerKit),
+        permissionGetter = permissionGetter,
     )
 
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
         text = "Edit...",
+        permissionGetter = permissionGetter,
     ) { player ->
         player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
@@ -46,12 +50,14 @@ fun MenuComponent.registerSpawnKit(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 3), 0.0),
         text = "Team Chest",
-        toggleProp = propertyRef(options::isTeamKit)
+        toggleProp = propertyRef(options::isTeamKit),
+        permissionGetter = permissionGetter,
     )
 
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 4), 0.0),
         text = "Edit...",
+        permissionGetter = permissionGetter,
     ) { player ->
         player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(

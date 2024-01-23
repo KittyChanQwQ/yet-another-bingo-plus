@@ -4,6 +4,7 @@ import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.entity.EntityType
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerMenu(
@@ -11,7 +12,7 @@ fun MenuComponent.registerMenu(
     options: List<String>,
     position: Vec3d,
     selectedIndexProp: MutableProperty<Int>,
-    requiredPermissionLevel: Int = 2,
+    permissionGetter: (ServerPlayerEntity) -> Boolean,
 ) {
 
     var selectedIndex by selectedIndexProp
@@ -21,7 +22,7 @@ fun MenuComponent.registerMenu(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + i * MENU_ITEM_HEIGHT), 0.0),
             text = option,
             isActiveProp = computedProperty { selectedIndex == i },
-            requiredPermissionLevel = requiredPermissionLevel,
+            permissionGetter = permissionGetter,
         ) {
             selectedIndex = i
         }
@@ -42,6 +43,7 @@ inline fun <reified E : Enum<E>> MenuComponent.registerEnumMenu(
     position: Vec3d,
     title: String,
     valueProp: MutableProperty<E>,
+    noinline permissionGetter: (ServerPlayerEntity) -> Boolean,
 ) {
     val options = E::class.java.enumConstants
 
@@ -56,13 +58,15 @@ inline fun <reified E : Enum<E>> MenuComponent.registerEnumMenu(
         options = options.map { it.name.replace('_', ' ') },
         selectedIndexProp = indexProp,
         position = position,
+        permissionGetter = permissionGetter,
     )
 }
 
 fun MenuComponent.registerDimensionMenu(
-    server: MinecraftServer,
     position: Vec3d,
     dimensionProperty: MutableProperty<String>,
+    permissionGetter: (ServerPlayerEntity) -> Boolean,
+    server: MinecraftServer = koinScope.get(),
 ) {
     val dimensions = server.worlds
         .map { it.registryKey.value }
@@ -80,5 +84,6 @@ fun MenuComponent.registerDimensionMenu(
         options = dimensions.map { it.path },
         selectedIndexProp = indexProp,
         position = position,
+        permissionGetter = permissionGetter,
     )
 }

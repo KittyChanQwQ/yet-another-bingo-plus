@@ -9,7 +9,7 @@ class RestartCommand : BaseCommand() {
         // Only on dedicated server instances
         LiteralArgumentBuilder.literal<ServerCommandSource>("restart")
             .requireBingoInstance()
-            .requirePermission(2)
+            .requirePermission(permissions::canUseRestartCommand)
             .requires { it.server.isDedicated }
             .executes { ctx ->
                 ctx.source.server.stop(false)

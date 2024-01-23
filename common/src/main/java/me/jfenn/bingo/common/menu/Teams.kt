@@ -5,12 +5,13 @@ import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.entity.EntityType
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerTeams(
     position: Vec3d,
-    requiredPermissionLevel: Int = 2,
     title: String = "Teams",
+    permissionGetter: (ServerPlayerEntity) -> Boolean,
     teamService: TeamService = koinScope.get(),
 ) {
     var teamCount = 3
@@ -18,7 +19,7 @@ fun MenuComponent.registerTeams(
     registerButton(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
         text = "+",
-        requiredPermissionLevel = requiredPermissionLevel,
+        permissionGetter = permissionGetter,
     ) {
         teamCount = (teamCount + 1).coerceIn(1, BingoTeam.TEAM_BLOCKS.size)
         markDirty()
@@ -27,7 +28,7 @@ fun MenuComponent.registerTeams(
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
         text = "-",
-        requiredPermissionLevel = requiredPermissionLevel,
+        permissionGetter = permissionGetter,
     ) {
         teamCount = (teamCount - 1).coerceIn(1, BingoTeam.TEAM_BLOCKS.size)
         markDirty()
@@ -36,7 +37,7 @@ fun MenuComponent.registerTeams(
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 3 * MENU_ITEM_HEIGHT), 0.0),
         text = "Shuffle!",
-        requiredPermissionLevel = requiredPermissionLevel,
+        permissionGetter = permissionGetter,
     ) { player ->
         teamService.shuffleTeams(teamCount)
         player.sendInfoMessage("Teams have been shuffled!")

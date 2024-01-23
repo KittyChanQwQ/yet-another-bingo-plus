@@ -21,7 +21,7 @@ fun MenuComponent.registerButton(
     width: Float = max(MENU_HITBOX_WIDTH, text.length * 0.15f),
     height: Float = MENU_HITBOX_HEIGHT,
     facing: Direction = Direction.SOUTH,
-    requiredPermissionLevel: Int = 2,
+    permissionGetter: (ServerPlayerEntity) -> Boolean,
     interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
     onClick: (player: ServerPlayerEntity) -> Unit,
 ) {
@@ -33,7 +33,7 @@ fun MenuComponent.registerButton(
         putFloat("height", height)
     }.onUpdate { entity ->
         interactionEntityEvents.onInteract(entity) { player ->
-            if (player.hasPermission(requiredPermissionLevel)) {
+            if (permissionGetter(player)) {
                 onClick(player)
                 Sounds.playButtonSound(player, entity.pos)
             }
@@ -61,12 +61,14 @@ fun MenuComponent.registerToggleButton(
     position: Vec3d,
     text: String,
     toggleProp: MutableProperty<Boolean>,
+    permissionGetter: (ServerPlayerEntity) -> Boolean,
     onClick: (player: ServerPlayerEntity) -> Unit = {},
 ) {
     registerButton(
         position = position,
         text = text,
         isActiveProp = toggleProp,
+        permissionGetter = permissionGetter,
     ) {
         var toggle by toggleProp
         toggle = !toggle

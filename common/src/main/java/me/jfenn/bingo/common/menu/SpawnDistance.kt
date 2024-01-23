@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.menu
 
 import net.minecraft.entity.EntityType
-import net.minecraft.text.Text
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
 
 const val MAX_SPAWN_DISTANCE = 500
@@ -9,14 +9,14 @@ const val MAX_SPAWN_DISTANCE = 500
 fun MenuComponent.registerSpawnDistance(
     position: Vec3d,
     spawnDistanceProp: MutableProperty<Int>,
-    requiredPermissionLevel: Int = 2,
+    permissionGetter: (ServerPlayerEntity) -> Boolean,
 ) {
     var spawnDistance by spawnDistanceProp
 
     registerButton(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
         text = "+",
-        requiredPermissionLevel = requiredPermissionLevel,
+        permissionGetter = permissionGetter,
     ) {
         spawnDistance = (spawnDistance + 10).coerceIn(0, MAX_SPAWN_DISTANCE)
         markDirty()
@@ -25,7 +25,7 @@ fun MenuComponent.registerSpawnDistance(
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
         text = "-",
-        requiredPermissionLevel = requiredPermissionLevel,
+        permissionGetter = permissionGetter,
     ) {
         spawnDistance = (spawnDistance - 10).coerceIn(0, MAX_SPAWN_DISTANCE)
         markDirty()

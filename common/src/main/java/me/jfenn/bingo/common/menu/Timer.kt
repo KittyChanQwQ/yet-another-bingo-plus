@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.entity.EntityType
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
 import java.util.*
 import kotlin.time.Duration
@@ -12,7 +13,7 @@ const val MAX_TIMER_MINUTES: Long = 360
 fun MenuComponent.registerTimer(
     position: Vec3d,
     timerMinutesProp: MutableProperty<Duration?>,
-    requiredPermissionLevel: Int = 2,
+    permissionGetter: (ServerPlayerEntity) -> Boolean,
     title: String = "Time Limit",
 ) {
     var timerMinutes by timerMinutesProp
@@ -20,7 +21,7 @@ fun MenuComponent.registerTimer(
     registerButton(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
         text = "+",
-        requiredPermissionLevel = requiredPermissionLevel,
+        permissionGetter = permissionGetter,
     ) {
         val mins = timerMinutes?.inWholeMinutes ?: 0
         val newMins = if (mins < MAX_TIMER_MINUTES)
@@ -32,7 +33,7 @@ fun MenuComponent.registerTimer(
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
         text = "-",
-        requiredPermissionLevel = requiredPermissionLevel,
+        permissionGetter = permissionGetter,
     ) {
         val mins = timerMinutes?.inWholeMinutes ?: (MAX_TIMER_MINUTES + 30)
         val newMins = if (mins > 30)

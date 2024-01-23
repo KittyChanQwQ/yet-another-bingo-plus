@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.utils.formatTitle
+import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtFloat
 import net.minecraft.nbt.NbtList
@@ -20,7 +21,10 @@ fun MenuComponent.registerPlayerMenu(
     facing: Direction,
     server: MinecraftServer = koinScope.get(),
     events: ScopedEvents = koinScope.get(),
+    permissionsIntegration: PermissionsIntegration = koinScope.get(),
 ) {
+    val permissionGetter = permissionsIntegration::canUsePlayerMenu
+
     registerEntity(EntityType.TEXT_DISPLAY, pos) {
         put("Rotation", NbtList().apply {
             add(NbtFloat.of(facing.asRotation()))
@@ -48,7 +52,7 @@ fun MenuComponent.registerPlayerMenu(
             position = fieldPosition,
             text = field.name.formatTitle(),
             facing = facing,
-            requiredPermissionLevel = 0,
+            permissionGetter = permissionGetter,
         ) {
             val player = it as? ServerPlayerEntity ?: return@registerButton
             val config = ConfigService.getPlayer(player.uuidAsString)

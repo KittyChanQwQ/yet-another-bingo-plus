@@ -16,10 +16,9 @@ object Main : DedicatedServerModInitializer {
     override fun onInitializeServer() {
         log.info("Starting Bingo Server koin application")
         koinApplication {
+            BingoKoin.koinApp = this@koinApplication
             logger(SLF4JLogger(level = Level.DEBUG))
             modules(sharedModule, commonModule)
-        }.also {
-            BingoKoin.koinApp = it
         }
     }
 }
