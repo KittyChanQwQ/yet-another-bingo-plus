@@ -37,7 +37,7 @@ class ChatCommand : BaseCommand() {
         // send a message to all teams, outside of the team-local chat
         listOf("all", "g", "global")
             .map { LiteralArgumentBuilder.literal<ServerCommandSource?>(it) }
-            .map { it.requireBingoInstance() }
+            .map { it.require(requireBingoInstance()) }
             .forEach { command ->
                 command.then(
                     RequiredArgumentBuilder.argument<ServerCommandSource?, String?>(

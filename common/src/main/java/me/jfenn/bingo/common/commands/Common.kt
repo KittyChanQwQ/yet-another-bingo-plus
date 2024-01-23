@@ -3,36 +3,38 @@ package me.jfenn.bingo.common.commands
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import me.jfenn.bingo.common.scope.BingoKoin
-import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.utils.hasPermission
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import org.koin.core.scope.Scope
 
-fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requireBingoInstance(): T {
-    return this.requires { source ->
-        if (source == null) return@requires false
-        BingoKoin.getScope(source.server) != null
-    }
+typealias CommandRequirement = (ServerCommandSource) -> Boolean
+
+fun requireBingoInstance(): CommandRequirement = {
+    BingoKoin.getScope(it.server) != null
 }
 
-fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requireState(vararg requiredState: GameState): T {
-    return this.requires { source ->
-        val scope = source?.server
-            ?.let { BingoKoin.getScope(it) }
-            ?: return@requires false
+fun requireState(vararg requiredState: GameState): CommandRequirement = { source ->
+    val scope = BingoKoin.getScope(source.server)
 
+    if (scope != null) {
         val state = scope.get<BingoState>()
         requiredState.contains(state.state)
+    } else {
+        false
     }
 }
 
-fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.requirePermission(getter: (ServerPlayerEntity) -> Boolean): T {
+fun requirePermission(getter: (ServerPlayerEntity) -> Boolean): CommandRequirement = { source ->
+    val player = source.player
+    player != null && getter(player)
+}
+
+fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.require(vararg requirements: CommandRequirement): T {
     return this.requires { source ->
-        val player = source?.player ?: return@requires false
-        getter(player)
+        if (source == null) return@requires false
+        requirements.all { it(source) }
     }
 }
 

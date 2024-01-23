@@ -15,8 +15,6 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 class CoordsCommand(
     private val scoreboardManager: IScoreboardManager,
@@ -72,8 +70,10 @@ class CoordsCommand(
     init {
         // send current player coordinates to other team members
         LiteralArgumentBuilder.literal<ServerCommandSource?>("coords")
-            .requireState(GameState.PLAYING)
-            .requirePermission(permissions::canUseCoordsCommand)
+            .require(
+                requireState(GameState.PLAYING),
+                requirePermission(permissions::canUseCoordsCommand),
+            )
             .then(
                 LiteralArgumentBuilder.literal<ServerCommandSource?>("list")
                     .executes { ctx ->

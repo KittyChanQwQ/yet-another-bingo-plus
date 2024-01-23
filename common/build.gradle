@@ -13,9 +13,6 @@ dependencies {
     implementation libs.kotlinx.serialization.json
 
     modCompileOnly libs.vanish
-
-    modImplementation libs.permissions.api
-    include libs.permissions.api
 }
 
 tasks.register('bingoDatapack', Zip) {

@@ -6,7 +6,6 @@ insert-koin-core = { module = "io.insert-koin:koin-core-jvm", version.ref = "ins
 insert-koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "insert-koin" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.0" }
 vanish = { module = "maven.modrinth:vanish", version = "1.5.1+1.20.4" }
-permissions-api = { module = "me.lucko:fabric-permissions-api", version = "0.3-SNAPSHOT" }
 
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "1.9.0" }

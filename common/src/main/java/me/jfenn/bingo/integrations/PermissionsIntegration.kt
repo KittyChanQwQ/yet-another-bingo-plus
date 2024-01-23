@@ -28,6 +28,8 @@ interface PermissionsIntegration {
     /** "/bingo set" command */
     fun canUseBingoSetCommand(player: ServerPlayerEntity): Boolean
 
+    fun canBypassLobbyChaosPrevention(player: ServerPlayerEntity): Boolean
+
     companion object {
         fun create(): PermissionsIntegration {
             return PermissionsIntegrationImpl()
@@ -38,8 +40,10 @@ interface PermissionsIntegration {
 
 class PermissionsIntegrationImpl : PermissionsIntegration {
 
+    private fun hasDefaultPermission(player: ServerPlayerEntity) = player.hasPermissionLevel(2) || player.server.isSingleplayer
+
     override fun canUseGameMenu(player: ServerPlayerEntity)
-        = Permissions.check(player, "$MOD_ID.lobbymenu", 2)
+        = Permissions.check(player, "$MOD_ID.lobbymenu", hasDefaultPermission(player))
 
     override fun canUsePlayerMenu(player: ServerPlayerEntity)
         = Permissions.check(player, "$MOD_ID.playermenu", true)
@@ -48,7 +52,7 @@ class PermissionsIntegrationImpl : PermissionsIntegration {
         = Permissions.check(player, "$MOD_ID.command.join", true)
 
     override fun canUseJoinPlayerCommand(player: ServerPlayerEntity)
-        = Permissions.check(player, "$MOD_ID.command.join_player", 2)
+        = Permissions.check(player, "$MOD_ID.command.join_player", hasDefaultPermission(player))
 
     override fun canUseCoordsCommand(player: ServerPlayerEntity)
         = Permissions.check(player, "$MOD_ID.command.coords", true)
@@ -57,9 +61,12 @@ class PermissionsIntegrationImpl : PermissionsIntegration {
         = Permissions.check(player, "$MOD_ID.command.restart", 2)
 
     override fun canUseBingoCommand(player: ServerPlayerEntity)
-        = Permissions.check(player, "$MOD_ID.command.bingo", 2)
+        = Permissions.check(player, "$MOD_ID.command.bingo", hasDefaultPermission(player))
 
     override fun canUseBingoSetCommand(player: ServerPlayerEntity)
         = Permissions.check(player, "$MOD_ID.command.bingo_set", true)
+
+    override fun canBypassLobbyChaosPrevention(player: ServerPlayerEntity)
+        = Permissions.check(player, "$MOD_ID.lobby.chaos_prevention.bypass", 2)
 
 }

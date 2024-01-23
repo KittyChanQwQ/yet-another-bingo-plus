@@ -15,14 +15,16 @@ class JoinCommand : BaseCommand() {
 
     init {
         var joinCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("join")
-            .requireBingoInstance()
 
         for (team in BingoTeam.TEAM_BLOCKS.values) {
             joinCommand = joinCommand.then(
                 LiteralArgumentBuilder.literal<ServerCommandSource>(team.name.lowercase())
                     .then(
                         CommandManager.argument("player", EntityArgumentType.player())
-                            .requirePermission(permissions::canUseJoinPlayerCommand)
+                            .require(
+                                requireBingoInstance(),
+                                requirePermission(permissions::canUseJoinPlayerCommand),
+                            )
                             .executesInScope { ctx ->
                                 val state = get<BingoState>()
                                 val teamService = get<TeamService>()
@@ -38,7 +40,10 @@ class JoinCommand : BaseCommand() {
                                 1
                             }
                     )
-                    .requirePermission(permissions::canUseJoinCommand)
+                    .require(
+                        requireBingoInstance(),
+                        requirePermission(permissions::canUseJoinCommand),
+                    )
                     .executesInScope { ctx ->
                         val state = get<BingoState>()
                         val teamService = get<TeamService>()

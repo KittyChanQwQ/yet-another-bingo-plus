@@ -2,14 +2,12 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
-import me.jfenn.bingo.common.utils.hasPermission
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtFloat
 import net.minecraft.nbt.NbtList
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.sound.SoundEvents
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import kotlin.math.max
