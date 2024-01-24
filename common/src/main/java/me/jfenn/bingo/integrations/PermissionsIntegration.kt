@@ -30,6 +30,20 @@ interface PermissionsIntegration {
 
     fun canBypassLobbyChaosPrevention(player: ServerPlayerEntity): Boolean
 
+    fun canSpectatorModifyBlock(player: ServerPlayerEntity): Boolean
+
+    fun canSpectatorInteractBlock(player: ServerPlayerEntity): Boolean
+
+    fun canSpectatorModifyEntity(player: ServerPlayerEntity): Boolean
+
+    fun canSpectatorInteractEntity(player: ServerPlayerEntity): Boolean
+
+    fun canSpectatorViewInventory(player: ServerPlayerEntity): Boolean
+
+    fun canSpectatorUseItem(player: ServerPlayerEntity): Boolean
+
+    fun canSpectatorViewCards(player: ServerPlayerEntity): Boolean
+
     companion object {
         fun create(): PermissionsIntegration {
             return PermissionsIntegrationImpl()
@@ -68,5 +82,26 @@ class PermissionsIntegrationImpl : PermissionsIntegration {
 
     override fun canBypassLobbyChaosPrevention(player: ServerPlayerEntity)
         = Permissions.check(player, "$MOD_ID.lobby.chaos_prevention.bypass", 2)
+
+    override fun canSpectatorModifyBlock(player: ServerPlayerEntity)
+        = Permissions.check(player, "$MOD_ID.spectator.modify_block", false)
+
+    override fun canSpectatorInteractBlock(player: ServerPlayerEntity)
+        = Permissions.check(player, "$MOD_ID.spectator.interact_block", false)
+
+    override fun canSpectatorModifyEntity(player: ServerPlayerEntity)
+            = Permissions.check(player, "$MOD_ID.spectator.modify_entity", false)
+
+    override fun canSpectatorInteractEntity(player: ServerPlayerEntity)
+            = Permissions.check(player, "$MOD_ID.spectator.interact_entity", false)
+
+    override fun canSpectatorViewInventory(player: ServerPlayerEntity)
+        = Permissions.check(player, "$MOD_ID.spectator.view_inventory", true)
+
+    override fun canSpectatorUseItem(player: ServerPlayerEntity)
+        = Permissions.check(player, "$MOD_ID.spectator.use_item", false)
+
+    override fun canSpectatorViewCards(player: ServerPlayerEntity)
+        = Permissions.check(player, "$MOD_ID.spectator.view_cards", true)
 
 }

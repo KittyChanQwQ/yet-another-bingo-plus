@@ -15,6 +15,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.allInventorySlots
 import me.jfenn.bingo.common.utils.giveOrEquipStack
+import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
@@ -48,6 +49,7 @@ class PlayerController(
     private val teamService: TeamService,
     private val advancementManager: IAdvancementManager,
     private val vanishIntegration: VanishIntegration,
+    private val permissions: PermissionsIntegration,
 ) {
 
     fun givePreviewCardItem(player: ServerPlayerEntity) {
@@ -294,8 +296,11 @@ class PlayerController(
                     }
                 }
 
-                if (state.state != GameState.PREGAME && (playerTeam == null || state.state == GameState.POSTGAME))
-                    giveSpectatorMapItems(player)
+                if (state.state != GameState.PREGAME && (playerTeam == null || state.state == GameState.POSTGAME)) {
+                    // if the state is not POSTGAME, players must have permission to receive the spectator cards
+                    if (state.state == GameState.POSTGAME || permissions.canSpectatorViewCards(player))
+                        giveSpectatorMapItems(player)
+                }
 
                 // If the player has switched teams, update the player UUID sets...
                 // (this is necessary because teams could be changed without us knowing, using /team join)
@@ -303,8 +308,10 @@ class PlayerController(
                 for (team in state.teams.values) {
                     if (playerTeam?.key == team.key) {
                         team.players.add(playerProfile)
+                        updateGameMode(player)
                     } else {
                         team.players.remove(playerProfile)
+                        updateGameMode(player)
                     }
                 }
             }

@@ -4,6 +4,7 @@ import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.network.ServerPlayerEntity
 
 object PlayerEntityMixinHandler {
@@ -16,9 +17,11 @@ object PlayerEntityMixinHandler {
         val scope = BingoKoin.getScope(player.server) ?: return false
         val teamService = scope.get<TeamService>()
         val state = scope.get<BingoState>()
+        val permissions = scope.get<PermissionsIntegration>()
 
         return state.state == GameState.PLAYING
                 && teamService.getPlayerTeam(player) == null
+                && !permissions.canSpectatorUseItem(player)
     }
 
 }
