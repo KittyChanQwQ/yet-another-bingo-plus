@@ -2,9 +2,11 @@ package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.common.scoreboard.ScoreChange
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardScoreResetS2CPacket
+import net.minecraft.network.packet.s2c.play.ScoreboardScoreUpdateS2CPacket
 import net.minecraft.scoreboard.ScoreboardCriterion
 import net.minecraft.scoreboard.ScoreboardDisplaySlot
 import net.minecraft.scoreboard.ScoreboardObjective
@@ -37,13 +39,6 @@ class ScoreboardManager : IScoreboardManager {
         for (score in server.scoreboard.getScoreboardEntries(handle.objective)) {
             if (!textLines.contains(score.owner)) {
                 server.scoreboard.removeScore({ score.owner }, handle.objective)
-
-                if (!server.isSingleplayer) {
-                    // The server sometimes fails to send this packet, so we're adding it manually. I don't know why.
-                    // - yes, this does need to be sent to all players, otherwise it may cause desync
-                    for (player in server.playerManager.playerList)
-                        player.networkHandler.sendPacket(ScoreboardScoreResetS2CPacket(score.owner, null))
-                }
             }
         }
 
@@ -53,20 +48,8 @@ class ScoreboardManager : IScoreboardManager {
         }
     }
 
-    override fun sendScoreboardDisplay(player: ServerPlayerEntity, handle: IObjectiveHandle?) {
-        require(handle is ObjectiveHandle?)
-        player.networkHandler.sendPacket(ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, handle?.objective))
-    }
-
-    override fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle, sendCreate: Boolean) {
+    override fun sendObjectiveCreate(player: ServerPlayerEntity, handle: IObjectiveHandle) {
         require(handle is ObjectiveHandle)
-
-        player.networkHandler.sendPacket(
-            ScoreboardObjectiveUpdateS2CPacket(
-                handle.objective,
-                ScoreboardObjectiveUpdateS2CPacket.REMOVE_MODE,
-            )
-        )
 
         player.networkHandler.sendPacket(
             ScoreboardObjectiveUpdateS2CPacket(
@@ -75,12 +58,37 @@ class ScoreboardManager : IScoreboardManager {
             )
         )
 
-        val packets = player.server.scoreboard.createChangePackets(handle.objective)
-            .filterNot { it is ScoreboardObjectiveUpdateS2CPacket }
-            .filterNot { it is ScoreboardDisplayS2CPacket && it.slot == ScoreboardDisplaySlot.SIDEBAR }
+        player.networkHandler.sendPacket(
+            ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, handle.objective)
+        )
+    }
 
-        for (packet in packets) {
-            player.networkHandler.sendPacket(packet)
+    override fun sendObjectiveDelete(player: ServerPlayerEntity, handle: IObjectiveHandle) {
+        require(handle is ObjectiveHandle)
+
+        player.networkHandler.sendPacket(
+            ScoreboardObjectiveUpdateS2CPacket(
+                handle.objective,
+                ScoreboardObjectiveUpdateS2CPacket.REMOVE_MODE,
+            )
+        )
+    }
+
+    override fun sendScoreChanges(player: ServerPlayerEntity, handle: IObjectiveHandle, changes: List<ScoreChange>) {
+        require(handle is ObjectiveHandle)
+
+        for (change in changes) {
+            when (change) {
+                is ScoreChange.Create -> {
+                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, null, null))
+                }
+                is ScoreChange.Update -> {
+                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, null, null))
+                }
+                is ScoreChange.Remove -> {
+                    player.networkHandler.sendPacket(ScoreboardScoreResetS2CPacket(change.name, handle.name))
+                }
+            }
         }
     }
 

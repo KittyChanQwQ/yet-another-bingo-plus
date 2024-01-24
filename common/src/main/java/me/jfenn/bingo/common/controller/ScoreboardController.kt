@@ -1,11 +1,11 @@
 package me.jfenn.bingo.common.controller
 
-import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
@@ -19,23 +19,13 @@ class ScoreboardController(
     private val options: BingoOptions,
     private val state: BingoState,
     private val teamService: TeamService,
-    private val scoreboardHandler: ScoreboardHandler,
-    private val scoreboardManager: IScoreboardManager,
+    private val scoreboardService: ScoreboardService,
 ) {
 
     init {
-        events.onChangePlayerSettings { player ->
-            val settings = ConfigService.getPlayer(player.uuidAsString)
-
-            if (!settings.scoreboard) {
-                // send a packet remove the scoreboard sidebar if set to false
-                scoreboardManager.sendScoreboardDisplay(player, null)
-            }
-        }
-
         events.onUpdateTick {
             for (team in state.getRegisteredTeams() + null) {
-                val objective = scoreboardHandler.getScoreboardObjective(team)
+                val objective = scoreboardService.getScoreboardObjective(team)
 
                 val scoreboardText = buildList {
                     add("")
@@ -100,31 +90,14 @@ class ScoreboardController(
                     str.ifEmpty { " ".repeat(i) }
                 }
 
-                // Update the scoreboard text on the server
-                scoreboardManager.setScoreboardText(server, objective, scoreboardText)
-
-                // Manually send the scoreboard update packets to each player
-                server.playerManager.playerList
+                // Determine which players should be shown the scoreboard
+                val players = server.playerManager.playerList
                     .filter { teamService.getPlayerTeam(it)?.key == team?.key }
                     .filter { ConfigService.getPlayer(it.uuidAsString).scoreboard }
-                    .forEach { player ->
-                        // if the player is holding the map item, show the scoreboard; otherwise, hide it
-                        if (scoreboardHandler.shouldDisplayScoreboard(player)) {
-                            scoreboardManager.sendScoreboardUpdates(
-                                player, objective,
-                                sendCreate = !scoreboardHandler.playerHasObjective(player, objective),
-                            )
-                            scoreboardManager.sendScoreboardDisplay(player, objective)
-                        } else {
-                            scoreboardManager.sendScoreboardDisplay(player, null)
-                        }
-                    }
-            }
-        }
+                    .filter { scoreboardService.shouldDisplayScoreboard(it) }
 
-        events.onPlayerLeave { player ->
-            // When a player disconnects, they need to be re-sent the objective if they reconnect
-            scoreboardHandler.playersWithObjectives.remove(player.uuid)
+                scoreboardService.setScoreboardContents(objective, scoreboardText, players)
+            }
         }
     }
 

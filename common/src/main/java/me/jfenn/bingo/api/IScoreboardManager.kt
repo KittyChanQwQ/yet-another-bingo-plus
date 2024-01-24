@@ -1,5 +1,6 @@
 package me.jfenn.bingo.api
 
+import me.jfenn.bingo.common.scoreboard.ScoreChange
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
@@ -10,9 +11,11 @@ interface IScoreboardManager {
 
     fun setScoreboardText(server: MinecraftServer, handle: IObjectiveHandle, textLines: List<String>)
 
-    fun sendScoreboardDisplay(player: ServerPlayerEntity, handle: IObjectiveHandle?)
+    fun sendObjectiveCreate(player: ServerPlayerEntity, handle: IObjectiveHandle)
 
-    fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle, sendCreate: Boolean)
+    fun sendObjectiveDelete(player: ServerPlayerEntity, handle: IObjectiveHandle)
+
+    fun sendScoreChanges(player: ServerPlayerEntity, handle: IObjectiveHandle, changes: List<ScoreChange>)
 
     fun getPlayerName(player: ServerPlayerEntity): String
 

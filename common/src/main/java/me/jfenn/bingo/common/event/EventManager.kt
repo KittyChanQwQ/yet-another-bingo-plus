@@ -31,7 +31,7 @@ class EventManager(
             val events = getEvents(server) ?: return@register
             events.onGameTick(Unit)
 
-            if (server.ticks % 20 == 0) {
+            if (server.ticks % 10 == 0) {
                 events.onUpdateTick(Unit)
             }
         }

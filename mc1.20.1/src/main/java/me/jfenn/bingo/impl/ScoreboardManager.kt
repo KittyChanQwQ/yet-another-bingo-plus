@@ -1,10 +1,8 @@
 package me.jfenn.bingo.impl
 
-import io.netty.buffer.ByteBufUtil
-import io.netty.buffer.Unpooled
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
-import net.minecraft.network.PacketByteBuf
+import me.jfenn.bingo.common.scoreboard.ScoreChange
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket
@@ -16,24 +14,6 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 
 class ScoreboardManager : IScoreboardManager {
-
-    /**
-     * Construct a ScoreboardDisplayS2CPacket using its PacketByteBuf constructor,
-     * which is compatible across 1.20-1.20.2...
-     */
-    private fun createScoreboardDisplayPacket(objective: ScoreboardObjective?) : ScoreboardDisplayS2CPacket {
-        val b = Unpooled.buffer()
-        b.writeByte(1) // ScoreboardDisplaySlot.SIDEBAR.id
-
-        val str = objective?.name ?: ""
-        val strMax = ByteBufUtil.utf8MaxBytes(str)
-        val strBuf = b.alloc().buffer(strMax)
-        val strLen = ByteBufUtil.writeUtf8(strBuf, str)
-        b.writeByte(strLen)
-        b.writeBytes(strBuf)
-
-        return ScoreboardDisplayS2CPacket(PacketByteBuf(b))
-    }
 
     override fun createDummyObjective(server: MinecraftServer, name: String, displayName: Text): IObjectiveHandle {
         val objective = server.scoreboard.getNullableObjective(name) ?: run {
@@ -55,13 +35,6 @@ class ScoreboardManager : IScoreboardManager {
         for (score in server.scoreboard.getAllPlayerScores(handle.objective)) {
             if (!textLines.contains(score.playerName)) {
                 server.scoreboard.resetPlayerScore(score.playerName, handle.objective)
-
-                if (!server.isSingleplayer) {
-                    // The server sometimes fails to send this packet, so we're adding it manually. I don't know why.
-                    // - yes, this does need to be sent to all players, otherwise it may cause desync
-                    for (player in server.playerManager.playerList)
-                        player.networkHandler.sendPacket(ScoreboardPlayerUpdateS2CPacket(ServerScoreboard.UpdateMode.REMOVE, handle.name, score.playerName, 0))
-                }
             }
         }
 
@@ -71,20 +44,8 @@ class ScoreboardManager : IScoreboardManager {
         }
     }
 
-    override fun sendScoreboardDisplay(player: ServerPlayerEntity, handle: IObjectiveHandle?) {
-        require(handle is ObjectiveHandle?)
-        player.networkHandler.sendPacket(createScoreboardDisplayPacket(handle?.objective))
-    }
-
-    override fun sendScoreboardUpdates(player: ServerPlayerEntity, handle: IObjectiveHandle, sendCreate: Boolean) {
+    override fun sendObjectiveCreate(player: ServerPlayerEntity, handle: IObjectiveHandle) {
         require(handle is ObjectiveHandle)
-
-        player.networkHandler.sendPacket(
-            ScoreboardObjectiveUpdateS2CPacket(
-                handle.objective,
-                ScoreboardObjectiveUpdateS2CPacket.REMOVE_MODE,
-            )
-        )
 
         player.networkHandler.sendPacket(
             ScoreboardObjectiveUpdateS2CPacket(
@@ -93,12 +54,37 @@ class ScoreboardManager : IScoreboardManager {
             )
         )
 
-        val packets = player.server.scoreboard.createChangePackets(handle.objective)
-            .filterNot { it is ScoreboardObjectiveUpdateS2CPacket }
-            .filterNot { it is ScoreboardDisplayS2CPacket && it.slot == 1 }
+        player.networkHandler.sendPacket(
+            ScoreboardDisplayS2CPacket(1, handle.objective)
+        )
+    }
 
-        for (packet in packets) {
-            player.networkHandler.sendPacket(packet)
+    override fun sendObjectiveDelete(player: ServerPlayerEntity, handle: IObjectiveHandle) {
+        require(handle is ObjectiveHandle)
+
+        player.networkHandler.sendPacket(
+            ScoreboardObjectiveUpdateS2CPacket(
+                handle.objective,
+                ScoreboardObjectiveUpdateS2CPacket.REMOVE_MODE,
+            )
+        )
+    }
+
+    override fun sendScoreChanges(player: ServerPlayerEntity, handle: IObjectiveHandle, changes: List<ScoreChange>) {
+        require(handle is ObjectiveHandle)
+
+        for (change in changes) {
+            when (change) {
+                is ScoreChange.Create -> {
+                    player.networkHandler.sendPacket(ScoreboardPlayerUpdateS2CPacket(ServerScoreboard.UpdateMode.CHANGE, handle.name, change.name, change.value))
+                }
+                is ScoreChange.Update -> {
+                    player.networkHandler.sendPacket(ScoreboardPlayerUpdateS2CPacket(ServerScoreboard.UpdateMode.CHANGE, handle.name, change.name, change.value))
+                }
+                is ScoreChange.Remove -> {
+                    player.networkHandler.sendPacket(ScoreboardPlayerUpdateS2CPacket(ServerScoreboard.UpdateMode.REMOVE, handle.name, change.name, change.value))
+                }
+            }
         }
     }
 
