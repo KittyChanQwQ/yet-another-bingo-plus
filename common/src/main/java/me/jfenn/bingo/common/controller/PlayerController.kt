@@ -34,7 +34,7 @@ import java.util.*
  * Ensures that players are put in their correct gamemode on certain events:
  * - in pre-game -> ADVENTURE
  * - when the game starts -> SURVIVAL & clear inventory
- * - if spectating -> SPECTATOR
+ * - if spectating -> SPECTATOR (or ADVENTURE + flying, if using the vanish integration)
  * - in post-game -> CREATIVE
  *
  * Needs to additionally ensure that the state is re-applied on
@@ -145,13 +145,13 @@ class PlayerController(
         player: ServerPlayerEntity,
         forceReset: Boolean = false,
     ) {
-        val isOnTeam = state.teams.values.any { it.includesPlayer(player) }
+        val isOnTeam = teamService.isPlaying(player)
 
         val gameMode = when (state.state) {
             GameState.PREGAME -> GameMode.ADVENTURE
             GameState.PLAYING -> when {
                 isOnTeam -> GameMode.SURVIVAL
-                vanishIntegration.isInstalled() -> GameMode.CREATIVE
+                vanishIntegration.isInstalled() -> GameMode.ADVENTURE
                 else -> GameMode.SPECTATOR
             }
             GameState.POSTGAME -> GameMode.CREATIVE
@@ -170,6 +170,12 @@ class PlayerController(
         // if the player is not on a team, they should be vanished
         val isVanished = !isOnTeam && state.state == GameState.PLAYING
         vanishIntegration.setVanish(player, isVanished)
+
+        // allow players in adventure mode to fly
+        if (isVanished && vanishIntegration.isInstalled()) {
+            player.abilities.allowFlying = true
+            player.sendAbilitiesUpdate()
+        }
     }
 
     fun resetPlayer(player: ServerPlayerEntity) {
@@ -290,10 +296,14 @@ class PlayerController(
                     if (options.isElytra)
                         giveElytra(player)
 
-                    // if the player enters creative mode during a game,
-                    // prevent them from modifying the world
-                    if (player.isCreative) {
-                        player.abilities.allowModifyWorld = false
+                    // if the player is spectating in adventure mode,
+                    // they should be able to fly
+                    if (player.interactionManager.gameMode == GameMode.ADVENTURE) {
+                        val allowFlying = !teamService.isPlaying(player)
+                        if (allowFlying != player.abilities.allowFlying) {
+                            player.abilities.allowFlying = allowFlying
+                            player.sendAbilitiesUpdate()
+                        }
                     }
                 }
 

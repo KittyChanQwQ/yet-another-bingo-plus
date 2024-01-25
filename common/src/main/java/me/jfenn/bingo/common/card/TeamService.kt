@@ -20,6 +20,10 @@ class TeamService(
         return state.teams[BingoTeamKey(team.name)]
     }
 
+    fun isPlaying(player: ServerPlayerEntity): Boolean {
+        return getPlayerTeam(player) != null
+    }
+
     fun createTeam(team: BingoTeam): ITeamHandle {
         return teamManager.createTeam(
             server,

@@ -34,26 +34,11 @@ object Permission {
     /** Make sounds in the lobby, even if lobbyChaosPrevention=true */
     val BYPASS_CHAOS_PREVENTION = PermissionKey("$MOD_ID.lobby.bypass_chaos_prevention", PermissionDefault.OPERATORS)
 
-    /** Modify blocks in spectator */
-    val SPECTATOR_MODIFY_BLOCK = PermissionKey("$MOD_ID.spectator.modify_block", PermissionDefault.DENY)
-
-    /** Interact with blocks/doors in spectator */
-    val SPECTATOR_INTERACT_BLOCK = PermissionKey("$MOD_ID.spectator.interact_block", PermissionDefault.DENY)
-
-    /** Punch entities in spectator */
-    val SPECTATOR_MODIFY_ENTITY = PermissionKey("$MOD_ID.spectator.modify_entity", PermissionDefault.DENY)
-
-    /** Interact with entities in spectator */
-    val SPECTATOR_INTERACT_ENTITY = PermissionKey("$MOD_ID.spectator.interact_entity", PermissionDefault.DENY)
-
-    /** Use items in spectator */
-    val SPECTATOR_USE_ITEM = PermissionKey("$MOD_ID.spectator.use_item", PermissionDefault.DENY)
+    /** Interact with blocks/doors in vanished spectator mode */
+    val SPECTATOR_USE_DOORS = PermissionKey("$MOD_ID.spectator.use_doors", PermissionDefault.DENY)
 
     /** View inventories in spectator */
     val SPECTATOR_VIEW_INVENTORY = PermissionKey("$MOD_ID.spectator.view_inventory", PermissionDefault.ALLOW)
-
-    /** Modify inventories in spectator */
-    val SPECTATOR_MODIFY_INVENTORY = PermissionKey("$MOD_ID.spectator.modify_inventory", PermissionDefault.ALLOW)
 
     /** View all team cards in spectator */
     val SPECTATOR_VIEW_CARDS = PermissionKey("$MOD_ID.spectator.view_cards", PermissionDefault.ALLOW)
