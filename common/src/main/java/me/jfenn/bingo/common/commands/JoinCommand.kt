@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.controller.PlayerController
@@ -23,7 +24,7 @@ class JoinCommand : BaseCommand() {
                         CommandManager.argument("player", EntityArgumentType.player())
                             .require(
                                 requireBingoInstance(),
-                                requirePermission(permissions::canUseJoinPlayerCommand),
+                                requirePermission(Permission.COMMAND_JOIN_PLAYER),
                             )
                             .executesInScope { ctx ->
                                 val state = get<BingoState>()
@@ -42,7 +43,7 @@ class JoinCommand : BaseCommand() {
                     )
                     .require(
                         requireBingoInstance(),
-                        requirePermission(permissions::canUseJoinCommand),
+                        requirePermission(Permission.COMMAND_JOIN),
                     )
                     .executesInScope { ctx ->
                         val state = get<BingoState>()

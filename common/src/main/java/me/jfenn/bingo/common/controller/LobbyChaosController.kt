@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.ChatMessages
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
@@ -20,7 +21,7 @@ class LobbyChaosController(
     private fun shouldPreventLobbyChaos(player: ServerPlayerEntity): Boolean {
         return config.preventLobbyChaos &&
                 state.state == GameState.PREGAME &&
-                !permissions.canBypassLobbyChaosPrevention(player)
+                !permissions.hasPermission(player, Permission.BYPASS_CHAOS_PREVENTION)
     }
 
     private val hitBlockSet = setOf(

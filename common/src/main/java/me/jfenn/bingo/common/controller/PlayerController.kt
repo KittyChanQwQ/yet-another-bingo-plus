@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.controller
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
@@ -298,7 +299,7 @@ class PlayerController(
 
                 if (state.state != GameState.PREGAME && (playerTeam == null || state.state == GameState.POSTGAME)) {
                     // if the state is not POSTGAME, players must have permission to receive the spectator cards
-                    if (state.state == GameState.POSTGAME || permissions.canSpectatorViewCards(player))
+                    if (state.state == GameState.POSTGAME || permissions.hasPermission(player, Permission.SPECTATOR_VIEW_CARDS))
                         giveSpectatorMapItems(player)
                 }
 

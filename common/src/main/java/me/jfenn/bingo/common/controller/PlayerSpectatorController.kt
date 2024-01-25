@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.spectator.SpectatorInventoryScreenHandler
 import me.jfenn.bingo.common.state.BingoState
@@ -33,7 +34,7 @@ class PlayerSpectatorController(
             if (
                 state.state == GameState.PLAYING
                 && player.isCreative
-                && !permissions.canSpectatorInteractBlock(player)
+                && !permissions.hasPermission(player, Permission.SPECTATOR_INTERACT_BLOCK)
             ) {
                 val blockState = player.world.getBlockState(it.hit.blockPos)
                 val block = blockState.block
@@ -56,7 +57,7 @@ class PlayerSpectatorController(
                     }
                     else -> null
                 }.takeIf {
-                    permissions.canSpectatorViewInventory(player)
+                    permissions.hasPermission(player, Permission.SPECTATOR_VIEW_INVENTORY)
                 }
 
                 if (inventory != null) {
@@ -92,7 +93,7 @@ class PlayerSpectatorController(
             if (
                 state.state == GameState.PLAYING
                 && player.isCreative
-                && !permissions.canSpectatorModifyBlock(player)
+                && !permissions.hasPermission(player, Permission.SPECTATOR_MODIFY_BLOCK)
             ) {
                 return@onAttackBlock ActionResult.FAIL
             }
@@ -108,7 +109,7 @@ class PlayerSpectatorController(
             if (
                 state.state == GameState.PLAYING
                 && player.isCreative
-                && !permissions.canSpectatorInteractEntity(player)
+                && !permissions.hasPermission(player, Permission.SPECTATOR_INTERACT_ENTITY)
             ) {
                 // if the interacted entity has an inventory, open it as read-only...
                 val inventory: Inventory? = when (it.entity) {
@@ -116,7 +117,7 @@ class PlayerSpectatorController(
                     is ChestBoatEntity -> it.entity
                     else -> null
                 }.takeIf {
-                    permissions.canSpectatorViewInventory(player)
+                    permissions.hasPermission(player, Permission.SPECTATOR_VIEW_INVENTORY)
                 }
 
                 if (inventory != null) {
@@ -150,7 +151,7 @@ class PlayerSpectatorController(
             if (
                 state.state == GameState.PLAYING
                 && player.isCreative
-                && !permissions.canSpectatorModifyEntity(player)
+                && !permissions.hasPermission(player, Permission.SPECTATOR_MODIFY_ENTITY)
             ) {
                 return@onAttackEntity ActionResult.FAIL
             }
@@ -166,7 +167,7 @@ class PlayerSpectatorController(
             if (
                 state.state == GameState.PLAYING
                 && player.isCreative
-                && !permissions.canSpectatorUseItem(player)
+                && !permissions.hasPermission(player, Permission.SPECTATOR_USE_ITEM)
             ) {
                 return@onUseItem TypedActionResult.fail(null)
             }

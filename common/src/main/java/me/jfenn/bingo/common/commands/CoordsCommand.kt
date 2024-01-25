@@ -7,6 +7,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.state.GameState
@@ -72,7 +73,7 @@ class CoordsCommand(
         LiteralArgumentBuilder.literal<ServerCommandSource?>("coords")
             .require(
                 requireState(GameState.PLAYING),
-                requirePermission(permissions::canUseCoordsCommand),
+                requirePermission(Permission.COMMAND_COORDS),
             )
             .then(
                 LiteralArgumentBuilder.literal<ServerCommandSource?>("list")

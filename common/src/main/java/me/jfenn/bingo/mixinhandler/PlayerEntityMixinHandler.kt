@@ -1,5 +1,6 @@
 package me.jfenn.bingo.mixinhandler
 
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
@@ -21,7 +22,7 @@ object PlayerEntityMixinHandler {
 
         return state.state == GameState.PLAYING
                 && teamService.getPlayerTeam(player) == null
-                && !permissions.canSpectatorUseItem(player)
+                && !permissions.hasPermission(player, Permission.SPECTATOR_USE_ITEM)
     }
 
 }

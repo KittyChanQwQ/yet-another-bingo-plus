@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -23,7 +24,9 @@ fun MenuComponent.registerPlayerMenu(
     events: ScopedEvents = koinScope.get(),
     permissionsIntegration: PermissionsIntegration = koinScope.get(),
 ) {
-    val permissionGetter = permissionsIntegration::canUsePlayerMenu
+    val permissionGetter = { player: ServerPlayerEntity ->
+        permissionsIntegration.hasPermission(player, Permission.CONFIGURE_PLAYER)
+    }
 
     registerEntity(EntityType.TEXT_DISPLAY, pos) {
         put("Rotation", NbtList().apply {

@@ -7,6 +7,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
@@ -33,7 +34,7 @@ class BingoCommands : BaseCommand() {
                 run {
                     var setCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("set")
                         .require(
-                            requirePermission(permissions::canUseBingoSetCommand),
+                            requirePermission(Permission.CONFIGURE_PLAYER),
                         )
 
                     val fields = listOf(
@@ -71,7 +72,7 @@ class BingoCommands : BaseCommand() {
                 LiteralArgumentBuilder.literal<ServerCommandSource>("itemdist")
                     .require(
                         requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(permissions::canUseBingoCommand),
+                        requirePermission(Permission.CONFIGURE_GAME),
                     )
                     .then(run {
                         val args = TierList.entries
@@ -114,7 +115,7 @@ class BingoCommands : BaseCommand() {
                 LiteralArgumentBuilder.literal<ServerCommandSource>("elytra")
                     .require(
                         requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(permissions::canUseBingoCommand),
+                        requirePermission(Permission.CONFIGURE_GAME),
                     )
                     .then(
                         RequiredArgumentBuilder.argument<ServerCommandSource, Boolean>(
@@ -152,7 +153,7 @@ class BingoCommands : BaseCommand() {
                 LiteralArgumentBuilder.literal<ServerCommandSource>("wincon")
                     .require(
                         requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(permissions::canUseBingoCommand),
+                        requirePermission(Permission.CONFIGURE_GAME),
                     )
                     .let {
                         val options = WinCondition.entries
@@ -182,7 +183,7 @@ class BingoCommands : BaseCommand() {
                 LiteralArgumentBuilder.literal<ServerCommandSource>("timelimit")
                     .require(
                         requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(permissions::canUseBingoCommand),
+                        requirePermission(Permission.CONFIGURE_GAME),
                     )
                     .then(
                         RequiredArgumentBuilder.argument<ServerCommandSource, Int>(
@@ -218,7 +219,7 @@ class BingoCommands : BaseCommand() {
                 LiteralArgumentBuilder.literal<ServerCommandSource>("shuffleteams")
                     .require(
                         requireState(GameState.PREGAME),
-                        requirePermission(permissions::canUseBingoCommand),
+                        requirePermission(Permission.CONFIGURE_GAME),
                     )
                     .then(
                         RequiredArgumentBuilder.argument<ServerCommandSource?, Int?>(
@@ -239,7 +240,7 @@ class BingoCommands : BaseCommand() {
                 // show or set the current BINGO card seed
                 LiteralArgumentBuilder.literal<ServerCommandSource>("seed")
                     .require(
-                        requirePermission(permissions::canUseBingoCommand),
+                        requirePermission(Permission.CONFIGURE_GAME),
                     )
                     .executesInScope { ctx ->
                         val state = get<BingoState>()
@@ -259,7 +260,7 @@ class BingoCommands : BaseCommand() {
                         )
                             .require(
                                 requireState(GameState.PREGAME, GameState.PLAYING),
-                                requirePermission(permissions::canUseBingoCommand),
+                                requirePermission(Permission.CONFIGURE_GAME),
                             )
                             .executesInScope { ctx ->
                                 val state = get<BingoState>()
@@ -283,7 +284,7 @@ class BingoCommands : BaseCommand() {
                 LiteralArgumentBuilder.literal<ServerCommandSource>("reroll")
                     .require(
                         requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(permissions::canUseBingoCommand),
+                        requirePermission(Permission.CONFIGURE_GAME),
                     )
                     .executesInScope { ctx ->
                         val cardService = get<CardService>()
@@ -297,7 +298,7 @@ class BingoCommands : BaseCommand() {
                 LiteralArgumentBuilder.literal<ServerCommandSource>("start")
                     .require(
                         requireState(GameState.PREGAME),
-                        requirePermission(permissions::canUseBingoCommand),
+                        requirePermission(Permission.CONFIGURE_GAME),
                     )
                     .executesInScope { ctx ->
                         val gameService = get<GameService>()
@@ -315,7 +316,7 @@ class BingoCommands : BaseCommand() {
                 LiteralArgumentBuilder.literal<ServerCommandSource>("end")
                     .require(
                         requireState(GameState.PLAYING),
-                        requirePermission(permissions::canUseBingoCommand),
+                        requirePermission(Permission.CONFIGURE_GAME),
                     )
                     .executesInScope {
                         val gameService = get<GameService>()

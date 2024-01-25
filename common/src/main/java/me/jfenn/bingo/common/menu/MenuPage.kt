@@ -1,9 +1,11 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.GameService
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerMenuPage(
@@ -15,7 +17,9 @@ fun MenuComponent.registerMenuPage(
     var page = 0
 
     val itemDistributionProp = propertyRef(options::itemDistribution)
-    val permissionGetter = permissionsIntegration::canUseGameMenu
+    val permissionGetter = { player: ServerPlayerEntity ->
+        permissionsIntegration.hasPermission(player, Permission.CONFIGURE_GAME)
+    }
 
     val pages = listOf(
         component(koinScope) {
