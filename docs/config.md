@@ -7,6 +7,7 @@ The BINGO mod creates several config files the first time you start it up:
  └ 🗀 bingo/
    ├ config.json
    ├ game-options.json
+   ├ game-options-default.json
    ├ player-settings.json
    └ ... .tierlist.json
 🗀 mods/
@@ -23,9 +24,15 @@ The specific options are described [on the "Additional Options" page](./config-e
 
 Most of these options can be changed in-game, using the menu in the pre-game lobby. For the most part, this file does not need to be manually edited.
 
+This file is overwritten with the selected options whenever a game is started.
+
+## `game-options-default.json`
+
+This file supplies the default options for the game menu - used whenever the "Reset Defaults" button is pressed. If you want to change the default game options, this file can be edited manually - or copied from `game-options.json`.
+
 ## `player-settings.json`
 
-`players.json` contains player-specific settings, such as whether to display info in a bossbar or scoreboard. These options can be changed by each player in the pre-game lobby.
+`player-settings.json` contains player-specific settings, such as whether to display info in a bossbar or scoreboard. These options can be changed by each player in the pre-game lobby.
 
 ## `*.tierlist.json`
 

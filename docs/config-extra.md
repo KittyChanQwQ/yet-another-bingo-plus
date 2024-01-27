@@ -13,11 +13,6 @@ server.properties
 
 These config options can only be changed by manually editing the `config.json` file, and do not have an interface in the pre-game lobby.
 
-## `"overwriteOptions"`
-(default: true)
-
-Specifies whether changes to the game configuration should persist in the file. If true, changing in-game settings (win condition, item distribution, time limit) will update those values.
-
 ## `"excludeSpawnKitItemsFromCards"`
 (default: true)
 

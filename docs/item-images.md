@@ -16,7 +16,7 @@ These are packaged with the mod by default. However, they can be overridden by p
    ├ 🗀 images/
    │ └ acacia_trapdoor.png
    ├ config.json
-   └ players.json
+   └ player-settings.json
 🗀 mods/
 🗀 world/
 server.properties

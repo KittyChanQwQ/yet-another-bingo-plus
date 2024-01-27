@@ -67,6 +67,14 @@ export default defineConfig({
           { text: 'Lobby Structure', link: '/lobby-structure' },
         ],
       },
+      {
+        text: 'Compatible Mods',
+        collapsed: false,
+        items: [
+          { text: 'LuckPerms', link: '/mods/luckperms' },
+          { text: 'Vanish', link: '/mods/vanish' },
+        ]
+      }
     ],
 
     socialLinks: [

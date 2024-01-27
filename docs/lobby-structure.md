@@ -15,7 +15,7 @@ config directory, under `./config/bingo/lobby/lobby.nbt`.
    ├ 🗀 lobby/
    │ └ lobby.nbt
    ├ config.json
-   └ players.json
+   └ player-settings.json
 🗀 mods/
 🗀 world/
 server.properties
