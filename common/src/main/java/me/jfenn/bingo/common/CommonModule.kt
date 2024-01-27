@@ -44,6 +44,7 @@ val commonModule = module {
     singleOf(::ChatCommand) withOptions { createdAtStart() }
     singleOf(::CoordsCommand) withOptions { createdAtStart() }
     singleOf(::JoinCommand) withOptions { createdAtStart() }
+    singleOf(::SpectatorCommand) withOptions { createdAtStart() }
     singleOf(::RestartCommand) withOptions { createdAtStart() }
 
     scope<BingoContext> {

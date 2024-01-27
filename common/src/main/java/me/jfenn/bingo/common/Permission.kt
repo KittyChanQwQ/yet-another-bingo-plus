@@ -28,6 +28,9 @@ object Permission {
     /** "/coords" command */
     val COMMAND_COORDS = PermissionKey("$MOD_ID.command.coords", PermissionDefault.ALLOW)
 
+    /** "/spectator" command */
+    val COMMAND_SPECTATOR = PermissionKey("$MOD_ID.command.spectator", PermissionDefault.ALLOW)
+
     /** "/restart" command */
     val COMMAND_RESTART = PermissionKey("$MOD_ID.command.restart", PermissionDefault.OPERATORS)
 
