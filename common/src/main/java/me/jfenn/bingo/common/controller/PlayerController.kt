@@ -202,10 +202,8 @@ class PlayerController(
         // give each player their team's card
         giveMapCardItem(player)
 
-        val team = teamService.getPlayerTeam(player)
-
         // give spawn equipment to the player if they are on a team
-        if (team != null) {
+        if (teamService.isPlaying(player)) {
             spawnService.giveSpawnEquipment(listOf(player))
         }
     }
@@ -238,6 +236,7 @@ class PlayerController(
                 state.state == GameState.PLAYING
                 // if KEEP_INVENTORY is on, we don't need to replace these items
                 && !server.gameRules.get(GameRules.KEEP_INVENTORY).get()
+                && teamService.isPlaying(player)
             ) {
                 spawnService.giveSpawnEquipment(listOf(player))
             }
@@ -293,7 +292,7 @@ class PlayerController(
                     giveMapCardItem(player)
 
                     // if elytra mode is configured, give the player an elytra
-                    if (options.isElytra)
+                    if (options.isElytra && teamService.isPlaying(player))
                         giveElytra(player)
 
                     // if the player is spectating in adventure mode,
