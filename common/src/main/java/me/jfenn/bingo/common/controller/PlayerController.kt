@@ -318,11 +318,11 @@ class PlayerController(
                 val playerProfile = BingoPlayerProfile.fromPlayer(player)
                 for (team in state.teams.values) {
                     if (playerTeam?.key == team.key) {
-                        team.players.add(playerProfile)
-                        updateGameMode(player)
+                        if (team.players.add(playerProfile))
+                            updateGameMode(player)
                     } else {
-                        team.players.remove(playerProfile)
-                        updateGameMode(player)
+                        if (team.players.remove(playerProfile))
+                            updateGameMode(player)
                     }
                 }
             }
