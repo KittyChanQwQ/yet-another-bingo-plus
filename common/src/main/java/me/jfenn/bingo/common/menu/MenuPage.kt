@@ -2,7 +2,9 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.network.ServerPlayerEntity
@@ -12,6 +14,7 @@ fun MenuComponent.registerMenuPage(
     position: Vec3d,
     options: BingoOptions = koinScope.get(),
     gameService: GameService = koinScope.get(),
+    cardService: CardService = koinScope.get(),
     permissionsIntegration: PermissionsIntegration = koinScope.get(),
 ) {
     var page = 0
@@ -92,9 +95,32 @@ fun MenuComponent.registerMenuPage(
         },
     )
 
+    registerButton(
+        position = position.add(-3.7, 0.5, 0.0),
+        text = "⟳ Reset Defaults",
+        isActiveProp = computedProperty { false },
+        permissionGetter = permissionGetter,
+    ) {
+        // Reset the menu to the default options
+        options.copyFrom(ConfigService.optionsDefault)
+        cardService.generateCard()
+        markDirty()
+    }
+
+    registerButton(
+        position = position.add(3.7, 0.5, 0.0),
+        text = "⚄ Re-roll Card",
+        isActiveProp = computedProperty { false },
+        permissionGetter = permissionGetter,
+    ) {
+        // Shuffle the current card + seed
+        cardService.shuffleCard()
+        markDirty()
+    }
+
     for (i in pages.indices) {
         registerButton(
-            position = position.add(-((pages.size-1) * 0.7) + (i*1.4), 0.5, 0.0),
+            position = position.add(-((pages.size-1) * 0.6) + (i*1.2), 0.5, 0.0),
             text = "Page ${i+1}",
             isActiveProp = computedProperty { page == i },
             permissionGetter = permissionGetter,

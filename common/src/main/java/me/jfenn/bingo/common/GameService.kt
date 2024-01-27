@@ -57,9 +57,7 @@ class GameService(
         }
 
         // save the current config, if overwrite option is set
-        if (ConfigService.config.overwriteOptions) {
-            ConfigService.writeOptions(options)
-        }
+        ConfigService.writeOptions(options)
 
         for (player in server.playerManager.playerList) {
             val team = teamService.getPlayerTeam(player)

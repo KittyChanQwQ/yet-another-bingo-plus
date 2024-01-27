@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.spawn.SpawnItem
 import net.minecraft.entity.EntityType
@@ -12,6 +13,7 @@ fun MenuComponent.registerSpawnKit(
     position: Vec3d,
     options: BingoOptions,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
+    cardService: CardService = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", "\"Spawn Kit\"")
@@ -26,7 +28,9 @@ fun MenuComponent.registerSpawnKit(
         text = "Player Items",
         toggleProp = propertyRef(options::isPlayerKit),
         permissionGetter = permissionGetter,
-    )
+    ) {
+        cardService.generateCard()
+    }
 
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
@@ -39,6 +43,7 @@ fun MenuComponent.registerSpawnKit(
                     InventoryScreenHandler(syncId, options.playerKitItems.flatMap { it.toItemStacks() }, inv).apply {
                         onClose { stacks ->
                             options.playerKitItems = stacks.map { SpawnItem.fromItemStack(it) }
+                            cardService.generateCard()
                         }
                     }
                 },
@@ -52,7 +57,9 @@ fun MenuComponent.registerSpawnKit(
         text = "Team Chest",
         toggleProp = propertyRef(options::isTeamKit),
         permissionGetter = permissionGetter,
-    )
+    ) {
+        cardService.generateCard()
+    }
 
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 4), 0.0),
@@ -65,6 +72,7 @@ fun MenuComponent.registerSpawnKit(
                     InventoryScreenHandler(syncId, options.teamKitItems.flatMap { it.toItemStacks() }, inv).apply {
                         onClose { stacks ->
                             options.teamKitItems = stacks.map { SpawnItem.fromItemStack(it) }
+                            cardService.generateCard()
                         }
                     }
                 },

@@ -4,6 +4,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.spawn.SpawnItem
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.full.memberProperties
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -83,6 +85,17 @@ data class BingoOptions(
         }
 
         return features.joinToString(", ").ifEmpty { "None" }
+    }
+
+    fun copyFrom(options: BingoOptions) {
+        for (p in BingoOptions::class.memberProperties) {
+            val property = p as? KMutableProperty1<BingoOptions, Any?>
+                ?: continue
+
+            println("Setting property ${p.name}")
+            val value = property.getValue(options, property)
+            property.setValue(this, property, value)
+        }
     }
 
 }
