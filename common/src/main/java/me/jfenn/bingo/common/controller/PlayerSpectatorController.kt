@@ -7,9 +7,7 @@ import me.jfenn.bingo.common.spectator.SpectatorInventoryScreenHandler
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.integrations.PermissionsIntegration
-import net.minecraft.block.BarrelBlock
-import net.minecraft.block.ChestBlock
-import net.minecraft.block.ShulkerBoxBlock
+import net.minecraft.block.*
 import net.minecraft.entity.vehicle.ChestBoatEntity
 import net.minecraft.entity.vehicle.ChestMinecartEntity
 import net.minecraft.inventory.DoubleInventory
@@ -18,6 +16,7 @@ import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.ActionResult
+import net.minecraft.world.GameMode
 
 class PlayerSpectatorController(
     events: ScopedEvents,
@@ -31,12 +30,21 @@ class PlayerSpectatorController(
             val player = it.player as? ServerPlayerEntity ?: return@onUseBlock null
             if (state.state != GameState.PLAYING) return@onUseBlock null
             if (teamService.isPlaying(player)) return@onUseBlock null
+            if (player.interactionManager.gameMode != GameMode.ADVENTURE) return@onUseBlock null
 
             // if the player is spectating a game, do not
             // allow them to modify any inventory
 
             val blockState = player.world.getBlockState(it.hit.blockPos)
             val block = blockState.block
+
+            // if the player has permission to open doors...
+            if (permissions.hasPermission(player, Permission.SPECTATOR_USE_DOORS)) {
+                when (block) {
+                    is DoorBlock -> return@onUseBlock null
+                    is TrapdoorBlock -> return@onUseBlock null
+                }
+            }
 
             // if the interacted block has an inventory, open it as read-only...
             var rows = 0
@@ -87,6 +95,7 @@ class PlayerSpectatorController(
             val player = it.player as? ServerPlayerEntity ?: return@onUseEntity null
             if (state.state != GameState.PLAYING) return@onUseEntity null
             if (teamService.isPlaying(player)) return@onUseEntity null
+            if (player.interactionManager.gameMode != GameMode.ADVENTURE) return@onUseEntity null
 
             // if the player is spectating a game, do not
             // allow them to modify any inventory
@@ -125,6 +134,7 @@ class PlayerSpectatorController(
             val player = it.player as? ServerPlayerEntity ?: return@onAttackEntity null
             if (state.state != GameState.PLAYING) return@onAttackEntity null
             if (teamService.isPlaying(player)) return@onAttackEntity null
+            if (player.interactionManager.gameMode != GameMode.ADVENTURE) return@onAttackEntity null
 
             // if the player is spectating a game, do not
             // allow them to attack any entity

@@ -178,16 +178,20 @@ class PlayerController(
         }
     }
 
-    fun resetPlayer(player: ServerPlayerEntity) {
-        // reset player info
+    fun resetPlayerHealth(player: ServerPlayerEntity) {
         player.clearStatusEffects()
-        player.inventory.clear()
         player.fireTicks = 0
         player.isOnFire = false
         player.health = 20f
         player.hungerManager.foodLevel = 20
         player.hungerManager.saturationLevel = 5f
         player.hungerManager.exhaustion = 0f
+    }
+
+    fun resetPlayer(player: ServerPlayerEntity) {
+        // reset player info
+        resetPlayerHealth(player)
+        player.inventory.clear()
 
         // unlock all crafting recipes, if set
         if (options.isUnlockRecipes)
@@ -298,9 +302,12 @@ class PlayerController(
                     // if the player is spectating in adventure mode,
                     // they should be able to fly
                     if (player.interactionManager.gameMode == GameMode.ADVENTURE) {
-                        val allowFlying = !teamService.isPlaying(player)
-                        if (allowFlying != player.abilities.allowFlying) {
-                            player.abilities.allowFlying = allowFlying
+                        val isSpectating = !teamService.isPlaying(player)
+                        if (isSpectating) {
+                            resetPlayerHealth(player)
+                        }
+                        if (isSpectating != player.abilities.allowFlying) {
+                            player.abilities.allowFlying = isSpectating
                             player.sendAbilitiesUpdate()
                         }
                     }
