@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.map
 
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
@@ -200,27 +199,26 @@ class MapRenderService(
     private fun drawMapTile(
         team: BingoTeam?,
         mapState: MapState,
-        item: BingoCardEntry,
+        entry: BingoCardEntry,
+        tile: BingoMapTile,
         itemX: Int,
         itemY: Int,
     ) {
         require(itemX in 0 until 5)
         require(itemY in 0 until 5)
 
-        val isAchieved = team != null && item.hasAchieved(team)
-        val isFlashing = item.isFlashing(team, FLASHING_DURATION)
-                && (server.ticks / 10) % 2 == 0
+        val isAchieved = team != null && entry.hasAchieved(team)
 
-        val isLocked = options.isLockoutMode && item.teams.isNotEmpty() && team != null && !item.hasAchieved(team)
-        val tileImage = getTileImage(item) ?: BingoTileImage.EMPTY
+        val isLocked = options.isLockoutMode && entry.teams.isNotEmpty() && team != null && !entry.hasAchieved(team)
+        val tileImage = getTileImage(entry) ?: BingoTileImage.EMPTY
         val tileImageArray = when {
-            options.hiddenItems && (team == null || !item.hasSeen(team)) -> BingoTileImage.EMPTY.regular
-            isFlashing -> tileImage.flashing
+            tile.isHidden -> BingoTileImage.EMPTY.regular
+            tile.isFlashing -> tileImage.flashing
             isAchieved -> tileImage.achieved
             else -> tileImage.regular
         }
 
-        val itemTeams = item.teams.mapNotNull { state.teams[it] }
+        val itemTeams = entry.teams.mapNotNull { state.teams[it] }
             .filter { it.key != team?.key }
 
         val tileX = MAP_BORDER + TILE_SIZE*itemX
@@ -253,7 +251,7 @@ class MapRenderService(
 
         if (
             options.showOtherTeamCompletions &&
-            item.hasAnyAchieved()
+            entry.hasAnyAchieved()
         ) {
             for (innerT in 0..innerMax*2 + 1) {
                 val tileTeamX = innerT * itemTeams.size / (innerMax*2 + 1)
@@ -279,14 +277,14 @@ class MapRenderService(
         }
     }
 
-    private fun shouldUpdate(
-        entry: BingoCardEntry,
+    private fun getTileState(
         team: BingoTeam?,
-        updatedAt: Instant,
-    ): Boolean {
-        return entry.updatedAt(team) > updatedAt
-                || ((options.showOtherTeamCompletions || options.isLockoutMode) && entry.updatedAt > updatedAt)
-                || (entry.isFlashing(team, FLASHING_DURATION + 1.seconds) && server.ticks % 10 == 0)
+        entry: BingoCardEntry,
+    ) : BingoMapTile {
+        return BingoMapTile(
+            isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
+            isHidden = options.hiddenItems && (team == null || !entry.hasSeen(team)),
+        )
     }
 
     fun update(
@@ -307,11 +305,21 @@ class MapRenderService(
         for (x in 0 until 5) {
             for (y in 0 until 5) {
                 val entry = card.entry(x, y)
-                if (shouldUpdate(entry, team, map.updatedAt)) {
+                val drawnState = map.tile(x, y)
+                val currentState = getTileState(team, entry)
+
+                if (
+                    entry.updatedAt(team) > map.updatedAt ||
+                    ((options.showOtherTeamCompletions || options.isLockoutMode) && entry.updatedAt > map.updatedAt) ||
+                    drawnState != currentState
+                ) {
+                    map.setTile(x, y, currentState)
+
                     drawMapTile(
                         mapState = state,
                         team = team,
-                        item = entry,
+                        entry = entry,
+                        tile = currentState,
                         itemX = x,
                         itemY = y,
                     )
