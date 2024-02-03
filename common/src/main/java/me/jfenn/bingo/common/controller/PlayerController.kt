@@ -182,7 +182,8 @@ class PlayerController(
         player.clearStatusEffects()
         player.fireTicks = 0
         player.isOnFire = false
-        player.health = 20f
+        player.health = player.maxHealth
+        player.air = player.maxAir
         player.hungerManager.foodLevel = 20
         player.hungerManager.saturationLevel = 5f
         player.hungerManager.exhaustion = 0f
