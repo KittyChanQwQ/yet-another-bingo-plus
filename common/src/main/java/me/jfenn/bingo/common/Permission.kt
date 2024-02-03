@@ -1,5 +1,9 @@
 package me.jfenn.bingo.common
 
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberProperties
+
 class PermissionKey(
     val permission: String,
     val default: PermissionDefault,
@@ -45,5 +49,9 @@ object Permission {
 
     /** View all team cards in spectator */
     val SPECTATOR_VIEW_CARDS = PermissionKey("$MOD_ID.spectator.view_cards", PermissionDefault.ALLOW)
+
+    fun getPermissions() = this::class.declaredMemberProperties
+        .filter { it.returnType == PermissionKey::class }
+        .map { @Suppress("UNCHECKED_CAST") (it as KProperty1<Permission, PermissionKey>).get(this) }
 
 }
