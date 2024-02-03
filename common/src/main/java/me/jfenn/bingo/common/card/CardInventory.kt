@@ -30,12 +30,17 @@ class CardInventory(
 
         if (slotX in 0 until 5 && slotY in 0 until 5) {
             val entry = card.entry(slotX, slotY)
-            if (
-                // If the items are hidden, don't show them in the card inventory!
-                !options.hiddenItems ||
-                (team != null && entry.hasSeen(team)) ||
-                state.state == GameState.POSTGAME
-            ) {
+
+            // If the items are hidden, don't show them in the card inventory!
+            val isVisible = !options.hiddenItems ||
+                    // if the team isn't null and has seen the item
+                    (team != null && entry.hasSeen(team)) ||
+                    // if the team is null and the game is playing (i.e. the player is spectating)
+                    (team == null && state.state != GameState.PREGAME) ||
+                    // if the game is ended
+                    state.state == GameState.POSTGAME
+
+            if (isVisible) {
                 entry.visualItem?.let {
                     return ItemStack(it, 1)
                 }
