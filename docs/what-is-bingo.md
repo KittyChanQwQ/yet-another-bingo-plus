@@ -1,3 +1,7 @@
+---
+description: '“Minecraft BINGO” is a custom gamemode in which teams compete to collect items on a randomized BINGO card. The first team to complete the required number of lines wins the game!'
+---
+
 # What is Minecraft BINGO?
 
 "Minecraft BINGO" is a custom gamemode in which teams compete to collect the items on a randomized Bingo Card.

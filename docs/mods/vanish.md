@@ -1,5 +1,6 @@
 ---
 layout: doc
+description: Use the Yet Another Minecraft BINGO mod together with Vanish for an improved spectator mode!
 ---
 
 # Vanish

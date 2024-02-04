@@ -1,3 +1,7 @@
+---
+description: Minecraft BINGO is often a lot more demanding on the server than regular gameplay! Find out how you can configure the game to run at its best performance.
+---
+
 # Server Optimization
 
 Minecraft BINGO is often a lot more demanding on the server than regular gameplay! The game sometimes doesn't run very well, especially if you're playing on a mid-range server with lots of players... and in a game where the objective is to explore as much as possible.

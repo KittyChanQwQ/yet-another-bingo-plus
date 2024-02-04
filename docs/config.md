@@ -1,3 +1,7 @@
+---
+description: Find out how to configure Yet Another Minecraft BINGO using the options in its JSON config files.
+---
+
 # Config Files
 
 The BINGO mod creates several config files the first time you start it up:

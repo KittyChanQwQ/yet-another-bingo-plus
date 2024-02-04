@@ -1,6 +1,7 @@
 ---
 layout: doc
 aside: false
+description: Find out how to configure permissions for Minecraft BINGO using the LuckPerms permissions mod!
 ---
 
 # LuckPerms

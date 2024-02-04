@@ -1,6 +1,7 @@
 ---
 layout: doc
 aside: false
+description: Use this page to generate your own item tier lists to use with the Yet Another Minecraft BINGO mod. These files can be downloaded and placed in your server's config directory.
 ---
 
 <script setup>

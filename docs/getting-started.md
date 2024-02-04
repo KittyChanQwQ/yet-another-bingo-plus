@@ -1,3 +1,7 @@
+---
+description: Find out how to install and use the Yet Another Minecraft BINGO mod on Fabric or Quilt!
+---
+
 # Getting Started
 
 To use this mod, you'll first need to have [Quilt](https://quiltmc.org/en/) or [Fabric](https://fabricmc.net) installed.

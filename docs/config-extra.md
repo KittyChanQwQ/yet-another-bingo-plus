@@ -1,3 +1,7 @@
+---
+description: A list of the customizable behavior in Yet Another Minecraft BINGO's additional config.json options.
+---
+
 # Additional config options
 
 ```txt{3}

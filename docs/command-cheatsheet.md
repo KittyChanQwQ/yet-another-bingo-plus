@@ -1,3 +1,7 @@
+---
+description: A reference page for all of the game commands provided in Yet Another Minecraft BINGO.
+---
+
 # Command Cheatsheet
 
 ## Player commands

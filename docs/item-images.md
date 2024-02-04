@@ -1,3 +1,7 @@
+---
+description: Customize the item images used in Yet Another Minecraft BINGO.
+---
+
 # Item Images
 
 Items will always be drawn onto the bingo card map by the server. This means that the server needs to provide images

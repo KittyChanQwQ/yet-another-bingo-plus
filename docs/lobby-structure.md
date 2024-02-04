@@ -1,3 +1,7 @@
+---
+description: Configure a custom game lobby in Yet Another Minecraft BINGO, using an NBT structure file.
+---
+
 # Lobby Structure
 
 The lobby structure used as the game's spawn area can also be customized by adding an
