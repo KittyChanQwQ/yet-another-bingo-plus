@@ -72,7 +72,7 @@ class CoordsCommand(
         // send current player coordinates to other team members
         LiteralArgumentBuilder.literal<ServerCommandSource?>("coords")
             .require(
-                requireState(GameState.PLAYING),
+                requireState(GameState.PLAYING, GameState.POSTGAME),
                 requirePermission(Permission.COMMAND_COORDS),
             )
             .then(
