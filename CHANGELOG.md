@@ -1,23 +1,11 @@
-### New Features:
-
-- Added a `/bingo start` command to start games from the lobby
-
-- Config files are now split into `config.json` (global config) and `game-options.json` (per-game options)
-
-- Added "Reset Defaults" and "Re-roll Card" buttons to the lobby menu
-
-- Added a `"preventLobbyChaos"` config option (default: false) that prevents players from making sounds and generally being a nuisance in the pre-game lobby
-
-- Support for using [LuckPerms](https://minecraft.horrific.dev/bingo/mods/luckperms) and [Vanish](https://minecraft.horrific.dev/bingo/mods/vanish) to spectate games on multiplayer servers.
+A couple small bug fixes since the last update - no new features in this one!
 
 ### Bugs Squashed:
 
-- Various performance improvements to server-side map rendering & scoreboard updates
-
-- Fixed bingo card not updating for other teams in the "Lockout" gamemode 
+- Spectators can now see all items in the card inventory when in "Hidden Items" mode
   
-- Fixed a few potential crashes on client-side singleplayer games
+- Fixed issues with bingo cards missing some tile updates during lag
 
-- Fixed players not being teleported when the game starts if they change gamemode in the lobby
+- Fixed the hidden items toggle not updating preview cards in the lobby
 
-- Fixed rainy weather sometimes occurring in the pre-game lobby
+- Prevent spectators from taking drowning damage
