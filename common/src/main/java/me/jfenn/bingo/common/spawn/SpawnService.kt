@@ -67,15 +67,16 @@ class SpawnService(
     }
 
     fun teleportPlayer(player: ServerPlayerEntity) {
+        val world = getSpawnDimension()
+
         val team = teamService.getPlayerTeam(player)
         val spawn = team?.let {
             getTeamSpawnpoint(team)
         } ?: run {
-            BlockPos(0, 100, 0)
+            world.spawnPos
         }
 
         // random offset for each player to prevent collision grouping
-        val world = getSpawnDimension()
         player.teleport(world, spawn.x + Random.nextDouble(), spawn.y.toDouble(), spawn.z + Random.nextDouble(), 0f, 0f)
         player.setSpawnPoint(
             world.registryKey,
