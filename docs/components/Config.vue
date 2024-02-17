@@ -44,6 +44,7 @@
 						<ItemList
 							can-drag
 							can-drop
+							can-group
 							:items="tierList[tier]"
 							:filter="filter"
 							@items-changed="(items) => onItemsChanged(tier, items)"
@@ -95,7 +96,7 @@ import DownloadButton from "./DownloadButton.vue";
 import SearchInput from "./SearchInput.vue";
 import Table from "./Table.vue";
 import Tabs from "./Tabs.vue";
-import { TierList } from "./types";
+import { TierList, TierListEntry } from "./types";
 import UploadButton from "./UploadButton.vue";
 import ItemGroupList from "./ItemGroupList.vue";
 
@@ -156,7 +157,7 @@ function handleListUploaded(list: TierList) {
 	onGroupsChanged(list.groups);
 }
 
-function onItemsChanged(tier: string, newItems: string[]) {
+function onItemsChanged(tier: string, newItems: TierListEntry[]) {
 	// update the tierLists ref
 	tierList.value[tier] = [...new Set(newItems)];
 	// write items to localStorage

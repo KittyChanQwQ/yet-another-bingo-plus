@@ -19,6 +19,7 @@
 import { ref, computed } from "vue";
 import { useDragItem } from "../compositions/useDragItem";
 import { useDragTarget } from "../compositions/useDragTarget";
+import { TierListEntry } from "./types";
 
 const props = defineProps<{
 	name: string,
@@ -27,7 +28,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(event: "itemChanged", item: string): void;
+	(event: "itemChanged", item: TierListEntry): void;
 	(event: "itemRemoved"): void;
 }>();
 
@@ -57,9 +58,7 @@ if (props.canDrop) {
 
 	onDrop((data) => {
 		// turn the item into a group item
-		const dataItems = data.name.split("|");
-		const newItems = [...new Set([props.name, ...dataItems])];
-		emit("itemChanged", newItems.join("|"));
+		emit("itemChanged", [data.name, props.name]);
 	});
 }
 </script>

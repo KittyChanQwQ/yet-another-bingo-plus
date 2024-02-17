@@ -5,14 +5,24 @@
 		:data-dragged-over="isDraggedOver" ref="dropTargetRef"
 	>
 		<template v-for="(item, i) in props.items">
-			<Item
-				v-if="shouldFilter(item)"
-				:can-drag="props.canDrag"
-				:can-drop="props.canGroup"
-				:name="item"
-				@item-changed="(newItem) => onItemChanged(i, newItem)"
-				@item-removed="onItemRemoved(i)"
-			/>
+			<template v-if="shouldFilter(item)">
+				<ItemGroup
+					v-if="(item instanceof Array)"
+					:can-drag="props.canDrag"
+					:can-drop="props.canGroup"
+					:items="item"
+					@item-changed="(newItem) => onItemChanged(i, newItem)"
+					@item-removed="onItemRemoved(i)"
+				/>
+				<Item
+					v-if="(typeof item === 'string')"
+					:can-drag="props.canDrag"
+					:can-drop="props.canGroup"
+					:name="item"
+					@item-changed="(newItem) => onItemChanged(i, newItem)"
+					@item-removed="onItemRemoved(i)"
+				/>
+			</template>
 		</template>
 	</div>
 </template>
@@ -21,9 +31,11 @@
 import { ref } from "vue";
 import { useDragTarget } from "../compositions/useDragTarget";
 import Item from "./Item.vue";
+import type { TierListEntry } from "./types";
+import ItemGroup from "./ItemGroup.vue";
 
 const props = defineProps<{
-	items: string[],
+	items: TierListEntry[],
 	canDrag?: boolean,
 	canDrop?: boolean,
 	canGroup?: boolean,
@@ -32,12 +44,21 @@ const props = defineProps<{
 	columns?: number,
 }>();
 
-function shouldFilter(item: string) {
+function shouldFilterItem(item: string) {
 	return !props.filter || item.includes(props.filter.toLowerCase().trim().replace(/ /g, "_"));
 }
 
+// Return 'true' if the item should be visible based on the current 'props.filter'
+function shouldFilter(item: TierListEntry) {
+	if (item instanceof Array) {
+		return item.some((str) => shouldFilterItem(str))
+	} else {
+		return shouldFilterItem(item);
+	}
+}
+
 const emit = defineEmits<{
-	(event: 'itemsChanged', items: string[]): void,
+	(event: 'itemsChanged', items: TierListEntry[]): void,
 }>();
 
 const dropTargetRef = ref<HTMLElement>();
@@ -77,9 +98,14 @@ if (props.canDrop) {
  * When an nested item value changes, such as an item being
  * dragged onto another item to create a group.
  */
-function onItemChanged(i: number, newItem: string) {
+function onItemChanged(i: number, newItem: TierListEntry) {
 	const newItems = props.items.slice();
-	newItems[i] = newItem;
+
+	// if the item was a group, but now only contains one item, change to a single item
+	if (newItem instanceof Array && newItem.length == 1)
+		newItems[i] = newItem[0];
+	else newItems[i] = newItem;
+
 	emit("itemsChanged", newItems);
 }
 

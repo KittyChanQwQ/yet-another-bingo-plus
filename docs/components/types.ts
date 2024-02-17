@@ -1,8 +1,10 @@
 export type TierList = {
-	S: string[],
-	A: string[],
-	B: string[],
-	C: string[],
-	D: string[],
+	S: TierListEntry[],
+	A: TierListEntry[],
+	B: TierListEntry[],
+	C: TierListEntry[],
+	D: TierListEntry[],
 	groups: string[][],
 };
+
+export type TierListEntry = string | string[];
