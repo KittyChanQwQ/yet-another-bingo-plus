@@ -47,6 +47,7 @@ lines to win the game.
   card (meaning you need to stay alive with your items in order to win).
 - **Ranked**: The game does not end when a team wins. Instead, it keeps going until the time limit and lists the winners
   when it ends.
+- **Hidden Items**: Items are not shown on the bingo card until a player discovers them.
 
 ### Extra Options:
 
@@ -55,7 +56,6 @@ lines to win the game.
 - **Elytra**: Gives all players an elytra and infinite rockets throughout the game.
 - **Allow PvP**: Toggles whether players can attack each other.
 - **Spawn Kit**: Give teams or players a configurable set of starting gear.
-- **Hidden Items**: Items are not shown on the bingo card until a player discovers them.
 
 ## 📖 Configuration
 

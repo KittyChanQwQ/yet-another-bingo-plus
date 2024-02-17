@@ -283,7 +283,7 @@ class MapRenderService(
     ) : BingoMapTile {
         return BingoMapTile(
             isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
-            isHidden = options.hiddenItems && (team == null || !entry.hasSeen(team)),
+            isHidden = options.isHiddenItemsMode && (team == null || !entry.hasSeen(team)),
         )
     }
 

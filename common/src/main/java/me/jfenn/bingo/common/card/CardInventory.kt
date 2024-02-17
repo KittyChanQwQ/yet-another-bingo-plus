@@ -32,7 +32,7 @@ class CardInventory(
             val entry = card.entry(slotX, slotY)
 
             // If the items are hidden, don't show them in the card inventory!
-            val isVisible = !options.hiddenItems ||
+            val isVisible = !options.isHiddenItemsMode ||
                     // if the team isn't null and has seen the item
                     (team != null && entry.hasSeen(team)) ||
                     // if the team is null and the game is playing (i.e. the player is spectating)

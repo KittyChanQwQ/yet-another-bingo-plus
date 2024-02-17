@@ -10,6 +10,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 @Serializable
+@OptIn(ExperimentalSerializationApi::class)
 data class BingoOptions(
     var winCondition: WinCondition = WinCondition.THREE_LINES,
     var timeLimit: Duration? = 60.minutes,
@@ -20,6 +21,8 @@ data class BingoOptions(
     var isLockoutMode: Boolean = false,
     var isInventoryMode: Boolean = false,
     var isRankedMode: Boolean = false,
+    @JsonNames("hiddenItems")
+    var isHiddenItemsMode: Boolean = false,
 
     // game feature settings
     var isElytra: Boolean = false,
@@ -29,7 +32,6 @@ data class BingoOptions(
 
     // team spawnpoint settings
     var spawnDimension: String = "minecraft:overworld",
-    @OptIn(ExperimentalSerializationApi::class)
     @JsonNames("spreadPlayersDistance")
     var spawnDistance: Int = 100,
 
@@ -40,10 +42,8 @@ data class BingoOptions(
     var showLeadingTeam: Boolean = true,
 
     // bingo card settings
-    @OptIn(ExperimentalSerializationApi::class)
     @JsonNames("drawOtherTeamCompletions")
     var showOtherTeamCompletions: Boolean = false,
-    var hiddenItems: Boolean = false,
     var showPreviewCard: Boolean = false,
 
     var isPlayerKit: Boolean = false,
@@ -72,6 +72,7 @@ data class BingoOptions(
             if (isLockoutMode) add("Lockout")
             if (isInventoryMode) add("Inventory")
             if (isRankedMode) add("Ranked")
+            if (isHiddenItemsMode) add("Hidden Items")
         }
 
         return gameMode.joinToString(", ").ifEmpty { "Standard" }

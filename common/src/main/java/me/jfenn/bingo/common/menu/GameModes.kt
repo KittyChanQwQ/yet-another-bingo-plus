@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
@@ -9,6 +10,7 @@ fun MenuComponent.registerGameModes(
     position: Vec3d,
     options: BingoOptions,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
+    cardService: CardService = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", "\"Game Mode\"")
@@ -38,4 +40,13 @@ fun MenuComponent.registerGameModes(
         toggleProp = propertyRef(options::isRankedMode),
         permissionGetter = permissionGetter,
     )
+
+    registerToggleButton(
+        position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
+        text = "Hidden Items",
+        toggleProp = propertyRef(options::isHiddenItemsMode),
+        permissionGetter = permissionGetter,
+    ) {
+        cardService.generateCard()
+    }
 }
