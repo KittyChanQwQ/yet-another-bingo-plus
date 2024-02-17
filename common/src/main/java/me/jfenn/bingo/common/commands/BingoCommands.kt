@@ -111,6 +111,34 @@ class BingoCommands : BaseCommand() {
                     })
             )
             .then(
+                run {
+                    var listCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("tierlist")
+                        .require(
+                            requireState(GameState.PREGAME, GameState.PLAYING),
+                            requirePermission(Permission.CONFIGURE_GAME),
+                        )
+
+                    for (listName in TierListService.tierLists) {
+                        listCommand = listCommand.then(
+                            LiteralArgumentBuilder.literal<ServerCommandSource>(listName)
+                                .executesInScope { ctx ->
+                                    val options = get<BingoOptions>()
+                                    val events = get<ScopedEvents>()
+                                    val cardService = get<CardService>()
+
+                                    options.tierLists = listOf(listName)
+                                    events.onChangeConfig(Unit)
+                                    cardService.generateCard()
+                                    ctx.source.player?.sendInfoMessage("Item tier list changed: $listName")
+                                    1
+                                }
+                        )
+                    }
+
+                    listCommand
+                }
+            )
+            .then(
                 // Change the elytra mode feature setting (while the game is running)
                 LiteralArgumentBuilder.literal<ServerCommandSource>("elytra")
                     .require(

@@ -15,7 +15,7 @@ fun MenuComponent.registerTierLists(
     cardService: CardService = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", "\"Tier Lists\"")
+        putString("text", "\"Tier List\"")
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)
@@ -23,24 +23,17 @@ fun MenuComponent.registerTierLists(
     }
 
     TierListService.tierLists.forEachIndexed { i, listName ->
-        val toggleProp = DelegatedProperty(
-            getter = { options.tierLists.contains(listName) },
-            setter = { isEnabled ->
-                val lists = options.tierLists.filter { TierListService.tierLists.contains(it) }
-                if (isEnabled) options.tierLists = lists + listName
-                else options.tierLists = lists - listName
-                markDirty()
-
-                // when changed, update the bingo card
-                cardService.generateCard()
-            }
-        )
-
-        registerToggleButton(
+        registerButton(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
             text = listName.formatTitle(),
-            toggleProp = toggleProp,
+            isActiveProp = computedProperty { options.tierLists.contains(listName) },
             permissionGetter = permissionGetter,
-        )
+        ) {
+            options.tierLists = listOf(listName)
+            markDirty()
+
+            // when changed, update the bingo card
+            cardService.generateCard()
+        }
     }
 }

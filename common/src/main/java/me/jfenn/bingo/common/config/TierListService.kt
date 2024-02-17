@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.config
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.utils.json
-import me.jfenn.bingo.common.utils.lazyRef
 import org.slf4j.LoggerFactory
 import java.io.FileInputStream
 

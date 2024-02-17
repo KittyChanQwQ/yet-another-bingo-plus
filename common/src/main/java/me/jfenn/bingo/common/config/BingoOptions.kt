@@ -14,7 +14,7 @@ data class BingoOptions(
     var winCondition: WinCondition = WinCondition.THREE_LINES,
     var timeLimit: Duration? = 60.minutes,
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
-    var tierLists: List<String> = listOf("overworld", "nether"),
+    var tierLists: List<String> = listOf("default"),
 
     // game mode settings
     var isLockoutMode: Boolean = false,
