@@ -13,10 +13,8 @@ import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import org.slf4j.Logger
 
 class GameService(
-    private val log: Logger,
     private val state: BingoState,
     private val options: BingoOptions,
     private val server: MinecraftServer,

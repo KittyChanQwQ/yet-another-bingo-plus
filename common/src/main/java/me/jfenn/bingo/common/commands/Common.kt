@@ -3,12 +3,12 @@ package me.jfenn.bingo.common.commands
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import me.jfenn.bingo.common.PermissionKey
+import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.network.ServerPlayerEntity
 import org.koin.core.scope.Scope
 
 typealias CommandRequirement = (ServerCommandSource) -> Boolean
@@ -35,6 +35,30 @@ fun requirePermission(key: PermissionKey): CommandRequirement = { source ->
     if (scope != null && player != null) {
         val permissions = scope.get<PermissionsIntegration>()
         permissions.hasPermission(player, key)
+    } else {
+        false
+    }
+}
+
+fun requirePlaying(): CommandRequirement = { source ->
+    val scope = BingoKoin.getScope(source.server)
+    val player = source.player
+
+    if (scope != null && player != null) {
+        val teamService = scope.get<TeamService>()
+        teamService.isPlaying(player)
+    } else {
+        false
+    }
+}
+
+fun requireNotPlaying(): CommandRequirement = { source ->
+    val scope = BingoKoin.getScope(source.server)
+    val player = source.player
+
+    if (scope != null && player != null) {
+        val teamService = scope.get<TeamService>()
+        !teamService.isPlaying(player)
     } else {
         false
     }

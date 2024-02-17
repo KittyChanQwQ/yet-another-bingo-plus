@@ -78,6 +78,8 @@ val commonModule = module {
         scopedOf(::ScoreboardController)
         scopedOf(::ScoredItemCheck)
         scopedOf(::TimerCheck)
+
+        scopedOf(::CommandTreeHandler)
     }
 }
 
@@ -94,4 +96,5 @@ fun Scope.commonInit() {
     get<ScoreboardController>()
     get<ScoredItemCheck>()
     get<TimerCheck>()
+    get<CommandTreeHandler>()
 }

@@ -38,7 +38,7 @@ class CoordsCommand(
 
     }
 
-    fun storeCoordinates(player: ServerPlayerEntity, team: BingoTeam, message: String?) {
+    private fun storeCoordinates(player: ServerPlayerEntity, team: BingoTeam, message: String?) {
         val entry = CoordinatesEntry(
             player = scoreboardManager.getPlayerName(player),
             pos = BlockPosition.fromBlockPos(player.blockPos),
@@ -54,7 +54,7 @@ class CoordsCommand(
         ChatCommand.sendTeamMessage(player, team, Text.literal(entry.formatText()))
     }
 
-    fun listCoordinates(player: ServerPlayerEntity, team: BingoTeam) {
+    private fun listCoordinates(player: ServerPlayerEntity, team: BingoTeam) {
         val coordMessages = team.chatCoordinates
         if (coordMessages.isEmpty()) return
 
@@ -74,6 +74,7 @@ class CoordsCommand(
             .require(
                 requireState(GameState.PLAYING, GameState.POSTGAME),
                 requirePermission(Permission.COMMAND_COORDS),
+                requirePlaying(),
             )
             .then(
                 LiteralArgumentBuilder.literal<ServerCommandSource?>("list")

@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.card
 import me.jfenn.bingo.api.ITeamHandle
 import me.jfenn.bingo.api.ITeamManager
 import me.jfenn.bingo.common.ChatMessages
+import me.jfenn.bingo.common.commands.CommandTreeHandler
 import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
@@ -13,6 +14,7 @@ class TeamService(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val teamManager: ITeamManager,
+    private val commandTreeHandler: CommandTreeHandler,
 ) {
 
     fun getPlayerTeam(player: ServerPlayerEntity): BingoTeam? {
@@ -46,6 +48,13 @@ class TeamService(
         teamManager.setPlayerTeam(player, createTeam(team))
         team.players.add(playerProfile)
         ChatMessages.broadcastJoinedTeam(player, team)
+
+        onTeamChanged(player)
+    }
+
+    fun onTeamChanged(player: ServerPlayerEntity) {
+        // Send a new command tree once player is on a team
+        commandTreeHandler.sendCommandTree(player)
     }
 
     fun shuffleTeams(numTeams: Int) {

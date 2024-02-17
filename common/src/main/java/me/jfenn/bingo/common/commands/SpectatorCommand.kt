@@ -14,18 +14,6 @@ class SpectatorCommand : BaseCommand() {
 
     private val vanish by inject<VanishIntegration>()
 
-    fun requireNotPlaying(): CommandRequirement = { source ->
-        val scope = BingoKoin.getScope(source.server)
-        val player = source.player
-
-        if (scope != null && player != null) {
-            val teamService = scope.get<TeamService>()
-            !teamService.isPlaying(player)
-        } else {
-            false
-        }
-    }
-
     init {
         // Switch between adventure and spectator modes
         // Only when spectating, if vanish is installed

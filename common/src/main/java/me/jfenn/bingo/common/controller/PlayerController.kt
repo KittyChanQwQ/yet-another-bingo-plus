@@ -327,14 +327,16 @@ class PlayerController(
                 // If the player has switched teams, update the player UUID sets...
                 // (this is necessary because teams could be changed without us knowing, using /team join)
                 val playerProfile = BingoPlayerProfile.fromPlayer(player)
-                for (team in state.teams.values) {
+                val isTeamChanged = state.teams.values.any { team ->
                     if (playerTeam?.key == team.key) {
-                        if (team.players.add(playerProfile))
-                            updateGameMode(player)
+                        team.players.add(playerProfile)
                     } else {
-                        if (team.players.remove(playerProfile))
-                            updateGameMode(player)
+                        team.players.remove(playerProfile)
                     }
+                }
+                if (isTeamChanged) {
+                    teamService.onTeamChanged(player)
+                    updateGameMode(player)
                 }
             }
         }
