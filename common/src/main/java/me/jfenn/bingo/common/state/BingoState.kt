@@ -13,6 +13,7 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.utils.formatString
+import net.minecraft.item.GoatHornItem
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting

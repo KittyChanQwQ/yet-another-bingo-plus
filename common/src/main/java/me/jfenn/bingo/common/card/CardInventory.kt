@@ -6,6 +6,9 @@ import me.jfenn.bingo.common.state.GameState
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtList
+import net.minecraft.nbt.NbtString
 
 class CardInventory(
     val options: BingoOptions,
@@ -41,8 +44,24 @@ class CardInventory(
                     state.state == GameState.POSTGAME
 
             if (isVisible) {
-                entry.visualItem?.let {
-                    return ItemStack(it, 1)
+                entry.visualItem?.let { visualItem ->
+                    return ItemStack(visualItem, 1).also { stack ->
+                        stack.getOrCreateNbt().apply {
+                            put("display", NbtCompound().apply {
+                                entry.formatName()?.let { name ->
+                                    putString("Name", name)
+                                }
+                                put(
+                                    "Lore",
+                                    NbtList().apply {
+                                        for (lore in entry.formatLore()) {
+                                            add(NbtString.of(lore))
+                                        }
+                                    }
+                                )
+                            })
+                        }
+                    }
                 }
             }
         }

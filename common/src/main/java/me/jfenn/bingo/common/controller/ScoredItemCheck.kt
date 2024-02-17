@@ -98,7 +98,7 @@ class ScoredItemCheck(
         // if isInventoryMode, we need to check that each team still has all their items
         // and mark them as lost if not
         if (options.isInventoryMode) {
-            for (item in state.card.entries.filterIsInstance<BingoCardEntry.ItemEntry>()) {
+            for (item in state.card.itemIndex.values) {
                 for (teamKey in item.teams.toSet()) {
                     val team = state.teams[teamKey] ?: continue
                     // don't update teams that have already won

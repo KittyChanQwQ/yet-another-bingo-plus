@@ -5,10 +5,11 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
+import me.jfenn.bingo.common.utils.text.TextColor
+import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import kotlin.time.Duration
 
@@ -20,8 +21,12 @@ sealed class BingoCardEntry {
 
     abstract val visualItem: Item?
 
-    open fun formatName(): Text? {
-        return visualItem?.name
+    open fun formatName(): String? {
+        return null
+    }
+
+    open fun formatLore(): List<String> {
+        return emptyList()
     }
 
     open fun hasAchieved(team: BingoTeam): Boolean {
@@ -70,13 +75,13 @@ sealed class BingoCardEntry {
      * If [team] is not null, this returns the last changed time
      * for the specified team.
      */
-    fun updatedAt(team: BingoTeam?): Instant = updatedAtMap.getOrPut(team?.key) { Clock.System.now() }
+    open fun updatedAt(team: BingoTeam?): Instant = updatedAtMap.getOrPut(team?.key) { Clock.System.now() }
 
     /**
      * Marks the tile as changed, indicating that it needs to be redrawn on
      * the bingo map
      */
-    fun markDirty(team: BingoTeam) {
+    open fun markDirty(team: BingoTeam) {
         Clock.System.now().let {
             updatedAtMap[team.key] = it
             updatedAtMap[null] = it
@@ -102,8 +107,10 @@ sealed class BingoCardEntry {
         override fun setAchieved(team: BingoTeam, value: Boolean): Boolean = false
         override fun isFlashing(team: BingoTeam?, duration: Duration): Boolean = false
 
-        override fun formatName(): Text? {
-            return Text.literal("Free Space")
+        override fun formatName(): String {
+            return TextInfo.toJsonString(
+                TextInfo.literal("Free Space")
+            )
         }
     }
 
@@ -131,5 +138,61 @@ sealed class BingoCardEntry {
             return visualItem
         }
 
+    }
+
+    @Serializable
+    data class MultiEntry(
+        val innerEntries: List<BingoCardEntry>,
+    ): BingoCardEntry() {
+        override val visualItem: Item? get() = innerEntries.firstOrNull()?.visualItem
+
+        override fun formatName(): String {
+            return TextInfo.toJsonString(
+                TextInfo.literal("One of:")
+                    .formatted(TextColor.GRAY)
+            )
+        }
+
+        override fun formatLore(): List<String> {
+            return innerEntries
+                .mapNotNull { it.visualItem?.translationKey }
+                .map { "{\"translate\":\"$it\"}" }
+        }
+
+        override fun hasAchieved(team: BingoTeam): Boolean {
+            return innerEntries.any { it.hasAchieved(team) }
+        }
+
+        @Throws(UnsupportedOperationException::class)
+        override fun setAchieved(team: BingoTeam, value: Boolean): Boolean {
+            throw UnsupportedOperationException("setAchieved on MultiEntry")
+        }
+
+        override fun hasSeen(team: BingoTeam): Boolean {
+            return innerEntries.any { it.hasSeen(team) }
+        }
+
+        @Throws(UnsupportedOperationException::class)
+        override fun markSeen(team: BingoTeam) {
+            throw UnsupportedOperationException("markSeen on MultiEntry")
+        }
+
+        override fun updatedAt(team: BingoTeam?): Instant {
+            if (team != null && hasAchieved(team)) {
+                innerEntries
+                    .filter { it.hasAchieved(team) }
+                    .minOfOrNull { it.updatedAt(team) }
+                    ?.let { return it }
+            }
+
+            return innerEntries
+                .maxOfOrNull { it.updatedAt(team) }
+                ?: Instant.fromEpochMilliseconds(0L)
+        }
+
+        @Throws(UnsupportedOperationException::class)
+        override fun markDirty(team: BingoTeam) {
+            throw UnsupportedOperationException("markDirty on MultiEntry")
+        }
     }
 }

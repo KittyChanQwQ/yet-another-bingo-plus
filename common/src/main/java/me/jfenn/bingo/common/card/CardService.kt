@@ -1,10 +1,7 @@
 package me.jfenn.bingo.common.card
 
 import me.jfenn.bingo.common.MOD_ID
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.config.TierList
-import me.jfenn.bingo.common.config.TierListService
+import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.registry.Registries
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
@@ -77,8 +74,7 @@ class CardService(
 
             val tiers = TierListService.getTierLists(options.tierLists)
             val items: MutableList<BingoCardEntry> = tiers.pick(dist, excludedItems, random)
-                .mapNotNull { parseIdentifier(it) }
-                .map { BingoCardEntry.ItemEntry(it) }
+                .mapNotNull { createEntry(it) }
                 .toMutableList()
 
             if (items.size < dist.sum()) {
@@ -92,6 +88,22 @@ class CardService(
 
             items.shuffle(random)
             return BingoCard(items)
+        }
+
+        private fun createEntry(entry: TierListEntry): BingoCardEntry? {
+            return when (entry) {
+                is TierListEntry.SingleEntry -> {
+                    val identifier = parseIdentifier(entry.item)
+                        ?: return null
+
+                    BingoCardEntry.ItemEntry(identifier)
+                }
+                is TierListEntry.MultiEntry -> {
+                    val innerEntries = entry.items.mapNotNull { createEntry(TierListEntry.SingleEntry(it)) }
+
+                    BingoCardEntry.MultiEntry(innerEntries)
+                }
+            }
         }
 
         private fun parseIdentifier(str: String): String? {

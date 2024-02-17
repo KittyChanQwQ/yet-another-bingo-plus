@@ -13,12 +13,10 @@ class BingoCard(
     }
 
     /**
-     * Index the card entries on their item for faster querying.
+     * Index the card's item entries on their item for faster querying.
      */
     val itemIndex by lazy {
-        entries
-            .filterIsInstance<BingoCardEntry.ItemEntry>()
-            .associateBy { it.item() }
+        getAllItemEntries().associateBy { it.item() }
     }
 
     /**
@@ -87,6 +85,14 @@ class BingoCard(
             items = countItems(team),
             lines = countLines(team),
         )
+    }
+
+    fun getAllItemEntries(): List<BingoCardEntry.ItemEntry> {
+        val multiEntries = entries.filterIsInstance<BingoCardEntry.MultiEntry>()
+            .map { multiEntry -> multiEntry.innerEntries.filterIsInstance<BingoCardEntry.ItemEntry>() }
+            .flatten()
+
+        return multiEntries + entries.filterIsInstance<BingoCardEntry.ItemEntry>()
     }
 
 }

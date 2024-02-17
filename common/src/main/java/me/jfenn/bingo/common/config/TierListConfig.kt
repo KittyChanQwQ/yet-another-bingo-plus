@@ -7,15 +7,15 @@ import kotlin.random.Random
 @Serializable
 data class TierListConfig(
     @SerialName("S")
-    val s: Set<String>,
+    val s: Set<TierListEntry>,
     @SerialName("A")
-    val a: Set<String>,
+    val a: Set<TierListEntry>,
     @SerialName("B")
-    val b: Set<String>,
+    val b: Set<TierListEntry>,
     @SerialName("C")
-    val c: Set<String>,
+    val c: Set<TierListEntry>,
     @SerialName("D")
-    val d: Set<String>,
+    val d: Set<TierListEntry>,
     val groups: List<Set<String>>,
 ) {
 
@@ -41,9 +41,9 @@ data class TierListConfig(
         )
     }
 
-    fun pick(distribution: List<Int>, excludingItems: Set<String>, random: Random): List<String> {
+    fun pick(distribution: List<Int>, excludingItems: Set<String>, random: Random): List<TierListEntry> {
         val excluding = excludingItems.toMutableSet()
-        val ret = mutableListOf<String>()
+        val ret = mutableListOf<TierListEntry>()
 
         // for each tier...
         for ((i, items) in listOf(s, a, b, c, d).withIndex()) {
@@ -55,15 +55,15 @@ data class TierListConfig(
             for (item in items.shuffled(random)) {
                 if (countAdded >= count) break
                 // skip excluded items
-                if (excluding.contains(item)) continue
+                if (item.asList().any { excluding.contains(it) }) continue
 
                 // add the item to the list
                 ret.add(item)
                 countAdded++
 
                 // if the chosen item is in any item groups, exclude all of those groups
-                excluding.add(item)
-                for (group in groups.filter { it.contains(item) }) {
+                excluding.addAll(item.asList())
+                for (group in groups.filter { group -> item.asList().any { group.contains(it) } }) {
                     excluding.addAll(group)
                 }
             }
