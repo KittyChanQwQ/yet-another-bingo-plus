@@ -157,7 +157,11 @@ class PlayerController(
             GameState.POSTGAME -> GameMode.CREATIVE
         }
 
-        if (player.interactionManager.gameMode != gameMode || forceReset) {
+        if (
+            player.interactionManager.gameMode != gameMode ||
+            (player.serverWorld == lobbyWorld && state.state != GameState.PREGAME) ||
+            forceReset
+        ) {
             // This indicates that a player is starting the game, or has logged back on after a game has started
             // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
             if (state.state == GameState.PLAYING) {
