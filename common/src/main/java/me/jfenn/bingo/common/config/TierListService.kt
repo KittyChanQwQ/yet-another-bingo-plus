@@ -14,6 +14,8 @@ object TierListService {
     init {
         // initialize default tier lists
         Config.readStream("default.tierlist.json").close()
+        Config.readStream("nether-only.tierlist.json").close()
+        Config.readStream("overworld-only.tierlist.json").close()
     }
 
     val tierLists by lazy {
@@ -24,6 +26,7 @@ object TierListService {
             .orEmpty()
             .filter { it.name.endsWith(".tierlist.json") }
             .map { it.name.removeSuffix(".tierlist.json") }
+            .sorted()
     }
 
     fun getTierList(name: String): TierListConfig? {

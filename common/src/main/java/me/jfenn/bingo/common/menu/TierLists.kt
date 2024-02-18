@@ -26,10 +26,10 @@ fun MenuComponent.registerTierLists(
         registerButton(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
             text = listName.formatTitle(),
-            isActiveProp = computedProperty { options.tierLists.contains(listName) },
+            isActiveProp = computedProperty { options.tierList == listName },
             permissionGetter = permissionGetter,
         ) {
-            options.tierLists = listOf(listName)
+            options.tierList = listName
             markDirty()
 
             // when changed, update the bingo card

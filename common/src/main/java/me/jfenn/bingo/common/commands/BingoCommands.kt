@@ -126,7 +126,7 @@ class BingoCommands : BaseCommand() {
                                     val events = get<ScopedEvents>()
                                     val cardService = get<CardService>()
 
-                                    options.tierLists = listOf(listName)
+                                    options.tierList = listName
                                     events.onChangeConfig(Unit)
                                     cardService.generateCard()
                                     ctx.source.player?.sendInfoMessage("Item tier list changed: $listName")

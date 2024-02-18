@@ -72,7 +72,9 @@ class CardService(
             val random = Random(seed)
             log.info("Using random BINGO card seed: $seed")
 
-            val tiers = TierListService.getTierLists(options.tierLists)
+            val tiers = TierListService.getTierList(options.tierList)
+                ?: TierListConfig.EMPTY
+
             val items: MutableList<BingoCardEntry> = tiers.pick(dist, excludedItems, random)
                 .mapNotNull { createEntry(it) }
                 .toMutableList()
