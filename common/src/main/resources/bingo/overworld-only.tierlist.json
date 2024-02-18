@@ -174,17 +174,20 @@
             "minecraft:dead_tube_coral_fan"
         ],
         "minecraft:diamond",
-        "minecraft:diamond_axe",
+        [
+            "minecraft:diamond_axe",
+            "minecraft:diamond_hoe",
+            "minecraft:diamond_pickaxe",
+            "minecraft:diamond_shovel",
+            "minecraft:diamond_sword"
+        ],
         "minecraft:diamond_block",
-        "minecraft:diamond_boots",
-        "minecraft:diamond_chestplate",
-        "minecraft:diamond_helmet",
-        "minecraft:diamond_hoe",
-        "minecraft:diamond_horse_armor",
-        "minecraft:diamond_leggings",
-        "minecraft:diamond_pickaxe",
-        "minecraft:diamond_shovel",
-        "minecraft:diamond_sword",
+        [
+            "minecraft:diamond_boots",
+            "minecraft:diamond_chestplate",
+            "minecraft:diamond_helmet",
+            "minecraft:diamond_leggings"
+        ],
         "minecraft:disc_fragment_5",
         "minecraft:echo_shard",
         "minecraft:emerald",
