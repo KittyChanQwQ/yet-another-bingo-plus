@@ -145,7 +145,7 @@ onMounted(() => {
 const allItems = computed(() => {
 	// the "allItems" column should only show items that aren't included in any other tiers
 	const items = itemData
-		.filter(item => currentTab.value === "tiers" ? !tiers.some(tier => tierList.value[tier].includes(item)) : !tierList.value.groups.some(group => group.includes(item)))
+		.filter(item => currentTab.value === "tiers" ? !tiers.some(tier => tierList.value[tier].some(entry => entry === item || (entry instanceof Array && entry.includes(item)))) : !tierList.value.groups.some(group => group.includes(item)))
 		.filter(item => shouldIncludeUnobtainable.value || !unobtainableItems.some(unobtainable => typeof unobtainable === "string" ? unobtainable === item : new RegExp(unobtainable).test(item)));
 	return items;
 });
@@ -159,7 +159,7 @@ function handleListUploaded(list: TierList) {
 
 function onItemsChanged(tier: string, newItems: TierListEntry[]) {
 	// update the tierLists ref
-	tierList.value[tier] = [...new Set(newItems)];
+	tierList.value[tier] = [...new Set(newItems)].sort();
 	// write items to localStorage
 	localStorage.setItem(TIERLIST_KEY, JSON.stringify(tierList.value));
 }

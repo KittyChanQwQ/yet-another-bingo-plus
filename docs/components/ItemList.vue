@@ -78,19 +78,25 @@ if (props.canDrop) {
 	 * When a new item is dropped onto the list
 	 */
 	onDrop((data, e) => {
-		if (!data || !data.name) return;
+		if (!data || !data.type) return;
 
-		const parentElement = dropTargetRef.value!!;
+		// Gets the index that the item was dropped between...
+		/*const parentElement = dropTargetRef.value!!;
 		let index = 0;
 		for (let i = 0; i < parentElement.children.length; i++) {
 			const element = parentElement.children[i] as HTMLElement;
 			if (e.offsetY > element.offsetTop)
 				index = i+1;
-		}
+		}*/
 
 		const newItems = props.items.slice();
-		newItems.splice(index, 0, data.name);
-		emit("itemsChanged", [...new Set(newItems)]);
+		if (data.type === "item" && typeof data.name === "string") {
+			newItems.push(data.name);
+		} else if (data.type === "group" && data.items instanceof Array) {
+			newItems.push(data.items);
+		}
+
+		emit("itemsChanged", [...new Set(newItems)].sort());
 	});
 }
 

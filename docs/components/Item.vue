@@ -52,13 +52,18 @@ if (props.canDrop) {
 	const { isDraggedOver: isDraggedOverRef, onDrop } = useDragTarget({
 		element: itemRef,
 		action: "move",
+		filter(data) {
+			// console.log("<Item> filter", data);
+			return data?.type === "item" && data.name && data.name != props.name;
+		},
 	});
 
 	isDraggedOver = isDraggedOverRef;
 
 	onDrop((data) => {
 		// turn the item into a group item
-		emit("itemChanged", [data.name, props.name]);
+		if (props.name != data.name)
+			emit("itemChanged", [props.name, data.name].sort());
 	});
 }
 </script>
