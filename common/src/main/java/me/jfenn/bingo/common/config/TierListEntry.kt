@@ -18,12 +18,12 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable(with = TierListEntry.Serializer::class)
 sealed class TierListEntry {
 
-    class MultiEntry(val items: List<String>) : TierListEntry() {
+    data class MultiEntry(val items: List<String>) : TierListEntry() {
         override fun asList(): List<String> = items
     }
 
 
-    class SingleEntry(val item: String) : TierListEntry() {
+    data class SingleEntry(val item: String) : TierListEntry() {
         override fun asList() = listOf(item)
     }
 

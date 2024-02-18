@@ -13,6 +13,7 @@ object TierListService {
 
     init {
         // initialize default tier lists
+        Config.readStream("all_items.tierlist.json").close()
         Config.readStream("default.tierlist.json").close()
         Config.readStream("nether-only.tierlist.json").close()
         Config.readStream("overworld-only.tierlist.json").close()

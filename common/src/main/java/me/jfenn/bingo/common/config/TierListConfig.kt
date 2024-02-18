@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.LinkedList
 import kotlin.random.Random
 
 @Serializable
@@ -41,19 +42,50 @@ data class TierListConfig(
         )
     }
 
+    private fun getWeightedSet(set: Set<TierListEntry>): LinkedList<Pair<TierListEntry, Double>> {
+        val ret = LinkedList<Pair<TierListEntry, Double>>()
+        for (entry in set) {
+            val inverseWeight = groups
+                .filter { group -> entry.asList().any { group.contains(it) } }
+                .sumOf { group -> group.size }
+                .coerceAtLeast(1)
+
+            ret.add(entry to (1.0 / inverseWeight))
+        }
+
+        return ret
+    }
+
     fun pick(distribution: List<Int>, excludingItems: Set<String>, random: Random): List<TierListEntry> {
         val excluding = excludingItems.toMutableSet()
         val ret = mutableListOf<TierListEntry>()
 
         // for each tier...
-        for ((i, items) in listOf(s, a, b, c, d).withIndex()) {
+        for ((tierIndex, items) in listOf(s, a, b, c, d).withIndex()) {
             // get the expected number of items
-            val count = distribution.getOrNull(i) ?: 0
+            val count = distribution.getOrNull(tierIndex) ?: 0
+
+            val itemWeights = getWeightedSet(items)
 
             // choose random items up to the expected count...
             var countAdded = 0
-            for (item in items.shuffled(random)) {
-                if (countAdded >= count) break
+            while (countAdded < count && itemWeights.isNotEmpty()) {
+                val itemWeightTotal = itemWeights.sumOf { it.second }
+                val choice = random.nextDouble(0.0, itemWeightTotal)
+
+                // get the index of the random weight in the tier list
+                var i = 0
+                var itemWeightSum = 0.0
+                for ((_, weight) in itemWeights) {
+                    itemWeightSum += weight
+                    if (itemWeightSum >= choice)
+                        break
+
+                    i++
+                }
+
+                i = i.coerceAtMost(itemWeights.size - 1)
+                val (item, _) = itemWeights.removeAt(i)
                 // skip excluded items
                 if (item.asList().any { excluding.contains(it) }) continue
 
