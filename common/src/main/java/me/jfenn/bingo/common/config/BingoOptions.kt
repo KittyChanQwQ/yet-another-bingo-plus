@@ -90,6 +90,7 @@ data class BingoOptions(
 
     fun copyFrom(options: BingoOptions) {
         for (p in BingoOptions::class.memberProperties) {
+            @Suppress("UNCHECKED_CAST")
             val property = p as? KMutableProperty1<BingoOptions, Any?>
                 ?: continue
 

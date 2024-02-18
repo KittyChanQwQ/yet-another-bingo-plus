@@ -53,6 +53,7 @@ class MenuInstance(
     }
 
     fun <T: Entity> spawn(info: MenuEntityHandle<T>, nbt: NbtCompound): T? {
+        @Suppress("UNCHECKED_CAST")
         var entity: T? = world.getEntity(info.id) as? T
 
         val chunkPos = ChunkPos.toLong(BlockPos(info.pos.x.toInt(), 0, info.pos.z.toInt()))

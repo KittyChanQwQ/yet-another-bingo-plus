@@ -14,7 +14,7 @@ class MotdController(
     }
 
     init {
-        events.onStateChange { (oldState, newState) ->
+        events.onStateChange { (_, newState) ->
             updateMotd(newState)
         }
     }
