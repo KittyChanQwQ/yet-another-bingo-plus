@@ -4,6 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BingoConfig(
+    var version: Int = 0,
+
     // adds BINGO_IGNORE to spawn kit items, preventing them from being scored
     val preventScoringSpawnKitItems: Boolean = false,
     // excludes the active spawn kit items from item tiers when generating a card

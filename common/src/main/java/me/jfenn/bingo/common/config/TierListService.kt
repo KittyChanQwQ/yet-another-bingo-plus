@@ -2,27 +2,29 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.utils.json
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 import java.io.FileInputStream
 
 object TierListService {
 
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log by BingoKoin.koinApp.koin.inject<Logger>()
 
     init {
         // initialize default tier lists
-        Config.readStream("overworld.tierlist.json").close()
-        Config.readStream("nether.tierlist.json").close()
+        Config.readStream("default.tierlist.json").close()
     }
 
-    val tierLists = Config.configDir
-        .resolve("bingo")
-        .toFile()
-        .listFiles()
-        .orEmpty()
-        .filter { it.name.endsWith(".tierlist.json") }
-        .map { it.name.removeSuffix(".tierlist.json") }
+    val tierLists by lazy {
+        Config.configDir
+            .resolve("bingo")
+            .toFile()
+            .listFiles()
+            .orEmpty()
+            .filter { it.name.endsWith(".tierlist.json") }
+            .map { it.name.removeSuffix(".tierlist.json") }
+    }
 
     fun getTierList(name: String): TierListConfig? {
         val file = Config.configDir

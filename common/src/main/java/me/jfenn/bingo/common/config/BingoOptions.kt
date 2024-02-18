@@ -93,7 +93,6 @@ data class BingoOptions(
             val property = p as? KMutableProperty1<BingoOptions, Any?>
                 ?: continue
 
-            println("Setting property ${p.name}")
             val value = property.getValue(options, property)
             property.setValue(this, property, value)
         }

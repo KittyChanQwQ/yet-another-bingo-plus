@@ -9,11 +9,9 @@ import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.LruHashMap
 import net.minecraft.item.FilledMapItem
-import net.minecraft.item.Item
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.InputStream
@@ -38,6 +36,7 @@ class MapRenderService(
         private val COLOR_FLASHING = Color(178, 76, 216)
         private val COLOR_ACHIEVED_SHADOW = Color(80, 120, 80)
         private val COLOR_LOCKED = Color(150, 0, 0)
+        private val COLOR_WHITE = Color(255, 255, 255)
 
         private const val MAP_SIZE = 128
         private const val MAP_BORDER = 5
@@ -53,7 +52,7 @@ class MapRenderService(
         fun validateItems() {
             for (item in Registries.ITEM.keys) {
                 try {
-                    readTileImage(item.value).close()
+                    readTileImage(item.value.path).close()
                 } catch (e: Throwable) {
                     val log = LoggerFactory.getLogger(MOD_ID)
                     log.warn("Missing item image: ${item.value.path}.png")
@@ -61,10 +60,10 @@ class MapRenderService(
             }
         }
 
-        private fun readTileImage(item: Identifier): InputStream {
-            return Config.readStream("images/${item.path}.png", false) {
-                MapRenderService::class.java.getResourceAsStream("/bingo/images/${item.path}.png")
-                    ?: throw IllegalArgumentException("Cannot find default texture for ${item.path}.png")
+        private fun readTileImage(itemPath: String): InputStream {
+            return Config.readStream("images/${itemPath}.png", false) {
+                MapRenderService::class.java.getResourceAsStream("/bingo/images/${itemPath}.png")
+                    ?: throw IllegalArgumentException("Cannot find default texture for ${itemPath}.png")
             }
         }
     }
@@ -84,16 +83,16 @@ class MapRenderService(
     }
 
     // keep a full card of 25 items in-memory, using LRU eviction
-    private val imageMap = LruHashMap<Item, BingoTileImage?>(25)
+    // (could need extra space to handle rotating items)
+    private val imageMap = LruHashMap<String, BingoTileImage?>(25)
 
-    private fun getTileImage(entry: BingoCardEntry): BingoTileImage? {
-        val item = entry.visualItem ?: return null
+    private fun getTileImage(entry: BingoMapTile): BingoTileImage? {
+        val item = entry.item ?: return null
         if (imageMap.containsKey(item))
             return imageMap[item]
 
         try {
-            val identifier = Registries.ITEM.getId(item)
-            val image = readTileImage(identifier).use { ImageIO.read(it) }
+            val image = readTileImage(item).use { ImageIO.read(it) }
             val tileImage = BingoTileImage()
 
             for (x in 0 until IMAGE_SIZE) {
@@ -133,7 +132,7 @@ class MapRenderService(
             imageMap[item] = tileImage
             return tileImage
         } catch (e: Throwable) {
-            log.error("Error reading item image: ${item.translationKey}", e)
+            log.error("Error reading item image: $item.png", e)
             imageMap[item] = null
             return null
         }
@@ -210,7 +209,7 @@ class MapRenderService(
         val isAchieved = team != null && entry.hasAchieved(team)
 
         val isLocked = options.isLockoutMode && entry.teams.isNotEmpty() && team != null && !entry.hasAchieved(team)
-        val tileImage = getTileImage(entry) ?: BingoTileImage.EMPTY
+        val tileImage = getTileImage(tile) ?: BingoTileImage.EMPTY
         val tileImageArray = when {
             tile.isHidden -> BingoTileImage.EMPTY.regular
             tile.isFlashing -> tileImage.flashing
@@ -231,6 +230,15 @@ class MapRenderService(
             val tileImageStart = innerY * IMAGE_SIZE
             // Uses System.arraycopy, which is a lot faster than manually setting each byte
             tileImageArray.copyInto(mapState.colors, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
+        }
+
+        // Draw a "+" if the tile can be captured multiple ways
+        if (tile.isMultiItem) {
+            val offset = 6
+            for (innerT in offset-2..offset+2) {
+                mapState.setColor(tileX + offset, tileY + innerT, COLOR_WHITE.asByte)
+                mapState.setColor(tileX + innerT, tileY + offset, COLOR_WHITE.asByte)
+            }
         }
 
         if (isLocked) {
@@ -282,6 +290,8 @@ class MapRenderService(
         entry: BingoCardEntry,
     ) : BingoMapTile {
         return BingoMapTile(
+            item = entry.visualItem?.let { Registries.ITEM.getId(it).path },
+            isMultiItem = entry is BingoCardEntry.MultiEntry,
             isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
             isHidden = options.isHiddenItemsMode && (team == null || !entry.hasSeen(team)),
         )

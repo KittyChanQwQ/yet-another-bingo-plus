@@ -12,6 +12,8 @@ object ConfigService {
     var playerConfig: PlayerConfig by config("bingo/player-settings.json")
 
     init {
+        this.config.version = MigrationHandler.migrate(this.config.version, this.config)
+
         // Write the parsed config files on startup
         this.config = this.config.copy()
         this.options = this.options.copy()
