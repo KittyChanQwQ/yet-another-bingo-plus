@@ -86,8 +86,8 @@ class MapRenderService(
     // (could need extra space to handle rotating items)
     private val imageMap = LruHashMap<String, BingoTileImage?>(25)
 
-    private fun getTileImage(entry: BingoMapTile): BingoTileImage? {
-        val item = entry.item ?: return null
+    private fun getTileImage(tile: BingoMapTile): BingoTileImage? {
+        val item = tile.item ?: return null
         if (imageMap.containsKey(item))
             return imageMap[item]
 
@@ -233,7 +233,7 @@ class MapRenderService(
         }
 
         // Draw a "+" if the tile can be captured multiple ways
-        if (tile.isMultiItem) {
+        if (tile.isMultiItem && !tile.isHidden) {
             val offset = 6
             for (innerT in offset-2..offset+2) {
                 mapState.setColor(tileX + offset, tileY + innerT, COLOR_WHITE.asByte)
