@@ -16,8 +16,8 @@ import kotlin.time.Duration
 @Serializable
 sealed class BingoCardEntry {
 
-    val teams = HashSet<BingoTeamKey>()
-    val teamsSeen = HashSet<BingoTeamKey>()
+    open val teams = HashSet<BingoTeamKey>()
+    private val teamsSeen = HashSet<BingoTeamKey>()
 
     abstract val visualItem: Item?
 
@@ -145,6 +145,12 @@ sealed class BingoCardEntry {
         val innerEntries: List<BingoCardEntry>,
     ): BingoCardEntry() {
         override val visualItem: Item? get() = innerEntries.firstOrNull()?.visualItem
+
+        override val teams: HashSet<BingoTeamKey>
+            get() = HashSet<BingoTeamKey>().apply {
+                for (entry in innerEntries)
+                    addAll(entry.teams)
+            }
 
         override fun formatName(): String {
             return TextInfo.toJsonString(
