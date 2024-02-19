@@ -76,7 +76,7 @@ class CardService(
                 ?: TierListConfig.EMPTY
 
             val items: MutableList<BingoCardEntry> = tiers.pick(dist, excludedItems, random)
-                .mapNotNull { createEntry(it) }
+                .mapNotNull { (entry, tier) -> createEntry(tier, entry) }
                 .toMutableList()
 
             if (items.size < dist.sum()) {
@@ -92,18 +92,18 @@ class CardService(
             return BingoCard(items)
         }
 
-        private fun createEntry(entry: TierListEntry): BingoCardEntry? {
+        private fun createEntry(tier: TierList, entry: TierListEntry): BingoCardEntry? {
             return when (entry) {
                 is TierListEntry.SingleEntry -> {
                     val identifier = parseIdentifier(entry.item)
                         ?: return null
 
-                    BingoCardEntry.ItemEntry(identifier)
+                    BingoCardEntry.ItemEntry(identifier, tier)
                 }
                 is TierListEntry.MultiEntry -> {
-                    val innerEntries = entry.items.mapNotNull { createEntry(TierListEntry.SingleEntry(it)) }
+                    val innerEntries = entry.items.mapNotNull { createEntry(tier, TierListEntry.SingleEntry(it)) }
 
-                    BingoCardEntry.MultiEntry(innerEntries)
+                    BingoCardEntry.MultiEntry(innerEntries, tier)
                 }
             }
         }

@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.Config
+import me.jfenn.bingo.common.config.TierList
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.LruHashMap
 import net.minecraft.item.FilledMapItem
@@ -14,6 +15,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.awt.image.BufferedImage
 import java.io.InputStream
 import javax.imageio.ImageIO
 import kotlin.time.Duration.Companion.milliseconds
@@ -79,6 +81,60 @@ class MapRenderService(
     ) {
         companion object {
             val EMPTY = BingoTileImage()
+
+            val FALLBACK = MapRenderService::class.java.getResourceAsStream("/bingo/image_fallback.png")
+                    .use { ImageIO.read(it) }
+                    .let { fromBufferedImage(it) }
+
+            val HIDDEN = MapRenderService::class.java.getResourceAsStream("/bingo/image_hidden.png")
+                .use { ImageIO.read(it) }
+                .let { fromBufferedImage(it) }
+
+            val HIDDEN_TIERS = TierList.entries.associateWith { tier ->
+                MapRenderService::class.java.getResourceAsStream("/bingo/image_hidden_${tier.name.lowercase()}.png")
+                    .use { ImageIO.read(it) }
+                    .let { fromBufferedImage(it) }
+            }
+
+            fun fromBufferedImage(image: BufferedImage): BingoTileImage {
+                val tileImage = BingoTileImage()
+
+                for (x in 0 until IMAGE_SIZE) {
+                    for (y in 0 until IMAGE_SIZE) {
+                        val i = x + y * IMAGE_SIZE
+
+                        val imgX = x - TILE_PADDING
+                        val imgY = y - TILE_PADDING
+
+                        var color = if (imgX in 0 until TILE_IMAGE && imgY in 0 until TILE_IMAGE) {
+                            Color.fromInt(image.getRGB(imgX, imgY))
+                        } else Color.fromInt(0)
+
+                        val prevColor = if (imgX-1 in 0 until TILE_IMAGE && imgY-1 in 0 until TILE_IMAGE) {
+                            Color.fromInt(image.getRGB(imgX-1, imgY-1))
+                        } else Color.fromInt(0)
+
+                        if (color.a == 0) {
+                            if (prevColor.a != 0) {
+                                tileImage.regular[i] = COLOR_ITEM_SHADOW.asByte
+                                tileImage.flashing[i] = COLOR_ITEM_SHADOW.asByte
+                                tileImage.achieved[i] = COLOR_ACHIEVED_SHADOW.asByte
+                            }
+                            continue
+                        }
+
+                        // if the image is transparent (glass), blend with the card background
+                        if (color.a < 255) color = COLOR_BACKGROUND.mix(color.copy(a = (color.a * 2).coerceAtMost(255)))
+
+                        tileImage.regular[i] = color.asByte
+                        tileImage.flashing[i] = color.asByte
+                        // make the item image slightly transparent when achieved
+                        tileImage.achieved[i] = COLOR_ACHIEVED.mix(color.copy(a = 200)).asByte
+                    }
+                }
+
+                return tileImage
+            }
         }
     }
 
@@ -89,52 +145,18 @@ class MapRenderService(
     private fun getTileImage(tile: BingoMapTile): BingoTileImage? {
         val item = tile.item ?: return null
         if (imageMap.containsKey(item))
-            return imageMap[item]
+            return imageMap[item] ?: BingoTileImage.FALLBACK
 
         try {
             val image = readTileImage(item).use { ImageIO.read(it) }
-            val tileImage = BingoTileImage()
-
-            for (x in 0 until IMAGE_SIZE) {
-                for (y in 0 until IMAGE_SIZE) {
-                    val i = x + y * IMAGE_SIZE
-
-                    val imgX = x - TILE_PADDING
-                    val imgY = y - TILE_PADDING
-
-                    var color = if (imgX in 0 until TILE_IMAGE && imgY in 0 until TILE_IMAGE) {
-                        Color.fromInt(image.getRGB(imgX, imgY))
-                    } else Color.fromInt(0)
-
-                    val prevColor = if (imgX-1 in 0 until TILE_IMAGE && imgY-1 in 0 until TILE_IMAGE) {
-                        Color.fromInt(image.getRGB(imgX-1, imgY-1))
-                    } else Color.fromInt(0)
-
-                    if (color.a == 0) {
-                        if (prevColor.a != 0) {
-                            tileImage.regular[i] = COLOR_ITEM_SHADOW.asByte
-                            tileImage.flashing[i] = COLOR_ITEM_SHADOW.asByte
-                            tileImage.achieved[i] = COLOR_ACHIEVED_SHADOW.asByte
-                        }
-                        continue
-                    }
-
-                    // if the image is transparent (glass), blend with the card background
-                    if (color.a < 255) color = COLOR_BACKGROUND.mix(color.copy(a = (color.a * 2).coerceAtMost(255)))
-
-                    tileImage.regular[i] = color.asByte
-                    tileImage.flashing[i] = color.asByte
-                    // make the item image slightly transparent when achieved
-                    tileImage.achieved[i] = COLOR_ACHIEVED.mix(color.copy(a = 200)).asByte
-                }
-            }
+            val tileImage = BingoTileImage.fromBufferedImage(image)
 
             imageMap[item] = tileImage
             return tileImage
         } catch (e: Throwable) {
             log.error("Error reading item image: $item.png", e)
             imageMap[item] = null
-            return null
+            return BingoTileImage.FALLBACK
         }
     }
 
@@ -211,7 +233,13 @@ class MapRenderService(
         val isLocked = options.isLockoutMode && entry.teams.isNotEmpty() && team != null && !entry.hasAchieved(team)
         val tileImage = getTileImage(tile) ?: BingoTileImage.EMPTY
         val tileImageArray = when {
-            tile.isHidden -> BingoTileImage.EMPTY.regular
+            tile.isHidden -> when {
+                options.showHiddenTiers && entry.tier != null -> {
+                    BingoTileImage.HIDDEN_TIERS[entry.tier]?.regular ?: BingoTileImage.FALLBACK.regular
+                }
+                entry is BingoCardEntry.FreeSpace -> BingoTileImage.EMPTY.regular
+                else -> BingoTileImage.HIDDEN.regular
+            }
             tile.isFlashing -> tileImage.flashing
             isAchieved -> tileImage.achieved
             else -> tileImage.regular

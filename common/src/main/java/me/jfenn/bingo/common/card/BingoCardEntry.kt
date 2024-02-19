@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
+import me.jfenn.bingo.common.config.TierList
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.item.Item
@@ -20,6 +21,8 @@ sealed class BingoCardEntry {
     private val teamsSeen = HashSet<BingoTeamKey>()
 
     abstract val visualItem: Item?
+
+    abstract val tier: TierList?
 
     open fun formatName(): String? {
         return null
@@ -102,6 +105,9 @@ sealed class BingoCardEntry {
     class FreeSpace : BingoCardEntry() {
         @Transient
         override val visualItem: Item? = null
+
+        @Transient
+        override val tier: TierList? = null
         override fun hasAnyAchieved(): Boolean = true
         override fun hasAchieved(team: BingoTeam): Boolean = true
         override fun setAchieved(team: BingoTeam, value: Boolean): Boolean = false
@@ -117,6 +123,7 @@ sealed class BingoCardEntry {
     @Serializable
     data class ItemEntry(
         val identifier: String,
+        override val tier: TierList,
     ): BingoCardEntry() {
 
         @Transient
@@ -143,6 +150,7 @@ sealed class BingoCardEntry {
     @Serializable
     data class MultiEntry(
         val innerEntries: List<BingoCardEntry>,
+        override val tier: TierList,
     ): BingoCardEntry() {
         override val visualItem: Item? get() = innerEntries.firstOrNull()?.visualItem
 

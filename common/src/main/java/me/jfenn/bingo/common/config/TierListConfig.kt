@@ -42,6 +42,14 @@ data class TierListConfig(
         )
     }
 
+    fun getTier(tier: TierList) = when (tier) {
+        TierList.S -> s
+        TierList.A -> a
+        TierList.B -> b
+        TierList.C -> c
+        TierList.D -> d
+    }
+
     private fun getWeightedSet(set: Set<TierListEntry>): LinkedList<Pair<TierListEntry, Double>> {
         val ret = LinkedList<Pair<TierListEntry, Double>>()
         for (entry in set) {
@@ -56,14 +64,15 @@ data class TierListConfig(
         return ret
     }
 
-    fun pick(distribution: List<Int>, excludingItems: Set<String>, random: Random): List<TierListEntry> {
+    fun pick(distribution: List<Int>, excludingItems: Set<String>, random: Random): List<Pair<TierListEntry, TierList>> {
         val excluding = excludingItems.toMutableSet()
-        val ret = mutableListOf<TierListEntry>()
+        val ret = mutableListOf<Pair<TierListEntry, TierList>>()
 
         // for each tier...
-        for ((tierIndex, items) in listOf(s, a, b, c, d).withIndex()) {
+        for ((tierIndex, tier) in TierList.entries.withIndex()) {
             // get the expected number of items
             val count = distribution.getOrNull(tierIndex) ?: 0
+            val items = getTier(tier)
 
             val itemWeights = getWeightedSet(items)
 
@@ -90,7 +99,7 @@ data class TierListConfig(
                 if (item.asList().any { excluding.contains(it) }) continue
 
                 // add the item to the list
-                ret.add(item)
+                ret.add(item to tier)
                 countAdded++
 
                 // if the chosen item is in any item groups, exclude all of those groups

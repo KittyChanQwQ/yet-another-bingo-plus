@@ -45,6 +45,7 @@ data class BingoOptions(
     @JsonNames("drawOtherTeamCompletions")
     var showOtherTeamCompletions: Boolean = false,
     var showPreviewCard: Boolean = false,
+    var showHiddenTiers: Boolean = false,
 
     var isPlayerKit: Boolean = false,
     var playerKitItems: List<SpawnItem> = listOf(
