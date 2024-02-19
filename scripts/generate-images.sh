@@ -263,15 +263,20 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   if echo $item_models | jq -e '. | index( "minecraft:item/template_banner" )' >/dev/null; then
     item_color=${item_id%_banner}
     # replace some unsupported item colors with ImageMagick ids
-    [ "$item_color" == "green" ] && item_color="#405411"
-    [ "$item_color" == "lime" ] && item_color="#85ce20"
-    [ "$item_color" == "light_blue" ] && item_color="#3cbae3"
-    [ "$item_color" == "blue" ] && item_color="#3e47b0"
+    [ "$item_color" == "blue" ] && item_color="#253193"
+    [ "$item_color" == "brown" ] && item_color="#56331c"
     [ "$item_color" == "cyan" ] && item_color="#17a2a2"
-    [ "$item_color" == "light_gray" ] && item_color="gray80"
-    [ "$item_color" == "brown" ] && item_color="#885734"
+    [ "$item_color" == "gray" ] && item_color="#414141"
+    [ "$item_color" == "green" ] && item_color="#364b18"
+    [ "$item_color" == "lime" ] && item_color="#39ba2e"
+    [ "$item_color" == "light_blue" ] && item_color="#6387d2"
+    [ "$item_color" == "light_gray" ] && item_color="#a0a7a7"
+    [ "$item_color" == "magenta" ] && item_color="#be49c9"
     [ "$item_color" == "pink" ] && item_color="#e890b0"
-    [ "$item_color" == "red" ] && item_color="#b72f28"
+    [ "$item_color" == "purple" ] && item_color="#7e34bf"
+    [ "$item_color" == "red" ] && item_color="#9e2b27"
+    [ "$item_color" == "white" ] && item_color="#e4e4e4"
+    [ "$item_color" == "yellow" ] && item_color="#fac505"
 
     echo "BANNER TINT: $item_color"
     # convert $IMAGE_MASK_DIR/template_banner.png -colorspace gray -fill $item_color -tint 300 PNG32:$OUT_DIR/$(echo $item_id | xargs).png
@@ -283,15 +288,20 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   if echo $item_models | jq -e '. | index( "minecraft:item/template_bed" )' >/dev/null; then
     item_color=${item_id%_bed}
     # replace some unsupported item colors with ImageMagick ids
-    [ "$item_color" == "green" ] && item_color="#405411"
-    [ "$item_color" == "lime" ] && item_color="#85ce20"
-    [ "$item_color" == "light_blue" ] && item_color="#3cbae3"
-    [ "$item_color" == "blue" ] && item_color="#3e47b0"
+    [ "$item_color" == "blue" ] && item_color="#253193"
+    [ "$item_color" == "brown" ] && item_color="#56331c"
     [ "$item_color" == "cyan" ] && item_color="#17a2a2"
-    [ "$item_color" == "light_gray" ] && item_color="gray80"
-    [ "$item_color" == "brown" ] && item_color="#885734"
+    [ "$item_color" == "gray" ] && item_color="#414141"
+    [ "$item_color" == "green" ] && item_color="#364b18"
+    [ "$item_color" == "lime" ] && item_color="#39ba2e"
+    [ "$item_color" == "light_blue" ] && item_color="#6387d2"
+    [ "$item_color" == "light_gray" ] && item_color="#a0a7a7"
+    [ "$item_color" == "magenta" ] && item_color="#be49c9"
     [ "$item_color" == "pink" ] && item_color="#e890b0"
-    [ "$item_color" == "red" ] && item_color="#b72f28"
+    [ "$item_color" == "purple" ] && item_color="#7e34bf"
+    [ "$item_color" == "red" ] && item_color="#9e2b27"
+    [ "$item_color" == "white" ] && item_color="#e4e4e4"
+    [ "$item_color" == "yellow" ] && item_color="#fac505"
 
     echo "BED TINT: $item_color"
     # convert $IMAGE_MASK_DIR/template_bed.png -colorspace gray -fill $item_color -tint 300 PNG32:$OUT_DIR/$(echo $item_id | xargs).png
