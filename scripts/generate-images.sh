@@ -164,6 +164,13 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
       continue
     fi
 
+    # if it's stained glass, we need to apply a manual image mask
+    if [[ "$item_id" == *"_stained_glass" ]]; then
+      echo "STAINED GLASS"
+      mask_texture $block_texture_file $IMAGE_MASK_DIR/template_stained_glass.png $item_out_file
+      continue
+    fi
+
     # if the block is waxed, apply a waxed overlay
     if [[ "$item_id" == "waxed_"* ]]; then
       echo "WAXED"
@@ -267,7 +274,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     [ "$item_color" == "brown" ] && item_color="#56331c"
     [ "$item_color" == "cyan" ] && item_color="#17a2a2"
     [ "$item_color" == "gray" ] && item_color="#414141"
-    [ "$item_color" == "green" ] && item_color="#364b18"
+    [ "$item_color" == "green" ] && item_color="#597a28"
     [ "$item_color" == "lime" ] && item_color="#39ba2e"
     [ "$item_color" == "light_blue" ] && item_color="#6387d2"
     [ "$item_color" == "light_gray" ] && item_color="#a0a7a7"
@@ -276,7 +283,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     [ "$item_color" == "purple" ] && item_color="#7e34bf"
     [ "$item_color" == "red" ] && item_color="#9e2b27"
     [ "$item_color" == "white" ] && item_color="#e4e4e4"
-    [ "$item_color" == "yellow" ] && item_color="#fac505"
+    [ "$item_color" == "yellow" ] && item_color="#faee4d"
 
     echo "BANNER TINT: $item_color"
     # convert $IMAGE_MASK_DIR/template_banner.png -colorspace gray -fill $item_color -tint 300 PNG32:$OUT_DIR/$(echo $item_id | xargs).png
@@ -292,7 +299,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     [ "$item_color" == "brown" ] && item_color="#56331c"
     [ "$item_color" == "cyan" ] && item_color="#17a2a2"
     [ "$item_color" == "gray" ] && item_color="#414141"
-    [ "$item_color" == "green" ] && item_color="#364b18"
+    [ "$item_color" == "green" ] && item_color="#597a28"
     [ "$item_color" == "lime" ] && item_color="#39ba2e"
     [ "$item_color" == "light_blue" ] && item_color="#6387d2"
     [ "$item_color" == "light_gray" ] && item_color="#a0a7a7"
@@ -301,7 +308,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     [ "$item_color" == "purple" ] && item_color="#7e34bf"
     [ "$item_color" == "red" ] && item_color="#9e2b27"
     [ "$item_color" == "white" ] && item_color="#e4e4e4"
-    [ "$item_color" == "yellow" ] && item_color="#fac505"
+    [ "$item_color" == "yellow" ] && item_color="#faee4d"
 
     echo "BED TINT: $item_color"
     # convert $IMAGE_MASK_DIR/template_bed.png -colorspace gray -fill $item_color -tint 300 PNG32:$OUT_DIR/$(echo $item_id | xargs).png
