@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.api.IStructureManager
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.Config
@@ -90,6 +91,18 @@ class MenuController(
             menu?.tick()
         }
 
+        // This is a hack to fix https://gitlab.com/horrific-tweaks/bingo/-/issues/53
+        // - which will handle cases where getBlockState() returns the wrong block the first time it's called
+        var teamSpawnAttempts = 0
+        events.onUpdateTick {
+            menu?.let { menu ->
+                if (BingoTeam.TEAM_BLOCKS.values.any { !teamPositions.containsKey(it.key) } && teamSpawnAttempts < 10) {
+                    log.info("Trying to spawn lobby team entities... attempt #${++teamSpawnAttempts}")
+                    spawnTeamEntities(menu)
+                }
+            }
+        }
+
         events.onEnter(GameState.PLAYING) {
             menu?.cleanup()
             menu = null
@@ -149,6 +162,8 @@ class MenuController(
             .also { log.info("Set lobby spawnpoint to $it") }
     }
 
+    private val teamPositions = mutableMapOf<BingoTeamKey, BlockPos>()
+
     private fun spawnTeamEntities(menu: MenuInstance) {
         // Search for team join entities
         for (x in -24..24) {
@@ -161,6 +176,7 @@ class MenuController(
                     val blockState = lobbyWorld.getBlockState(blockPos)
 
                     val team = BingoTeam.TEAM_BLOCKS[blockState.block] ?: continue
+                    teamPositions[team.key] = blockPos
                     spawnTeamEntity(lobbyWorld, Vec3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team, menu.instanceTag)
                     lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
                 }
