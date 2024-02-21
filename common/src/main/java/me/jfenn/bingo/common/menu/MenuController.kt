@@ -66,15 +66,15 @@ class MenuController(
             val lobbySpawnPos = getLobbySpawnPosition()
             state.lobbySpawnPos = lobbySpawnPos
 
-            menu = MenuInstance(
+            val menuInstance = MenuInstance(
                 log = log,
                 koinScope = koinScope,
                 server = server,
                 interactionEntityEvents = interactionEntityEvents,
                 spawnPos = lobbySpawnPos,
-            ).also {
-                spawnTeamEntities(it)
-            }
+            )
+            menu = menuInstance
+            spawnTeamEntities(menuInstance)
         }
 
         events.onEntityLoad { (entity, world) ->
@@ -89,18 +89,6 @@ class MenuController(
 
         events.onGameTick {
             menu?.tick()
-        }
-
-        // This is a hack to fix https://gitlab.com/horrific-tweaks/bingo/-/issues/53
-        // - which will handle cases where getBlockState() returns the wrong block the first time it's called
-        var teamSpawnAttempts = 0
-        events.onUpdateTick {
-            menu?.let { menu ->
-                if (BingoTeam.TEAM_BLOCKS.values.any { !teamPositions.containsKey(it.key) } && teamSpawnAttempts < 10) {
-                    log.info("Trying to spawn lobby team entities... attempt #${++teamSpawnAttempts}")
-                    spawnTeamEntities(menu)
-                }
-            }
         }
 
         events.onEnter(GameState.PLAYING) {
