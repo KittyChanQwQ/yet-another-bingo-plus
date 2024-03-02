@@ -16,6 +16,7 @@ data class BingoOptions(
     var timeLimit: Duration? = null,
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
     var tierList: String = "all_items",
+    var tierListPage: Int = 0,
 
     // game mode settings
     var isLockoutMode: Boolean = false,
@@ -64,6 +65,13 @@ data class BingoOptions(
         SpawnItem("minecraft:torch", count = 64),
     ),
 ) {
+
+    init {
+        // Verify that the chosen tier list actually exists
+        val tierLists = TierListService.getTierLists()
+        if (this.tierList !in tierLists)
+            tierLists.firstOrNull()?.let { this.tierList = it }
+    }
 
     fun isValid(): Boolean {
         return itemDistribution.sum() <= 25

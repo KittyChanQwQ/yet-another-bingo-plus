@@ -22,18 +22,41 @@ fun MenuComponent.registerTierLists(
         putBoolean("shadow", true)
     }
 
-    TierListService.tierLists.forEachIndexed { i, listName ->
+    val pages = TierListService.getTierLists().chunked(4)
+
+    // Update options.tierList/tierListPage to ensure that there is a tier list selected
+    options.tierListPage = pages.indexOfFirst { it.contains(options.tierList) }
+        .takeIf { it != -1 }
+        ?: 0
+
+    val page by computedProperty { options.tierListPage.coerceIn(pages.indices) }
+
+    for (i in 0..3) {
         registerButton(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
-            text = listName.formatTitle(),
-            isActiveProp = computedProperty { options.tierList == listName },
+            text = "",
+            textProp = computedProperty { pages[page].getOrNull(i)?.formatTitle() ?: "" },
+            isActiveProp = computedProperty { options.tierList == pages[page].getOrNull(i) },
             permissionGetter = permissionGetter,
         ) {
+            val listName = pages[page].getOrNull(i) ?: return@registerButton
             options.tierList = listName
             markDirty()
 
             // when changed, update the bingo card
             cardService.generateCard()
+        }
+    }
+
+    if (pages.size > 1) {
+        registerButton(
+            position = position.add(0.0, -(MENU_ITEM_OFFSET + 4*MENU_ITEM_HEIGHT), 0.0),
+            text = "More...",
+            isActiveProp = computedProperty { false },
+            permissionGetter = permissionGetter,
+        ) {
+            options.tierListPage = (options.tierListPage + 1) % pages.size
+            markDirty()
         }
     }
 }

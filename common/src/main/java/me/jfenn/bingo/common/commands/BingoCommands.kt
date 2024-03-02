@@ -126,7 +126,7 @@ class BingoCommands : BaseCommand() {
                             requirePermission(Permission.CONFIGURE_GAME),
                         )
 
-                    for (listName in TierListService.tierLists) {
+                    for (listName in TierListService.getTierLists()) {
                         listCommand = listCommand.then(
                             LiteralArgumentBuilder.literal<ServerCommandSource>(listName)
                                 .executesInScope { ctx ->

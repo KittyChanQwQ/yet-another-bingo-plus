@@ -15,6 +15,7 @@ import kotlin.math.max
 fun MenuComponent.registerButton(
     position: Vec3d,
     text: String,
+    textProp: Property<String> = computedProperty { text },
     isActiveProp: Property<Boolean> = ConstantProperty(false),
     width: Float = max(MENU_HITBOX_WIDTH, text.length * 0.15f),
     height: Float = MENU_HITBOX_HEIGHT,
@@ -24,6 +25,7 @@ fun MenuComponent.registerButton(
     onClick: (player: ServerPlayerEntity) -> Unit,
 ) {
     val isActive by isActiveProp
+    val buttonText by textProp
 
     val offset = -width / 2.0
     registerEntity(EntityType.INTERACTION, position.add(facing.vector.x * offset, 0.0, facing.vector.z * offset)) {
@@ -46,7 +48,7 @@ fun MenuComponent.registerButton(
         putString("text", TextInfo.toJsonString(
             TextInfo.empty()
                 .append(if (isActive) TextInfo.literal("✔ ") else TextInfo.empty())
-                .append(TextInfo.literal(text))
+                .append(TextInfo.literal(buttonText))
                 .formatted(if (isActive) TextColor.BLACK else TextColor.GRAY)
         ))
         putString("billboard", "fixed")

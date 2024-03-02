@@ -19,8 +19,8 @@ object TierListService {
         Config.readStream("simplified.tierlist.json").close()
     }
 
-    val tierLists by lazy {
-        Config.configDir
+    fun getTierLists() : List<String> {
+        return Config.configDir
             .resolve("bingo")
             .toFile()
             .listFiles()
