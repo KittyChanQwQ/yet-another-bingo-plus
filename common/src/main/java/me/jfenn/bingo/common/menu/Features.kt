@@ -41,6 +41,13 @@ fun MenuComponent.registerFeatures(
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
+        text = "Night Vision",
+        toggleProp = propertyRef(options::isNightVision),
+        permissionGetter = permissionGetter,
+    )
+
+    registerToggleButton(
+        position = position.add(0.0, -(MENU_ITEM_OFFSET + 4*MENU_ITEM_HEIGHT), 0.0),
         text = "Allow PvP",
         toggleProp = propertyRef(options::isPvpEnabled),
         permissionGetter = permissionGetter,

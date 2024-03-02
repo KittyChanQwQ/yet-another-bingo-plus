@@ -26,6 +26,7 @@ data class BingoOptions(
 
     // game feature settings
     var isElytra: Boolean = false,
+    var isNightVision: Boolean = false,
     var isUnlockRecipes: Boolean = true,
     var isPvpEnabled: Boolean = true,
     var isKeepInventory: Boolean = false,
@@ -82,6 +83,7 @@ data class BingoOptions(
     fun formatFeatures(): String {
         val features = buildList {
             if (isElytra) add("Elytra")
+            if (isNightVision) add("NightVis")
             if (isKeepInventory) add("KeepInv")
             if (isPvpEnabled) add("PvP")
         }

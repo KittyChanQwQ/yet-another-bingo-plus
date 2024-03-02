@@ -14,6 +14,9 @@ data class BingoConfig(
     // stops sounds from being sent to other players in the lobby
     val preventLobbyChaos: Boolean = false,
 
+    val nightVisionInSpectator: Boolean = true,
+    val nightVisionInPostgame: Boolean = true,
+
     // shuts down the server once all players log out after a game
     val autoShutDownInPostgame: Boolean = true,
     // shuts down the server faster, at the risk of bugs or data corruption

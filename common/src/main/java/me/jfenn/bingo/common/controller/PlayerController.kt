@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -18,6 +19,8 @@ import me.jfenn.bingo.common.utils.allInventorySlots
 import me.jfenn.bingo.common.utils.giveOrEquipStack
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
+import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -45,6 +48,7 @@ class PlayerController(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
+    private val config: BingoConfig,
     private val mapItemService: MapItemService,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
@@ -180,10 +184,29 @@ class PlayerController(
             player.abilities.allowFlying = true
             player.sendAbilitiesUpdate()
         }
+
+        updateNightVision(player)
+    }
+
+    private fun updateNightVision(player: ServerPlayerEntity) {
+        val isOnTeam = teamService.isPlaying(player)
+
+        // give the player night_vision if configured
+        if (
+            (state.state == GameState.PLAYING && !isOnTeam && config.nightVisionInSpectator) ||
+            (state.state == GameState.POSTGAME && config.nightVisionInPostgame) ||
+            (state.state == GameState.PLAYING && options.isNightVision)
+        ) {
+            player.addStatusEffect(
+                StatusEffectInstance(StatusEffects.NIGHT_VISION, -1, 0, false, false)
+            )
+        }
     }
 
     fun resetPlayerHealth(player: ServerPlayerEntity) {
         player.clearStatusEffects()
+        updateNightVision(player)
+
         player.fireTicks = 0
         player.isOnFire = false
         player.health = player.maxHealth
@@ -249,6 +272,8 @@ class PlayerController(
             ) {
                 spawnService.giveSpawnEquipment(listOf(player))
             }
+
+            updateNightVision(player)
         }
 
         // Transition from PREGAME -> PLAYING

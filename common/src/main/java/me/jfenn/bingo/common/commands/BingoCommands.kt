@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.*
+import me.jfenn.bingo.common.controller.PlayerController
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -19,6 +20,7 @@ import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.common.utils.sendWarningMessage
+import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.Items
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
@@ -172,6 +174,43 @@ class BingoCommands : BaseCommand() {
                                 }
 
                                 ctx.source.player?.sendInfoMessage("Elytra mode: $isElytra")
+                                1
+                            }
+                    )
+            )
+            .then(
+                // Change the night vision feature setting (while the game is running)
+                LiteralArgumentBuilder.literal<ServerCommandSource>("night_vision")
+                    .require(
+                        requireState(GameState.PREGAME, GameState.PLAYING),
+                        requirePermission(Permission.CONFIGURE_GAME),
+                    )
+                    .then(
+                        RequiredArgumentBuilder.argument<ServerCommandSource, Boolean>(
+                            "true/false",
+                            BoolArgumentType.bool()
+                        )
+                            .executesInScope { ctx ->
+                                val state = get<BingoState>()
+                                val options = get<BingoOptions>()
+                                val events = get<ScopedEvents>()
+                                val playerController = get<PlayerController>()
+
+                                val isNightVision = BoolArgumentType.getBool(ctx, "true/false")
+                                options.isNightVision = isNightVision
+                                events.onChangeConfig(Unit)
+
+                                // if night vision is changed, update all players
+                                if (state.state == GameState.PLAYING) {
+                                    ctx.source.server.playerManager.playerList.forEach { player ->
+                                        if (!isNightVision)
+                                            player.removeStatusEffect(StatusEffects.NIGHT_VISION)
+                                        else
+                                            playerController.updateGameMode(player, forceReset = false)
+                                    }
+                                }
+
+                                ctx.source.player?.sendInfoMessage("Night vision: $isNightVision")
                                 1
                             }
                     )
