@@ -20,7 +20,7 @@ description: A reference page for all of the game commands provided in Yet Anoth
 | `/bingo shuffleteams #`      | Randomly shuffles all players onto the given number of teams.                   |
 | `/bingo elytra <true/false>` | Changes whether players have elytra/rockets during the game.                    |
 | `/bingo timelimit #`         | Sets the time limit of the game, in minutes (or "off" for no timer)             |
-| `/bingo wincon <option>`     | Changes the number of Bingo lines needed for a team to win the game.            |
+| `/bingo goal <option>`       | Changes the number of Bingo lines needed for a team to win the game.            |
 | `/bingo itemdist # # # # #`  | Changes the [item distribution](./item-distribution) used to generate the card. |
 | `/bingo tierlist <name>`     | Changes the tier list used to generate the card.                                |
 | `/bingo reroll`              | Re-rolls the card for completely new random items.                              |

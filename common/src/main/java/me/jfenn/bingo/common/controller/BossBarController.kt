@@ -67,7 +67,7 @@ class BossBarController(
                     } else it
                 }
                 .append(
-                    Text.literal(options.winCondition.name.formatTitle())
+                    Text.literal(options.goal.name.formatTitle())
                         .formatted(Formatting.BOLD)
                 )
         }

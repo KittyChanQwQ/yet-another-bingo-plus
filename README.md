@@ -81,7 +81,7 @@ Global commands:
 BINGO commands (operator-only):
 - `/bingo elytra <true/false>` changes the elytra mode setting
 - `/bingo timelimit <minutes>` sets the time limit of the game, in minutes (or "off")
-- `/bingo wincon <option>` sets the condition for a team to win
+- `/bingo goal <option>` sets the number of lines required for a team to win
 - `/bingo itemdist <distribution...>` changes the item distribution used to generate the card
 - `/bingo reroll` rerolls for a new Bingo Card with different items
 - `/bingo seed` shows the random seed used to generate the current Bingo Card

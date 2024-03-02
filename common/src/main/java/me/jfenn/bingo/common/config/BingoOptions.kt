@@ -7,12 +7,12 @@ import me.jfenn.bingo.common.spawn.SpawnItem
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.memberProperties
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
 data class BingoOptions(
-    var winCondition: WinCondition = WinCondition.THREE_LINES,
+    @JsonNames("winCondition")
+    var goal: WinCondition = WinCondition.THREE_LINES,
     var timeLimit: Duration? = null,
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
     var tierList: String = "all_items",

@@ -52,7 +52,7 @@ object ChatMessages {
 
             Text.empty()
                 .append("  Win condition: ")
-                .append(options.winCondition.formatName())
+                .append(options.goal.formatName())
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 

@@ -37,8 +37,8 @@ fun MenuComponent.registerMenuPage(
                 permissionGetter = permissionGetter,
             )
             registerEnumMenu(
-                title = "Win Condition",
-                valueProp = propertyRef(options::winCondition),
+                title = "Goal",
+                valueProp = propertyRef(options::goal),
                 position = position.add(0.6, 0.0, 0.0),
                 permissionGetter = permissionGetter,
             )

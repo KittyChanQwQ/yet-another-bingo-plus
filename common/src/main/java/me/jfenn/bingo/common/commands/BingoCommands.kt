@@ -178,7 +178,7 @@ class BingoCommands : BaseCommand() {
             )
             .then(
                 // Change the win condition setting (while the game is running)
-                LiteralArgumentBuilder.literal<ServerCommandSource>("wincon")
+                LiteralArgumentBuilder.literal<ServerCommandSource>("goal")
                     .require(
                         requireState(GameState.PREGAME, GameState.PLAYING),
                         requirePermission(Permission.CONFIGURE_GAME),
@@ -186,14 +186,14 @@ class BingoCommands : BaseCommand() {
                     .let {
                         val options = WinCondition.entries
                             .map { wincon ->
-                                LiteralArgumentBuilder.literal<ServerCommandSource>(wincon.name)
+                                LiteralArgumentBuilder.literal<ServerCommandSource>(wincon.name.lowercase())
                                     .executesInScope { ctx ->
                                         val options = get<BingoOptions>()
                                         val events = get<ScopedEvents>()
 
-                                        options.winCondition = wincon
+                                        options.goal = wincon
                                         events.onChangeConfig(Unit)
-                                        ctx.source.player?.sendInfoMessage("Win condition: ${wincon.name}")
+                                        ctx.source.player?.sendInfoMessage("Goal: ${wincon.name}")
                                         1
                                     }
                             }

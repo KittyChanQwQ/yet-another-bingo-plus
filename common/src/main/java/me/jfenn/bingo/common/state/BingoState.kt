@@ -13,7 +13,6 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.utils.formatString
-import net.minecraft.item.GoatHornItem
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -69,7 +68,7 @@ data class BingoState(
      */
     fun updateWinner(team: BingoTeam): Boolean {
         val score = team.score
-        val isWinner = score.lines >= options.winCondition.numLines
+        val isWinner = score.lines >= options.goal.numLines
 
         if (isWinner && team.winner == null) {
             team.winner = TeamWinner(

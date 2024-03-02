@@ -23,6 +23,26 @@ class ScoreboardController(
     private val scoreboardService: ScoreboardService,
 ) {
 
+    private fun String.wrap(maxChars: Int) : List<String> {
+        val items = this.split(", ")
+        return buildList {
+            val builder = StringBuilder()
+            for ((i, item) in items.withIndex()) {
+                if (builder.isNotEmpty() && builder.length + item.length + 2 >= maxChars) {
+                    add(builder.toString())
+                    builder.clear()
+                }
+
+                builder.append(item)
+                if (i+1 < items.size)
+                    builder.append(", ")
+            }
+
+            if (builder.isNotEmpty())
+                add(builder.toString())
+        }
+    }
+
     init {
         events.onUpdateTick {
             val activeTeams = state.getRegisteredTeams()
@@ -33,24 +53,22 @@ class ScoreboardController(
 
                 val scoreboardText = buildList {
                     add("")
-                    options.formatGameMode().let {
-                        if (it.length > 18) {
-                            add("Game mode:")
-                            add("  ${Formatting.YELLOW}$it")
-                        } else {
-                            add("Game mode: ${Formatting.YELLOW}$it")
+                    options.formatGameMode()
+                        .let { "Mode: ${Formatting.YELLOW}$it" }
+                        .wrap(32)
+                        .mapIndexed { i, str ->
+                            if (i == 0) str else "  ${Formatting.YELLOW}$str"
                         }
-                    }
-                    options.formatFeatures().let {
-                        if (it.length > 18) {
-                            add("Features:")
-                            add("  ${Formatting.YELLOW}$it")
-                        } else {
-                            add("Features: ${Formatting.YELLOW}$it")
+                        .let { addAll(it) }
+                    options.formatFeatures()
+                        .let { "Features: ${Formatting.YELLOW}$it" }
+                        .wrap(32)
+                        .mapIndexed { i, str ->
+                            if (i == 0) str else "  ${Formatting.YELLOW}$str"
                         }
-                    }
-                    add("Win condition: ${Formatting.YELLOW}${options.winCondition.formatName()}")
-                    if (options.showRemainingTime) {
+                        .let { addAll(it) }
+                    add("Goal: ${Formatting.YELLOW}${options.goal.formatName()}")
+                    if (options.showRemainingTime && options.timeLimit != null) {
                         add("Time left: ${Formatting.YELLOW}${state.formatTimeRemaining().string}")
                     }
                     add("")
