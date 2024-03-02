@@ -56,7 +56,10 @@ class CoordsCommand(
 
     private fun listCoordinates(player: ServerPlayerEntity, team: BingoTeam) {
         val coordMessages = team.chatCoordinates
-        if (coordMessages.isEmpty()) return
+        if (coordMessages.isEmpty()) {
+            player.sendMessage(Text.literal("No coordinates have been saved yet.").formatted(Formatting.GRAY))
+            return
+        }
 
         player.sendMessage(Text.literal("Coordinates:").formatted(Formatting.GRAY, Formatting.BOLD))
         for (entry in coordMessages) {

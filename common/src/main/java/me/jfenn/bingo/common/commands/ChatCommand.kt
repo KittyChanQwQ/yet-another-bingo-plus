@@ -3,6 +3,8 @@ package me.jfenn.bingo.common.commands
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
+import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.api.ITeamManager
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
@@ -12,8 +14,12 @@ import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
+import org.koin.core.component.inject
 
 class ChatCommand : BaseCommand() {
+
+    private val scoreboardManager: IScoreboardManager by inject()
 
     companion object {
         fun sendTeamMessage(
@@ -44,17 +50,25 @@ class ChatCommand : BaseCommand() {
                         "message",
                         StringArgumentType.greedyString()
                     )
-                        .executes { ctx ->
-                            val player = ctx.source.player ?: return@executes 0
+                        .executesInScope { ctx ->
+                            val player = ctx.source.player ?: return@executesInScope 0
                             val message = StringArgumentType.getString(ctx, "message")
+
+                            val teamService = get<TeamService>()
+                            val teamColor = teamService.getPlayerTeam(player)
+                                ?.formatting
+                                ?: Formatting.RESET
 
                             ctx.source.server?.playerManager?.broadcast(
                                 Text.empty()
                                     .append(Text.literal("<"))
-                                    .append(player.name)
+                                    .append(
+                                        Text.literal(scoreboardManager.getPlayerName(player))
+                                            .formatted(teamColor)
+                                    )
                                     .append(Text.literal("> $message")),
                                 false,
-                            ) ?: return@executes 0
+                            ) ?: return@executesInScope 0
                             1
                         }
                 )
