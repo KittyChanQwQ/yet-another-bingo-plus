@@ -51,6 +51,20 @@ object MigrationHandler {
                 .takeIfMd5("7eb68b14b0288982b86a3c6b856482e3")
                 ?.deleteIfExists()
         }
+
+        migrations[2] = {
+            loader.configDir.resolve("bingo/all_items.tierlist.json")
+                .takeIfMd5("37946b44952cab04cd2dde840da5beac")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("bingo/overworld-only.tierlist.json")
+                .takeIfMd5("747b65ffd7b923cc4e2f746dffacd4e0")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("bingo/simplified.tierlist.json")
+                .takeIfMd5("707151ae1614dc508ad264677be397e2")
+                ?.deleteIfExists()
+        }
     }
 
     private fun Path.takeIfMd5(md5Str: String): Path? {
