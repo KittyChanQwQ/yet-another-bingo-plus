@@ -59,7 +59,13 @@ class BingoCommands : BaseCommand() {
                                             val events = get<ScopedEvents>()
                                             val player = ctx.source.player ?: return@executesInScope 0
                                             val value = BoolArgumentType.getBool(ctx, "value")
-                                            ConfigService.setPlayerConfig(events, player, field, value)
+
+                                            val settings = ConfigService.getPlayer(player.uuidAsString)
+                                            field.set(settings, value)
+                                            settings.seenTutorial = true
+                                            ConfigService.setPlayer(player.uuidAsString, settings)
+
+                                            events.onChangePlayerSettings(player)
                                             player.sendInfoMessage("${field.name.formatTitle()}: $value")
                                             1
                                         }

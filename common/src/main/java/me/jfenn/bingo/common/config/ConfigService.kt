@@ -1,9 +1,5 @@
 package me.jfenn.bingo.common.config
 
-import me.jfenn.bingo.common.event.ScopedEvents
-import net.minecraft.server.network.ServerPlayerEntity
-import kotlin.reflect.KMutableProperty1
-
 object ConfigService {
 
     var config: BingoConfig by config("bingo/config.json")
@@ -33,19 +29,6 @@ object ConfigService {
         val players = playerConfig.players.toMutableMap()
         players[uuid] = settings
         playerConfig = playerConfig.copy(players = players)
-    }
-
-    fun setPlayerConfig(
-        events: ScopedEvents,
-        player: ServerPlayerEntity,
-        field: KMutableProperty1<PlayerSettings, Boolean>,
-        value: Boolean
-    ) {
-        val config = getPlayer(player.uuidAsString)
-        field.set(config, value)
-        setPlayer(player.uuidAsString, config)
-
-        events.onChangePlayerSettings(player)
     }
 
 }

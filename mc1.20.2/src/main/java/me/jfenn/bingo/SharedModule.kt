@@ -13,4 +13,5 @@ val sharedModule = module {
     singleOf(::ScoreboardManager) bind IScoreboardManager::class
     singleOf(::StructureManager) bind IStructureManager::class
     singleOf(::TeamManager) bind ITeamManager::class
+    singleOf(::TextSerializer) bind ITextSerializer::class
 }

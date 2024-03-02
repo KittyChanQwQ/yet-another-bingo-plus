@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -9,12 +8,11 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
-import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import org.koin.core.scope.Scope
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 
 class MenuInstance(
     private val log: Logger,
@@ -36,7 +34,6 @@ class MenuInstance(
     val menuComponent = component(koinScope) {
         registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.45))
         registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.45))
-        registerPlayerMenu(Vec3d(4.0, spawnPos.y + 3.5, 4.45), Direction.NORTH)
     }
 
     fun tick() {
