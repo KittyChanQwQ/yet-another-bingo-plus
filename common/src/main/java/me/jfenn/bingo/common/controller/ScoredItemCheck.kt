@@ -186,7 +186,7 @@ class ScoredItemCheck(
 
         // check if the leading team has changed, and announce the leader
         val leadingTeam = ScoreService.getLeading(state)
-        if (prevLeadingTeam != leadingTeam && options.showLeadingTeam) {
+        if (prevLeadingTeam != leadingTeam && options.showLeadingTeam && state.getRegisteredTeams().size > 1) {
             // if the leading team should be shown, announce the new leader
             if (leadingTeam != null) {
                 ChatMessages.broadcastScoreLeadingTeam(server, options, leadingTeam)

@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.GameState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 
@@ -24,7 +25,10 @@ class ScoreboardController(
 
     init {
         events.onUpdateTick {
-            for (team in state.getRegisteredTeams() + null) {
+            val activeTeams = state.getRegisteredTeams()
+            val isMultipleTeams = state.state == GameState.PREGAME || activeTeams.size > 1
+
+            for (team in activeTeams + null) {
                 val objective = scoreboardService.getScoreboardObjective(team)
 
                 val scoreboardText = buildList {
@@ -53,14 +57,16 @@ class ScoreboardController(
                     if (team != null) {
                         val score = team.score
 
-                        add("Team: ${team.formatting}${team.name}")
+                        if (isMultipleTeams) {
+                            add("Team: ${team.formatting}${team.name}")
+                        }
                         add("Items scored: ${team.formatting}${score.items}")
                         add("Lines scored: ${team.formatting}${score.lines}")
                         add("")
                     }
 
                     val leadingTeam = ScoreService.getLeading(state)
-                    if (options.showLeadingTeam) {
+                    if (options.showLeadingTeam && isMultipleTeams) {
                         add("Leading team: ${leadingTeam?.let { it.formatting.toString() + it.name } ?: "${Formatting.WHITE}Tie"}")
                     }
 
@@ -71,20 +77,20 @@ class ScoreboardController(
                         else -> leadingTeam?.formatting ?: Formatting.WHITE
                     }
 
-                    if (options.showCompletedItems && team != leadingTeam) {
+                    if (options.showCompletedItems && isMultipleTeams && team != leadingTeam) {
                         // if the leading team is a tie, find one of the tied teams to get the item/line count
                         val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByItems(state, allowTies = true)
                         val itemsScored = leadingOrTied?.score?.items ?: 0
                         add("Items scored: $formatting$itemsScored")
                     }
-                    if (options.showCompletedLines && team != leadingTeam) {
+                    if (options.showCompletedLines && isMultipleTeams && team != leadingTeam) {
                         // if the leading team is a tie, find one of the tied teams to get the item/line count
                         val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByLines(state, allowTies = true)
                         val linesScored = leadingOrTied?.score?.lines ?: 0
                         add("Lines scored: $formatting$linesScored")
                     }
 
-                    if (options.showLeadingTeam || options.showCompletedItems || options.showCompletedLines)
+                    if (lastOrNull() != "")
                         add("")
                 }.mapIndexed { i, str ->
                     str.ifEmpty { " ".repeat(i) }
