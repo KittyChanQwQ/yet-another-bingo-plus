@@ -11,7 +11,6 @@ import net.minecraft.nbt.*
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.PersistentState
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 @Serializable
 sealed class SerializedPersistentState: PersistentState() {

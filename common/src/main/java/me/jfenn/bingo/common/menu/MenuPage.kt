@@ -16,6 +16,7 @@ fun MenuComponent.registerMenuPage(
     gameService: GameService = koinScope.get(),
     cardService: CardService = koinScope.get(),
     permissionsIntegration: PermissionsIntegration = koinScope.get(),
+    configService: ConfigService = koinScope.get(),
 ) {
     var page = 0
 
@@ -102,7 +103,7 @@ fun MenuComponent.registerMenuPage(
         permissionGetter = permissionGetter,
     ) {
         // Reset the menu to the default options
-        options.copyFrom(ConfigService.optionsDefault)
+        options.copyFrom(configService.optionsDefault)
         cardService.generateCard()
         markDirty()
     }

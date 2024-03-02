@@ -21,6 +21,7 @@ class ScoreboardController(
     private val state: BingoState,
     private val teamService: TeamService,
     private val scoreboardService: ScoreboardService,
+    private val configService: ConfigService,
 ) {
 
     private fun String.wrap(maxChars: Int) : List<String> {
@@ -117,7 +118,7 @@ class ScoreboardController(
                 // Determine which players should be shown the scoreboard
                 val players = server.playerManager.playerList
                     .filter { teamService.getPlayerTeam(it)?.key == team?.key }
-                    .filter { ConfigService.getPlayer(it.uuidAsString).scoreboard }
+                    .filter { configService.getPlayer(it.uuidAsString).scoreboard }
                     .filter { scoreboardService.shouldDisplayScoreboard(it) }
 
                 scoreboardService.setScoreboardContents(objective, scoreboardText, players)

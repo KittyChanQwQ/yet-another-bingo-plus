@@ -3,10 +3,7 @@ package me.jfenn.bingo.common.state
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.BingoTeamKey
-import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.*
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
@@ -27,10 +24,13 @@ data class BingoState(
     var updatedAt: Instant? = null,
     var lobbySpawnPos: BlockPosition = BlockPosition(0, 0, 0),
     var timeOffline: Duration = Duration.ZERO,
-    val options: BingoOptions = ConfigService.options.copy(),
+    val options: BingoOptions = ConfigService().options,
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
     var previewMap: BingoMap? = null,
-    var card: BingoCard = CardService.generate(options, seed),
+    // This is a temporary card that should be overwritten by `CardService.generate()`
+    var card: BingoCard = BingoCard(
+        entries = List(25) { BingoCardEntry.FreeSpace() }
+    ),
 ) : SerializedPersistentState() {
 
     fun getRegisteredTeams(): List<BingoTeam> {

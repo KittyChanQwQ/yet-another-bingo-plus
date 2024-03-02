@@ -4,6 +4,8 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.config.MigrationHandler
+import me.jfenn.bingo.common.config.TierListService
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
@@ -21,7 +23,10 @@ import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.server.MinecraftServer
-import org.koin.core.module.dsl.*
+import org.koin.core.Koin
+import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.scopedOf
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.scope.Scope
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
@@ -30,22 +35,26 @@ val commonModule = module {
     single { getKoin() }
     single { LoggerFactory.getLogger(MOD_ID) }
     single { SerializedPersistentStateFactory(get()) }
-    single { ConfigService.config }
+    singleOf(::MigrationHandler)
 
-    singleOf(::ServerDatapackManager) withOptions { createdAtStart() }
-    singleOf(::EventManager) withOptions { createdAtStart() }
-    singleOf(::ScopeManager) withOptions { createdAtStart() }
+    singleOf(::ConfigService)
+    single { get<ConfigService>().config }
+    singleOf(::TierListService)
 
-    singleOf(::AutoShutdownController) withOptions { createdAtStart() }
+    singleOf(::ServerDatapackManager)
+    singleOf(::EventManager)
+    singleOf(::ScopeManager)
+
+    singleOf(::AutoShutdownController)
     factoryOf(PermissionsIntegration::create)
     factoryOf(VanishIntegration::create)
 
-    singleOf(::BingoCommands) withOptions { createdAtStart() }
-    singleOf(::ChatCommand) withOptions { createdAtStart() }
-    singleOf(::CoordsCommand) withOptions { createdAtStart() }
-    singleOf(::JoinCommand) withOptions { createdAtStart() }
-    singleOf(::SpectatorCommand) withOptions { createdAtStart() }
-    singleOf(::RestartCommand) withOptions { createdAtStart() }
+    singleOf(::BingoCommands)
+    singleOf(::ChatCommand)
+    singleOf(::CoordsCommand)
+    singleOf(::JoinCommand)
+    singleOf(::SpectatorCommand)
+    singleOf(::RestartCommand)
 
     scope<BingoContext> {
         scoped { ScopedEvents() }
@@ -82,6 +91,20 @@ val commonModule = module {
 
         scopedOf(::CommandTreeHandler)
     }
+}
+
+fun Koin.commonInit() {
+    get<ServerDatapackManager>()
+    get<EventManager>()
+    get<ScopeManager>()
+    get<AutoShutdownController>()
+
+    get<BingoCommands>()
+    get<ChatCommand>()
+    get<CoordsCommand>()
+    get<JoinCommand>()
+    get<SpectatorCommand>()
+    get<RestartCommand>()
 }
 
 fun Scope.commonInit() {

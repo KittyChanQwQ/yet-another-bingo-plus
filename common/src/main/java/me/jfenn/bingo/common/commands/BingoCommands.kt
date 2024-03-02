@@ -26,9 +26,13 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
+import org.koin.core.component.inject
 import kotlin.time.Duration.Companion.minutes
 
 class BingoCommands : BaseCommand() {
+
+    private val configService by inject<ConfigService>()
+
     init {
         LiteralArgumentBuilder.literal<ServerCommandSource>("bingo")
             .require(requireBingoInstance())
@@ -60,10 +64,10 @@ class BingoCommands : BaseCommand() {
                                             val player = ctx.source.player ?: return@executesInScope 0
                                             val value = BoolArgumentType.getBool(ctx, "value")
 
-                                            val settings = ConfigService.getPlayer(player.uuidAsString)
+                                            val settings = configService.getPlayer(player.uuidAsString)
                                             field.set(settings, value)
                                             settings.seenTutorial = true
-                                            ConfigService.setPlayer(player.uuidAsString, settings)
+                                            configService.setPlayer(player.uuidAsString, settings)
 
                                             events.onChangePlayerSettings(player)
                                             player.sendInfoMessage("${field.name.formatTitle()}: $value")
@@ -126,7 +130,7 @@ class BingoCommands : BaseCommand() {
                             requirePermission(Permission.CONFIGURE_GAME),
                         )
 
-                    for (listName in TierListService.getTierLists()) {
+                    for (listName in TierListService.readTierLists()) {
                         listCommand = listCommand.then(
                             LiteralArgumentBuilder.literal<ServerCommandSource>(listName)
                                 .executesInScope { ctx ->

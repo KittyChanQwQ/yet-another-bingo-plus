@@ -32,6 +32,7 @@ class PlayerSettingsController(
     private val permissions: PermissionsIntegration,
     private val textSerializer: ITextSerializer,
     private val scoreboardManager: IScoreboardManager,
+    private val configService: ConfigService,
 ) {
 
     private fun getIntroPage(player: ServerPlayerEntity) =
@@ -145,7 +146,7 @@ class PlayerSettingsController(
     }
 
     private fun updateBookItem(player: ServerPlayerEntity, stack: ItemStack) {
-        val settings = ConfigService.getPlayer(player.uuidAsString)
+        val settings = configService.getPlayer(player.uuidAsString)
 
         stack.getOrCreateNbt().apply {
             put("pages", NbtList().apply {

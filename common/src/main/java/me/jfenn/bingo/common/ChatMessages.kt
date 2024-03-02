@@ -139,7 +139,7 @@ object ChatMessages {
             .forEach { it.sendMessage(message, false) }
     }
 
-    fun broadcastScoreLeadingTeam(server: MinecraftServer, options: BingoOptions, team: BingoTeam) {
+    fun broadcastScoreLeadingTeam(server: MinecraftServer, options: BingoOptions, configService: ConfigService, team: BingoTeam) {
         val score = team.score
         val message = Text.empty()
             .append(team.text())
@@ -150,11 +150,11 @@ object ChatMessages {
             ).formatted(Formatting.YELLOW))
 
         server.playerManager.playerList
-            .filter { ConfigService.getPlayer(it.uuidAsString).leadingMessages }
+            .filter { configService.getPlayer(it.uuidAsString).leadingMessages }
             .forEach { it.sendMessage(message, false) }
     }
 
-    fun broadcastScoreTiedTeam(server: MinecraftServer, options: BingoOptions, team: BingoTeam) {
+    fun broadcastScoreTiedTeam(server: MinecraftServer, options: BingoOptions, configService: ConfigService, team: BingoTeam) {
         val score = team.score
         val message = Text.empty()
             .append(team.text())
@@ -165,7 +165,7 @@ object ChatMessages {
             ).formatted(Formatting.YELLOW))
 
         server.playerManager.playerList
-            .filter { ConfigService.getPlayer(it.uuidAsString).leadingMessages }
+            .filter { configService.getPlayer(it.uuidAsString).leadingMessages }
             .forEach { it.sendMessage(message, false) }
     }
 

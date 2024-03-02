@@ -14,6 +14,7 @@ import net.minecraft.world.GameMode
 class ScoreboardService(
     private val server: MinecraftServer,
     private val scoreboardManager: IScoreboardManager,
+    private val configService: ConfigService,
 ) {
 
     fun getScoreboardObjective(team: BingoTeam?) : IObjectiveHandle {
@@ -23,11 +24,11 @@ class ScoreboardService(
     }
 
     fun shouldDisplayScoreboard(playerEntity: PlayerEntity) : Boolean {
-        val isScoreboardEnabled = ConfigService.getPlayer(playerEntity.uuidAsString).scoreboard
+        val isScoreboardEnabled = configService.getPlayer(playerEntity.uuidAsString).scoreboard
         if (!isScoreboardEnabled) return false
         val player = server.playerManager.getPlayer(playerEntity.uuid) ?: return false
 
-        val settings = ConfigService.getPlayer(playerEntity.uuidAsString)
+        val settings = configService.getPlayer(playerEntity.uuidAsString)
         if (!settings.scoreboardAutoHide)
             return true
 

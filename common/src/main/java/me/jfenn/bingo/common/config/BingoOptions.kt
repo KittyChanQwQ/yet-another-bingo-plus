@@ -68,7 +68,7 @@ data class BingoOptions(
 
     init {
         // Verify that the chosen tier list actually exists
-        val tierLists = TierListService.getTierLists()
+        val tierLists = TierListService.readTierLists()
         if (this.tierList !in tierLists)
             tierLists.firstOrNull()?.let { this.tierList = it }
     }

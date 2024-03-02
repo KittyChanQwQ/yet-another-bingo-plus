@@ -20,6 +20,7 @@ class BossBarController(
     private val server: MinecraftServer,
     private val options: BingoOptions,
     private val state: BingoState,
+    private val configService: ConfigService,
 ) {
 
     private val ID = Identifier.of("fennifith", "bingo")
@@ -42,7 +43,7 @@ class BossBarController(
 
     init {
         events.onChangePlayerSettings { player ->
-            val settings = ConfigService.getPlayer(player.uuidAsString)
+            val settings = configService.getPlayer(player.uuidAsString)
 
             if (settings.bossbar)
                 bossBar.addPlayer(player)

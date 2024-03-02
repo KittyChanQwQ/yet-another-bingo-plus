@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.MapRenderService
 import me.jfenn.bingo.common.state.BingoState
@@ -12,6 +13,7 @@ class BingoCardController(
     events: ScopedEvents,
     private val state: BingoState,
     private val mapRenderService: MapRenderService,
+    private val cardService: CardService,
 ) {
     init {
         events.onGameTick {
@@ -24,6 +26,10 @@ class BingoCardController(
                     mapRenderService.update(team)
                 }
             }
+        }
+
+        events.onEnter(GameState.PREGAME) {
+            cardService.generateCard()
         }
 
         events.onEnter(GameState.POSTGAME) {

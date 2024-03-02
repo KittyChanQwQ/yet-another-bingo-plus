@@ -2,35 +2,28 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
-import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.utils.json
 import org.slf4j.Logger
 import java.io.FileInputStream
 
-object TierListService {
+class TierListService(
+    private val log: Logger,
+) {
 
-    private val log by BingoKoin.koinApp.koin.inject<Logger>()
-
-    init {
-        // initialize default tier lists
-        Config.readStream("all_items.tierlist.json").close()
-        Config.readStream("nether-only.tierlist.json").close()
-        Config.readStream("overworld-only.tierlist.json").close()
-        Config.readStream("simplified.tierlist.json").close()
+    companion object {
+        fun readTierLists() : List<String> {
+            return Config.configDir
+                .resolve("bingo")
+                .toFile()
+                .listFiles()
+                .orEmpty()
+                .filter { it.name.endsWith(".tierlist.json") }
+                .map { it.name.removeSuffix(".tierlist.json") }
+                .sorted()
+        }
     }
 
-    fun getTierLists() : List<String> {
-        return Config.configDir
-            .resolve("bingo")
-            .toFile()
-            .listFiles()
-            .orEmpty()
-            .filter { it.name.endsWith(".tierlist.json") }
-            .map { it.name.removeSuffix(".tierlist.json") }
-            .sorted()
-    }
-
-    fun getTierList(name: String): TierListConfig? {
+    private fun readTierList(name: String): TierListConfig? {
         val file = Config.configDir
             .resolve("bingo/$name.tierlist.json")
             .toFile()
@@ -49,11 +42,17 @@ object TierListService {
         return config.getOrNull()
     }
 
+    val tierLists = readTierLists()
+        .mapNotNull { name ->
+            readTierList(name)?.let { name to it }
+        }
+        .toMap()
+
     fun getTierLists(names: List<String>): TierListConfig {
         var config = TierListConfig.EMPTY
 
         names.sorted()
-            .mapNotNull { getTierList(it) }
+            .mapNotNull { tierLists[it] }
             .forEach { config = config.combine(it) }
 
         return config

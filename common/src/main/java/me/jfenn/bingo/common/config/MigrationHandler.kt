@@ -13,9 +13,12 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.pathString
 
-object MigrationHandler {
+class MigrationHandler(
+    private val log: Logger,
+    private val configService: ConfigService,
+    private val config: BingoConfig,
+) {
 
-    private val log by BingoKoin.koinApp.koin.inject<Logger>()
     private val migrations = mutableMapOf<Int, (BingoConfig) -> Unit>()
 
     init {
@@ -64,6 +67,11 @@ object MigrationHandler {
             loader.configDir.resolve("bingo/simplified.tierlist.json")
                 .takeIfMd5("707151ae1614dc508ad264677be397e2")
                 ?.deleteIfExists()
+
+            Config.readStream("all_items.tierlist.json").close()
+            Config.readStream("nether-only.tierlist.json").close()
+            Config.readStream("overworld-only.tierlist.json").close()
+            Config.readStream("simplified.tierlist.json").close()
         }
     }
 
@@ -84,13 +92,19 @@ object MigrationHandler {
         return takeIf { matches }
     }
 
-    fun migrate(fromVersion: Int, config: BingoConfig): Int {
+    fun runMigrations() {
+        val fromVersion = config.version
         val maxVersion = migrations.keys.max()
+
         for (i in fromVersion+1..maxVersion) {
             log.info("$MOD_ID: running migrations to v$i")
             migrations[i]?.invoke(config)
         }
-        return maxVersion
+
+        configService.config = config.copy(version = maxVersion)
+        configService.options = configService.options.copy()
+        configService.optionsDefault = configService.optionsDefault.copy()
+        configService.playerConfig = configService.playerConfig.copy()
     }
 
 }

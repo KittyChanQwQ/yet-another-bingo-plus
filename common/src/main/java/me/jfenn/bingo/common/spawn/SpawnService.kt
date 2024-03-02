@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.spawn
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
@@ -26,6 +27,7 @@ class SpawnService(
     private val server: MinecraftServer,
     private val options: BingoOptions,
     private val state: BingoState,
+    private val config: BingoConfig,
     private val teamService: TeamService,
 ) {
 
@@ -187,7 +189,7 @@ class SpawnService(
         options.teamKitItems
             .flatMap { it.toItemStacks() }
             .forEachIndexed { i, itemStack ->
-                if (ConfigService.config.preventScoringSpawnKitItems) {
+                if (config.preventScoringSpawnKitItems) {
                     // set BINGO_IGNORE flag so that spawn items do not count on the bingo card
                     itemStack.getOrCreateNbt().apply {
                         putBoolean(NBT_BINGO_IGNORE, true)
@@ -207,7 +209,7 @@ class SpawnService(
         val itemStacks = options.playerKitItems
             .flatMap { it.toItemStacks() }
 
-        if (ConfigService.config.preventScoringSpawnKitItems) {
+        if (config.preventScoringSpawnKitItems) {
             for (itemStack in itemStacks) {
                 // set BINGO_IGNORE flag so that spawn items do not count on the bingo card
                 itemStack.getOrCreateNbt().apply {

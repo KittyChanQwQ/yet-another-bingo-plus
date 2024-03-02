@@ -4,7 +4,10 @@ import me.jfenn.bingo.api.IOfflinePlayerAccessor
 import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.common.card.*
+import me.jfenn.bingo.common.card.BingoPlayerProfile
+import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.ScoreService
+import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -32,6 +35,7 @@ class ScoredItemCheck(
     private val state: BingoState,
     private val gameService: GameService,
     private val teamService: TeamService,
+    private val configService: ConfigService,
     private val offlinePlayerAccessor: IOfflinePlayerAccessor,
 ) {
 
@@ -152,7 +156,7 @@ class ScoredItemCheck(
                     )
 
                 server.playerManager.playerList
-                    .filter { ConfigService.getPlayer(it.uuidAsString).scoreMessages }
+                    .filter { configService.getPlayer(it.uuidAsString).scoreMessages }
                     .forEach { it.sendMessage(message, false) }
             }
 
@@ -189,10 +193,10 @@ class ScoredItemCheck(
         if (prevLeadingTeam != leadingTeam && options.showLeadingTeam && state.getRegisteredTeams().size > 1) {
             // if the leading team should be shown, announce the new leader
             if (leadingTeam != null) {
-                ChatMessages.broadcastScoreLeadingTeam(server, options, leadingTeam)
+                ChatMessages.broadcastScoreLeadingTeam(server, options, configService, leadingTeam)
             } else {
                 updatedTeams.firstOrNull()?.let {
-                    ChatMessages.broadcastScoreTiedTeam(server, options, it)
+                    ChatMessages.broadcastScoreTiedTeam(server, options, configService, it)
                 }
             }
         }

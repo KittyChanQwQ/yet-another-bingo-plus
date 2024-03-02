@@ -22,7 +22,7 @@ fun MenuComponent.registerTierLists(
         putBoolean("shadow", true)
     }
 
-    val pages = TierListService.getTierLists().chunked(4)
+    val pages = TierListService.readTierLists().chunked(4)
 
     // Update options.tierList/tierListPage to ensure that there is a tier list selected
     options.tierListPage = pages.indexOfFirst { it.contains(options.tierList) }

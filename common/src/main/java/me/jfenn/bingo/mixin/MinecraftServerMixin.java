@@ -95,7 +95,7 @@ public abstract class MinecraftServerMixin {
             this.playerManager.disconnectAllPlayers();
         }
 
-        if (ConfigService.INSTANCE.getConfig().getUnsafeSkipWorldClose()) {
+        if (new ConfigService().getConfig().getUnsafeSkipWorldClose()) {
             log.info("unsafeSkipWorldClose is true; skipping file closing");
             log.info("This will likely cause a crash...");
 

@@ -21,6 +21,7 @@ class GameService(
     private val events: ScopedEvents,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
+    private val configService: ConfigService,
 ) {
 
     fun start(
@@ -55,7 +56,7 @@ class GameService(
         }
 
         // save the current config, if overwrite option is set
-        ConfigService.writeOptions(options)
+        configService.writeOptions(options)
 
         for (player in server.playerManager.playerList) {
             val team = teamService.getPlayerTeam(player)
