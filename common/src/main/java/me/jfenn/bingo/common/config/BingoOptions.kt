@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.minutes
 @OptIn(ExperimentalSerializationApi::class)
 data class BingoOptions(
     var winCondition: WinCondition = WinCondition.THREE_LINES,
-    var timeLimit: Duration? = 60.minutes,
+    var timeLimit: Duration? = null,
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
     var tierList: String = "all_items",
 
