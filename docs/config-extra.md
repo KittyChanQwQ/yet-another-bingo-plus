@@ -32,6 +32,16 @@ Adds NBT tags to all spawn kit items, which prevents them from being scored. How
 
 Turns off sounds that can be caused by other players in the pre-game lobby. This prevents large groups from causing a racket, and is a nice option for streamers to avoid distractions.
 
+## `"nightVisionInSpectator"`
+(default: true)
+
+Controls whether all spectating players are given the night vision effect.
+
+## `"nightVisionInPostgame"`
+(default: true)
+
+Controls whether all players are given the night vision effect when the game is over.
+
 ## `"autoShutDownInPostgame"`
 (default: true)
 
