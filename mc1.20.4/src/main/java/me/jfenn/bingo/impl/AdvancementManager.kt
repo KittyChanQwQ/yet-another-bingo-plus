@@ -41,7 +41,7 @@ class AdvancementHandle(
     val advancement: AdvancementEntry,
 ) : IAdvancementHandle {
     override val name: Text?
-        get() = advancement.value.name.getOrNull()
+        get() = advancement.value.display.getOrNull()?.title
     override val description: Text?
         get() = advancement.value.display.getOrNull()?.description
     override val displayIcon: ItemStack?

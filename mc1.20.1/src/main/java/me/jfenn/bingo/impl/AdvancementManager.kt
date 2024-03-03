@@ -36,7 +36,7 @@ class AdvancementHandle(
     val advancement: Advancement,
 ) : IAdvancementHandle {
     override val name: Text?
-        get() = advancement.toHoverableText()
+        get() = advancement.display?.title
     override val description: Text?
         get() = advancement.display?.description
     override val displayIcon: ItemStack?

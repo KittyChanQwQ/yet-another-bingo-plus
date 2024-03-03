@@ -277,7 +277,7 @@ class MapRenderService(
         }
 
         // Draw the advancement frame if the tile is an advancement
-        if (tile.isAdvancement) {
+        if (tile.isAdvancement && !tile.isHidden) {
             for (innerX in 0..innerMax) for (innerY in 0..innerMax) {
                 val frameIndex = innerX + innerY * IMAGE_SIZE
                 if (frameIndex !in IMAGE_FRAME_ADVANCEMENT.indices) continue

@@ -10,6 +10,9 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer
+import net.minecraft.text.Style
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import org.slf4j.Logger
 
 /**
@@ -34,7 +37,9 @@ class BingoCardController(
                 // If the entry doesn't have a visualItem yet, set it to match the advancement
                 if (entry.visualItem == null) {
                     entry.visualItem = advancement.displayIcon ?: ItemStack.EMPTY
-                    entry.name = advancement.name?.let { textSerializer.toJson(it) }
+                    entry.name = advancement.name
+                        ?.let { Text.empty().append(it).setStyle(Style.EMPTY.withItalic(false).withColor(Formatting.GREEN)) }
+                        ?.let { textSerializer.toJson(it) }
                     entry.description = advancement.description?.let { textSerializer.toJson(it) }
                 }
             }
