@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.card
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
@@ -52,11 +53,17 @@ class CardInventory(
                             if (name != null)
                                 putString("Name", name)
 
-                            if (lore != null) {
-                                put("Lore", NbtList().apply {
-                                    lore.forEach { add(NbtString.of(it)) }
-                                })
-                            }
+                            put("Lore", NbtList().apply {
+                                lore?.forEach { add(NbtString.of(it)) }
+                                entry.tier?.let { tier ->
+                                    add(NbtString.of(
+                                        TextInfo.toJsonString(TextInfo(
+                                            text = "${tier.name}-tier",
+                                            color = tier.formatting,
+                                        ))
+                                    ))
+                                }
+                            })
                         })
                         putInt("HideFlags", 255)
                     }
