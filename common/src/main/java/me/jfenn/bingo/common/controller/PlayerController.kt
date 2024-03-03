@@ -206,7 +206,10 @@ class PlayerController(
     }
 
     fun resetPlayerHealth(player: ServerPlayerEntity) {
-        player.clearStatusEffects()
+        player.activeStatusEffects.keys
+            .filter { it != StatusEffects.NIGHT_VISION }
+            .forEach { player.removeStatusEffect(it) }
+
         player.fireTicks = 0
         player.isOnFire = false
         player.health = player.maxHealth
