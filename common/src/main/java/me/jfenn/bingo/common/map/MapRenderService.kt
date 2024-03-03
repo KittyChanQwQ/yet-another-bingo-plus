@@ -15,6 +15,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.InputStream
 import javax.imageio.ImageIO
@@ -67,6 +68,21 @@ class MapRenderService(
                 MapRenderService::class.java.getResourceAsStream("/bingo/images/${itemPath}.png")
                     ?: throw IllegalArgumentException("Cannot find default texture for ${itemPath}.png")
             }
+        }
+
+        val IMAGE_FRAME_ADVANCEMENT: ByteArray = run {
+            val image = MapRenderService::class.java.getResourceAsStream("/bingo/image_frame_advancement.png")
+                .use { ImageIO.read(it) }
+
+            val arr = ByteArray(IMAGE_SIZE*IMAGE_SIZE)
+            for (x in 0 until IMAGE_SIZE) for (y in 0 until IMAGE_SIZE) {
+                val color = Color.fromInt(image.getRGB(x, y))
+                if (color.a != 0) {
+                    arr[x + y * IMAGE_SIZE] = color.asByte
+                }
+            }
+
+            arr
         }
     }
 
@@ -260,6 +276,18 @@ class MapRenderService(
             tileImageArray.copyInto(mapState.colors, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
         }
 
+        // Draw the advancement frame if the tile is an advancement
+        if (tile.isAdvancement) {
+            for (innerX in 0..innerMax) for (innerY in 0..innerMax) {
+                val frameIndex = innerX + innerY * IMAGE_SIZE
+                if (frameIndex !in IMAGE_FRAME_ADVANCEMENT.indices) continue
+                val color = IMAGE_FRAME_ADVANCEMENT[frameIndex]
+                if (color != 0.toByte()) {
+                    mapState.setColor(innerX + tileX, innerY + tileY, color)
+                }
+            }
+        }
+
         // Draw a "+" if the tile can be captured multiple ways
         if (tile.isMultiItem && !tile.isHidden) {
             val offset = 6
@@ -322,6 +350,8 @@ class MapRenderService(
             isMultiItem = entry is BingoCardEntry.MultiEntry,
             isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
             isHidden = options.isHiddenItemsMode && (team == null || !entry.hasSeen(team)),
+            isAdvancement = entry is BingoCardEntry.AdvancementEntry ||
+                    (entry as? BingoCardEntry.MultiEntry)?.innerEntries?.firstOrNull() is BingoCardEntry.AdvancementEntry,
         )
     }
 

@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.card
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.state.TeamScore
 
 @Serializable
@@ -94,6 +95,7 @@ class BingoCard(
             .plus(entries.filterIsInstance<T>())
     }
 
+    @Transient
     val advancementEntries = getAllEntriesOf<BingoCardEntry.AdvancementEntry>()
 
 }

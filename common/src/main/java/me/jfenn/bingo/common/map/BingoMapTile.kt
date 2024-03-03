@@ -8,4 +8,5 @@ data class BingoMapTile(
     val isMultiItem: Boolean = false,
     val isFlashing: Boolean = false,
     val isHidden: Boolean = false,
+    val isAdvancement: Boolean = false,
 )
