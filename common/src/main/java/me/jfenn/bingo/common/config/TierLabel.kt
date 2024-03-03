@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.config
 
 import me.jfenn.bingo.common.utils.text.TextColor
 
-enum class TierList(
+enum class TierLabel(
     val formatting: TextColor,
 ) {
     S(TextColor.DARK_RED),

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.config.TierList
+import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.entity.EntityType
@@ -26,7 +26,7 @@ fun MenuComponent.registerItemDistribution(
 
     fun createTier(
         i: Int,
-        tier: TierList,
+        tier: TierLabel,
     ) {
         registerButton(
             position = position.add(i*TIER_WIDTH + TIER_OFFSET, -MENU_ITEM_OFFSET, 0.0),
@@ -91,5 +91,5 @@ fun MenuComponent.registerItemDistribution(
         putBoolean("shadow", true)
     }
 
-    TierList.entries.forEachIndexed { i, tier -> createTier(i, tier) }
+    TierLabel.entries.forEachIndexed { i, tier -> createTier(i, tier) }
 }

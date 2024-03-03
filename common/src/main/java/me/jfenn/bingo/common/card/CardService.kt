@@ -2,11 +2,9 @@ package me.jfenn.bingo.common.card
 
 import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.state.BingoState
-import net.minecraft.registry.Registries
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import kotlin.random.Random
 
@@ -49,7 +47,7 @@ class CardService(
 
     private fun generate(options: BingoOptions, seed: Long): BingoCard {
         val dist = options.itemDistribution
-        assert(dist.size == TierList.entries.size) { "Item distribution does not match the number of tiers (${TierList.entries.size})!" }
+        assert(dist.size == TierLabel.entries.size) { "Item distribution does not match the number of tiers (${TierLabel.entries.size})!" }
         assert(dist.sum() <= 25) { "Item distribution exceeds 25!" }
 
         // Exclude any items from the card that the player might spawn with
@@ -64,8 +62,8 @@ class CardService(
                     add("minecraft:elytra")
                     add("minecraft:firework_rocket")
                 }
-            }
-        } else emptySet()
+            }.toMutableSet()
+        } else mutableSetOf()
 
         val random = Random(seed)
         log.info("Using random BINGO card seed: $seed")
@@ -73,9 +71,17 @@ class CardService(
         val tiers = tierListService.tierLists[options.tierList]
             ?: TierListConfig.EMPTY
 
-        val items: MutableList<BingoCardEntry> = tiers.pick(dist, excludedItems, random)
-            .mapNotNull { (entry, tier) -> createEntry(tier, entry) }
-            .toMutableList()
+        val items = mutableListOf<BingoCardEntry>()
+
+        // Pick the given number of items from the tier list for each tier
+        for ((tierIndex, tier) in TierLabel.entries.withIndex()) {
+            val tierCount = dist[tierIndex]
+
+            tiers.pick(tier, excludedItems, random)
+                .mapNotNull { entry -> createEntry(tier, entry) }
+                .take(tierCount)
+                .forEach { items.add(it) }
+        }
 
         if (items.size < dist.sum()) {
             log.error("Card has generated with ${items.size} entries, when the item distribution needed ${dist.sum()}!")
@@ -90,13 +96,23 @@ class CardService(
         return BingoCard(items)
     }
 
-    private fun createEntry(tier: TierList, entry: TierListEntry): BingoCardEntry? {
+    private fun createEntry(tier: TierLabel, entry: TierListEntry): BingoCardEntry? {
         return when (entry) {
             is TierListEntry.SingleEntry -> {
-                val identifier = parseIdentifier(entry.item)
-                    ?: return null
+                val isAdvancement = entry.item.startsWith(TierListConfig.ADVANCEMENT_PREFIX)
 
-                BingoCardEntry.ItemEntry(identifier, tier)
+                try {
+                    when {
+                        isAdvancement -> BingoCardEntry.AdvancementEntry(
+                            entry.item.removePrefix(TierListConfig.ADVANCEMENT_PREFIX),
+                            tier,
+                        )
+                        else -> BingoCardEntry.ItemEntry(entry.item, tier)
+                    }
+                } catch (e: IllegalArgumentException) {
+                    log.error(e.message)
+                    null
+                }
             }
             is TierListEntry.MultiEntry -> {
                 val innerEntries = entry.items.mapNotNull { createEntry(tier, TierListEntry.SingleEntry(it)) }
@@ -104,28 +120,6 @@ class CardService(
                 BingoCardEntry.MultiEntry(innerEntries, tier)
             }
         }
-    }
-
-    private fun parseIdentifier(str: String): String? {
-        val name = str.trim()
-            .lowercase()
-            .let {
-                if (it.contains(":"))
-                    it
-                else "minecraft:$it"
-            }
-
-        val identifier = Identifier.tryParse(name) ?: run {
-            log.error("Could not parse item identifier '${name}'")
-            return null
-        }
-
-        if (!Registries.ITEM.containsId(identifier)) {
-            log.error("Item identifier '${name}' does not exist")
-            return null
-        }
-
-        return identifier.toString()
     }
 
 }

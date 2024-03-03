@@ -6,7 +6,7 @@ import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.Config
-import me.jfenn.bingo.common.config.TierList
+import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.LruHashMap
 import net.minecraft.item.FilledMapItem
@@ -90,7 +90,7 @@ class MapRenderService(
                 .use { ImageIO.read(it) }
                 .let { fromBufferedImage(it) }
 
-            val HIDDEN_TIERS = TierList.entries.associateWith { tier ->
+            val HIDDEN_TIERS = TierLabel.entries.associateWith { tier ->
                 MapRenderService::class.java.getResourceAsStream("/bingo/image_hidden_${tier.name.lowercase()}.png")
                     .use { ImageIO.read(it) }
                     .let { fromBufferedImage(it) }
@@ -318,7 +318,7 @@ class MapRenderService(
         entry: BingoCardEntry,
     ) : BingoMapTile {
         return BingoMapTile(
-            item = entry.visualItem?.let { Registries.ITEM.getId(it).path },
+            item = entry.visualItem?.item?.let { Registries.ITEM.getId(it).path },
             isMultiItem = entry is BingoCardEntry.MultiEntry,
             isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
             isHidden = options.isHiddenItemsMode && (team == null || !entry.hasSeen(team)),

@@ -6,6 +6,7 @@ abstract class BingoComponent {
     init {
         BingoKoin.koinApp.koin
             .get<Logger>()
-            .debug("Initialize [${this::class.simpleName}]")
+            .takeIf { it.isDebugEnabled }
+            ?.debug("Initialize [{}]", this::class.simpleName)
     }
 }

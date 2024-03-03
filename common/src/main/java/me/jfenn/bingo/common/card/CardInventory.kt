@@ -27,7 +27,7 @@ class CardInventory(
         return false
     }
 
-    override fun getStack(slot: Int): ItemStack {
+    val inventory = List(45) { slot ->
         val slotX = (slot % 9) - 2
         val slotY = slot / 9
 
@@ -44,29 +44,34 @@ class CardInventory(
                     state.state == GameState.POSTGAME
 
             if (isVisible) {
-                entry.visualItem?.let { visualItem ->
-                    return ItemStack(visualItem, 1).also { stack ->
+                entry.visualItem?.copy()?.also { stack ->
+                    val name = entry.formatName()
+                    val lore = entry.formatLore()
+                    if (name != null || lore != null) {
                         stack.getOrCreateNbt().apply {
                             put("display", NbtCompound().apply {
-                                entry.formatName()?.let { name ->
+                                if (name != null)
                                     putString("Name", name)
+
+                                if (lore != null) {
+                                    put("Lore", NbtList().apply {
+                                        lore.forEach { add(NbtString.of(it)) }
+                                    })
                                 }
-                                put(
-                                    "Lore",
-                                    NbtList().apply {
-                                        for (lore in entry.formatLore()) {
-                                            add(NbtString.of(lore))
-                                        }
-                                    }
-                                )
                             })
                         }
                     }
+                }?.let {
+                    return@List it
                 }
             }
         }
 
-        return ItemStack.EMPTY
+        ItemStack.EMPTY
+    }
+
+    override fun getStack(slot: Int): ItemStack {
+        return inventory.getOrNull(slot) ?: ItemStack.EMPTY
     }
 
     override fun removeStack(slot: Int, amount: Int): ItemStack {

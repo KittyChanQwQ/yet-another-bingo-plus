@@ -133,11 +133,65 @@ class ScoredItemCheck(
         return updatedTeams
     }
 
+    fun updateAdvancements(): Set<BingoTeam> {
+        val updatedTeams = mutableSetOf<BingoTeam>()
+
+        for (entry in state.card.advancementEntries) {
+            val advancement = server.advancementLoader.get(entry.identifierInstance)
+                ?: continue
+
+            // If the entry doesn't have a visualItem yet, set it to match the advancement
+            if (entry.visualItem == null) {
+                entry.visualItem = advancement.display?.icon
+            }
+
+            for (team in state.getRegisteredTeams()) {
+                // don't update teams that have already won
+                if (team.isWinner()) continue
+
+                val players = team.players.map { getOfflinePlayer(it) }
+
+                val isAnyObtained = players.any {
+                    it.advancementTracker.getProgress(advancement).isAnyObtained
+                }
+                if (isAnyObtained) {
+                    entry.markSeen(team)
+                }
+
+                val isDone = players.any {
+                    it.advancementTracker.getProgress(advancement).isDone
+                }
+
+                // if the advancement is finished, and the tile is not locked
+                if (isDone && !(options.isLockoutMode && entry.hasAnyAchieved())) {
+                    entry.setAchieved(team, true)
+                        // if the tile has changed, mark updatedTeams
+                        .also { isChanged -> if (isChanged) updatedTeams.add(team) }
+                }
+
+                // if noone on the team has the advancement anymore, and the game is in inventory mode
+                // then mark it as lost...
+                if (!isDone && options.isInventoryMode) {
+                    entry.setAchieved(team, true)
+                        // if the tile has changed, mark updatedTeams
+                        .also { isChanged -> if (isChanged) updatedTeams.add(team) }
+                }
+            }
+        }
+
+        // update the stored score for each team
+        for (team in updatedTeams) {
+            state.updateScore(team)
+        }
+
+        return updatedTeams
+    }
+
     fun updateScores() {
         val prevLeadingTeam = ScoreService.getLeading(state)
         val prevTeamScores = state.teams.mapValues { (_, team) -> team.score }
 
-        val updatedTeams = updateInventory()
+        val updatedTeams = updateInventory() + updateAdvancements()
 
         // if there are no updated teams, we can skip the remaining checks...
         if (updatedTeams.isEmpty()) return

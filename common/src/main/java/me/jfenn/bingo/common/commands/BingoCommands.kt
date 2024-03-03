@@ -87,7 +87,7 @@ class BingoCommands : BaseCommand() {
                         requirePermission(Permission.CONFIGURE_GAME),
                     )
                     .then(run {
-                        val args = TierList.entries
+                        val args = TierLabel.entries
                             .map { tier ->
                                 RequiredArgumentBuilder.argument<ServerCommandSource, Int>(
                                     tier.name,
@@ -101,7 +101,7 @@ class BingoCommands : BaseCommand() {
                             val events = get<ScopedEvents>()
                             val cardService = get<CardService>()
 
-                            val itemDist = TierList.entries
+                            val itemDist = TierLabel.entries
                                 .map { IntegerArgumentType.getInteger(ctx, it.name) }
 
                             if (itemDist.size == 5 && itemDist.sum() > 25) {

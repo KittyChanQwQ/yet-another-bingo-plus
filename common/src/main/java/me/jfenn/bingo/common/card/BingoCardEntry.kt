@@ -5,12 +5,14 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
-import me.jfenn.bingo.common.config.TierList
+import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKeys
 import net.minecraft.util.Identifier
 import kotlin.time.Duration
 
@@ -20,17 +22,12 @@ sealed class BingoCardEntry {
     open val teams = HashSet<BingoTeamKey>()
     private val teamsSeen = HashSet<BingoTeamKey>()
 
-    abstract val visualItem: Item?
+    abstract val visualItem: ItemStack?
 
-    abstract val tier: TierList?
+    abstract val tier: TierLabel?
 
-    open fun formatName(): String? {
-        return null
-    }
-
-    open fun formatLore(): List<String> {
-        return emptyList()
-    }
+    open fun formatName(): String? = null
+    open fun formatLore(): List<String>? = null
 
     open fun hasAchieved(team: BingoTeam): Boolean {
         return teams.contains(team.key)
@@ -104,10 +101,10 @@ sealed class BingoCardEntry {
     @Serializable
     class FreeSpace : BingoCardEntry() {
         @Transient
-        override val visualItem: Item? = null
+        override val visualItem: ItemStack? = null
 
         @Transient
-        override val tier: TierList? = null
+        override val tier: TierLabel? = null
         override fun hasAnyAchieved(): Boolean = true
         override fun hasAchieved(team: BingoTeam): Boolean = true
         override fun setAchieved(team: BingoTeam, value: Boolean): Boolean = false
@@ -121,13 +118,23 @@ sealed class BingoCardEntry {
     }
 
     @Serializable
-    data class ItemEntry(
+    data class ItemEntry @Throws(IllegalArgumentException::class) constructor(
         val identifier: String,
-        override val tier: TierList,
+        override val tier: TierLabel,
     ): BingoCardEntry() {
 
         @Transient
-        override val visualItem: Item = Registries.ITEM.get(Identifier(identifier))
+        val identifierInstance = try {
+            Identifier(identifier)
+        } catch (e: Throwable) {
+            throw IllegalArgumentException("Could not parse identifier '$identifier'")
+        }
+
+        @Transient
+        override val visualItem: ItemStack = Registries.ITEM.get(identifierInstance)
+            .takeIf { it != Items.AIR }
+            ?.let { ItemStack(it, 1) }
+            ?: throw IllegalArgumentException("Item identifier '$identifier' does not exist.")
 
         /**
          * Returns true if the item can be counted to complete the bingo tile
@@ -142,17 +149,36 @@ sealed class BingoCardEntry {
         }
 
         fun item(): Item {
-            return visualItem
+            return visualItem.item
         }
+
+    }
+
+    @Serializable
+    data class AdvancementEntry @Throws(IllegalArgumentException::class) constructor(
+        val identifier: String,
+        override val tier: TierLabel,
+    ): BingoCardEntry() {
+
+        @Transient
+        val identifierInstance = try {
+            Identifier(identifier)
+        } catch (e: Throwable) {
+            throw IllegalArgumentException("Could not parse identifier '$identifier'")
+        }
+
+        // To be populated by [ScoredItemCheck.updateAdvancements], once we have a server reference
+        @Transient
+        override var visualItem: ItemStack? = null
 
     }
 
     @Serializable
     data class MultiEntry(
         val innerEntries: List<BingoCardEntry>,
-        override val tier: TierList,
+        override val tier: TierLabel,
     ): BingoCardEntry() {
-        override val visualItem: Item? get() = innerEntries.firstOrNull()?.visualItem
+        override val visualItem: ItemStack? get() = innerEntries.firstOrNull()?.visualItem
 
         override val teams: HashSet<BingoTeamKey>
             get() = HashSet<BingoTeamKey>().apply {
