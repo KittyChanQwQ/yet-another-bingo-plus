@@ -168,20 +168,25 @@ class PlayerSettingsController(
                 return@onGameTick
 
             for (player in server.playerManager.playerList) {
-                val bookCount = player.allHeldStacks().count { isBookItem(it) }
+                var bookCount = 0
+                for (stack in player.allHeldStacks()) {
+                    if (isBookItem(stack)) {
+                        // prevent players from taking someone else's book...
+                        if (stack.nbt?.getString("author") != scoreboardManager.getPlayerName(player))
+                            updateBookItem(player, stack)
+
+                        bookCount++
+
+                        if (bookCount > 1)
+                            stack.count = 0
+                        else if (stack.count > 1)
+                            stack.count = 1
+                    }
+                }
+
                 if (bookCount == 0) {
                     val bookItem = createBookItem(player)
                     player.giveItemStack(bookItem)
-                }
-
-                // If the player ends up with multiple book stacks, remove them!
-                if (bookCount > 1) {
-                    for ((slot, stack) in player.allInventorySlots()) {
-                        if (isBookItem(stack)) {
-                            player.inventory.getStack(slot)
-                                .apply { count = 0 }
-                        }
-                    }
                 }
             }
         }
