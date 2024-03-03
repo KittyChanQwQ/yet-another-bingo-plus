@@ -1152,24 +1152,6 @@
             "minecraft:diamond_leggings"
         ],
         [
-            "minecraft:black_candle",
-            "minecraft:blue_candle",
-            "minecraft:brown_candle",
-            "minecraft:cyan_candle",
-            "minecraft:gray_candle",
-            "minecraft:green_candle",
-            "minecraft:light_blue_candle",
-            "minecraft:light_gray_candle",
-            "minecraft:lime_candle",
-            "minecraft:magenta_candle",
-            "minecraft:orange_candle",
-            "minecraft:pink_candle",
-            "minecraft:purple_candle",
-            "minecraft:red_candle",
-            "minecraft:white_candle",
-            "minecraft:yellow_candle"
-        ],
-        [
             "minecraft:black_concrete",
             "minecraft:blue_concrete",
             "minecraft:brown_concrete",
@@ -1822,11 +1804,27 @@
             "minecraft:sea_lantern"
         ],
         [
+            "minecraft:black_candle",
+            "minecraft:blue_candle",
+            "minecraft:brown_candle",
             "minecraft:candle",
+            "minecraft:cyan_candle",
+            "minecraft:gray_candle",
+            "minecraft:green_candle",
             "minecraft:honey_block",
             "minecraft:honey_bottle",
             "minecraft:honeycomb",
-            "minecraft:honeycomb_block"
+            "minecraft:honeycomb_block",
+            "minecraft:light_blue_candle",
+            "minecraft:light_gray_candle",
+            "minecraft:lime_candle",
+            "minecraft:magenta_candle",
+            "minecraft:orange_candle",
+            "minecraft:pink_candle",
+            "minecraft:purple_candle",
+            "minecraft:red_candle",
+            "minecraft:white_candle",
+            "minecraft:yellow_candle"
         ],
         [
             "minecraft:sponge",
