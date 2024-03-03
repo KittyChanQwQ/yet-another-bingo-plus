@@ -1,11 +1,15 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.MapRenderService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import net.minecraft.item.ItemStack
+import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 
 /**
@@ -13,12 +17,28 @@ import org.slf4j.Logger
  */
 class BingoCardController(
     events: ScopedEvents,
+    private val server: MinecraftServer,
     private val state: BingoState,
     private val mapRenderService: MapRenderService,
     private val cardService: CardService,
+    private val advancementManager: IAdvancementManager,
+    private val textSerializer: ITextSerializer,
 ) : BingoComponent() {
     init {
         events.onGameTick {
+            // first populate advancement images, if missing...
+            for (entry in state.card.advancementEntries) {
+                val advancement = advancementManager.getAdvancement(server, entry.identifierInstance)
+                    ?: continue
+
+                // If the entry doesn't have a visualItem yet, set it to match the advancement
+                if (entry.visualItem == null) {
+                    entry.visualItem = advancement.displayIcon ?: ItemStack.EMPTY
+                    entry.name = advancement.name?.let { textSerializer.toJson(it) }
+                    entry.description = advancement.description?.let { textSerializer.toJson(it) }
+                }
+            }
+
             // update all card map images
             if (state.state == GameState.PREGAME) {
                 // if in pregame, update the preview card!

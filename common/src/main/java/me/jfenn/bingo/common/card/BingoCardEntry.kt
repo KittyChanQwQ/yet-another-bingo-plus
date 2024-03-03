@@ -167,9 +167,15 @@ sealed class BingoCardEntry {
             throw IllegalArgumentException("Could not parse identifier '$identifier'")
         }
 
-        // To be populated by [ScoredItemCheck.updateAdvancements], once we have a server reference
+        // To be populated by [BingoCardController] once we have a server reference
         @Transient
         override var visualItem: ItemStack? = null
+
+        var name: String? = null
+        var description: String? = null
+
+        override fun formatName(): String? = name
+        override fun formatLore(): List<String>? = description?.let { listOf(it) }
 
     }
 

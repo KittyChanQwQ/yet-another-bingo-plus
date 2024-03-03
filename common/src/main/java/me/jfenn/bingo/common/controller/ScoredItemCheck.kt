@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.IOfflinePlayerAccessor
 import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.GameService
@@ -38,6 +39,7 @@ class ScoredItemCheck(
     private val teamService: TeamService,
     private val configService: ConfigService,
     private val offlinePlayerAccessor: IOfflinePlayerAccessor,
+    private val advancementManager: IAdvancementManager,
 ) : BingoComponent() {
 
     private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, ServerPlayerEntity>()
@@ -137,13 +139,8 @@ class ScoredItemCheck(
         val updatedTeams = mutableSetOf<BingoTeam>()
 
         for (entry in state.card.advancementEntries) {
-            val advancement = server.advancementLoader.get(entry.identifierInstance)
+            val advancement = advancementManager.getAdvancement(server, entry.identifierInstance)
                 ?: continue
-
-            // If the entry doesn't have a visualItem yet, set it to match the advancement
-            if (entry.visualItem == null) {
-                entry.visualItem = advancement.display?.icon
-            }
 
             for (team in state.getRegisteredTeams()) {
                 // don't update teams that have already won
@@ -152,14 +149,14 @@ class ScoredItemCheck(
                 val players = team.players.map { getOfflinePlayer(it) }
 
                 val isAnyObtained = players.any {
-                    it.advancementTracker.getProgress(advancement).isAnyObtained
+                    advancementManager.isAnyObtained(it, advancement)
                 }
                 if (isAnyObtained) {
                     entry.markSeen(team)
                 }
 
                 val isDone = players.any {
-                    it.advancementTracker.getProgress(advancement).isDone
+                    advancementManager.isDone(it, advancement)
                 }
 
                 // if the advancement is finished, and the tile is not locked

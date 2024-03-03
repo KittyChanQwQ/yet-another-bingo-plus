@@ -1,0 +1,28 @@
+{
+    "S": [
+        "advancement!minecraft:story/follow_ender_eye",
+        "advancement!minecraft:story/enter_the_end"
+    ],
+    "A": [
+        "advancement!minecraft:story/shiny_gear",
+        "advancement!minecraft:story/enchant_item",
+        "advancement!minecraft:story/cure_zombie_villager"
+    ],
+    "B": [
+        "advancement!minecraft:story/form_obsidian",
+        "advancement!minecraft:story/mine_diamond",
+        "advancement!minecraft:story/enter_the_nether"
+    ],
+    "C": [
+        "advancement!minecraft:story/obtain_armor",
+        "advancement!minecraft:story/lava_bucket",
+        "advancement!minecraft:story/deflect_arrow"
+    ],
+    "D": [
+        "advancement!minecraft:story/mine_stone",
+        "advancement!minecraft:story/upgrade_tools",
+        "advancement!minecraft:story/smelt_iron",
+        "advancement!minecraft:story/iron_tools"
+    ],
+    "groups": []
+}

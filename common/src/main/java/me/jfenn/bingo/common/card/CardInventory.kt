@@ -47,19 +47,18 @@ class CardInventory(
                 entry.visualItem?.copy()?.also { stack ->
                     val name = entry.formatName()
                     val lore = entry.formatLore()
-                    if (name != null || lore != null) {
-                        stack.getOrCreateNbt().apply {
-                            put("display", NbtCompound().apply {
-                                if (name != null)
-                                    putString("Name", name)
+                    stack.getOrCreateNbt().apply {
+                        put("display", NbtCompound().apply {
+                            if (name != null)
+                                putString("Name", name)
 
-                                if (lore != null) {
-                                    put("Lore", NbtList().apply {
-                                        lore.forEach { add(NbtString.of(it)) }
-                                    })
-                                }
-                            })
-                        }
+                            if (lore != null) {
+                                put("Lore", NbtList().apply {
+                                    lore.forEach { add(NbtString.of(it)) }
+                                })
+                            }
+                        })
+                        putInt("HideFlags", 255)
                     }
                 }?.let {
                     return@List it

@@ -73,6 +73,10 @@ class MigrationHandler(
             Config.readStream("overworld-only.tierlist.json").close()
             Config.readStream("simplified.tierlist.json").close()
         }
+
+        migrations[3] = {
+            Config.readStream("advancements.tierlist.json").close()
+        }
     }
 
     private fun Path.takeIfMd5(md5Str: String): Path? {
