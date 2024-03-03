@@ -6,7 +6,7 @@ import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
-import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.giveOrEquipStack
 import net.minecraft.block.Blocks
@@ -66,6 +66,17 @@ class SpawnService(
                 createTeamChest(world, it)
             }
         }
+    }
+
+    fun teleportToLobby(player: ServerPlayerEntity) {
+        val spawn = state.lobbySpawnPos
+        val lobbyWorld = server.lobbyWorld!!
+        player.teleport(lobbyWorld, spawn.x.toDouble(), spawn.y.toDouble(), spawn.z.toDouble(), 180f, 0f)
+        player.setSpawnPoint(
+            lobbyWorld.registryKey,
+            spawn.toBlockPos(),
+            0f, true, false,
+        )
     }
 
     fun teleportPlayer(player: ServerPlayerEntity) {

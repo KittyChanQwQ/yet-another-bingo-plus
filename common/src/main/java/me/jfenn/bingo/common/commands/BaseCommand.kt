@@ -6,8 +6,12 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.server.command.ServerCommandSource
 import org.koin.core.Koin
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.slf4j.Logger
 
 abstract class BaseCommand : KoinComponent {
+
+    private val log by inject<Logger>()
 
     override fun getKoin(): Koin {
         return BingoKoin.koinApp.koin
@@ -23,6 +27,8 @@ abstract class BaseCommand : KoinComponent {
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             for (command in commands)
                 dispatcher.register(command)
+
+            log.debug("Registered [${this::class.simpleName}]")
         }
     }
 }

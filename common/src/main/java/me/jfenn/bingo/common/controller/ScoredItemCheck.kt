@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.state.TeamScore
@@ -37,7 +38,7 @@ class ScoredItemCheck(
     private val teamService: TeamService,
     private val configService: ConfigService,
     private val offlinePlayerAccessor: IOfflinePlayerAccessor,
-) {
+) : BingoComponent() {
 
     private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, ServerPlayerEntity>()
 

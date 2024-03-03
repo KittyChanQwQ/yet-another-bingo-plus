@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.controller
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.MapItemService
+import me.jfenn.bingo.common.scope.BingoComponent
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
 import net.minecraft.item.BoatItem
@@ -21,7 +22,7 @@ class MapItemHandler(
     events: ScopedEvents,
     private val server: MinecraftServer,
     private val cardService: CardService,
-) {
+) : BingoComponent() {
 
     // set of players for which the bingo map item was used in the current tick
     private val usedBingoMap = mutableSetOf<UUID>()

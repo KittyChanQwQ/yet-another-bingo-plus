@@ -57,8 +57,8 @@ val commonModule = module {
     singleOf(::RestartCommand)
 
     scope<BingoContext> {
-        scoped { ScopedEvents() }
-        scoped { InteractionEntityEvents() }
+        scopedOf(::ScopedEvents)
+        scopedOf(::InteractionEntityEvents)
 
         scoped { get<BingoContext>().server }
         scoped {

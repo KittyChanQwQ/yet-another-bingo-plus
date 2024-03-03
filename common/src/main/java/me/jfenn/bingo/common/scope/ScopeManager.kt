@@ -30,7 +30,6 @@ class ScopeManager(
         return try {
             koin.getScope(getScopeId(server))
         } catch (e: ScopeNotCreatedException) {
-            log.error("Error fetching scope for server", e)
             null
         }
     }
@@ -40,6 +39,7 @@ class ScopeManager(
             val packExists = server.lobbyWorld != null
             if (!packExists) {
                 log.error("$MOD_ID datapack not found, exiting...")
+                return@register
             }
 
             // obtain the bingo game state from the save file
@@ -51,6 +51,7 @@ class ScopeManager(
                 state.timeOffline += (Clock.System.now() - lastUpdate)
             }
 
+            log.info("[ScopeManager] Starting server scope...")
             val ctx = BingoContext(server, state)
             val scopeId = getScopeId(server)
             val scope = koin.createScope<BingoContext>(scopeId, ctx)
@@ -62,6 +63,7 @@ class ScopeManager(
 
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
             val scope = getScope(server) ?: return@register
+            log.info("[ScopeManager] Closing server scope...")
             onCleanup(scope)
             koin.deleteScope(getScopeId(server))
         }

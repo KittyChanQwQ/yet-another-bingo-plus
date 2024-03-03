@@ -4,6 +4,7 @@ import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.integrations.PermissionsIntegration
@@ -16,7 +17,7 @@ class LobbyChaosController(
     private val config: BingoConfig,
     private val state: BingoState,
     private val permissions: PermissionsIntegration,
-) {
+) : BingoComponent() {
 
     private fun shouldPreventLobbyChaos(player: ServerPlayerEntity): Boolean {
         return config.preventLobbyChaos &&

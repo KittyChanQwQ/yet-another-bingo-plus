@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.controller
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spectator.SpectatorInventoryScreenHandler
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -23,7 +24,7 @@ class PlayerSpectatorController(
     private val state: BingoState,
     private val teamService: TeamService,
     private val permissions: PermissionsIntegration,
-) {
+) : BingoComponent() {
 
     init {
         events.onUseBlock {

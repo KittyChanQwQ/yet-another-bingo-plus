@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.controller
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.formatTitle
 import net.minecraft.entity.boss.BossBar
@@ -21,7 +22,7 @@ class BossBarController(
     private val options: BingoOptions,
     private val state: BingoState,
     private val configService: ConfigService,
-) {
+) : BingoComponent() {
 
     private val ID = Identifier.of("fennifith", "bingo")
 

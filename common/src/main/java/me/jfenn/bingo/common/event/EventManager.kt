@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.event
 
 import me.jfenn.bingo.common.event.model.*
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
@@ -18,7 +19,7 @@ import net.minecraft.util.TypedActionResult
  */
 class EventManager(
     private val scopeManager: ScopeManager,
-) {
+) : BingoComponent() {
 
     private fun getEvents(server: MinecraftServer?) : ScopedEvents? {
         server ?: return null

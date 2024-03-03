@@ -4,6 +4,7 @@ import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 
@@ -16,7 +17,7 @@ class TimerCheck(
     private val state: BingoState,
     private val options: BingoOptions,
     private val gameService: GameService,
-) {
+) : BingoComponent() {
 
     init {
         events.onEnter(GameState.PLAYING) { prevState ->

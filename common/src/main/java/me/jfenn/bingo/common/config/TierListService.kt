@@ -2,13 +2,14 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.utils.json
 import org.slf4j.Logger
 import java.io.FileInputStream
 
 class TierListService(
     private val log: Logger,
-) {
+) : BingoComponent() {
 
     companion object {
         fun readTierLists() : List<String> {

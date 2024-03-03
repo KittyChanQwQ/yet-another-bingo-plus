@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
@@ -33,7 +34,7 @@ class PlayerSettingsController(
     private val textSerializer: ITextSerializer,
     private val scoreboardManager: IScoreboardManager,
     private val configService: ConfigService,
-) {
+) : BingoComponent() {
 
     private fun getIntroPage(player: ServerPlayerEntity) =
         Text.empty()

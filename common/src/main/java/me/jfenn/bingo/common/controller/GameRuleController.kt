@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.server.MinecraftServer
@@ -17,7 +18,7 @@ class GameRuleController(
     private val server: MinecraftServer,
     private val options: BingoOptions,
     private val state: BingoState,
-) {
+) : BingoComponent() {
 
     fun readFromServer(server: MinecraftServer, options: BingoOptions) {
         options.isPvpEnabled = server.isPvpEnabled

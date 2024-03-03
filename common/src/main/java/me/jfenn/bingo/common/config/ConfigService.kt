@@ -1,5 +1,7 @@
 package me.jfenn.bingo.common.config
 
+import org.slf4j.Logger
+
 class ConfigService {
 
     var config: BingoConfig by config("bingo/config.json")

@@ -3,8 +3,10 @@ package me.jfenn.bingo.common.controller
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.MapRenderService
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import org.slf4j.Logger
 
 /**
  * Handles re-rolling or generating new BINGO card layouts.
@@ -14,7 +16,7 @@ class BingoCardController(
     private val state: BingoState,
     private val mapRenderService: MapRenderService,
     private val cardService: CardService,
-) {
+) : BingoComponent() {
     init {
         events.onGameTick {
             // update all card map images

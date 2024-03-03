@@ -4,9 +4,9 @@ import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.client.common.commonClientModule
 import me.jfenn.bingo.client.impl.ButtonService
 import me.jfenn.bingo.common.commonInit
-import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.commonModule
 import me.jfenn.bingo.common.config.MigrationHandler
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.sharedModule
 import net.fabricmc.api.ClientModInitializer
 import org.koin.core.logger.Level
@@ -26,7 +26,7 @@ object Main : ClientModInitializer {
     }
 
     override fun onInitializeClient() {
-        log.info("Starting Bingo Client koin application")
+        log.info("Starting Bingo migration runner...")
 
         koinApplication {
             logger(SLF4JLogger(level = Level.DEBUG))
@@ -35,6 +35,8 @@ object Main : ClientModInitializer {
             it.koin.get<MigrationHandler>().runMigrations()
             it.close()
         }
+
+        log.info("Starting Bingo Client application")
 
         koinApplication {
             BingoKoin.koinApp = this@koinApplication

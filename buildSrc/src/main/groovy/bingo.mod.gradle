@@ -19,6 +19,8 @@ loom {
             sourceSet sourceSets.client
         }
     }
+
+    log4jConfigs.from file("../buildSrc/src/main/resources/log4j-debug.xml")
 }
 
 dependencies {

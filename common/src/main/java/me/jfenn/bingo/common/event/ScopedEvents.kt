@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.event
 
 import me.jfenn.bingo.common.event.model.*
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.common.utils.ReturnEventListener
@@ -10,8 +11,12 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.ActionResult
 import net.minecraft.util.TypedActionResult
+import org.slf4j.Logger
 
-class ScopedEvents {
+class ScopedEvents(
+    private val log: Logger,
+) : BingoComponent() {
+
     val onGameTick = EventListener<Unit>()
     val onUpdateTick = EventListener<Unit>()
 
@@ -30,6 +35,12 @@ class ScopedEvents {
 
     val onChangeConfig = EventListener<Unit>()
     val onChangePlayerSettings = EventListener<ServerPlayerEntity>()
+
+    init {
+        onStateChange { (from, to) ->
+            log.info("GameState changed: {} -> {}", from, to)
+        }
+    }
 
     fun onEnter(
         state: GameState,

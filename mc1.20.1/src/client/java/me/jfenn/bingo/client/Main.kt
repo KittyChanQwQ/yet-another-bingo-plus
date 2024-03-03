@@ -26,7 +26,7 @@ object Main : ClientModInitializer {
     }
 
     override fun onInitializeClient() {
-        log.info("Starting Bingo Client koin application")
+        log.info("Starting Bingo migration runner...")
 
         koinApplication {
             logger(SLF4JLogger(level = Level.DEBUG))
@@ -35,6 +35,8 @@ object Main : ClientModInitializer {
             it.koin.get<MigrationHandler>().runMigrations()
             it.close()
         }
+
+        log.info("Starting Bingo Client application...")
 
         koinApplication {
             BingoKoin.koinApp = this@koinApplication

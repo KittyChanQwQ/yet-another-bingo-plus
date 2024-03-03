@@ -16,7 +16,7 @@ import java.util.*
 
 class MenuInstance(
     private val log: Logger,
-    private val koinScope: Scope,
+    koinScope: Scope,
     private val server: MinecraftServer,
     private val interactionEntityEvents: InteractionEntityEvents,
     private val spawnPos: BlockPosition,

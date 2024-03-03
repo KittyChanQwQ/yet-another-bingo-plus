@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.MapItemService
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -29,6 +30,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
+import org.slf4j.Logger
 import java.util.*
 
 /**
@@ -45,6 +47,7 @@ import java.util.*
  */
 class PlayerController(
     events: ScopedEvents,
+    private val log: Logger,
     private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
@@ -55,7 +58,7 @@ class PlayerController(
     private val advancementManager: IAdvancementManager,
     private val vanishIntegration: VanishIntegration,
     private val permissions: PermissionsIntegration,
-) {
+) : BingoComponent() {
 
     fun givePreviewCardItem(player: ServerPlayerEntity) {
         val hasMap = player.allHeldStacks().any { MapItemService.isMapItem(it) }
@@ -150,6 +153,7 @@ class PlayerController(
         forceReset: Boolean = false,
     ) {
         val isOnTeam = teamService.isPlaying(player)
+        log.debug("updateGameMode(${player.uuidAsString}, forceReset=$forceReset)")
 
         val gameMode = when (state.state) {
             GameState.PREGAME -> GameMode.ADVENTURE
@@ -168,8 +172,8 @@ class PlayerController(
         ) {
             // This indicates that a player is starting the game, or has logged back on after a game has started
             // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
-            if (state.state == GameState.PLAYING) {
-                resetPlayer(player)
+            if (state.state == GameState.PREGAME || state.state == GameState.PLAYING) {
+                respawnPlayer(player)
             }
 
             player.changeGameMode(gameMode)
@@ -184,8 +188,6 @@ class PlayerController(
             player.abilities.allowFlying = true
             player.sendAbilitiesUpdate()
         }
-
-        updateNightVision(player)
     }
 
     private fun updateNightVision(player: ServerPlayerEntity) {
@@ -198,15 +200,13 @@ class PlayerController(
             (state.state == GameState.PLAYING && options.isNightVision)
         ) {
             player.addStatusEffect(
-                StatusEffectInstance(StatusEffects.NIGHT_VISION, -1, 0, false, false)
+                StatusEffectInstance(StatusEffects.NIGHT_VISION, -1, 0, false, false),
             )
         }
     }
 
     fun resetPlayerHealth(player: ServerPlayerEntity) {
         player.clearStatusEffects()
-        updateNightVision(player)
-
         player.fireTicks = 0
         player.isOnFire = false
         player.health = player.maxHealth
@@ -216,27 +216,32 @@ class PlayerController(
         player.hungerManager.exhaustion = 0f
     }
 
-    fun resetPlayer(player: ServerPlayerEntity) {
+    fun respawnPlayer(player: ServerPlayerEntity) {
+        log.debug("respawnPlayer(${player.uuidAsString})")
         // reset player info
         resetPlayerHealth(player)
         player.inventory.clear()
 
         // unlock all crafting recipes, if set
-        if (options.isUnlockRecipes)
+        if (state.state == GameState.PLAYING && options.isUnlockRecipes)
             player.unlockRecipes(server.recipeManager.values())
 
         // reset advancements state
         advancementManager.clearAdvancements(player)
 
-        // teleport the player to their spawnpoint
-        spawnService.teleportPlayer(player)
+        if (state.state == GameState.PREGAME) {
+            spawnService.teleportToLobby(player)
+        } else {
+            // teleport the player to their spawnpoint
+            spawnService.teleportPlayer(player)
 
-        // give each player their team's card
-        giveMapCardItem(player)
+            // give each player their team's card
+            giveMapCardItem(player)
 
-        // give spawn equipment to the player if they are on a team
-        if (teamService.isPlaying(player)) {
-            spawnService.giveSpawnEquipment(listOf(player))
+            // give spawn equipment to the player if they are on a team
+            if (teamService.isPlaying(player)) {
+                spawnService.giveSpawnEquipment(listOf(player))
+            }
         }
     }
 
@@ -272,8 +277,6 @@ class PlayerController(
             ) {
                 spawnService.giveSpawnEquipment(listOf(player))
             }
-
-            updateNightVision(player)
         }
 
         // Transition from PREGAME -> PLAYING
@@ -363,6 +366,14 @@ class PlayerController(
                     teamService.onTeamChanged(player)
                     updateGameMode(player)
                 }
+            }
+        }
+
+        events.onUpdateTick {
+            for (player in server.playerManager.playerList) {
+                // Night vision is apparently super buggy and doesn't apply if invoked in `resetPlayerHealth()`...
+                // (seems like effects get cleared in a few other places - so we need to make sure it persists)
+                updateNightVision(player)
             }
         }
     }

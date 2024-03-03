@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -22,7 +23,7 @@ class ScoreboardController(
     private val teamService: TeamService,
     private val scoreboardService: ScoreboardService,
     private val configService: ConfigService,
-) {
+) : BingoComponent() {
 
     private fun String.wrap(maxChars: Int) : List<String> {
         val items = this.split(", ")

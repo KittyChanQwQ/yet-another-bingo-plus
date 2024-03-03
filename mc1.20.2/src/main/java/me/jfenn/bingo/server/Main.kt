@@ -16,7 +16,7 @@ object Main : DedicatedServerModInitializer {
     private val log = LoggerFactory.getLogger(this::class.java)
 
     override fun onInitializeServer() {
-        log.info("Starting Bingo Server koin application")
+        log.info("Starting Bingo migration runner...")
 
         koinApplication {
             logger(SLF4JLogger(level = Level.DEBUG))
@@ -25,6 +25,8 @@ object Main : DedicatedServerModInitializer {
             it.koin.get<MigrationHandler>().runMigrations()
             it.close()
         }
+
+        log.info("Starting Bingo Server application...")
 
         koinApplication {
             BingoKoin.koinApp = this@koinApplication
