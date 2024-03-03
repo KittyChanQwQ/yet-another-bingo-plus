@@ -1,28 +1,107 @@
 {
     "S": [
         "advancement!minecraft:story/follow_ender_eye",
-        "advancement!minecraft:story/enter_the_end"
+        "advancement!minecraft:story/enter_the_end",
+        "advancement!minecraft:nether/uneasy_alliance",
+        "advancement!minecraft:nether/netherite_armor",
+        "advancement!minecraft:nether/get_wither_skull",
+        "advancement!minecraft:nether/ride_strider_in_overworld_lava",
+        "advancement!minecraft:nether/summon_wither",
+        "advancement!minecraft:nether/create_beacon",
+        "advancement!minecraft:end/kill_dragon",
+        "advancement!minecraft:end/dragon_egg",
+        "advancement!minecraft:end/enter_end_gateway",
+        "advancement!minecraft:end/dragon_breath",
+        "advancement!minecraft:end/find_end_city",
+        "advancement!minecraft:end/elytra",
+        "advancement!minecraft:end/levitate",
+        "advancement!minecraft:adventure/hero_of_the_village",
+        "advancement!minecraft:adventure/kill_all_mobs",
+        "advancement!minecraft:adventure/totem_of_undying",
+        "advancement!minecraft:adventure/trade_at_world_height",
+        "advancement!minecraft:adventure/spyglass_at_dragon",
+        "advancement!minecraft:husbandry/silk_touch_nest",
+        "advancement!minecraft:husbandry/allay_deliver_cake_to_note_block",
+        "advancement!minecraft:husbandry/leash_all_frog_variants"
     ],
     "A": [
         "advancement!minecraft:story/shiny_gear",
         "advancement!minecraft:story/enchant_item",
-        "advancement!minecraft:story/cure_zombie_villager"
+        "advancement!minecraft:story/cure_zombie_villager",
+        "advancement!minecraft:nether/return_to_sender",
+        "advancement!minecraft:nether/find_bastion",
+        "advancement!minecraft:nether/find_fortress",
+        "advancement!minecraft:nether/obtain_ancient_debris",
+        "advancement!minecraft:nether/fast_travel",
+        "advancement!minecraft:nether/ride_strider",
+        "advancement!minecraft:nether/loot_bastion",
+        "advancement!minecraft:nether/use_lodestone",
+        "advancement!minecraft:nether/obtain_blaze_rod",
+        "advancement!minecraft:nether/charge_respawn_anchor",
+        "advancement!minecraft:nether/explore_nether",
+        "advancement!minecraft:adventure/spyglass_at_parrot",
+        "advancement!minecraft:adventure/trim_with_any_armor_pattern",
+        "advancement!minecraft:adventure/honey_block_slide",
+        "advancement!minecraft:adventure/avoid_vibration",
+        "advancement!minecraft:adventure/kill_mob_near_sculk_catalyst",
+        "advancement!minecraft:adventure/sniper_duel",
+        "advancement!minecraft:husbandry/tadpole_in_a_bucket",
+        "advancement!minecraft:husbandry/obtain_sniffer_egg",
+        "advancement!minecraft:husbandry/obtain_netherite_hoe"
     ],
     "B": [
         "advancement!minecraft:story/form_obsidian",
         "advancement!minecraft:story/mine_diamond",
-        "advancement!minecraft:story/enter_the_nether"
+        "advancement!minecraft:story/enter_the_nether",
+        "advancement!minecraft:nether/obtain_crying_obsidian",
+        "advancement!minecraft:nether/distract_piglin",
+        "advancement!minecraft:nether/brew_potion",
+        "advancement!minecraft:adventure/voluntary_exile",
+        "advancement!minecraft:adventure/read_power_of_chiseled_bookshelf",
+        "advancement!minecraft:adventure/lightning_rod_with_villager_no_fire",
+        "advancement!minecraft:adventure/fall_from_world_height",
+        "advancement!minecraft:adventure/salvage_sherd",
+        "advancement!minecraft:adventure/spyglass_at_ghast",
+        "advancement!minecraft:adventure/whos_the_pillager_now",
+        "advancement!minecraft:adventure/play_jukebox_in_meadows",
+        "advancement!minecraft:adventure/walk_on_powder_snow_with_leather_boots",
+        "advancement!minecraft:husbandry/safely_harvest_honey",
+        "advancement!minecraft:husbandry/allay_deliver_item_to_player",
+        "advancement!minecraft:husbandry/wax_on",
+        "advancement!minecraft:husbandry/wax_off"
     ],
     "C": [
         "advancement!minecraft:story/obtain_armor",
         "advancement!minecraft:story/lava_bucket",
-        "advancement!minecraft:story/deflect_arrow"
+        "advancement!minecraft:story/deflect_arrow",
+        "advancement!minecraft:adventure/trade",
+        "advancement!minecraft:adventure/ol_betsy",
+        "advancement!minecraft:adventure/shoot_arrow",
+        "advancement!minecraft:adventure/summon_iron_golem",
+        "advancement!minecraft:husbandry/breed_an_animal",
+        "advancement!minecraft:husbandry/ride_a_boat_with_a_goat",
+        "advancement!minecraft:husbandry/make_a_sign_glow",
+        "advancement!minecraft:husbandry/tactical_fishing",
+        "advancement!minecraft:husbandry/axolotl_in_a_bucket"
     ],
     "D": [
         "advancement!minecraft:story/mine_stone",
         "advancement!minecraft:story/upgrade_tools",
         "advancement!minecraft:story/smelt_iron",
-        "advancement!minecraft:story/iron_tools"
+        "advancement!minecraft:story/iron_tools",
+        "advancement!minecraft:adventure/kill_a_mob",
+        "advancement!minecraft:adventure/sleep_in_bed",
+        "advancement!minecraft:husbandry/tame_an_animal",
+        "advancement!minecraft:husbandry/fishy_business",
+        "advancement!minecraft:husbandry/plant_seed"
     ],
-    "groups": []
+    "groups": [
+        [
+            "advancement!minecraft:adventure/honey_block_slide",
+            "advancement!minecraft:husbandry/safely_harvest_honey",
+            "advancement!minecraft:husbandry/wax_on",
+            "advancement!minecraft:husbandry/wax_off",
+            "advancement!minecraft:husbandry/silk_touch_nest"
+        ]
+    ]
 }
