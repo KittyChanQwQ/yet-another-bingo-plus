@@ -20,6 +20,7 @@ import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
+import me.jfenn.bingo.integrations.ChunkyIntegration
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.server.MinecraftServer
@@ -48,6 +49,7 @@ val commonModule = module {
     singleOf(::AutoShutdownController)
     factoryOf(PermissionsIntegration::create)
     factoryOf(VanishIntegration::create)
+    factoryOf(ChunkyIntegration::create)
 
     singleOf(::BingoCommands)
     singleOf(::ChatCommand)
@@ -79,6 +81,7 @@ val commonModule = module {
         scopedOf(::BingoCardController)
         scopedOf(::BossBarController)
         scopedOf(::GameRuleController)
+        scopedOf(::IntegrationController)
         scopedOf(::LobbyChaosController)
         scopedOf(::MapItemHandler)
         scopedOf(::MotdController)
@@ -112,6 +115,7 @@ fun Scope.commonInit() {
     get<BingoCardController>()
     get<BossBarController>()
     get<GameRuleController>()
+    get<IntegrationController>()
     get<LobbyChaosController>()
     get<MapItemHandler>()
     get<MotdController>()
