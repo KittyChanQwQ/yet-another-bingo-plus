@@ -82,7 +82,8 @@ data class BingoState(
 
     fun ingameDuration(): Duration? {
         val started = startedAt ?: return null
-        val duration = Clock.System.now() - started
+        val updated = updatedAt ?: return null
+        val duration = updated - started
         // subtract any offline server time from the game duration
         return duration - timeOffline
     }

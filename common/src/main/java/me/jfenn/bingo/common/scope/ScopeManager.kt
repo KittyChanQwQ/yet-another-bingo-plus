@@ -45,12 +45,6 @@ class ScopeManager(
             // obtain the bingo game state from the save file
             val state: BingoState = persistentStateFactory.fromWorld(server.overworld)
 
-            // if the game was previously running, increment its updated timestamp by the time spent offline
-            // (this is so that the timer only counts the amount of time spent in-game or with the server running)
-            state.updatedAt?.let { lastUpdate ->
-                state.timeOffline += (Clock.System.now() - lastUpdate)
-            }
-
             log.info("[ScopeManager] Starting server scope...")
             val ctx = BingoContext(server, state)
             val scopeId = getScopeId(server)
