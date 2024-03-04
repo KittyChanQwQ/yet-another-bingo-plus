@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.integrations.ChunkyIntegration
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
@@ -22,12 +23,19 @@ class GameService(
     private val spawnService: SpawnService,
     private val teamService: TeamService,
     private val configService: ConfigService,
+    private val chunkyIntegration: ChunkyIntegration,
 ) {
+
+    init {
+        chunkyIntegration.startPregen(server)
+    }
 
     fun start(
         sendFeedback: (String) -> Unit = {},
         allowSpectators: Boolean = false,
     ): Boolean {
+        chunkyIntegration.cancelTasks(server)
+
         val playersWithoutATeam = server.playerManager.playerList
             .filter { teamService.getPlayerTeam(it) == null }
 

@@ -21,4 +21,6 @@ data class BingoConfig(
     val autoShutDownInPostgame: Boolean = true,
     // shuts down the server faster, at the risk of bugs or data corruption
     val unsafeSkipWorldClose: Boolean = false,
+
+    val integrations: IntegrationsConfig = IntegrationsConfig(),
 )

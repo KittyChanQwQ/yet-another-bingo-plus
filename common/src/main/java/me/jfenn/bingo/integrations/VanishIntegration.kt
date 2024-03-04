@@ -1,6 +1,7 @@
 package me.jfenn.bingo.integrations
 
 import me.drex.vanish.api.VanishAPI
+import me.jfenn.bingo.common.config.BingoConfig
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.network.ServerPlayerEntity
 import org.slf4j.Logger
@@ -17,8 +18,9 @@ interface VanishIntegration {
 
         fun create(
             log: Logger,
+            config: BingoConfig,
         ): VanishIntegration {
-            return if (isInstalled()) {
+            return if (isInstalled() && config.integrations.vanish) {
                 log.info("Integrations: Vanish is installed!")
                 VanishIntegrationImpl()
             } else {

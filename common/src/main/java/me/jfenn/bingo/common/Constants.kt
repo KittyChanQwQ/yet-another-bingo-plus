@@ -16,4 +16,4 @@ const val NBT_BINGO_VANISH = "bingo_vanish"
 
 val BINGO_WORLD_PREFIX = "${Formatting.GREEN}[BINGO]${Formatting.WHITE}"
 
-const val BINGO_VERSION = "1.1.11"
+const val BINGO_VERSION = "1.1.12"
