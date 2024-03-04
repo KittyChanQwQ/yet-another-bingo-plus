@@ -71,6 +71,7 @@ export default defineConfig({
         text: 'Compatible Mods',
         collapsed: false,
         items: [
+          { text: 'Chunky', link: '/mods/chunky' },
           { text: 'LuckPerms', link: '/mods/luckperms' },
           { text: 'Vanish', link: '/mods/vanish' },
         ]

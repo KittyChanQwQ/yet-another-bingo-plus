@@ -51,3 +51,20 @@ Automatically shuts down / restarts the server if all players disconnect after a
 (default: false)
 
 Skips world closing when the server is shutting down, which can speed up restarts if the server is held up by chunk saving. This may cause crashes or world data corruption.
+
+## `"integrations"`
+
+### `"vanish"`
+(default: true)
+
+Controls whether the mod's [Vanish integration](./mods/vanish) is enabled. If this is turned off, the game will not put spectating players into vanish mode, and will act like the mod isn't installed - you'll need to use its commands manually instead.
+
+### `"chunky"`
+(default: true)
+
+Controls whether the mod's [Chunky integration](./mods/chunky) is enabled. If this is turned off, the game will not automatically start/cancel any pre-generation tasks. You'll need to manage these manually instead.
+
+### `"chunkyWorlds"`
+(default: `"minecraft:overworld": 8000, "minecraft:the_nether": 1000`)
+
+Specifies the dimensions and distance (in blocks) that Chunky should automatically pre-generate, if the `"chunky"` config is `true`.

@@ -39,7 +39,11 @@ This is a list of server-side performance mods I've been using with a fair amoun
   > Note that while the server loads *more chunks* with this mod, I have not seen it significantly affect lag or tick speed. This likely won't change any lag/responsiveness issues on your server. Additionally, being in alpha, it does have some quirks that seem to (very occasionally) cause broken chunks or invisible entities.
 
   > As such, if you are not using elytra mode and do not need to stress the chunk loading, I would recommend leaving this out for better stability.
- 
+
+- [Chunky](https://modrinth.com/plugin/chunky) can be used to pre-generate the world files, which prevents lag to due to world generation. However, it does need time to run before starting a game, and can use a fair amount of storage space.
+
+  See the [Chunky integration](./mods/chunky) page for more info!
+
 ## Auto-save
 
 Occasionally, you might notice a lag spike accompanied by a chat message that the game is saving. This can happen if your server is on an HDD instead of an SSD, or has a slow disk write speed.
