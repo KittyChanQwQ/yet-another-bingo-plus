@@ -5,6 +5,8 @@ import me.jfenn.bingo.common.config.BlockPosition
 import net.minecraft.block.Blocks
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.ChunkPos
+import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.Heightmap
 import net.minecraft.world.World
@@ -22,6 +24,12 @@ class SpreadPlayers(
 ) {
 
     private val log = LoggerFactory.getLogger(this::class.java)
+
+    // Clamp spawn positions to the overworld border
+    // - yes, even if the spawn dimension isn't in the overworld...
+    private val worldBorder = world.server.overworld.worldBorder
+    private val coordinateScale = world.dimension.coordinateScale
+    private val worldBorderCenterInWorld = BlockPos((worldBorder.centerX / coordinateScale).toInt(), 0, (worldBorder.centerZ / coordinateScale).toInt())
 
     private val invalidSpawnBiomes = setOf(
         BiomeKeys.BEACH,
@@ -51,7 +59,10 @@ class SpreadPlayers(
     )
 
     fun spreadGroups(count: Int, distance: Int): List<Pair<Int, Int>> {
-        val radius = (distance * count) / (2 * Math.PI)
+        val center = ChunkPos(worldBorderCenterInWorld)
+        val radius = ((distance * count) / (2 * Math.PI))
+            .coerceAtMost(ChunkSectionPos.getSectionCoord(worldBorder.maxRadius).toDouble() - 16.0)
+            .coerceAtLeast(0.0)
 
         val theta = 2 * Math.PI * Math.random()
 
@@ -59,14 +70,25 @@ class SpreadPlayers(
             for (i in 0 until count) {
                 val t0 = theta + (i * 2 * Math.PI / count)
                 val x = sin(t0) * radius
-                val y = cos(t0) * radius
+                val z = cos(t0) * radius
 
-                add(Pair(x.toInt(), y.toInt()))
+                add(Pair(center.x + x.toInt(), center.z + z.toInt()))
             }
         }
     }
 
     private fun isValidSpawn(chunk: Chunk, groundPos: BlockPos): Boolean {
+        // scale the groundPos to match overworld positions for the worldBorder
+        val groundPosInOverworld = BlockPos(
+            groundPos.x.times(coordinateScale).toInt(),
+            groundPos.y,
+            groundPos.z.times(coordinateScale).toInt(),
+        )
+        if (!worldBorder.contains(groundPosInOverworld)) {
+            log.debug("Skipping block {} to avoid spawning outside the world border", groundPos)
+            return false
+        }
+
         if (world.registryKey == World.OVERWORLD && groundPos.y <= world.seaLevel) {
             log.debug("Skipping block {} to avoid spawning underwater (y <= {})", groundPos, world.seaLevel)
             return false
@@ -184,10 +206,28 @@ class SpreadPlayers(
 
         while (true) {
             // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
-            val biomeTest = world.getBiome(BlockPos(x*16 + 8, world.logicalHeight, z*16 + 8))
+            val chunkCenter = BlockPos(x*16 + 8, world.logicalHeight, z*16 + 8)
+            val biomeTest = world.getBiome(chunkCenter)
             if (invalidSpawnBiomes.contains(biomeTest.key.get())) {
                 x += 4 * xSign
                 continue
+            }
+
+            // Scale the chunkCenter to match overworld positions for the worldBorder
+            val chunkCenterInOverworld = BlockPos(
+                chunkCenter.x.times(coordinateScale).toInt(),
+                chunkCenter.y,
+                chunkCenter.z.times(coordinateScale).toInt(),
+            )
+            if (!worldBorder.contains(chunkCenterInOverworld)) {
+                log.warn("Selected chunk is outside of the world border - attempting to find any valid position...")
+                val centerChunkPos = ChunkPos(worldBorderCenterInWorld)
+                val centerChunk = world.getChunk(centerChunkPos.x, centerChunkPos.z)
+                selectChunkPosition(centerChunk)
+                    ?.let { return it }
+
+                log.error("Could not find any valid spawn location due to the world border. Using the default world spawn, which may be buggy...")
+                return world.spawnPos
             }
 
             // This "!!" looks unsafe. but maybe it isn't though? (it should actually be fine)
