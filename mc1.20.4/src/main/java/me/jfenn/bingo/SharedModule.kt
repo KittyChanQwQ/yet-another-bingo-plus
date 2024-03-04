@@ -8,6 +8,7 @@ import org.koin.dsl.module
 
 val sharedModule = module {
     singleOf(::AdvancementManager) bind IAdvancementManager::class
+    singleOf(::CommandRunner) bind ICommandRunner::class
     singleOf(::OfflinePlayerAccessor) bind IOfflinePlayerAccessor::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     singleOf(::ScoreboardManager) bind IScoreboardManager::class

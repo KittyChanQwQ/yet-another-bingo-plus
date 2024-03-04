@@ -1,7 +1,7 @@
 package me.jfenn.bingo.integrations
 
+import me.jfenn.bingo.api.ICommandRunner
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.utils.runSilentCommand
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
@@ -18,10 +18,11 @@ interface ChunkyIntegration {
         fun create(
             log: Logger,
             config: BingoConfig,
+            commandRunner: ICommandRunner,
         ): ChunkyIntegration {
             return if (isInstalled() && config.integrations.chunky) {
                 log.info("Integrations: Chunky is installed!")
-                ChunkyIntegrationImpl(log, config)
+                ChunkyIntegrationImpl(log, config, commandRunner)
             } else {
                 log.info("Integrations: Chunky is not installed - https://modrinth.com/plugin/chunky (optional, for world pre-generation)")
                 ChunkyIntegrationDummy
@@ -38,14 +39,16 @@ object ChunkyIntegrationDummy : ChunkyIntegration {
 class ChunkyIntegrationImpl(
     private val log: Logger,
     private val config: BingoConfig,
+    private val commandRunner: ICommandRunner,
 ) : ChunkyIntegration {
     override fun startPregen(server: MinecraftServer) {
         try {
-            config.integrations.chunkyWorlds.forEach { world, size ->
-                server.runSilentCommand("chunky world $world")
-                server.runSilentCommand("chunky radius $size")
-                server.runSilentCommand("chunky start")
+            config.integrations.chunkyWorlds.forEach { (world, size) ->
+                commandRunner.runSilentCommand(server, "chunky world $world")
+                commandRunner.runSilentCommand(server, "chunky radius $size")
+                commandRunner.runSilentCommand(server, "chunky start")
             }
+            commandRunner.runSilentCommand(server, "chunky continue")
         } catch (e: Throwable) {
             log.error("Error starting chunky pre-generation:", e)
         }
@@ -53,8 +56,8 @@ class ChunkyIntegrationImpl(
 
     override fun cancelTasks(server: MinecraftServer) {
         try {
-            server.runSilentCommand("chunky cancel")
-            server.runSilentCommand("chunky confirm")
+            commandRunner.runSilentCommand(server, "chunky cancel")
+            commandRunner.runSilentCommand(server, "chunky confirm")
         } catch (e: Throwable) {
             log.error("Error cancelling chunky pre-generation:", e)
         }

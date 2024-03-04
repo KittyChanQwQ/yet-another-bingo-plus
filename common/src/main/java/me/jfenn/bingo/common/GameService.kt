@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common
 
-import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
@@ -14,7 +13,6 @@ import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import kotlin.time.Duration.Companion.milliseconds
 
 class GameService(
     private val state: BingoState,
@@ -60,12 +58,10 @@ class GameService(
         // save the current config, if overwrite option is set
         configService.writeOptions(options)
 
-        val spawnStartedAt = Clock.System.now()
         for (player in server.playerManager.playerList) {
             val team = teamService.getPlayerTeam(player)
             player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
             player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game is starting!")))
-            Sounds.playGameStarted(player)
         }
 
         // spread player teams to spawnpoint
@@ -80,11 +76,7 @@ class GameService(
             val team = teamService.getPlayerTeam(player)
             player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
             player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game has started!")))
-
-            // Only play the second sound if spawning took >500ms
-            if (Clock.System.now() - spawnStartedAt > 500.milliseconds) {
-                Sounds.playGameStarted(player)
-            }
+            Sounds.playGameStarted(player)
         }
 
         return true
