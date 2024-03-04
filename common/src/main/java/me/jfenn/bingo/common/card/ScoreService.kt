@@ -4,22 +4,29 @@ import me.jfenn.bingo.common.state.BingoState
 
 object ScoreService {
 
-    fun isStalemate(state: BingoState): Boolean {
+    fun isLockout(state: BingoState): Boolean {
         if (!state.options.isLockoutMode) return false
+        // if we're in inventory mode, then teams can lose tiles...
+        // so it shouldn't be possible to get into a stalemate
+        if (state.options.isInventoryMode) return false
+        // if there's only one team, then the game shouldn't end by lockout...
+        if (state.getRegisteredTeams().size <= 1) return false
 
-        // max lines
+        val leadingTeam = getLeadingByLines(state, allowTies = false)
+        val leadingTeamLines = leadingTeam?.score?.lines
+            ?: state.getRegisteredTeams().maxOfOrNull { it.score.lines }
+            ?: 0
 
-        //
+        // if noone can beat or tie with the leading team, then it is a lockout (the leading team has won)
+        val isLockout = state.getRegisteredTeams()
+            .filter { it.key != leadingTeam?.key }
+            .none { team ->
+                val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
+                // if a team can capture more lines, and it would either tie or beat the current team
+                possibleLines > team.score.lines && possibleLines >= leadingTeamLines
+            }
 
-        // check all teams for the number of capture-able lines
-        // if any team can capture a line, it is not a stalemate
-        for (team in state.getRegisteredTeams()) {
-            // count number of lines that the team can achieve
-            val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
-            if (possibleLines >= 1) return false
-        }
-
-        return true
+        return isLockout
     }
 
     fun getLeading(state: BingoState, allowTies: Boolean = false): BingoTeam? {

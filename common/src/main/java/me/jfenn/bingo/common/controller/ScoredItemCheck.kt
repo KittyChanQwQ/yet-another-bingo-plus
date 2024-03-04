@@ -235,8 +235,8 @@ class ScoredItemCheck(
         }
 
         // check if the game is in a stalemate
-        if (ScoreService.isStalemate(state)) {
-            gameService.end("Stalemate!")
+        if (ScoreService.isLockout(state)) {
+            gameService.end("Lockout!")
             return
         }
 
