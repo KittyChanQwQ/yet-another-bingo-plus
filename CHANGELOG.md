@@ -1,17 +1,21 @@
 ### New Features:
 
-- Added a "Night Vision" toggle to give all players night vision during the game
+- Advancements can now be used as bingo conditions!
 
-- Added night vision for spectating players and post-game.
+  There's a new "Advancements" tier list with vanilla advancements for now - but more is on the way!
 
-  This can be changed with the `"nightVisionInSpectator"` and `"nightVisionInPostgame"` configs. Both default to `true`.
+- Support for world pre-generation with [Chunky](https://modrinth.com/plugin/chunky) - more info is [in the wiki](https://minecraft.horrific.dev/bingo/mods/chunky)!
 
-- Moved the player settings menu to a book that players can use in the lobby - which now includes descriptions for said settings.
-
-- Renamed "Win Condition" to "Goal" - among other text changes to reduce confusion/clutter.
+- The card inventory view now shows which tier each item belongs to.
 
 ### Bugs Squashed:
 
-- Fixed an issue causing non-bingo singleplayer worlds to crash the game
+- Fixed "stalemate" detection in lockout mode not working as expected
 
-- Prevent spectating players from editing entity inventories (boat/minecart chests) without the permission to do so
+  The game should now end automatically if a team is guaranteed to win,
+  or if the goal becomes impossible.
+  (unless inventory or ranked mode is enabled)
+
+- Added checks to ensure that spawnpoints are inside of the world border
+
+- Fixed the timer not pausing with the game when playing in singleplayer
