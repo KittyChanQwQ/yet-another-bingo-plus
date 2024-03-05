@@ -9,6 +9,8 @@ object ScoreService {
         // if we're in inventory mode, then teams can lose tiles...
         // so it shouldn't be possible to get into a stalemate
         if (state.options.isInventoryMode) return false
+        // if we're in ranked mode, don't end the game from a lockout at all
+        if (state.options.isRankedMode) return false
         // if there's only one team, then the game shouldn't end by lockout...
         if (state.getRegisteredTeams().size <= 1) return false
 
@@ -26,7 +28,14 @@ object ScoreService {
                 possibleLines > team.score.lines && possibleLines >= leadingTeamLines
             }
 
-        return isLockout
+        val isGoalImpossible = state.getRegisteredTeams()
+            .none { team ->
+                val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
+                // if no team can capture the amount of lines needed for the win condition
+                possibleLines >= state.options.goal.numLines
+            }
+
+        return isLockout || isGoalImpossible
     }
 
     fun getLeading(state: BingoState, allowTies: Boolean = false): BingoTeam? {
