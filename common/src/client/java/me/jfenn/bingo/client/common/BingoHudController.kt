@@ -103,6 +103,34 @@ class BingoHudController(
 
             if (tile.isAchieved && !tile.isFlashing)
                 context.fill(RenderLayer.getGuiOverlay(), itemX, itemY, itemX + 18, itemY + 18, 0x4055FF55)
+
+            if (tile.isLocked) {
+                service.drawTexture(
+                    texture = Identifier("minecraft", "bingo/image_frame_locked"),
+                    x = itemX - 1, y = itemY - 1,
+                    u = 0f, v = 0f,
+                    width = 20, height = 20,
+                    textureWidth = 20, textureHeight = 20,
+                )
+            }
+
+            for ((i, teamColor) in tile.teamColors.withIndex()) {
+                val colorValue = teamColor.colorValue?.or(0xff000000.toInt())
+                    ?: continue
+
+                val start = i * 34f / tile.teamColors.size
+                val end = (i+1) * 34f / tile.teamColors.size
+
+                if (start < 17f) {
+                    context.drawHorizontalLine(itemX + start.toInt(), itemX + 17, itemY, colorValue)
+                    context.drawVerticalLine(itemX, itemY + start.toInt(), itemY + 17, colorValue)
+                }
+
+                if (end > 17f) {
+                    context.drawHorizontalLine(itemX, itemX + end.toInt() - 17, itemY + 17, colorValue)
+                    context.drawVerticalLine(itemX + 17, itemY, itemY + end.toInt() - 17, colorValue)
+                }
+            }
         }
     }
 

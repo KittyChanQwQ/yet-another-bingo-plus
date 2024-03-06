@@ -41,7 +41,7 @@ class CardViewService(
             isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
             isAchieved = team != null && entry.hasAchieved(team),
             teamColors = if (options.showOtherTeamCompletions)
-                entry.teams.filter { it != team?.key }.mapNotNull { state.teams[it]?.textColor }
+                entry.teams.filter { it != team?.key }.mapNotNull { state.teams[it]?.formatting }
             else emptyList(),
         )
     }

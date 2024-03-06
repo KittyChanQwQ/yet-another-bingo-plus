@@ -10,6 +10,7 @@ import net.minecraft.item.FilledMapItem
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
+import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
@@ -174,16 +175,16 @@ class MapRenderService(
         }
     }
 
-    fun getMapColor(color: TextColor?): Byte {
+    fun getMapColor(color: Formatting?): Byte {
         return when (color) {
-            TextColor.BLUE -> 12
-            TextColor.RED -> 4
-            TextColor.GREEN -> 33
-            TextColor.YELLOW -> 30
-            TextColor.LIGHT_PURPLE -> 20
-            TextColor.AQUA -> 31
-            TextColor.GOLD -> 15
-            TextColor.GRAY -> 21
+            Formatting.BLUE -> 12
+            Formatting.RED -> 4
+            Formatting.GREEN -> 33
+            Formatting.YELLOW -> 30
+            Formatting.LIGHT_PURPLE -> 20
+            Formatting.AQUA -> 31
+            Formatting.GOLD -> 15
+            Formatting.GRAY -> 21
             else -> 22
         }
     }
@@ -192,9 +193,9 @@ class MapRenderService(
         mapState: MapState,
         team: BingoTeam?,
     ) {
-        val borderLight = (getMapColor(team?.textColor)*4 + 2).toUByte().toByte()
-        val borderMid = (getMapColor(team?.textColor)*4 + 1).toUByte().toByte()
-        val borderDark = (getMapColor(team?.textColor)*4 + 3).toUByte().toByte()
+        val borderLight = (getMapColor(team?.formatting)*4 + 2).toUByte().toByte()
+        val borderMid = (getMapColor(team?.formatting)*4 + 1).toUByte().toByte()
+        val borderDark = (getMapColor(team?.formatting)*4 + 3).toUByte().toByte()
 
         // Outer edge borders
         for (x in 0 until MAP_SIZE) {

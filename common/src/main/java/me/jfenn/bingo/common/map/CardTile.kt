@@ -4,6 +4,7 @@ import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.utils.text.TextColor
 import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.util.Formatting
 
 data class CardTile(
     val item: ItemStack?,
@@ -15,7 +16,7 @@ data class CardTile(
     val isLocked: Boolean,
     val isFlashing: Boolean,
     val isAchieved: Boolean,
-    val teamColors: List<TextColor>,
+    val teamColors: List<Formatting>,
 ) {
     fun toPacketBuf(buf: PacketByteBuf) {
         if (item != null) {
@@ -62,7 +63,7 @@ data class CardTile(
                 isLocked = buf.readBoolean(),
                 isFlashing = buf.readBoolean(),
                 isAchieved = buf.readBoolean(),
-                teamColors = List(buf.readInt()) { TextColor.valueOf(buf.readString()) },
+                teamColors = List(buf.readInt()) { Formatting.valueOf(buf.readString()) },
             )
         }
     }
