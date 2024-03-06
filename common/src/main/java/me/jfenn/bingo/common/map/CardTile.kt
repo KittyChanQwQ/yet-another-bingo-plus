@@ -1,0 +1,69 @@
+package me.jfenn.bingo.common.map
+
+import me.jfenn.bingo.common.config.TierLabel
+import me.jfenn.bingo.common.utils.text.TextColor
+import net.minecraft.item.ItemStack
+import net.minecraft.network.PacketByteBuf
+
+data class CardTile(
+    val item: ItemStack?,
+    val itemTier: TierLabel?,
+    val isFreeSpace: Boolean,
+    val isAdvancement: Boolean,
+    val isMultiItem: Boolean,
+    val isHidden: Boolean,
+    val isLocked: Boolean,
+    val isFlashing: Boolean,
+    val isAchieved: Boolean,
+    val teamColors: List<TextColor>,
+) {
+    fun toPacketBuf(buf: PacketByteBuf) {
+        if (item != null) {
+            buf.writeBoolean(true)
+            buf.writeItemStack(item)
+        } else {
+            buf.writeBoolean(false)
+        }
+
+        if (itemTier != null) {
+            buf.writeBoolean(true)
+            buf.writeString(itemTier.name)
+        } else {
+            buf.writeBoolean(false)
+        }
+
+        buf.writeBoolean(isFreeSpace)
+        buf.writeBoolean(isAdvancement)
+        buf.writeBoolean(isMultiItem)
+        buf.writeBoolean(isHidden)
+        buf.writeBoolean(isLocked)
+        buf.writeBoolean(isFlashing)
+        buf.writeBoolean(isAchieved)
+
+        buf.writeInt(teamColors.size)
+        for (team in teamColors) {
+            buf.writeString(team.name)
+        }
+    }
+
+    companion object {
+        fun fromPacketBuf(buf: PacketByteBuf): CardTile {
+            return CardTile(
+                item = if (buf.readBoolean()) {
+                    buf.readItemStack()
+                } else null,
+                itemTier = if (buf.readBoolean()) {
+                    TierLabel.valueOf(buf.readString())
+                } else null,
+                isFreeSpace = buf.readBoolean(),
+                isAdvancement = buf.readBoolean(),
+                isMultiItem = buf.readBoolean(),
+                isHidden = buf.readBoolean(),
+                isLocked = buf.readBoolean(),
+                isFlashing = buf.readBoolean(),
+                isAchieved = buf.readBoolean(),
+                teamColors = List(buf.readInt()) { TextColor.valueOf(buf.readString()) },
+            )
+        }
+    }
+}

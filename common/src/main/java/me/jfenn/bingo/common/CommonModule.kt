@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.map.MapRenderService
 import me.jfenn.bingo.common.menu.MenuController
@@ -73,6 +74,7 @@ val commonModule = module {
         scopedOf(::SpawnService)
         scopedOf(::MapItemService)
         scopedOf(::MapRenderService)
+        scopedOf(::CardViewService)
         scopedOf(::TeamService)
         scopedOf(::CardService)
         scopedOf(::ScoreboardService)

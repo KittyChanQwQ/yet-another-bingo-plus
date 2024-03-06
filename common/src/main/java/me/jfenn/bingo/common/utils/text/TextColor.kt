@@ -4,21 +4,21 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class TextColor {
-    @SerialName("black") BLACK,
-    @SerialName("dark_blue") DARK_BLUE,
-    @SerialName("dark_green") DARK_GREEN,
-    @SerialName("dark_aqua") DARK_AQUA,
-    @SerialName("dark_red") DARK_RED,
-    @SerialName("dark_purple") DARK_PURPLE,
-    @SerialName("gold") GOLD,
-    @SerialName("gray") GRAY,
-    @SerialName("dark_gray") DARK_GRAY,
-    @SerialName("blue") BLUE,
-    @SerialName("green") GREEN,
-    @SerialName("aqua") AQUA,
-    @SerialName("red") RED,
-    @SerialName("light_purple") LIGHT_PURPLE,
-    @SerialName("yellow") YELLOW,
-    @SerialName("white") WHITE,
+enum class TextColor(val isDark: Boolean) {
+    @SerialName("black") BLACK(true),
+    @SerialName("dark_blue") DARK_BLUE(true),
+    @SerialName("dark_green") DARK_GREEN(true),
+    @SerialName("dark_aqua") DARK_AQUA(true),
+    @SerialName("dark_red") DARK_RED(true),
+    @SerialName("dark_purple") DARK_PURPLE(true),
+    @SerialName("gold") GOLD(false),
+    @SerialName("gray") GRAY(false),
+    @SerialName("dark_gray") DARK_GRAY(true),
+    @SerialName("blue") BLUE(true),
+    @SerialName("green") GREEN(false),
+    @SerialName("aqua") AQUA(false),
+    @SerialName("red") RED(true),
+    @SerialName("light_purple") LIGHT_PURPLE(false),
+    @SerialName("yellow") YELLOW(false),
+    @SerialName("white") WHITE(false),
 }

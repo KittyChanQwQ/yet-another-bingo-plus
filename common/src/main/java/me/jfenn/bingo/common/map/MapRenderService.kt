@@ -1,21 +1,17 @@
 package me.jfenn.bingo.common.map
 
-import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.MOD_ID
-import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.config.TierLabel
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.LruHashMap
+import me.jfenn.bingo.common.utils.text.TextColor
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.InputStream
 import javax.imageio.ImageIO
@@ -26,8 +22,6 @@ import kotlin.time.measureTime
 class MapRenderService(
     private val log: Logger,
     private val server: MinecraftServer,
-    private val options: BingoOptions,
-    private val state: BingoState,
 ) {
 
     companion object {
@@ -158,8 +152,12 @@ class MapRenderService(
     // (could need extra space to handle rotating items)
     private val imageMap = LruHashMap<String, BingoTileImage?>(25)
 
-    private fun getTileImage(tile: BingoMapTile): BingoTileImage? {
-        val item = tile.item ?: return null
+    private fun getTileImage(tile: CardTile): BingoTileImage? {
+        val item = tile.item
+            ?.item
+            ?.let { Registries.ITEM.getId(it).path }
+            ?: return null
+
         if (imageMap.containsKey(item))
             return imageMap[item] ?: BingoTileImage.FALLBACK
 
@@ -176,17 +174,27 @@ class MapRenderService(
         }
     }
 
-    fun getMapColor(team: BingoTeam?): Byte {
-        return team?.mapColor ?: 22
+    fun getMapColor(color: TextColor?): Byte {
+        return when (color) {
+            TextColor.BLUE -> 12
+            TextColor.RED -> 4
+            TextColor.GREEN -> 33
+            TextColor.YELLOW -> 30
+            TextColor.LIGHT_PURPLE -> 20
+            TextColor.AQUA -> 31
+            TextColor.GOLD -> 15
+            TextColor.GRAY -> 21
+            else -> 22
+        }
     }
 
     private fun drawMapBorders(
         mapState: MapState,
         team: BingoTeam?,
     ) {
-        val borderLight = (getMapColor(team)*4 + 2).toUByte().toByte()
-        val borderMid = (getMapColor(team)*4 + 1).toUByte().toByte()
-        val borderDark = (getMapColor(team)*4 + 3).toUByte().toByte()
+        val borderLight = (getMapColor(team?.textColor)*4 + 2).toUByte().toByte()
+        val borderMid = (getMapColor(team?.textColor)*4 + 1).toUByte().toByte()
+        val borderDark = (getMapColor(team?.textColor)*4 + 3).toUByte().toByte()
 
         // Outer edge borders
         for (x in 0 until MAP_SIZE) {
@@ -234,35 +242,27 @@ class MapRenderService(
     }
 
     private fun drawMapTile(
-        team: BingoTeam?,
         mapState: MapState,
-        entry: BingoCardEntry,
-        tile: BingoMapTile,
+        tile: CardTile,
         itemX: Int,
         itemY: Int,
     ) {
         require(itemX in 0 until 5)
         require(itemY in 0 until 5)
 
-        val isAchieved = team != null && entry.hasAchieved(team)
-
-        val isLocked = options.isLockoutMode && entry.teams.isNotEmpty() && team != null && !entry.hasAchieved(team)
         val tileImage = getTileImage(tile) ?: BingoTileImage.EMPTY
         val tileImageArray = when {
             tile.isHidden -> when {
-                options.showHiddenTiers && entry.tier != null -> {
-                    BingoTileImage.HIDDEN_TIERS[entry.tier]?.regular ?: BingoTileImage.FALLBACK.regular
+                tile.itemTier != null -> {
+                    BingoTileImage.HIDDEN_TIERS[tile.itemTier]?.regular ?: BingoTileImage.FALLBACK.regular
                 }
-                entry is BingoCardEntry.FreeSpace -> BingoTileImage.EMPTY.regular
+                tile.isFreeSpace -> BingoTileImage.EMPTY.regular
                 else -> BingoTileImage.HIDDEN.regular
             }
             tile.isFlashing -> tileImage.flashing
-            isAchieved -> tileImage.achieved
+            tile.isAchieved -> tileImage.achieved
             else -> tileImage.regular
         }
-
-        val itemTeams = entry.teams.mapNotNull { state.teams[it] }
-            .filter { it.key != team?.key }
 
         val tileX = MAP_BORDER + TILE_SIZE*itemX
         val tileY = MAP_BORDER + TILE_SIZE*itemY
@@ -297,7 +297,7 @@ class MapRenderService(
             }
         }
 
-        if (isLocked) {
+        if (tile.isLocked) {
             for (innerT in 0..innerMax) {
                 val x = tileX + innerT
                 val y = tileY + innerT
@@ -313,13 +313,10 @@ class MapRenderService(
             }
         }
 
-        if (
-            options.showOtherTeamCompletions &&
-            entry.hasAnyAchieved()
-        ) {
+        if (tile.teamColors.isNotEmpty()) {
             for (innerT in 0..innerMax*2 + 1) {
-                val tileTeamX = innerT * itemTeams.size / (innerMax*2 + 1)
-                val itemTeam = itemTeams.getOrNull(tileTeamX) ?: continue
+                val tileTeamX = innerT * tile.teamColors.size / (innerMax*2 + 1)
+                val itemTeam = tile.teamColors.getOrNull(tileTeamX) ?: continue
                 val variant = if (innerT % 2 == 0) 2 else 3
                 val color = (getMapColor(itemTeam)*4 + variant).toUByte().toByte()
 
@@ -341,26 +338,11 @@ class MapRenderService(
         }
     }
 
-    private fun getTileState(
-        team: BingoTeam?,
-        entry: BingoCardEntry,
-    ) : BingoMapTile {
-        return BingoMapTile(
-            item = entry.visualItem?.item?.let { Registries.ITEM.getId(it).path },
-            isMultiItem = entry is BingoCardEntry.MultiEntry,
-            isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
-            isHidden = options.isHiddenItemsMode && (team == null || !entry.hasSeen(team)),
-            isAdvancement = entry is BingoCardEntry.AdvancementEntry ||
-                    (entry as? BingoCardEntry.MultiEntry)?.innerEntries?.firstOrNull() is BingoCardEntry.AdvancementEntry,
-        )
-    }
-
     fun update(
         team: BingoTeam?,
+        map: BingoMap,
+        currentView: CardView,
     ) = measureTime {
-        val card = state.card
-        val map = team?.getMap(server) ?: state.getPreviewMap(server)
-
         val state = map.mapState ?: kotlin.run {
             val state = MapState.of(1, true, server.overworld.registryKey)
             drawMapBorders(state, team)
@@ -372,30 +354,19 @@ class MapRenderService(
 
         for (x in 0 until 5) {
             for (y in 0 until 5) {
-                val entry = card.entry(x, y)
-                val drawnState = map.tile(x, y)
-                val currentState = getTileState(team, entry)
+                val drawnTile = map.view.tile(x, y)
+                val currentTile = currentView.tile(x, y) ?: continue
 
-                if (
-                    entry.updatedAt(team) > map.updatedAt ||
-                    ((options.showOtherTeamCompletions || options.isLockoutMode) && entry.updatedAt > map.updatedAt) ||
-                    drawnState != currentState
-                ) {
-                    map.setTile(x, y, currentState)
-
+                if (drawnTile != currentTile) {
                     drawMapTile(
                         mapState = state,
-                        team = team,
-                        entry = entry,
-                        tile = currentState,
+                        tile = currentTile,
                         itemX = x,
                         itemY = y,
                     )
                 }
             }
         }
-
-        map.updatedAt = Clock.System.now()
     }.also {
         if (it >= 1.milliseconds) {
             log.info("Re-drawing map_${team?.map?.mapId} for team ${team?.name} ($it)")

@@ -40,18 +40,6 @@ data class BingoTeam(
 
     val formatting get() = Formatting.valueOf(textColor.name)
 
-    val mapColor: Byte get() = when (textColor) {
-        TextColor.BLUE -> 12
-        TextColor.RED -> 4
-        TextColor.GREEN -> 33
-        TextColor.YELLOW -> 30
-        TextColor.LIGHT_PURPLE -> 20
-        TextColor.AQUA -> 31
-        TextColor.GOLD -> 15
-        TextColor.GRAY -> 21
-        else -> 22
-    }
-
     fun getMap(server: MinecraftServer): BingoMap {
         return this.map ?: run {
             val map = BingoMap(

@@ -3,16 +3,13 @@ package me.jfenn.bingo.client.common
 import com.google.common.collect.ImmutableList
 import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
-import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.datapack.DatapackService
-import me.jfenn.bingo.common.lobbyWorld
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ConfirmScreen
 import net.minecraft.client.gui.screen.Screen
@@ -31,8 +28,7 @@ import kotlin.io.path.name
 class BingoWorldManager(
     private val log: Logger,
     private val buttonService: IButtonService,
-    private val persistentStateFactory: SerializedPersistentStateFactory,
-) {
+) : BingoComponent() {
 
     fun createBingoWorld(client: MinecraftClient, parent: Screen) {
         CreateWorldScreen.create(client, parent)
