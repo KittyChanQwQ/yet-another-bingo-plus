@@ -20,3 +20,4 @@ const val BINGO_VERSION = "1.1.12"
 
 val PACKET_CARD_DISPLAY = Identifier("bingo", "display_cards")
 val PACKET_CARD_UPDATE = Identifier("bingo", "update_card")
+val PACKET_CARD_OPEN = Identifier("bingo", "open_card")

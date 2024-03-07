@@ -7,5 +7,6 @@ import org.koin.dsl.module
 
 val commonClientModule = module {
     singleOf(::BingoHudController) withOptions { createdAtStart() }
+    singleOf(::BingoOpenCardController) withOptions { createdAtStart() }
     singleOf(::BingoWorldManager) withOptions { createdAtStart() }
 }
