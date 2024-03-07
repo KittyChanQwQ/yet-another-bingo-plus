@@ -9,7 +9,7 @@ import kotlin.math.roundToInt
 interface IDrawService {
     fun drawTexture(
         texture: Identifier,
-        x: Int, y: Int,
+        x: Int, y: Int, z: Int = 0,
         u: Float, v: Float,
         width: Int, height: Int,
         textureWidth: Int, textureHeight: Int,
@@ -39,10 +39,10 @@ interface IDrawService {
                 val partHeight = min(centerHeight - (yPart * textureCenterHeight), textureCenterHeight)
                 drawTexture(
                     texture,
-                    x + sliceSize + xPart*textureCenterWidth, y + sliceSize + yPart*textureCenterHeight,
-                    sliceSize.toFloat(), sliceSize.toFloat(),
-                    partWidth, partHeight,
-                    textureWidth, textureHeight,
+                    x = x + sliceSize + xPart*textureCenterWidth, y = y + sliceSize + yPart*textureCenterHeight,
+                    u = sliceSize.toFloat(), v = sliceSize.toFloat(),
+                    width = partWidth, height = partHeight,
+                    textureWidth = textureWidth, textureHeight = textureHeight,
                 )
             }
         }
@@ -52,17 +52,17 @@ interface IDrawService {
             val xPartWidth = min(centerWidth - (xPart * textureCenterWidth), textureCenterWidth)
             drawTexture(
                 texture,
-                x + sliceSize + xPart*textureCenterWidth, y,
-                sliceSize.toFloat(), 0f,
-                xPartWidth, sliceSize,
-                textureWidth, textureHeight
+                x = x + sliceSize + xPart*textureCenterWidth, y = y,
+                u = sliceSize.toFloat(), v = 0f,
+                width = xPartWidth, height = sliceSize,
+                textureWidth = textureWidth, textureHeight = textureHeight,
             )
             drawTexture(
                 texture,
-                x + sliceSize + xPart*textureCenterWidth, y + height - sliceSize,
-                sliceSize.toFloat(), textureHeight.toFloat() - sliceSize,
-                xPartWidth, sliceSize,
-                textureWidth, textureHeight
+                x = x + sliceSize + xPart*textureCenterWidth, y = y + height - sliceSize,
+                u = sliceSize.toFloat(), v = textureHeight.toFloat() - sliceSize,
+                width = xPartWidth, height = sliceSize,
+                textureWidth = textureWidth, textureHeight = textureHeight,
             )
         }
 
@@ -71,48 +71,48 @@ interface IDrawService {
             val yPartHeight = min(centerHeight - (yPart * textureCenterHeight), textureCenterHeight)
             drawTexture(
                 texture,
-                x, y + sliceSize + yPart*textureCenterHeight,
-                0f, sliceSize.toFloat(),
-                sliceSize, yPartHeight,
-                textureWidth, textureHeight
+                x = x, y = y + sliceSize + yPart*textureCenterHeight,
+                u = 0f, v = sliceSize.toFloat(),
+                width = sliceSize, height = yPartHeight,
+                textureWidth = textureWidth, textureHeight = textureHeight,
             )
             drawTexture(
                 texture,
-                x + width - sliceSize, y + sliceSize + yPart*textureCenterHeight,
-                textureWidth.toFloat() - sliceSize, sliceSize.toFloat(),
-                sliceSize, yPartHeight,
-                textureWidth, textureHeight
+                x = x + width - sliceSize, y = y + sliceSize + yPart*textureCenterHeight,
+                u = textureWidth.toFloat() - sliceSize, v = sliceSize.toFloat(),
+                width = sliceSize, height = yPartHeight,
+                textureWidth = textureWidth, textureHeight = textureHeight,
             )
         }
 
         // Draw corners
         drawTexture(
             texture,
-            x, y,
-            0f, 0f,
-            sliceSize, sliceSize,
-            textureWidth, textureHeight
+            x = x, y = y,
+            u = 0f, v = 0f,
+            width = sliceSize, height = sliceSize,
+            textureWidth = textureWidth, textureHeight = textureHeight,
         )
         drawTexture(
             texture,
-            x + width - sliceSize, y,
-            textureWidth.toFloat() - sliceSize, 0f,
-            sliceSize, sliceSize,
-            textureWidth, textureHeight
+            x = x + width - sliceSize, y = y,
+            u = textureWidth.toFloat() - sliceSize, v = 0f,
+            width = sliceSize, height = sliceSize,
+            textureWidth = textureWidth, textureHeight = textureHeight,
         )
         drawTexture(
             texture,
-            x, y + height - sliceSize,
-            0f, textureHeight.toFloat() - sliceSize,
-            sliceSize, sliceSize,
-            textureWidth, textureHeight
+            x = x, y = y + height - sliceSize,
+            u = 0f, v = textureHeight.toFloat() - sliceSize,
+            width = sliceSize, height = sliceSize,
+            textureWidth = textureWidth, textureHeight = textureHeight,
         )
         drawTexture(
             texture,
-            x + width - sliceSize, y + height - sliceSize,
-            textureWidth.toFloat() - sliceSize, textureHeight.toFloat() - sliceSize,
-            sliceSize, sliceSize,
-            textureWidth, textureHeight
+            x = x + width - sliceSize, y = y + height - sliceSize,
+            u = textureWidth.toFloat() - sliceSize, v = textureHeight.toFloat() - sliceSize,
+            width = sliceSize, height = sliceSize,
+            textureWidth = textureWidth, textureHeight = textureHeight,
         )
     }
 }

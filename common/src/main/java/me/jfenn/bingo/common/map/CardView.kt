@@ -4,10 +4,11 @@ import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.utils.text.TextColor
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.util.Formatting
 
 data class CardView(
     val teamKey: BingoTeamKey?,
-    val teamColor: TextColor?,
+    val teamColor: Formatting?,
     val teamName: String,
     val tiles: MutableList<CardTile>,
 ) {
@@ -49,7 +50,7 @@ data class CardView(
     companion object {
         fun fromPacketBuf(buf: PacketByteBuf): CardView {
             val teamKey = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null
-            val teamColor = if (buf.readBoolean()) TextColor.valueOf(buf.readString()) else null
+            val teamColor = if (buf.readBoolean()) Formatting.valueOf(buf.readString()) else null
             val teamName = buf.readString()
             val tilesLen = buf.readInt()
             val tiles = MutableList(tilesLen) { CardTile.fromPacketBuf(buf) }

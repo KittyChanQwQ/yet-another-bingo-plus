@@ -2,6 +2,7 @@ package me.jfenn.bingo.client.common
 
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.client.api.IOptionsAccessor
 import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
 import me.jfenn.bingo.common.PACKET_CARD_UPDATE
 import me.jfenn.bingo.common.card.BingoTeamKey
@@ -14,10 +15,12 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 
 class BingoHudController(
     private val drawServiceFactory: IDrawServiceFactory,
+    private val optionsAccessor: IOptionsAccessor,
 ) : BingoComponent() {
 
     private var display: CardTeams? = null
@@ -26,6 +29,26 @@ class BingoHudController(
     companion object {
         const val CARD_WIDTH = 118
         const val CARD_HEIGHT = 128
+    }
+
+    private fun isDark(color: Formatting) = when (color) {
+        Formatting.BLACK -> true
+        Formatting.DARK_BLUE -> true
+        Formatting.DARK_GREEN -> true
+        Formatting.DARK_AQUA -> true
+        Formatting.DARK_RED -> true
+        Formatting.DARK_PURPLE -> true
+        Formatting.GOLD -> false
+        Formatting.GRAY -> false
+        Formatting.DARK_GRAY -> true
+        Formatting.BLUE -> true
+        Formatting.GREEN -> false
+        Formatting.AQUA -> false
+        Formatting.RED -> true
+        Formatting.LIGHT_PURPLE -> false
+        Formatting.YELLOW -> false
+        Formatting.WHITE -> false
+        else -> false
     }
 
     private fun drawCard(context: DrawContext, service: IDrawService, view: CardView, x: Int, y: Int) {
@@ -55,7 +78,7 @@ class BingoHudController(
             )
         }
 
-        val teamNameColor = when (view.teamColor?.isDark) {
+        val teamNameColor = when (view.teamColor?.let { isDark(it) }) {
             true -> 0xa8ffffff.toInt()
             false -> 0xa8000000.toInt()
             else -> 0xff505050.toInt()
@@ -107,7 +130,7 @@ class BingoHudController(
             if (tile.isLocked) {
                 service.drawTexture(
                     texture = Identifier("minecraft", "bingo/image_frame_locked"),
-                    x = itemX - 1, y = itemY - 1,
+                    x = itemX - 1, y = itemY - 1, z = 300,
                     u = 0f, v = 0f,
                     width = 20, height = 20,
                     textureWidth = 20, textureHeight = 20,
@@ -156,6 +179,9 @@ class BingoHudController(
         }
 
         HudRenderCallback.EVENT.register { context, tickDelta ->
+            if (optionsAccessor.isDebugEnabled() || optionsAccessor.isPlayerListPressed())
+                return@register
+
             drawHud(context)
         }
 

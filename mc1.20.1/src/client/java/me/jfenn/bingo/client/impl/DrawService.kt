@@ -17,6 +17,7 @@ class DrawService(
         texture: Identifier,
         x: Int,
         y: Int,
+        z: Int,
         u: Float,
         v: Float,
         width: Int,
@@ -26,7 +27,7 @@ class DrawService(
     ) {
         context.drawTexture(
             with(texture) { Identifier(namespace, "textures/gui/sprites/$path.png") },
-            x, y,
+            x, y, z,
             u, v,
             width, height,
             textureWidth, textureHeight

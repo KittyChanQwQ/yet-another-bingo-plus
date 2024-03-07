@@ -49,7 +49,7 @@ class CardViewService(
     fun getMapView(team: BingoTeam?): CardView {
         return CardView(
             teamKey = team?.key,
-            teamColor = team?.textColor,
+            teamColor = team?.mapColor,
             teamName = team?.name?.let { "${it.formatTitle()} Team" } ?: "Preview Card",
             tiles = state.card.entries
                 .map { entry -> getTileState(team, entry) }

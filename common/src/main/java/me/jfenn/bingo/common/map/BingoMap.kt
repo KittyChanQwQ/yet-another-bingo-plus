@@ -3,9 +3,7 @@ package me.jfenn.bingo.common.map
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.jfenn.bingo.common.utils.text.TextColor
 import net.minecraft.item.map.MapState
-import net.minecraft.text.Text
 
 @Serializable
 data class BingoMap(
@@ -13,7 +11,7 @@ data class BingoMap(
 ) {
 
     @Transient
-    var view: CardView = CardView(null, TextColor.GRAY, "", mutableListOf())
+    var view: CardView = CardView(null, null, "", mutableListOf())
 
     @Transient
     var updatedAt: Instant = Instant.fromEpochMilliseconds(0L)

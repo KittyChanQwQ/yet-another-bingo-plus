@@ -1,12 +1,13 @@
 package me.jfenn.bingo.common.card
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.state.TeamWinner
+import me.jfenn.bingo.common.utils.FormattingSerializer
 import me.jfenn.bingo.common.utils.text.TextColor
 import net.minecraft.block.Blocks
 import net.minecraft.entity.player.PlayerEntity
@@ -27,6 +28,8 @@ value class BingoTeamKey(
 data class BingoTeam(
     val id: String,
     val name: String,
+    @Serializable(with = FormattingSerializer::class)
+    val mapColor: Formatting,
     val textColor: TextColor,
     var score: TeamScore = TeamScore.ZERO,
     var winner: TeamWinner? = null,
@@ -82,14 +85,14 @@ data class BingoTeam(
 
     companion object {
 
-        val BLUE get() = BingoTeam("bingo_blue", "BLUE", TextColor.BLUE)
-        val RED get() = BingoTeam("bingo_red", "RED", TextColor.RED)
-        val GREEN get() = BingoTeam("bingo_green", "GREEN", TextColor.GREEN)
-        val YELLOW get() = BingoTeam("bingo_yellow", "YELLOW", TextColor.YELLOW)
-        val PINK get() = BingoTeam("bingo_pink", "PINK", TextColor.LIGHT_PURPLE)
-        val AQUA get() = BingoTeam("bingo_aqua", "AQUA", TextColor.AQUA)
-        val ORANGE get() = BingoTeam("bingo_orange", "ORANGE", TextColor.GOLD)
-        val GRAY get() = BingoTeam("bingo_gray", "GRAY", TextColor.GRAY)
+        val BLUE get() = BingoTeam("bingo_blue", "BLUE", Formatting.BLUE, TextColor.BLUE)
+        val RED get() = BingoTeam("bingo_red", "RED", Formatting.RED, TextColor.RED)
+        val GREEN get() = BingoTeam("bingo_green", "GREEN", Formatting.GREEN, TextColor.GREEN)
+        val YELLOW get() = BingoTeam("bingo_yellow", "YELLOW", Formatting.YELLOW, TextColor.YELLOW)
+        val PINK get() = BingoTeam("bingo_pink", "PINK", Formatting.LIGHT_PURPLE, TextColor.LIGHT_PURPLE)
+        val AQUA get() = BingoTeam("bingo_aqua", "AQUA", Formatting.AQUA, TextColor.AQUA)
+        val ORANGE get() = BingoTeam("bingo_orange", "ORANGE", Formatting.GOLD, TextColor.GOLD)
+        val GRAY get() = BingoTeam("bingo_gray", "GRAY", Formatting.DARK_GRAY, TextColor.GRAY)
 
         val TEAM_BLOCKS get() = mapOf(
             Blocks.BLUE_CARPET to BLUE,

@@ -2,9 +2,11 @@ package me.jfenn.bingo.client
 
 import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.client.api.IOptionsAccessor
 import me.jfenn.bingo.client.common.commonClientModule
 import me.jfenn.bingo.client.impl.ButtonService
 import me.jfenn.bingo.client.impl.DrawService
+import me.jfenn.bingo.client.impl.OptionsAccessor
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.commonModule
@@ -26,6 +28,7 @@ object Main : ClientModInitializer {
     private val clientModule = module {
         singleOf(::ButtonService) bind IButtonService::class
         single { DrawService } bind IDrawServiceFactory::class
+        single { OptionsAccessor } bind IOptionsAccessor::class
     }
 
     override fun onInitializeClient() {
