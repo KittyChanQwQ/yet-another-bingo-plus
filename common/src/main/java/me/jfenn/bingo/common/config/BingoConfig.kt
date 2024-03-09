@@ -27,4 +27,7 @@ data class BingoConfig(
     val unsafeSkipWorldClose: Boolean = false,
 
     val integrations: IntegrationsConfig = IntegrationsConfig(),
+
+    // only applies to client
+    val client: ClientConfig = ClientConfig(),
 )

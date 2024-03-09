@@ -1,4 +1,8 @@
 {
   "category.bingo": "Yet Another Minecraft BINGO",
-  "key.bingo.open_card": "View Bingo Card"
+  "key.bingo.open_card": "View Bingo Card",
+  "bingo.config.gui": "GUI Options",
+  "bingo.config.gui.tooltip": "Settings for the Bingo Card GUI and other visual aspects.",
+  "bingo.config.gui.cardScale": "Card Scale",
+  "bingo.config.gui.cardScale.description": "The size of the Bingo Card on the screen, relative to other GUI elements."
 }

@@ -13,6 +13,16 @@ dependencies {
     implementation libs.kotlinx.serialization.json
 
     modCompileOnly libs.vanish
+    modCompileOnly(libs.modmenu) {
+        exclude(group: "net.fabricmc")
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    modCompileOnly(libs.yacl) {
+        exclude(group: "net.fabricmc")
+        exclude(group: "net.fabricmc.fabric-api")
+        exclude(group: "com.twelvemonkeys.common")
+        exclude(group: "com.twelvemonkeys.imageio")
+    }
 }
 
 tasks.register('bingoDatapack', Zip) {

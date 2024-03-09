@@ -6,6 +6,7 @@ import me.jfenn.bingo.client.api.IOptionsAccessor
 import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
 import me.jfenn.bingo.common.PACKET_CARD_UPDATE
 import me.jfenn.bingo.common.card.BingoTeamKey
+import me.jfenn.bingo.common.config.ClientConfig
 import me.jfenn.bingo.common.map.CardTeams
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -21,6 +22,7 @@ import net.minecraft.util.Identifier
 class BingoHudController(
     private val drawServiceFactory: IDrawServiceFactory,
     private val optionsAccessor: IOptionsAccessor,
+    private val clientConfig: ClientConfig,
 ) : BingoComponent() {
 
     private var display: CardTeams? = null
@@ -55,7 +57,7 @@ class BingoHudController(
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.matrices.push()
-        context.matrices.scale(2f, 2f, 2f)
+        context.matrices.scale(clientConfig.cardScale, clientConfig.cardScale, clientConfig.cardScale)
 
         service.drawTexture(
             texture = Identifier("minecraft", "bingo/hud_card"),

@@ -17,6 +17,9 @@
         "adapter": "kotlin",
         "value": "me.jfenn.bingo.client.Main"
       }
+    ],
+    "modmenu": [
+      "me.jfenn.bingo.client.entrypoint.ModMenuEntrypoint"
     ]
   },
   "depends": {

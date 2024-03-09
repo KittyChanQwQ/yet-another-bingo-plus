@@ -42,6 +42,7 @@ val commonModule = module {
 
     singleOf(::ConfigService)
     single { get<ConfigService>().config }
+    single { get<ConfigService>().config.client }
     singleOf(::TierListService)
 
     singleOf(::ServerDatapackManager)
