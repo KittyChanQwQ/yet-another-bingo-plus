@@ -42,6 +42,8 @@ class YetAnotherConfigLibIntegrationImpl(
     private val config: BingoConfig,
 ) : YetAnotherConfigLibIntegration {
 
+    private val defaultConfig = BingoConfig()
+
     override fun buildConfigScreen(parent: Screen): Screen {
         return YetAnotherConfigLib.createBuilder()
             .title(Text.translatable("category.bingo"))
@@ -60,7 +62,7 @@ class YetAnotherConfigLibIntegrationImpl(
                                 )
                             )
                             .binding(
-                                config.supportClientHud,
+                                defaultConfig.supportClientHud,
                                 { config.supportClientHud },
                                 {
                                     config.supportClientHud = it
@@ -77,7 +79,7 @@ class YetAnotherConfigLibIntegrationImpl(
                                 )
                             )
                             .binding(
-                                config.client.cardScale,
+                                defaultConfig.client.cardScale,
                                 { config.client.cardScale },
                                 {
                                     config.client.cardScale = it
@@ -98,7 +100,7 @@ class YetAnotherConfigLibIntegrationImpl(
                                 )
                             )
                             .binding(
-                                config.client.cardAlignment,
+                                defaultConfig.client.cardAlignment,
                                 { config.client.cardAlignment },
                                 {
                                     config.client.cardAlignment = it
@@ -119,7 +121,7 @@ class YetAnotherConfigLibIntegrationImpl(
                                 )
                             )
                             .binding(
-                                config.client.cardOffsetX,
+                                defaultConfig.client.cardOffsetX,
                                 { config.client.cardOffsetX },
                                 {
                                     config.client.cardOffsetX = it
@@ -140,7 +142,7 @@ class YetAnotherConfigLibIntegrationImpl(
                                 )
                             )
                             .binding(
-                                config.client.cardOffsetY,
+                                defaultConfig.client.cardOffsetY,
                                 { config.client.cardOffsetY },
                                 {
                                     config.client.cardOffsetY = it
@@ -161,7 +163,7 @@ class YetAnotherConfigLibIntegrationImpl(
                                 )
                             )
                             .binding(
-                                config.client.showMultipleCards,
+                                defaultConfig.client.showMultipleCards,
                                 { config.client.showMultipleCards },
                                 {
                                     config.client.showMultipleCards = it
