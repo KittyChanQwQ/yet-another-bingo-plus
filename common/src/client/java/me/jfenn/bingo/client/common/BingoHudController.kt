@@ -55,6 +55,9 @@ class BingoHudController(
         else -> false
     }
 
+    private val scaledCardWidth get() = CARD_WIDTH * clientConfig.cardScale
+    private val scaledCardHeight get() = CARD_HEIGHT * clientConfig.cardScale
+
     private fun drawCard(context: DrawContext, service: IDrawService, view: CardView, x: Int, y: Int) {
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
@@ -180,10 +183,12 @@ class BingoHudController(
         val drawService = drawServiceFactory.create(context)
         val teamKeys = display?.display ?: return
 
-        for ((i, teamKey) in teamKeys.withIndex()) {
-            val view = views[teamKey] ?: continue
-            drawCard(context, drawService, view, i*CARD_WIDTH, 0)
-        }
+        val teamKey = teamKeys.firstOrNull()
+        val view = views[teamKey] ?: return
+
+        val x = clientConfig.cardAlignment.x * (context.scaledWindowWidth - scaledCardWidth) / clientConfig.cardScale
+        val y = clientConfig.cardAlignment.y * (context.scaledWindowHeight - scaledCardHeight) / clientConfig.cardScale
+        drawCard(context, drawService, view, x.toInt(), y.toInt())
     }
 
     init {

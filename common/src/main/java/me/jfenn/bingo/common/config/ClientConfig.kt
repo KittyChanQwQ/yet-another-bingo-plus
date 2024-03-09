@@ -5,4 +5,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ClientConfig(
     var cardScale: Float = 1f,
+    var cardAlignment: CardAlignment = CardAlignment.TOP_LEFT,
 )
+
+enum class CardAlignment(val x: Int, val y: Int) {
+    TOP_LEFT(0, 0),
+    TOP_RIGHT(1, 0),
+    BOTTOM_LEFT(0, 1),
+    BOTTOM_RIGHT(1, 1),
+}

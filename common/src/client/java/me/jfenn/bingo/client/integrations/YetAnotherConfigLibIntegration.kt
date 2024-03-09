@@ -5,8 +5,10 @@ import dev.isxander.yacl3.api.Option
 import dev.isxander.yacl3.api.OptionDescription
 import dev.isxander.yacl3.api.YetAnotherConfigLib
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder
+import dev.isxander.yacl3.api.controller.EnumControllerBuilder
 import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.config.ConfigService
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.gui.screen.Screen
@@ -66,10 +68,10 @@ class YetAnotherConfigLibIntegrationImpl(
                             .controller { BooleanControllerBuilder.create(it).coloured(true) }
                             .build(),
                         Option.createBuilder<Float>()
-                            .name(Text.translatable("bingo.config.gui.card_scale"))
+                            .name(Text.translatable("bingo.config.card_scale"))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.gui.card_scale.description")
+                                    Text.translatable("bingo.config.card_scale.description")
                                 )
                             )
                             .binding(
@@ -85,7 +87,28 @@ class YetAnotherConfigLibIntegrationImpl(
                                     .range(0.25f, 4.0f)
                                     .step(0.1f)
                             }
-                            .build()
+                            .build(),
+                        Option.createBuilder<CardAlignment>()
+                            .name(Text.translatable("bingo.config.card_alignment"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.config.card_alignment.description")
+                                )
+                            )
+                            .binding(
+                                config.client.cardAlignment,
+                                { config.client.cardAlignment },
+                                {
+                                    config.client.cardAlignment = it
+                                    configService.writeConfig(config)
+                                }
+                            )
+                            .controller {
+                                EnumControllerBuilder.create(it)
+                                    .enumClass(CardAlignment::class.java)
+                                    .formatValue { value -> Text.translatable("bingo.config.card_alignment.${value.name.lowercase()}") }
+                            }
+                            .build(),
                     ))
                     .build()
             )
