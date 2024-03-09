@@ -6,6 +6,7 @@ import me.jfenn.bingo.client.api.IOptionsAccessor
 import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
 import me.jfenn.bingo.common.PACKET_CARD_UPDATE
 import me.jfenn.bingo.common.card.BingoTeamKey
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.ClientConfig
 import me.jfenn.bingo.common.map.CardTeams
 import me.jfenn.bingo.common.map.CardView
@@ -22,6 +23,7 @@ import net.minecraft.util.Identifier
 class BingoHudController(
     private val drawServiceFactory: IDrawServiceFactory,
     private val optionsAccessor: IOptionsAccessor,
+    private val config: BingoConfig,
     private val clientConfig: ClientConfig,
 ) : BingoComponent() {
 
@@ -185,27 +187,29 @@ class BingoHudController(
     }
 
     init {
-        ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_DISPLAY) { client, handler, buf, response ->
-            val display = CardTeams.fromPacketBuf(buf)
-            client.execute { this.display = display }
-        }
+        if (config.supportClientHud) {
+            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_DISPLAY) { client, handler, buf, response ->
+                val display = CardTeams.fromPacketBuf(buf)
+                client.execute { this.display = display }
+            }
 
-        ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_UPDATE) { client, handler, buf, response ->
-            val view = CardView.fromPacketBuf(buf)
-            client.execute { views[view.teamKey] = view }
-        }
+            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_UPDATE) { client, handler, buf, response ->
+                val view = CardView.fromPacketBuf(buf)
+                client.execute { views[view.teamKey] = view }
+            }
 
-        HudRenderCallback.EVENT.register { context, tickDelta ->
-            if (optionsAccessor.isDebugEnabled() || optionsAccessor.isPlayerListPressed())
-                return@register
+            HudRenderCallback.EVENT.register { context, tickDelta ->
+                if (optionsAccessor.isDebugEnabled() || optionsAccessor.isPlayerListPressed())
+                    return@register
 
-            drawHud(context)
-        }
+                drawHud(context)
+            }
 
-        ClientPlayConnectionEvents.DISCONNECT.register { handler, client ->
-            client.execute {
-                display = null
-                views.clear()
+            ClientPlayConnectionEvents.DISCONNECT.register { handler, client ->
+                client.execute {
+                    display = null
+                    views.clear()
+                }
             }
         }
     }

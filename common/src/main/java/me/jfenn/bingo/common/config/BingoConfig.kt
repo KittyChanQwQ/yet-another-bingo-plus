@@ -19,7 +19,7 @@ data class BingoConfig(
 
     // whether the server should allow connecting clients to use the bingo HUD
     // instead of the vanilla map/card behavior
-    val supportClientHud: Boolean = true,
+    var supportClientHud: Boolean = true,
 
     // shuts down the server once all players log out after a game
     val autoShutDownInPostgame: Boolean = true,

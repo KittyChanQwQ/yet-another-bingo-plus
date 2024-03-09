@@ -4,12 +4,14 @@ import dev.isxander.yacl3.api.ConfigCategory
 import dev.isxander.yacl3.api.Option
 import dev.isxander.yacl3.api.OptionDescription
 import dev.isxander.yacl3.api.YetAnotherConfigLib
+import dev.isxander.yacl3.api.controller.BooleanControllerBuilder
 import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.ConfigService
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 
 interface YetAnotherConfigLibIntegration {
 
@@ -43,12 +45,31 @@ class YetAnotherConfigLibIntegrationImpl(
                 ConfigCategory.createBuilder()
                     .name(Text.translatable("bingo.config.gui"))
                     .tooltip(Text.translatable("bingo.config.gui.tooltip"))
-                    .option(
-                        Option.createBuilder<Float>()
-                            .name(Text.translatable("bingo.config.gui.cardScale"))
+                    .options(listOf(
+                        Option.createBuilder<Boolean>()
+                            .name(Text.translatable("bingo.config.support_client_hud"))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.gui.cardScale.description")
+                                    Text.translatable("bingo.config.support_client_hud.description"),
+                                    Text.empty(),
+                                    Text.translatable("bingo.config.needs_restart").formatted(Formatting.YELLOW)
+                                )
+                            )
+                            .binding(
+                                config.supportClientHud,
+                                { config.supportClientHud },
+                                {
+                                    config.supportClientHud = it
+                                    configService.writeConfig(config)
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it).coloured(true) }
+                            .build(),
+                        Option.createBuilder<Float>()
+                            .name(Text.translatable("bingo.config.gui.card_scale"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.config.gui.card_scale.description")
                                 )
                             )
                             .binding(
@@ -65,7 +86,7 @@ class YetAnotherConfigLibIntegrationImpl(
                                     .step(0.1f)
                             }
                             .build()
-                    )
+                    ))
                     .build()
             )
             .build()
