@@ -260,6 +260,16 @@ class ScoredItemCheck(
                 updateScores()
             }
         }
+
+        events.onEnter(GameState.POSTGAME) {
+            // Mark all items as "seen" when game ends
+            // (if hidden items is true, players should see all items after the game)
+            for (team in state.teams.values) {
+                for (item in state.card.itemIndex.values) {
+                    item.markSeen(team)
+                }
+            }
+        }
     }
 
 }

@@ -3,13 +3,13 @@ package me.jfenn.bingo.common.controller
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
-import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.SpawnService
@@ -18,7 +18,6 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.allInventorySlots
 import me.jfenn.bingo.common.utils.giveOrEquipStack
-import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
@@ -55,12 +54,16 @@ class PlayerController(
     private val mapItemService: MapItemService,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
+    private val cardViewService: CardViewService,
     private val advancementManager: IAdvancementManager,
     private val vanishIntegration: VanishIntegration,
-    private val permissions: PermissionsIntegration,
 ) : BingoComponent() {
 
     fun givePreviewCardItem(player: ServerPlayerEntity) {
+        if (!cardViewService.isNetworkReady(player)) return
+        if (cardViewService.supportsCardHud(player)) return
+
+        println("giving preview card to $player")
         val hasMap = player.allHeldStacks().any { MapItemService.isMapItem(it) }
 
         if (!hasMap) {
@@ -81,6 +84,9 @@ class PlayerController(
      * Has no effect if the player already has a card
      */
     fun giveMapCardItem(player: ServerPlayerEntity) {
+        if (!cardViewService.isNetworkReady(player)) return
+        if (cardViewService.supportsCardHud(player)) return
+
         val team = teamService.getPlayerTeam(player) ?: return
         val hasMap = player.allHeldStacks().any { mapItemService.isMapTeamItem(it, team) }
 
@@ -103,6 +109,9 @@ class PlayerController(
      * hotbar items.
      */
     fun giveSpectatorMapItems(player: ServerPlayerEntity) {
+        if (!cardViewService.isNetworkReady(player)) return
+        if (cardViewService.supportsCardHud(player)) return
+
         state.getRegisteredTeams()
             .map { mapItemService.createMapItem(it) }
             .forEachIndexed { i, stack ->
@@ -319,6 +328,21 @@ class PlayerController(
                     updateGameMode(player)
                 }
 
+                if (player.isAlive && !player.isSpectator) {
+                    if (state.state == GameState.PREGAME) {
+                        if (cardViewService.isViewingPreviewCard()) {
+                            givePreviewCardItem(player)
+                        } else {
+                            removePreviewCardItem(player)
+                        }
+                    } else if (playerTeam != null && cardViewService.isViewingTeamCard(player, playerTeam)) {
+                        // give player a new map, if they don't have one?
+                        giveMapCardItem(player)
+                    } else if (cardViewService.isViewingSpectatorCards(player)) {
+                        giveSpectatorMapItems(player)
+                    }
+                }
+
                 if (state.state == GameState.PREGAME && player.isAlive) {
                     if (options.showPreviewCard) {
                         givePreviewCardItem(player)
@@ -328,9 +352,6 @@ class PlayerController(
                 }
 
                 if (state.state == GameState.PLAYING && player.health > 0f && !player.isSpectator) {
-                    // give player a new map, if they don't have one?
-                    giveMapCardItem(player)
-
                     // if elytra mode is configured, give the player an elytra
                     if (options.isElytra && teamService.isPlaying(player))
                         giveElytra(player)
@@ -347,12 +368,6 @@ class PlayerController(
                             player.sendAbilitiesUpdate()
                         }
                     }
-                }
-
-                if (state.state != GameState.PREGAME && (playerTeam == null || state.state == GameState.POSTGAME)) {
-                    // if the state is not POSTGAME, players must have permission to receive the spectator cards
-                    if (state.state == GameState.POSTGAME || permissions.hasPermission(player, Permission.SPECTATOR_VIEW_CARDS))
-                        giveSpectatorMapItems(player)
                 }
 
                 // If the player has switched teams, update the player UUID sets...

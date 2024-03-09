@@ -1,23 +1,70 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
+import me.jfenn.bingo.common.PACKET_CARD_UPDATE
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.formatTitle
+import me.jfenn.bingo.integrations.PermissionsIntegration
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayerEntity
 import kotlin.time.Duration.Companion.seconds
 
 class CardViewService(
     private val server: MinecraftServer,
     private val options: BingoOptions,
+    private val config: BingoConfig,
     private val state: BingoState,
     private val teamService: TeamService,
+    private val permissions: PermissionsIntegration,
 ) {
 
     companion object {
         private val FLASHING_DURATION = 4.seconds
+    }
+
+    /**
+     * True if the player's supported packets are known to the server
+     * False if the player is still connecting
+     */
+    fun isNetworkReady(player: ServerPlayerEntity): Boolean {
+        return ServerPlayNetworking.getSendable(player).isNotEmpty()
+    }
+
+    /**
+     * True if the Bingo Card HUD packets are supported by the player's client
+     * False if the packets are not supported, or if the player's supported packets are not yet known
+     */
+    fun supportsCardHud(player: ServerPlayerEntity): Boolean {
+        return config.supportClientHud &&
+                ServerPlayNetworking.canSend(player, PACKET_CARD_DISPLAY) &&
+                ServerPlayNetworking.canSend(player, PACKET_CARD_UPDATE)
+    }
+
+    fun isViewingPreviewCard()
+        = state.state == GameState.PREGAME && options.showPreviewCard
+
+    fun isViewingTeamCard(player: ServerPlayerEntity, team: BingoTeam)
+        = state.state == GameState.PLAYING && team.includesPlayer(player)
+
+    fun isViewingSpectatorCards(player: ServerPlayerEntity) = when (state.state) {
+        // if the state is not POSTGAME, players must have permission to receive the spectator cards
+        GameState.PLAYING -> !teamService.isPlaying(player) && permissions.hasPermission(player, Permission.SPECTATOR_VIEW_CARDS)
+        GameState.POSTGAME -> true
+        else -> false
+    }
+
+    fun isViewingCard(player: ServerPlayerEntity, team: BingoTeam?): Boolean {
+        return (team == null && isViewingPreviewCard()) ||
+                (team != null && isViewingTeamCard(player, team)) ||
+                (team != null && isViewingSpectatorCards(player))
     }
 
     private fun getTileState(

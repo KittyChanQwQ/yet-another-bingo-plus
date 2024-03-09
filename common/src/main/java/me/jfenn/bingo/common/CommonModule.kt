@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.map.BingoMapController
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.map.MapRenderService
@@ -80,7 +81,7 @@ val commonModule = module {
         scopedOf(::ScoreboardService)
 
         scopedOf(::MenuController)
-        scopedOf(::BingoCardController)
+        scopedOf(::BingoMapController)
         scopedOf(::BossBarController)
         scopedOf(::GameRuleController)
         scopedOf(::IntegrationController)
@@ -114,7 +115,7 @@ fun Koin.commonInit() {
 
 fun Scope.commonInit() {
     get<MenuController>()
-    get<BingoCardController>()
+    get<BingoMapController>()
     get<BossBarController>()
     get<GameRuleController>()
     get<IntegrationController>()
