@@ -54,10 +54,8 @@ class BingoMapController(
 
     init {
         // When the player opens the card with a keybind, show the inventory card view
-        ServerPlayNetworking.registerGlobalReceiver(PACKET_CARD_OPEN) { server, player, handler, packet, response ->
-            server.execute {
-                cardService.showInventory(player)
-            }
+        events.onPacket(PACKET_CARD_OPEN) {
+            cardService.showInventory(it.player)
         }
 
         events.onGameTick {
