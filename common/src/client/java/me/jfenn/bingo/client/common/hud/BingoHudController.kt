@@ -15,7 +15,9 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
 import org.lwjgl.glfw.GLFW
@@ -58,13 +60,18 @@ class BingoHudController(
         val cardScale = config.client.cardScale
         val cardAlignment = config.client.cardAlignment
 
-        val x = cardAlignment.x * (context.scaledWindowWidth - (BingoHudRenderer.CARD_WIDTH * cardScale)) / cardScale
-        val y = cardAlignment.y * (context.scaledWindowHeight - (BingoHudRenderer.CARD_HEIGHT * cardScale)) / cardScale
+        val offsetX = config.client.cardOffsetX * (if (cardAlignment.x > 0) -1 else 1)
+        val offsetY = config.client.cardOffsetY * (if (cardAlignment.y > 0) -1 else 1)
+
+        val x = cardAlignment.x * (context.scaledWindowWidth - (BingoHudRenderer.CARD_WIDTH * cardScale)) + offsetX
+        val y = cardAlignment.y * (context.scaledWindowHeight - (BingoHudRenderer.CARD_HEIGHT * cardScale)) + offsetY
         renderer.drawCard(context, drawService, view, x.toInt(), y.toInt(), cardScale)
     }
 
     init {
         if (config.supportClientHud) {
+            val client = MinecraftClient.getInstance()
+
             ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_DISPLAY) { client, handler, buf, response ->
                 val display = CardTeams.fromPacketBuf(buf)
                 client.execute { state.display = display }
@@ -76,7 +83,8 @@ class BingoHudController(
             }
 
             HudRenderCallback.EVENT.register { context, tickDelta ->
-                if (optionsAccessor.isDebugEnabled() || optionsAccessor.isPlayerListPressed())
+                // Do not draw the HUD if the F3, player list, or chat overlay is shown
+                if (optionsAccessor.isDebugEnabled() || optionsAccessor.isPlayerListPressed() || client.currentScreen is ChatScreen)
                     return@register
 
                 drawHud(context)

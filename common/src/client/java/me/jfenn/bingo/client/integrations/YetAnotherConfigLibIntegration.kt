@@ -7,10 +7,12 @@ import dev.isxander.yacl3.api.YetAnotherConfigLib
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder
 import dev.isxander.yacl3.api.controller.EnumControllerBuilder
 import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder
+import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.config.ConfigService
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -107,6 +109,48 @@ class YetAnotherConfigLibIntegrationImpl(
                                 EnumControllerBuilder.create(it)
                                     .enumClass(CardAlignment::class.java)
                                     .formatValue { value -> Text.translatable("bingo.config.card_alignment.${value.name.lowercase()}") }
+                            }
+                            .build(),
+                        Option.createBuilder<Int>()
+                            .name(Text.translatable("bingo.config.card_offset_x"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.config.card_offset_x.description")
+                                )
+                            )
+                            .binding(
+                                config.client.cardOffsetX,
+                                { config.client.cardOffsetX },
+                                {
+                                    config.client.cardOffsetX = it
+                                    configService.writeConfig(config)
+                                }
+                            )
+                            .controller {
+                                IntegerSliderControllerBuilder.create(it)
+                                    .range(0, MinecraftClient.getInstance().window.scaledWidth/2)
+                                    .step(1)
+                            }
+                            .build(),
+                        Option.createBuilder<Int>()
+                            .name(Text.translatable("bingo.config.card_offset_y"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.config.card_offset_y.description")
+                                )
+                            )
+                            .binding(
+                                config.client.cardOffsetY,
+                                { config.client.cardOffsetY },
+                                {
+                                    config.client.cardOffsetY = it
+                                    configService.writeConfig(config)
+                                }
+                            )
+                            .controller {
+                                IntegerSliderControllerBuilder.create(it)
+                                    .range(0, MinecraftClient.getInstance().window.scaledHeight/2)
+                                    .step(1)
                             }
                             .build(),
                     ))

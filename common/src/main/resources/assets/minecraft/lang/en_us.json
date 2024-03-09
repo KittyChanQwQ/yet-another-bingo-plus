@@ -3,7 +3,7 @@
   "key.bingo.open_card": "View Bingo Card",
   "bingo.config.gui": "GUI Options",
   "bingo.config.gui.tooltip": "Settings for the Bingo Card GUI and other visual aspects.",
-  "bingo.config.support_client_hud": "Enable Bingo HUD",
+  "bingo.config.support_client_hud": "Enable Bingo Card HUD",
   "bingo.config.support_client_hud.description": "Whether the client-side Bingo Card HUD is rendered. Turning this off will make the mod behave like vanilla Minecraft when connecting to a bingo server.",
   "bingo.config.card_scale": "Card Scale",
   "bingo.config.card_scale.description": "This changes size of the Bingo Card on the screen, relative to other GUI elements.",
@@ -13,6 +13,10 @@
   "bingo.config.card_alignment.top_right": "Top Right",
   "bingo.config.card_alignment.bottom_left": "Bottom Left",
   "bingo.config.card_alignment.bottom_right": "Bottom Right",
+  "bingo.config.card_offset_x": "Horizontal Offset",
+  "bingo.config.card_offset_x.description": "This sets the horizontal distance between the Bingo Card and the edge of the screen.",
+  "bingo.config.card_offset_y": "Vertical Offset",
+  "bingo.config.card_offset_y.description": "This sets the vertical distance between the Bingo Card and the edge of the screen.",
   "bingo.config.needs_restart": "You will need to restart Minecraft for this setting to take effect.",
   "bingo.card.title": "Bingo Card"
 }

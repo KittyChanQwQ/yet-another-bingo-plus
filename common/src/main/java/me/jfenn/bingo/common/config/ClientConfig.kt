@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 data class ClientConfig(
     var cardScale: Float = 1f,
     var cardAlignment: CardAlignment = CardAlignment.TOP_LEFT,
+    var cardOffsetX: Int = 0,
+    var cardOffsetY: Int = 0,
 )
 
 enum class CardAlignment(val x: Int, val y: Int) {

@@ -48,12 +48,13 @@ class BingoHudRenderer {
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.matrices.push()
+        context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
         context.matrices.scale(cardScale, cardScale, cardScale)
 
         service.drawTexture(
             texture = Identifier("minecraft", "bingo/hud_card"),
-            x = x,
-            y = y,
+            x = 0,
+            y = 0,
             u = 0f,
             v = 0f,
             width = CARD_WIDTH,
@@ -65,7 +66,7 @@ class BingoHudRenderer {
         view.teamColor?.let { color ->
             service.drawTexture(
                 texture = Identifier("minecraft", "bingo/hud_frame_${color.name.lowercase()}"),
-                x = x, y = y,
+                x = 0, y = 0,
                 u = 0f, v = 0f,
                 width = CARD_WIDTH,
                 height = CARD_HEIGHT,
@@ -79,12 +80,12 @@ class BingoHudRenderer {
             false -> 0xa8000000.toInt()
             else -> 0xff505050.toInt()
         }
-        context.drawText(textRenderer, view.teamName, x + 10, y + 8, teamNameColor, false)
+        context.drawText(textRenderer, view.teamName, 10, 8, teamNameColor, false)
 
         for (tileX in 0..4) for (tileY in 0..4) {
             val tile = view.tile(tileX, tileY) ?: continue
-            val itemX = 10 + x + tileX*20
-            val itemY = 20 + y + tileY*20
+            val itemX = 10 + tileX*20
+            val itemY = 20 + tileY*20
 
             when {
                 tile.isFlashing -> context.fill(itemX, itemY, itemX + 18, itemY + 18, 0xffb24cd8.toInt())
@@ -123,7 +124,7 @@ class BingoHudRenderer {
                 context.drawItemInSlot(textRenderer, tile.item, itemX, itemY)
             }
 
-            if (tile.isAchieved && !tile.isFlashing)
+            if (tile.isAchieved && !tile.isFlashing && mouseX == -1 && mouseY == -1)
                 context.fill(RenderLayer.getGuiOverlay(), itemX, itemY, itemX + 18, itemY + 18, 0x4055FF55)
 
             if (tile.isMultiItem) {
@@ -163,14 +164,25 @@ class BingoHudRenderer {
                     context.drawVerticalLine(itemX + 17, itemY, itemY + end.toInt() - 17, colorValue)
                 }
             }
-
-            // Render the hover tooltip last
-            if (tile.item != null && mouseX in itemX until itemX+20 && mouseY in itemY until itemY+20) {
-                context.drawItemTooltip(textRenderer, tile.item, mouseX, mouseY)
-            }
         }
 
         context.matrices.pop()
+
+        // Render the hover tooltips last, without the matrix translate/transform
+        for (tileX in 0..4) for (tileY in 0..4) {
+            val tile = view.tile(tileX, tileY) ?: continue
+            val itemX = 10 + tileX * 20
+            val itemY = 20 + tileY * 20
+
+            val mouseItemX = x + itemX * cardScale
+            val mouseItemRangeX = mouseItemX.toInt() until (mouseItemX + 20*cardScale).toInt()
+            val mouseItemY = y + itemY * cardScale
+            val mouseItemRangeY = mouseItemY.toInt() until (mouseItemY + 20*cardScale).toInt()
+
+            if (tile.item != null && mouseX in mouseItemRangeX && mouseY in mouseItemRangeY) {
+                context.drawItemTooltip(textRenderer, tile.item, mouseX, mouseY)
+            }
+        }
     }
 
 }
