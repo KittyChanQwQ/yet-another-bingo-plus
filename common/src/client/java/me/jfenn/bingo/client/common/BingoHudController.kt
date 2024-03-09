@@ -54,6 +54,9 @@ class BingoHudController(
     private fun drawCard(context: DrawContext, service: IDrawService, view: CardView, x: Int, y: Int) {
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
+        context.matrices.push()
+        context.matrices.scale(2f, 2f, 2f)
+
         service.drawTexture(
             texture = Identifier("minecraft", "bingo/hud_card"),
             x = x,
@@ -127,10 +130,20 @@ class BingoHudController(
             if (tile.isAchieved && !tile.isFlashing)
                 context.fill(RenderLayer.getGuiOverlay(), itemX, itemY, itemX + 18, itemY + 18, 0x4055FF55)
 
+            if (tile.isMultiItem) {
+                service.drawTexture(
+                    texture = Identifier("minecraft", "bingo/image_frame_multi"),
+                    x = itemX - 1, y = itemY - 1, z = 300,
+                    u = 0f, v = 0f,
+                    width = 20, height = 20,
+                    textureWidth = 20, textureHeight = 20,
+                )
+            }
+
             if (tile.isLocked) {
                 service.drawTexture(
                     texture = Identifier("minecraft", "bingo/image_frame_locked"),
-                    x = itemX - 1, y = itemY - 1, z = 300,
+                    x = itemX - 1, y = itemY - 1, z = 400,
                     u = 0f, v = 0f,
                     width = 20, height = 20,
                     textureWidth = 20, textureHeight = 20,
@@ -155,6 +168,8 @@ class BingoHudController(
                 }
             }
         }
+
+        context.matrices.pop()
     }
 
     private fun drawHud(context: DrawContext) {

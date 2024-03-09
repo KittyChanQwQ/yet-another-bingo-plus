@@ -82,7 +82,7 @@ class CardViewService(
                     entry is BingoCardEntry.AdvancementEntry ||
                             (entry as? BingoCardEntry.MultiEntry)?.innerEntries?.firstOrNull() is BingoCardEntry.AdvancementEntry
             ),
-            isMultiItem = entry is BingoCardEntry.MultiEntry,
+            isMultiItem = !isHidden && entry is BingoCardEntry.MultiEntry,
             isHidden = isHidden,
             isLocked = options.isLockoutMode && entry.teams.isNotEmpty() && team != null && !entry.hasAchieved(team),
             isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,

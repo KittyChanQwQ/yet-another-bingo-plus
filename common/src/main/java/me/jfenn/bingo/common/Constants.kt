@@ -16,7 +16,7 @@ const val NBT_BINGO_VANISH = "bingo_vanish"
 
 val BINGO_WORLD_PREFIX = "${Formatting.GREEN}[BINGO]${Formatting.WHITE}"
 
-const val BINGO_VERSION = "1.1.12"
+const val BINGO_VERSION = "1.2.0.beta1"
 
 val PACKET_CARD_DISPLAY = Identifier("bingo", "display_cards")
 val PACKET_CARD_UPDATE = Identifier("bingo", "update_card")
