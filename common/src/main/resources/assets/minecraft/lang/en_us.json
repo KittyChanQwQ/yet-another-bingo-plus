@@ -17,6 +17,8 @@
   "bingo.config.card_offset_x.description": "This sets the horizontal distance between the Bingo Card and the edge of the screen.",
   "bingo.config.card_offset_y": "Vertical Offset",
   "bingo.config.card_offset_y.description": "This sets the vertical distance between the Bingo Card and the edge of the screen.",
+  "bingo.config.show_multiple_cards": "Show Multiple Cards",
+  "bingo.config.show_multiple_cards.description": "Attempts to draw all available cards in the HUD, if there is space. This may overlap with other GUI elements.",
   "bingo.config.needs_restart": "You will need to restart Minecraft for this setting to take effect.",
   "bingo.card.title": "Bingo Card"
 }

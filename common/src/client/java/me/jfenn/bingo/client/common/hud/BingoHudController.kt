@@ -65,13 +65,28 @@ class BingoHudController(
 
         val x = cardAlignment.x * (context.scaledWindowWidth - (BingoHudRenderer.CARD_WIDTH * cardScale)) + offsetX
         val y = cardAlignment.y * (context.scaledWindowHeight - (BingoHudRenderer.CARD_HEIGHT * cardScale)) + offsetY
+
         renderer.drawCard(context, drawService, view, x.toInt(), y.toInt(), cardScale)
+
+        // Attempt to draw additional cards if showMultipleCards=true
+        val xDirection = if (cardAlignment.x > 0) -1 else 1
+        if (config.client.showMultipleCards) {
+            val remainingViews = (teamKeys - selectedTeam)
+                .mapNotNull { state.views[it] }
+
+            for ((i, remainingView) in remainingViews.withIndex()) {
+                val cardX = x + ((i+1) * xDirection * BingoHudRenderer.CARD_WIDTH * cardScale)
+                val cardEndX = x + ((i+2) * xDirection * BingoHudRenderer.CARD_WIDTH * cardScale)
+                // if the card would go off-screen, don't bother rendering it...
+                if (cardEndX < 0 || cardEndX > context.scaledWindowWidth) continue
+
+                renderer.drawCard(context, drawService, remainingView, cardX.toInt(), y.toInt(), cardScale)
+            }
+        }
     }
 
     init {
         if (config.supportClientHud) {
-            val client = MinecraftClient.getInstance()
-
             ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_DISPLAY) { client, handler, buf, response ->
                 val display = CardTeams.fromPacketBuf(buf)
                 client.execute { state.display = display }
@@ -84,7 +99,7 @@ class BingoHudController(
 
             HudRenderCallback.EVENT.register { context, tickDelta ->
                 // Do not draw the HUD if the F3, player list, or chat overlay is shown
-                if (optionsAccessor.isDebugEnabled() || optionsAccessor.isPlayerListPressed() || client.currentScreen is ChatScreen)
+                if (optionsAccessor.isDebugEnabled() || optionsAccessor.isPlayerListPressed() || MinecraftClient.getInstance().currentScreen is ChatScreen)
                     return@register
 
                 drawHud(context)

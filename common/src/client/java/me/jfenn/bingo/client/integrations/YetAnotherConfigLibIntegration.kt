@@ -153,6 +153,23 @@ class YetAnotherConfigLibIntegrationImpl(
                                     .step(1)
                             }
                             .build(),
+                        Option.createBuilder<Boolean>()
+                            .name(Text.translatable("bingo.config.show_multiple_cards"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.config.show_multiple_cards.description")
+                                )
+                            )
+                            .binding(
+                                config.client.showMultipleCards,
+                                { config.client.showMultipleCards },
+                                {
+                                    config.client.showMultipleCards = it
+                                    configService.writeConfig(config)
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build(),
                     ))
                     .build()
             )

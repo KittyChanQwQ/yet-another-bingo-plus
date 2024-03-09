@@ -8,6 +8,7 @@ data class ClientConfig(
     var cardAlignment: CardAlignment = CardAlignment.TOP_LEFT,
     var cardOffsetX: Int = 0,
     var cardOffsetY: Int = 0,
+    var showMultipleCards: Boolean = false,
 )
 
 enum class CardAlignment(val x: Int, val y: Int) {
