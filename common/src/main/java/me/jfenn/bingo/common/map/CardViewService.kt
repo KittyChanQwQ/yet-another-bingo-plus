@@ -75,7 +75,7 @@ class CardViewService(
         val isHidden = options.isHiddenItemsMode && (team == null || !entry.hasSeen(team)) && !isFreeSpace
 
         return CardTile(
-            item = entry.visualItem.takeIf { !isHidden },
+            item = if (isHidden) null else entry.visualItem(),
             itemTier = entry.tier.takeIf { options.showHiddenTiers },
             isFreeSpace = isFreeSpace,
             isAdvancement = !isHidden && (

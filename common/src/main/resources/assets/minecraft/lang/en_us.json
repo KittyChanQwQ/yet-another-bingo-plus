@@ -13,5 +13,6 @@
   "bingo.config.card_alignment.top_right": "Top Right",
   "bingo.config.card_alignment.bottom_left": "Bottom Left",
   "bingo.config.card_alignment.bottom_right": "Bottom Right",
-  "bingo.config.needs_restart": "You will need to restart Minecraft for this setting to take effect."
+  "bingo.config.needs_restart": "You will need to restart Minecraft for this setting to take effect.",
+  "bingo.card.title": "Bingo Card"
 }

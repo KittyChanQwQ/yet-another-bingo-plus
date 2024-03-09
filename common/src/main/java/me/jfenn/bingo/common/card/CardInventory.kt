@@ -45,29 +45,7 @@ class CardInventory(
                     state.state == GameState.POSTGAME
 
             if (isVisible) {
-                entry.visualItem?.copy()?.also { stack ->
-                    val name = entry.formatName()
-                    val lore = entry.formatLore()
-                    stack.getOrCreateNbt().apply {
-                        put("display", NbtCompound().apply {
-                            if (name != null)
-                                putString("Name", name)
-
-                            put("Lore", NbtList().apply {
-                                lore?.forEach { add(NbtString.of(it)) }
-                                entry.tier?.let { tier ->
-                                    add(NbtString.of(
-                                        TextInfo.toJsonString(TextInfo(
-                                            text = "${tier.name}-tier",
-                                            color = tier.formatting,
-                                        ))
-                                    ))
-                                }
-                            })
-                        })
-                        putInt("HideFlags", 255)
-                    }
-                }?.let {
+                entry.visualItem()?.let {
                     return@List it
                 }
             }

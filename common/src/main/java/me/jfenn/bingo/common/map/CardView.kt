@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.common.card.BingoTeamKey
-import me.jfenn.bingo.common.utils.text.TextColor
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Formatting
@@ -39,6 +38,8 @@ data class CardView(
 
         buf.writeString(teamName)
 
+        // read-only copy of tiles to avoid concurrent modification
+        val tiles = this.tiles.toList()
         buf.writeInt(tiles.size)
         for (tile in tiles) {
             tile.toPacketBuf(buf)

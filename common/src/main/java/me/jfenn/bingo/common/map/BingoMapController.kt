@@ -40,10 +40,10 @@ class BingoMapController(
         if (cardViewService.needsUpdate(map, view)) {
             mapRenderService.update(team, map, view)
 
-            val packetBuf = view.toPacketBuf()
             for (player in server.playerManager.playerList) {
                 if (cardViewService.isViewingCard(player, team) && cardViewService.supportsCardHud(player)) {
-                    ServerPlayNetworking.send(player, PACKET_CARD_UPDATE, packetBuf)
+                    // yes, every send() needs its own PacketByteBuf() instance, otherwise we get Scary Errors
+                    ServerPlayNetworking.send(player, PACKET_CARD_UPDATE, view.toPacketBuf())
                 }
             }
 

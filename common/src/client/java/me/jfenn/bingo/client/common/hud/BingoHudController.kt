@@ -1,0 +1,105 @@
+package me.jfenn.bingo.client.common.hud
+
+import me.jfenn.bingo.client.api.IButtonService
+import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.client.api.IOptionsAccessor
+import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
+import me.jfenn.bingo.common.PACKET_CARD_UPDATE
+import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.map.CardTeams
+import me.jfenn.bingo.common.map.CardView
+import me.jfenn.bingo.common.scope.BingoComponent
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.option.KeyBinding
+import net.minecraft.client.util.InputUtil
+import org.lwjgl.glfw.GLFW
+
+class BingoHudController(
+    private val drawServiceFactory: IDrawServiceFactory,
+    private val buttonService: IButtonService,
+    private val optionsAccessor: IOptionsAccessor,
+    private val config: BingoConfig,
+) : BingoComponent() {
+
+    private val state = BingoHudState()
+    private val renderer = BingoHudRenderer()
+
+    private val openCardKey = KeyBindingHelper.registerKeyBinding(
+        KeyBinding(
+            "key.$MOD_ID.open_card",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_V,
+            "category.$MOD_ID",
+        )
+    )
+
+    private fun drawHud(context: DrawContext) {
+        val drawService = drawServiceFactory.create(context)
+        val teamKeys = state.display?.display
+        if (teamKeys.isNullOrEmpty()) return
+
+        // If the selected team is one of the displayed cards, try to find its view state...
+        val selectedTeam = state.selectedTeam
+        val view = when {
+            selectedTeam in teamKeys -> state.views[selectedTeam]
+            // otherwise, find a different card to display
+            else -> state.views[teamKeys.first()]
+        } ?: return
+
+        // Ensure that `selectedTeam` is set to the displayed card, in case they don't match
+        state.selectedTeam = view.teamKey
+
+        val cardScale = config.client.cardScale
+        val cardAlignment = config.client.cardAlignment
+
+        val x = cardAlignment.x * (context.scaledWindowWidth - (BingoHudRenderer.CARD_WIDTH * cardScale)) / cardScale
+        val y = cardAlignment.y * (context.scaledWindowHeight - (BingoHudRenderer.CARD_HEIGHT * cardScale)) / cardScale
+        renderer.drawCard(context, drawService, view, x.toInt(), y.toInt(), cardScale)
+    }
+
+    init {
+        if (config.supportClientHud) {
+            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_DISPLAY) { client, handler, buf, response ->
+                val display = CardTeams.fromPacketBuf(buf)
+                client.execute { state.display = display }
+            }
+
+            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_UPDATE) { client, handler, buf, response ->
+                val view = CardView.fromPacketBuf(buf)
+                client.execute { state.views[view.teamKey] = view }
+            }
+
+            HudRenderCallback.EVENT.register { context, tickDelta ->
+                if (optionsAccessor.isDebugEnabled() || optionsAccessor.isPlayerListPressed())
+                    return@register
+
+                drawHud(context)
+            }
+
+            ClientPlayConnectionEvents.DISCONNECT.register { handler, client ->
+                client.execute {
+                    state.display = null
+                    state.views.clear()
+                }
+            }
+
+            ClientTickEvents.END_CLIENT_TICK.register { client ->
+                if (client.isPaused) return@register
+
+                if (openCardKey.wasPressed()) {
+                    val display = state.display?.display
+                    if (display.isNullOrEmpty())
+                        return@register
+
+                    client.setScreen(BingoHudScreen(drawServiceFactory, buttonService, state))
+                }
+            }
+        }
+    }
+}

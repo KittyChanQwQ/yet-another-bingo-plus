@@ -1,34 +1,14 @@
-package me.jfenn.bingo.client.common
+package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IDrawService
-import me.jfenn.bingo.client.api.IDrawServiceFactory
-import me.jfenn.bingo.client.api.IOptionsAccessor
-import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
-import me.jfenn.bingo.common.PACKET_CARD_UPDATE
-import me.jfenn.bingo.common.card.BingoTeamKey
-import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.config.ClientConfig
-import me.jfenn.bingo.common.map.CardTeams
 import me.jfenn.bingo.common.map.CardView
-import me.jfenn.bingo.common.scope.BingoComponent
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 
-class BingoHudController(
-    private val drawServiceFactory: IDrawServiceFactory,
-    private val optionsAccessor: IOptionsAccessor,
-    private val config: BingoConfig,
-    private val clientConfig: ClientConfig,
-) : BingoComponent() {
-
-    private var display: CardTeams? = null
-    private val views = mutableMapOf<BingoTeamKey?, CardView>()
+class BingoHudRenderer {
 
     companion object {
         const val CARD_WIDTH = 118
@@ -55,14 +35,20 @@ class BingoHudController(
         else -> false
     }
 
-    private val scaledCardWidth get() = CARD_WIDTH * clientConfig.cardScale
-    private val scaledCardHeight get() = CARD_HEIGHT * clientConfig.cardScale
-
-    private fun drawCard(context: DrawContext, service: IDrawService, view: CardView, x: Int, y: Int) {
+    fun drawCard(
+        context: DrawContext,
+        service: IDrawService,
+        view: CardView,
+        x: Int,
+        y: Int,
+        cardScale: Float,
+        mouseX: Int = -1,
+        mouseY: Int = -1,
+    ) {
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.matrices.push()
-        context.matrices.scale(clientConfig.cardScale, clientConfig.cardScale, clientConfig.cardScale)
+        context.matrices.scale(cardScale, cardScale, cardScale)
 
         service.drawTexture(
             texture = Identifier("minecraft", "bingo/hud_card"),
@@ -93,7 +79,7 @@ class BingoHudController(
             false -> 0xa8000000.toInt()
             else -> 0xff505050.toInt()
         }
-        context.drawText(textRenderer, "Bingo Card", x + 10, y + 8, teamNameColor, false)
+        context.drawText(textRenderer, view.teamName, x + 10, y + 8, teamNameColor, false)
 
         for (tileX in 0..4) for (tileY in 0..4) {
             val tile = view.tile(tileX, tileY) ?: continue
@@ -130,7 +116,10 @@ class BingoHudController(
             }
 
             if (tile.item != null) {
-                context.drawItem(tile.item, itemX + 1, itemY + 1)
+                // always draws centered at z=150... but 3d items can extend past this
+                // so any overlays should start at z=300 to be safe
+                context.drawItem(tile.item, itemX + 1, itemY + 1, itemX + itemY * CARD_WIDTH)
+                // draws the item count + durability bar
                 context.drawItemInSlot(textRenderer, tile.item, itemX, itemY)
             }
 
@@ -150,7 +139,7 @@ class BingoHudController(
             if (tile.isLocked) {
                 service.drawTexture(
                     texture = Identifier("minecraft", "bingo/image_frame_locked"),
-                    x = itemX - 1, y = itemY - 1, z = 400,
+                    x = itemX - 1, y = itemY - 1, z = 301,
                     u = 0f, v = 0f,
                     width = 20, height = 20,
                     textureWidth = 20, textureHeight = 20,
@@ -174,48 +163,14 @@ class BingoHudController(
                     context.drawVerticalLine(itemX + 17, itemY, itemY + end.toInt() - 17, colorValue)
                 }
             }
+
+            // Render the hover tooltip last
+            if (tile.item != null && mouseX in itemX until itemX+20 && mouseY in itemY until itemY+20) {
+                context.drawItemTooltip(textRenderer, tile.item, mouseX, mouseY)
+            }
         }
 
         context.matrices.pop()
     }
 
-    private fun drawHud(context: DrawContext) {
-        val drawService = drawServiceFactory.create(context)
-        val teamKeys = display?.display ?: return
-
-        val teamKey = teamKeys.firstOrNull()
-        val view = views[teamKey] ?: return
-
-        val x = clientConfig.cardAlignment.x * (context.scaledWindowWidth - scaledCardWidth) / clientConfig.cardScale
-        val y = clientConfig.cardAlignment.y * (context.scaledWindowHeight - scaledCardHeight) / clientConfig.cardScale
-        drawCard(context, drawService, view, x.toInt(), y.toInt())
-    }
-
-    init {
-        if (config.supportClientHud) {
-            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_DISPLAY) { client, handler, buf, response ->
-                val display = CardTeams.fromPacketBuf(buf)
-                client.execute { this.display = display }
-            }
-
-            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_UPDATE) { client, handler, buf, response ->
-                val view = CardView.fromPacketBuf(buf)
-                client.execute { views[view.teamKey] = view }
-            }
-
-            HudRenderCallback.EVENT.register { context, tickDelta ->
-                if (optionsAccessor.isDebugEnabled() || optionsAccessor.isPlayerListPressed())
-                    return@register
-
-                drawHud(context)
-            }
-
-            ClientPlayConnectionEvents.DISCONNECT.register { handler, client ->
-                client.execute {
-                    display = null
-                    views.clear()
-                }
-            }
-        }
-    }
 }

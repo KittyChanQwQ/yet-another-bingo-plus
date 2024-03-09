@@ -11,8 +11,10 @@ import me.jfenn.bingo.common.utils.text.TextInfo
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtList
+import net.minecraft.nbt.NbtString
 import net.minecraft.registry.Registries
-import net.minecraft.registry.RegistryKeys
 import net.minecraft.util.Identifier
 import kotlin.time.Duration
 
@@ -28,6 +30,33 @@ sealed class BingoCardEntry {
 
     open fun formatName(): String? = null
     open fun formatLore(): List<String>? = null
+
+    fun visualItem(): ItemStack? {
+        return visualItem?.copy()?.also { stack ->
+            val name = formatName()
+            val lore = formatLore()
+            stack.getOrCreateNbt().apply {
+                put("display", NbtCompound().apply {
+                    if (name != null)
+                        putString("Name", name)
+
+                    put("Lore", NbtList().apply {
+                        lore?.forEach { add(NbtString.of(it)) }
+                        tier?.let { tier ->
+                            add(
+                                NbtString.of(
+                                TextInfo.toJsonString(TextInfo(
+                                    text = "${tier.name}-tier",
+                                    color = tier.formatting,
+                                ))
+                            ))
+                        }
+                    })
+                })
+                putInt("HideFlags", 255)
+            }
+        }
+    }
 
     open fun hasAchieved(team: BingoTeam): Boolean {
         return teams.contains(team.key)
