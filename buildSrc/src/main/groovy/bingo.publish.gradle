@@ -10,7 +10,13 @@ modrinth {
     projectId = "yet-another-minecraft-bingo"
     versionNumber = version
     versionName = "[${project.minecraft_version}] Yet Another BINGO ${project.mod_version}"
-    versionType = "release"
+    if (project.mod_version.contains("alpha")) {
+        versionType = "alpha"
+    } else if (project.mod_version.contains("beta")) {
+        versionType = "beta"
+    } else {
+        versionType = "release"
+    }
     changelog = rootProject.file("CHANGELOG.md").text
     uploadFile = remapJar
     gameVersions = [project.minecraft_version]
