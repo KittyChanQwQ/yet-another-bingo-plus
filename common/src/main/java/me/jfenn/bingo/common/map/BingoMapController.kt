@@ -4,7 +4,6 @@ import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
-import me.jfenn.bingo.common.PACKET_CARD_OPEN
 import me.jfenn.bingo.common.PACKET_CARD_UPDATE
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
@@ -53,11 +52,6 @@ class BingoMapController(
     }
 
     init {
-        // When the player opens the card with a keybind, show the inventory card view
-        events.onPacket(PACKET_CARD_OPEN) {
-            cardService.showInventory(it.player)
-        }
-
         events.onGameTick {
             // first populate advancement images, if missing...
             for (entry in state.card.advancementEntries) {

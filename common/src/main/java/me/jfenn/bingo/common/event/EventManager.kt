@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.common.PACKET_CARD_OPEN
 import me.jfenn.bingo.common.event.model.*
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
@@ -9,7 +8,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.*
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.ActionResult
 import net.minecraft.util.TypedActionResult
@@ -120,14 +118,6 @@ class EventManager(
                 ActionResult.FAIL in results -> ActionResult.FAIL
                 ActionResult.SUCCESS in results -> ActionResult.SUCCESS
                 else -> ActionResult.PASS
-            }
-        }
-
-        ServerPlayNetworking.registerGlobalReceiver(PACKET_CARD_OPEN) { server, player, handler, packet, response ->
-            server.execute {
-                getEvents(server)?.onPacket?.invoke(
-                    PacketEvent(PACKET_CARD_OPEN, player, handler, packet, response)
-                )
             }
         }
     }
