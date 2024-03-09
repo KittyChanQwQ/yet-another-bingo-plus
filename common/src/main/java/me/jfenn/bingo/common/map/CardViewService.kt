@@ -31,14 +31,6 @@ class CardViewService(
     }
 
     /**
-     * True if the player's supported packets are known to the server
-     * False if the player is still connecting
-     */
-    fun isNetworkReady(player: ServerPlayerEntity): Boolean {
-        return ServerPlayNetworking.getSendable(player).isNotEmpty()
-    }
-
-    /**
      * True if the Bingo Card HUD packets are supported by the player's client
      * False if the packets are not supported, or if the player's supported packets are not yet known
      */

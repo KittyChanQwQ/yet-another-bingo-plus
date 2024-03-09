@@ -3,6 +3,7 @@ package me.jfenn.bingo.client.common.hud
 import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.api.IOptionsAccessor
+import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
 import me.jfenn.bingo.common.PACKET_CARD_UPDATE
@@ -34,7 +35,7 @@ class BingoHudController(
 
     private val openCardKey = KeyBindingHelper.registerKeyBinding(
         KeyBinding(
-            "key.$MOD_ID.open_card",
+            KEYBIND_OPEN_CARD,
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_V,
             "category.$MOD_ID",

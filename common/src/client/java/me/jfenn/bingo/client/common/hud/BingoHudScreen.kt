@@ -94,4 +94,8 @@ class BingoHudScreen(
         }
     }
 
+    override fun shouldPause(): Boolean {
+        return false
+    }
+
 }

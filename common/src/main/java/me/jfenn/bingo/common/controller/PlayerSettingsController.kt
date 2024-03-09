@@ -2,19 +2,17 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.api.ITextSerializer
-import me.jfenn.bingo.common.BINGO_VERSION
-import me.jfenn.bingo.common.NBT_BINGO_IGNORE
-import me.jfenn.bingo.common.NBT_BINGO_VANISH
-import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
-import me.jfenn.bingo.common.utils.allInventorySlots
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtList
@@ -31,6 +29,7 @@ class PlayerSettingsController(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val permissions: PermissionsIntegration,
+    private val cardViewService: CardViewService,
     private val textSerializer: ITextSerializer,
     private val scoreboardManager: IScoreboardManager,
     private val configService: ConfigService,
@@ -67,6 +66,27 @@ class PlayerSettingsController(
                 }
             }
             .append("\n\nHave fun!")
+            .let { textSerializer.toJson(it) }
+
+    private fun getHintsPage(player: ServerPlayerEntity) =
+        Text.empty()
+            .append(Text.literal("Hints").formatted(Formatting.BOLD))
+            .append("\n\n")
+            .append(when {
+                cardViewService.supportsCardHud(player) -> Text.empty()
+                    .append("Press [")
+                    .append(Text.keybind(KEYBIND_OPEN_CARD).formatted(Formatting.DARK_GREEN))
+                    .append("] to see the Bingo Card in an inventory view.")
+                else -> Text.empty()
+                    .append("When holding a Bingo Card, press [")
+                    .append(Text.keybind("key.use").formatted(Formatting.DARK_GREEN))
+                    .append("] to see its items.")
+            })
+            .also {
+                if (permissions.hasPermission(player, Permission.COMMAND_COORDS)) {
+                    it.append("\n\nUse \"/coords\" to keep track of coordinates and share them with your team.")
+                }
+            }
             .let { textSerializer.toJson(it) }
 
     private fun toggleText(
@@ -154,9 +174,11 @@ class PlayerSettingsController(
                 if (settings.seenTutorial) {
                     add(NbtString.of(getSettingsPage(settings)))
                     add(NbtString.of(getIntroPage(player)))
+                    add(NbtString.of(getHintsPage(player)))
                 } else {
                     add(NbtString.of(getIntroPage(player)))
                     add(NbtString.of(getSettingsPage(settings)))
+                    add(NbtString.of(getHintsPage(player)))
                 }
             })
         }
@@ -195,6 +217,17 @@ class PlayerSettingsController(
             player.allHeldStacks()
                 .filter { isBookItem(it) }
                 .forEach { updateBookItem(player, it) }
+        }
+
+        events.onUpdateTick {
+            if (state.state != GameState.PREGAME)
+                return@onUpdateTick
+
+            for (player in server.playerManager.playerList) {
+                player.allHeldStacks()
+                    .filter { isBookItem(it) }
+                    .forEach { updateBookItem(player, it) }
+            }
         }
     }
 

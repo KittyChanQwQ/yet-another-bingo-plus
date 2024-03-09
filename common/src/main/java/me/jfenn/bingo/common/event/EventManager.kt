@@ -38,15 +38,19 @@ class EventManager(
         }
 
         ServerPlayConnectionEvents.JOIN.register { handler, _, server ->
-            val events = getEvents(server) ?:return@register
-            events.onPlayerJoin.invoke(handler.player)
+            server.execute {
+                val events = getEvents(server) ?:return@execute
+                events.onPlayerJoin.invoke(handler.player)
 
-            // onChangePlayerSettings should also be invoked if a player logs in
-            events.onChangePlayerSettings.invoke(handler.player)
+                // onChangePlayerSettings should also be invoked if a player logs in
+                events.onChangePlayerSettings.invoke(handler.player)
+            }
         }
 
         ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
-            getEvents(server)?.onPlayerLeave?.invoke(handler.player)
+            server.execute {
+                getEvents(server)?.onPlayerLeave?.invoke(handler.player)
+            }
         }
 
         ServerPlayerEvents.AFTER_RESPAWN.register { _, player, _ ->

@@ -60,7 +60,6 @@ class PlayerController(
 ) : BingoComponent() {
 
     fun givePreviewCardItem(player: ServerPlayerEntity) {
-        if (!cardViewService.isNetworkReady(player)) return
         if (cardViewService.supportsCardHud(player)) return
 
         println("giving preview card to $player")
@@ -84,19 +83,24 @@ class PlayerController(
      * Has no effect if the player already has a card
      */
     fun giveMapCardItem(player: ServerPlayerEntity) {
-        if (!cardViewService.isNetworkReady(player)) return
         if (cardViewService.supportsCardHud(player)) return
 
         val team = teamService.getPlayerTeam(player) ?: return
-        val hasMap = player.allHeldStacks().any { mapItemService.isMapTeamItem(it, team) }
+        val hasMap = player.allHeldStacks()
+            .filter { MapItemService.isMapItem(it) }
+            .mapNotNull {
+                if (mapItemService.isMapTeamItem(it, team)) {
+                    it
+                } else {
+                    // if the player has another team's map item, remove it!
+                    it.count = 0
+                    null
+                }
+            }
+            .toList()
+            .isNotEmpty()
 
         if (!hasMap) {
-            // if the player has another team's map item, remove it!
-            for ((slot, item) in player.allInventorySlots()) {
-                if (MapItemService.isMapItem(item))
-                    player.inventory.removeStack(slot)
-            }
-
             // give the player a new map item
             val mapItem = mapItemService.createMapItem(team)
             player.giveItemStack(mapItem)
@@ -109,7 +113,6 @@ class PlayerController(
      * hotbar items.
      */
     fun giveSpectatorMapItems(player: ServerPlayerEntity) {
-        if (!cardViewService.isNetworkReady(player)) return
         if (cardViewService.supportsCardHud(player)) return
 
         state.getRegisteredTeams()
@@ -119,6 +122,15 @@ class PlayerController(
                 val hasMap = player.allHeldStacks().any { FilledMapItem.getMapId(it) == mapId }
                 if (!hasMap) player.getStackReference(i).set(stack)
             }
+    }
+
+    /**
+     * Remove all bingo map items from the player
+     */
+    fun removeAllMapItems(player: ServerPlayerEntity) {
+        player.allHeldStacks()
+            .filter { MapItemService.isMapItem(it) }
+            .forEach { it.count = 0 }
     }
 
     /**
@@ -384,6 +396,11 @@ class PlayerController(
                     teamService.onTeamChanged(player)
                     updateGameMode(player)
                 }
+
+                // If the player is using the client-side hud, make sure they don't have any map items
+                // (this might be false when the player is first connecting)
+                if (cardViewService.supportsCardHud(player))
+                    removeAllMapItems(player)
             }
         }
 
