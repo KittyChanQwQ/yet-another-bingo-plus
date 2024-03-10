@@ -21,6 +21,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
+import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
 
 class BingoHudController(
@@ -118,8 +119,10 @@ class BingoHudController(
 
                 if (openCardKey.wasPressed()) {
                     val display = state.display?.display
-                    if (display.isNullOrEmpty())
+                    if (display.isNullOrEmpty()) {
+                        client.player?.sendMessage(Text.translatable("bingo.card.no_cards"), true)
                         return@register
+                    }
 
                     client.setScreen(BingoHudScreen(drawServiceFactory, buttonService, state))
                 }
