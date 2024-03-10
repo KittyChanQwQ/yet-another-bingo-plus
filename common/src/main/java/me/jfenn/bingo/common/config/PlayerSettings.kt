@@ -10,4 +10,5 @@ data class PlayerSettings(
     var scoreboardAutoHide: Boolean = false,
     var leadingMessages: Boolean = true,
     var scoreMessages: Boolean = true,
+    var nightVision: Boolean = true,
 )

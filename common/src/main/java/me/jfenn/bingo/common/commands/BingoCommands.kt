@@ -49,6 +49,7 @@ class BingoCommands : BaseCommand() {
                         PlayerSettings::scoreboardAutoHide,
                         PlayerSettings::leadingMessages,
                         PlayerSettings::scoreMessages,
+                        PlayerSettings::nightVision,
                     )
 
                     for (field in fields) {

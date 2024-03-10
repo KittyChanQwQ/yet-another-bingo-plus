@@ -12,7 +12,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.integrations.PermissionsIntegration
-import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtList
@@ -146,6 +145,13 @@ class PlayerSettingsController(
                 toggleText(settings.scoreMessages, "Lines Scored", "Send chat messages when a line is scored.")
                     .also {
                         it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set scoreMessages ${!settings.scoreMessages}"))
+                    }
+            )
+            .append("\n\n")
+            .append(
+                toggleText(settings.nightVision, "Night Vision", "Receive night vision when the feature is enabled, spectating, or post-game.")
+                    .also {
+                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set nightVision ${!settings.nightVision}"))
                     }
             )
             .let { textSerializer.toJson(it) }

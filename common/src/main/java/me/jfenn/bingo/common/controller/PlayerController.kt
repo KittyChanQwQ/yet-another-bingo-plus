@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.CardViewService
@@ -51,6 +52,7 @@ class PlayerController(
     private val state: BingoState,
     private val options: BingoOptions,
     private val config: BingoConfig,
+    private val configService: ConfigService,
     private val mapItemService: MapItemService,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
@@ -90,6 +92,8 @@ class PlayerController(
             .filter { MapItemService.isMapItem(it) }
             .mapNotNull {
                 if (mapItemService.isMapTeamItem(it, team)) {
+                    if (it.count != 1)
+                        it.count = 1
                     it
                 } else {
                     // if the player has another team's map item, remove it!
@@ -220,9 +224,16 @@ class PlayerController(
             (state.state == GameState.POSTGAME && config.nightVisionInPostgame) ||
             (state.state == GameState.PLAYING && options.isNightVision)
         ) {
-            player.addStatusEffect(
-                StatusEffectInstance(StatusEffects.NIGHT_VISION, -1, 0, false, false),
-            )
+            if (configService.getPlayer(player.uuidAsString).nightVision) {
+                player.addStatusEffect(
+                    StatusEffectInstance(StatusEffects.NIGHT_VISION, -1, 0, false, false),
+                )
+            } else {
+                // if the player has infinite night vision (and should not), remove it
+                if (player.getStatusEffect(StatusEffects.NIGHT_VISION)?.duration == -1) {
+                    player.removeStatusEffect(StatusEffects.NIGHT_VISION)
+                }
+            }
         }
     }
 
