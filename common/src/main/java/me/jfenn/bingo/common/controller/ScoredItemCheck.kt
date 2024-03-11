@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -40,6 +41,7 @@ class ScoredItemCheck(
     private val configService: ConfigService,
     private val offlinePlayerAccessor: IOfflinePlayerAccessor,
     private val advancementManager: IAdvancementManager,
+    private val playerSettingsService: PlayerSettingsService,
 ) : BingoComponent() {
 
     private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, ServerPlayerEntity>()
@@ -208,7 +210,7 @@ class ScoredItemCheck(
                     )
 
                 server.playerManager.playerList
-                    .filter { configService.getPlayer(it.uuidAsString).scoreMessages }
+                    .filter { playerSettingsService.getPlayer(it).scoreMessages }
                     .forEach { it.sendMessage(message, false) }
             }
 

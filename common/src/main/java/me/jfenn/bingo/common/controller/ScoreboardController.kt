@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.controller
 import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
@@ -22,7 +22,7 @@ class ScoreboardController(
     private val state: BingoState,
     private val teamService: TeamService,
     private val scoreboardService: ScoreboardService,
-    private val configService: ConfigService,
+    private val playerSettingsService: PlayerSettingsService,
 ) : BingoComponent() {
 
     private fun String.wrap(maxChars: Int) : List<String> {
@@ -119,7 +119,7 @@ class ScoreboardController(
                 // Determine which players should be shown the scoreboard
                 val players = server.playerManager.playerList
                     .filter { teamService.getPlayerTeam(it)?.key == team?.key }
-                    .filter { configService.getPlayer(it.uuidAsString).scoreboard }
+                    .filter { playerSettingsService.getPlayer(it).scoreboard }
                     .filter { scoreboardService.shouldDisplayScoreboard(it) }
 
                 scoreboardService.setScoreboardContents(objective, scoreboardText, players)

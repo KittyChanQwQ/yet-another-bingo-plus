@@ -3,9 +3,9 @@ package me.jfenn.bingo.common.scoreboard
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.config.PlayerSettingsService
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
@@ -14,7 +14,8 @@ import net.minecraft.world.GameMode
 class ScoreboardService(
     private val server: MinecraftServer,
     private val scoreboardManager: IScoreboardManager,
-    private val configService: ConfigService,
+    private val playerSettingsService: PlayerSettingsService,
+    private val cardViewService: CardViewService,
 ) {
 
     fun getScoreboardObjective(team: BingoTeam?) : IObjectiveHandle {
@@ -23,19 +24,19 @@ class ScoreboardService(
         return objective
     }
 
-    fun shouldDisplayScoreboard(playerEntity: PlayerEntity) : Boolean {
-        val isScoreboardEnabled = configService.getPlayer(playerEntity.uuidAsString).scoreboard
-        if (!isScoreboardEnabled) return false
-        val player = server.playerManager.getPlayer(playerEntity.uuid) ?: return false
+    fun shouldDisplayScoreboard(player: ServerPlayerEntity) : Boolean {
+        val settings = playerSettingsService.getPlayer(player)
+        if (!settings.scoreboard) return false
+        if (!settings.scoreboardAutoHide) return true
 
-        val settings = configService.getPlayer(playerEntity.uuidAsString)
-        if (!settings.scoreboardAutoHide)
-            return true
+        // auto-hide should not be used if the player is using the card HUD
+        // (as the player will never be holding a card)
+        if (cardViewService.supportsCardHud(player)) return true
 
         // if the player is holding the map item, show the scoreboard; otherwise, hide it
         val isHoldingMapItem = player.interactionManager.gameMode != GameMode.SURVIVAL
-                || MapItemService.isMapItem(playerEntity.mainHandStack)
-                || MapItemService.isMapItem(playerEntity.offHandStack)
+                || MapItemService.isMapItem(player.mainHandStack)
+                || MapItemService.isMapItem(player.offHandStack)
 
         return isHoldingMapItem
     }

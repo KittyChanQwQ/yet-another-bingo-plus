@@ -25,6 +25,14 @@ dependencies {
     }
 }
 
+tasks.register('copyLangs', Copy) {
+    from "src/main/resources/yet-another-minecraft-bingo/lang"
+    into file("src/main/resources/assets/minecraft/lang")
+}
+
+tasks.processResources.dependsOn(tasks.copyLangs)
+tasks.sourcesJar.dependsOn(tasks.copyLangs)
+
 tasks.register('bingoDatapack', Zip) {
     from 'datapack'
     include '**/*'

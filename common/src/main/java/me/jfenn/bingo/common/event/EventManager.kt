@@ -1,5 +1,8 @@
 package me.jfenn.bingo.common.event
 
+import me.jfenn.bingo.common.PACKET_SETTINGS_UPDATE_C2S
+import me.jfenn.bingo.common.PACKET_SETTINGS_UPDATE_S2C
+import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.event.model.*
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
@@ -8,6 +11,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.*
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.ActionResult
 import net.minecraft.util.TypedActionResult
@@ -41,9 +45,6 @@ class EventManager(
             server.execute {
                 val events = getEvents(server) ?:return@execute
                 events.onPlayerJoin.invoke(handler.player)
-
-                // onChangePlayerSettings should also be invoked if a player logs in
-                events.onChangePlayerSettings.invoke(handler.player)
             }
         }
 
@@ -122,6 +123,13 @@ class EventManager(
                 ActionResult.FAIL in results -> ActionResult.FAIL
                 ActionResult.SUCCESS in results -> ActionResult.SUCCESS
                 else -> ActionResult.PASS
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(PACKET_SETTINGS_UPDATE_C2S) { server, player, handler, packet, response ->
+            val settings = PlayerSettings.fromPacketBuf(packet) ?: return@registerGlobalReceiver
+            server.execute {
+                getEvents(server)?.onPlayerSettingsPacket?.invoke(SettingsUpdateEvent(player, settings))
             }
         }
     }

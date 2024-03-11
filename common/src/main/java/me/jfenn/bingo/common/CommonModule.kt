@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.MigrationHandler
+import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.config.TierListService
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
@@ -22,6 +23,7 @@ import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.integrations.ChunkyIntegration
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
@@ -44,6 +46,7 @@ val commonModule = module {
     single { get<ConfigService>().config }
     single { get<ConfigService>().config.client }
     singleOf(::TierListService)
+    singleOf(::TextProvider)
 
     singleOf(::ServerDatapackManager)
     singleOf(::EventManager)
@@ -80,6 +83,7 @@ val commonModule = module {
         scopedOf(::TeamService)
         scopedOf(::CardService)
         scopedOf(::ScoreboardService)
+        scopedOf(::PlayerSettingsService)
 
         scopedOf(::MenuController)
         scopedOf(::BingoMapController)

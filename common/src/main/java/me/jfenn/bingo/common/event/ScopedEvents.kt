@@ -10,7 +10,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.ActionResult
-import net.minecraft.util.Identifier
 import net.minecraft.util.TypedActionResult
 import org.slf4j.Logger
 
@@ -37,7 +36,7 @@ class ScopedEvents(
     val onChangeConfig = EventListener<Unit>()
     val onChangePlayerSettings = EventListener<ServerPlayerEntity>()
 
-    val onPacket = EventListener<PacketEvent>()
+    val onPlayerSettingsPacket = EventListener<SettingsUpdateEvent>()
 
     init {
         onStateChange { (from, to) ->
@@ -54,16 +53,6 @@ class ScopedEvents(
             if (to == state && (!requireChange || from != to)) {
                 callback(from)
             }
-        }
-    }
-
-    fun onPacket(
-        channel: Identifier,
-        callback: (PacketEvent) -> Unit,
-    ) {
-        onPacket {
-            if (it.channel == channel)
-                callback(it)
         }
     }
 }

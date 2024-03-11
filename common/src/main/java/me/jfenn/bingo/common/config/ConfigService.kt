@@ -1,5 +1,7 @@
 package me.jfenn.bingo.common.config
 
+import java.util.*
+
 class ConfigService {
 
     var config: BingoConfig by config("bingo/config.json")
@@ -15,14 +17,13 @@ class ConfigService {
         this.options = options
     }
 
-    fun getPlayer(uuid: String): PlayerSettings {
-        return playerConfig.players[uuid] ?: PlayerSettings()
+    fun writePlayerConfig() {
+        this.playerConfig = playerConfig
     }
 
-    fun setPlayer(uuid: String, settings: PlayerSettings) {
-        val players = playerConfig.players.toMutableMap()
-        players[uuid] = settings
-        playerConfig = playerConfig.copy(players = players)
+    fun setPlayer(uuid: UUID, settings: PlayerSettings) {
+        playerConfig.players[uuid.toString()] = settings
+        writePlayerConfig()
     }
 
 }

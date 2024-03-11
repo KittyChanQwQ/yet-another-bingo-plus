@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayerEntity
 
 object ScoreboardMixinHandler {
 
@@ -15,7 +16,7 @@ object ScoreboardMixinHandler {
         return scoreboardTracker.getScoreboardObjective(team)
     }
 
-    fun shouldDisplayScoreboard(server: MinecraftServer, player: PlayerEntity): Boolean {
+    fun shouldDisplayScoreboard(server: MinecraftServer, player: ServerPlayerEntity): Boolean {
         val scope = BingoKoin.getScope(server) ?: return false
         val scoreboardHandler = scope.get<ScoreboardService>()
         return scoreboardHandler.shouldDisplayScoreboard(player)

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.utils.formatTitle
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.entity.boss.CommandBossBar
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
@@ -21,7 +22,7 @@ class BossBarController(
     private val server: MinecraftServer,
     private val options: BingoOptions,
     private val state: BingoState,
-    private val configService: ConfigService,
+    private val playerSettingsService: PlayerSettingsService,
 ) : BingoComponent() {
 
     private val ID = Identifier.of("fennifith", "bingo")
@@ -42,14 +43,16 @@ class BossBarController(
 
     private val bossBar by lazy { getBossbar() }
 
-    init {
-        events.onChangePlayerSettings { player ->
-            val settings = configService.getPlayer(player.uuidAsString)
+    fun updateBossBar(player: ServerPlayerEntity) {
+        val settings = playerSettingsService.getPlayer(player)
+        if (settings.bossbar)
+            bossBar.addPlayer(player)
+        else bossBar.removePlayer(player)
+    }
 
-            if (settings.bossbar)
-                bossBar.addPlayer(player)
-            else bossBar.removePlayer(player)
-        }
+    init {
+        events.onPlayerJoin { player -> updateBossBar(player) }
+        events.onChangePlayerSettings { player -> updateBossBar(player) }
 
         events.onUpdateTick {
             if (options.showRemainingTime) {

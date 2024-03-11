@@ -1,16 +1,15 @@
 package me.jfenn.bingo.client.integrations
 
-import dev.isxander.yacl3.api.ConfigCategory
-import dev.isxander.yacl3.api.Option
-import dev.isxander.yacl3.api.OptionDescription
-import dev.isxander.yacl3.api.YetAnotherConfigLib
+import dev.isxander.yacl3.api.*
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder
 import dev.isxander.yacl3.api.controller.EnumControllerBuilder
 import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder
 import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder
+import me.jfenn.bingo.client.common.settings.ClientSettingsService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.config.PlayerSettings
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
@@ -24,9 +23,13 @@ interface YetAnotherConfigLibIntegration {
     companion object {
         fun hasYACL() = FabricLoader.getInstance().isModLoaded("yet_another_config_lib_v3")
 
-        fun create(configService: ConfigService, config: BingoConfig): YetAnotherConfigLibIntegration {
+        fun create(
+            configService: ConfigService,
+            config: BingoConfig,
+            clientSettings: ClientSettingsService,
+        ): YetAnotherConfigLibIntegration {
             return if (hasYACL())
-                YetAnotherConfigLibIntegrationImpl(configService, config)
+                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings)
             else YetAnotherConfigLibIntegrationDummy()
         }
     }
@@ -40,9 +43,13 @@ class YetAnotherConfigLibIntegrationDummy : YetAnotherConfigLibIntegration {
 class YetAnotherConfigLibIntegrationImpl(
     private val configService: ConfigService,
     private val config: BingoConfig,
+    private val clientSettings: ClientSettingsService,
 ) : YetAnotherConfigLibIntegration {
 
     private val defaultConfig = BingoConfig()
+    private val defaultPlayerSettings = PlayerSettings()
+
+    private val playerSettings get() = clientSettings.getSettings()
 
     override fun buildConfigScreen(parent: Screen): Screen {
         return YetAnotherConfigLib.createBuilder()
@@ -208,6 +215,130 @@ class YetAnotherConfigLibIntegrationImpl(
                             .build(),
                     ))
                     .build()
+            )
+            .category(
+                ConfigCategory.createBuilder()
+                    .name(Text.translatable("bingo.player_settings"))
+                    .tooltip(Text.translatable("bingo.player_settings.tooltip"))
+                    .option(
+                        Option.createBuilder<Boolean>()
+                            .name(Text.translatable("bingo.player_settings.bossbar"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.player_settings.bossbar.description")
+                                )
+                            )
+                            .binding(
+                                defaultPlayerSettings.bossbar,
+                                { playerSettings.bossbar },
+                                {
+                                    clientSettings.update(playerSettings.copy(bossbar = it))
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build()
+                    )
+                    .option(
+                        Option.createBuilder<Boolean>()
+                            .name(Text.translatable("bingo.player_settings.scoreboard"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.player_settings.scoreboard.description")
+                                )
+                            )
+                            .binding(
+                                defaultPlayerSettings.scoreboard,
+                                { playerSettings.scoreboard },
+                                {
+                                    clientSettings.update(playerSettings.copy(scoreboard = it))
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build()
+                    )
+                    .let { builder ->
+                        Option.createBuilder<Boolean>()
+                            .name(Text.translatable("bingo.player_settings.scoreboard_auto_hide"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.player_settings.scoreboard_auto_hide.description")
+                                )
+                            )
+                            .binding(
+                                defaultPlayerSettings.scoreboardAutoHide,
+                                { playerSettings.scoreboardAutoHide },
+                                {
+                                    clientSettings.update(playerSettings.copy(scoreboardAutoHide = it))
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build()
+                            .takeIf { !config.supportClientHud }
+                            ?.let { builder.option(it) }
+                            ?: builder
+                    }
+                    .option(
+                        Option.createBuilder<Boolean>()
+                            .name(Text.translatable("bingo.player_settings.night_vision"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.player_settings.night_vision.description")
+                                )
+                            )
+                            .binding(
+                                defaultPlayerSettings.nightVision,
+                                { playerSettings.nightVision },
+                                {
+                                    clientSettings.update(playerSettings.copy(nightVision = it))
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build(),
+                    )
+                    .group(
+                        OptionGroup.createBuilder()
+                            .collapsed(false)
+                            .name(Text.translatable("bingo.player_settings.messages"))
+                            .option(
+                                Option.createBuilder<Boolean>()
+                                    .name(Text.translatable("bingo.player_settings.messages.leading"))
+                                    .description(
+                                        OptionDescription.of(
+                                            Text.translatable("bingo.player_settings.messages.leading.description")
+                                        )
+                                    )
+                                    .binding(
+                                        defaultPlayerSettings.leadingMessages,
+                                        { playerSettings.leadingMessages },
+                                        {
+                                            clientSettings.update(playerSettings.copy(leadingMessages = it))
+                                        }
+                                    )
+                                    .controller { BooleanControllerBuilder.create(it) }
+                                    .build()
+                            )
+                            .option(
+                                Option.createBuilder<Boolean>()
+                                    .name(Text.translatable("bingo.player_settings.messages.lines"))
+                                    .description(
+                                        OptionDescription.of(
+                                            Text.translatable("bingo.player_settings.messages.lines.description")
+                                        )
+                                    )
+                                    .binding(
+                                        defaultPlayerSettings.scoreMessages,
+                                        { playerSettings.scoreMessages },
+                                        {
+                                            clientSettings.update(playerSettings.copy(scoreMessages = it))
+                                        }
+                                    )
+                                    .controller { BooleanControllerBuilder.create(it) }
+                                    .build(),
+                            )
+                            .build()
+                    )
+                    .build(),
+
             )
             .build()
             .generateScreen(parent)

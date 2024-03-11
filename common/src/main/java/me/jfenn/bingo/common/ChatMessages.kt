@@ -150,7 +150,7 @@ object ChatMessages {
             ).formatted(Formatting.YELLOW))
 
         server.playerManager.playerList
-            .filter { configService.getPlayer(it.uuidAsString).leadingMessages }
+            .filter { configService.playerConfig[it.uuid].leadingMessages }
             .forEach { it.sendMessage(message, false) }
     }
 
@@ -165,7 +165,7 @@ object ChatMessages {
             ).formatted(Formatting.YELLOW))
 
         server.playerManager.playerList
-            .filter { configService.getPlayer(it.uuidAsString).leadingMessages }
+            .filter { configService.playerConfig[it.uuid].leadingMessages }
             .forEach { it.sendMessage(message, false) }
     }
 

@@ -61,16 +61,15 @@ class BingoCommands : BaseCommand() {
                                         BoolArgumentType.bool()
                                     )
                                         .executesInScope { ctx ->
-                                            val events = get<ScopedEvents>()
+                                            val handler = get<PlayerSettingsService>()
                                             val player = ctx.source.player ?: return@executesInScope 0
                                             val value = BoolArgumentType.getBool(ctx, "value")
 
-                                            val settings = configService.getPlayer(player.uuidAsString)
+                                            val settings = handler.getPlayer(player)
                                             field.set(settings, value)
                                             settings.seenTutorial = true
-                                            configService.setPlayer(player.uuidAsString, settings)
+                                            handler.setPlayer(player, settings)
 
-                                            events.onChangePlayerSettings(player)
                                             player.sendInfoMessage("${field.name.formatTitle()}: $value")
                                             1
                                         }

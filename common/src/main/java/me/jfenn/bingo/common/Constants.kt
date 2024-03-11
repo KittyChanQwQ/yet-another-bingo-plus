@@ -20,5 +20,7 @@ const val BINGO_VERSION = "1.2.0.beta1"
 
 val PACKET_CARD_DISPLAY = Identifier("bingo", "display_cards")
 val PACKET_CARD_UPDATE = Identifier("bingo", "update_card")
+val PACKET_SETTINGS_UPDATE_S2C = Identifier("bingo", "update_settings_s2c")
+val PACKET_SETTINGS_UPDATE_C2S = Identifier("bingo", "update_settings_c2s")
 
 val KEYBIND_OPEN_CARD = "key.$MOD_ID.open_card"
