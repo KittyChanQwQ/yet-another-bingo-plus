@@ -12,7 +12,18 @@ class PlayerSettingsService(
         return configService.playerConfig[player.uuid]
     }
 
-    fun setPlayer(player: ServerPlayerEntity, settings: PlayerSettings) {
+    fun setPlayer(
+        player: ServerPlayerEntity,
+        settings: PlayerSettings,
+        seenTutorial: Boolean = false,
+    ) {
+        if (seenTutorial) {
+            settings.seenTutorial = true
+        } else {
+            val prevConfig = configService.playerConfig[player.uuid]
+            settings.seenTutorial = settings.seenTutorial || prevConfig.seenTutorial
+        }
+
         configService.playerConfig.players[player.uuid.toString()] = settings
         configService.writePlayerConfig()
         events.onChangePlayerSettings(player)

@@ -67,8 +67,7 @@ class BingoCommands : BaseCommand() {
 
                                             val settings = handler.getPlayer(player)
                                             field.set(settings, value)
-                                            settings.seenTutorial = true
-                                            handler.setPlayer(player, settings)
+                                            handler.setPlayer(player, settings, seenTutorial = true)
 
                                             player.sendInfoMessage("${field.name.formatTitle()}: $value")
                                             1
