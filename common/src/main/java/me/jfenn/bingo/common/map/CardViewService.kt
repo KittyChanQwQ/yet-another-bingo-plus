@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
-import me.jfenn.bingo.common.PACKET_CARD_UPDATE
+import me.jfenn.bingo.common.PACKET_CARD_DISPLAY_S2C
+import me.jfenn.bingo.common.PACKET_CARD_UPDATE_S2C
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
@@ -36,8 +36,8 @@ class CardViewService(
      */
     fun supportsCardHud(player: ServerPlayerEntity): Boolean {
         return config.supportClientHud &&
-                ServerPlayNetworking.canSend(player, PACKET_CARD_DISPLAY) &&
-                ServerPlayNetworking.canSend(player, PACKET_CARD_UPDATE)
+                ServerPlayNetworking.canSend(player, PACKET_CARD_DISPLAY_S2C) &&
+                ServerPlayNetworking.canSend(player, PACKET_CARD_UPDATE_S2C)
     }
 
     fun isViewingPreviewCard()

@@ -5,8 +5,8 @@ import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.api.IOptionsAccessor
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.MOD_ID
-import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
-import me.jfenn.bingo.common.PACKET_CARD_UPDATE
+import me.jfenn.bingo.common.PACKET_CARD_DISPLAY_S2C
+import me.jfenn.bingo.common.PACKET_CARD_UPDATE_S2C
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTeams
 import me.jfenn.bingo.common.map.CardView
@@ -89,12 +89,12 @@ class BingoHudController(
 
     init {
         if (config.supportClientHud) {
-            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_DISPLAY) { client, handler, buf, response ->
+            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_DISPLAY_S2C) { client, handler, buf, response ->
                 val display = CardTeams.fromPacketBuf(buf)
                 client.execute { state.display = display }
             }
 
-            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_UPDATE) { client, handler, buf, response ->
+            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_UPDATE_S2C) { client, handler, buf, response ->
                 val view = CardView.fromPacketBuf(buf)
                 client.execute { state.views[view.teamKey] = view }
             }

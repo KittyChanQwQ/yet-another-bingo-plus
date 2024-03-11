@@ -3,8 +3,8 @@ package me.jfenn.bingo.common.map
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.ITextSerializer
-import me.jfenn.bingo.common.PACKET_CARD_DISPLAY
-import me.jfenn.bingo.common.PACKET_CARD_UPDATE
+import me.jfenn.bingo.common.PACKET_CARD_DISPLAY_S2C
+import me.jfenn.bingo.common.PACKET_CARD_UPDATE_S2C
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -42,7 +42,7 @@ class BingoMapController(
             for (player in server.playerManager.playerList) {
                 if (cardViewService.isViewingCard(player, team) && cardViewService.supportsCardHud(player)) {
                     // yes, every send() needs its own PacketByteBuf() instance, otherwise we get Scary Errors
-                    ServerPlayNetworking.send(player, PACKET_CARD_UPDATE, view.toPacketBuf())
+                    ServerPlayNetworking.send(player, PACKET_CARD_UPDATE_S2C, view.toPacketBuf())
                 }
             }
 
@@ -96,11 +96,11 @@ class BingoMapController(
                     display = displayTeams.map { it?.key },
                 )
 
-                ServerPlayNetworking.send(player, PACKET_CARD_DISPLAY, packet.toPacketBuf())
+                ServerPlayNetworking.send(player, PACKET_CARD_DISPLAY_S2C, packet.toPacketBuf())
 
                 for (team in displayTeams) {
                     val view = cardViewService.getMapView(team)
-                    ServerPlayNetworking.send(player, PACKET_CARD_UPDATE, view.toPacketBuf())
+                    ServerPlayNetworking.send(player, PACKET_CARD_UPDATE_S2C, view.toPacketBuf())
                 }
             }
         }
