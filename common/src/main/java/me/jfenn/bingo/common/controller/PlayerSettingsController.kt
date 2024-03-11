@@ -256,11 +256,8 @@ class PlayerSettingsController(
             }
         }
 
-        events.onUpdateTick {
-            if (state.state != GameState.PREGAME)
-                return@onUpdateTick
-
-            for (player in server.playerManager.playerList) {
+        events.onPlayerChannelRegister { player ->
+            if (state.state == GameState.PREGAME) {
                 player.allHeldStacks()
                     .filter { isBookItem(it) }
                     .forEach { updateBookItem(player, it) }

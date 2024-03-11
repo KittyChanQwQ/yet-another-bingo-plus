@@ -23,6 +23,7 @@ class ScopedEvents(
     val onPlayerJoin = EventListener<ServerPlayerEntity>()
     val onPlayerLeave = EventListener<ServerPlayerEntity>()
     val onPlayerRespawn = EventListener<ServerPlayerEntity>()
+    val onPlayerChannelRegister = EventListener<ServerPlayerEntity>()
 
     val onEntityLoad = EventListener<Pair<Entity, ServerWorld>>()
     val onUseBlock = ReturnEventListener<UseBlockEvent, ActionResult?>()
