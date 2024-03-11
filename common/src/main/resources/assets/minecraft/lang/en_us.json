@@ -19,6 +19,10 @@
   "bingo.config.card_offset_y.description": "This sets the vertical distance between the Bingo Card and the edge of the screen.",
   "bingo.config.show_multiple_cards": "Show Multiple Cards",
   "bingo.config.show_multiple_cards.description": "Attempts to draw all available cards in the HUD, if there is space. This may overlap with other GUI elements.",
+  "bingo.config.hide_on_f3": "Hide in F3/Debug Screen",
+  "bingo.config.hide_on_f3.description": "Hides the Bingo Card overlay when the F3/Debug screen is open.",
+  "bingo.config.hide_on_chat": "Hide in Chat Screen",
+  "bingo.config.hide_on_chat.description": "Hides the Bingo Card overlay when the chat screen is open.",
   "bingo.config.needs_restart": "You will need to restart Minecraft for this setting to take effect.",
   "bingo.card.title": "Bingo Card",
   "bingo.card.no_cards": "There are no Bingo Cards to display..."

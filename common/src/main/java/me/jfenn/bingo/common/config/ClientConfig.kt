@@ -9,6 +9,8 @@ data class ClientConfig(
     var cardOffsetX: Int = 0,
     var cardOffsetY: Int = 0,
     var showMultipleCards: Boolean = false,
+    var hideOnF3: Boolean = true,
+    var hideOnChat: Boolean = true,
 )
 
 enum class CardAlignment(val x: Int, val y: Int) {

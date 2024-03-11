@@ -172,6 +172,40 @@ class YetAnotherConfigLibIntegrationImpl(
                             )
                             .controller { BooleanControllerBuilder.create(it) }
                             .build(),
+                        Option.createBuilder<Boolean>()
+                            .name(Text.translatable("bingo.config.hide_on_f3"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.config.hide_on_f3.description")
+                                )
+                            )
+                            .binding(
+                                defaultConfig.client.hideOnF3,
+                                { config.client.hideOnF3 },
+                                {
+                                    config.client.hideOnF3 = it
+                                    configService.writeConfig(config)
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build(),
+                        Option.createBuilder<Boolean>()
+                            .name(Text.translatable("bingo.config.hide_on_chat"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.config.hide_on_chat.description")
+                                )
+                            )
+                            .binding(
+                                defaultConfig.client.hideOnChat,
+                                { config.client.hideOnChat },
+                                {
+                                    config.client.hideOnChat = it
+                                    configService.writeConfig(config)
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build(),
                     ))
                     .build()
             )

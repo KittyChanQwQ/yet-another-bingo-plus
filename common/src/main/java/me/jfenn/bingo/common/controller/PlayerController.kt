@@ -92,8 +92,7 @@ class PlayerController(
             .filter { MapItemService.isMapItem(it) }
             .mapNotNull {
                 if (mapItemService.isMapTeamItem(it, team)) {
-                    if (it.count != 1)
-                        it.count = 1
+                    it.count = 1
                     it
                 } else {
                     // if the player has another team's map item, remove it!
