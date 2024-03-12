@@ -38,7 +38,7 @@ class BingoHudController(
         KeyBinding(
             KEYBIND_OPEN_CARD,
             InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_V,
+            GLFW.GLFW_KEY_Y,
             "category.$MOD_ID",
         )
     )
