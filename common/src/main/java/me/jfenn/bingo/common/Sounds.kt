@@ -17,11 +17,11 @@ object Sounds {
         val soundEntry = Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_LEVER_CLICK)
         val packet = PlaySoundS2CPacket(
             soundEntry,
-            SoundCategory.BLOCKS,
+            SoundCategory.MASTER,
             fromPosition.x,
             fromPosition.y,
             fromPosition.z,
-            1f,
+            0.3f,
             1f,
             player.serverWorld.seed,
         )
@@ -41,7 +41,7 @@ object Sounds {
     fun playGameStarted(player: ServerPlayerEntity) {
         player.playSound(
             SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(),
-            SoundCategory.BLOCKS,
+            SoundCategory.RECORDS,
             1f, 2f
         )
     }
@@ -52,13 +52,13 @@ object Sounds {
                 val score = team.score.items
                 player.playSound(
                     SoundEvents.ENTITY_PLAYER_LEVELUP,
-                    SoundCategory.BLOCKS,
+                    SoundCategory.RECORDS,
                     1f, 1f + (score / 25f)
                 )
             } else {
                 player.playSound(
                     SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(),
-                    SoundCategory.BLOCKS,
+                    SoundCategory.RECORDS,
                     1f, 1f
                 )
             }
@@ -68,7 +68,7 @@ object Sounds {
     fun playGameOver(player: ServerPlayerEntity) {
         player.playSound(
             SoundEvents.BLOCK_PORTAL_TRAVEL,
-            SoundCategory.BLOCKS,
+            SoundCategory.RECORDS,
             0.2f, 1f
         )
     }

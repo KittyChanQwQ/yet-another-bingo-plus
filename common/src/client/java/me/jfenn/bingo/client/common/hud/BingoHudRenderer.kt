@@ -2,6 +2,7 @@ package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.common.map.CardView
+import me.jfenn.bingo.common.map.Color
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
@@ -148,20 +149,43 @@ class BingoHudRenderer {
             }
 
             for ((i, teamColor) in tile.teamColors.withIndex()) {
-                val colorValue = teamColor.colorValue?.or(0xff000000.toInt())
-                    ?: continue
+                val color = Color.fromInt(teamColor.colorValue ?: continue)
+                    .copy(a = 255)
+                val colorValue = color.toInt()
+                val colorValueDark = color.mix(Color.fromInt(0x40_000000)).toInt()
 
                 val start = i * 34f / tile.teamColors.size
                 val end = (i+1) * 34f / tile.teamColors.size
 
                 if (start < 17f) {
-                    context.drawHorizontalLine(itemX + start.toInt(), itemX + 17, itemY, colorValue)
-                    context.drawVerticalLine(itemX, itemY + start.toInt(), itemY + 17, colorValue)
+                    val lineStart = start.toInt()
+                    val lineEnd = end.toInt().coerceAtMost(17)
+                    context.drawHorizontalLine(itemX + lineStart, itemX + lineEnd, itemY, colorValue)
+                    context.drawVerticalLine(itemX, itemY + lineStart, itemY + lineEnd, colorValue)
                 }
 
                 if (end > 17f) {
-                    context.drawHorizontalLine(itemX, itemX + end.toInt() - 17, itemY + 17, colorValue)
-                    context.drawVerticalLine(itemX + 17, itemY, itemY + end.toInt() - 17, colorValue)
+                    val lineStart = (start.toInt() - 17).coerceAtLeast(0)
+                    val lineEnd = end.toInt() - 17
+                    context.drawHorizontalLine(itemX + lineStart, itemX + lineEnd, itemY + 17, colorValueDark)
+                    context.drawVerticalLine(itemX + 17, itemY + lineStart, itemY + lineEnd, colorValueDark)
+                }
+
+                val start2 = i * 30f / tile.teamColors.size
+                val end2 = (i+1) * 30f / tile.teamColors.size
+
+                if (start2 < 15f) {
+                    val lineStart = start2.toInt()
+                    val lineEnd = end2.toInt().coerceAtMost(15)
+                    context.drawHorizontalLine((itemX+1) + lineStart, (itemX+1) + lineEnd, itemY + 1, colorValueDark)
+                    context.drawVerticalLine(itemX + 1, (itemY+1) + lineStart, (itemY+1) + lineEnd, colorValueDark)
+                }
+
+                if (end2 > 15f) {
+                    val lineStart = (start2.toInt() - 15).coerceAtLeast(0)
+                    val lineEnd = end2.toInt() - 15
+                    context.drawHorizontalLine((itemX+1) + lineStart, (itemX+1) + lineEnd, (itemY+1) + 15, colorValue)
+                    context.drawVerticalLine((itemX+1) + 15, (itemY+1) + lineStart, (itemY+1) + lineEnd, colorValue)
                 }
             }
         }

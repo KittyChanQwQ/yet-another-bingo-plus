@@ -129,6 +129,8 @@ class BingoHudController(
                     client.setScreen(BingoHudScreen(drawServiceFactory, buttonService, state))
                 }
             }
+
+            // TODO: open the bingo HUD screen at the end of the game
         }
     }
 }
