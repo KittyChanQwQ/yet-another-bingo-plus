@@ -1,21 +1,15 @@
 ### New Features:
 
-- Advancements can now be used as bingo conditions!
+- Added a client-side HUD to replace the Bingo Card map, if the mod is installed
 
-  There's a new "Advancements" tier list with vanilla advancements for now - but more is on the way!
+  (the mod remains fully compatible with vanilla clients - this is just a QoL feature)
 
-- Support for world pre-generation with [Chunky](https://modrinth.com/plugin/chunky) - more info is [in the wiki](https://minecraft.horrific.dev/bingo/mods/chunky)!
+- Added a config GUI (requires [Mod Menu](https://modrinth.com/mod/modmenu) and [YetAnotherConfigLib](https://modrinth.com/mod/yacl)) for game options and player settings
 
-- The card inventory view now shows which tier each item belongs to.
+  Player settings in the config screen are automatically synced with any servers you join.
+
+- Added a player-specific "Night Vision" setting to turn off NightVis on a per-player basis.
 
 ### Bugs Squashed:
 
-- Fixed "stalemate" detection in lockout mode not working as expected
-
-  The game should now end automatically if a team is guaranteed to win,
-  or if the goal becomes impossible.
-  (unless inventory or ranked mode is enabled)
-
-- Added checks to ensure that spawnpoints are inside of the world border
-
-- Fixed the timer not pausing with the game when playing in singleplayer
+- All game sounds (note blocks, button clicks) now play in the expected sound channels

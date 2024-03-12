@@ -23,6 +23,8 @@ modrinth {
     loaders = ["fabric", "quilt"]
     dependencies {
         required.project "fabric-api"
+        optional.project "modmenu"
+        optional.project "yacl"
     }
     syncBodyFrom = rootProject.file("README.md").text
 }
