@@ -25,6 +25,7 @@ modrinth {
         required.project "fabric-api"
         optional.project "modmenu"
         optional.project "yacl"
+        optional.project "jei"
     }
     syncBodyFrom = rootProject.file("README.md").text
 }

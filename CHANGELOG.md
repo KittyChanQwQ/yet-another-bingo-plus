@@ -1,3 +1,9 @@
+### 1.2.0.beta2:
+
+- Added a "Card Overlap" setting to control whether the card draws over/under other HUD elements
+
+- If [Just Enough Items](https://modrinth.com/mod/jei) is installed, clicking on a Bingo Card item will now open its recipe
+
 ### New Features:
 
 - Added a client-side HUD to replace the Bingo Card map, if the mod is installed
