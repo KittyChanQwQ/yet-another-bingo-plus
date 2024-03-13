@@ -1,17 +1,13 @@
 package me.jfenn.bingo.client.common.hud
 
-import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.api.IOptionsAccessor
-import me.jfenn.bingo.client.integrations.jei.JeiIntegration
-import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
-import me.jfenn.bingo.common.MOD_ID
-import me.jfenn.bingo.common.PACKET_CARD_DISPLAY_S2C
-import me.jfenn.bingo.common.PACKET_CARD_UPDATE_S2C
+import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTeams
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.common.text.GameOverPacket
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
@@ -23,18 +19,17 @@ import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
 import net.minecraft.text.Text
+import org.koin.core.Koin
 import org.lwjgl.glfw.GLFW
 
 class BingoHudController(
+    private val koin: Koin,
     private val drawServiceFactory: IDrawServiceFactory,
-    private val buttonService: IButtonService,
     private val optionsAccessor: IOptionsAccessor,
     private val config: BingoConfig,
-    private val jei: JeiIntegration,
+    private val renderer: BingoHudRenderer,
+    private val state: BingoHudState,
 ) : BingoComponent() {
-
-    private val state = BingoHudState()
-    private val renderer = BingoHudRenderer()
 
     private val openCardKey = KeyBindingHelper.registerKeyBinding(
         KeyBinding(
@@ -117,6 +112,14 @@ class BingoHudController(
                 client.execute { state.views[view.teamKey] = view }
             }
 
+            ClientPlayNetworking.registerGlobalReceiver(PACKET_GAME_OVER_S2C) { client, handler, buf, response ->
+                val packet = GameOverPacket.fromPacketBuf(buf)
+                client.execute {
+                    state.gameOverPacket = packet
+                    client.setScreen(BingoEndScreen(koin, packet, canEscape = false))
+                }
+            }
+
             HudRenderCallback.EVENT.register { context, tickDelta ->
                 // Do not draw the HUD if the F3 or chat overlay is shown
                 if (config.client.hideOnF3 && optionsAccessor.isDebugEnabled())
@@ -131,6 +134,8 @@ class BingoHudController(
                 client.execute {
                     state.display = null
                     state.views.clear()
+                    state.selectedTeam = null
+                    state.gameOverPacket = null
                 }
             }
 
@@ -144,11 +149,13 @@ class BingoHudController(
                         return@register
                     }
 
-                    client.setScreen(BingoHudScreen(drawServiceFactory, buttonService, state, jei))
+                    val hudScreen = state.gameOverPacket
+                        ?.let { BingoEndScreen(koin, it, canEscape = true) }
+                        ?: BingoHudScreen(koin)
+
+                    client.setScreen(hudScreen)
                 }
             }
-
-            // TODO: open the bingo HUD screen at the end of the game
         }
     }
 }

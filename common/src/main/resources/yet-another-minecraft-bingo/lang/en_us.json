@@ -1,6 +1,11 @@
 {
   "category.bingo": "Yet Another Minecraft BINGO",
   "key.bingo.open_card": "View Bingo Card",
+  "bingo.world.preparing": "Preparing a new Bingo world...",
+  "bingo.world.new_game": "New Game",
+  "bingo.world.restart": "Restart Server",
+  "bingo.world.disconnect": "Disconnect",
+  "bingo.card.close": "Close",
   "bingo.player_settings": "Player Settings",
   "bingo.player_settings.tooltip": "In-game behavior that can be adjusted per-player.",
   "bingo.player_settings.bossbar": "Bossbar",

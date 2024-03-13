@@ -1,4 +1,4 @@
-package me.jfenn.bingo.client.common
+package me.jfenn.bingo.client.common.world
 
 import com.google.common.collect.ImmutableList
 import me.jfenn.bingo.client.api.IButtonService
@@ -28,22 +28,12 @@ import kotlin.io.path.name
 class BingoWorldManager(
     private val log: Logger,
     private val buttonService: IButtonService,
+    private val worldState: BingoWorldState,
 ) : BingoComponent() {
 
     fun createBingoWorld(client: MinecraftClient, parent: Screen) {
+        worldState.state = ScreenState.CreateBingoWorld
         CreateWorldScreen.create(client, parent)
-    }
-
-    private var isCreatingBingoWorld = false
-    // this flag prevents infinite recursion, as there is a setScreen call in applyDataPacks
-    private var isApplyingLobbyDataPack = false
-
-    private var isOpeningBingoWorld = false
-
-    private fun resetFlags() {
-        isCreatingBingoWorld = false
-        isApplyingLobbyDataPack = false
-        isOpeningBingoWorld = false
     }
 
     init {
@@ -64,17 +54,22 @@ class BingoWorldManager(
         }
 
         ScreenEvents.BEFORE_INIT.register { client, screen, width, height ->
-            if (screen is CreateWorldScreen && !isApplyingLobbyDataPack) {
+            if (screen is CreateWorldScreen && worldState.state == ScreenState.CreateBingoWorld) {
                 // Add a prefix to the names of bingo worlds
-                if (isCreatingBingoWorld) {
-                    screen.worldCreator.worldName = "$BINGO_WORLD_PREFIX ${screen.worldCreator.worldName}"
-                }
+                screen.worldCreator.worldName = "$BINGO_WORLD_PREFIX ${screen.worldCreator.worldName}"
             }
         }
 
         ScreenEvents.AFTER_INIT.register { client, screen, width, height ->
+            val state = worldState.state
+
             if (screen is TitleScreen) {
-                resetFlags()
+                if (state == ScreenState.ImmediatelyReopenBingoWorld) {
+                    createBingoWorld(client, screen)
+                    return@register
+                }
+
+                worldState.state = null
 
                 val buttons = Screens.getButtons(screen)
                 buttons.add(
@@ -85,34 +80,20 @@ class BingoWorldManager(
                         height = 50,
                         texture = Identifier.of("minecraft", "bingo/button"),
                         focusedTexture = Identifier.of("minecraft", "bingo/button_focused"),
-                        onClick = {
-                            isCreatingBingoWorld = true
-                            createBingoWorld(client, screen)
-                            isCreatingBingoWorld = false
-                        },
+                        onClick = { createBingoWorld(client, screen) },
                         message = Text.literal("BINGO!"),
                     )
                 )
             }
 
-            if (screen is CreateWorldScreen && !isApplyingLobbyDataPack) {
-                if (isOpeningBingoWorld) {
-                    // Once the world creation screen is reached, immediately press the
-                    // create world button
+            log.info("init screen [${screen::class.java.simpleName}]: $state ${worldState.isApplyingLobbyDataPack}")
 
-                    val createWorldButton = Screens.getButtons(screen)
-                        .find {
-                            val content = it.message.content as? TranslatableTextContent
-                            content?.key == "selectWorld.create"
-                        }
+            if (worldState.isApplyingLobbyDataPack) {
+                // this flag prevents infinite recursion, as there is a setScreen call in applyDataPacks
+                return@register
+            }
 
-                    createWorldButton?.onClick(0.0, 0.0)
-                        ?: log.error("Error: could not find create world button")
-
-                    isOpeningBingoWorld = false
-                    return@register
-                }
-
+            if (screen is CreateWorldScreen && (state == ScreenState.CreateBingoWorld || state == null)) {
                 // Copy the built-in lobby data pack to the world creator's temp dir
                 // - we want this to happen on every world creation, so that the pack is available
                 //   even if the user has not specifically pressed the "BINGO!" button.
@@ -124,12 +105,12 @@ class BingoWorldManager(
                     ?: return@register
 
                 // this flag prevents infinite recursion, as there is a setScreen call in applyDataPacks
-                isApplyingLobbyDataPack = true
+                worldState.isApplyingLobbyDataPack = true
                 screen.applyDataPacks(pair.second, false) {}
-                isApplyingLobbyDataPack = false
+                worldState.isApplyingLobbyDataPack = false
 
-                // actually enable the bingo lobby datapack
-                if (isCreatingBingoWorld) {
+                if (state == ScreenState.CreateBingoWorld) {
+                    // actually enable the bingo lobby datapack
                     pair.second.setEnabledProfiles(
                         (pair.second.enabledNames + "file/bingo-lobby.zip")
                             .reversed()
@@ -142,24 +123,43 @@ class BingoWorldManager(
                         screen.worldCreator.generatorOptionsHolder.dataConfiguration().enabledFeatures()
                     )
 
-                    isOpeningBingoWorld = true
+                    worldState.state = ScreenState.OpenBingoWorld
                     screen.validateDataPacks(pair.second, dataConfiguration) {}
+
+                    return@register
                 }
             }
 
-            if (screen is ConfirmScreen && isOpeningBingoWorld) {
+            if (screen is CreateWorldScreen && state == ScreenState.OpenBingoWorld) {
+                // Once the world creation screen is reached, immediately press the
+                // create world button
+
+                val createWorldButton = Screens.getButtons(screen)
+                    .find {
+                        val content = it.message.content as? TranslatableTextContent
+                        content?.key == "selectWorld.create"
+                    }
+
+                worldState.state = ScreenState.ConfirmExperimentalFeatures
+                createWorldButton?.onClick(0.0, 0.0)
+                    ?: log.error("Error: could not find create world button")
+
+                return@register
+            }
+
+            if (screen is ConfirmScreen && state == ScreenState.ConfirmExperimentalFeatures) {
                 // If there is a prompt to confirm the experimental datapack usage,
                 // click yes automatically
                 log.warn("Bypassing experimental warnings for a BINGO world")
 
                 val confirmButton = Screens.getButtons(screen)
-                        .find {
-                            val content = it.message.content as? TranslatableTextContent
-                            content?.key == "gui.yes"
-                        }
+                    .find {
+                        val content = it.message.content as? TranslatableTextContent
+                        content?.key == "gui.yes"
+                    }
 
                 confirmButton?.onClick(0.0, 0.0)
-                        ?: log.error("Error: could not find the experimental world features confirm button")
+                    ?: log.error("Error: could not find the experimental world features confirm button")
             }
         }
     }

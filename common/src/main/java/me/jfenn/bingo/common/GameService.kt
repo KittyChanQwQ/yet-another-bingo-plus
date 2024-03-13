@@ -1,18 +1,26 @@
 package me.jfenn.bingo.common
 
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.GameOverPacket
+import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.integrations.PermissionsIntegration
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
+import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
+import kotlin.time.Duration
 
 class GameService(
     private val state: BingoState,
@@ -21,7 +29,9 @@ class GameService(
     private val events: ScopedEvents,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
+    private val cardViewService: CardViewService,
     private val configService: ConfigService,
+    private val permissions: PermissionsIntegration,
 ) {
 
     fun start(
@@ -83,8 +93,87 @@ class GameService(
     }
 
     fun end(reason: String?) {
-        ChatMessages.broadcastEnd(server, options, state, reason)
+        broadcastEnd(reason)
         state.changeState(events, GameState.POSTGAME)
+    }
+
+    private fun broadcastEnd(reason: String?) {
+        val winningTeams = state.getRegisteredTeams()
+            .filter { it.isWinner() }
+
+        // The winning team, if there is only one winner
+        val winningTeam = winningTeams
+            .takeIf { it.size == 1 }
+            ?.firstOrNull()
+
+        val winTitle = Text.literal("BINGO")
+        val winMessage = Text.literal(reason ?: "Game over!")
+            .takeIf { options.isRankedMode }
+            ?: winningTeam?.let { winner ->
+                Text.empty()
+                    .append(winner.text())
+                    .append(Text.literal(" completed their card!").formatted(Formatting.YELLOW))
+            }
+            ?: ScoreService.getLeadingByLines(state)?.let { leader ->
+                Text.empty()
+                    .append(Text.literal(reason?.plus(" ") ?: "").formatted(Formatting.YELLOW))
+                    .append(leader.text())
+                    .append(Text.literal(" had more lines and won!").formatted(Formatting.YELLOW))
+            }
+            ?: ScoreService.getLeadingByItems(state)?.let { leader ->
+                Text.empty()
+                    .append(Text.literal(reason?.plus(" ") ?: "").formatted(Formatting.YELLOW))
+                    .append(leader.text())
+                    .append(Text.literal(" had more items and won!").formatted(Formatting.YELLOW))
+            }
+            ?: run {
+                Text.empty()
+                    .append(Text.literal(reason?.plus(" ") ?: "").formatted(Formatting.YELLOW))
+                    .append(Text.literal("The game is a draw!").formatted(Formatting.YELLOW))
+            }
+
+        sequence {
+            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
+            yield(Text.empty().append("  ").append(winMessage))
+
+            Text.empty()
+                .append(Text.literal("  Game duration: ").formatted(Formatting.YELLOW))
+                .append((state.ingameDuration() ?: Duration.ZERO).formatString())
+                .also { yield(it) }
+
+            Text.empty()
+                .append(Text.literal("  Seed: "))
+                .append(Texts.bracketedCopyable(server.overworld.seed.toString()))
+                .also { yield(it) }
+
+            if (options.isRankedMode) {
+                yield(Text.empty())
+                for (text in state.formatWinners())
+                    yield(Text.empty().append("  ").append(text))
+            }
+
+            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
+        }.forEach {
+            server.playerManager.broadcast(it, false)
+        }
+
+        for (player in server.playerManager.playerList) {
+            if (cardViewService.supportsCardHud(player) && ServerPlayNetworking.canSend(player, PACKET_GAME_OVER_S2C)) {
+                ServerPlayNetworking.send(player, PACKET_GAME_OVER_S2C, GameOverPacket(
+                    title = winTitle,
+                    subtitle = winMessage,
+                    winner = winningTeam?.key,
+                    duration = state.ingameDuration() ?: Duration.ZERO,
+                    canSendRestart = server.isDedicated && permissions.hasPermission(player, Permission.COMMAND_RESTART),
+                ).toPacketBuf())
+            } else {
+                // send the winning team title message
+                player.networkHandler.sendPacket(TitleS2CPacket(winTitle))
+                player.networkHandler.sendPacket(SubtitleS2CPacket(winMessage))
+
+                Sounds.playGameOver(player)
+            }
+        }
     }
 
 }

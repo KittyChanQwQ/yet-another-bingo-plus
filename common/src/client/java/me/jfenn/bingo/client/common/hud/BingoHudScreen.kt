@@ -10,16 +10,18 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import org.koin.core.Koin
 import kotlin.math.ceil
 
 class BingoHudScreen(
-    private val drawServiceFactory: IDrawServiceFactory,
-    private val buttonService: IButtonService,
-    private val state: BingoHudState,
-    private val jei: JeiIntegration,
+    koin: Koin,
 ) : Screen(Text.translatable("bingo.card.title")) {
 
-    private val renderer = BingoHudRenderer()
+    private val drawServiceFactory = koin.get<IDrawServiceFactory>()
+    private val buttonService = koin.get<IButtonService>()
+    private val state = koin.get<BingoHudState>()
+    private val jei = koin.get<JeiIntegration>()
+    private val renderer = koin.get<BingoHudRenderer>()
 
     private fun viewsWithPositions(callback: (view: CardView, x: Int, y: Int) -> Unit) {
         val views = (state.display?.display ?: emptyList())
