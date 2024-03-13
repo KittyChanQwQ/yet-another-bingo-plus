@@ -4,6 +4,7 @@ import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.common.world.BingoWorldService
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.text.GameOverPacket
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -109,8 +110,14 @@ class BingoEndScreen(
     }
 
     override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-        super.render(context, mouseX, mouseY, delta)
         if (context == null) return
+        try {
+            renderBackground(context)
+        } catch (e: NoSuchMethodError) {
+            // This doesn't exist on 1.20.2+
+        }
+
+        super.render(context, mouseX, mouseY, delta)
 
         context.matrices.push()
         context.matrices.scale(2f, 2f, 2f)

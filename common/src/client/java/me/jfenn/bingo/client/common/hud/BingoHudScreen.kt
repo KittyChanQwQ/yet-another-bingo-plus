@@ -86,8 +86,14 @@ class BingoHudScreen(
     }
 
     override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-        super.render(context, mouseX, mouseY, delta)
         if (context == null) return
+        try {
+            renderBackground(context)
+        } catch (e: NoSuchMethodError) {
+            // This doesn't exist on 1.20.2+
+        }
+
+        super.render(context, mouseX, mouseY, delta)
 
         updateButtons()
 
