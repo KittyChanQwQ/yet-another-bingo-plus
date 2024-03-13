@@ -61,6 +61,7 @@ class BingoHudRenderer {
         view: CardView,
         x: Int,
         y: Int,
+        z: Int = 0,
         cardScale: Float,
         mouseX: Int = -1,
         mouseY: Int = -1,
@@ -68,7 +69,7 @@ class BingoHudRenderer {
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.matrices.push()
-        context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
+        context.matrices.translate(x.toFloat(), y.toFloat(), z.toFloat())
         context.matrices.scale(cardScale, cardScale, cardScale)
 
         service.drawTexture(

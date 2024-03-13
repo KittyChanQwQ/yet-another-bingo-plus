@@ -92,7 +92,16 @@ class BingoHudScreen(
         val drawService = drawServiceFactory.create(context)
 
         viewsWithPositions { view, x, y ->
-            renderer.drawCard(context, drawService, view, x, y, 1f, mouseX, mouseY)
+            renderer.drawCard(
+                context,
+                drawService,
+                view,
+                x = x,
+                y = y,
+                cardScale = 1f,
+                mouseX = mouseX,
+                mouseY = mouseY,
+            )
         }
     }
 

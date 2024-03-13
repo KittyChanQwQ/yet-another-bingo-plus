@@ -70,7 +70,15 @@ class BingoHudController(
         val x = cardAlignment.x * (context.scaledWindowWidth - (BingoHudRenderer.CARD_WIDTH * cardScale)) + offsetX
         val y = cardAlignment.y * (context.scaledWindowHeight - (BingoHudRenderer.CARD_HEIGHT * cardScale)) + offsetY
 
-        renderer.drawCard(context, drawService, view, x.toInt(), y.toInt(), cardScale)
+        renderer.drawCard(
+            context,
+            drawService,
+            view,
+            x = x.toInt(),
+            y = y.toInt(),
+            z = config.client.cardOverlap.z,
+            cardScale = cardScale,
+        )
 
         // Attempt to draw additional cards if showMultipleCards=true
         val xDirection = if (cardAlignment.x > 0) -1 else 1
@@ -84,7 +92,15 @@ class BingoHudController(
                 // if the card would go off-screen, don't bother rendering it...
                 if (cardEndX < 0 || cardEndX > context.scaledWindowWidth) continue
 
-                renderer.drawCard(context, drawService, remainingView, cardX.toInt(), y.toInt(), cardScale)
+                renderer.drawCard(
+                    context,
+                    drawService,
+                    remainingView,
+                    x = cardX.toInt(),
+                    y = y.toInt(),
+                    z = config.client.cardOverlap.z,
+                    cardScale =  cardScale
+                )
             }
         }
     }

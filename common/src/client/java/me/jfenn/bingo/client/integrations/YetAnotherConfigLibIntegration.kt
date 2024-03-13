@@ -6,10 +6,7 @@ import dev.isxander.yacl3.api.controller.EnumControllerBuilder
 import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder
 import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
-import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.config.CardAlignment
-import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.config.PlayerSettings
+import me.jfenn.bingo.common.config.*
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
@@ -118,6 +115,27 @@ class YetAnotherConfigLibIntegrationImpl(
                                 EnumControllerBuilder.create(it)
                                     .enumClass(CardAlignment::class.java)
                                     .formatValue { value -> Text.translatable("bingo.config.card_alignment.${value.name.lowercase()}") }
+                            }
+                            .build(),
+                        Option.createBuilder<CardOverlap>()
+                            .name(Text.translatable("bingo.config.card_overlap"))
+                            .description(
+                                OptionDescription.of(
+                                    Text.translatable("bingo.config.card_overlap.description")
+                                )
+                            )
+                            .binding(
+                                defaultConfig.client.cardOverlap,
+                                { config.client.cardOverlap },
+                                {
+                                    config.client.cardOverlap = it
+                                    configService.writeConfig(config)
+                                }
+                            )
+                            .controller {
+                                EnumControllerBuilder.create(it)
+                                    .enumClass(CardOverlap::class.java)
+                                    .formatValue { value -> Text.translatable("bingo.config.card_overlap.${value.name.lowercase()}") }
                             }
                             .build(),
                         Option.createBuilder<Int>()
