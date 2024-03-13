@@ -36,6 +36,25 @@ class BingoHudRenderer {
         else -> false
     }
 
+    fun getItem(
+        x: Int,
+        y: Int,
+        cardScale: Float,
+        mouseX: Int,
+        mouseY: Int,
+    ): Pair<Int, Int>? {
+        val startX = x + (10 * cardScale)
+        val startY = y + (20 * cardScale)
+
+        val tileX = (mouseX - startX).div(20 * cardScale).toInt()
+        val tileY = (mouseY - startY).div(20 * cardScale).toInt()
+
+        if (tileX !in 0..4 || tileY !in 0..4)
+            return null
+
+        return Pair(tileX, tileY)
+    }
+
     fun drawCard(
         context: DrawContext,
         service: IDrawService,
@@ -193,19 +212,18 @@ class BingoHudRenderer {
         context.matrices.pop()
 
         // Render the hover tooltips last, without the matrix translate/transform
-        for (tileX in 0..4) for (tileY in 0..4) {
-            val tile = view.tile(tileX, tileY) ?: continue
-            val itemX = 10 + tileX * 20
-            val itemY = 20 + tileY * 20
+        val (tileX, tileY) = getItem(x, y, cardScale, mouseX, mouseY) ?: return
+        val tile = view.tile(tileX, tileY) ?: return
+        val itemX = 10 + tileX * 20
+        val itemY = 20 + tileY * 20
 
-            val mouseItemX = x + itemX * cardScale
-            val mouseItemRangeX = mouseItemX.toInt() until (mouseItemX + 20*cardScale).toInt()
-            val mouseItemY = y + itemY * cardScale
-            val mouseItemRangeY = mouseItemY.toInt() until (mouseItemY + 20*cardScale).toInt()
+        val mouseItemX = x + itemX * cardScale
+        val mouseItemRangeX = mouseItemX.toInt() until (mouseItemX + 20*cardScale).toInt()
+        val mouseItemY = y + itemY * cardScale
+        val mouseItemRangeY = mouseItemY.toInt() until (mouseItemY + 20*cardScale).toInt()
 
-            if (tile.item != null && mouseX in mouseItemRangeX && mouseY in mouseItemRangeY) {
-                context.drawItemTooltip(textRenderer, tile.item, mouseX, mouseY)
-            }
+        if (tile.item != null && mouseX in mouseItemRangeX && mouseY in mouseItemRangeY) {
+            context.drawItemTooltip(textRenderer, tile.item, mouseX, mouseY)
         }
     }
 

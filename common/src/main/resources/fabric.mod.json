@@ -5,6 +5,14 @@
   "version": "$version",
   "environment": "*",
   "icon": "bingo/icon.png",
+  "entrypoints": {
+    "jei_mod_plugin": [
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.client.integrations.jei.JeiEntrypoint"
+      }
+    ]
+  },
   "depends": {
     "fabricloader": ">=0.15.0",
     "minecraft": ">=1.20",

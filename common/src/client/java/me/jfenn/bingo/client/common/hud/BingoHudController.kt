@@ -3,6 +3,7 @@ package me.jfenn.bingo.client.common.hud
 import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.api.IOptionsAccessor
+import me.jfenn.bingo.client.integrations.jei.JeiIntegration
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.PACKET_CARD_DISPLAY_S2C
@@ -29,6 +30,7 @@ class BingoHudController(
     private val buttonService: IButtonService,
     private val optionsAccessor: IOptionsAccessor,
     private val config: BingoConfig,
+    private val jei: JeiIntegration,
 ) : BingoComponent() {
 
     private val state = BingoHudState()
@@ -126,7 +128,7 @@ class BingoHudController(
                         return@register
                     }
 
-                    client.setScreen(BingoHudScreen(drawServiceFactory, buttonService, state))
+                    client.setScreen(BingoHudScreen(drawServiceFactory, buttonService, state, jei))
                 }
             }
 

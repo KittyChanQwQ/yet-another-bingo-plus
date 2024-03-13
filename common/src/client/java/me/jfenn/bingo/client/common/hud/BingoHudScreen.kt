@@ -2,6 +2,7 @@ package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.client.integrations.jei.JeiIntegration
 import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.map.CardView
 import net.minecraft.client.gui.DrawContext
@@ -15,6 +16,7 @@ class BingoHudScreen(
     private val drawServiceFactory: IDrawServiceFactory,
     private val buttonService: IButtonService,
     private val state: BingoHudState,
+    private val jei: JeiIntegration,
 ) : Screen(Text.translatable("bingo.card.title")) {
 
     private val renderer = BingoHudRenderer()
@@ -92,6 +94,22 @@ class BingoHudScreen(
         viewsWithPositions { view, x, y ->
             renderer.drawCard(context, drawService, view, x, y, 1f, mouseX, mouseY)
         }
+    }
+
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        var ret = false
+
+        viewsWithPositions { view, x, y ->
+            val (tileX, tileY) = renderer.getItem(x, y, 1f, mouseX.toInt(), mouseY.toInt()) ?: return@viewsWithPositions
+            val tile = view.tile(tileX, tileY) ?: return@viewsWithPositions
+            val stack = tile.item ?: return@viewsWithPositions
+            if (!tile.isAdvancement) {
+                jei.openJeiRecipe(stack)
+            }
+            ret = true
+        }
+
+        return ret || super.mouseClicked(mouseX, mouseY, button)
     }
 
     override fun shouldPause(): Boolean {

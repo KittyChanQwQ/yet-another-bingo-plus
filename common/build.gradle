@@ -23,6 +23,8 @@ dependencies {
         exclude(group: "com.twelvemonkeys.common")
         exclude(group: "com.twelvemonkeys.imageio")
     }
+
+    modCompileOnlyApi(libs.jei)
 }
 
 tasks.register('copyLangs', Copy) {
