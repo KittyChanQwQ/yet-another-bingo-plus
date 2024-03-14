@@ -161,7 +161,7 @@ class BingoEndScreen(
         }
     }
 
-    override fun shouldPause() = true
+    override fun shouldPause() = false
 
     override fun shouldCloseOnEsc() = canEscape
 

@@ -129,8 +129,6 @@ class BingoHudScreen(
         return ret || super.mouseClicked(mouseX, mouseY, button)
     }
 
-    override fun shouldPause(): Boolean {
-        return false
-    }
+    override fun shouldPause() = false
 
 }

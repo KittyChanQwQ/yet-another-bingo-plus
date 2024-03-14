@@ -86,7 +86,12 @@ class BingoWorldManager(
                 )
             }
 
-            log.info("init screen [${screen::class.java.simpleName}]: $state ${worldState.isApplyingLobbyDataPack}")
+            log.debug(
+                "init screen [{}]: {} isApplyingLobbyDataPack={}",
+                screen::class.java.simpleName,
+                state,
+                worldState.isApplyingLobbyDataPack
+            )
 
             if (worldState.isApplyingLobbyDataPack) {
                 // this flag prevents infinite recursion, as there is a setScreen call in applyDataPacks

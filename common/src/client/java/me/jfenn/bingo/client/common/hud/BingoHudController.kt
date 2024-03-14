@@ -13,6 +13,8 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.fabricmc.fabric.api.client.rendering.v1.InvalidateRenderStateCallback
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ChatScreen
@@ -120,7 +122,7 @@ class BingoHudController(
                 }
             }
 
-            HudRenderCallback.EVENT.register { context, tickDelta ->
+            HudRenderCallback.EVENT.register { context, _ ->
                 // Do not draw the HUD if the F3 or chat overlay is shown
                 if (config.client.hideOnF3 && optionsAccessor.isDebugEnabled())
                     return@register
@@ -130,13 +132,24 @@ class BingoHudController(
                 drawHud(context)
             }
 
-            ClientPlayConnectionEvents.DISCONNECT.register { handler, client ->
-                client.execute {
-                    state.display = null
-                    state.views.clear()
-                    state.selectedTeam = null
-                    state.gameOverPacket = null
-                }
+            ClientPlayConnectionEvents.JOIN.register { _, _, client ->
+                client.execute { state.reset() }
+            }
+
+            ClientPlayConnectionEvents.DISCONNECT.register { _, client ->
+                client.execute { state.reset() }
+            }
+
+            ServerLifecycleEvents.SERVER_STARTED.register { _ ->
+                MinecraftClient.getInstance().execute { state.reset() }
+            }
+
+            ServerLifecycleEvents.SERVER_STOPPED.register { _ ->
+                MinecraftClient.getInstance().execute { state.reset() }
+            }
+
+            InvalidateRenderStateCallback.EVENT.register {
+                MinecraftClient.getInstance().execute { state.reset() }
             }
 
             ClientTickEvents.END_CLIENT_TICK.register { client ->
