@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.IOfflinePlayerAccessor
-import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoPlayerProfile
@@ -17,10 +16,10 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.state.TeamScore
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.allHeldStacks
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
@@ -42,6 +41,7 @@ class ScoredItemCheck(
     private val offlinePlayerAccessor: IOfflinePlayerAccessor,
     private val advancementManager: IAdvancementManager,
     private val playerSettingsService: PlayerSettingsService,
+    private val textProvider: TextProvider,
 ) : BingoComponent() {
 
     private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, ServerPlayerEntity>()
@@ -202,12 +202,8 @@ class ScoredItemCheck(
 
             // if the team has scored a line, post a message
             if (scoreAfter.lines > scoreBefore.lines && options.showCompletedLines) {
-                val message = Text.empty()
-                    .append(team.text())
-                    .append(
-                        Text.literal(" has scored ${scoreAfter.lines} line${if (scoreAfter.lines > 1) "s" else ""}!")
-                            .formatted(Formatting.YELLOW)
-                    )
+                val message = textProvider.string("bingo.game.message.scored_line", team.text(), textProvider.lineCount(scoreAfter.lines))
+                    .formatted(Formatting.YELLOW)
 
                 server.playerManager.playerList
                     .filter { playerSettingsService.getPlayer(it).scoreMessages }
@@ -226,19 +222,19 @@ class ScoredItemCheck(
 
             if (isWinner && options.isRankedMode) {
                 // announce that another team has completed their card
-                ChatMessages.broadcastTeamCompleted(server, team)
+                broadcastCardCompleted(team)
             }
 
             if (isWinner && !options.isRankedMode) {
                 // end the game, since a team has won
-                gameService.end( null)
+                gameService.end( textProvider.string("bingo.game.end.reason_bingo"))
                 return
             }
         }
 
         // check if the game is in a stalemate
         if (ScoreService.isLockout(state)) {
-            gameService.end("Lockout!")
+            gameService.end(textProvider.string("bingo.game.end.reason_lockout"))
             return
         }
 
@@ -247,13 +243,48 @@ class ScoredItemCheck(
         if (prevLeadingTeam != leadingTeam && options.showLeadingTeam && state.getRegisteredTeams().size > 1) {
             // if the leading team should be shown, announce the new leader
             if (leadingTeam != null) {
-                ChatMessages.broadcastScoreLeadingTeam(server, options, configService, leadingTeam)
+                broadcastScoreLeadingTeam(leadingTeam)
             } else {
                 updatedTeams.firstOrNull()?.let {
-                    ChatMessages.broadcastScoreTiedTeam(server, options, configService, it)
+                    broadcastScoreTiedTeam(it)
                 }
             }
         }
+    }
+
+    private fun broadcastCardCompleted(team: BingoTeam) {
+        val message = textProvider.string("bingo.game.message.completed_card", team.text())
+
+        server.playerManager.playerList
+            .forEach { it.sendMessage(message, false) }
+    }
+
+    private fun broadcastScoreLeadingTeam(team: BingoTeam) {
+        val score = team.score
+        val message = when {
+            options.showCompletedItems -> {
+                textProvider.string("bingo.game.message.leading_with_score", team.text(), textProvider.itemCount(score.items))
+            }
+            else -> textProvider.string("bingo.game.message.leading", team.text())
+        }.formatted(Formatting.YELLOW)
+
+        server.playerManager.playerList
+            .filter { configService.playerConfig[it.uuid].leadingMessages }
+            .forEach { it.sendMessage(message, false) }
+    }
+
+    private fun broadcastScoreTiedTeam(team: BingoTeam) {
+        val score = team.score
+        val message = when {
+            options.showCompletedItems -> {
+                textProvider.string("bingo.game.message.leading_tied_with_score", team.text(), textProvider.itemCount(score.items))
+            }
+            else -> textProvider.string("bingo.game.message.leading_tied", team.text())
+        }.formatted(Formatting.YELLOW)
+
+        server.playerManager.playerList
+            .filter { configService.playerConfig[it.uuid].leadingMessages }
+            .forEach { it.sendMessage(message, false) }
     }
 
     init {

@@ -2,12 +2,13 @@ package me.jfenn.bingo.common.card
 
 import me.jfenn.bingo.api.ITeamHandle
 import me.jfenn.bingo.api.ITeamManager
-import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.commands.CommandTreeHandler
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.text.TextProvider
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import kotlin.math.ceil
 
 class TeamService(
@@ -15,6 +16,7 @@ class TeamService(
     private val state: BingoState,
     private val teamManager: ITeamManager,
     private val commandTreeHandler: CommandTreeHandler,
+    private val textProvider: TextProvider,
 ) {
 
     fun getPlayerTeam(player: ServerPlayerEntity): BingoTeam? {
@@ -47,7 +49,10 @@ class TeamService(
 
         teamManager.setPlayerTeam(player, createTeam(team))
         team.players.add(playerProfile)
-        ChatMessages.broadcastJoinedTeam(player, team)
+        player.sendMessage(
+            textProvider.string("bingo.lobby.team_changed", team.text())
+                .formatted(Formatting.YELLOW)
+        )
 
         onTeamChanged(player)
     }

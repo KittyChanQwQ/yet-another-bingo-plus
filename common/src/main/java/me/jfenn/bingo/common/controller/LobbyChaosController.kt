@@ -1,12 +1,12 @@
 package me.jfenn.bingo.common.controller
 
-import me.jfenn.bingo.common.ChatMessages
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
@@ -17,6 +17,7 @@ class LobbyChaosController(
     private val config: BingoConfig,
     private val state: BingoState,
     private val permissions: PermissionsIntegration,
+    private val textProvider: TextProvider,
 ) : BingoComponent() {
 
     private fun shouldPreventLobbyChaos(player: ServerPlayerEntity): Boolean {
@@ -32,7 +33,7 @@ class LobbyChaosController(
     init {
         events.onPlayerJoin { player ->
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
-                ChatMessages.broadcastLobbyMuted(player)
+                player.sendMessage(textProvider.string("bingo.lobby.sounds_muted"))
             }
         }
 
@@ -42,7 +43,7 @@ class LobbyChaosController(
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
                 val blockState = player.world.getBlockState(it.hit.blockPos)
                 if (blockState.block in hitBlockSet) {
-                    ChatMessages.broadcastLobbyMuted(player, overlay = true)
+                    player.sendMessage(textProvider.string("bingo.lobby.sounds_muted"), true)
                 }
             }
 

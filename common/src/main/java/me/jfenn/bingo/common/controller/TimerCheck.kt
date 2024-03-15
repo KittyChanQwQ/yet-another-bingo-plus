@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
 import org.slf4j.Logger
 import kotlin.time.Duration.Companion.seconds
 
@@ -20,6 +21,7 @@ class TimerCheck(
     private val options: BingoOptions,
     private val gameService: GameService,
     private val log: Logger,
+    private val textProvider: TextProvider,
 ) : BingoComponent() {
 
     init {
@@ -51,7 +53,7 @@ class TimerCheck(
             val duration = state.ingameDuration() ?: return@onGameTick
             if (duration >= timeLimit) {
                 // end the game!
-                gameService.end("Out of time!")
+                gameService.end(textProvider.string("bingo.game.end.reason_timer"))
             }
         }
     }

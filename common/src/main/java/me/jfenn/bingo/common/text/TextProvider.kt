@@ -27,4 +27,18 @@ class TextProvider(
         return Text.translatableWithFallback(key, fallback, *args)
     }
 
+    fun itemCount(number: Int): Text {
+        return when (number) {
+            1 -> string("bingo.game.item_single")
+            else -> string("bingo.game.item_count", number)
+        }
+    }
+
+    fun lineCount(number: Int): Text {
+        return when (number) {
+            1 -> string("bingo.game.line_single")
+            else -> string("bingo.game.line_count", number)
+        }
+    }
+
 }
