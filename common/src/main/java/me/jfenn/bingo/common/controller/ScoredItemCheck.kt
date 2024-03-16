@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.controller
 
-import StringKey
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.IOfflinePlayerAccessor
 import me.jfenn.bingo.common.GameService
@@ -19,6 +18,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.allHeldStacks
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting

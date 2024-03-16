@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common
 
-import StringKey
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.card.TeamService
@@ -14,6 +13,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.GameOverPacket
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket

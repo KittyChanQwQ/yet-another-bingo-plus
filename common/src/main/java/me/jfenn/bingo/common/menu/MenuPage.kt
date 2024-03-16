@@ -5,9 +5,12 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.sendWarningMessage
+import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerMenuPage(
@@ -17,6 +20,7 @@ fun MenuComponent.registerMenuPage(
     cardService: CardService = koinScope.get(),
     permissionsIntegration: PermissionsIntegration = koinScope.get(),
     configService: ConfigService = koinScope.get(),
+    text: TextProvider = koinScope.get(),
 ) {
     var page = 0
 
@@ -38,19 +42,18 @@ fun MenuComponent.registerMenuPage(
                 permissionGetter = permissionGetter,
             )
             registerEnumMenu(
-                title = "Goal",
+                title = text.string(StringKey.OptionsGoal),
                 valueProp = propertyRef(options::goal),
+                valueText = { text.string(it.string) },
                 position = position.add(0.6, 0.0, 0.0),
                 permissionGetter = permissionGetter,
             )
             registerTimer(
-                title = "Time Limit",
                 timerMinutesProp = propertyRef(options::timeLimit),
                 position = position.add(2.3, 0.0, 0.0),
                 permissionGetter = permissionGetter,
             )
             registerTeams(
-                title = "Teams",
                 position = position.add(3.6, 0.0, 0.0),
                 permissionGetter = permissionGetter,
             )
@@ -98,7 +101,8 @@ fun MenuComponent.registerMenuPage(
 
     registerButton(
         position = position.add(-3.7, 0.5, 0.0),
-        text = "⟳ Reset Defaults",
+        text = Text.literal("⟳ ")
+            .append(text.string(StringKey.OptionsResetDefaults)),
         isActiveProp = computedProperty { false },
         permissionGetter = permissionGetter,
     ) {
@@ -110,7 +114,8 @@ fun MenuComponent.registerMenuPage(
 
     registerButton(
         position = position.add(3.7, 0.5, 0.0),
-        text = "⚄ Re-roll Card",
+        text = Text.literal("⚄ ")
+            .append(text.string(StringKey.OptionsRerollCard)),
         isActiveProp = computedProperty { false },
         permissionGetter = permissionGetter,
     ) {
@@ -122,7 +127,7 @@ fun MenuComponent.registerMenuPage(
     for (i in pages.indices) {
         registerButton(
             position = position.add(-((pages.size-1) * 0.6) + (i*1.2), 0.5, 0.0),
-            text = "Page ${i+1}",
+            text = text.string(StringKey.OptionsPage, i+1),
             isActiveProp = computedProperty { page == i },
             permissionGetter = permissionGetter,
         ) {
@@ -133,7 +138,7 @@ fun MenuComponent.registerMenuPage(
 
     registerButton(
         position = position.add(5.0, -MENU_ITEM_OFFSET, 0.0),
-        text = "START",
+        text = text.string(StringKey.OptionsStart),
         isActiveProp = computedProperty { options.isValid() },
         permissionGetter = permissionGetter,
     ) { player ->

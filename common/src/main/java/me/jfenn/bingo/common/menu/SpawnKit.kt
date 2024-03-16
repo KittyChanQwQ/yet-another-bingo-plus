@@ -3,6 +3,8 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.spawn.SpawnItem
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
@@ -14,9 +16,10 @@ fun MenuComponent.registerSpawnKit(
     options: BingoOptions,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     cardService: CardService = koinScope.get(),
+    text: TextProvider = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", "\"Spawn Kit\"")
+        putString("text", text.serialized(text.string(StringKey.OptionsSpawnKit)))
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)
@@ -25,7 +28,7 @@ fun MenuComponent.registerSpawnKit(
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
-        text = "Player Items",
+        text = text.string(StringKey.OptionsSpawnKitPlayer),
         toggleProp = propertyRef(options::isPlayerKit),
         permissionGetter = permissionGetter,
     ) {
@@ -34,7 +37,7 @@ fun MenuComponent.registerSpawnKit(
 
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
-        text = "Edit...",
+        text = text.string(StringKey.OptionsSpawnKitEdit),
         permissionGetter = permissionGetter,
     ) { player ->
         player.openHandledScreen(
@@ -47,14 +50,14 @@ fun MenuComponent.registerSpawnKit(
                         }
                     }
                 },
-                Text.literal("Player Items")
+                text.string(StringKey.OptionsSpawnKitPlayer)
             )
         )
     }
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 3), 0.0),
-        text = "Team Chest",
+        text = text.string(StringKey.OptionsSpawnKitTeam),
         toggleProp = propertyRef(options::isTeamKit),
         permissionGetter = permissionGetter,
     ) {
@@ -63,7 +66,7 @@ fun MenuComponent.registerSpawnKit(
 
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 4), 0.0),
-        text = "Edit...",
+        text = text.string(StringKey.OptionsSpawnKitEdit),
         permissionGetter = permissionGetter,
     ) { player ->
         player.openHandledScreen(
@@ -76,7 +79,7 @@ fun MenuComponent.registerSpawnKit(
                         }
                     }
                 },
-                Text.literal("Team Chest")
+                text.string(StringKey.OptionsSpawnKitTeam)
             )
         )
     }

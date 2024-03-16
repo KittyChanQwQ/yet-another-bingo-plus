@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.controller
 
-import StringKey
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.*
@@ -13,6 +12,8 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.allHeldStacks
+import me.jfenn.bingo.generated.BINGO_VERSION
+import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.item.ItemStack
@@ -37,40 +38,42 @@ class PlayerSettingsController(
     private val textSerializer: ITextSerializer,
     private val scoreboardManager: IScoreboardManager,
     private val playerSettingsService: PlayerSettingsService,
-    private val textProvider: TextProvider,
+    private val text: TextProvider,
 ) : BingoComponent() {
 
     private fun getIntroPage(player: ServerPlayerEntity) =
         Text.empty()
             .append(
-                Text.literal("Welcome to ")
-                    .append(Text.literal("Yet Another MC BINGO").formatted(Formatting.DARK_GREEN, Formatting.UNDERLINE).also {
+                text.string(
+                    StringKey.IntroWelcome,
+                    text.string(StringKey.IntroWelcomeLink).formatted(Formatting.DARK_GREEN, Formatting.UNDERLINE).also {
                         it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://minecraft.horrific.dev/bingo/"))
-                    })
-                    .append("!")
-                    .formatted(Formatting.BOLD)
+                    },
+                ).formatted(Formatting.BOLD)
             )
             .append("\n")
             .append(Text.literal("v$BINGO_VERSION").formatted(Formatting.GRAY))
             .also {
                 if (permissions.hasPermission(player, Permission.CONFIGURE_GAME)) {
-                    it.append("\n\nUse the menu in front of you to configure the game.")
+                    it.append("\n\n").append(text.string(StringKey.IntroUseConfigMenu))
                 }
             }
             .append("\n\n")
             .append(
-                Text.literal("Read ")
-                    .append(Text.literal("how to play").formatted(Formatting.DARK_GREEN, Formatting.UNDERLINE).also {
+                text.string(
+                    StringKey.IntroReadHowToPlay,
+                    text.string(StringKey.IntroReadHowToPlayLink).formatted(Formatting.DARK_GREEN, Formatting.UNDERLINE).also {
                         it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://minecraft.horrific.dev/bingo/what-is-bingo"))
-                    })
-                    .append(Text.literal(" on the wiki."))
+                    },
+                )
             )
             .also {
                 if (!permissions.hasPermission(player, Permission.CONFIGURE_GAME)) {
-                    it.append("\n\nChange your player settings on the next page.")
+                    it.append("\n\n").append(text.string(StringKey.IntroChangePlayerSettings))
                 }
             }
-            .append("\n\nHave fun!")
+            .append("\n\n")
+            .append(text.string(StringKey.IntroHaveFun))
             .let { textSerializer.toJson(it) }
 
     private fun getHintsPage(player: ServerPlayerEntity) =
@@ -78,18 +81,18 @@ class PlayerSettingsController(
             .append(Text.literal("Hints").formatted(Formatting.BOLD))
             .append("\n\n")
             .append(when {
-                cardViewService.supportsCardHud(player) -> Text.empty()
-                    .append("Press [")
-                    .append(Text.keybind(KEYBIND_OPEN_CARD).formatted(Formatting.DARK_GREEN))
-                    .append("] to see the Bingo Card in an inventory view.")
-                else -> Text.empty()
-                    .append("When holding a Bingo Card, press [")
-                    .append(Text.keybind("key.use").formatted(Formatting.DARK_GREEN))
-                    .append("] to see its items.")
+                cardViewService.supportsCardHud(player) -> text.string(
+                    StringKey.IntroKeybindHud,
+                    Text.keybind(KEYBIND_OPEN_CARD).formatted(Formatting.DARK_GREEN),
+                )
+                else -> text.string(
+                    StringKey.IntroKeybindMap,
+                    Text.keybind("key.use").formatted(Formatting.DARK_GREEN),
+                )
             })
             .also {
                 if (permissions.hasPermission(player, Permission.COMMAND_COORDS)) {
-                    it.append("\n\nUse \"/coords\" to keep track of coordinates and share them with your team.")
+                    it.append("\n\n").append(text.string(StringKey.IntroUseCoords))
                 }
             }
             .let { textSerializer.toJson(it) }
@@ -107,19 +110,19 @@ class PlayerSettingsController(
                     )
             )
             .append(" ")
-            .append(textProvider.string(name))
+            .append(text.string(name))
             .append(
                 Text.literal(" \uD83D\uDEC8").formatted(Formatting.GRAY).also {
                     it.style = it.style.withHoverEvent(HoverEvent(
                         HoverEvent.Action.SHOW_TEXT,
-                        textProvider.string(description)
+                        text.string(description)
                     ))
                 }
             )
 
     private fun getSettingsPage(player: ServerPlayerEntity, settings: PlayerSettings) =
         Text.empty()
-            .append(Text.literal("Player Settings").formatted(Formatting.BOLD))
+            .append(text.string(StringKey.PlayerSettings).formatted(Formatting.BOLD))
             .append("\n\n")
             .append(
                 toggleText(settings.bossbar, StringKey.PlayerSettingsBossbar, StringKey.PlayerSettingsBossbarDescription)
@@ -146,7 +149,7 @@ class PlayerSettingsController(
                 }
             }
             .append("\n\n")
-            .append(textProvider.string(StringKey.PlayerSettingsMessages))
+            .append(text.string(StringKey.PlayerSettingsMessages))
             .append(":\n")
             .append(
                 toggleText(settings.leadingMessages, StringKey.PlayerSettingsMessagesLeading, StringKey.PlayerSettingsMessagesLeadingDescription)
@@ -179,7 +182,7 @@ class PlayerSettingsController(
         item.getOrCreateNbt().apply {
             putBoolean(NBT_BINGO_IGNORE, true)
             putBoolean(NBT_BINGO_VANISH, true)
-            putString("title", "Yet Another Minecraft BINGO")
+            putString("title", text.raw(StringKey.FullName))
             putString("author", scoreboardManager.getPlayerName(player))
         }
         updateBookItem(player, item)

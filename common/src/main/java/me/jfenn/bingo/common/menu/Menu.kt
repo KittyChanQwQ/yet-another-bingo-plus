@@ -1,21 +1,24 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.common.utils.text.TextInfo
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerMenu(
-    title: String,
-    options: List<String>,
+    title: Text,
+    options: List<Text>,
     position: Vec3d,
     selectedIndexProp: MutableProperty<Int>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
+    text: TextProvider = koinScope.get(),
 ) {
-
     var selectedIndex by selectedIndexProp
 
     options.forEachIndexed { i, option ->
@@ -30,9 +33,7 @@ fun MenuComponent.registerMenu(
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", TextInfo.toJsonString(
-            TextInfo.literal(title)
-        ))
+        putString("text", text.serialized(title))
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)
@@ -42,8 +43,9 @@ fun MenuComponent.registerMenu(
 
 inline fun <reified E : Enum<E>> MenuComponent.registerEnumMenu(
     position: Vec3d,
-    title: String,
+    title: Text,
     valueProp: MutableProperty<E>,
+    valueText: (E) -> Text,
     noinline permissionGetter: (ServerPlayerEntity) -> Boolean,
 ) {
     val options = E::class.java.enumConstants
@@ -56,7 +58,7 @@ inline fun <reified E : Enum<E>> MenuComponent.registerEnumMenu(
 
     registerMenu(
         title = title,
-        options = options.map { it.name.formatTitle() },
+        options = options.map(valueText),
         selectedIndexProp = indexProp,
         position = position,
         permissionGetter = permissionGetter,
@@ -68,6 +70,7 @@ fun MenuComponent.registerDimensionMenu(
     dimensionProperty: MutableProperty<String>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     server: MinecraftServer = koinScope.get(),
+    text: TextProvider = koinScope.get(),
 ) {
     val dimensions = server.worlds
         .map { it.registryKey.value }
@@ -81,8 +84,8 @@ fun MenuComponent.registerDimensionMenu(
     )
 
     registerMenu(
-        title = "Spawn Dimension",
-        options = dimensions.map { it.path },
+        title = text.string(StringKey.OptionsSpawnDimension),
+        options = dimensions.map { Text.literal(it.path.formatTitle()) },
         selectedIndexProp = indexProp,
         position = position,
         permissionGetter = permissionGetter,

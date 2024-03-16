@@ -14,8 +14,10 @@ import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.text.TextInfo
 import me.jfenn.bingo.common.utils.toNbt
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.DisplayEntity
@@ -45,6 +47,7 @@ class MenuController(
     private val structureManager: IStructureManager,
     private val state: BingoState,
     private val teamService: TeamService,
+    private val text: TextProvider,
 ) : KoinComponent {
 
     private var menu: MenuInstance? = null
@@ -182,11 +185,7 @@ class MenuController(
             .apply {
                 readNbt(NbtCompound().apply {
                     put("Pos", position.add(0.0, 1.5, 0.0).toNbt())
-                    putString("text", TextInfo.toJsonString(
-                        TextInfo.literal("${team.name} Team")
-                            .formatted(team.textColor)
-                            .bold()
-                    ))
+                    putString("text", text.serialized(team.text()))
                     putString("billboard", "vertical")
                     putString("alignment", "center")
                     putInt("background", 0)
@@ -200,8 +199,8 @@ class MenuController(
             .apply {
                 readNbt(NbtCompound().apply {
                     put("Pos", position.add(0.0, 1.0, 0.0).toNbt())
-                    putString("text", TextInfo.toJsonString(
-                        TextInfo.literal("Click to join!")
+                    putString("text", text.serialized(
+                        text.string(StringKey.LobbyClickToJoin)
                     ))
                     putString("billboard", "vertical")
                     putString("alignment", "center")

@@ -1,9 +1,10 @@
 package me.jfenn.bingo.common.text
 
-import StringKey
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
+import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import org.slf4j.Logger
@@ -11,6 +12,7 @@ import java.util.*
 
 class TextProvider(
     private val logger: Logger,
+    private val textSerializer: ITextSerializer,
 ) {
 
     val lang: Map<StringKey, String> = this::class.java.getResourceAsStream("/yet-another-minecraft-bingo/lang/en_us.json")
@@ -54,6 +56,8 @@ class TextProvider(
 
         return Text.translatableWithFallback(str.key, fallback, *args)
     }
+
+    fun serialized(text: Text) = textSerializer.toJson(text)
 
     fun itemCount(number: Int): Text {
         return when (number) {

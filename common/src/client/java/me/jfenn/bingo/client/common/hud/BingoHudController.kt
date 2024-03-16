@@ -2,12 +2,17 @@ package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.api.IOptionsAccessor
-import me.jfenn.bingo.common.*
+import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
+import me.jfenn.bingo.common.PACKET_CARD_DISPLAY_S2C
+import me.jfenn.bingo.common.PACKET_CARD_UPDATE_S2C
+import me.jfenn.bingo.common.PACKET_GAME_OVER_S2C
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTeams
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.text.GameOverPacket
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
@@ -20,7 +25,6 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
-import net.minecraft.text.Text
 import org.koin.core.Koin
 import org.lwjgl.glfw.GLFW
 
@@ -31,6 +35,7 @@ class BingoHudController(
     private val config: BingoConfig,
     private val renderer: BingoHudRenderer,
     private val state: BingoHudState,
+    private val text: TextProvider,
 ) : BingoComponent() {
 
     private val openCardKey = KeyBindingHelper.registerKeyBinding(
@@ -38,7 +43,7 @@ class BingoHudController(
             KEYBIND_OPEN_CARD,
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_Y,
-            "category.$MOD_ID",
+            StringKey.FullName.key,
         )
     )
 
@@ -158,7 +163,7 @@ class BingoHudController(
                 if (openCardKey.wasPressed()) {
                     val display = state.display?.display
                     if (display.isNullOrEmpty()) {
-                        client.player?.sendMessage(Text.translatable("bingo.card.no_cards"), true)
+                        client.player?.sendMessage(text.string(StringKey.CardNoCards), true)
                         return@register
                     }
 

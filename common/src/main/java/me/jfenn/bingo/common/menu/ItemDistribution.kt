@@ -2,10 +2,13 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.TierLabel
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.common.utils.text.TextInfo
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 
 const val TIER_WIDTH = 0.5
@@ -16,6 +19,7 @@ fun MenuComponent.registerItemDistribution(
     itemDistributionProp: MutableProperty<List<Int>>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     cardService: CardService = koinScope.get(),
+    text: TextProvider = koinScope.get(),
 ) {
     var itemDistribution by itemDistributionProp
 
@@ -30,7 +34,7 @@ fun MenuComponent.registerItemDistribution(
     ) {
         registerButton(
             position = position.add(i*TIER_WIDTH + TIER_OFFSET, -MENU_ITEM_OFFSET, 0.0),
-            text = "+",
+            text = Text.literal("+"),
             width = TIER_WIDTH.toFloat(),
             permissionGetter = permissionGetter,
         ) {
@@ -42,7 +46,7 @@ fun MenuComponent.registerItemDistribution(
 
         registerButton(
             position = position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
-            text = "-",
+            text = Text.literal("-"),
             width = TIER_WIDTH.toFloat(),
             permissionGetter = permissionGetter,
         ) {
@@ -84,7 +88,7 @@ fun MenuComponent.registerItemDistribution(
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", "\"Item Distribution\"")
+        putString("text", text.serialized(text.string(StringKey.OptionsItemDistribution)))
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)

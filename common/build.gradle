@@ -92,7 +92,7 @@ tasks.register("bingoLangFiles", DefaultTask) {
             .toList()
             .join("\n")
 
-    var enumClass = "enum class StringKey(val key: String) {\n$enumEntries\n}\n"
+    var enumClass = "package me.jfenn.bingo.generated\n\nenum class StringKey(val key: String) {\n$enumEntries\n}\n"
 
     var outFile = file("${buildDir}/generated/main/java/me/jfenn/bingo/generated/StringKey.kt")
     Files.createDirectories(outFile.toPath().parent)
@@ -101,3 +101,16 @@ tasks.register("bingoLangFiles", DefaultTask) {
 
 tasks.processResources.dependsOn(tasks.bingoLangFiles)
 tasks.sourcesJar.dependsOn(tasks.bingoLangFiles)
+
+tasks.register("bingoConstants") {
+    var constantsText = "package me.jfenn.bingo.generated\n\n" +
+            "const val BINGO_VERSION = \"${project.mod_version}\"" +
+            "\n"
+
+    var outFile = file("${buildDir}/generated/main/java/me/jfenn/bingo/generated/Constants.kt")
+    Files.createDirectories(outFile.toPath().parent)
+    outFile.write(constantsText)
+}
+
+tasks.processResources.dependsOn(tasks.bingoConstants)
+tasks.sourcesJar.dependsOn(tasks.bingoConstants)

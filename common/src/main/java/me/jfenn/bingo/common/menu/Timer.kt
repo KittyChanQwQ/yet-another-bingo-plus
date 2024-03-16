@@ -1,8 +1,10 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.utils.text.TextInfo
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 import java.util.*
 import kotlin.time.Duration
@@ -14,13 +16,13 @@ fun MenuComponent.registerTimer(
     position: Vec3d,
     timerMinutesProp: MutableProperty<Duration?>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
-    title: String = "Time Limit",
+    text: TextProvider = koinScope.get(),
 ) {
     var timerMinutes by timerMinutesProp
 
     registerButton(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
-        text = "+",
+        text = Text.literal("+"),
         permissionGetter = permissionGetter,
     ) {
         val mins = timerMinutes?.inWholeMinutes ?: 0
@@ -32,7 +34,7 @@ fun MenuComponent.registerTimer(
 
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
-        text = "-",
+        text = Text.literal("-"),
         permissionGetter = permissionGetter,
     ) {
         val mins = timerMinutes?.inWholeMinutes ?: (MAX_TIMER_MINUTES + 30)
@@ -43,16 +45,15 @@ fun MenuComponent.registerTimer(
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
-        val timerText = timerMinutes?.let {
-            val minutes = it.inWholeMinutes
-            String.format(Locale.US, "%dh %02dm", minutes / 60, minutes % 60)
-        } ?: "Off"
+        val timerText = timerMinutes
+            ?.inWholeMinutes
+            ?.let { minutes ->
+                String.format(Locale.US, "%dh %02dm", minutes / 60, minutes % 60)
+                    .let { Text.literal(it) }
+            }
+            ?: text.string(StringKey.OptionsTimeLimitOff)
 
-        putString(
-            "text", TextInfo.toJsonString(
-                TextInfo.literal(timerText)
-            )
-        )
+        putString("text", text.serialized(timerText))
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)
@@ -60,11 +61,9 @@ fun MenuComponent.registerTimer(
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString(
-            "text", TextInfo.toJsonString(
-                TextInfo.literal(title)
-            )
-        )
+        putString("text", text.serialized(
+            text.string(StringKey.OptionsTimeLimit)
+        ))
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", 0)

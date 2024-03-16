@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 

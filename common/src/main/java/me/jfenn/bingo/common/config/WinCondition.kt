@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.config
 
-import StringKey
-import me.jfenn.bingo.common.utils.formatTitle
+import me.jfenn.bingo.generated.StringKey
 
 enum class WinCondition(
     val numLines: Int,
@@ -12,8 +11,4 @@ enum class WinCondition(
     THREE_LINES(3, StringKey.GoalThreeLines),
     FOUR_LINES(4, StringKey.GoalFourLines),
     FULL_CARD(12, StringKey.GoalFullCard);
-
-    fun formatName(): String {
-        return name.formatTitle()
-    }
 }

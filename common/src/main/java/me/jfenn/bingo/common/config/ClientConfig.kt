@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.generated.StringKey
 
 @Serializable
 data class ClientConfig(
@@ -14,14 +15,14 @@ data class ClientConfig(
     var hideOnChat: Boolean = false,
 )
 
-enum class CardAlignment(val x: Int, val y: Int) {
-    TOP_LEFT(0, 0),
-    TOP_RIGHT(1, 0),
-    BOTTOM_LEFT(0, 1),
-    BOTTOM_RIGHT(1, 1),
+enum class CardAlignment(val x: Int, val y: Int, val string: StringKey) {
+    TOP_LEFT(0, 0, StringKey.ConfigCardAlignmentTopLeft),
+    TOP_RIGHT(1, 0, StringKey.ConfigCardAlignmentTopRight),
+    BOTTOM_LEFT(0, 1, StringKey.ConfigCardAlignmentBottomLeft),
+    BOTTOM_RIGHT(1, 1, StringKey.ConfigCardAlignmentBottomRight),
 }
 
-enum class CardOverlap(val z: Int) {
-    ABOVE(800),
-    UNDERNEATH(-800),
+enum class CardOverlap(val z: Int, val string: StringKey) {
+    ABOVE(800, StringKey.ConfigCardOverlapAbove),
+    UNDERNEATH(-800, StringKey.ConfigCardOverlapUnderneath),
 }

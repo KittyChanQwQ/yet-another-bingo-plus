@@ -7,6 +7,8 @@ import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder
 import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
 import me.jfenn.bingo.common.config.*
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
@@ -24,9 +26,10 @@ interface YetAnotherConfigLibIntegration {
             configService: ConfigService,
             config: BingoConfig,
             clientSettings: ClientSettingsService,
+            text: TextProvider,
         ): YetAnotherConfigLibIntegration {
             return if (hasYACL())
-                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings)
+                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings, text)
             else YetAnotherConfigLibIntegrationDummy()
         }
     }
@@ -41,6 +44,7 @@ class YetAnotherConfigLibIntegrationImpl(
     private val configService: ConfigService,
     private val config: BingoConfig,
     private val clientSettings: ClientSettingsService,
+    private val text: TextProvider,
 ) : YetAnotherConfigLibIntegration {
 
     private val defaultConfig = BingoConfig()
@@ -50,19 +54,19 @@ class YetAnotherConfigLibIntegrationImpl(
 
     override fun buildConfigScreen(parent: Screen): Screen {
         return YetAnotherConfigLib.createBuilder()
-            .title(Text.translatable("category.bingo"))
+            .title(text.string(StringKey.FullName))
             .category(
                 ConfigCategory.createBuilder()
-                    .name(Text.translatable("bingo.config.gui"))
-                    .tooltip(Text.translatable("bingo.config.gui.tooltip"))
+                    .name(text.string(StringKey.ConfigGui))
+                    .tooltip(text.string(StringKey.ConfigGuiTooltip))
                     .options(listOf(
                         Option.createBuilder<Boolean>()
-                            .name(Text.translatable("bingo.config.support_client_hud"))
+                            .name(text.string(StringKey.ConfigSupportClientHud))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.support_client_hud.description"),
+                                    text.string(StringKey.ConfigSupportClientHudDescription),
                                     Text.empty(),
-                                    Text.translatable("bingo.config.needs_restart").formatted(Formatting.YELLOW)
+                                    text.string(StringKey.ConfigNeedsRestart).formatted(Formatting.YELLOW),
                                 )
                             )
                             .binding(
@@ -76,10 +80,10 @@ class YetAnotherConfigLibIntegrationImpl(
                             .controller { BooleanControllerBuilder.create(it).coloured(true) }
                             .build(),
                         Option.createBuilder<Float>()
-                            .name(Text.translatable("bingo.config.card_scale"))
+                            .name(text.string(StringKey.ConfigCardScale))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.card_scale.description")
+                                    text.string(StringKey.ConfigCardScaleDescription)
                                 )
                             )
                             .binding(
@@ -97,10 +101,10 @@ class YetAnotherConfigLibIntegrationImpl(
                             }
                             .build(),
                         Option.createBuilder<CardAlignment>()
-                            .name(Text.translatable("bingo.config.card_alignment"))
+                            .name(text.string(StringKey.ConfigCardAlignment))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.card_alignment.description")
+                                    text.string(StringKey.ConfigCardAlignmentDescription)
                                 )
                             )
                             .binding(
@@ -114,14 +118,14 @@ class YetAnotherConfigLibIntegrationImpl(
                             .controller {
                                 EnumControllerBuilder.create(it)
                                     .enumClass(CardAlignment::class.java)
-                                    .formatValue { value -> Text.translatable("bingo.config.card_alignment.${value.name.lowercase()}") }
+                                    .formatValue { value -> text.string(value.string) }
                             }
                             .build(),
                         Option.createBuilder<CardOverlap>()
-                            .name(Text.translatable("bingo.config.card_overlap"))
+                            .name(text.string(StringKey.ConfigCardOverlap))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.card_overlap.description")
+                                    text.string(StringKey.ConfigCardOverlapDescription)
                                 )
                             )
                             .binding(
@@ -135,14 +139,14 @@ class YetAnotherConfigLibIntegrationImpl(
                             .controller {
                                 EnumControllerBuilder.create(it)
                                     .enumClass(CardOverlap::class.java)
-                                    .formatValue { value -> Text.translatable("bingo.config.card_overlap.${value.name.lowercase()}") }
+                                    .formatValue { value -> text.string(value.string) }
                             }
                             .build(),
                         Option.createBuilder<Int>()
-                            .name(Text.translatable("bingo.config.card_offset_x"))
+                            .name(text.string(StringKey.ConfigCardOffsetX))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.card_offset_x.description")
+                                    text.string(StringKey.ConfigCardOffsetXDescription)
                                 )
                             )
                             .binding(
@@ -160,10 +164,10 @@ class YetAnotherConfigLibIntegrationImpl(
                             }
                             .build(),
                         Option.createBuilder<Int>()
-                            .name(Text.translatable("bingo.config.card_offset_y"))
+                            .name(text.string(StringKey.ConfigCardOffsetY))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.card_offset_y.description")
+                                    text.string(StringKey.ConfigCardOffsetYDescription)
                                 )
                             )
                             .binding(
@@ -181,10 +185,10 @@ class YetAnotherConfigLibIntegrationImpl(
                             }
                             .build(),
                         Option.createBuilder<Boolean>()
-                            .name(Text.translatable("bingo.config.show_multiple_cards"))
+                            .name(text.string(StringKey.ConfigShowMultipleCards))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.show_multiple_cards.description")
+                                    text.string(StringKey.ConfigShowMultipleCardsDescription)
                                 )
                             )
                             .binding(
@@ -198,10 +202,10 @@ class YetAnotherConfigLibIntegrationImpl(
                             .controller { BooleanControllerBuilder.create(it) }
                             .build(),
                         Option.createBuilder<Boolean>()
-                            .name(Text.translatable("bingo.config.hide_on_f3"))
+                            .name(text.string(StringKey.ConfigHideOnF3))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.hide_on_f3.description")
+                                    text.string(StringKey.ConfigHideOnF3Description)
                                 )
                             )
                             .binding(
@@ -215,10 +219,10 @@ class YetAnotherConfigLibIntegrationImpl(
                             .controller { BooleanControllerBuilder.create(it) }
                             .build(),
                         Option.createBuilder<Boolean>()
-                            .name(Text.translatable("bingo.config.hide_on_chat"))
+                            .name(text.string(StringKey.ConfigHideOnChat))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.config.hide_on_chat.description")
+                                    text.string(StringKey.ConfigHideOnChatDescription)
                                 )
                             )
                             .binding(
@@ -236,14 +240,14 @@ class YetAnotherConfigLibIntegrationImpl(
             )
             .category(
                 ConfigCategory.createBuilder()
-                    .name(Text.translatable("bingo.player_settings"))
-                    .tooltip(Text.translatable("bingo.player_settings.tooltip"))
+                    .name(text.string(StringKey.PlayerSettings))
+                    .tooltip(text.string(StringKey.PlayerSettingsTooltip))
                     .option(
                         Option.createBuilder<Boolean>()
-                            .name(Text.translatable("bingo.player_settings.bossbar"))
+                            .name(text.string(StringKey.PlayerSettingsBossbar))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.player_settings.bossbar.description")
+                                    text.string(StringKey.PlayerSettingsBossbarDescription)
                                 )
                             )
                             .binding(
@@ -258,10 +262,10 @@ class YetAnotherConfigLibIntegrationImpl(
                     )
                     .option(
                         Option.createBuilder<Boolean>()
-                            .name(Text.translatable("bingo.player_settings.scoreboard"))
+                            .name(text.string(StringKey.PlayerSettingsScoreboard))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.player_settings.scoreboard.description")
+                                    text.string(StringKey.PlayerSettingsScoreboardDescription)
                                 )
                             )
                             .binding(
@@ -276,10 +280,10 @@ class YetAnotherConfigLibIntegrationImpl(
                     )
                     .let { builder ->
                         Option.createBuilder<Boolean>()
-                            .name(Text.translatable("bingo.player_settings.scoreboard_auto_hide"))
+                            .name(text.string(StringKey.PlayerSettingsScoreboardAutoHide))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.player_settings.scoreboard_auto_hide.description")
+                                    text.string(StringKey.PlayerSettingsScoreboardAutoHideDescription)
                                 )
                             )
                             .binding(
@@ -297,10 +301,10 @@ class YetAnotherConfigLibIntegrationImpl(
                     }
                     .option(
                         Option.createBuilder<Boolean>()
-                            .name(Text.translatable("bingo.player_settings.night_vision"))
+                            .name(text.string(StringKey.PlayerSettingsNightVision))
                             .description(
                                 OptionDescription.of(
-                                    Text.translatable("bingo.player_settings.night_vision.description")
+                                    text.string(StringKey.PlayerSettingsNightVisionDescription)
                                 )
                             )
                             .binding(
@@ -316,13 +320,13 @@ class YetAnotherConfigLibIntegrationImpl(
                     .group(
                         OptionGroup.createBuilder()
                             .collapsed(false)
-                            .name(Text.translatable("bingo.player_settings.messages"))
+                            .name(text.string(StringKey.PlayerSettingsMessages))
                             .option(
                                 Option.createBuilder<Boolean>()
-                                    .name(Text.translatable("bingo.player_settings.messages.leading"))
+                                    .name(text.string(StringKey.PlayerSettingsMessagesLeading))
                                     .description(
                                         OptionDescription.of(
-                                            Text.translatable("bingo.player_settings.messages.leading.description")
+                                            text.string(StringKey.PlayerSettingsMessagesLeadingDescription)
                                         )
                                     )
                                     .binding(
@@ -337,10 +341,10 @@ class YetAnotherConfigLibIntegrationImpl(
                             )
                             .option(
                                 Option.createBuilder<Boolean>()
-                                    .name(Text.translatable("bingo.player_settings.messages.lines"))
+                                    .name(text.string(StringKey.PlayerSettingsMessagesLines))
                                     .description(
                                         OptionDescription.of(
-                                            Text.translatable("bingo.player_settings.messages.lines.description")
+                                            text.string(StringKey.PlayerSettingsMessagesLinesDescription)
                                         )
                                     )
                                     .binding(

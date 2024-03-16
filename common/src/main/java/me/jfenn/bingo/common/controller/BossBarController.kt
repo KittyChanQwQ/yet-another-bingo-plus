@@ -1,13 +1,12 @@
 package me.jfenn.bingo.common.controller
 
-import StringKey
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.formatTitle
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.entity.boss.CommandBossBar
 import net.minecraft.server.MinecraftServer

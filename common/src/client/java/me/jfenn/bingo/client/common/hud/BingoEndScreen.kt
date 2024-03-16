@@ -4,12 +4,12 @@ import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.common.world.BingoWorldService
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.text.GameOverPacket
-import net.fabricmc.loader.api.FabricLoader
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.text.Text
 import org.koin.core.Koin
 import kotlin.math.ceil
 
@@ -17,7 +17,8 @@ class BingoEndScreen(
     koin: Koin,
     private val gameOver: GameOverPacket,
     private val canEscape: Boolean = false,
-) : Screen(Text.translatable("bingo.card.title")) {
+    private val text: TextProvider = koin.get(),
+) : Screen(text.string(StringKey.CardTitle)) {
 
     private val drawServiceFactory = koin.get<IDrawServiceFactory>()
     private val state = koin.get<BingoHudState>()
@@ -65,7 +66,7 @@ class BingoEndScreen(
     fun updateButtons() {
         val client = client ?: return
 
-        val dismissButton = dismissButton ?: ButtonWidget.builder(Text.translatable("bingo.card.close")) { close() }
+        val dismissButton = dismissButton ?: ButtonWidget.builder(text.string(StringKey.CardClose)) { close() }
             .width(BUTTON_WIDTH)
             .position(0, 0)
             .build()
@@ -79,9 +80,9 @@ class BingoEndScreen(
 
         val restartButton = restartButton ?: ButtonWidget.builder(
             when {
-                client.isInSingleplayer -> Text.translatable("bingo.world.new_game")
-                gameOver.canSendRestart -> Text.translatable("bingo.world.restart")
-                else -> Text.translatable("bingo.world.disconnect")
+                client.isInSingleplayer -> text.string(StringKey.WorldNewGame)
+                gameOver.canSendRestart -> text.string(StringKey.WorldRestart)
+                else -> text.string(StringKey.WorldDisconnect)
             }
         ) {
             it.active = false;

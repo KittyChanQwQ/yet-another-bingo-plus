@@ -5,6 +5,8 @@ import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.integrations.jei.JeiIntegration
 import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.map.CardView
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -15,7 +17,8 @@ import kotlin.math.ceil
 
 class BingoHudScreen(
     koin: Koin,
-) : Screen(Text.translatable("bingo.card.title")) {
+    text: TextProvider = koin.get(),
+) : Screen(text.string(StringKey.CardTitle)) {
 
     private val drawServiceFactory = koin.get<IDrawServiceFactory>()
     private val buttonService = koin.get<IButtonService>()

@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import org.slf4j.Logger
 import kotlin.time.Duration.Companion.seconds
 

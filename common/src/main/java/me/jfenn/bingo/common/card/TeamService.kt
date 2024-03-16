@@ -5,6 +5,7 @@ import me.jfenn.bingo.api.ITeamManager
 import me.jfenn.bingo.common.commands.CommandTreeHandler
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
