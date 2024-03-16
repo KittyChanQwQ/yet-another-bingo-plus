@@ -59,6 +59,17 @@ data class BingoTeam(
         return fromPlayer(player) == this
     }
 
+    fun teamOrPlayerName(): Text {
+        return if (players.size == 1) {
+            val player = players.firstOrNull() ?: return text()
+
+            Text.empty()
+                .append("[")
+                .append(Text.literal(player.name).formatted(formatting))
+                .append("]")
+        } else text()
+    }
+
     fun text(): Text {
         val text = Text.empty()
             .append("[")

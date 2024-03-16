@@ -3,7 +3,10 @@ package me.jfenn.bingo.common.state
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.common.card.*
+import me.jfenn.bingo.common.card.BingoCard
+import me.jfenn.bingo.common.card.BingoCardEntry
+import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
@@ -114,7 +117,7 @@ data class BingoState(
                 val duration = win.instant - (startedAt ?: Clock.System.now())
                 Text.empty()
                     .append(Text.literal("${index+1}. ").formatted(Formatting.GRAY))
-                    .append(team.text())
+                    .append(team.teamOrPlayerName())
                     .append(" - ${duration.formatString()}")
                     .also { add(it) }
             }

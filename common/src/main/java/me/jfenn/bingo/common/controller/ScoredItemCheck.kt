@@ -203,7 +203,7 @@ class ScoredItemCheck(
 
             // if the team has scored a line, post a message
             if (scoreAfter.lines > scoreBefore.lines && options.showCompletedLines) {
-                val message = textProvider.string(StringKey.GameMessageScoredLine, team.text(), textProvider.lineCount(scoreAfter.lines))
+                val message = textProvider.string(StringKey.GameMessageScoredLine, team.teamOrPlayerName(), textProvider.lineCount(scoreAfter.lines))
                     .formatted(Formatting.YELLOW)
 
                 server.playerManager.playerList
@@ -254,7 +254,7 @@ class ScoredItemCheck(
     }
 
     private fun broadcastCardCompleted(team: BingoTeam) {
-        val message = textProvider.string(StringKey.GameMessageCompletedCard, team.text())
+        val message = textProvider.string(StringKey.GameMessageCompletedCard, team.teamOrPlayerName())
 
         server.playerManager.playerList
             .forEach { it.sendMessage(message, false) }
@@ -264,9 +264,9 @@ class ScoredItemCheck(
         val score = team.score
         val message = when {
             options.showCompletedItems -> {
-                textProvider.string(StringKey.GameMessageLeadingWithScore, team.text(), textProvider.itemCount(score.items))
+                textProvider.string(StringKey.GameMessageLeadingWithScore, team.teamOrPlayerName(), textProvider.itemCount(score.items))
             }
-            else -> textProvider.string(StringKey.GameMessageLeading, team.text())
+            else -> textProvider.string(StringKey.GameMessageLeading, team.teamOrPlayerName())
         }.formatted(Formatting.YELLOW)
 
         server.playerManager.playerList
@@ -278,9 +278,9 @@ class ScoredItemCheck(
         val score = team.score
         val message = when {
             options.showCompletedItems -> {
-                textProvider.string(StringKey.GameMessageLeadingTiedWithScore, team.text(), textProvider.itemCount(score.items))
+                textProvider.string(StringKey.GameMessageLeadingTiedWithScore, team.teamOrPlayerName(), textProvider.itemCount(score.items))
             }
-            else -> textProvider.string(StringKey.GameMessageLeadingTied, team.text())
+            else -> textProvider.string(StringKey.GameMessageLeadingTied, team.teamOrPlayerName())
         }.formatted(Formatting.YELLOW)
 
         server.playerManager.playerList

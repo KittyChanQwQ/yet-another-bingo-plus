@@ -145,13 +145,13 @@ class GameService(
             Text.empty()
                 .takeIf { options.isRankedMode }
                 ?: winningTeam?.let { winner ->
-                    textProvider.string(StringKey.GameEndCompletedCard, winner.text())
+                    textProvider.string(StringKey.GameEndCompletedCard, winner.teamOrPlayerName())
                 }
                 ?: ScoreService.getLeadingByLines(state)?.let { leader ->
-                    textProvider.string(StringKey.GameEndWonWithMoreLines, leader.text())
+                    textProvider.string(StringKey.GameEndWonWithMoreLines, leader.teamOrPlayerName())
                 }
                 ?: ScoreService.getLeadingByItems(state)?.let { leader ->
-                    textProvider.string(StringKey.GameEndWonWithMoreItems, leader.text())
+                    textProvider.string(StringKey.GameEndWonWithMoreItems, leader.teamOrPlayerName())
                 }
                 ?: textProvider.string(StringKey.GameEndDraw)
         ).formatted(Formatting.YELLOW)
