@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common
 
+import StringKey
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.card.TeamService
@@ -137,20 +138,20 @@ class GameService(
             .takeIf { it.size == 1 }
             ?.firstOrNull()
 
-        val winTitle = reason ?: textProvider.string("bingo.game.end.game_over")
+        val winTitle = reason ?: textProvider.string(StringKey.GameEndGameOver)
         val winMessage = (
             Text.empty()
                 .takeIf { options.isRankedMode }
                 ?: winningTeam?.let { winner ->
-                    textProvider.string("bingo.game.end.completed_card", winner.text())
+                    textProvider.string(StringKey.GameEndCompletedCard, winner.text())
                 }
                 ?: ScoreService.getLeadingByLines(state)?.let { leader ->
-                    textProvider.string("bingo.game.end.won_with_more_lines", leader.text())
+                    textProvider.string(StringKey.GameEndWonWithMoreLines, leader.text())
                 }
                 ?: ScoreService.getLeadingByItems(state)?.let { leader ->
-                    textProvider.string("bingo.game.end.won_with_more_items", leader.text())
+                    textProvider.string(StringKey.GameEndWonWithMoreItems, leader.text())
                 }
-                ?: textProvider.string("bingo.game.end.draw")
+                ?: textProvider.string(StringKey.GameEndDraw)
         ).formatted(Formatting.YELLOW)
 
         sequence {
@@ -159,13 +160,13 @@ class GameService(
 
             Text.literal("  ")
                 .append(
-                    textProvider.string("bingo.game.end.duration", (state.ingameDuration() ?: Duration.ZERO).formatString())
+                    textProvider.string(StringKey.GameEndDuration, (state.ingameDuration() ?: Duration.ZERO).formatString())
                 )
                 .also { yield(it) }
 
             Text.literal("  ")
                 .append(
-                    textProvider.string("bingo.game.end.seed", Texts.bracketedCopyable(server.overworld.seed.toString()))
+                    textProvider.string(StringKey.GameEndSeed, Texts.bracketedCopyable(server.overworld.seed.toString()))
                 )
                 .also { yield(it) }
 

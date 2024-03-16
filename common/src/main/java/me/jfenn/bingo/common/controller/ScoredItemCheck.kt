@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.controller
 
+import StringKey
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.IOfflinePlayerAccessor
 import me.jfenn.bingo.common.GameService
@@ -202,7 +203,7 @@ class ScoredItemCheck(
 
             // if the team has scored a line, post a message
             if (scoreAfter.lines > scoreBefore.lines && options.showCompletedLines) {
-                val message = textProvider.string("bingo.game.message.scored_line", team.text(), textProvider.lineCount(scoreAfter.lines))
+                val message = textProvider.string(StringKey.GameMessageScoredLine, team.text(), textProvider.lineCount(scoreAfter.lines))
                     .formatted(Formatting.YELLOW)
 
                 server.playerManager.playerList
@@ -227,14 +228,14 @@ class ScoredItemCheck(
 
             if (isWinner && !options.isRankedMode) {
                 // end the game, since a team has won
-                gameService.end( textProvider.string("bingo.game.end.reason_bingo"))
+                gameService.end(textProvider.string(StringKey.GameEndReasonBingo))
                 return
             }
         }
 
         // check if the game is in a stalemate
         if (ScoreService.isLockout(state)) {
-            gameService.end(textProvider.string("bingo.game.end.reason_lockout"))
+            gameService.end(textProvider.string(StringKey.GameEndReasonLockout))
             return
         }
 
@@ -253,7 +254,7 @@ class ScoredItemCheck(
     }
 
     private fun broadcastCardCompleted(team: BingoTeam) {
-        val message = textProvider.string("bingo.game.message.completed_card", team.text())
+        val message = textProvider.string(StringKey.GameMessageCompletedCard, team.text())
 
         server.playerManager.playerList
             .forEach { it.sendMessage(message, false) }
@@ -263,9 +264,9 @@ class ScoredItemCheck(
         val score = team.score
         val message = when {
             options.showCompletedItems -> {
-                textProvider.string("bingo.game.message.leading_with_score", team.text(), textProvider.itemCount(score.items))
+                textProvider.string(StringKey.GameMessageLeadingWithScore, team.text(), textProvider.itemCount(score.items))
             }
-            else -> textProvider.string("bingo.game.message.leading", team.text())
+            else -> textProvider.string(StringKey.GameMessageLeading, team.text())
         }.formatted(Formatting.YELLOW)
 
         server.playerManager.playerList
@@ -277,9 +278,9 @@ class ScoredItemCheck(
         val score = team.score
         val message = when {
             options.showCompletedItems -> {
-                textProvider.string("bingo.game.message.leading_tied_with_score", team.text(), textProvider.itemCount(score.items))
+                textProvider.string(StringKey.GameMessageLeadingTiedWithScore, team.text(), textProvider.itemCount(score.items))
             }
-            else -> textProvider.string("bingo.game.message.leading_tied", team.text())
+            else -> textProvider.string(StringKey.GameMessageLeadingTied, team.text())
         }.formatted(Formatting.YELLOW)
 
         server.playerManager.playerList

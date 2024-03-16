@@ -1,3 +1,5 @@
+import java.nio.file.Files
+
 plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
     id 'bingo.mod'
@@ -52,3 +54,50 @@ tasks.register('bingoImages', Copy) {
 
 tasks.processResources.dependsOn(tasks.bingoImages)
 tasks.sourcesJar.dependsOn(tasks.bingoImages)
+
+// This is a mess, but it generates safe enum entries for every key in /resources/.../lang/en_us.json
+// which ensures that I can't make typos on any of the thousands of string keys in there.
+sourceSets {
+    main {
+        java {
+            srcDir "${buildDir}/generated/main/java"
+        }
+    }
+}
+
+tasks.register("bingoLangFiles", DefaultTask) {
+    var regex = "\"([\\W\\w]+)\":"
+    var nonEnumSafeRegex = "[^a-zA-Z0-9_]"
+
+    var langFile = file("src/main/resources/yet-another-minecraft-bingo/lang/en_us.json").text
+    var enumEntries = langFile.lines()
+            .map {
+                var match = it.find(regex)
+                if (match != null)
+                    return match.substring(1, match.length() - 2)
+                else return null
+            }
+            .filter { it != null }
+            .map { it.replaceAll("^bingo\\.", "") }
+            .map {
+                var enumName = it[0].toUpperCase() +
+                        it.substring(1)
+                        .replaceAll(nonEnumSafeRegex, "_")
+                        .replaceAll("_[a-z]") { "${it.toString().substring(1).toUpperCase()}" }
+
+                var enumValue = it
+
+                return "    $enumName(\"$enumValue\"),"
+            }
+            .toList()
+            .join("\n")
+
+    var enumClass = "enum class StringKey(val key: String) {\n$enumEntries\n}\n"
+
+    var outFile = file("${buildDir}/generated/main/java/me/jfenn/bingo/generated/StringKey.kt")
+    Files.createDirectories(outFile.toPath().parent)
+    outFile.write(enumClass)
+}
+
+tasks.processResources.dependsOn(tasks.bingoLangFiles)
+tasks.sourcesJar.dependsOn(tasks.bingoLangFiles)

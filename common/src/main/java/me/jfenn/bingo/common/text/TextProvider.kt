@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.text
 
+import StringKey
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.utils.json
@@ -18,26 +19,26 @@ class TextProvider(
         }
         ?: emptyMap()
 
-    fun string(key: String, vararg args: Any): MutableText {
-        val fallback = lang[key] ?: run {
-            logger.error("[TextProvider] No translation key for $key!")
-            key
+    fun string(str: StringKey, vararg args: Any): MutableText {
+        val fallback = lang[str.key] ?: run {
+            logger.error("[TextProvider] No translation key for ${str.key}!")
+            str.key
         }
 
-        return Text.translatableWithFallback(key, fallback, *args)
+        return Text.translatableWithFallback(str.key, fallback, *args)
     }
 
     fun itemCount(number: Int): Text {
         return when (number) {
-            1 -> string("bingo.game.item_single")
-            else -> string("bingo.game.item_count", number)
+            1 -> string(StringKey.GameItemSingle)
+            else -> string(StringKey.GameItemCount, number)
         }
     }
 
     fun lineCount(number: Int): Text {
         return when (number) {
-            1 -> string("bingo.game.line_single")
-            else -> string("bingo.game.line_count", number)
+            1 -> string(StringKey.GameLineSingle)
+            else -> string(StringKey.GameLineCount, number)
         }
     }
 

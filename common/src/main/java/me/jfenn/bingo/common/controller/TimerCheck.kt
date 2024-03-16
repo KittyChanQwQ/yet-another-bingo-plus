@@ -53,7 +53,7 @@ class TimerCheck(
             val duration = state.ingameDuration() ?: return@onGameTick
             if (duration >= timeLimit) {
                 // end the game!
-                gameService.end(textProvider.string("bingo.game.end.reason_timer"))
+                gameService.end(textProvider.string(StringKey.GameEndReasonTimer))
             }
         }
     }

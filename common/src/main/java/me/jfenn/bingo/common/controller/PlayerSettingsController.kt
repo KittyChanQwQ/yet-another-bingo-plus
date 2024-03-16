@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.controller
 
+import StringKey
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.*
@@ -95,7 +96,8 @@ class PlayerSettingsController(
 
     private fun toggleText(
         value: Boolean,
-        key: String,
+        name: StringKey,
+        description: StringKey,
     ) =
         Text.empty()
             .append(
@@ -105,12 +107,12 @@ class PlayerSettingsController(
                     )
             )
             .append(" ")
-            .append(textProvider.string("bingo.player_settings.$key"))
+            .append(textProvider.string(name))
             .append(
                 Text.literal(" \uD83D\uDEC8").formatted(Formatting.GRAY).also {
                     it.style = it.style.withHoverEvent(HoverEvent(
                         HoverEvent.Action.SHOW_TEXT,
-                        textProvider.string("bingo.player_settings.$key.description")
+                        textProvider.string(description)
                     ))
                 }
             )
@@ -120,14 +122,14 @@ class PlayerSettingsController(
             .append(Text.literal("Player Settings").formatted(Formatting.BOLD))
             .append("\n\n")
             .append(
-                toggleText(settings.bossbar, "bossbar")
+                toggleText(settings.bossbar, StringKey.PlayerSettingsBossbar, StringKey.PlayerSettingsBossbarDescription)
                     .also {
                         it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set bossbar ${!settings.bossbar}"))
                     }
             )
             .append("\n\n")
             .append(
-                toggleText(settings.scoreboard, "scoreboard")
+                toggleText(settings.scoreboard, StringKey.PlayerSettingsScoreboard, StringKey.PlayerSettingsScoreboardDescription)
                     .also {
                         it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set scoreboard ${!settings.scoreboard}"))
                     }
@@ -136,7 +138,7 @@ class PlayerSettingsController(
                 if (!cardViewService.supportsCardHud(player)) {
                     it.append("\n")
                     it.append(
-                        toggleText(settings.scoreboardAutoHide, "scoreboard_auto_hide")
+                        toggleText(settings.scoreboardAutoHide, StringKey.PlayerSettingsScoreboardAutoHide, StringKey.PlayerSettingsScoreboardAutoHideDescription)
                             .also {
                                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set scoreboardAutoHide ${!settings.scoreboardAutoHide}"))
                             }
@@ -144,24 +146,24 @@ class PlayerSettingsController(
                 }
             }
             .append("\n\n")
-            .append(textProvider.string("bingo.player_settings.messages"))
+            .append(textProvider.string(StringKey.PlayerSettingsMessages))
             .append(":\n")
             .append(
-                toggleText(settings.leadingMessages, "messages.leading")
+                toggleText(settings.leadingMessages, StringKey.PlayerSettingsMessagesLeading, StringKey.PlayerSettingsMessagesLeadingDescription)
                     .also {
                         it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set leadingMessages ${!settings.leadingMessages}"))
                     }
             )
             .append("\n")
             .append(
-                toggleText(settings.scoreMessages, "messages.lines")
+                toggleText(settings.scoreMessages, StringKey.PlayerSettingsMessagesLines, StringKey.PlayerSettingsMessagesLinesDescription)
                     .also {
                         it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set scoreMessages ${!settings.scoreMessages}"))
                     }
             )
             .append("\n\n")
             .append(
-                toggleText(settings.nightVision, "night_vision")
+                toggleText(settings.nightVision, StringKey.PlayerSettingsNightVision, StringKey.PlayerSettingsNightVisionDescription)
                     .also {
                         it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set nightVision ${!settings.nightVision}"))
                     }

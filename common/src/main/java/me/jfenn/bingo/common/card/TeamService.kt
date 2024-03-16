@@ -50,7 +50,7 @@ class TeamService(
         teamManager.setPlayerTeam(player, createTeam(team))
         team.players.add(playerProfile)
         player.sendMessage(
-            textProvider.string("bingo.lobby.team_changed", team.text())
+            textProvider.string(StringKey.LobbyTeamChanged, team.text())
                 .formatted(Formatting.YELLOW)
         )
 
