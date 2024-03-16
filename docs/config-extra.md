@@ -42,10 +42,15 @@ Controls whether all spectating players are given the night vision effect.
 
 Controls whether all players are given the night vision effect when the game is over.
 
-## `"autoShutDownInPostgame"`
+## `"shutDownWhenEveryoneDisconnects"`
 (default: true)
 
 Automatically shuts down / restarts the server if all players disconnect after a game has ended.
+
+## `"shutDownWhenGameOverSeconds"`
+(default: null)
+
+Automatically shuts down / restarts the server a set time after the game has ended. This can be cancelled by an operator with the `/restart abort` command.
 
 ## `"unsafeSkipWorldClose"`
 (default: false)
