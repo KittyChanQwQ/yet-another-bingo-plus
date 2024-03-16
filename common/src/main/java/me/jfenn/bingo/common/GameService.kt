@@ -103,23 +103,25 @@ class GameService(
     private fun broadcastStart() {
         sequence {
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
-            yield(Text.literal("  BINGO Start!").formatted(Formatting.GREEN))
 
-            Text.empty()
-                .append("  Game mode: ")
-                .append(options.formatGameMode())
+            Text.literal("  ")
+                .append(textProvider.string(StringKey.GameStart))
+                .formatted(Formatting.GREEN)
+                .also { yield(it) }
+
+            Text.literal("  ")
+                .append(textProvider.string(StringKey.ScoreboardMode, options.formatGameMode()))
+                .formatted(Formatting.GRAY)
+                .also { yield(it) }
+
+            Text.literal("  ")
+                .append(textProvider.string(StringKey.ScoreboardFeatures, options.formatFeatures()))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
             Text.empty()
-                .append("  Features: ")
-                .append(options.formatFeatures())
-                .formatted(Formatting.GRAY)
-                .also { yield(it) }
-
-            Text.empty()
-                .append("  Win condition: ")
-                .append(options.goal.formatName())
+                .append("  ")
+                .append(textProvider.string(StringKey.ScoreboardGoal, textProvider.string(options.goal.string)))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
@@ -160,7 +162,7 @@ class GameService(
 
             Text.literal("  ")
                 .append(
-                    textProvider.string(StringKey.GameEndDuration, (state.ingameDuration() ?: Duration.ZERO).formatString())
+                    textProvider.string(StringKey.GameEndDuration, Text.literal((state.ingameDuration() ?: Duration.ZERO).formatString()).formatted(Formatting.GREEN))
                 )
                 .also { yield(it) }
 

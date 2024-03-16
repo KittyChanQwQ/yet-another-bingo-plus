@@ -78,10 +78,10 @@ tasks.register("bingoLangFiles", DefaultTask) {
                 else return null
             }
             .filter { it != null }
-            .map { it.replaceAll("^bingo\\.", "") }
             .map {
-                var enumName = it[0].toUpperCase() +
-                        it.substring(1)
+                var enumStr = it.replaceAll("^bingo\\.", "")
+                var enumName = enumStr[0].toUpperCase() +
+                        enumStr.substring(1)
                         .replaceAll(nonEnumSafeRegex, "_")
                         .replaceAll("_[a-z]") { "${it.toString().substring(1).toUpperCase()}" }
 

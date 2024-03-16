@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 
@@ -23,6 +24,7 @@ class ScoreboardController(
     private val teamService: TeamService,
     private val scoreboardService: ScoreboardService,
     private val playerSettingsService: PlayerSettingsService,
+    private val textProvider: TextProvider,
 ) : BingoComponent() {
 
     private fun String.wrap(maxChars: Int) : List<String> {
@@ -55,39 +57,45 @@ class ScoreboardController(
 
                 val scoreboardText = buildList {
                     add("")
-                    options.formatGameMode()
-                        .let { "Mode: ${Formatting.YELLOW}$it" }
+                    textProvider.raw(StringKey.ScoreboardMode, "${Formatting.YELLOW}" + options.formatGameMode())
                         .wrap(32)
                         .mapIndexed { i, str ->
                             if (i == 0) str else "  ${Formatting.YELLOW}$str"
                         }
-                        .let { addAll(it) }
-                    options.formatFeatures()
-                        .let { "Features: ${Formatting.YELLOW}$it" }
+                        .also { addAll(it) }
+                    textProvider.raw(StringKey.ScoreboardFeatures, "${Formatting.YELLOW}" + options.formatFeatures())
                         .wrap(32)
                         .mapIndexed { i, str ->
                             if (i == 0) str else "  ${Formatting.YELLOW}$str"
                         }
-                        .let { addAll(it) }
-                    add("Goal: ${Formatting.YELLOW}${options.goal.formatName()}")
+                        .also { addAll(it) }
+                    textProvider.raw(StringKey.ScoreboardGoal, "${Formatting.YELLOW}" + textProvider.raw(options.goal.string))
+                        .also { add(it) }
                     if (options.showRemainingTime && options.timeLimit != null) {
-                        add("Time left: ${Formatting.YELLOW}${state.formatTimeRemaining().string}")
+                        textProvider.raw(StringKey.ScoreboardTimeLeft, "${Formatting.YELLOW}${state.formatTimeRemaining().string}")
+                            .also { add(it) }
                     }
                     add("")
                     if (team != null) {
                         val score = team.score
 
                         if (isMultipleTeams) {
-                            add("Team: ${team.formatting}${team.name}")
+                            textProvider.raw(StringKey.ScoreboardTeam, "${team.formatting}${team.name}")
+                                .also { add(it) }
                         }
-                        add("Items scored: ${team.formatting}${score.items}")
-                        add("Lines scored: ${team.formatting}${score.lines}")
+                        textProvider.raw(StringKey.ScoreboardItemsScored, "${team.formatting}${score.items}")
+                            .also { add(it) }
+                        textProvider.raw(StringKey.ScoreboardLinesScored, "${team.formatting}${score.lines}")
+                            .also { add(it) }
                         add("")
                     }
 
                     val leadingTeam = ScoreService.getLeading(state)
                     if (options.showLeadingTeam && isMultipleTeams) {
-                        add("Leading team: ${leadingTeam?.let { it.formatting.toString() + it.name } ?: "${Formatting.WHITE}Tie"}")
+                        val teamName = leadingTeam?.let { it.formatting.toString() + it.name }
+                            ?: "${Formatting.WHITE}${textProvider.raw(StringKey.ScoreboardLeadingTeamTie)}"
+                        textProvider.raw(StringKey.ScoreboardLeadingTeam, teamName)
+                            .also { add(it) }
                     }
 
                     val formatting = when {
@@ -101,13 +109,15 @@ class ScoreboardController(
                         // if the leading team is a tie, find one of the tied teams to get the item/line count
                         val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByItems(state, allowTies = true)
                         val itemsScored = leadingOrTied?.score?.items ?: 0
-                        add("Items scored: $formatting$itemsScored")
+                        textProvider.raw(StringKey.ScoreboardItemsScored, "$formatting$itemsScored")
+                            .also { add(it) }
                     }
                     if (options.showCompletedLines && isMultipleTeams && team != leadingTeam) {
                         // if the leading team is a tie, find one of the tied teams to get the item/line count
                         val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByLines(state, allowTies = true)
                         val linesScored = leadingOrTied?.score?.lines ?: 0
-                        add("Lines scored: $formatting$linesScored")
+                        textProvider.raw(StringKey.ScoreboardLinesScored, "$formatting$linesScored")
+                            .also { add(it) }
                     }
 
                     if (lastOrNull() != "")

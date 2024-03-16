@@ -1,10 +1,12 @@
 package me.jfenn.bingo.common.controller
 
+import StringKey
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.entity.boss.CommandBossBar
@@ -23,6 +25,7 @@ class BossBarController(
     private val options: BingoOptions,
     private val state: BingoState,
     private val playerSettingsService: PlayerSettingsService,
+    private val textProvider: TextProvider,
 ) : BingoComponent() {
 
     private val ID = Identifier.of("fennifith", "bingo")
@@ -63,18 +66,13 @@ class BossBarController(
                 }
             }
 
-            bossBar.name = Text.empty()
-                .let {
-                    if (options.showRemainingTime) {
-                        it.append(Text.literal("Time Remaining: "))
-                            .append(state.formatTimeRemaining())
-                            .append(Text.literal(" or "))
-                    } else it
+            val goalText = textProvider.string(options.goal.string).formatted(Formatting.BOLD)
+            bossBar.name = when {
+                options.showRemainingTime -> {
+                    textProvider.string(StringKey.BossbarTimeRemainingOrGoal, state.formatTimeRemaining(), goalText)
                 }
-                .append(
-                    Text.literal(options.goal.name.formatTitle())
-                        .formatted(Formatting.BOLD)
-                )
+                else -> goalText
+            }
         }
     }
 
