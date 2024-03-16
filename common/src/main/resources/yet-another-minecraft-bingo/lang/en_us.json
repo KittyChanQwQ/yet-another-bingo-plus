@@ -141,5 +141,8 @@
   "bingo.goal.two_lines": "Two Lines",
   "bingo.goal.three_lines": "Three Lines",
   "bingo.goal.four_lines": "Four Lines",
-  "bingo.goal.full_card": "Full Card"
+  "bingo.goal.full_card": "Full Card",
+  "bingo.command.restart.aborted": "The scheduled restart has been aborted.",
+  "bingo.command.restart.not_scheduled": "There is no scheduled restart to abort.",
+  "bingo.command.restart.warning": "The server will restart in %s!"
 }

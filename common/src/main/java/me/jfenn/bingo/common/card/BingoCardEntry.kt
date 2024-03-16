@@ -248,6 +248,7 @@ sealed class BingoCardEntry {
         }
 
         @Throws(UnsupportedOperationException::class)
+        @Deprecated("This is unsupported and will throw an error", replaceWith = ReplaceWith(""))
         override fun markSeen(team: BingoTeam) {
             throw UnsupportedOperationException("markSeen on MultiEntry")
         }
@@ -266,6 +267,7 @@ sealed class BingoCardEntry {
         }
 
         @Throws(UnsupportedOperationException::class)
+        @Deprecated("This is unsupported and will throw an error", replaceWith = ReplaceWith(""))
         override fun markDirty(team: BingoTeam) {
             throw UnsupportedOperationException("markDirty on MultiEntry")
         }

@@ -1,8 +1,11 @@
 package me.jfenn.bingo.common.config
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
+@OptIn(ExperimentalSerializationApi::class)
 data class BingoConfig(
     var version: Int = 0,
 
@@ -22,7 +25,9 @@ data class BingoConfig(
     var supportClientHud: Boolean = true,
 
     // shuts down the server once all players log out after a game
-    val autoShutDownInPostgame: Boolean = true,
+    @JsonNames("autoShutDownInPostgame")
+    val shutDownWhenEveryoneDisconnects: Boolean = true,
+    val shutDownWhenGameOverSeconds: Int? = null,
     // shuts down the server faster, at the risk of bugs or data corruption
     val unsafeSkipWorldClose: Boolean = false,
 

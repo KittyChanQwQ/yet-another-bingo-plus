@@ -1,5 +1,9 @@
 package me.jfenn.bingo.common
 
+import me.jfenn.bingo.common.autorestart.RestartCommand
+import me.jfenn.bingo.common.autorestart.RestartOnLeaveController
+import me.jfenn.bingo.common.autorestart.RestartTimerController
+import me.jfenn.bingo.common.autorestart.RestartTimerState
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.commands.*
@@ -52,7 +56,7 @@ val commonModule = module {
     singleOf(::EventManager)
     singleOf(::ScopeManager)
 
-    singleOf(::AutoShutdownController)
+    singleOf(::RestartOnLeaveController)
     factoryOf(PermissionsIntegration::create)
     factoryOf(VanishIntegration::create)
     factoryOf(ChunkyIntegration::create)
@@ -100,6 +104,9 @@ val commonModule = module {
         scopedOf(::ScoredItemCheck)
         scopedOf(::TimerCheck)
 
+        scoped { RestartTimerState() }
+        scopedOf(::RestartTimerController)
+
         scopedOf(::CommandTreeHandler)
     }
 }
@@ -108,7 +115,7 @@ fun Koin.commonInit() {
     get<ServerDatapackManager>()
     get<EventManager>()
     get<ScopeManager>()
-    get<AutoShutdownController>()
+    get<RestartOnLeaveController>()
 
     get<BingoCommands>()
     get<ChatCommand>()
@@ -133,5 +140,6 @@ fun Scope.commonInit() {
     get<ScoreboardController>()
     get<ScoredItemCheck>()
     get<TimerCheck>()
+    get<RestartTimerController>()
     get<CommandTreeHandler>()
 }

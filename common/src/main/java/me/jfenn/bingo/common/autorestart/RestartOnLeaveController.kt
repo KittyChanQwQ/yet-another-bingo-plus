@@ -1,7 +1,6 @@
-package me.jfenn.bingo.common
+package me.jfenn.bingo.common.autorestart
 
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -10,7 +9,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger
 
-class AutoShutdownController(
+class RestartOnLeaveController(
     private val log: Logger,
     private val config: BingoConfig,
 ) {
@@ -22,8 +21,8 @@ class AutoShutdownController(
             val state = scope.get<BingoState>()
 
             // if the last player is disconnecting after a bingo game, shut down the server
-            if (server.isRunning && config.autoShutDownInPostgame && state.state == GameState.POSTGAME && server.currentPlayerCount <= 1) {
-                log.info("Last player has disconnected and 'autoShutDownInPostgame' is true; Shutting down the server...")
+            if (server.isRunning && config.shutDownWhenEveryoneDisconnects && state.state == GameState.POSTGAME && server.currentPlayerCount <= 1) {
+                log.info("[RestartOnLeaveController] Last player has disconnected and 'shutDownWhenEveryoneDisconnects' is true; Shutting down the server...")
                 server.stop(false)
             }
         }
