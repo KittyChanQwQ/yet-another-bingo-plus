@@ -69,7 +69,7 @@ object Sounds {
         player.playSound(
             SoundEvents.BLOCK_PORTAL_TRAVEL,
             SoundCategory.RECORDS,
-            0.2f, 1f
+            0.5f, 1f
         )
     }
 
