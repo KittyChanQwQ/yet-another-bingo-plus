@@ -56,7 +56,9 @@ class BingoWorldManager(
         ScreenEvents.BEFORE_INIT.register { client, screen, width, height ->
             if (screen is CreateWorldScreen && worldState.state == ScreenState.CreateBingoWorld) {
                 // Add a prefix to the names of bingo worlds
-                screen.worldCreator.worldName = "$BINGO_WORLD_PREFIX ${screen.worldCreator.worldName}"
+                if (!screen.worldCreator.worldName.startsWith(BINGO_WORLD_PREFIX)) {
+                    screen.worldCreator.worldName = "$BINGO_WORLD_PREFIX ${screen.worldCreator.worldName}"
+                }
             }
         }
 
