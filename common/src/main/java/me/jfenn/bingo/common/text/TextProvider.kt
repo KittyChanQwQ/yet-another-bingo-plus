@@ -15,7 +15,7 @@ class TextProvider(
     private val textSerializer: ITextSerializer,
 ) {
 
-    val lang: Map<StringKey, String> = this::class.java.getResourceAsStream("/yet-another-minecraft-bingo/lang/en_us.json")
+    val lang: Map<StringKey, String> = this::class.java.getResourceAsStream("/assets/yet-another-minecraft-bingo/lang/en_us.json")
         ?.use { stream ->
             @OptIn(ExperimentalSerializationApi::class)
             json.decodeFromStream<Map<String, String>>(stream)

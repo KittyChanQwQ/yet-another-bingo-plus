@@ -29,14 +29,6 @@ dependencies {
     modCompileOnlyApi(libs.jei)
 }
 
-tasks.register('copyLangs', Copy) {
-    from "src/main/resources/yet-another-minecraft-bingo/lang"
-    into file("src/main/resources/assets/minecraft/lang")
-}
-
-tasks.processResources.dependsOn(tasks.copyLangs)
-tasks.sourcesJar.dependsOn(tasks.copyLangs)
-
 tasks.register('bingoDatapack', Zip) {
     from 'datapack'
     include '**/*'
@@ -65,52 +57,65 @@ sourceSets {
     }
 }
 
-tasks.register("bingoLangFiles", DefaultTask) {
-    var regex = "\"([\\W\\w]+)\":"
-    var nonEnumSafeRegex = "[^a-zA-Z0-9_]"
+tasks.register("bingoLangFiles") {
+    def langDir = "src/main/resources/assets/yet-another-minecraft-bingo/lang"
+    def stringKeyFile = layout.buildDirectory.file("generated/main/java/me/jfenn/bingo/generated/StringKey.kt").get().asFile
+    inputs.files(fileTree(langDir))
+    outputs.file(stringKeyFile)
+    doLast {
+        var regex = "\"([\\W\\w]+)\":"
+        var nonEnumSafeRegex = "[^a-zA-Z0-9_]"
 
-    var langFile = file("src/main/resources/yet-another-minecraft-bingo/lang/en_us.json").text
-    var enumEntries = langFile.lines()
-            .map {
-                var match = it.find(regex)
-                if (match != null)
-                    return match.substring(1, match.length() - 2)
-                else return null
-            }
-            .filter { it != null }
-            .map {
-                var enumStr = it.replaceAll("^bingo\\.", "")
-                var enumName = enumStr[0].toUpperCase() +
-                        enumStr.substring(1)
-                        .replaceAll(nonEnumSafeRegex, "_")
-                        .replaceAll("_[a-z]") { "${it.toString().substring(1).toUpperCase()}" }
+        var langFile = file("$langDir/en_us.json").text
+        var enumEntries = langFile.lines()
+                .map {
+                    var match = it.find(regex)
+                    if (match != null)
+                        return match.substring(1, match.length() - 2)
+                    else return null
+                }
+                .filter { it != null }
+                .map {
+                    var enumStr = it.replaceAll("^bingo\\.", "")
+                    var enumName = enumStr[0].toUpperCase() +
+                            enumStr.substring(1)
+                                    .replaceAll(nonEnumSafeRegex, "_")
+                                    .replaceAll("_[a-z]") { "${it.toString().substring(1).toUpperCase()}" }
 
-                var enumValue = it
+                    var enumValue = it
 
-                return "    $enumName(\"$enumValue\"),"
-            }
-            .toList()
-            .join("\n")
+                    return "    $enumName(\"$enumValue\"),"
+                }
+                .toList()
+                .join("\n")
 
-    var enumClass = "package me.jfenn.bingo.generated\n\nenum class StringKey(val key: String) {\n$enumEntries\n}\n"
+        var enumClass = "package me.jfenn.bingo.generated\n\nenum class StringKey(val key: String) {\n$enumEntries\n}\n"
 
-    var outFile = file("${buildDir}/generated/main/java/me/jfenn/bingo/generated/StringKey.kt")
-    Files.createDirectories(outFile.toPath().parent)
-    outFile.write(enumClass)
+        Files.createDirectories(stringKeyFile.toPath().parent)
+        stringKeyFile.write(enumClass)
+    }
 }
 
 tasks.processResources.dependsOn(tasks.bingoLangFiles)
 tasks.sourcesJar.dependsOn(tasks.bingoLangFiles)
+tasks.compileClientKotlin.dependsOn(tasks.bingoLangFiles)
+tasks.compileKotlin.dependsOn(tasks.bingoLangFiles)
 
 tasks.register("bingoConstants") {
-    var constantsText = "package me.jfenn.bingo.generated\n\n" +
-            "const val BINGO_VERSION = \"${project.mod_version}\"" +
-            "\n"
+    def constantsKtFile = layout.buildDirectory.file("generated/main/java/me/jfenn/bingo/generated/Constants.kt").get().asFile
+    inputs.property("version", project.mod_version)
+    outputs.file(constantsKtFile)
+    doLast {
+        var constantsText = "package me.jfenn.bingo.generated\n\n" +
+                "const val BINGO_VERSION = \"${project.mod_version}\"" +
+                "\n"
 
-    var outFile = file("${buildDir}/generated/main/java/me/jfenn/bingo/generated/Constants.kt")
-    Files.createDirectories(outFile.toPath().parent)
-    outFile.write(constantsText)
+        Files.createDirectories(constantsKtFile.toPath().parent)
+        constantsKtFile.write(constantsText)
+    }
 }
 
 tasks.processResources.dependsOn(tasks.bingoConstants)
 tasks.sourcesJar.dependsOn(tasks.bingoConstants)
+tasks.compileClientKotlin.dependsOn(tasks.bingoConstants)
+tasks.compileKotlin.dependsOn(tasks.bingoConstants)
