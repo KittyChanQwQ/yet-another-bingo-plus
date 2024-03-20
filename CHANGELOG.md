@@ -8,6 +8,8 @@
 
 - Fixed duplicate "[BINGO]" prefixes being added to single-player world names
 
+- Fixed a compatibility issue with server_translations_api (causing broken log messages when installed)
+
 ### New Features:
 
 - Added a client-side HUD to replace the Bingo Card map, if the mod is installed ([#70](https://gitlab.com/horrific-tweaks/bingo/-/issues/70))
