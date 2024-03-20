@@ -196,9 +196,9 @@ class GameService(
                 // send the winning team title message
                 player.networkHandler.sendPacket(TitleS2CPacket(winTitle))
                 player.networkHandler.sendPacket(SubtitleS2CPacket(winMessage))
-
-                Sounds.playGameOver(player)
             }
+
+            Sounds.playGameOver(player)
         }
     }
 
