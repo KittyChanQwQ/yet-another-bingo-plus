@@ -3,7 +3,7 @@ plugins {
     id "fabric-loom"
 }
 
-version = project.mod_version + "-" + project.name
+version = project.mod_version + "+" + project.name
 group = project.maven_group + "-" + project.name
 
 base {

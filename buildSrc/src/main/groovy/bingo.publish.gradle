@@ -2,9 +2,6 @@ plugins {
     id "com.modrinth.minotaur"
 }
 
-version = project.mod_version + "-" + project.name
-group = project.maven_group + "-" + project.name
-
 modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = "yet-another-minecraft-bingo"
