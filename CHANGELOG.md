@@ -1,14 +1,12 @@
-### 1.2.0.beta3:
+### 1.2.0-beta.4:
 
-- Added a "Game Over" screen that shows a restart / new game prompt with the bingo cards & win reason
+- Made team outlines wider to avoid mistaking the green team outline as a completed item...
 
-- Added a `"shutDownWhenGameOverSeconds"` config to automatically shutdown or restart the server after a game ends, without waiting for players to disconnect. ([#76](https://gitlab.com/horrific-tweaks/bingo/-/issues/76))
+- Turn off team outlines when the game has ended to reduce clutter
 
-- Uses player names instead of team names if there is only one player on the team
-  
-- Various text changes to support translations in the future ([#79](https://gitlab.com/horrific-tweaks/bingo/-/issues/79))
+- Fixed the "Game End" sound not being sent to players with the bingo mod on their client
 
-- Fixed custom screens not rendering a dimmed background on the 1.20.1 build
+- Fixed duplicate "[BINGO]" prefixes being added to single-player world names
 
 ### New Features:
 
