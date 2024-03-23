@@ -23,16 +23,18 @@ Make sure this is not installed on an existing world or you will lose your data!
 <tbody>
 <tr>
 <td>
-<img alt="A screenshot of Minecraft plains/taiga with a BINGO card in the corner" src="https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot1.png" />
+<img alt="A screenshot of Minecraft savanna with a BINGO card in the corner" src="https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot_with_hud.png" />
 </td>
 <td>
 
-Up to 8 teams can compete to collect items on the BINGO card. Teams can score items in horizontal, vertical, or diagonal
+Up to 8 teams can compete to collect items on the BINGO card. Score items in horizontal, vertical, or diagonal
 lines to win the game.
 
 ---
 
-🖱️ Right-click when holding the map to see the items in an inventory view!
+⌨ Press "Y" to see the Bingo Card in an inventory view!
+
+🖱️ Vanilla clients can right-click when holding the map to do the same.
 
 </td>
 </tr>

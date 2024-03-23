@@ -22,7 +22,9 @@ description: '“Minecraft BINGO” is a custom gamemode in which teams compete 
 </div>
 
 ::: tip
-🖱️ Right-click when holding the map to see the items in an inventory view!
+⌨ Press "Y" to see the Bingo Card in an inventory view!
+
+🖱️ Vanilla clients can right-click when holding the map to do the same.
 :::
 
 The game can be started with a timer to limit the duration of the game.
