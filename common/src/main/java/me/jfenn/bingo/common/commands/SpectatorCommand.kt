@@ -16,10 +16,14 @@ class SpectatorCommand : BaseCommand() {
 
     init {
         // Switch between adventure and spectator modes
-        // Only when spectating, if vanish is installed
         LiteralArgumentBuilder.literal<ServerCommandSource>("spectator")
             .require(
-                requireState(GameState.PLAYING),
+                when {
+                    // If vanish is installed, allow when spectating a game
+                    vanish.isInstalled() -> requireState(GameState.PLAYING, GameState.POSTGAME)
+                    // Otherwise, only allow in postgame
+                    else -> requireState(GameState.POSTGAME)
+                },
                 requirePermission(Permission.COMMAND_SPECTATOR),
                 requireNotPlaying(),
             )
@@ -32,7 +36,6 @@ class SpectatorCommand : BaseCommand() {
                 player.changeGameMode(gameMode)
                 1
             }
-            .takeIf { vanish.isInstalled() }
-            ?.register()
+            .register()
     }
 }
