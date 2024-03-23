@@ -112,6 +112,7 @@ class BingoHudScreen(
                 cardScale = 1f,
                 mouseX = mouseX,
                 mouseY = mouseY,
+                showTeamOutlines = state.display?.display?.size?.let { it <= 1 } == true,
             )
         }
     }

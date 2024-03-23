@@ -65,6 +65,7 @@ class BingoHudRenderer {
         cardScale: Float,
         mouseX: Int = -1,
         mouseY: Int = -1,
+        showTeamOutlines: Boolean = true,
     ) {
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
@@ -168,7 +169,7 @@ class BingoHudRenderer {
                 )
             }
 
-            for ((i, teamColor) in tile.teamColors.withIndex()) {
+            if (showTeamOutlines) for ((i, teamColor) in tile.teamColors.withIndex()) {
                 val color = Color.fromInt(teamColor.colorValue ?: continue)
                     .copy(a = 255)
                 val colorValue = color.toInt()

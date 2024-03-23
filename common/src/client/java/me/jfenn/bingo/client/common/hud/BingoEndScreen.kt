@@ -158,6 +158,7 @@ class BingoEndScreen(
                 cardScale = 1f,
                 mouseX = mouseX,
                 mouseY = mouseY,
+                showTeamOutlines = false,
             )
         }
     }
