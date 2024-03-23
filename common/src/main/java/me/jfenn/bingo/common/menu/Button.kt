@@ -49,7 +49,6 @@ fun MenuComponent.registerButton(
         })
         putString("text", textProvider.serialized(
             Text.empty()
-                .append(if (isActive) "✔ " else "")
                 .append(buttonText)
                 .formatted(if (isActive) Formatting.BLACK else Formatting.GRAY)
         ))
@@ -66,9 +65,16 @@ fun MenuComponent.registerToggleButton(
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     onClick: (player: ServerPlayerEntity) -> Unit = {},
 ) {
+    val isActive by toggleProp
+
     registerButton(
         position = position,
         text = text,
+        textProp = computedProperty {
+            Text.empty()
+                .append(if (isActive) "✔ " else "✗ ")
+                .append(text)
+        },
         isActiveProp = toggleProp,
         permissionGetter = permissionGetter,
     ) {

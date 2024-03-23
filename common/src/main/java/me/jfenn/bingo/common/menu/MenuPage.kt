@@ -138,7 +138,7 @@ fun MenuComponent.registerMenuPage(
 
     registerButton(
         position = position.add(5.0, -MENU_ITEM_OFFSET, 0.0),
-        text = text.string(StringKey.OptionsStart),
+        text = Text.literal("✔ ").append(text.string(StringKey.OptionsStart)),
         isActiveProp = computedProperty { options.isValid() },
         permissionGetter = permissionGetter,
     ) { player ->
