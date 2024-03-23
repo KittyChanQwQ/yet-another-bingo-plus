@@ -1,13 +1,29 @@
 package me.jfenn.bingo.client.common.hud
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.api.IDrawService
+import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.map.Color
+import me.jfenn.bingo.common.utils.json
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper
+import net.fabricmc.fabric.api.resource.SimpleResourceReloadListener
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
+import net.minecraft.resource.ResourceManager
+import net.minecraft.resource.ResourceReloader
+import net.minecraft.resource.ResourceType
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
+import net.minecraft.util.profiler.Profiler
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
+import kotlin.jvm.optionals.getOrNull
 
 class BingoHudRenderer {
 
@@ -16,24 +32,30 @@ class BingoHudRenderer {
         const val CARD_HEIGHT = 128
     }
 
-    private fun isDark(color: Formatting) = when (color) {
-        Formatting.BLACK -> true
-        Formatting.DARK_BLUE -> true
-        Formatting.DARK_GREEN -> true
-        Formatting.DARK_AQUA -> true
-        Formatting.DARK_RED -> true
-        Formatting.DARK_PURPLE -> true
-        Formatting.GOLD -> false
-        Formatting.GRAY -> false
-        Formatting.DARK_GRAY -> true
-        Formatting.BLUE -> true
-        Formatting.GREEN -> false
-        Formatting.AQUA -> false
-        Formatting.RED -> true
-        Formatting.LIGHT_PURPLE -> false
-        Formatting.YELLOW -> false
-        Formatting.WHITE -> false
-        else -> false
+    private var colorMap = emptyMap<String, String>()
+
+    private fun textColor(color: Formatting?): Int {
+        (colorMap[color?.name ?: "null"] ?: colorMap["null"])
+            ?.substring(1)
+            ?.toUIntOrNull(16)
+            ?.let { return it.toInt() }
+
+        return when (color) {
+            Formatting.GOLD -> false
+            Formatting.DARK_GRAY -> true
+            Formatting.BLUE -> true
+            Formatting.GREEN -> false
+            Formatting.AQUA -> false
+            Formatting.RED -> true
+            Formatting.LIGHT_PURPLE -> false
+            Formatting.YELLOW -> false
+            else -> false
+        }.let {
+            when (it) {
+                true -> 0xa8ffffff.toInt()
+                false -> 0xa8000000.toInt()
+            }
+        }
     }
 
     fun getItem(
@@ -73,6 +95,9 @@ class BingoHudRenderer {
         context.matrices.translate(x.toFloat(), y.toFloat(), z.toFloat())
         context.matrices.scale(cardScale, cardScale, cardScale)
 
+        // Draw a translucent background behind all card items
+        context.fill(10, 20, 10 + 5*20, 20 + 5*20, 0x80505050.toInt())
+
         service.drawTexture(
             texture = Identifier("minecraft", "bingo/hud_card"),
             x = 0,
@@ -97,11 +122,7 @@ class BingoHudRenderer {
             )
         }
 
-        val teamNameColor = when (view.teamColor?.let { isDark(it) }) {
-            true -> 0xa8ffffff.toInt()
-            false -> 0xa8000000.toInt()
-            else -> 0xff505050.toInt()
-        }
+        val teamNameColor = textColor(view.teamColor)
         context.drawText(textRenderer, view.teamName, 10, 8, teamNameColor, false)
 
         for (tileX in 0..4) for (tileY in 0..4) {
@@ -227,6 +248,24 @@ class BingoHudRenderer {
         if (tile.item != null && mouseX in mouseItemRangeX && mouseY in mouseItemRangeY) {
             context.drawItemTooltip(textRenderer, tile.item, mouseX, mouseY)
         }
+    }
+
+    init {
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(object : SimpleSynchronousResourceReloadListener {
+            override fun reload(manager: ResourceManager) {
+                val colorMap = manager.getResource(Identifier(MOD_ID_BINGO, "gui/text_colors.json"))
+                    .getOrNull()
+                    ?.inputStream
+                    ?.use {
+                        @OptIn(ExperimentalSerializationApi::class)
+                        json.decodeFromStream<Map<String, String>>(it)
+                    }
+
+                this@BingoHudRenderer.colorMap = colorMap ?: emptyMap()
+            }
+
+            override fun getFabricId(): Identifier = Identifier(MOD_ID_BINGO, "hud_renderer")
+        })
     }
 
 }

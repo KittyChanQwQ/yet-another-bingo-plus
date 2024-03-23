@@ -29,4 +29,6 @@ val commonClientModule = module {
     singleOf(::ClientSettingsController) withOptions { createdAtStart() }
     factoryOf(YetAnotherConfigLibIntegration::create)
     factoryOf(JeiIntegration::create)
+
+    singleOf(::ResourcePackInit) withOptions { createdAtStart() }
 }

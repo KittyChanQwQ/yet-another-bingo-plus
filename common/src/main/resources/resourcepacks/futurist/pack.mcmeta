@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "pack_format": 15,
+    "description": "A futuristic theme for the Bingo HUD",
+    "supported_formats": [15, 26]
+  }
+}
