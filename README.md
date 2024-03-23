@@ -74,6 +74,8 @@ You can find more info about configuring this mod [on the wiki](https://minecraf
 
 ## ⌨️ Commands
 
+This is a brief summary of the most important commands. See the [Command Cheatsheet](https://minecraft.horrific.dev/bingo/command-cheatsheet) for a complete list of bingo commands and descriptions!
+
 Global commands:
 - `/coords` prints the current player coordinates in the team chat
 - `/coords list` displays a list of the team's previous "/coords" messages
@@ -81,16 +83,9 @@ Global commands:
 - `/join <team>` (when in the lobby) allows a player to join the specified team
 
 BINGO commands (operator-only):
-- `/bingo timelimit <minutes>` sets the time limit of the game, in minutes (or "off")
-- `/bingo goal <option>` sets the number of lines required for a team to win
-- `/bingo itemdist <distribution...>` changes the item distribution used to generate the card
 - `/bingo reroll` rerolls for a new Bingo Card with different items
-- `/bingo seed` shows the random seed used to generate the current Bingo Card
-- `/bingo seed <number>` sets the Bingo Card seed to a specific value (which will generate the same card as long as the settings are not changed)
-- `/bingo elytra <true/false>` changes the elytra mode setting
-- `/bingo night_vision <true/false>` changes the night vision setting
-- `/bingo shuffleteams <number>` randomly sorts all players onto the given number of teams
-- `/bingo end` ends the current game and displays the winner (or a draw)
+- `/bingo seed` shows or sets the random seed used to generate the current Bingo Card
+- `/bingo end` immediately ends the current game and displays the winner (or a draw)
 - `/join <team> <player>` assigns a player to a different team - will respawn them if in-game
 
 ## Credits
