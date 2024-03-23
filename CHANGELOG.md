@@ -1,15 +1,3 @@
-### 1.2.0-beta.4:
-
-- Made team outlines wider to avoid mistaking the green team outline as a completed item...
-
-- Turn off team outlines when the game has ended to reduce clutter
-
-- Fixed the "Game End" sound not being sent to players with the bingo mod on their client
-
-- Fixed duplicate "[BINGO]" prefixes being added to single-player world names
-
-- Fixed a compatibility issue with server_translations_api (causing broken log messages when installed)
-
 ### New Features:
 
 - Added a client-side HUD to replace the Bingo Card map, if the mod is installed ([#70](https://gitlab.com/horrific-tweaks/bingo/-/issues/70))
