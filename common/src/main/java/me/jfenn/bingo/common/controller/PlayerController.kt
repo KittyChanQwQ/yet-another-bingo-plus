@@ -217,12 +217,17 @@ class PlayerController(
         val isOnTeam = teamService.isPlaying(player)
 
         // give the player night_vision if configured
+        // ...and remove it if not
         if (
-            (state.state == GameState.PLAYING && !isOnTeam && config.nightVisionInSpectator) ||
-            (state.state == GameState.POSTGAME && config.nightVisionInPostgame) ||
-            (state.state == GameState.PLAYING && options.isNightVision)
+            config.nightVisionInPostgame || config.nightVisionInSpectator || options.isNightVision
         ) {
-            if (playerSettingsService.getPlayer(player).nightVision) {
+            val shouldHaveNightVision = (
+                    (state.state == GameState.PLAYING && !isOnTeam && config.nightVisionInSpectator) ||
+                            (state.state == GameState.POSTGAME && config.nightVisionInPostgame) ||
+                            (state.state == GameState.PLAYING && options.isNightVision)
+            ) && playerSettingsService.getPlayer(player).nightVision
+
+            if (shouldHaveNightVision) {
                 player.addStatusEffect(
                     StatusEffectInstance(StatusEffects.NIGHT_VISION, -1, 0, false, false),
                 )
