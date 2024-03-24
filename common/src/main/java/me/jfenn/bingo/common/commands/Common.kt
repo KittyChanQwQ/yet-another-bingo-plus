@@ -13,55 +13,30 @@ import org.koin.core.scope.Scope
 
 typealias CommandRequirement = (ServerCommandSource) -> Boolean
 
+inline fun requireInScope(crossinline req: Scope.(ServerCommandSource) -> Boolean): CommandRequirement = { source ->
+    val scope = BingoKoin.getScope(source.server)
+    scope != null && req.invoke(scope, source)
+}
+
 fun requireBingoInstance(): CommandRequirement = {
     BingoKoin.getScope(it.server) != null
 }
 
-fun requireState(vararg requiredState: GameState): CommandRequirement = { source ->
-    val scope = BingoKoin.getScope(source.server)
-
-    if (scope != null) {
-        val state = scope.get<BingoState>()
-        requiredState.contains(state.state)
-    } else {
-        false
-    }
+fun requireState(vararg requiredState: GameState): CommandRequirement = requireInScope {
+    val state = get<BingoState>()
+    requiredState.contains(state.state)
 }
 
-fun requirePermission(key: PermissionKey): CommandRequirement = { source ->
-    val scope = BingoKoin.getScope(source.server)
-    val player = source.player
-
-    if (scope != null && player != null) {
-        val permissions = scope.get<PermissionsIntegration>()
-        permissions.hasPermission(player, key)
-    } else {
-        false
-    }
+fun requirePermission(key: PermissionKey): CommandRequirement = requireInScope { source ->
+    val player = source.player ?: return@requireInScope false
+    val permissions = get<PermissionsIntegration>()
+    permissions.hasPermission(player, key)
 }
 
-fun requirePlaying(): CommandRequirement = { source ->
-    val scope = BingoKoin.getScope(source.server)
-    val player = source.player
-
-    if (scope != null && player != null) {
-        val teamService = scope.get<TeamService>()
-        teamService.isPlaying(player)
-    } else {
-        false
-    }
-}
-
-fun requireNotPlaying(): CommandRequirement = { source ->
-    val scope = BingoKoin.getScope(source.server)
-    val player = source.player
-
-    if (scope != null && player != null) {
-        val teamService = scope.get<TeamService>()
-        !teamService.isPlaying(player)
-    } else {
-        false
-    }
+fun requirePlaying(): CommandRequirement = requireInScope { source ->
+    val player = source.player ?: return@requireInScope false
+    val teamService = get<TeamService>()
+    teamService.isPlaying(player)
 }
 
 fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.require(vararg requirements: CommandRequirement): T {
@@ -71,7 +46,9 @@ fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.require(vararg requirements:
     }
 }
 
-fun <T: ArgumentBuilder<ServerCommandSource, T>> T.executesInScope(callback: Scope.(CommandContext<ServerCommandSource>) -> Int): T {
+inline fun <T: ArgumentBuilder<ServerCommandSource, T>> T.executesInScope(
+    crossinline callback: Scope.(CommandContext<ServerCommandSource>) -> Int
+): T {
     return this.executes { ctx ->
         val scope = ctx.source?.server
             ?.let { BingoKoin.getScope(it) }

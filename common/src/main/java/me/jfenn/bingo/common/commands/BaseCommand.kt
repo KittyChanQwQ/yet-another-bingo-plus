@@ -11,7 +11,7 @@ import org.slf4j.Logger
 
 abstract class BaseCommand : KoinComponent {
 
-    private val log by inject<Logger>()
+    val log by inject<Logger>()
 
     override fun getKoin(): Koin {
         return BingoKoin.koinApp.koin
