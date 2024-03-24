@@ -61,6 +61,10 @@ lines to win the game.
 
 ## 📖 Configuration
 
+*When using this mod in single-player, make sure to install [Mod Menu](https://modrinth.com/mod/modmenu) and [YetAnotherConfigLib](https://modrinth.com/mod/yacl) to use the built-in config screen!*
+
+![A configuration menu for the Bingo GUI options](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/config-menu.png)
+
 On the first startup, the mod will create its initial config files in `./config/bingo/...`. No initial setup is needed
 to use the mod; it should run out of the box.
 
