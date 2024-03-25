@@ -141,8 +141,8 @@ class ScoredItemCheck(
     fun updateAdvancements(): Set<BingoTeam> {
         val updatedTeams = mutableSetOf<BingoTeam>()
 
-        for (entry in state.card.advancementEntries) {
-            val advancement = advancementManager.getAdvancement(server, entry.identifierInstance)
+        for ((identifier, entry) in state.card.advancementIndex) {
+            val advancement = advancementManager.getAdvancement(server, identifier)
                 ?: continue
 
             for (team in state.getRegisteredTeams()) {

@@ -3,6 +3,8 @@ package me.jfenn.bingo.common.card
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.state.TeamScore
+import net.minecraft.item.Item
+import net.minecraft.util.Identifier
 
 @Serializable
 class BingoCard(
@@ -16,8 +18,42 @@ class BingoCard(
     /**
      * Index the card's item entries on their item for faster querying.
      */
-    val itemIndex by lazy {
-        getAllEntriesOf<BingoCardEntry.ItemEntry>().associateBy { it.item() }
+    @Transient
+    val itemIndex = buildMap<Item, BingoCardEntry> {
+        this@BingoCard.entries
+            .filterIsInstance<BingoCardEntry.ItemEntry>()
+            .forEach { entry ->
+                put(entry.item(), entry)
+            }
+
+        this@BingoCard.entries
+            .filterIsInstance<BingoCardEntry.MultiEntry>()
+            .forEach { entry ->
+                entry.innerEntries
+                    .filterIsInstance<BingoCardEntry.ItemEntry>()
+                    .forEach { item ->
+                        put(item.item(), entry)
+                    }
+            }
+    }
+
+    @Transient
+    val advancementIndex = buildMap<Identifier, BingoCardEntry> {
+        this@BingoCard.entries
+            .filterIsInstance<BingoCardEntry.AdvancementEntry>()
+            .forEach { entry ->
+                put(entry.identifierInstance, entry)
+            }
+
+        this@BingoCard.entries
+            .filterIsInstance<BingoCardEntry.MultiEntry>()
+            .forEach { entry ->
+                entry.innerEntries
+                    .filterIsInstance<BingoCardEntry.AdvancementEntry>()
+                    .forEach { item ->
+                        put(item.identifierInstance, entry)
+                    }
+            }
     }
 
     /**
@@ -94,8 +130,5 @@ class BingoCard(
             .flatten()
             .plus(entries.filterIsInstance<T>())
     }
-
-    @Transient
-    val advancementEntries = getAllEntriesOf<BingoCardEntry.AdvancementEntry>()
 
 }

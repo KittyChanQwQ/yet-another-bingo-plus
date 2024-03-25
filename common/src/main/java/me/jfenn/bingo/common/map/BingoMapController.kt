@@ -5,6 +5,7 @@ import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.PACKET_CARD_DISPLAY_S2C
 import me.jfenn.bingo.common.PACKET_CARD_UPDATE_S2C
+import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -54,18 +55,27 @@ class BingoMapController(
     init {
         events.onGameTick {
             // first populate advancement images, if missing...
-            for (entry in state.card.advancementEntries) {
-                val advancement = advancementManager.getAdvancement(server, entry.identifierInstance)
-                    ?: continue
+            for ((identifier, entry) in state.card.advancementIndex) {
+                val advancementEntry = when (entry) {
+                    is BingoCardEntry.AdvancementEntry -> entry
+                    is BingoCardEntry.MultiEntry -> {
+                        entry.innerEntries.firstOrNull() as? BingoCardEntry.AdvancementEntry
+                            ?: continue
+                    }
+                    else -> continue
+                }
 
                 // If the entry doesn't have a visualItem yet, set it to match the advancement
-                if (entry.visualItem == null) {
-                    entry.visualItem = advancement.displayIcon ?: ItemStack.EMPTY
-                    entry.name = advancement.name
+                if (advancementEntry.visualItem == null) {
+                    val advancement = advancementManager.getAdvancement(server, identifier)
+                        ?: continue
+
+                    advancementEntry.visualItem = advancement.displayIcon ?: ItemStack.EMPTY
+                    advancementEntry.name = advancement.name
                         ?.let { Text.empty()
                             .append(it).setStyle(Style.EMPTY.withItalic(false).withColor(Formatting.GREEN)) }
                         ?.let { textSerializer.toJson(it) }
-                    entry.description = advancement.description?.let { textSerializer.toJson(it) }
+                    advancementEntry.description = advancement.description?.let { textSerializer.toJson(it) }
                 }
             }
 

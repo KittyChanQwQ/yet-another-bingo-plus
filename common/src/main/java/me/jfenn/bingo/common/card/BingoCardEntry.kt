@@ -58,6 +58,8 @@ sealed class BingoCardEntry {
         }
     }
 
+    open fun canSatisfy(stack: ItemStack): Boolean = false
+
     open fun hasAchieved(team: BingoTeam): Boolean {
         return teams.contains(team.key)
     }
@@ -96,8 +98,6 @@ sealed class BingoCardEntry {
 
     @Transient
     private val updatedAtMap = mutableMapOf<BingoTeamKey?, Instant>()
-
-    val updatedAt: Instant get() = updatedAt(null)
 
     /**
      * Determines the last time that the tile was changed at.
@@ -173,7 +173,7 @@ sealed class BingoCardEntry {
          * - item has a bingo card's map ID
          * - item has a "bingo_ignore:true" NBT tag
          */
-        fun canSatisfy(stack: ItemStack): Boolean {
+        override fun canSatisfy(stack: ItemStack): Boolean {
             return stack.item == item() && stack.nbt?.getBoolean(NBT_BINGO_IGNORE) != true
         }
 
@@ -215,12 +215,6 @@ sealed class BingoCardEntry {
     ): BingoCardEntry() {
         override val visualItem: ItemStack? get() = innerEntries.firstOrNull()?.visualItem
 
-        override val teams: HashSet<BingoTeamKey>
-            get() = HashSet<BingoTeamKey>().apply {
-                for (entry in innerEntries)
-                    addAll(entry.teams)
-            }
-
         override fun formatName(): String {
             return TextInfo.toJsonString(
                 TextInfo.literal("One of:")
@@ -234,42 +228,8 @@ sealed class BingoCardEntry {
                 .map { "{\"translate\":\"$it\"}" }
         }
 
-        override fun hasAchieved(team: BingoTeam): Boolean {
-            return innerEntries.any { it.hasAchieved(team) }
-        }
-
-        @Throws(UnsupportedOperationException::class)
-        override fun setAchieved(team: BingoTeam, value: Boolean): Boolean {
-            throw UnsupportedOperationException("setAchieved on MultiEntry")
-        }
-
-        override fun hasSeen(team: BingoTeam): Boolean {
-            return innerEntries.any { it.hasSeen(team) }
-        }
-
-        @Throws(UnsupportedOperationException::class)
-        @Deprecated("This is unsupported and will throw an error", replaceWith = ReplaceWith(""))
-        override fun markSeen(team: BingoTeam) {
-            throw UnsupportedOperationException("markSeen on MultiEntry")
-        }
-
-        override fun updatedAt(team: BingoTeam?): Instant {
-            if (team != null && hasAchieved(team)) {
-                innerEntries
-                    .filter { it.hasAchieved(team) }
-                    .minOfOrNull { it.updatedAt(team) }
-                    ?.let { return it }
-            }
-
-            return innerEntries
-                .maxOfOrNull { it.updatedAt(team) }
-                ?: Instant.fromEpochMilliseconds(0L)
-        }
-
-        @Throws(UnsupportedOperationException::class)
-        @Deprecated("This is unsupported and will throw an error", replaceWith = ReplaceWith(""))
-        override fun markDirty(team: BingoTeam) {
-            throw UnsupportedOperationException("markDirty on MultiEntry")
+        override fun canSatisfy(stack: ItemStack): Boolean {
+            return innerEntries.any { it.canSatisfy(stack) }
         }
     }
 }
