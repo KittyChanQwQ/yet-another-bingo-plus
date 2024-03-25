@@ -71,12 +71,12 @@ class BingoEndScreen(
             .position(0, 0)
             .build()
             .also {
-                addDrawableChild(it)
                 dismissButton = it
             }
 
         dismissButton.x = (width/2) - 4 - BUTTON_WIDTH
         dismissButton.y = (height/2) + (BingoHudRenderer.CARD_HEIGHT /2) + 8
+        addDrawableChild(dismissButton)
 
         val restartButton = restartButton ?: ButtonWidget.builder(
             when {
@@ -92,12 +92,12 @@ class BingoEndScreen(
             .position(0, 0)
             .build()
             .also {
-                addDrawableChild(it)
                 restartButton = it
             }
 
         restartButton.x = (width/2) + 4
         restartButton.y = (height/2) + (BingoHudRenderer.CARD_HEIGHT /2) + 8
+        addDrawableChild(restartButton)
     }
 
     override fun init() {

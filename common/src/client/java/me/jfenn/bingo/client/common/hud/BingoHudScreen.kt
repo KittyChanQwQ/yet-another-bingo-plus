@@ -49,6 +49,9 @@ class BingoHudScreen(
     private var cardButtons = mapOf<BingoTeamKey?, ClickableWidget>()
 
     private fun updateButtons() {
+        println("[BingoHudScreen] invoked updateButtons()!")
+        clearChildren()
+
         val newButtons = mutableMapOf<BingoTeamKey?, ClickableWidget>()
 
         viewsWithPositions { view, x, y ->
@@ -66,13 +69,12 @@ class BingoHudScreen(
                     close()
                 },
                 message = Text.literal(view.teamName),
-            ).also {
-                addDrawableChild(it)
-            }
+            )
 
             button.x = x
             button.y = y
             newButtons[view.teamKey] = button
+            addDrawableChild(button)
         }
 
         // If some views are no longer being displayed (e.g. a team is removed), remove them
@@ -98,7 +100,19 @@ class BingoHudScreen(
 
         super.render(context, mouseX, mouseY, delta)
 
-        updateButtons()
+        // Only call updateButtons() if the visible cards have changed
+        val expectedButtons = state.display
+            ?.display
+            ?.filter { it != state.selectedTeam }
+            ?.toSet()
+            ?: emptySet()
+
+        if (
+            cardButtons.keys.size != expectedButtons.size ||
+            !cardButtons.keys.containsAll(expectedButtons)
+        ) {
+            updateButtons()
+        }
 
         val drawService = drawServiceFactory.create(context)
 

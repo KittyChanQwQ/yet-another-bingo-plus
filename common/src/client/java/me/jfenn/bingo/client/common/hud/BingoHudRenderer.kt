@@ -68,11 +68,19 @@ class BingoHudRenderer {
         val startX = x + (10 * cardScale)
         val startY = y + (20 * cardScale)
 
-        val tileX = (mouseX - startX).div(20 * cardScale).toInt()
-        val tileY = (mouseY - startY).div(20 * cardScale).toInt()
+        val tileX = (mouseX - startX)
+            .takeIf { it >= 0f }
+            ?.div(20 * cardScale)
+            ?.toInt()
+            ?.takeIf { it in 0..4 }
+            ?: return null
 
-        if (tileX !in 0..4 || tileY !in 0..4)
-            return null
+        val tileY = (mouseY - startY)
+            .takeIf { it >= 0f }
+            ?.div(20 * cardScale)
+            ?.toInt()
+            ?.takeIf { it in 0..4 }
+            ?: return null
 
         return Pair(tileX, tileY)
     }
