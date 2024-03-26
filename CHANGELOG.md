@@ -12,6 +12,10 @@
 
 - Added a player-specific "Night Vision" setting to turn off NightVis on a per-player basis. ([#72](https://gitlab.com/horrific-tweaks/bingo/-/issues/72))
 
+- Enabled the `/spectator` command for toggling spectator mode after the game ends ([#81](https://gitlab.com/horrific-tweaks/bingo/-/issues/81))
+
 ### Bugs Squashed:
 
 - All game sounds (note blocks, button clicks) now play in the expected sound channels
+
+- Fixed "One of:" card entries not behaving correctly in Lockout mode
