@@ -34,7 +34,6 @@ class TimerCheck(
 
         events.onGameTick {
             if (state.state != GameState.PLAYING) return@onGameTick
-            val timeLimit = options.timeLimit ?: return@onGameTick
 
             val now = Clock.System.now()
 
@@ -52,7 +51,8 @@ class TimerCheck(
             state.updatedAt = now
 
             val duration = state.ingameDuration() ?: return@onGameTick
-            if (duration >= timeLimit) {
+            val timeLimit = options.timeLimit
+            if (timeLimit != null && duration >= timeLimit) {
                 // end the game!
                 gameService.end(textProvider.string(StringKey.GameEndReasonTimer))
             }
