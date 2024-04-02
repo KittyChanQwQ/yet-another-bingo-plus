@@ -24,9 +24,9 @@ loom {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    // testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    // testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    // testImplementation "org.jetbrains.kotlin:kotlin-test"
 
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -43,10 +43,6 @@ dependencies {
         include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
         include "me.lucko:fabric-permissions-api:${project.permissions_api_version}"
     }
-}
-
-test {
-    useJUnitPlatform()
 }
 
 processResources {

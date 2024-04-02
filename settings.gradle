@@ -2,6 +2,20 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
     }
+
+    // Workaround for https://github.com/FabricMC/fabric-loom/issues/1020
+    buildscript {
+        configurations.configureEach {
+            resolutionStrategy {
+                eachDependency {
+                    if (requested.group == "com.google.code.gson" && requested.name == "gson") {
+                        useVersion("2.10.1")
+                        because("Fabric Loom needs a newer version than foojay toolchains")
+                    }
+                }
+            }
+        }
+    }
 }
 
 plugins {
