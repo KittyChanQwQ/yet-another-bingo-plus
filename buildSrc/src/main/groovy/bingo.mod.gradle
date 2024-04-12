@@ -53,9 +53,18 @@ processResources {
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
+def javaVersion = 17
+if (project.name.toString() == "common" || project.name.toString() == "mc1.20.1" || project.name.toString() == "mc1.20.2" || project.name.toString() == "mc1.20.4") {
     // Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-    it.options.release.set(17)
+    javaVersion = 17
+} else {
+    // Minecraft 1.20.5 upwards uses Java 21
+    javaVersion = 21
+}
+
+tasks.withType(JavaCompile).configureEach {
+    println("Configure Java release version $javaVersion")
+    it.options.release.set(javaVersion)
 }
 
 java {
@@ -64,8 +73,19 @@ java {
     // If you remove this line, sources will not be generated.
     withSourcesJar()
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    println("Using Java Version $javaVersion")
+    if (javaVersion == 17) {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    } else {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    toolchain {
+        println("Using Java toolchain $javaVersion")
+        languageVersion.set(JavaLanguageVersion.of(javaVersion))
+    }
 }
 
 test {
@@ -79,5 +99,6 @@ jar {
 }
 
 kotlin {
-    jvmToolchain(17)
+    println("Using Kotlin toolchain $javaVersion")
+    jvmToolchain(javaVersion)
 }
