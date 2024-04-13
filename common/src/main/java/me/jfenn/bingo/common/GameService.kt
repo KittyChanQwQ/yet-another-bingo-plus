@@ -1,13 +1,12 @@
 package me.jfenn.bingo.common
 
 import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketManager
-import me.jfenn.bingo.common.map.CardViewService
+import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -16,7 +15,6 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
@@ -32,7 +30,6 @@ class GameService(
     private val events: ScopedEvents,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
-    private val cardViewService: CardViewService,
     private val configService: ConfigService,
     private val permissions: PermissionsIntegration,
     private val textProvider: TextProvider,
@@ -192,18 +189,21 @@ class GameService(
                 winner = winningTeam?.key,
                 duration = state.ingameDuration() ?: Duration.ZERO,
                 canSendRestart = server.isDedicated && permissions.hasPermission(player, Permission.COMMAND_RESTART),
+                isWinner = winningTeam?.includesPlayer(player) ?: false,
             )
 
             when {
-                packetManager.sendPacketS2C(player, GameOverPacket.V1, packet) -> {}
+                packetManager.sendPacketS2C(player, GameOverPacket.V2, packet) -> {}
+                packetManager.sendPacketS2C(player, GameOverPacket.V1, packet) -> {
+                    Sounds.playGameOver(player)
+                }
                 else -> {
                     // send the winning team title message
                     player.networkHandler.sendPacket(TitleS2CPacket(winTitle))
                     player.networkHandler.sendPacket(SubtitleS2CPacket(winMessage))
+                    Sounds.playGameOver(player)
                 }
             }
-
-            Sounds.playGameOver(player)
         }
     }
 

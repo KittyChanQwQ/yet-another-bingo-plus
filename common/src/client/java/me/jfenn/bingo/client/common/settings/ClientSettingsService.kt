@@ -24,7 +24,7 @@ class ClientSettingsService(
 
         if (sendPacket) {
             log.debug("[ClientSettingsService] Sending settings update for player")
-            packetManager.sendPacketC2S(PlayerSettings.V1_C2S, settings)
+            packetManager.sendPacketC2S(PlayerSettings.V1_C2S, value = settings)
         }
     }
 

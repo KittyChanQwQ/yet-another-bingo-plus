@@ -13,12 +13,13 @@ class ClientSettingsController(
 
     init {
         packetManager.registerGlobalReceiver(PlayerSettings.V1_S2C) { client, handler, packet, response ->
-            log.debug("[ClientSettingsController] Updating local settings without notifying the server...")
+            log.debug("[ClientSettingsController] Received a settings update from the server...")
             clientSettings.update(packet, sendPacket = false)
         }
 
         C2SPlayChannelEvents.REGISTER.register { handler, sender, client, packets ->
-            packetManager.sendPacketC2S(PlayerSettings.V1_C2S, clientSettings.getSettings())
+            log.debug("[ClientSettingsController] Sending initial settings to the server...")
+            packetManager.sendPacketC2S(PlayerSettings.V1_C2S, value = clientSettings.getSettings())
         }
     }
 

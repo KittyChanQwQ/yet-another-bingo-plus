@@ -25,10 +25,14 @@ import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.scope.BingoContext
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
+import me.jfenn.bingo.common.scoring.ScoredItemCheck
+import me.jfenn.bingo.common.timer.TimerCheck
+import me.jfenn.bingo.common.scoring.ScoreUpdateService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.timer.TimerPacketController
 import me.jfenn.bingo.integrations.ChunkyIntegration
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
@@ -103,8 +107,12 @@ val commonModule = module {
         scopedOf(::PlayerSettingsController)
         scopedOf(::PlayerSpectatorController)
         scopedOf(::ScoreboardController)
-        scopedOf(::ScoredItemCheck)
+
         scopedOf(::TimerCheck)
+        scopedOf(::TimerPacketController)
+
+        scopedOf(::ScoredItemCheck)
+        scopedOf(::ScoreUpdateService)
 
         scoped { RestartTimerState() }
         scopedOf(::RestartTimerController)
@@ -142,6 +150,7 @@ fun Scope.commonInit() {
     get<ScoreboardController>()
     get<ScoredItemCheck>()
     get<TimerCheck>()
+    get<TimerPacketController>()
     get<RestartTimerController>()
     get<CommandTreeHandler>()
 }

@@ -20,6 +20,7 @@ data class PlayerSettings(
         override val id: Identifier = Identifier("bingo", "update_settings_s2c")
 
         override fun fromPacketBuf(buf: PacketByteBuf): PlayerSettings {
+            buf.readInt()
             return PlayerSettings(
                 seenTutorial = buf.readBoolean(),
                 bossbar = buf.readBoolean(),

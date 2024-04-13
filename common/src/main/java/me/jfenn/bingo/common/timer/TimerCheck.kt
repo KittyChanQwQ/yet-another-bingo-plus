@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.controller
+package me.jfenn.bingo.common.timer
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.GameService

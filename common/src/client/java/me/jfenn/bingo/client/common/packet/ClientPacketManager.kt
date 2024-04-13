@@ -11,34 +11,49 @@ class ClientPacketManager(
     private val log: Logger,
 ) {
 
-    fun <T> sendPacketC2S(converter: PacketConverter<T>, value: T) : Boolean {
-        return if (ClientPlayNetworking.canSend(converter.id)) {
-            log.debug("[ClientPacketManager] Sending packet {} to server", converter.id)
+    companion object {
+        private const val VERBOSE = false
+    }
+
+    fun <T> sendPacketC2S(vararg converters: PacketConverter<T>, value: T) : Boolean {
+        for (converter in converters) {
+            if (!ClientPlayNetworking.canSend(converter.id)) {
+                log.debug("[ClientPacketManager] Not sending unsupported packet {} to server", converter.id)
+                continue
+            }
+            if (VERBOSE) {
+                log.debug("[ClientPacketManager] Sending packet {} to server", converter.id)
+            }
+
             ClientPlayNetworking.send(converter.id, converter.toPacketBuf(value))
-            true
-        } else {
-            log.debug("[ClientPacketManager] Not sending unsupported packet {} to server", converter.id)
-            false
+            return true
         }
+
+        return false
     }
 
     fun <T> registerGlobalReceiver(
-        converter: PacketConverter<T>,
+        vararg converters: PacketConverter<T>,
         callback: (client: MinecraftClient, handler: ClientPlayNetworkHandler, packet: T, response: PacketSender) -> Unit
     ) {
-        ClientPlayNetworking.registerGlobalReceiver(converter.id) { client, handler, buf, response ->
-            log.debug("[ClientPacketManager] Received packet {} from server", converter.id)
-            try {
-                val packet = converter.fromPacketBuf(buf)
-                client.execute {
-                    try {
-                        callback(client, handler, packet, response)
-                    } catch (e: Throwable) {
-                        log.error("[ClientPacketManager] Error in packet callback ${converter.id}:", e)
-                    }
+        for (converter in converters) {
+            ClientPlayNetworking.registerGlobalReceiver(converter.id) { client, handler, buf, response ->
+                if (VERBOSE) {
+                    log.debug("[ClientPacketManager] Received packet {} from server", converter.id)
                 }
-            } catch (e: Throwable) {
-                log.error("[ClientPacketManager] Error receiving packet ${converter.id}:", e)
+
+                try {
+                    val packet = converter.fromPacketBuf(buf)
+                    client.execute {
+                        try {
+                            callback(client, handler, packet, response)
+                        } catch (e: Throwable) {
+                            log.error("[ClientPacketManager] Error in packet callback ${converter.id}:", e)
+                        }
+                    }
+                } catch (e: Throwable) {
+                    log.error("[ClientPacketManager] Error receiving packet ${converter.id}:", e)
+                }
             }
         }
     }

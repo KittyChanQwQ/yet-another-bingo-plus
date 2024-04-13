@@ -1,16 +1,13 @@
-package me.jfenn.bingo.common.controller
+package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.IOfflinePlayerAccessor
 import me.jfenn.bingo.common.GameService
-import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.ScoreService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -41,8 +38,8 @@ class ScoredItemCheck(
     private val configService: ConfigService,
     private val offlinePlayerAccessor: IOfflinePlayerAccessor,
     private val advancementManager: IAdvancementManager,
-    private val playerSettingsService: PlayerSettingsService,
     private val textProvider: TextProvider,
+    private val scoreUpdateService: ScoreUpdateService,
 ) : BingoComponent() {
 
     private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, ServerPlayerEntity>()
@@ -101,7 +98,12 @@ class ScoredItemCheck(
 
                 tile.setAchieved(team, true)
                     // if the tile has changed, mark updatedTeams
-                    .also { isChanged -> if (isChanged) updatedTeams.add(team) }
+                    .also { isChanged ->
+                        if (isChanged) {
+                            updatedTeams.add(team)
+                            scoreUpdateService.sendItemCaptured(player, team, tile)
+                        }
+                    }
             }
         }
 
@@ -158,21 +160,26 @@ class ScoredItemCheck(
                     entry.markSeen(team)
                 }
 
-                val isDone = players.any {
+                val player = players.find {
                     advancementManager.isDone(it, advancement)
                 }
 
                 // if the advancement is finished, and the tile is not locked
-                if (isDone && !(options.isLockoutMode && entry.hasAnyAchieved())) {
+                if (player != null && !(options.isLockoutMode && entry.hasAnyAchieved())) {
                     entry.setAchieved(team, true)
                         // if the tile has changed, mark updatedTeams
-                        .also { isChanged -> if (isChanged) updatedTeams.add(team) }
+                        .also { isChanged ->
+                            if (isChanged) {
+                                updatedTeams.add(team)
+                                scoreUpdateService.sendItemCaptured(player, team, entry)
+                            }
+                        }
                 }
 
                 // if noone on the team has the advancement anymore, and the game is in inventory mode
                 // then mark it as lost...
-                if (!isDone && options.isInventoryMode) {
-                    entry.setAchieved(team, true)
+                if (player == null && options.isInventoryMode) {
+                    entry.setAchieved(team, false)
                         // if the tile has changed, mark updatedTeams
                         .also { isChanged -> if (isChanged) updatedTeams.add(team) }
                 }
@@ -202,18 +209,8 @@ class ScoredItemCheck(
             val scoreAfter = team.score
 
             // if the team has scored a line, post a message
-            if (scoreAfter.lines > scoreBefore.lines && options.showCompletedLines) {
-                val message = textProvider.string(StringKey.GameMessageScoredLine, team.teamOrPlayerName(), textProvider.lineCount(scoreAfter.lines))
-                    .formatted(Formatting.YELLOW)
-
-                server.playerManager.playerList
-                    .filter { playerSettingsService.getPlayer(it).scoreMessages }
-                    .forEach { it.sendMessage(message, false) }
-            }
-
-            if (scoreAfter.items > scoreBefore.items) {
-                // play the doink sound
-                Sounds.playTileCollected(server, team)
+            if (scoreAfter.lines > scoreBefore.lines) {
+                scoreUpdateService.sendLineCaptured(team)
             }
         }
 

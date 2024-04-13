@@ -13,7 +13,7 @@ class ServerPacketManager(
 
     fun <T> sendPacketS2C(player: ServerPlayerEntity, converter: PacketConverter<T>, value: T) : Boolean {
         return if (ServerPlayNetworking.canSend(player, converter.id)) {
-            log.debug("[ServerPacketManager] Sending packet {} to client", converter.id)
+            // log.debug("[ServerPacketManager] Sending packet {} to client", converter.id)
             ServerPlayNetworking.send(player, converter.id, converter.toPacketBuf(value))
             true
         } else {
@@ -27,7 +27,7 @@ class ServerPacketManager(
         callback: (server: MinecraftServer, player: ServerPlayerEntity, handler: ServerPlayNetworkHandler, packet: T, response: PacketSender) -> Unit
     ) {
         ServerPlayNetworking.registerGlobalReceiver(converter.id) { server, player, handler, buf, response ->
-            log.debug("[ServerPacketManager] Received packet {} from client", converter.id)
+            // log.debug("[ServerPacketManager] Received packet {} from client", converter.id)
             try {
                 val packet = converter.fromPacketBuf(buf)
                 server.execute {

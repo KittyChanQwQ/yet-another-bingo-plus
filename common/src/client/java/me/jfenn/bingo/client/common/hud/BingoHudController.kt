@@ -2,13 +2,11 @@ package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.api.IOptionsAccessor
+import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.packet.ClientPacketManager
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.map.CardDisplayPacket
-import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.scope.BingoComponent
-import me.jfenn.bingo.common.text.GameOverPacket
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -34,6 +32,7 @@ class BingoHudController(
     private val state: BingoHudState,
     private val text: TextProvider,
     packetManager: ClientPacketManager,
+    packetEvents: ClientPacketEvents,
 ) : BingoComponent() {
 
     private val openCardKey = KeyBindingHelper.registerKeyBinding(
@@ -55,7 +54,7 @@ class BingoHudController(
         val view = when {
             selectedTeam in teamKeys -> state.views[selectedTeam]
             // otherwise, find a different card to display
-            else -> state.views[teamKeys.first()]
+            else -> teamKeys.firstOrNull()?.let { state.views[it] }
         } ?: return
 
         // Ensure that `selectedTeam` is set to the displayed card, in case they don't match
@@ -110,17 +109,17 @@ class BingoHudController(
 
     init {
         if (config.supportClientHud) {
-            packetManager.registerGlobalReceiver(CardDisplayPacket.V1) { client, handler, packet, response ->
-                state.display = packet
+            packetEvents.onCardDisplay {
+                state.display = it
             }
 
-            packetManager.registerGlobalReceiver(CardUpdatePacket.V1) { client, handler, packet, response ->
-                state.views[packet.view.teamKey] = packet.view
+            packetEvents.onCardUpdate {
+                state.views[it.view.teamKey] = it.view
             }
 
-            packetManager.registerGlobalReceiver(GameOverPacket.V1) { client, handler, packet, response ->
-                state.gameOverPacket = packet
-                client.setScreen(BingoEndScreen(koin, packet, canEscape = false))
+            packetEvents.onGameOver {
+                state.gameOverPacket = it
+                MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, it, canEscape = false))
             }
 
             HudRenderCallback.EVENT.register { context, _ ->

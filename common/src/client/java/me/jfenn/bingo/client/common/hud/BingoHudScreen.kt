@@ -49,7 +49,6 @@ class BingoHudScreen(
     private var cardButtons = mapOf<BingoTeamKey?, ClickableWidget>()
 
     private fun updateButtons() {
-        println("[BingoHudScreen] invoked updateButtons()!")
         clearChildren()
 
         val newButtons = mutableMapOf<BingoTeamKey?, ClickableWidget>()
