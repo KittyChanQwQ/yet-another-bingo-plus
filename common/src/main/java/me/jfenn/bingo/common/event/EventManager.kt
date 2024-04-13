@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.common.PACKET_SETTINGS_UPDATE_C2S
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.event.model.*
+import me.jfenn.bingo.common.event.packet.ServerPacketManager
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
@@ -11,7 +11,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.*
 import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.ActionResult
 import net.minecraft.util.TypedActionResult
@@ -23,6 +22,7 @@ import net.minecraft.util.TypedActionResult
  */
 class EventManager(
     private val scopeManager: ScopeManager,
+    packetManager: ServerPacketManager,
 ) : BingoComponent() {
 
     private fun getEvents(server: MinecraftServer?) : ScopedEvents? {
@@ -128,12 +128,10 @@ class EventManager(
             }
         }
 
-        ServerPlayNetworking.registerGlobalReceiver(PACKET_SETTINGS_UPDATE_C2S) { server, player, handler, packet, response ->
-            val settings = PlayerSettings.fromPacketBuf(packet) ?: return@registerGlobalReceiver
-            val event = SettingsUpdateEvent(player, settings)
-            server.execute {
-                getEvents(server)?.onPlayerSettingsPacket?.invoke(event)
-            }
+        packetManager.registerGlobalReceiver(PlayerSettings.V1_C2S) { server, player, handler, packet, response ->
+            getEvents(server)?.onPlayerSettingsPacket?.invoke(
+                SettingsUpdateEvent(player, packet)
+            )
         }
 
         S2CPlayChannelEvents.REGISTER.register { handler, sender, server, packets ->

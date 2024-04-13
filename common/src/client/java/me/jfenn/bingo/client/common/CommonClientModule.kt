@@ -3,6 +3,7 @@ package me.jfenn.bingo.client.common
 import me.jfenn.bingo.client.common.hud.BingoHudController
 import me.jfenn.bingo.client.common.hud.BingoHudRenderer
 import me.jfenn.bingo.client.common.hud.BingoHudState
+import me.jfenn.bingo.client.common.packet.ClientPacketManager
 import me.jfenn.bingo.client.common.settings.ClientSettingsController
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
 import me.jfenn.bingo.client.common.world.BingoWorldManager
@@ -17,6 +18,8 @@ import org.koin.core.module.dsl.withOptions
 import org.koin.dsl.module
 
 val commonClientModule = module {
+    singleOf(::ClientPacketManager)
+
     single { BingoHudState() }
     singleOf(::BingoHudRenderer)
     singleOf(::BingoHudController) withOptions { createdAtStart() }

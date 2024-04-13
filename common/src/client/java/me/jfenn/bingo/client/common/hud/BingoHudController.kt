@@ -2,13 +2,11 @@ package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.api.IOptionsAccessor
+import me.jfenn.bingo.client.common.packet.ClientPacketManager
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
-import me.jfenn.bingo.common.PACKET_CARD_DISPLAY_S2C
-import me.jfenn.bingo.common.PACKET_CARD_UPDATE_S2C
-import me.jfenn.bingo.common.PACKET_GAME_OVER_S2C
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.map.CardTeams
-import me.jfenn.bingo.common.map.CardView
+import me.jfenn.bingo.common.map.CardDisplayPacket
+import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.text.GameOverPacket
 import me.jfenn.bingo.common.text.TextProvider
@@ -16,7 +14,6 @@ import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.fabricmc.fabric.api.client.rendering.v1.InvalidateRenderStateCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -36,6 +33,7 @@ class BingoHudController(
     private val renderer: BingoHudRenderer,
     private val state: BingoHudState,
     private val text: TextProvider,
+    packetManager: ClientPacketManager,
 ) : BingoComponent() {
 
     private val openCardKey = KeyBindingHelper.registerKeyBinding(
@@ -112,22 +110,17 @@ class BingoHudController(
 
     init {
         if (config.supportClientHud) {
-            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_DISPLAY_S2C) { client, handler, buf, response ->
-                val display = CardTeams.fromPacketBuf(buf)
-                client.execute { state.display = display }
+            packetManager.registerGlobalReceiver(CardDisplayPacket.V1) { client, handler, packet, response ->
+                state.display = packet
             }
 
-            ClientPlayNetworking.registerGlobalReceiver(PACKET_CARD_UPDATE_S2C) { client, handler, buf, response ->
-                val view = CardView.fromPacketBuf(buf)
-                client.execute { state.views[view.teamKey] = view }
+            packetManager.registerGlobalReceiver(CardUpdatePacket.V1) { client, handler, packet, response ->
+                state.views[packet.view.teamKey] = packet.view
             }
 
-            ClientPlayNetworking.registerGlobalReceiver(PACKET_GAME_OVER_S2C) { client, handler, buf, response ->
-                val packet = GameOverPacket.fromPacketBuf(buf)
-                client.execute {
-                    state.gameOverPacket = packet
-                    client.setScreen(BingoEndScreen(koin, packet, canEscape = false))
-                }
+            packetManager.registerGlobalReceiver(GameOverPacket.V1) { client, handler, packet, response ->
+                state.gameOverPacket = packet
+                client.setScreen(BingoEndScreen(koin, packet, canEscape = false))
             }
 
             HudRenderCallback.EVENT.register { context, _ ->

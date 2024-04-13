@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.packet.ServerPacketManager
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -39,6 +40,7 @@ class PlayerSettingsController(
     private val scoreboardManager: IScoreboardManager,
     private val playerSettingsService: PlayerSettingsService,
     private val text: TextProvider,
+    private val packetManager: ServerPacketManager,
 ) : BingoComponent() {
 
     private fun getIntroPage(player: ServerPlayerEntity) =
@@ -244,9 +246,7 @@ class PlayerSettingsController(
             }
 
             val settings = playerSettingsService.getPlayer(player)
-            if (ServerPlayNetworking.canSend(player, PACKET_SETTINGS_UPDATE_S2C)) {
-                ServerPlayNetworking.send(player, PACKET_SETTINGS_UPDATE_S2C, settings.toPacketBuf())
-            }
+            packetManager.sendPacketS2C(player, PlayerSettings.V1_S2C, settings)
         }
 
         events.onPlayerSettingsPacket {

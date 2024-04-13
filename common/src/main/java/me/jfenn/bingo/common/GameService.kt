@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.packet.ServerPacketManager
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
@@ -35,6 +36,7 @@ class GameService(
     private val configService: ConfigService,
     private val permissions: PermissionsIntegration,
     private val textProvider: TextProvider,
+    private val packetManager: ServerPacketManager,
 ) {
 
     fun start(
@@ -184,18 +186,21 @@ class GameService(
         }
 
         for (player in server.playerManager.playerList) {
-            if (cardViewService.supportsCardHud(player) && ServerPlayNetworking.canSend(player, PACKET_GAME_OVER_S2C)) {
-                ServerPlayNetworking.send(player, PACKET_GAME_OVER_S2C, GameOverPacket(
-                    title = winTitle,
-                    subtitle = winMessage,
-                    winner = winningTeam?.key,
-                    duration = state.ingameDuration() ?: Duration.ZERO,
-                    canSendRestart = server.isDedicated && permissions.hasPermission(player, Permission.COMMAND_RESTART),
-                ).toPacketBuf())
-            } else {
-                // send the winning team title message
-                player.networkHandler.sendPacket(TitleS2CPacket(winTitle))
-                player.networkHandler.sendPacket(SubtitleS2CPacket(winMessage))
+            val packet = GameOverPacket(
+                title = winTitle,
+                subtitle = winMessage,
+                winner = winningTeam?.key,
+                duration = state.ingameDuration() ?: Duration.ZERO,
+                canSendRestart = server.isDedicated && permissions.hasPermission(player, Permission.COMMAND_RESTART),
+            )
+
+            when {
+                packetManager.sendPacketS2C(player, GameOverPacket.V1, packet) -> {}
+                else -> {
+                    // send the winning team title message
+                    player.networkHandler.sendPacket(TitleS2CPacket(winTitle))
+                    player.networkHandler.sendPacket(SubtitleS2CPacket(winMessage))
+                }
             }
 
             Sounds.playGameOver(player)

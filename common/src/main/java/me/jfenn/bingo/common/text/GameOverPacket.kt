@@ -1,9 +1,11 @@
 package me.jfenn.bingo.common.text
 
 import me.jfenn.bingo.common.card.BingoTeamKey
+import me.jfenn.bingo.common.event.packet.PacketConverter
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -14,26 +16,10 @@ data class GameOverPacket(
     val duration: Duration,
     val canSendRestart: Boolean,
 ) {
+    object V1 : PacketConverter<GameOverPacket> {
+        override val id = Identifier("bingo", "game_over")
 
-    fun toPacketBuf(): PacketByteBuf {
-        val buf = PacketByteBufs.create()
-        buf.writeText(title)
-        buf.writeText(subtitle)
-
-        if (winner != null) {
-            buf.writeBoolean(true)
-            buf.writeString(winner.id)
-        } else {
-            buf.writeBoolean(false)
-        }
-
-        buf.writeLong(duration.inWholeMilliseconds)
-        buf.writeBoolean(canSendRestart)
-        return buf
-    }
-
-    companion object {
-        fun fromPacketBuf(buf: PacketByteBuf): GameOverPacket {
+        override fun fromPacketBuf(buf: PacketByteBuf): GameOverPacket {
             return GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
@@ -42,6 +28,22 @@ data class GameOverPacket(
                 canSendRestart = buf.readBoolean(),
             )
         }
-    }
 
+        override fun toPacketBuf(source: GameOverPacket): PacketByteBuf {
+            val buf = PacketByteBufs.create()
+            buf.writeText(source.title)
+            buf.writeText(source.subtitle)
+
+            if (source.winner != null) {
+                buf.writeBoolean(true)
+                buf.writeString(source.winner.id)
+            } else {
+                buf.writeBoolean(false)
+            }
+
+            buf.writeLong(source.duration.inWholeMilliseconds)
+            buf.writeBoolean(source.canSendRestart)
+            return buf
+        }
+    }
 }

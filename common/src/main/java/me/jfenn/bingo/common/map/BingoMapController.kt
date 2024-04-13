@@ -3,16 +3,14 @@ package me.jfenn.bingo.common.map
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.ITextSerializer
-import me.jfenn.bingo.common.PACKET_CARD_DISPLAY_S2C
-import me.jfenn.bingo.common.PACKET_CARD_UPDATE_S2C
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.packet.ServerPacketManager
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Style
@@ -31,6 +29,7 @@ class BingoMapController(
     private val cardViewService: CardViewService,
     private val advancementManager: IAdvancementManager,
     private val textSerializer: ITextSerializer,
+    private val packetManager: ServerPacketManager,
 ) : BingoComponent() {
 
     fun updateCard(team: BingoTeam?) {
@@ -40,10 +39,11 @@ class BingoMapController(
         if (cardViewService.needsUpdate(map, view)) {
             mapRenderService.update(team, map, view)
 
+            val updatePacket = CardUpdatePacket(view)
             for (player in server.playerManager.playerList) {
                 if (cardViewService.isViewingCard(player, team) && cardViewService.supportsCardHud(player)) {
                     // yes, every send() needs its own PacketByteBuf() instance, otherwise we get Scary Errors
-                    ServerPlayNetworking.send(player, PACKET_CARD_UPDATE_S2C, view.toPacketBuf())
+                    packetManager.sendPacketS2C(player, CardUpdatePacket.V1, updatePacket)
                 }
             }
 
@@ -101,16 +101,16 @@ class BingoMapController(
                 val teams = state.getRegisteredTeams()
                 val displayTeams = (teams + null).filter { cardViewService.isViewingCard(player, it) }
 
-                val packet = CardTeams(
+                val packet = CardDisplayPacket(
                     teamInfo = teams.associate { it.key to it.textColor },
                     display = displayTeams.map { it?.key },
                 )
 
-                ServerPlayNetworking.send(player, PACKET_CARD_DISPLAY_S2C, packet.toPacketBuf())
+                packetManager.sendPacketS2C(player, CardDisplayPacket.V1, packet)
 
                 for (team in displayTeams) {
                     val view = cardViewService.getMapView(team)
-                    ServerPlayNetworking.send(player, PACKET_CARD_UPDATE_S2C, view.toPacketBuf())
+                    packetManager.sendPacketS2C(player, CardUpdatePacket.V1, CardUpdatePacket(view))
                 }
             }
         }
