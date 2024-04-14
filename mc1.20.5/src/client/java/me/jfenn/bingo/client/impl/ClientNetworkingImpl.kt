@@ -43,7 +43,12 @@ class ClientPacketHandlerC2S<T>(
     )
 
     init {
-        PayloadTypeRegistry.playC2S().register(id, codec)
+        try {
+            PayloadTypeRegistry.playC2S().register(id, codec)
+        } catch (e: IllegalArgumentException) {
+            if (e.message?.contains("already registered") != true)
+                throw RuntimeException("Error initializing bingo ClientNetworking", e)
+        }
     }
 
     override fun isSupported(): Boolean {
@@ -73,7 +78,13 @@ class ClientPacketHandlerS2C<T>(
     )
 
     init {
-        PayloadTypeRegistry.playS2C().register(id, codec)
+        try {
+            PayloadTypeRegistry.playS2C().register(id, codec)
+        } catch (e: IllegalArgumentException) {
+            if (e.message?.contains("already registered") != true)
+                throw RuntimeException("Error initializing bingo ClientNetworking", e)
+        }
+
         ClientPlayNetworking.registerGlobalReceiver(id) { packet, ctx ->
             val client = ctx.client()
             val data = ClientPacket(packet.value)
