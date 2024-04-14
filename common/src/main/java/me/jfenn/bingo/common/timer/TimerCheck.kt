@@ -27,7 +27,7 @@ class TimerCheck(
 
     init {
         events.onEnter(GameState.PLAYING) { prevState ->
-            if (prevState != GameState.PREGAME) return@onEnter
+            if (prevState == GameState.PLAYING) return@onEnter
 
             state.startedAt = Clock.System.now()
         }

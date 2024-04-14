@@ -35,6 +35,14 @@ object Sounds {
         )
     }
 
+    fun playGameCountdown(player: ServerPlayerEntity) {
+        player.playSound(
+            SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(),
+            SoundCategory.RECORDS,
+            1f, 1f
+        )
+    }
+
     fun playGameStarted(player: ServerPlayerEntity) {
         player.playSound(
             SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(),

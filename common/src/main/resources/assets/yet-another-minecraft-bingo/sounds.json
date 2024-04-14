@@ -28,5 +28,17 @@
     "sounds": [
       "yet-another-minecraft-bingo:timer_tick"
     ]
+  },
+  "start_countdown": {
+    "subtitle": "bingo.sound.start_countdown",
+    "sounds": [
+      "yet-another-minecraft-bingo:start_countdown"
+    ]
+  },
+  "start_release": {
+    "subtitle": "bingo.sound.start_release",
+    "sounds": [
+      "yet-another-minecraft-bingo:start_release"
+    ]
   }
 }

@@ -5,6 +5,7 @@ enum class GameState(
     val motd: String,
 ) {
     PREGAME("§a", "PRE-GAME"),
+    COUNTDOWN("§c", "IN-GAME"),
     PLAYING("§c", "IN-GAME"),
     POSTGAME("§6", "POST-GAME"),
 }

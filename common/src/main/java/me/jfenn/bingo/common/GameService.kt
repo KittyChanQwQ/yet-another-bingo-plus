@@ -12,6 +12,8 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.GameOverPacket
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.timer.CountdownPacket
+import me.jfenn.bingo.common.timer.CountdownService
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
@@ -34,6 +36,7 @@ class GameService(
     private val permissions: PermissionsIntegration,
     private val textProvider: TextProvider,
     private val packetManager: ServerPacketManager,
+    private val countdownService: CountdownService,
 ) {
 
     fun start(
@@ -79,17 +82,19 @@ class GameService(
         // spread player teams to spawnpoint
         spawnService.createSpawnpoints()
 
-        broadcastStart()
-
         // change to the playing state
-        state.changeState(events, GameState.PLAYING)
+        if (options.startCountdownSeconds > 0) {
+            state.changeState(events, GameState.COUNTDOWN)
+        } else {
+            state.changeState(events, GameState.PLAYING)
 
-        for (player in server.playerManager.playerList) {
-            val team = teamService.getPlayerTeam(player)
-            player.networkHandler.sendPacket(TitleS2CPacket(Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)))
-            player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game has started!")))
-            Sounds.playGameStarted(player)
+            val packet = CountdownPacket(0)
+            for (player in server.playerManager.playerList) {
+                countdownService.sendCountdownPacket(player, packet)
+            }
         }
+
+        broadcastStart()
 
         return true
     }

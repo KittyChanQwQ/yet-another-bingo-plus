@@ -40,5 +40,24 @@ class ScorePacketReceiver(
                 )
             }
         }
+
+        clientPacketEvents.onCountdown { packet ->
+            when (packet.secondsRemaining) {
+                in 1..3 -> {
+                    MinecraftClient.getInstance().player?.playSound(
+                        ClientSounds.START_COUNTDOWN,
+                        SoundCategory.RECORDS,
+                        0.5f, 1f
+                    )
+                }
+                0 -> {
+                    MinecraftClient.getInstance().player?.playSound(
+                        ClientSounds.START_RELEASE,
+                        SoundCategory.RECORDS,
+                        0.5f, 1f
+                    )
+                }
+            }
+        }
     }
 }

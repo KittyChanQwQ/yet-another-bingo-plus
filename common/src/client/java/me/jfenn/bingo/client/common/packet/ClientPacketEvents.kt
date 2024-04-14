@@ -4,6 +4,7 @@ import me.jfenn.bingo.common.map.CardDisplayPacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.scoring.ScoredItemPacket
 import me.jfenn.bingo.common.text.GameOverPacket
+import me.jfenn.bingo.common.timer.CountdownPacket
 import me.jfenn.bingo.common.timer.TimerPacket
 import me.jfenn.bingo.common.utils.EventListener
 
@@ -20,6 +21,8 @@ class ClientPacketEvents(
     val onScoredItem = EventListener<ScoredItemPacket>()
 
     val onTimer = EventListener<TimerPacket>()
+
+    val onCountdown = EventListener<CountdownPacket>()
 
     init {
         packetManager.registerGlobalReceiver(CardDisplayPacket.V1) { client, handler, packet, response ->
@@ -40,6 +43,10 @@ class ClientPacketEvents(
 
         packetManager.registerGlobalReceiver(TimerPacket.V1) { client, handler, packet, response ->
             onTimer(packet)
+        }
+
+        packetManager.registerGlobalReceiver(CountdownPacket.V1) { client, handler, packet, response ->
+            onCountdown(packet)
         }
     }
 

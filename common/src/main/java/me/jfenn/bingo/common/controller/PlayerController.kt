@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.controller
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
+import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
@@ -16,6 +17,7 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.timer.CountdownService
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.allInventorySlots
 import me.jfenn.bingo.common.utils.giveOrEquipStack
@@ -26,8 +28,12 @@ import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
+import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
 import org.slf4j.Logger
@@ -57,6 +63,7 @@ class PlayerController(
     private val spawnService: SpawnService,
     private val teamService: TeamService,
     private val cardViewService: CardViewService,
+    private val countdownService: CountdownService,
     private val advancementManager: IAdvancementManager,
     private val vanishIntegration: VanishIntegration,
 ) : BingoComponent() {
@@ -180,6 +187,7 @@ class PlayerController(
 
         val gameMode = when (state.state) {
             GameState.PREGAME -> GameMode.ADVENTURE
+            GameState.COUNTDOWN -> GameMode.ADVENTURE
             GameState.PLAYING -> when {
                 isOnTeam -> GameMode.SURVIVAL
                 vanishIntegration.isInstalled() -> GameMode.ADVENTURE
@@ -195,7 +203,7 @@ class PlayerController(
         ) {
             // This indicates that a player is starting the game, or has logged back on after a game has started
             // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
-            if (state.state == GameState.PREGAME || state.state == GameState.PLAYING) {
+            if (state.state != GameState.POSTGAME) {
                 respawnPlayer(player)
             }
 
@@ -317,9 +325,18 @@ class PlayerController(
             }
         }
 
+        // Transition from PREGAME -> COUNTDOWN
+        events.onEnter(GameState.COUNTDOWN) { prevState ->
+            if (prevState == GameState.COUNTDOWN) return@onEnter
+
+            for (player in server.playerManager.playerList) {
+                updateGameMode(player, forceReset = true)
+            }
+        }
+
         // Transition from PREGAME -> PLAYING
         events.onEnter(GameState.PLAYING) { prevState ->
-            if (prevState != GameState.PREGAME) return@onEnter
+            if (prevState == GameState.PLAYING) return@onEnter
 
             for (player in server.playerManager.playerList) {
                 updateGameMode(player, forceReset = true)
@@ -328,7 +345,7 @@ class PlayerController(
 
         // Transition from PLAYING -> POSTGAME
         events.onEnter(GameState.POSTGAME) { prevState ->
-            if (prevState != GameState.PLAYING) return@onEnter
+            if (prevState == GameState.POSTGAME) return@onEnter
 
             for (player in server.playerManager.playerList) {
                 updateGameMode(player)

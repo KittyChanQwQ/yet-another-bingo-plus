@@ -64,6 +64,9 @@ data class BingoOptions(
         SpawnItem("minecraft:oak_log", count = 64),
         SpawnItem("minecraft:torch", count = 64),
     ),
+
+    // amount of time to wait before starting the game
+    var startCountdownSeconds: Int = 5,
 ) {
 
     init {

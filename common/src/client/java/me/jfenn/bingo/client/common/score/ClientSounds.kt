@@ -16,6 +16,9 @@ class ClientSounds {
         val GAME_LOST = SoundEvent.of(Identifier(MOD_ID_BINGO, "game_lost"))
 
         val TIMER_TICK = SoundEvent.of(Identifier(MOD_ID_BINGO, "timer_tick"))
+
+        val START_COUNTDOWN = SoundEvent.of(Identifier(MOD_ID_BINGO, "start_countdown"))
+        val START_RELEASE = SoundEvent.of(Identifier(MOD_ID_BINGO, "start_release"))
     }
 
     init {
@@ -24,6 +27,8 @@ class ClientSounds {
         Registry.register(Registries.SOUND_EVENT, GAME_WON.id, GAME_WON)
         Registry.register(Registries.SOUND_EVENT, GAME_LOST.id, GAME_LOST)
         Registry.register(Registries.SOUND_EVENT, TIMER_TICK.id, TIMER_TICK)
+        Registry.register(Registries.SOUND_EVENT, START_COUNTDOWN.id, START_COUNTDOWN)
+        Registry.register(Registries.SOUND_EVENT, START_RELEASE.id, START_RELEASE)
     }
 
 }

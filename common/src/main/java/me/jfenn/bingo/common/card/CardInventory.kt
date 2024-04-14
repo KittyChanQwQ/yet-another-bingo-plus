@@ -40,7 +40,7 @@ class CardInventory(
                     // if the team isn't null and has seen the item
                     (team != null && entry.hasSeen(team)) ||
                     // if the team is null and the game is playing (i.e. the player is spectating)
-                    (team == null && state.state != GameState.PREGAME) ||
+                    (team == null && state.state == GameState.PLAYING) ||
                     // if the game is ended
                     state.state == GameState.POSTGAME
 

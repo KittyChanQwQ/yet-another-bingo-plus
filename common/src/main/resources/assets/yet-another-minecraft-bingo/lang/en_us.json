@@ -149,5 +149,7 @@
   "bingo.sound.opponent_scored": "Opponent Scored",
   "bingo.sound.game_won": "Bingo Game Won",
   "bingo.sound.game_lost": "Bingo Game Lost",
-  "bingo.sound.timer_tick": "Clock ticks..."
+  "bingo.sound.timer_tick": "Clock ticks...",
+  "bingo.sound.start_countdown": "Bingo countdown...",
+  "bingo.sound.start_release": "Bingo started!"
 }

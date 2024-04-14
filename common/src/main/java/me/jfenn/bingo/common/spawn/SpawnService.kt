@@ -89,8 +89,12 @@ class SpawnService(
             world.spawnPos
         }
 
+        // if the player already has the exact block position, don't teleport them again
+        val needsTeleport = player.world != world || player.blockX != spawn.x || player.blockY != spawn.y || player.blockZ != spawn.z
+        if (!needsTeleport) return
+
         // random offset for each player to prevent collision grouping
-        player.teleport(world, spawn.x + Random.nextDouble(), spawn.y.toDouble(), spawn.z + Random.nextDouble(), 0f, 0f)
+        player.teleport(world, spawn.x + Random.nextDouble(), spawn.y.toDouble(), spawn.z + Random.nextDouble(), player.yaw, player.pitch)
         player.setSpawnPoint(
             world.registryKey,
             spawn,
