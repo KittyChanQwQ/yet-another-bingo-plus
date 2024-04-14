@@ -50,6 +50,13 @@ class GameRuleController(
             }
         }
 
+        events.onEnter(GameState.COUNTDOWN) {
+            // reset overworld time
+            server.overworld.timeOfDay = 0
+
+            // TODO: freeze ticks during countdown
+        }
+
         events.onEnter(GameState.PLAYING) { prevState ->
             // revert the lobby gamerule changes
             server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(true, server)
@@ -59,7 +66,7 @@ class GameRuleController(
             server.isPvpEnabled = options.isPvpEnabled
             server.gameRules.get(GameRules.KEEP_INVENTORY).set(options.isKeepInventory, server)
 
-            if (prevState == GameState.PREGAME) {
+            if (prevState != GameState.PLAYING) {
                 // reset overworld time
                 server.overworld.timeOfDay = 0
             }
