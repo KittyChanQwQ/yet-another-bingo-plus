@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.common.settings
 
 import me.jfenn.bingo.client.api.ISessionAccessor
-import me.jfenn.bingo.client.common.packet.ClientPacketManager
+import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.PlayerSettings
 import org.slf4j.Logger
@@ -11,7 +11,7 @@ class ClientSettingsService(
     private val log: Logger,
     private val configService: ConfigService,
     sessionAccessor: ISessionAccessor,
-    private val packetManager: ClientPacketManager,
+    private val packetEvents: ClientPacketEvents,
 ) {
 
     private val playerUuid = sessionAccessor.getPlayerUuid()
@@ -24,7 +24,7 @@ class ClientSettingsService(
 
         if (sendPacket) {
             log.debug("[ClientSettingsService] Sending settings update for player")
-            packetManager.sendPacketC2S(PlayerSettings.V1_C2S, value = settings)
+            packetEvents.sendPlayerSettingsV1.send(settings)
         }
     }
 

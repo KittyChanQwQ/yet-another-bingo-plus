@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.common.config.TierLabel
-import me.jfenn.bingo.common.utils.text.TextColor
 import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Formatting
@@ -18,7 +18,7 @@ data class CardTile(
     val isAchieved: Boolean,
     val teamColors: List<Formatting>,
 ) {
-    fun toPacketBuf(buf: PacketByteBuf) {
+    fun toPacketBuf(buf: IPacketBuf) {
         if (item != null) {
             buf.writeBoolean(true)
             buf.writeItemStack(item)
@@ -48,7 +48,7 @@ data class CardTile(
     }
 
     companion object {
-        fun fromPacketBuf(buf: PacketByteBuf): CardTile {
+        fun fromPacketBuf(buf: IPacketBuf): CardTile {
             return CardTile(
                 item = if (buf.readBoolean()) {
                     buf.readItemStack()

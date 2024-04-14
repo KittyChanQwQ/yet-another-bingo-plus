@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
-import me.jfenn.bingo.common.event.packet.ServerPacketManager
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -18,7 +18,7 @@ import net.minecraft.util.Formatting
 
 class ScoreUpdateService(
     private val server: MinecraftServer,
-    private val packetManager: ServerPacketManager,
+    private val packetManager: ServerPacketEvents,
     private val options: BingoOptions,
     private val textProvider: TextProvider,
     private val playerSettingsService: PlayerSettingsService,
@@ -58,7 +58,7 @@ class ScoreUpdateService(
             val playerPacket = if (isOnTeam) packet else otherTeamPacket
 
             when {
-                packetManager.sendPacketS2C(player, ScoredItemPacket.V1, playerPacket) -> {}
+                packetManager.scoredItemV1.send(player, playerPacket) -> {}
                 else -> {
                     // play the doink sound
                     if (isOnTeam) {

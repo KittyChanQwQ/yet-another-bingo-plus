@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.timer
 
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.event.packet.ServerPacketManager
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.network.ServerPlayerEntity
@@ -10,7 +10,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 class CountdownService(
-    private val packetManager: ServerPacketManager,
+    private val packetManager: ServerPacketEvents,
     private val teamService: TeamService,
 ) {
 
@@ -27,7 +27,7 @@ class CountdownService(
         }
 
         when {
-            packetManager.sendPacketS2C(player, CountdownPacket.V1, packet) -> {}
+            packetManager.countdownV1.send(player, packet) -> {}
             packet.secondsRemaining in 1..3 -> Sounds.playGameCountdown(player)
             packet.secondsRemaining == 0 -> Sounds.playGameStarted(player)
         }

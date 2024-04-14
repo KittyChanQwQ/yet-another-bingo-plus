@@ -1,0 +1,25 @@
+package me.jfenn.bingo.api
+
+import net.minecraft.item.ItemStack
+import net.minecraft.text.Text
+
+interface IPacketBuf {
+    fun writeString(str: String)
+    fun readString(): String
+
+    fun writeInt(int: Int)
+    fun readInt(): Int
+
+    fun writeLong(long: Long)
+    fun readLong(): Long
+
+    fun writeBoolean(bool: Boolean)
+    fun readBoolean(): Boolean
+
+    fun writeItemStack(stack: ItemStack)
+    fun readItemStack(): ItemStack
+
+    fun writeText(text: Text)
+    fun readText(): Text
+
+}

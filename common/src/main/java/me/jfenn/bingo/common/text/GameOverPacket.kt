@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.text
 
+import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.event.packet.PacketConverter
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
-import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import kotlin.time.Duration
@@ -20,7 +20,7 @@ data class GameOverPacket(
     object V1 : PacketConverter<GameOverPacket> {
         override val id = Identifier("bingo", "game_over")
 
-        override fun fromPacketBuf(buf: PacketByteBuf): GameOverPacket {
+        override fun fromPacketBuf(buf: IPacketBuf): GameOverPacket {
             return GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
@@ -31,28 +31,26 @@ data class GameOverPacket(
             )
         }
 
-        override fun toPacketBuf(source: GameOverPacket): PacketByteBuf {
-            val buf = PacketByteBufs.create()
-            buf.writeText(source.title)
-            buf.writeText(source.subtitle)
+        override fun toPacketBuf(source: GameOverPacket, dest: IPacketBuf) {
+            dest.writeText(source.title)
+            dest.writeText(source.subtitle)
 
             if (source.winner != null) {
-                buf.writeBoolean(true)
-                buf.writeString(source.winner.id)
+                dest.writeBoolean(true)
+                dest.writeString(source.winner.id)
             } else {
-                buf.writeBoolean(false)
+                dest.writeBoolean(false)
             }
 
-            buf.writeLong(source.duration.inWholeMilliseconds)
-            buf.writeBoolean(source.canSendRestart)
-            return buf
+            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeBoolean(source.canSendRestart)
         }
     }
 
     object V2 : PacketConverter<GameOverPacket> {
         override val id = Identifier("bingo", "game_over_v2")
 
-        override fun fromPacketBuf(buf: PacketByteBuf): GameOverPacket {
+        override fun fromPacketBuf(buf: IPacketBuf): GameOverPacket {
             return GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
@@ -63,22 +61,20 @@ data class GameOverPacket(
             )
         }
 
-        override fun toPacketBuf(source: GameOverPacket): PacketByteBuf {
-            val buf = PacketByteBufs.create()
-            buf.writeText(source.title)
-            buf.writeText(source.subtitle)
+        override fun toPacketBuf(source: GameOverPacket, dest: IPacketBuf) {
+            dest.writeText(source.title)
+            dest.writeText(source.subtitle)
 
             if (source.winner != null) {
-                buf.writeBoolean(true)
-                buf.writeString(source.winner.id)
+                dest.writeBoolean(true)
+                dest.writeString(source.winner.id)
             } else {
-                buf.writeBoolean(false)
+                dest.writeBoolean(false)
             }
 
-            buf.writeLong(source.duration.inWholeMilliseconds)
-            buf.writeBoolean(source.canSendRestart)
-            buf.writeBoolean(source.isWinner)
-            return buf
+            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isWinner)
         }
     }
 }

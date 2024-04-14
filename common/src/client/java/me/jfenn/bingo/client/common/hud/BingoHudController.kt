@@ -3,7 +3,6 @@ package me.jfenn.bingo.client.common.hud
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.api.IOptionsAccessor
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
-import me.jfenn.bingo.client.common.packet.ClientPacketManager
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -31,7 +30,6 @@ class BingoHudController(
     private val renderer: BingoHudRenderer,
     private val state: BingoHudState,
     private val text: TextProvider,
-    packetManager: ClientPacketManager,
     packetEvents: ClientPacketEvents,
 ) : BingoComponent() {
 
@@ -109,17 +107,22 @@ class BingoHudController(
 
     init {
         if (config.supportClientHud) {
-            packetEvents.onCardDisplay {
-                state.display = it
+            packetEvents.cardDisplayV1.onPacket {
+                state.display = it.packet
             }
 
-            packetEvents.onCardUpdate {
-                state.views[it.view.teamKey] = it.view
+            packetEvents.cardUpdateV1.onPacket { (packet) ->
+                state.views[packet.view.teamKey] = packet.view
             }
 
-            packetEvents.onGameOver {
-                state.gameOverPacket = it
-                MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, it, canEscape = false))
+            packetEvents.gameOverV1.onPacket { (packet) ->
+                state.gameOverPacket = packet
+                MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, packet, canEscape = false))
+            }
+
+            packetEvents.gameOverV2.onPacket { (packet) ->
+                state.gameOverPacket = packet
+                MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, packet, canEscape = false))
             }
 
             HudRenderCallback.EVENT.register { context, _ ->

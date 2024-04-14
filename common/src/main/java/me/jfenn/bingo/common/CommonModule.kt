@@ -16,7 +16,7 @@ import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.packet.ServerPacketManager
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.BingoMapController
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
@@ -62,7 +62,7 @@ val commonModule = module {
     singleOf(::ServerDatapackManager)
     singleOf(::EventManager)
     singleOf(::ScopeManager)
-    singleOf(::ServerPacketManager)
+    singleOf(::ServerPacketEvents)
 
     singleOf(::RestartOnLeaveController)
     factoryOf(PermissionsIntegration::create)
@@ -129,6 +129,7 @@ fun Koin.commonInit() {
     get<ServerDatapackManager>()
     get<EventManager>()
     get<ScopeManager>()
+    get<ServerPacketEvents>()
     get<RestartOnLeaveController>()
 
     get<BingoCommands>()

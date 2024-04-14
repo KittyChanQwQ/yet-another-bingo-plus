@@ -1,53 +1,27 @@
 package me.jfenn.bingo.client.common.packet
 
+import me.jfenn.bingo.client.api.IClientNetworking
+import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.map.CardDisplayPacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.scoring.ScoredItemPacket
 import me.jfenn.bingo.common.text.GameOverPacket
 import me.jfenn.bingo.common.timer.CountdownPacket
 import me.jfenn.bingo.common.timer.TimerPacket
-import me.jfenn.bingo.common.utils.EventListener
 
 class ClientPacketEvents(
-    packetManager: ClientPacketManager,
+    clientNetworking: IClientNetworking,
 ) {
 
-    val onCardDisplay = EventListener<CardDisplayPacket>()
+    val cardDisplayV1 = clientNetworking.registerS2C(CardDisplayPacket.V1)
+    val cardUpdateV1 = clientNetworking.registerS2C(CardUpdatePacket.V1)
+    val gameOverV1 = clientNetworking.registerS2C(GameOverPacket.V1)
+    val gameOverV2 = clientNetworking.registerS2C(GameOverPacket.V2)
+    val scoredItemV1 = clientNetworking.registerS2C(ScoredItemPacket.V1)
+    val timerV1 = clientNetworking.registerS2C(TimerPacket.V1)
+    val countdownV1 = clientNetworking.registerS2C(CountdownPacket.V1)
 
-    val onCardUpdate = EventListener<CardUpdatePacket>()
-
-    val onGameOver = EventListener<GameOverPacket>()
-
-    val onScoredItem = EventListener<ScoredItemPacket>()
-
-    val onTimer = EventListener<TimerPacket>()
-
-    val onCountdown = EventListener<CountdownPacket>()
-
-    init {
-        packetManager.registerGlobalReceiver(CardDisplayPacket.V1) { client, handler, packet, response ->
-            onCardDisplay(packet)
-        }
-
-        packetManager.registerGlobalReceiver(CardUpdatePacket.V1) { client, handler, packet, response ->
-            onCardUpdate(packet)
-        }
-
-        packetManager.registerGlobalReceiver(GameOverPacket.V1, GameOverPacket.V2) { client, handler, packet, response ->
-            onGameOver(packet)
-        }
-
-        packetManager.registerGlobalReceiver(ScoredItemPacket.V1) { client, handler, packet, response ->
-            onScoredItem(packet)
-        }
-
-        packetManager.registerGlobalReceiver(TimerPacket.V1) { client, handler, packet, response ->
-            onTimer(packet)
-        }
-
-        packetManager.registerGlobalReceiver(CountdownPacket.V1) { client, handler, packet, response ->
-            onCountdown(packet)
-        }
-    }
+    val sendPlayerSettingsV1 = clientNetworking.registerC2S(PlayerSettings.V1_C2S)
+    val receivePlayerSettingsV1 = clientNetworking.registerS2C(PlayerSettings.V1_S2C)
 
 }

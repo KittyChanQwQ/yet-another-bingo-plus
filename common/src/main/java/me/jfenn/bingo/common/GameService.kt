@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.packet.ServerPacketManager
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
@@ -35,7 +35,7 @@ class GameService(
     private val configService: ConfigService,
     private val permissions: PermissionsIntegration,
     private val textProvider: TextProvider,
-    private val packetManager: ServerPacketManager,
+    private val packetManager: ServerPacketEvents,
     private val countdownService: CountdownService,
 ) {
 
@@ -198,8 +198,8 @@ class GameService(
             )
 
             when {
-                packetManager.sendPacketS2C(player, GameOverPacket.V2, packet) -> {}
-                packetManager.sendPacketS2C(player, GameOverPacket.V1, packet) -> {
+                packetManager.gameOverV2.send(player, packet) -> {}
+                packetManager.gameOverV1.send(player, packet) -> {
                     Sounds.playGameOver(player)
                 }
                 else -> {

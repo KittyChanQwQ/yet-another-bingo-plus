@@ -1,21 +1,15 @@
 package me.jfenn.bingo.client
 
-import me.jfenn.bingo.client.api.IButtonService
-import me.jfenn.bingo.client.api.IDrawServiceFactory
-import me.jfenn.bingo.client.api.IOptionsAccessor
-import me.jfenn.bingo.client.api.ISessionAccessor
+import me.jfenn.bingo.api.ITextSerializer
+import me.jfenn.bingo.client.api.*
 import me.jfenn.bingo.client.common.commonClientModule
-import me.jfenn.bingo.client.impl.ButtonService
-import me.jfenn.bingo.client.impl.DrawService
-import me.jfenn.bingo.client.impl.OptionsAccessor
-import me.jfenn.bingo.client.impl.SessionAccessor
+import me.jfenn.bingo.client.impl.*
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.commonModule
 import me.jfenn.bingo.common.config.MigrationHandler
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.sharedModule
 import net.fabricmc.api.ClientModInitializer
-import net.minecraft.server.MinecraftServer
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -30,6 +24,8 @@ object Main : ClientModInitializer {
 
     private val clientModule = module {
         singleOf(::ButtonService) bind IButtonService::class
+        singleOf(::ClientNetworkingImpl) bind IClientNetworking::class
+        singleOf(::ClientTextSerializerImpl) bind ITextSerializer::class
         single { DrawService } bind IDrawServiceFactory::class
         single { OptionsAccessor } bind IOptionsAccessor::class
         single { SessionAccessor } bind ISessionAccessor::class

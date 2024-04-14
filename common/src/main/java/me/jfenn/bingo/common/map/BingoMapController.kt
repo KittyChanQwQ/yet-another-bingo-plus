@@ -7,7 +7,7 @@ import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.packet.ServerPacketManager
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -29,7 +29,7 @@ class BingoMapController(
     private val cardViewService: CardViewService,
     private val advancementManager: IAdvancementManager,
     private val textSerializer: ITextSerializer,
-    private val packetManager: ServerPacketManager,
+    private val packetManager: ServerPacketEvents,
 ) : BingoComponent() {
 
     fun updateCard(team: BingoTeam?) {
@@ -43,7 +43,7 @@ class BingoMapController(
             for (player in server.playerManager.playerList) {
                 if (cardViewService.isViewingCard(player, team) && cardViewService.supportsCardHud(player)) {
                     // yes, every send() needs its own PacketByteBuf() instance, otherwise we get Scary Errors
-                    packetManager.sendPacketS2C(player, CardUpdatePacket.V1, updatePacket)
+                    packetManager.cardUpdateV1.send(player, updatePacket)
                 }
             }
 
@@ -106,11 +106,11 @@ class BingoMapController(
                     display = displayTeams.map { it?.key },
                 )
 
-                packetManager.sendPacketS2C(player, CardDisplayPacket.V1, packet)
+                packetManager.cardDisplayV1.send(player, packet)
 
                 for (team in displayTeams) {
                     val view = cardViewService.getMapView(team)
-                    packetManager.sendPacketS2C(player, CardUpdatePacket.V1, CardUpdatePacket(view))
+                    packetManager.cardUpdateV1.send(player, CardUpdatePacket(view))
                 }
             }
         }

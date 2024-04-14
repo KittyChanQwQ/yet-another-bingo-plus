@@ -1,8 +1,7 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.event.model.*
-import me.jfenn.bingo.common.event.packet.ServerPacketManager
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
@@ -22,7 +21,7 @@ import net.minecraft.util.TypedActionResult
  */
 class EventManager(
     private val scopeManager: ScopeManager,
-    packetManager: ServerPacketManager,
+    packetEvents: ServerPacketEvents,
 ) : BingoComponent() {
 
     private fun getEvents(server: MinecraftServer?) : ScopedEvents? {
@@ -128,8 +127,8 @@ class EventManager(
             }
         }
 
-        packetManager.registerGlobalReceiver(PlayerSettings.V1_C2S) { server, player, handler, packet, response ->
-            getEvents(server)?.onPlayerSettingsPacket?.invoke(
+        packetEvents.sendPlayerSettingsV1.onPacket { (player, packet) ->
+            getEvents(player.server)?.onPlayerSettingsPacket?.invoke(
                 SettingsUpdateEvent(player, packet)
             )
         }

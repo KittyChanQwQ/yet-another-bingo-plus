@@ -2,11 +2,14 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.api.ITextSerializer
-import me.jfenn.bingo.common.*
+import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
+import me.jfenn.bingo.common.NBT_BINGO_IGNORE
+import me.jfenn.bingo.common.NBT_BINGO_VANISH
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.packet.ServerPacketManager
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -16,7 +19,6 @@ import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtList
@@ -40,7 +42,7 @@ class PlayerSettingsController(
     private val scoreboardManager: IScoreboardManager,
     private val playerSettingsService: PlayerSettingsService,
     private val text: TextProvider,
-    private val packetManager: ServerPacketManager,
+    private val packetManager: ServerPacketEvents,
 ) : BingoComponent() {
 
     private fun getIntroPage(player: ServerPlayerEntity) =
@@ -246,7 +248,7 @@ class PlayerSettingsController(
             }
 
             val settings = playerSettingsService.getPlayer(player)
-            packetManager.sendPacketS2C(player, PlayerSettings.V1_S2C, settings)
+            packetManager.receivePlayerSettingsV1.send(player, settings)
         }
 
         events.onPlayerSettingsPacket {

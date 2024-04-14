@@ -1,9 +1,6 @@
 package me.jfenn.bingo.client.common.score
 
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
-import me.jfenn.bingo.client.common.packet.ClientPacketManager
-import me.jfenn.bingo.common.scoring.ScoredItemPacket
-import me.jfenn.bingo.common.text.GameOverPacket
 import net.minecraft.client.MinecraftClient
 import net.minecraft.sound.SoundCategory
 
@@ -12,7 +9,7 @@ class ScorePacketReceiver(
 ) {
 
     init {
-        clientPacketEvents.onScoredItem { packet ->
+        clientPacketEvents.scoredItemV1.onPacket { (packet) ->
             val score = packet.score.items
             MinecraftClient.getInstance().player?.playSound(
                 if (packet.isViewerOnTeam) ClientSounds.ITEM_SCORED else ClientSounds.OPPONENT_SCORED,
@@ -21,7 +18,7 @@ class ScorePacketReceiver(
             )
         }
 
-        clientPacketEvents.onGameOver { packet ->
+        clientPacketEvents.gameOverV1.onPacket { (packet) ->
             MinecraftClient.getInstance().player?.playSound(
                 if (packet.isWinner) ClientSounds.GAME_WON else ClientSounds.GAME_LOST,
                 SoundCategory.RECORDS,
@@ -29,7 +26,15 @@ class ScorePacketReceiver(
             )
         }
 
-        clientPacketEvents.onTimer { packet ->
+        clientPacketEvents.gameOverV2.onPacket { (packet) ->
+            MinecraftClient.getInstance().player?.playSound(
+                if (packet.isWinner) ClientSounds.GAME_WON else ClientSounds.GAME_LOST,
+                SoundCategory.RECORDS,
+                0.5f, 1f
+            )
+        }
+
+        clientPacketEvents.timerV1.onPacket { (packet) ->
             if (packet.secondsRemaining in 1..20 && packet.secondsRemaining % 2 != 0) {
                 val volume = 1f - (packet.secondsRemaining / 20f)
 
@@ -41,7 +46,7 @@ class ScorePacketReceiver(
             }
         }
 
-        clientPacketEvents.onCountdown { packet ->
+        clientPacketEvents.countdownV1.onPacket { (packet) ->
             when (packet.secondsRemaining) {
                 in 1..3 -> {
                     MinecraftClient.getInstance().player?.playSound(

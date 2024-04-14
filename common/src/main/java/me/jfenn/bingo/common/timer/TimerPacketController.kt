@@ -1,14 +1,14 @@
 package me.jfenn.bingo.common.timer
 
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.packet.ServerPacketManager
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.server.MinecraftServer
 
 class TimerPacketController(
     private val server: MinecraftServer,
     private val state: BingoState,
-    private val packetManager: ServerPacketManager,
+    private val packetManager: ServerPacketEvents,
     events: ScopedEvents,
 ) {
 
@@ -26,7 +26,7 @@ class TimerPacketController(
                 prevSecondsRemaining = secondsRemaining
                 val packet = TimerPacket(secondsRemaining.toInt())
                 for (player in server.playerManager.playerList) {
-                    packetManager.sendPacketS2C(player, TimerPacket.V1, packet)
+                    packetManager.timerV1.send(player, packet)
                 }
             }
         }

@@ -1,9 +1,8 @@
 package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.common.event.packet.PacketConverter
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
-import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
 @Serializable
@@ -19,7 +18,7 @@ data class PlayerSettings(
     object V1_S2C : PacketConverter<PlayerSettings> {
         override val id: Identifier = Identifier("bingo", "update_settings_s2c")
 
-        override fun fromPacketBuf(buf: PacketByteBuf): PlayerSettings {
+        override fun fromPacketBuf(buf: IPacketBuf): PlayerSettings {
             buf.readInt()
             return PlayerSettings(
                 seenTutorial = buf.readBoolean(),
@@ -32,23 +31,21 @@ data class PlayerSettings(
             )
         }
 
-        override fun toPacketBuf(source: PlayerSettings): PacketByteBuf {
-            val buf = PacketByteBufs.create()
-            buf.writeInt(0)
-            buf.writeBoolean(source.seenTutorial)
-            buf.writeBoolean(source.bossbar)
-            buf.writeBoolean(source.scoreboard)
-            buf.writeBoolean(source.scoreboardAutoHide)
-            buf.writeBoolean(source.leadingMessages)
-            buf.writeBoolean(source.scoreMessages)
-            buf.writeBoolean(source.nightVision)
-            return buf
+        override fun toPacketBuf(source: PlayerSettings, dest: IPacketBuf) {
+            dest.writeInt(0)
+            dest.writeBoolean(source.seenTutorial)
+            dest.writeBoolean(source.bossbar)
+            dest.writeBoolean(source.scoreboard)
+            dest.writeBoolean(source.scoreboardAutoHide)
+            dest.writeBoolean(source.leadingMessages)
+            dest.writeBoolean(source.scoreMessages)
+            dest.writeBoolean(source.nightVision)
         }
     }
 
     object V1_C2S : PacketConverter<PlayerSettings> {
         override val id: Identifier = Identifier("bingo", "update_settings_c2s")
-        override fun fromPacketBuf(buf: PacketByteBuf) = V1_S2C.fromPacketBuf(buf)
-        override fun toPacketBuf(source: PlayerSettings) = V1_S2C.toPacketBuf(source)
+        override fun fromPacketBuf(buf: IPacketBuf) = V1_S2C.fromPacketBuf(buf)
+        override fun toPacketBuf(source: PlayerSettings, dest: IPacketBuf) = V1_S2C.toPacketBuf(source, dest)
     }
 }
