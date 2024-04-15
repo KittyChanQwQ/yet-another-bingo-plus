@@ -66,7 +66,7 @@ data class BingoOptions(
     ),
 
     // amount of time to wait before starting the game
-    var startCountdownSeconds: Int = 5,
+    var startCountdownSeconds: Int = 8,
 ) {
 
     init {
