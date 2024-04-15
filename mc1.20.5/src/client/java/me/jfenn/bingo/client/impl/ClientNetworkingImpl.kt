@@ -1,6 +1,5 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.client.api.ClientPacket
 import me.jfenn.bingo.client.api.IClientNetworking
 import me.jfenn.bingo.client.api.IClientPacketHandlerC2S
@@ -14,14 +13,12 @@ import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 
-class ClientNetworkingImpl(
-    private val textSerializer: ITextSerializer,
-) : IClientNetworking {
+class ClientNetworkingImpl : IClientNetworking {
     override fun <T> registerC2S(converter: PacketConverter<T>): IClientPacketHandlerC2S<T>
-        = ClientPacketHandlerC2S(converter, textSerializer)
+        = ClientPacketHandlerC2S(converter)
 
     override fun <T> registerS2C(converter: PacketConverter<T>): IClientPacketHandlerS2C<T>
-        = ClientPacketHandlerS2C(converter, textSerializer)
+        = ClientPacketHandlerS2C(converter)
 }
 
 class BingoPayload<T>(
@@ -33,13 +30,12 @@ class BingoPayload<T>(
 
 class ClientPacketHandlerC2S<T>(
     private val converter: PacketConverter<T>,
-    private val textSerializer: ITextSerializer,
 ) : IClientPacketHandlerC2S<T> {
 
     private val id = CustomPayload.id<BingoPayload<T>>(converter.id.toString())
     private val codec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
-        { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, textSerializer)) },
-        { b: RegistryByteBuf -> BingoPayload(id, converter.fromPacketBuf(PacketBufImpl(b, textSerializer))) }
+        { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf)) },
+        { b: RegistryByteBuf -> BingoPayload(id, converter.fromPacketBuf(PacketBufImpl(b))) }
     )
 
     init {
@@ -67,14 +63,13 @@ class ClientPacketHandlerC2S<T>(
 
 class ClientPacketHandlerS2C<T>(
     private val converter: PacketConverter<T>,
-    private val textSerializer: ITextSerializer,
 ) : IClientPacketHandlerS2C<T> {
     private val event = EventListener<ClientPacket<T>>()
 
     private val id = CustomPayload.id<BingoPayload<T>>(converter.id.toString())
     private val codec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
-        { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, textSerializer)) },
-        { b: RegistryByteBuf -> BingoPayload(id, converter.fromPacketBuf(PacketBufImpl(b, textSerializer))) }
+        { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf)) },
+        { b: RegistryByteBuf -> BingoPayload(id, converter.fromPacketBuf(PacketBufImpl(b))) }
     )
 
     init {

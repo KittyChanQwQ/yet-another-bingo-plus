@@ -1,6 +1,5 @@
 package me.jfenn.bingo.client
 
-import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.client.api.*
 import me.jfenn.bingo.client.common.commonClientModule
 import me.jfenn.bingo.client.impl.*
@@ -25,7 +24,6 @@ object Main : ClientModInitializer {
     private val clientModule = module {
         singleOf(::ButtonService) bind IButtonService::class
         singleOf(::ClientNetworkingImpl) bind IClientNetworking::class
-        singleOf(::ClientTextSerializerImpl) bind ITextSerializer::class
         single { DrawService } bind IDrawServiceFactory::class
         single { OptionsAccessor } bind IOptionsAccessor::class
         single { SessionAccessor } bind ISessionAccessor::class
