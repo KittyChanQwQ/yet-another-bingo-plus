@@ -22,7 +22,7 @@ class ScorePacketReceiver(
             MinecraftClient.getInstance().player?.playSound(
                 if (packet.isWinner) ClientSounds.GAME_WON else ClientSounds.GAME_LOST,
                 SoundCategory.RECORDS,
-                0.8f, 1f
+                1f, 1f
             )
         }
 
@@ -30,7 +30,7 @@ class ScorePacketReceiver(
             MinecraftClient.getInstance().player?.playSound(
                 if (packet.isWinner) ClientSounds.GAME_WON else ClientSounds.GAME_LOST,
                 SoundCategory.RECORDS,
-                0.8f, 1f
+                1f, 1f
             )
         }
 
@@ -41,7 +41,7 @@ class ScorePacketReceiver(
                 MinecraftClient.getInstance().player?.playSound(
                     ClientSounds.TIMER_TICK,
                     SoundCategory.RECORDS,
-                    volume * 0.7f, volume * 0.5f + 0.5f
+                    volume * 0.8f, volume * 0.5f + 0.5f
                 )
             }
         }
