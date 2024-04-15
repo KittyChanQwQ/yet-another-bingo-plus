@@ -1,39 +1,25 @@
-package me.jfenn.bingo.common.controller
+package me.jfenn.bingo.common.spawn
 
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
-import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
-import me.jfenn.bingo.common.map.CardViewService
-import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.scope.BingoComponent
-import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.timer.CountdownService
 import me.jfenn.bingo.common.utils.allHeldStacks
-import me.jfenn.bingo.common.utils.allInventorySlots
 import me.jfenn.bingo.common.utils.giveOrEquipStack
 import me.jfenn.bingo.integrations.VanishIntegration
-import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.item.FilledMapItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
-import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
 import org.slf4j.Logger
@@ -57,96 +43,17 @@ class PlayerController(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
-    private val config: BingoConfig,
-    private val playerSettingsService: PlayerSettingsService,
-    private val mapItemService: MapItemService,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
-    private val cardViewService: CardViewService,
-    private val countdownService: CountdownService,
     private val advancementManager: IAdvancementManager,
     private val vanishIntegration: VanishIntegration,
 ) : BingoComponent() {
-
-    fun givePreviewCardItem(player: ServerPlayerEntity) {
-        if (cardViewService.supportsCardHud(player)) return
-
-        val hasMap = player.allHeldStacks().any { MapItemService.isMapItem(it) }
-
-        if (!hasMap) {
-            val mapItem = mapItemService.createPreviewMapItem()
-            player.giveItemStack(mapItem)
-        }
-    }
-
-    fun removePreviewCardItem(player: ServerPlayerEntity) {
-        for ((slot, item) in player.allInventorySlots()) {
-            if (MapItemService.isMapItem(item) && FilledMapItem.getMapId(item) == state.getPreviewMap(server).mapId)
-                player.inventory.removeStack(slot)
-        }
-    }
-
-    /**
-     * Ensure that the player has their team's bingo map card.
-     * Has no effect if the player already has a card
-     */
-    fun giveMapCardItem(player: ServerPlayerEntity) {
-        if (cardViewService.supportsCardHud(player)) return
-
-        val team = teamService.getPlayerTeam(player) ?: return
-        val hasMap = player.allHeldStacks()
-            .filter { MapItemService.isMapItem(it) }
-            .mapNotNull {
-                if (mapItemService.isMapTeamItem(it, team)) {
-                    it.count = 1
-                    it
-                } else {
-                    // if the player has another team's map item, remove it!
-                    it.count = 0
-                    null
-                }
-            }
-            .toList()
-            .isNotEmpty()
-
-        if (!hasMap) {
-            // give the player a new map item
-            val mapItem = mapItemService.createMapItem(team)
-            player.giveItemStack(mapItem)
-        }
-    }
-
-    /**
-     * Ensure that the player has every team's bingo map card
-     * in their hotbar slots. Indiscriminately replaces any existing
-     * hotbar items.
-     */
-    fun giveSpectatorMapItems(player: ServerPlayerEntity) {
-        if (cardViewService.supportsCardHud(player)) return
-
-        state.getRegisteredTeams()
-            .map { mapItemService.createMapItem(it) }
-            .forEachIndexed { i, stack ->
-                val mapId = FilledMapItem.getMapId(stack)
-                val hasMap = player.allHeldStacks().any { FilledMapItem.getMapId(it) == mapId }
-                if (!hasMap) player.getStackReference(i).set(stack)
-            }
-    }
-
-    /**
-     * Remove all bingo map items from the player
-     */
-    fun removeAllMapItems(player: ServerPlayerEntity) {
-        player.allHeldStacks()
-            .filter { MapItemService.isMapItem(it) }
-            .forEach { it.count = 0 }
-    }
 
     /**
      * Equip the player with elytra and firework rockets.
      * Only runs if config.isElytra is true
      */
-    fun giveElytra(player: ServerPlayerEntity) {
+    private fun giveElytra(player: ServerPlayerEntity) {
         val hasElytra = player.allHeldStacks().any { it.item == Items.ELYTRA && it.nbt?.getBoolean(NBT_BINGO_VANISH) == true }
         if (!hasElytra) {
             // insert elytra in armor slot
@@ -221,36 +128,12 @@ class PlayerController(
         }
     }
 
-    private fun updateNightVision(player: ServerPlayerEntity) {
-        val isOnTeam = teamService.isPlaying(player)
-
-        // give the player night_vision if configured
-        // ...and remove it if not
-        if (
-            config.nightVisionInPostgame || config.nightVisionInSpectator || options.isNightVision
-        ) {
-            val shouldHaveNightVision = (
-                    (state.state == GameState.PLAYING && !isOnTeam && config.nightVisionInSpectator) ||
-                            (state.state == GameState.POSTGAME && config.nightVisionInPostgame) ||
-                            (state.state == GameState.PLAYING && options.isNightVision)
-            ) && playerSettingsService.getPlayer(player).nightVision
-
-            if (shouldHaveNightVision) {
-                player.addStatusEffect(
-                    StatusEffectInstance(StatusEffects.NIGHT_VISION, -1, 0, false, false),
-                )
-            } else {
-                // if the player has infinite night vision (and should not), remove it
-                if (player.getStatusEffect(StatusEffects.NIGHT_VISION)?.duration == -1) {
-                    player.removeStatusEffect(StatusEffects.NIGHT_VISION)
-                }
-            }
-        }
-    }
-
-    fun resetPlayerHealth(player: ServerPlayerEntity) {
+    private fun resetPlayerHealth(player: ServerPlayerEntity) {
         player.activeStatusEffects.keys
-            .filter { it != StatusEffects.NIGHT_VISION }
+            // Night vision needs to be filtered so that this doesn't cancel out [NightVisionController]
+            .filterNot { options.isNightVision && it == StatusEffects.NIGHT_VISION }
+            // Avoid cancelling out effects from [CountdownController]
+            .filterNot { state.state == GameState.COUNTDOWN && (it == StatusEffects.SLOWNESS || it == StatusEffects.JUMP_BOOST) }
             .forEach { player.removeStatusEffect(it) }
 
         player.fireTicks = 0
@@ -262,7 +145,7 @@ class PlayerController(
         player.hungerManager.exhaustion = 0f
     }
 
-    fun respawnPlayer(player: ServerPlayerEntity) {
+    private fun respawnPlayer(player: ServerPlayerEntity) {
         log.debug("respawnPlayer(${player.uuidAsString})")
         // reset player info
         resetPlayerHealth(player)
@@ -281,11 +164,8 @@ class PlayerController(
             // teleport the player to their spawnpoint
             spawnService.teleportPlayer(player)
 
-            // give each player their team's card
-            giveMapCardItem(player)
-
             // give spawn equipment to the player if they are on a team
-            if (teamService.isPlaying(player)) {
+            if (teamService.isPlaying(player) && state.state == GameState.PLAYING) {
                 spawnService.giveSpawnEquipment(listOf(player))
             }
         }
@@ -345,19 +225,8 @@ class PlayerController(
 
         // Transition from PLAYING -> POSTGAME
         events.onEnter(GameState.POSTGAME) { prevState ->
-            if (prevState == GameState.POSTGAME) return@onEnter
-
             for (player in server.playerManager.playerList) {
                 updateGameMode(player)
-
-                // remove any existing maps in the player's inventory
-                for (i in 0 until player.inventory.size()) {
-                    if (MapItemService.isMapItem(player.inventory.getStack(i)))
-                        player.inventory.removeStack(i)
-                }
-
-                // give all maps for active teams to the player
-                giveSpectatorMapItems(player)
             }
         }
 
@@ -369,29 +238,6 @@ class PlayerController(
                 if (player.uuid in playersJoinedIds) {
                     playersJoinedIds.remove(player.uuid)
                     updateGameMode(player)
-                }
-
-                if (player.isAlive && !player.isSpectator) {
-                    if (state.state == GameState.PREGAME) {
-                        if (cardViewService.isViewingPreviewCard()) {
-                            givePreviewCardItem(player)
-                        } else {
-                            removePreviewCardItem(player)
-                        }
-                    } else if (playerTeam != null && cardViewService.isViewingTeamCard(player, playerTeam)) {
-                        // give player a new map, if they don't have one?
-                        giveMapCardItem(player)
-                    } else if (cardViewService.isViewingSpectatorCards(player)) {
-                        giveSpectatorMapItems(player)
-                    }
-                }
-
-                if (state.state == GameState.PREGAME && player.isAlive) {
-                    if (options.showPreviewCard) {
-                        givePreviewCardItem(player)
-                    } else {
-                        removePreviewCardItem(player)
-                    }
                 }
 
                 if (state.state == GameState.PLAYING && player.health > 0f && !player.isSpectator) {
@@ -427,19 +273,6 @@ class PlayerController(
                     teamService.onTeamChanged(player)
                     updateGameMode(player)
                 }
-
-                // If the player is using the client-side hud, make sure they don't have any map items
-                // (this might be false when the player is first connecting)
-                if (cardViewService.supportsCardHud(player))
-                    removeAllMapItems(player)
-            }
-        }
-
-        events.onUpdateTick {
-            for (player in server.playerManager.playerList) {
-                // Night vision is apparently super buggy and doesn't apply if invoked in `resetPlayerHealth()`...
-                // (seems like effects get cleared in a few other places - so we need to make sure it persists)
-                updateNightVision(player)
             }
         }
     }

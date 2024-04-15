@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scoring.ScoreService
+import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -31,6 +32,7 @@ class GameService(
     private val server: MinecraftServer,
     private val events: ScopedEvents,
     private val spawnService: SpawnService,
+    private val chestService: ChestService,
     private val teamService: TeamService,
     private val configService: ConfigService,
     private val permissions: PermissionsIntegration,
@@ -81,6 +83,7 @@ class GameService(
 
         // spread player teams to spawnpoint
         spawnService.createSpawnpoints()
+        chestService.createChestSpawnpoints()
 
         // change to the playing state
         if (options.startCountdownSeconds > 0) {

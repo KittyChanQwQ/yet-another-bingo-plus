@@ -145,6 +145,7 @@
   "bingo.command.restart.aborted": "The scheduled restart has been aborted.",
   "bingo.command.restart.not_scheduled": "There is no scheduled restart to abort.",
   "bingo.command.restart.warning": "The server will restart in %s!",
+  "bingo.command.join.success": "Moved player %s onto team %s!",
   "bingo.sound.item_scored": "Item Scored",
   "bingo.sound.opponent_scored": "Opponent Scored",
   "bingo.sound.game_won": "Bingo Game Won",

@@ -34,6 +34,7 @@ data class BingoTeam(
     var score: TeamScore = TeamScore.ZERO,
     var winner: TeamWinner? = null,
     var spawnpoint: BlockPosition? = null,
+    var chestSpawnpoint: BlockPosition? = null,
     val chatCoordinates: MutableList<CoordsCommand.CoordinatesEntry> = mutableListOf(),
     var map: BingoMap? = null,
     val players: MutableSet<BingoPlayerProfile> = mutableSetOf(),

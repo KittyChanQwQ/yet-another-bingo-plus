@@ -12,7 +12,7 @@ import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.*
-import me.jfenn.bingo.common.controller.PlayerController
+import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState

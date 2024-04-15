@@ -17,6 +17,7 @@ val sharedModule = module {
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
     singleOf(::StructureManager) bind IStructureManager::class
     singleOf(::TeamManager) bind ITeamManager::class
+    singleOf(::TickManagerImpl) bind ITickManager::class
 
     scope<BingoContext> {
         scopedOf(::TextSerializer) bind ITextSerializer::class

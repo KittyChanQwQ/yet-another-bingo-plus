@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.timer
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.api.ITickManager
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -18,6 +19,7 @@ class CountdownController(
     private val state: BingoState,
     private val events: ScopedEvents,
     private val countdownService: CountdownService,
+    private val tickManager: ITickManager,
 ) : BingoComponent() {
 
     private var countdownUntil: Instant? = null
@@ -45,6 +47,10 @@ class CountdownController(
                     )
                 )
             }
+        }
+
+        events.onStateChange { (_, toState) ->
+            tickManager.setFrozen(server, toState == GameState.COUNTDOWN)
         }
 
         events.onGameTick {

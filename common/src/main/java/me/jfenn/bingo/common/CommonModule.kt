@@ -28,6 +28,9 @@ import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.scoring.ScoredItemCheck
 import me.jfenn.bingo.common.timer.TimerCheck
 import me.jfenn.bingo.common.scoring.ScoreUpdateService
+import me.jfenn.bingo.common.spawn.ChestController
+import me.jfenn.bingo.common.spawn.ChestService
+import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
@@ -88,7 +91,6 @@ val commonModule = module {
         scoped { get<BingoState>().options }
 
         scopedOf(::GameService)
-        scopedOf(::SpawnService)
         scopedOf(::MapItemService)
         scopedOf(::MapRenderService)
         scopedOf(::CardViewService)
@@ -103,12 +105,19 @@ val commonModule = module {
         scopedOf(::GameRuleController)
         scopedOf(::IntegrationController)
         scopedOf(::LobbyChaosController)
+        scopedOf(::MapItemController)
         scopedOf(::MapItemHandler)
         scopedOf(::MotdController)
-        scopedOf(::PlayerController)
+        scopedOf(::NightVisionController)
         scopedOf(::PlayerSettingsController)
         scopedOf(::PlayerSpectatorController)
         scopedOf(::ScoreboardController)
+
+        scopedOf(::ChestService)
+        scopedOf(::ChestController)
+
+        scopedOf(::SpawnService)
+        scopedOf(::PlayerController)
 
         scopedOf(::CountdownService)
         scopedOf(::CountdownController)
@@ -147,16 +156,23 @@ fun Scope.commonInit() {
     get<GameRuleController>()
     get<IntegrationController>()
     get<LobbyChaosController>()
+    get<MapItemController>()
     get<MapItemHandler>()
     get<MotdController>()
-    get<PlayerController>()
+    get<NightVisionController>()
     get<PlayerSettingsController>()
     get<PlayerSpectatorController>()
     get<ScoreboardController>()
+
     get<ScoredItemCheck>()
+
     get<CountdownController>()
     get<TimerCheck>()
     get<TimerPacketController>()
+
     get<RestartTimerController>()
     get<CommandTreeHandler>()
+
+    get<PlayerController>()
+    get<ChestController>()
 }

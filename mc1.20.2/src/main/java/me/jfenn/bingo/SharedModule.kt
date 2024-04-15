@@ -16,4 +16,5 @@ val sharedModule = module {
     singleOf(::StructureManager) bind IStructureManager::class
     singleOf(::TeamManager) bind ITeamManager::class
     singleOf(::TextSerializer) bind ITextSerializer::class
+    single { DummyTickManager() } bind ITickManager::class
 }

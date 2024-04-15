@@ -9,14 +9,10 @@ import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.giveOrEquipStack
-import net.minecraft.block.Blocks
-import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
-import net.minecraft.world.Heightmap
 import org.slf4j.Logger
 import kotlin.math.absoluteValue
 import kotlin.math.sign
@@ -35,7 +31,7 @@ class SpawnService(
         return server.worlds.find {
             it.registryKey.value.toString() == options.spawnDimension
         } ?: run {
-            log.error("Could not find spawnDimension '${options.spawnDimension}'; defaulting to minecraft:overworld")
+            log.error("[SpawnService] Could not find spawnDimension '${options.spawnDimension}'; defaulting to minecraft:overworld")
             server.overworld
         }
     }
@@ -59,12 +55,6 @@ class SpawnService(
         } else {
             // spread player teams to spawnpoint
             spread.spread(state.getRegisteredTeams(), distance)
-        }
-
-        for (team in state.getRegisteredTeams()) {
-            team.spawnpoint?.let {
-                createTeamChest(world, it)
-            }
         }
     }
 
@@ -105,8 +95,7 @@ class SpawnService(
     fun getTeamSpawnpoint(team: BingoTeam): BlockPos? {
         val world = getSpawnDimension()
         val spawnpoint = team.spawnpoint ?: run {
-            log.warn("Team ${team.name} does not have a stored spawn point!")
-            log.warn("Finding a new spawn position...")
+            log.warn("[SpawnService] Team ${team.name} does not have a stored spawn point! Finding a new spawn position...")
 
             // Get the chunk of an existing spawnpoint
             val (x, y) = state.getRegisteredTeams()
@@ -133,8 +122,7 @@ class SpawnService(
         ) {
             pos.y += 1
             if (pos.y >= world.logicalHeight) {
-                log.warn("Spawn position for team $team is obstructed up to build height!")
-                log.warn("Finding a new spawn position...")
+                log.warn("[SpawnService] Spawn position for team $team is obstructed up to build height! Finding a new spawn position...")
 
                 val spread = SpreadPlayers(world)
                 val newSpawnPos = spread.findSpawnPos(spawnpoint.toChunkPos())
@@ -145,74 +133,6 @@ class SpawnService(
         }
 
         return pos
-    }
-
-    /**
-     * Place a team kit chest in the world, nearby the provided [spawnpoint]
-     * Similar behavior to the BonusChestFeature
-     */
-    private fun createTeamChest(world: ServerWorld, spawnpoint: BlockPosition) {
-        if (!options.isTeamKit) return
-
-        val chunk = world.getChunk(spawnpoint.toBlockPos())
-        // if the dimension has a ceiling, we can't use heightmaps...
-        val chestBlockPos: BlockPos? = if (world.dimension.hasCeiling) {
-            // spawn the chest directly next to the player
-            BlockPos(spawnpoint.x + 1, spawnpoint.y, spawnpoint.z)
-        } else {
-            val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES)
-
-            // Choose a random position in the chunk to spawn the team chest at
-            buildList {
-                for (x in 0..15) {
-                    for (z in 0..15) {
-                        add(Pair(x, z))
-                    }
-                }
-            }
-                .shuffled()
-                .asSequence()
-                .map { (x, z) ->
-                    val y = heightmap.get(x, z)
-                    chunk.pos.getBlockPos(x, y, z)
-                }
-                .find {  blockPos ->
-                    world.isAir(blockPos) || world.getBlockState(blockPos).getCollisionShape(world, blockPos).isEmpty
-                }
-        }
-
-        if (chestBlockPos == null) {
-            log.error("No valid locations to create a team kit chest!")
-            return
-        }
-
-        // Create the team chest block/entity at the chosen position
-        world.setBlockState(chestBlockPos, Blocks.CHEST.defaultState)
-        val entity = world.getBlockEntity(chestBlockPos) as? ChestBlockEntity ?: run {
-            log.error("Creating a team kit chest did not create a block entity. This should never happen!!")
-            return
-        }
-
-        // Place torches around the chest in each direction
-        val torchState = Blocks.TORCH.defaultState
-        Direction.Type.HORIZONTAL
-            .map { direction -> chestBlockPos.offset(direction) }
-            .filter { blockPos -> torchState.canPlaceAt(world, blockPos) }
-            .forEach { blockPos -> world.setBlockState(blockPos, torchState) }
-
-        // Fill the chest with the configured item stacks
-        options.teamKitItems
-            .flatMap { it.toItemStacks() }
-            .forEachIndexed { i, itemStack ->
-                if (config.preventScoringSpawnKitItems) {
-                    // set BINGO_IGNORE flag so that spawn items do not count on the bingo card
-                    itemStack.getOrCreateNbt().apply {
-                        putBoolean(NBT_BINGO_IGNORE, true)
-                    }
-                }
-
-                entity.setStack(i, itemStack)
-            }
     }
 
     /**
