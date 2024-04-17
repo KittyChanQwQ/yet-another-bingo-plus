@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.commands.BingoPrefsCommand
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -131,14 +132,14 @@ class PlayerSettingsController(
             .append(
                 toggleText(settings.bossbar, StringKey.PlayerSettingsBossbar, StringKey.PlayerSettingsBossbarDescription)
                     .also {
-                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set bossbar ${!settings.bossbar}"))
+                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(PlayerSettings::bossbar, !settings.bossbar)))
                     }
             )
             .append("\n\n")
             .append(
                 toggleText(settings.scoreboard, StringKey.PlayerSettingsScoreboard, StringKey.PlayerSettingsScoreboardDescription)
                     .also {
-                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set scoreboard ${!settings.scoreboard}"))
+                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(PlayerSettings::scoreboard, !settings.scoreboard)))
                     }
             )
             .also {
@@ -147,7 +148,7 @@ class PlayerSettingsController(
                     it.append(
                         toggleText(settings.scoreboardAutoHide, StringKey.PlayerSettingsScoreboardAutoHide, StringKey.PlayerSettingsScoreboardAutoHideDescription)
                             .also {
-                                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set scoreboardAutoHide ${!settings.scoreboardAutoHide}"))
+                                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(PlayerSettings::scoreboardAutoHide, !settings.scoreboardAutoHide)))
                             }
                     )
                 }
@@ -158,21 +159,21 @@ class PlayerSettingsController(
             .append(
                 toggleText(settings.leadingMessages, StringKey.PlayerSettingsMessagesLeading, StringKey.PlayerSettingsMessagesLeadingDescription)
                     .also {
-                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set leadingMessages ${!settings.leadingMessages}"))
+                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(PlayerSettings::leadingMessages, !settings.leadingMessages)))
                     }
             )
             .append("\n")
             .append(
                 toggleText(settings.scoreMessages, StringKey.PlayerSettingsMessagesLines, StringKey.PlayerSettingsMessagesLinesDescription)
                     .also {
-                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set scoreMessages ${!settings.scoreMessages}"))
+                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(PlayerSettings::scoreMessages, !settings.scoreMessages)))
                     }
             )
             .append("\n\n")
             .append(
                 toggleText(settings.nightVision, StringKey.PlayerSettingsNightVision, StringKey.PlayerSettingsNightVisionDescription)
                     .also {
-                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingo set nightVision ${!settings.nightVision}"))
+                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(PlayerSettings::nightVision, !settings.nightVision)))
                     }
             )
             .let { textSerializer.toJson(it) }

@@ -11,11 +11,12 @@ import me.jfenn.bingo.common.utils.sendInfoMessage
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import org.koin.core.scope.Scope
+import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KMutableProperty1
 
 class BingoPrefsCommand : BaseCommand() {
 
-    fun changeBooleanSetting(
+    private fun changeBooleanSetting(
         player: ServerPlayerEntity,
         field: KMutableProperty1<PlayerSettings, Boolean>,
         value: Boolean,
@@ -47,10 +48,8 @@ class BingoPrefsCommand : BaseCommand() {
         )
 
         for (field in fields) {
-            // replace any upper case letter to transform camelCase -> snake_case
-            val fieldName = field.name.replace(Regex("[A-Z]")) { match -> "_" + match.value.lowercase() }
             prefsCommand = prefsCommand.then(
-                LiteralArgumentBuilder.literal<ServerCommandSource>(fieldName)
+                LiteralArgumentBuilder.literal<ServerCommandSource>(getFieldName(field))
                     .then(
                         RequiredArgumentBuilder.argument<ServerCommandSource, Boolean>(
                             "value",
@@ -68,6 +67,22 @@ class BingoPrefsCommand : BaseCommand() {
         }
 
         prefsCommand.register()
+    }
+
+    companion object {
+        private fun getFieldName(
+            field: KMutableProperty<*>,
+        ): String {
+            // replace any upper case letter to transform camelCase -> snake_case
+            return field.name.replace(Regex("[A-Z]")) { match -> "_" + match.value.lowercase() }
+        }
+
+        fun <T> getCommand(
+            field: KMutableProperty1<PlayerSettings, T>,
+            value: T,
+        ): String {
+            return "/bingoprefs ${getFieldName(field)} $value"
+        }
     }
 
 }
