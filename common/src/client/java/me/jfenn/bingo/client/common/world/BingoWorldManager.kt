@@ -53,7 +53,7 @@ class BingoWorldManager(
             }
         }
 
-        ScreenEvents.BEFORE_INIT.register { client, screen, width, height ->
+        ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
             if (screen is CreateWorldScreen && worldState.state == ScreenState.CreateBingoWorld) {
                 // Add a prefix to the names of bingo worlds
                 if (!screen.worldCreator.worldName.startsWith(BINGO_WORLD_PREFIX)) {
@@ -62,7 +62,7 @@ class BingoWorldManager(
             }
         }
 
-        ScreenEvents.AFTER_INIT.register { client, screen, width, height ->
+        ScreenEvents.AFTER_INIT.register { client, screen, _, height ->
             val state = worldState.state
 
             if (screen is TitleScreen) {

@@ -39,7 +39,7 @@ class JeiIntegrationImpl(
 
         val focus = runtime.jeiHelpers.focusFactory.createFocus(
             RecipeIngredientRole.OUTPUT,
-            VanillaTypes.ITEM_STACK as IIngredientType<ItemStack>,
+            @Suppress("UNCHECKED_CAST") (VanillaTypes.ITEM_STACK as IIngredientType<ItemStack>),
             stack,
         )
 

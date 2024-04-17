@@ -63,9 +63,9 @@ if (project.name.toString() == "common" || project.name.toString() == "mc1.20.1"
     // Minecraft 1.20.5 upwards uses Java 21
     javaVersion = 21
 }
+println("Using Java version $javaVersion")
 
 tasks.withType(JavaCompile).configureEach {
-    println("Configure Java release version $javaVersion")
     it.options.release.set(javaVersion)
 }
 
@@ -75,7 +75,6 @@ java {
     // If you remove this line, sources will not be generated.
     withSourcesJar()
 
-    println("Using Java Version $javaVersion")
     if (javaVersion == 17) {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -85,7 +84,6 @@ java {
     }
 
     toolchain {
-        println("Using Java toolchain $javaVersion")
         languageVersion.set(JavaLanguageVersion.of(javaVersion))
     }
 }
@@ -101,6 +99,5 @@ jar {
 }
 
 kotlin {
-    println("Using Kotlin toolchain $javaVersion")
     jvmToolchain(javaVersion)
 }

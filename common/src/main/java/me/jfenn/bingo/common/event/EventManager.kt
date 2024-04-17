@@ -133,7 +133,7 @@ class EventManager(
             )
         }
 
-        S2CPlayChannelEvents.REGISTER.register { handler, sender, server, packets ->
+        S2CPlayChannelEvents.REGISTER.register { handler, _, server, _ ->
             val player = handler.player
             server.execute {
                 getEvents(server)?.onPlayerChannelRegister?.invoke(player)

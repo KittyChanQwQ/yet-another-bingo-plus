@@ -26,7 +26,7 @@ class ServerPacketHandlerC2S<T>(
     override fun onPacket(receiver: (ServerPacket<T>) -> Unit) = event(receiver)
 
     init {
-        ServerPlayNetworking.registerGlobalReceiver(converter.id) { server, player, handler, buf, response ->
+        ServerPlayNetworking.registerGlobalReceiver(converter.id) { server, player, _, buf, _ ->
             val packet = converter.fromPacketBuf(PacketBufImpl(buf))
             val data = ServerPacket(player, packet)
             server.execute {

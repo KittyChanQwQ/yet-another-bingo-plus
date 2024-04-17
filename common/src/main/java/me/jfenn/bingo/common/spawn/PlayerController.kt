@@ -224,7 +224,7 @@ class PlayerController(
         }
 
         // Transition from PLAYING -> POSTGAME
-        events.onEnter(GameState.POSTGAME) { prevState ->
+        events.onEnter(GameState.POSTGAME) {
             for (player in server.playerManager.playerList) {
                 updateGameMode(player)
             }
