@@ -4,10 +4,11 @@ import me.jfenn.bingo.client.common.hud.BingoHudController
 import me.jfenn.bingo.client.common.hud.BingoHudRenderer
 import me.jfenn.bingo.client.common.hud.BingoHudState
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
-import me.jfenn.bingo.client.common.score.ClientSounds
-import me.jfenn.bingo.client.common.score.ScorePacketReceiver
+import me.jfenn.bingo.client.common.sound.ClientSounds
+import me.jfenn.bingo.client.common.sound.ScorePacketReceiver
 import me.jfenn.bingo.client.common.settings.ClientSettingsController
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
+import me.jfenn.bingo.client.common.sound.SoundService
 import me.jfenn.bingo.client.common.world.BingoWorldManager
 import me.jfenn.bingo.client.common.world.BingoWorldService
 import me.jfenn.bingo.client.common.world.BingoWorldState
@@ -26,6 +27,7 @@ val commonClientModule = module {
     singleOf(::BingoHudRenderer)
     singleOf(::BingoHudController) withOptions { createdAtStart() }
 
+    singleOf(::SoundService)
     singleOf(::ClientSounds) withOptions { createdAtStart() }
     singleOf(::ScorePacketReceiver) withOptions { createdAtStart() }
 

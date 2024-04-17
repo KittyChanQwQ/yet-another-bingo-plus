@@ -6,6 +6,8 @@ import dev.isxander.yacl3.api.controller.EnumControllerBuilder
 import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder
 import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
+import me.jfenn.bingo.client.common.sound.ClientSounds
+import me.jfenn.bingo.client.common.sound.SoundService
 import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -26,10 +28,11 @@ interface YetAnotherConfigLibIntegration {
             configService: ConfigService,
             config: BingoConfig,
             clientSettings: ClientSettingsService,
+            soundService: SoundService,
             text: TextProvider,
         ): YetAnotherConfigLibIntegration {
             return if (hasYACL())
-                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings, text)
+                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings, soundService, text)
             else YetAnotherConfigLibIntegrationDummy()
         }
     }
@@ -44,6 +47,7 @@ class YetAnotherConfigLibIntegrationImpl(
     private val configService: ConfigService,
     private val config: BingoConfig,
     private val clientSettings: ClientSettingsService,
+    private val soundService: SoundService,
     private val text: TextProvider,
 ) : YetAnotherConfigLibIntegration {
 
@@ -361,6 +365,61 @@ class YetAnotherConfigLibIntegrationImpl(
                     )
                     .build(),
 
+            )
+            .category(
+                ConfigCategory.createBuilder()
+                    .name(text.string(StringKey.SoundSettings))
+                    .tooltip(text.string(StringKey.SoundSettingsTooltip))
+                    .groups(
+                        ClientSounds.Key.entries.map { sound ->
+                            val soundId = sound.name.lowercase()
+                            val soundString = StringKey.entries.find { it.key == "bingo.sound.${soundId}" }!!
+
+                            val sliderOption = Option.createBuilder<Float>()
+                                .name(text.string(StringKey.SoundSettingsVolume))
+                                .description(OptionDescription.of(
+                                    text.string(StringKey.SoundSettingsCategoryDescription).formatted(Formatting.YELLOW)
+                                ))
+                                .controller {
+                                    FloatSliderControllerBuilder.create(it)
+                                        .range(0f, 1.5f)
+                                        .step(0.01f)
+                                        .formatValue { value -> Text.literal((value * 100f).toInt().toString() + "%") }
+                                }
+                                .binding(
+                                    defaultConfig.client.getSoundVolume(soundId),
+                                    { config.client.getSoundVolume(soundId) },
+                                    {
+                                        config.client.soundVolumes[soundId] = it
+                                        configService.writeConfig(config)
+                                    }
+                                )
+                                .build()
+
+                            val buttonOption = ButtonOption.createBuilder()
+                                .name(
+                                    text.string(StringKey.SoundSettingsTestSound)
+                                )
+                                .description(OptionDescription.of(
+                                    text.string(StringKey.SoundSettingsCategoryDescription).formatted(Formatting.YELLOW)
+                                ))
+                                .action { _, _ ->
+                                    soundService.play(sound, actualVolume = sliderOption.pendingValue())
+                                }
+                                .build()
+
+                            OptionGroup.createBuilder()
+                                .name(text.string(soundString))
+                                .description(OptionDescription.of(
+                                    text.string(StringKey.SoundSettingsCategoryDescription).formatted(Formatting.YELLOW)
+                                ))
+                                .collapsed(false)
+                                .option(sliderOption)
+                                .option(buttonOption)
+                                .build()
+                        }
+                    )
+                    .build()
             )
             .build()
             .generateScreen(parent)

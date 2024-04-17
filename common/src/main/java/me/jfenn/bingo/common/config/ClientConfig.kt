@@ -13,7 +13,14 @@ data class ClientConfig(
     var showMultipleCards: Boolean = false,
     var hideOnF3: Boolean = true,
     var hideOnChat: Boolean = false,
-)
+    var soundVolumes: MutableMap<String, Float> = mutableMapOf(),
+) {
+
+    fun getSoundVolume(sound: String): Float {
+        return soundVolumes[sound] ?: 0.8f
+    }
+
+}
 
 enum class CardAlignment(val x: Int, val y: Int, val string: StringKey) {
     TOP_LEFT(0, 0, StringKey.ConfigCardAlignmentTopLeft),

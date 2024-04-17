@@ -24,6 +24,7 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
         exclude(group: "com.twelvemonkeys.common")
         exclude(group: "com.twelvemonkeys.imageio")
+        exclude(group: "org.quiltmc.parsers")
     }
 
     modCompileOnlyApi(libs.jei)

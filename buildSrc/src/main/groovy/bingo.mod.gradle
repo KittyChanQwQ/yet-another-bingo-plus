@@ -37,11 +37,13 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
 
-    modImplementation "me.lucko:fabric-permissions-api:${project.permissions_api_version}"
-
     if (!project.name.equals("common")) {
         include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
-        include "me.lucko:fabric-permissions-api:${project.permissions_api_version}"
+
+        modImplementation "${libs.fabric.permissions.api.get()}"
+        include "${libs.fabric.permissions.api.get()}"
+    } else {
+        modCompileOnly "${libs.fabric.permissions.api.get()}"
     }
 }
 

@@ -11,13 +11,15 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TeamService
-import me.jfenn.bingo.common.config.*
-import me.jfenn.bingo.common.spawn.PlayerController
+import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.TierLabel
+import me.jfenn.bingo.common.config.TierListService
+import me.jfenn.bingo.common.config.WinCondition
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
-import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.entity.effect.StatusEffects
@@ -26,59 +28,13 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
-import org.koin.core.component.inject
 import kotlin.time.Duration.Companion.minutes
 
 class BingoCommands : BaseCommand() {
 
-    private val configService by inject<ConfigService>()
-
     init {
         LiteralArgumentBuilder.literal<ServerCommandSource>("bingo")
             .require(requireBingoInstance())
-            .then(
-                run {
-                    var setCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("set")
-                        .require(
-                            requirePermission(Permission.CONFIGURE_PLAYER),
-                        )
-
-                    val fields = listOf(
-                        PlayerSettings::bossbar,
-                        PlayerSettings::scoreboard,
-                        PlayerSettings::scoreboardAutoHide,
-                        PlayerSettings::leadingMessages,
-                        PlayerSettings::scoreMessages,
-                        PlayerSettings::nightVision,
-                    )
-
-                    for (field in fields) {
-                        setCommand = setCommand.then(
-                            LiteralArgumentBuilder.literal<ServerCommandSource>(field.name)
-                                .then(
-                                    RequiredArgumentBuilder.argument<ServerCommandSource, Boolean>(
-                                        "value",
-                                        BoolArgumentType.bool()
-                                    )
-                                        .executesInScope { ctx ->
-                                            val handler = get<PlayerSettingsService>()
-                                            val player = ctx.source.player ?: return@executesInScope 0
-                                            val value = BoolArgumentType.getBool(ctx, "value")
-
-                                            val settings = handler.getPlayer(player)
-                                            field.set(settings, value)
-                                            handler.setPlayer(player, settings, seenTutorial = true)
-
-                                            player.sendInfoMessage("${field.name.formatTitle()}: $value")
-                                            1
-                                        }
-                                )
-                        )
-                    }
-
-                    setCommand
-                }
-            )
             .then(
                 LiteralArgumentBuilder.literal<ServerCommandSource>("itemdist")
                     .require(
