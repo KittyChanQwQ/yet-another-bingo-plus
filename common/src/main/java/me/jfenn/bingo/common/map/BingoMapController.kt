@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.map
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.api.IItemStackFactory
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam

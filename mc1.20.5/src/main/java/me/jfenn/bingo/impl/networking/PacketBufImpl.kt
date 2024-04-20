@@ -1,7 +1,7 @@
 package me.jfenn.bingo.impl.networking
 
-import me.jfenn.bingo.api.IItemStack
-import me.jfenn.bingo.api.IItemStackFactory
+import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.api.IPacketBuf
 import net.minecraft.item.ItemStack
 import net.minecraft.network.RegistryByteBuf

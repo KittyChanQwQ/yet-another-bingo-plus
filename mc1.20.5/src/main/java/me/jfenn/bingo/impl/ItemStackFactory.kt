@@ -1,10 +1,7 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IItemStack
-import me.jfenn.bingo.api.IItemStackFactory
-import me.jfenn.bingo.api.ITextSerializer
-import net.minecraft.component.Component
-import net.minecraft.component.DataComponentType
+import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.api.item.IItemStackFactory
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.LoreComponent
 import net.minecraft.component.type.NbtComponent
@@ -12,13 +9,7 @@ import net.minecraft.component.type.UnbreakableComponent
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.NbtList
-import net.minecraft.nbt.NbtString
-import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.Registries
-import net.minecraft.server.MinecraftServer
-import net.minecraft.server.command.DataCommand
-import net.minecraft.server.command.ItemCommand
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Unit

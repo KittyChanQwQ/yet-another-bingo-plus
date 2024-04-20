@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.controller
 
-import me.jfenn.bingo.api.IItemStackFactory
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents

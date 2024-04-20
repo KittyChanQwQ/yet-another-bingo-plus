@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.IScoreboardManager
-import me.jfenn.bingo.api.ITextSerializer
+import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.api.item.IWrittenBook
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
@@ -20,10 +21,6 @@ import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.nbt.NbtList
-import net.minecraft.nbt.NbtString
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
@@ -39,11 +36,11 @@ class PlayerSettingsController(
     private val state: BingoState,
     private val permissions: PermissionsIntegration,
     private val cardViewService: CardViewService,
-    private val textSerializer: ITextSerializer,
     private val scoreboardManager: IScoreboardManager,
     private val playerSettingsService: PlayerSettingsService,
     private val text: TextProvider,
     private val packetManager: ServerPacketEvents,
+    private val itemStackFactory: IItemStackFactory,
 ) : BingoComponent() {
 
     private fun getIntroPage(player: ServerPlayerEntity) =
@@ -79,7 +76,6 @@ class PlayerSettingsController(
             }
             .append("\n\n")
             .append(text.string(StringKey.IntroHaveFun))
-            .let { textSerializer.toJson(it) }
 
     private fun getHintsPage(player: ServerPlayerEntity) =
         Text.empty()
@@ -100,7 +96,6 @@ class PlayerSettingsController(
                     it.append("\n\n").append(text.string(StringKey.IntroUseCoords))
                 }
             }
-            .let { textSerializer.toJson(it) }
 
     private fun toggleText(
         value: Boolean,
@@ -176,40 +171,34 @@ class PlayerSettingsController(
                         it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(PlayerSettings::nightVision, !settings.nightVision)))
                     }
             )
-            .let { textSerializer.toJson(it) }
 
-    private fun isBookItem(stack: ItemStack) = stack.item == Items.WRITTEN_BOOK
-            && stack.nbt?.getBoolean(NBT_BINGO_IGNORE) == true
-            && stack.nbt?.getBoolean(NBT_BINGO_VANISH) == true
+    private fun isBookItem(stack: IWrittenBook) =
+            stack.hasCustomTag(NBT_BINGO_IGNORE) && stack.hasCustomTag(NBT_BINGO_VANISH)
 
-    private fun createBookItem(player: ServerPlayerEntity) : ItemStack {
-        val item = ItemStack(Items.WRITTEN_BOOK, 1)
-        item.getOrCreateNbt().apply {
-            putBoolean(NBT_BINGO_IGNORE, true)
-            putBoolean(NBT_BINGO_VANISH, true)
-            putString("title", text.raw(StringKey.FullName))
-            putString("author", scoreboardManager.getPlayerName(player))
-        }
-        updateBookItem(player, item)
-        return item
+    private fun createBookItem(player: ServerPlayerEntity) : IWrittenBook {
+        val stack = itemStackFactory.createWrittenBook()
+        stack.addCustomTag(NBT_BINGO_IGNORE)
+        stack.addCustomTag(NBT_BINGO_VANISH)
+        stack.title =  text.raw(StringKey.FullName)
+        stack.author = scoreboardManager.getPlayerName(player)
+        updateBookItem(player, stack)
+        return stack
     }
 
-    private fun updateBookItem(player: ServerPlayerEntity, stack: ItemStack) {
+    private fun updateBookItem(player: ServerPlayerEntity, stack: IWrittenBook) {
         val settings = playerSettingsService.getPlayer(player)
 
-        stack.getOrCreateNbt().apply {
-            put("pages", NbtList().apply {
-                if (settings.seenTutorial) {
-                    add(NbtString.of(getSettingsPage(player, settings)))
-                    add(NbtString.of(getIntroPage(player)))
-                    add(NbtString.of(getHintsPage(player)))
-                } else {
-                    add(NbtString.of(getIntroPage(player)))
-                    add(NbtString.of(getSettingsPage(player, settings)))
-                    add(NbtString.of(getHintsPage(player)))
-                }
-            })
-        }
+        stack.setPages(buildList {
+            if (settings.seenTutorial) {
+                add(getSettingsPage(player, settings))
+                add(getIntroPage(player))
+                add(getHintsPage(player))
+            } else {
+                add(getIntroPage(player))
+                add(getSettingsPage(player, settings))
+                add(getHintsPage(player))
+            }
+        })
     }
 
     init {
@@ -219,10 +208,10 @@ class PlayerSettingsController(
 
             for (player in server.playerManager.playerList) {
                 var bookCount = 0
-                for (stack in player.allHeldStacks()) {
+                for (stack in player.allHeldStacks().mapNotNull { itemStackFactory.forStack(it).asWrittenBook() }) {
                     if (isBookItem(stack)) {
                         // prevent players from taking someone else's book...
-                        if (stack.nbt?.getString("author") != scoreboardManager.getPlayerName(player))
+                        if (stack.author != scoreboardManager.getPlayerName(player))
                             updateBookItem(player, stack)
 
                         bookCount++
@@ -236,7 +225,7 @@ class PlayerSettingsController(
 
                 if (bookCount == 0) {
                     val bookItem = createBookItem(player)
-                    player.giveItemStack(bookItem)
+                    player.giveItemStack(bookItem.stack)
                 }
             }
         }
@@ -244,6 +233,7 @@ class PlayerSettingsController(
         events.onChangePlayerSettings { player ->
             if (state.state == GameState.PREGAME) {
                 player.allHeldStacks()
+                    .mapNotNull { itemStackFactory.forStack(it).asWrittenBook() }
                     .filter { isBookItem(it) }
                     .forEach { updateBookItem(player, it) }
             }
@@ -267,6 +257,7 @@ class PlayerSettingsController(
         events.onPlayerChannelRegister { player ->
             if (state.state == GameState.PREGAME) {
                 player.allHeldStacks()
+                    .mapNotNull { itemStackFactory.forStack(it).asWrittenBook() }
                     .filter { isBookItem(it) }
                     .forEach { updateBookItem(player, it) }
             }

@@ -1,7 +1,7 @@
-package me.jfenn.bingo.impl
+package me.jfenn.bingo.impl.item
 
-import me.jfenn.bingo.api.IItemStack
-import me.jfenn.bingo.api.IItemStackFactory
+import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.api.IMapService
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.Items

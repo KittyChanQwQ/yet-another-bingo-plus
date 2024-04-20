@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.spawn
 
 import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.api.IItemStackFactory
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.card.BingoPlayerProfile

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IItemStack
-import me.jfenn.bingo.api.IItemStackFactory
+import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.api.ITextSerializer
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack

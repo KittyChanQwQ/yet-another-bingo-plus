@@ -1,4 +1,4 @@
-package me.jfenn.bingo.api
+package me.jfenn.bingo.api.item
 
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -10,6 +10,8 @@ interface IItemStackFactory {
     fun createStack(item: Identifier, count: Int = 1): IItemStack
     fun createStack(item: Item, count: Int = 1): IItemStack
     fun forStack(stack: ItemStack?): IItemStack
+
+    fun createWrittenBook(): IWrittenBook
 }
 
 interface IItemStack {
@@ -37,4 +39,6 @@ interface IItemStack {
     fun getNbtString(): String?
 
     fun copy(): IItemStack
+
+    fun asWrittenBook(): IWrittenBook?
 }

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.api.IItemStackFactory
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.client.api.ClientPacket
 import me.jfenn.bingo.client.api.IClientNetworking
 import me.jfenn.bingo.client.api.IClientPacketHandlerC2S

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.api.IItemStackFactory
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.api.IOfflinePlayerAccessor
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.card.BingoPlayerProfile

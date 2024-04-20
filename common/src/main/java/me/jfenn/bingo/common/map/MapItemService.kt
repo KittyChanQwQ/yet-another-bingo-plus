@@ -1,12 +1,11 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.api.IItemStack
+import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.state.BingoState
-import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting

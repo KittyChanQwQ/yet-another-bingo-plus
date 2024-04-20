@@ -1,10 +1,12 @@
-package me.jfenn.bingo.impl
+package me.jfenn.bingo.impl.item
 
-import me.jfenn.bingo.api.IItemStack
-import me.jfenn.bingo.api.IItemStackFactory
 import me.jfenn.bingo.api.ITextSerializer
+import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.api.item.IWrittenBook
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.nbt.StringNbtReader
@@ -31,7 +33,9 @@ class ItemStackFactory(
         return ItemStackImpl(stack ?: ItemStack.EMPTY)
     }
 
-    inner class ItemStackImpl(
+    override fun createWrittenBook(): IWrittenBook = createStack(Items.WRITTEN_BOOK, 1).asWrittenBook()!!
+
+    open inner class ItemStackImpl(
         override val stack: ItemStack,
     ) : IItemStack {
         override val item: Item
@@ -102,6 +106,12 @@ class ItemStackFactory(
 
         override fun copy(): IItemStack {
             return ItemStackImpl(stack.copy())
+        }
+
+        override fun asWrittenBook(): IWrittenBook? {
+            return (this as? WrittenBookImpl)
+                ?: takeIf { item == Items.WRITTEN_BOOK }
+                    ?.let { WrittenBookImpl(stack, textSerializer) }
         }
 
     }

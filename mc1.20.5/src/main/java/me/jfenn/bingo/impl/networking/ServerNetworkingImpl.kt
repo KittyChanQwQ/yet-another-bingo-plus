@@ -1,6 +1,7 @@
 package me.jfenn.bingo.impl.networking
 
 import me.jfenn.bingo.api.*
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.event.packet.PacketConverter
 import me.jfenn.bingo.common.utils.EventListener
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry

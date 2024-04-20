@@ -1,6 +1,7 @@
 package me.jfenn.bingo
 
 import me.jfenn.bingo.api.*
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.impl.*
 import me.jfenn.bingo.impl.networking.ServerNetworkingImpl
 import org.koin.core.module.dsl.singleOf

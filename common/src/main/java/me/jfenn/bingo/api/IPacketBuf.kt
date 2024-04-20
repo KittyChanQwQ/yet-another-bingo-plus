@@ -1,6 +1,6 @@
 package me.jfenn.bingo.api
 
-import net.minecraft.item.ItemStack
+import me.jfenn.bingo.api.item.IItemStack
 import net.minecraft.text.Text
 
 interface IPacketBuf {
