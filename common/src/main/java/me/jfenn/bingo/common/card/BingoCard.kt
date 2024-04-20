@@ -19,11 +19,11 @@ class BingoCard(
      * Index the card's item entries on their item for faster querying.
      */
     @Transient
-    val itemIndex = buildMap<Item, BingoCardEntry> {
+    val itemIndex = buildMap<Identifier, BingoCardEntry> {
         this@BingoCard.entries
             .filterIsInstance<BingoCardEntry.ItemEntry>()
             .forEach { entry ->
-                put(entry.item(), entry)
+                put(entry.identifierInstance, entry)
             }
 
         this@BingoCard.entries
@@ -32,7 +32,7 @@ class BingoCard(
                 entry.innerEntries
                     .filterIsInstance<BingoCardEntry.ItemEntry>()
                     .forEach { item ->
-                        put(item.item(), entry)
+                        put(item.identifierInstance, entry)
                     }
             }
     }

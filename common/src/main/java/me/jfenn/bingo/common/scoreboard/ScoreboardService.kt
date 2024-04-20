@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoreboard
 
+import me.jfenn.bingo.api.IItemStackFactory
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.common.card.BingoTeam
@@ -16,6 +17,8 @@ class ScoreboardService(
     private val scoreboardManager: IScoreboardManager,
     private val playerSettingsService: PlayerSettingsService,
     private val cardViewService: CardViewService,
+    private val mapItemService: MapItemService,
+    private val itemStackFactory: IItemStackFactory,
 ) {
 
     fun getScoreboardObjective(team: BingoTeam?) : IObjectiveHandle {
@@ -35,8 +38,8 @@ class ScoreboardService(
 
         // if the player is holding the map item, show the scoreboard; otherwise, hide it
         val isHoldingMapItem = player.interactionManager.gameMode != GameMode.SURVIVAL
-                || MapItemService.isMapItem(player.mainHandStack)
-                || MapItemService.isMapItem(player.offHandStack)
+                || mapItemService.isMapItem(itemStackFactory.forStack(player.mainHandStack))
+                || mapItemService.isMapItem(itemStackFactory.forStack(player.offHandStack))
 
         return isHoldingMapItem
     }

@@ -1,12 +1,14 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.api.IItemStack
+import me.jfenn.bingo.api.IItemStackFactory
 import me.jfenn.bingo.api.IPacketBuf
-import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.Text
 
 class PacketBufImpl(
-    private val buf: PacketByteBuf
+    private val buf: PacketByteBuf,
+    private val itemStackFactory: IItemStackFactory,
 ) : IPacketBuf {
     override fun writeString(str: String) = buf.writeString(str).let {}
     override fun readString(): String = buf.readString()
@@ -20,8 +22,8 @@ class PacketBufImpl(
     override fun writeBoolean(bool: Boolean) = buf.writeBoolean(bool).let {}
     override fun readBoolean(): Boolean = buf.readBoolean()
 
-    override fun writeItemStack(stack: ItemStack) = buf.writeItemStack(stack).let {}
-    override fun readItemStack(): ItemStack = buf.readItemStack()
+    override fun writeItemStack(stack: IItemStack) = buf.writeItemStack(stack.stack).let {}
+    override fun readItemStack(): IItemStack = itemStackFactory.forStack(buf.readItemStack())
 
     override fun writeText(text: Text) = buf.writeText(text).let {}
     override fun readText(): Text = buf.readText()

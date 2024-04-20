@@ -45,8 +45,6 @@ class MapRenderService(
         private const val TILE_SIZE = TILE_IMAGE + TILE_PADDING*2 + TILE_MARGIN
         private const val IMAGE_SIZE = TILE_IMAGE + TILE_PADDING*2
 
-        private val FLASHING_DURATION = 4.seconds
-
         fun validateItems() {
             for (item in Registries.ITEM.keys) {
                 try {

@@ -4,17 +4,12 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.jfenn.bingo.api.IItemStack
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.config.TierLabel
-import me.jfenn.bingo.common.utils.text.TextColor
-import me.jfenn.bingo.common.utils.text.TextInfo
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.NbtList
-import net.minecraft.nbt.NbtString
-import net.minecraft.registry.Registries
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import kotlin.time.Duration
 
@@ -24,41 +19,24 @@ sealed class BingoCardEntry {
     open val teams = HashSet<BingoTeamKey>()
     private val teamsSeen = HashSet<BingoTeamKey>()
 
-    abstract val visualItem: ItemStack?
+    abstract val visualItem: IItemStack?
 
     abstract val tier: TierLabel?
 
-    open fun formatName(): String? = null
-    open fun formatLore(): List<String>? = null
+    open fun formatName(): Text? = null
+    open fun formatLore(): List<Text>? = null
 
-    fun visualItem(): ItemStack? {
+    fun visualItem(): IItemStack? {
         return visualItem?.copy()?.also { stack ->
-            val name = formatName()
-            val lore = formatLore()
-            stack.getOrCreateNbt().apply {
-                put("display", NbtCompound().apply {
-                    if (name != null)
-                        putString("Name", name)
-
-                    put("Lore", NbtList().apply {
-                        lore?.forEach { add(NbtString.of(it)) }
-                        tier?.let { tier ->
-                            add(
-                                NbtString.of(
-                                TextInfo.toJsonString(TextInfo(
-                                    text = "${tier.name}-tier",
-                                    color = tier.formatting,
-                                ))
-                            ))
-                        }
-                    })
-                })
-                putInt("HideFlags", 255)
-            }
+            stack.setDisplay(
+                name = formatName(),
+                lore = formatLore(),
+            )
+            stack.setHideFlags(255)
         }
     }
 
-    open fun canSatisfy(stack: ItemStack): Boolean = false
+    open fun canSatisfy(stack: IItemStack): Boolean = false
 
     open fun hasAchieved(team: BingoTeam): Boolean {
         return teams.contains(team.key)
@@ -130,7 +108,7 @@ sealed class BingoCardEntry {
     @Serializable
     class FreeSpace : BingoCardEntry() {
         @Transient
-        override val visualItem: ItemStack? = null
+        override val visualItem: IItemStack? = null
 
         @Transient
         override val tier: TierLabel? = null
@@ -139,10 +117,8 @@ sealed class BingoCardEntry {
         override fun setAchieved(team: BingoTeam, value: Boolean): Boolean = false
         override fun isFlashing(team: BingoTeam?, duration: Duration): Boolean = false
 
-        override fun formatName(): String {
-            return TextInfo.toJsonString(
-                TextInfo.literal("Free Space")
-            )
+        override fun formatName(): Text {
+            return Text.literal("Free Space")
         }
     }
 
@@ -159,11 +135,9 @@ sealed class BingoCardEntry {
             throw IllegalArgumentException("Could not parse identifier '$identifier'")
         }
 
+        // To be populated by [BingoCardController] once we have a server reference
         @Transient
-        override val visualItem: ItemStack = Registries.ITEM.get(identifierInstance)
-            .takeIf { it != Items.AIR }
-            ?.let { ItemStack(it, 1) }
-            ?: throw IllegalArgumentException("Item identifier '$identifier' does not exist.")
+        override var visualItem: IItemStack? = null
 
         /**
          * Returns true if the item can be counted to complete the bingo tile
@@ -173,12 +147,12 @@ sealed class BingoCardEntry {
          * - item has a bingo card's map ID
          * - item has a "bingo_ignore:true" NBT tag
          */
-        override fun canSatisfy(stack: ItemStack): Boolean {
-            return stack.item == item() && stack.nbt?.getBoolean(NBT_BINGO_IGNORE) != true
+        override fun canSatisfy(stack: IItemStack): Boolean {
+            return stack.item == item()?.item && !stack.hasCustomTag(NBT_BINGO_IGNORE)
         }
 
-        fun item(): Item {
-            return visualItem.item
+        fun item(): IItemStack? {
+            return visualItem
         }
 
     }
@@ -198,13 +172,13 @@ sealed class BingoCardEntry {
 
         // To be populated by [BingoCardController] once we have a server reference
         @Transient
-        override var visualItem: ItemStack? = null
+        override var visualItem: IItemStack? = null
 
-        var name: String? = null
-        var description: String? = null
+        var name: Text? = null
+        var description: Text? = null
 
-        override fun formatName(): String? = name
-        override fun formatLore(): List<String>? = description?.let { listOf(it) }
+        override fun formatName(): Text? = name
+        override fun formatLore(): List<Text>? = description?.let { listOf(it) }
 
     }
 
@@ -213,22 +187,17 @@ sealed class BingoCardEntry {
         val innerEntries: List<BingoCardEntry>,
         override val tier: TierLabel,
     ): BingoCardEntry() {
-        override val visualItem: ItemStack? get() = innerEntries.firstOrNull()?.visualItem
+        override val visualItem: IItemStack? get() = innerEntries.firstOrNull()?.visualItem
 
-        override fun formatName(): String {
-            return TextInfo.toJsonString(
-                TextInfo.literal("One of:")
-                    .formatted(TextColor.GRAY)
-            )
+        override fun formatName(): Text {
+            return Text.literal("One of:").formatted(Formatting.GRAY)
         }
 
-        override fun formatLore(): List<String> {
-            return innerEntries
-                .mapNotNull { it.visualItem?.translationKey }
-                .map { "{\"translate\":\"$it\"}" }
+        override fun formatLore(): List<Text> {
+            return innerEntries.mapNotNull { it.visualItem?.displayName }
         }
 
-        override fun canSatisfy(stack: ItemStack): Boolean {
+        override fun canSatisfy(stack: IItemStack): Boolean {
             return innerEntries.any { it.canSatisfy(stack) }
         }
     }

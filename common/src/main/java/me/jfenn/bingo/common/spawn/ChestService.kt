@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.spawn
 
+import me.jfenn.bingo.api.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.BingoConfig
@@ -21,6 +22,7 @@ class ChestService(
     private val options: BingoOptions,
     private val config: BingoConfig,
     private val state: BingoState,
+    private val itemStackFactory: IItemStackFactory,
 ) {
 
     private fun getSpawnDimension(): ServerWorld {
@@ -113,16 +115,14 @@ class ChestService(
 
         // Fill the chest with the configured item stacks
         options.teamKitItems
-            .flatMap { it.toItemStacks() }
+            .flatMap { it.toItemStacks(itemStackFactory) }
             .forEachIndexed { i, itemStack ->
                 if (config.preventScoringSpawnKitItems) {
                     // set BINGO_IGNORE flag so that spawn items do not count on the bingo card
-                    itemStack.getOrCreateNbt().apply {
-                        putBoolean(NBT_BINGO_IGNORE, true)
-                    }
+                    itemStack.addCustomTag(NBT_BINGO_IGNORE)
                 }
 
-                entity.setStack(i, itemStack)
+                entity.setStack(i, itemStack.stack)
             }
     }
 

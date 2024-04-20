@@ -3,26 +3,19 @@ package me.jfenn.bingo.client.common.hud
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.api.IDrawService
-import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.utils.json
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.fabricmc.fabric.api.resource.SimpleResourceReloadListener
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.resource.ResourceManager
-import net.minecraft.resource.ResourceReloader
 import net.minecraft.resource.ResourceType
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
-import net.minecraft.util.profiler.Profiler
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import kotlin.jvm.optionals.getOrNull
 
 class BingoHudRenderer {
@@ -167,12 +160,12 @@ class BingoHudRenderer {
                 )
             }
 
-            if (tile.item != null) {
+            tile.item?.stack?.let { stack ->
                 // always draws centered at z=150... but 3d items can extend past this
                 // so any overlays should start at z=300 to be safe
-                context.drawItem(tile.item, itemX + 1, itemY + 1, itemX + itemY * CARD_WIDTH)
+                context.drawItem(stack, itemX + 1, itemY + 1, itemX + itemY * CARD_WIDTH)
                 // draws the item count + durability bar
-                context.drawItemInSlot(textRenderer, tile.item, itemX, itemY)
+                context.drawItemInSlot(textRenderer, stack, itemX, itemY)
             }
 
             if (tile.isAchieved && !tile.isFlashing && mouseX == -1 && mouseY == -1)
@@ -253,8 +246,10 @@ class BingoHudRenderer {
         val mouseItemY = y + itemY * cardScale
         val mouseItemRangeY = mouseItemY.toInt() until (mouseItemY + 20*cardScale).toInt()
 
-        if (tile.item != null && mouseX in mouseItemRangeX && mouseY in mouseItemRangeY) {
-            context.drawItemTooltip(textRenderer, tile.item, mouseX, mouseY)
+        if (mouseX in mouseItemRangeX && mouseY in mouseItemRangeY) {
+            tile.item?.stack?.let { stack ->
+                context.drawItemTooltip(textRenderer, stack, mouseX, mouseY)
+            }
         }
     }
 

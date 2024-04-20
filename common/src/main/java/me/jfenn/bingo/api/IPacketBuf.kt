@@ -16,8 +16,8 @@ interface IPacketBuf {
     fun writeBoolean(bool: Boolean)
     fun readBoolean(): Boolean
 
-    fun writeItemStack(stack: ItemStack)
-    fun readItemStack(): ItemStack
+    fun writeItemStack(stack: IItemStack)
+    fun readItemStack(): IItemStack
 
     fun writeText(text: Text)
     fun readText(): Text

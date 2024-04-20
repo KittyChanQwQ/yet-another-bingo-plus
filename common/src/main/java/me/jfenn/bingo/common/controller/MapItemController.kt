@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.api.IItemStackFactory
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -10,7 +11,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.allInventorySlots
-import net.minecraft.item.FilledMapItem
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 
@@ -20,23 +20,26 @@ class MapItemController(
     private val options: BingoOptions,
     private val cardViewService: CardViewService,
     private val mapItemService: MapItemService,
+    private val itemStackFactory: IItemStackFactory,
     private val teamService: TeamService,
     events: ScopedEvents,
 ) : BingoComponent() {
     fun givePreviewCardItem(player: ServerPlayerEntity) {
         if (cardViewService.supportsCardHud(player)) return
 
-        val hasMap = player.allHeldStacks().any { MapItemService.isMapItem(it) }
+        val hasMap = player.allHeldStacks()
+            .map { itemStackFactory.forStack(it) }
+            .any { mapItemService.isMapItem(it) }
 
         if (!hasMap) {
             val mapItem = mapItemService.createPreviewMapItem()
-            player.giveItemStack(mapItem)
+            player.giveItemStack(mapItem.stack)
         }
     }
 
     fun removePreviewCardItem(player: ServerPlayerEntity) {
         for ((slot, item) in player.allInventorySlots()) {
-            if (MapItemService.isMapItem(item) && FilledMapItem.getMapId(item) == state.getPreviewMap(server).mapId)
+            if (mapItemService.isPreviewMapItem(itemStackFactory.forStack(item)))
                 player.inventory.removeStack(slot)
         }
     }
@@ -50,7 +53,8 @@ class MapItemController(
 
         val team = teamService.getPlayerTeam(player) ?: return
         val hasMap = player.allHeldStacks()
-            .filter { MapItemService.isMapItem(it) }
+            .map { itemStackFactory.forStack(it) }
+            .filter { mapItemService.isMapItem(it) }
             .mapNotNull {
                 if (mapItemService.isMapTeamItem(it, team)) {
                     it.count = 1
@@ -67,7 +71,7 @@ class MapItemController(
         if (!hasMap) {
             // give the player a new map item
             val mapItem = mapItemService.createMapItem(team)
-            player.giveItemStack(mapItem)
+            player.giveItemStack(mapItem.stack)
         }
     }
 
@@ -80,11 +84,15 @@ class MapItemController(
         if (cardViewService.supportsCardHud(player)) return
 
         state.getRegisteredTeams()
-            .map { mapItemService.createMapItem(it) }
-            .forEachIndexed { i, stack ->
-                val mapId = FilledMapItem.getMapId(stack)
-                val hasMap = player.allHeldStacks().any { FilledMapItem.getMapId(it) == mapId }
-                if (!hasMap) player.getStackReference(i).set(stack)
+            .forEachIndexed { i, team ->
+                val hasMap = player.allHeldStacks()
+                    .map { itemStackFactory.forStack(it) }
+                    .any { mapItemService.isMapTeamItem(it, team) }
+
+                if (!hasMap) {
+                    val stack = mapItemService.createMapItem(team)
+                    player.getStackReference(i).set(stack.stack)
+                }
             }
     }
 
@@ -93,7 +101,8 @@ class MapItemController(
      */
     fun removeAllMapItems(player: ServerPlayerEntity) {
         player.allHeldStacks()
-            .filter { MapItemService.isMapItem(it) }
+            .map { itemStackFactory.forStack(it) }
+            .filter { mapItemService.isMapItem(it) }
             .forEach { it.count = 0 }
     }
 

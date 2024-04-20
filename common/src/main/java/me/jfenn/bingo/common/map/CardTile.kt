@@ -1,13 +1,12 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.api.IItemStack
 import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.common.config.TierLabel
-import net.minecraft.item.ItemStack
-import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Formatting
 
 data class CardTile(
-    val item: ItemStack?,
+    val item: IItemStack?,
     val itemTier: TierLabel?,
     val isFreeSpace: Boolean,
     val isAdvancement: Boolean,

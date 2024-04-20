@@ -1,10 +1,8 @@
 package me.jfenn.bingo.common.spawn
 
 import kotlinx.serialization.Serializable
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.StringNbtReader
-import net.minecraft.registry.Registries
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.api.IItemStack
+import me.jfenn.bingo.api.IItemStackFactory
 import org.slf4j.LoggerFactory
 
 @Serializable
@@ -17,51 +15,42 @@ data class SpawnItem(
     companion object {
         private val log = LoggerFactory.getLogger(this::class.java)
 
-        fun fromItemStack(itemStack: ItemStack): SpawnItem {
-            val identifier = Registries.ITEM.getId(itemStack.item)
-
+        fun fromItemStack(itemStack: IItemStack): SpawnItem {
             return SpawnItem(
-                id = identifier.toString(),
-                nbt = itemStack.nbt?.toString(),
+                id = itemStack.identifier.toString(),
+                nbt = itemStack.getNbtString(),
                 count = itemStack.count,
             )
         }
     }
 
-    fun toIdentifier(): Identifier? {
-        return Identifier.tryParse(id) ?: run {
-            log.error("Cannot parse spawnEquipmentItems id '$id'")
-            null
-        }
-    }
-
-    fun toItemStacks(): List<ItemStack> {
-        val identifier = toIdentifier() ?: return emptyList()
-
+    fun toItemStacks(
+        itemStackFactory: IItemStackFactory,
+    ): List<IItemStack> {
         val item = try {
-            Registries.ITEM.get(identifier)
-        } catch (e: Error) {
+            itemStackFactory.createStack(id)
+        } catch (e: Throwable) {
             log.error("spawnEquipmentItems id '$id' is not in the item registry", e)
-            null
-        } ?: return emptyList()
+            return emptyList()
+        }
 
         val fullStackCount = count / item.maxCount
         val extraStackCount = count % item.maxCount
 
         val itemStacks = sequence {
             repeat(fullStackCount) {
-                yield(ItemStack(item, item.maxCount))
+                yield(item.copy().apply { count = maxCount })
             }
 
             if (extraStackCount > 0) {
-                yield(ItemStack(item, extraStackCount))
+                yield(item.copy().apply { count = extraStackCount })
             }
         }.toList()
 
         if (nbt != null && nbt != "{}") {
             for (itemStack in itemStacks) {
                 try {
-                    itemStack.nbt = StringNbtReader.parse(nbt)
+                    itemStack.setNbtString(nbt)
                 } catch (e: Error) {
                     log.error("spawnEquipmentItems nbt '${nbt}' could not be parsed", e)
                 }

@@ -4,14 +4,12 @@ import me.jfenn.bingo.client.common.hud.BingoHudController
 import me.jfenn.bingo.client.common.hud.BingoHudRenderer
 import me.jfenn.bingo.client.common.hud.BingoHudState
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
-import me.jfenn.bingo.client.common.sound.ClientSounds
-import me.jfenn.bingo.client.common.sound.ScorePacketReceiver
 import me.jfenn.bingo.client.common.settings.ClientSettingsController
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
+import me.jfenn.bingo.client.common.sound.ClientSounds
+import me.jfenn.bingo.client.common.sound.ScorePacketReceiver
 import me.jfenn.bingo.client.common.sound.SoundService
 import me.jfenn.bingo.client.common.world.BingoWorldManager
-import me.jfenn.bingo.client.common.world.BingoWorldService
-import me.jfenn.bingo.client.common.world.BingoWorldState
 import me.jfenn.bingo.client.integrations.YetAnotherConfigLibIntegration
 import me.jfenn.bingo.client.integrations.jei.JeiIntegration
 import org.koin.core.module.dsl.createdAtStart
@@ -31,8 +29,6 @@ val commonClientModule = module {
     singleOf(::ClientSounds) withOptions { createdAtStart() }
     singleOf(::ScorePacketReceiver) withOptions { createdAtStart() }
 
-    single { BingoWorldState() }
-    singleOf(::BingoWorldService)
     singleOf(::BingoWorldManager) withOptions { createdAtStart() }
 
     singleOf(::ClientSettingsService)

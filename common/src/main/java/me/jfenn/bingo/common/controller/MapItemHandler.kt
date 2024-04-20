@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.api.IItemStackFactory
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.MapItemService
@@ -22,6 +23,8 @@ class MapItemHandler(
     events: ScopedEvents,
     private val server: MinecraftServer,
     private val cardService: CardService,
+    private val mapItemService: MapItemService,
+    private val itemStackFactory: IItemStackFactory,
 ) : BingoComponent() {
 
     // set of players for which the bingo map item was used in the current tick
@@ -63,7 +66,7 @@ class MapItemHandler(
             usedAnyItem.add(player.uuid)
 
             // if the item is the player's bingo map, open the item details chest
-            if (MapItemService.isMapItem(itemStack)) {
+            if (mapItemService.isMapItem(itemStackFactory.forStack(itemStack))) {
                 val otherItemStack = player.getStackInHand(when (hand) {
                     Hand.MAIN_HAND -> Hand.OFF_HAND
                     else -> Hand.MAIN_HAND
@@ -93,7 +96,11 @@ class MapItemHandler(
 
             val itemStack = player.getStackInHand(hand)
 
-            if (usedBingoMap.contains(player.uuid) && !MapItemService.isMapItem(itemStack) && !itemStack.isEmpty) {
+            if (
+                usedBingoMap.contains(player.uuid)
+                && !mapItemService.isMapItem(itemStackFactory.forStack(itemStack))
+                && !itemStack.isEmpty
+            ) {
                 // println("Removing; block used ($hand, with ${itemStack.translationKey})")
                 usedBingoMap.remove(player.uuid)
             }
@@ -106,7 +113,11 @@ class MapItemHandler(
 
             val itemStack = player.getStackInHand(hand)
 
-            if (usedBingoMap.contains(player.uuid) && !MapItemService.isMapItem(itemStack) && !itemStack.isEmpty) {
+            if (
+                usedBingoMap.contains(player.uuid)
+                && !mapItemService.isMapItem(itemStackFactory.forStack(itemStack))
+                && !itemStack.isEmpty
+            ) {
                 // println("Removing; entity used")
                 usedBingoMap.remove(player.uuid)
             }

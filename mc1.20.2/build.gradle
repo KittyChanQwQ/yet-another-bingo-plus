@@ -10,6 +10,8 @@ processResources {
     }
 }
 
+loom.accessWidenerPath = file("src/main/resources/bingo-impl.accesswidener")
+
 dependencies {
     implementation libs.insert.koin.core
     include libs.insert.koin.core

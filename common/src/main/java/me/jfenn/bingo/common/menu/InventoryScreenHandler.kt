@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.IItemStack
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.utils.EventListener
@@ -14,7 +15,7 @@ import org.koin.core.component.KoinComponent
 
 class InventoryScreenHandler(
     syncId: Int,
-    stacks: List<ItemStack>,
+    stacks: List<IItemStack>,
     playerInventory: PlayerInventory,
 ) : ScreenHandler(ScreenHandlerType.GENERIC_9X3, syncId), KoinComponent {
 
@@ -25,9 +26,9 @@ class InventoryScreenHandler(
     init {
         stacks.forEachIndexed { i, stack ->
             // remove bingo flags when in a config inventory
-            stack.nbt?.remove(NBT_BINGO_IGNORE)
-            stack.nbt?.remove(NBT_BINGO_VANISH)
-            inventory.setStack(i, stack)
+            stack.removeCustomTag(NBT_BINGO_IGNORE)
+            stack.removeCustomTag(NBT_BINGO_VANISH)
+            inventory.setStack(i, stack.stack)
         }
 
         // inventory slots

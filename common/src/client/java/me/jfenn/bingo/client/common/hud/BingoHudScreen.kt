@@ -138,7 +138,7 @@ class BingoHudScreen(
             val tile = view.tile(tileX, tileY) ?: return@viewsWithPositions
             val stack = tile.item ?: return@viewsWithPositions
             if (!tile.isAdvancement) {
-                jei.openJeiRecipe(stack)
+                jei.openJeiRecipe(stack.stack)
             }
             ret = true
         }

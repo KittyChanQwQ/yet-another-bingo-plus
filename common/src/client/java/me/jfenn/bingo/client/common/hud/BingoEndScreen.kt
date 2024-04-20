@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IDrawServiceFactory
-import me.jfenn.bingo.client.common.world.BingoWorldService
+import me.jfenn.bingo.client.api.IWorldService
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.text.GameOverPacket
 import me.jfenn.bingo.common.text.TextProvider
@@ -23,7 +23,7 @@ class BingoEndScreen(
     private val drawServiceFactory = koin.get<IDrawServiceFactory>()
     private val state = koin.get<BingoHudState>()
     private val renderer = koin.get<BingoHudRenderer>()
-    private val worldService = koin.get<BingoWorldService>()
+    private val worldService = koin.get<IWorldService>()
 
     companion object {
         private const val BUTTON_WIDTH = 120
@@ -52,18 +52,16 @@ class BingoEndScreen(
     var dismissButton: ButtonWidget? = null
     var restartButton: ButtonWidget? = null
 
-    fun reopenWorld() {
+    private fun reopenWorld() {
         val client = client ?: return
         when {
-            client.isInSingleplayer -> worldService.reopenClientWorld()
-            gameOver.canSendRestart -> {
-                client.player?.networkHandler?.sendCommand("restart")
-            }
+            client.isInSingleplayer -> worldService.disconnectAndReopen()
+            gameOver.canSendRestart -> worldService.restartServer()
             else -> worldService.disconnect()
         }
     }
 
-    fun updateButtons() {
+    private fun updateButtons() {
         val client = client ?: return
 
         val dismissButton = dismissButton ?: ButtonWidget.builder(text.string(StringKey.CardClose)) { close() }

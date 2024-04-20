@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.spawn
 
 import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.card.BingoPlayerProfile
@@ -47,6 +48,7 @@ class PlayerController(
     private val teamService: TeamService,
     private val advancementManager: IAdvancementManager,
     private val vanishIntegration: VanishIntegration,
+    private val itemStackFactory: IItemStackFactory,
 ) : BingoComponent() {
 
     /**
@@ -54,17 +56,20 @@ class PlayerController(
      * Only runs if config.isElytra is true
      */
     private fun giveElytra(player: ServerPlayerEntity) {
-        val hasElytra = player.allHeldStacks().any { it.item == Items.ELYTRA && it.nbt?.getBoolean(NBT_BINGO_VANISH) == true }
+        val hasElytra = player.allHeldStacks()
+            .map { itemStackFactory.forStack(it) }
+            .any { it.item == Items.ELYTRA && it.hasCustomTag(NBT_BINGO_VANISH) }
+
         if (!hasElytra) {
             // insert elytra in armor slot
-            player.giveOrEquipStack(ItemStack(Items.ELYTRA, 1).also {
-                it.getOrCreateNbt().apply {
+            player.giveOrEquipStack(
+                itemStackFactory.createStack(Items.ELYTRA).apply {
                     // unbreakable (should not take damage)
-                    putBoolean("Unbreakable", true)
-                    putBoolean(NBT_BINGO_IGNORE, true)
-                    putBoolean(NBT_BINGO_VANISH, true)
-                }
-            })
+                    setUnbreakable(true)
+                    addCustomTag(NBT_BINGO_IGNORE)
+                    addCustomTag(NBT_BINGO_VANISH)
+                }.stack
+            )
         }
 
         // also give rocket

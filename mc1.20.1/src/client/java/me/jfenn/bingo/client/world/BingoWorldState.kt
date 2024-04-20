@@ -1,4 +1,4 @@
-package me.jfenn.bingo.client.common.world
+package me.jfenn.bingo.client.world
 
 class BingoWorldState {
     var state: ScreenState? = null

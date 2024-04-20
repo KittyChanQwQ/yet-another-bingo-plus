@@ -38,6 +38,7 @@
   ],
   "description": "A multiplayer BINGO item hunt mod + lobby",
   "mixins": [],
+  "accessWidener": "bingo-impl.accesswidener",
   "custom": {
     "modmenu": {
       "links": {

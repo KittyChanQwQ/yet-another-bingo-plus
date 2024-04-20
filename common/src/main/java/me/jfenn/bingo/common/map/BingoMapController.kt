@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.map
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.IItemStackFactory
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
@@ -11,7 +12,6 @@ import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -30,6 +30,7 @@ class BingoMapController(
     private val advancementManager: IAdvancementManager,
     private val textSerializer: ITextSerializer,
     private val packetManager: ServerPacketEvents,
+    private val itemStackFactory: IItemStackFactory,
 ) : BingoComponent() {
 
     fun updateCard(team: BingoTeam?) {
@@ -54,7 +55,24 @@ class BingoMapController(
 
     init {
         events.onGameTick {
-            // first populate advancement images, if missing...
+            // first populate entry item stacks, if missing...
+            for ((identifier, entry) in state.card.itemIndex) {
+                val itemEntry = when (entry) {
+                    is BingoCardEntry.ItemEntry -> entry
+                    is BingoCardEntry.MultiEntry -> {
+                        entry.innerEntries.firstOrNull() as? BingoCardEntry.ItemEntry
+                            ?: continue
+                    }
+                    else -> continue
+                }
+
+                // If the entry doesn't have a visualItem yet, set it to match the item
+                if (itemEntry.visualItem == null) {
+                    val stack = itemStackFactory.createStack(identifier)
+                    itemEntry.visualItem = stack
+                }
+            }
+
             for ((identifier, entry) in state.card.advancementIndex) {
                 val advancementEntry = when (entry) {
                     is BingoCardEntry.AdvancementEntry -> entry
@@ -70,12 +88,14 @@ class BingoMapController(
                     val advancement = advancementManager.getAdvancement(server, identifier)
                         ?: continue
 
-                    advancementEntry.visualItem = advancement.displayIcon ?: ItemStack.EMPTY
+                    advancementEntry.visualItem = itemStackFactory.forStack(advancement.displayIcon)
                     advancementEntry.name = advancement.name
-                        ?.let { Text.empty()
-                            .append(it).setStyle(Style.EMPTY.withItalic(false).withColor(Formatting.GREEN)) }
-                        ?.let { textSerializer.toJson(it) }
-                    advancementEntry.description = advancement.description?.let { textSerializer.toJson(it) }
+                        ?.let {
+                            Text.empty()
+                                .append(it)
+                                .setStyle(Style.EMPTY.withItalic(false).withColor(Formatting.GREEN))
+                        }
+                    advancementEntry.description = advancement.description
                 }
             }
 

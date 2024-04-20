@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.IItemStackFactory
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.spawn.SpawnItem
@@ -8,7 +9,6 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerSpawnKit(
@@ -17,6 +17,7 @@ fun MenuComponent.registerSpawnKit(
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     cardService: CardService = koinScope.get(),
     text: TextProvider = koinScope.get(),
+    itemStackFactory: IItemStackFactory = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", text.serialized(text.string(StringKey.OptionsSpawnKit)))
@@ -43,9 +44,12 @@ fun MenuComponent.registerSpawnKit(
         player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
                 { syncId, inv, _ ->
-                    InventoryScreenHandler(syncId, options.playerKitItems.flatMap { it.toItemStacks() }, inv).apply {
+                    InventoryScreenHandler(syncId, options.playerKitItems.flatMap { it.toItemStacks(itemStackFactory) }, inv).apply {
                         onClose { stacks ->
-                            options.playerKitItems = stacks.map { SpawnItem.fromItemStack(it) }
+                            options.playerKitItems = stacks
+                                .map { itemStackFactory.forStack(it) }
+                                .map { SpawnItem.fromItemStack(it) }
+
                             cardService.generateCard()
                         }
                     }
@@ -72,9 +76,12 @@ fun MenuComponent.registerSpawnKit(
         player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
                 { syncId, inv, _ ->
-                    InventoryScreenHandler(syncId, options.teamKitItems.flatMap { it.toItemStacks() }, inv).apply {
+                    InventoryScreenHandler(syncId, options.teamKitItems.flatMap { it.toItemStacks(itemStackFactory) }, inv).apply {
                         onClose { stacks ->
-                            options.teamKitItems = stacks.map { SpawnItem.fromItemStack(it) }
+                            options.teamKitItems = stacks
+                                .map { itemStackFactory.forStack(it) }
+                                .map { SpawnItem.fromItemStack(it) }
+
                             cardService.generateCard()
                         }
                     }

@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.IItemStackFactory
 import me.jfenn.bingo.api.IOfflinePlayerAccessor
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.card.BingoPlayerProfile
@@ -40,6 +41,7 @@ class ScoredItemCheck(
     private val advancementManager: IAdvancementManager,
     private val textProvider: TextProvider,
     private val scoreUpdateService: ScoreUpdateService,
+    private val itemStackFactory: IItemStackFactory,
 ) : BingoComponent() {
 
     private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, ServerPlayerEntity>()
@@ -81,9 +83,9 @@ class ScoredItemCheck(
             if (team.isWinner()) continue
 
             // check inventory for new collected items
-            for (stack in player.allHeldStacks()) {
+            for (stack in player.allHeldStacks().map { itemStackFactory.forStack(it) }) {
                 // get the item tile, if it is on the card
-                val tile = state.card.itemIndex[stack.item] ?: continue
+                val tile = state.card.itemIndex[stack.identifier] ?: continue
 
                 // if the item hasn't been achieved and can be satisfied, mark it as collected
                 if (tile.canSatisfy(stack)) {
@@ -118,8 +120,8 @@ class ScoredItemCheck(
 
                     val teamPlayers = team.players.map { getOfflinePlayer(it) }
                     val hasTeamItem = teamPlayers.any { player ->
-                        player.inventory.containsAny { item.canSatisfy(it) }
-                                || item.canSatisfy(player.currentScreenHandler.cursorStack)
+                        player.inventory.containsAny { item.canSatisfy(itemStackFactory.forStack(it)) }
+                                || item.canSatisfy(itemStackFactory.forStack(player.currentScreenHandler.cursorStack))
                     }
 
                     // if noone on the team has the item anymore, mark it lost

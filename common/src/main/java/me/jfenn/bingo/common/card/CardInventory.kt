@@ -46,7 +46,7 @@ class CardInventory(
 
             if (isVisible) {
                 entry.visualItem()?.let {
-                    return@List it
+                    return@List it.stack
                 }
             }
         }
