@@ -2,14 +2,14 @@ package me.jfenn.bingo.common.timer
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.api.EffectType
+import me.jfenn.bingo.api.IStatusEffectsFactory
 import me.jfenn.bingo.api.ITickManager
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.server.MinecraftServer
 import kotlin.time.Duration.Companion.seconds
 
@@ -20,6 +20,7 @@ class CountdownController(
     private val events: ScopedEvents,
     private val countdownService: CountdownService,
     private val tickManager: ITickManager,
+    private val statusEffectsFactory: IStatusEffectsFactory,
 ) : BingoComponent() {
 
     private var countdownUntil: Instant? = null
@@ -31,26 +32,26 @@ class CountdownController(
             prevSeconds = -1
 
             for (player in server.playerManager.playerList) {
-                player.addStatusEffect(
-                    StatusEffectInstance(
-                        StatusEffects.SLOWNESS,
-                        -1,
-                        10, false, false
-                    )
+                val statusEffects = statusEffectsFactory.getStatusEffects(player)
+                statusEffects.addEffect(
+                    type = EffectType.SLOWNESS,
+                    duration = -1,
+                    amplifier = 10,
+                    ambient = false,
+                    visible = false,
                 )
-
-                player.addStatusEffect(
-                    StatusEffectInstance(
-                        StatusEffects.JUMP_BOOST,
-                        -1,
-                        128, false, false
-                    )
+                statusEffects.addEffect(
+                    type = EffectType.JUMP_BOOST,
+                    duration = -1,
+                    amplifier = 120,
+                    ambient = false,
+                    visible = false,
                 )
             }
         }
 
         events.onStateChange { (_, toState) ->
-            tickManager.setFrozen(server, toState == GameState.COUNTDOWN)
+            tickManager.setFrozen(toState == GameState.COUNTDOWN)
         }
 
         events.onGameTick {

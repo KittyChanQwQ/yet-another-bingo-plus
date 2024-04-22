@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.state
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
@@ -13,7 +14,6 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.utils.formatString
-import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import kotlin.random.Random
@@ -34,7 +34,7 @@ data class BingoState(
     var card: BingoCard = BingoCard(
         entries = List(25) { BingoCardEntry.FreeSpace() }
     ),
-) : SerializedPersistentState() {
+) {
 
     fun getRegisteredTeams(): List<BingoTeam> {
         return teams.values.filter { it.players.isNotEmpty() }
@@ -44,10 +44,10 @@ data class BingoState(
         return teams.getOrPut(team.key) { team.copy() }
     }
 
-    fun getPreviewMap(server: MinecraftServer): BingoMap {
+    fun getPreviewMap(mapService: IMapService): BingoMap {
         return previewMap ?: run {
             val map = BingoMap(
-                mapId = server.overworld.nextMapId,
+                mapId = mapService.getNextMapId(),
             )
             previewMap = map
             return@run map

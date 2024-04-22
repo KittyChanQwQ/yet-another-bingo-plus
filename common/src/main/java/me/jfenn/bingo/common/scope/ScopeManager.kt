@@ -1,13 +1,11 @@
 package me.jfenn.bingo.common.scope
 
-import kotlinx.datetime.Clock
-import me.jfenn.bingo.common.LOBBY_WORLD_ID
+import me.jfenn.bingo.api.IPersistentStateManager
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
 import me.jfenn.bingo.common.utils.EventListener
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
@@ -20,7 +18,7 @@ import org.slf4j.Logger
 class ScopeManager(
     private val koin: Koin,
     private val log: Logger,
-    private val persistentStateFactory: SerializedPersistentStateFactory,
+    private val persistentStateManager: IPersistentStateManager,
 ) {
 
     private fun getScopeId(server: MinecraftServer): ScopeID =
@@ -43,7 +41,12 @@ class ScopeManager(
             }
 
             // obtain the bingo game state from the save file
-            val state: BingoState = persistentStateFactory.fromWorld(server.overworld)
+            val state: BingoState = persistentStateManager.getFromWorld(
+                world = server.overworld,
+                id = MOD_ID,
+                clazz = BingoState::class,
+                default = { BingoState() },
+            )
 
             log.info("[ScopeManager] Starting server scope...")
             val ctx = BingoContext(server, state)

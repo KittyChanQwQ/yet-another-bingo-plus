@@ -10,8 +10,10 @@ import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.network.ServerPlayerEntity
+import org.slf4j.Logger
 
 class ServerNetworkingImpl(
+    private val log: Logger,
     private val itemStackFactory: IItemStackFactory,
 ) : IServerNetworking {
 
@@ -33,6 +35,7 @@ class ServerNetworkingImpl(
         )
 
         init {
+            log.debug("[ServerNetworkingInfo] Registering C2S packet {}", converter.id.toString())
             try {
                 PayloadTypeRegistry.playC2S().register(id, codec)
             } catch (e: IllegalArgumentException) {
@@ -63,6 +66,7 @@ class ServerNetworkingImpl(
         )
 
         init {
+            log.debug("[ServerNetworkingInfo] Registering S2C packet {}", converter.id.toString())
             try {
                 PayloadTypeRegistry.playS2C().register(id, codec)
             } catch (e: IllegalArgumentException) {

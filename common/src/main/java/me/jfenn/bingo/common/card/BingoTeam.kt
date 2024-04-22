@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.card
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
@@ -44,10 +45,10 @@ data class BingoTeam(
 
     val formatting get() = Formatting.valueOf(textColor.name)
 
-    fun getMap(server: MinecraftServer): BingoMap {
+    fun getMap(mapService: IMapService): BingoMap {
         return this.map ?: run {
             val map = BingoMap(
-                mapId = server.overworld.nextMapId,
+                mapId = mapService.getNextMapId(),
             )
             this.map = map
             return@run map

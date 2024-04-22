@@ -1,7 +1,6 @@
 package me.jfenn.bingo.mixin;
 
-import me.jfenn.bingo.common.ConstantsKt;
-import me.jfenn.bingo.common.scope.BingoKoin;
+import me.jfenn.bingo.mixinhandler.PlayerEntityMixinHandler;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -21,23 +20,20 @@ public abstract class PlayerEntityMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;", cancellable = true)
     public void dropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> ci) {
-        PlayerEntity playerEntity = (PlayerEntity) (Object) this;
-        if (!(playerEntity instanceof ServerPlayerEntity)) return;
-        if (BingoKoin.INSTANCE.getScope(playerEntity.getServer()) == null) return;
+        if ((Object) this instanceof ServerPlayerEntity player) {
+            if (PlayerEntityMixinHandler.INSTANCE.shouldVanishDrop(player, stack)) {
+                ItemStack cur = getInventory().getMainHandStack();
+                if (retainOwnership && (cur == null || cur.isEmpty())) {
+                    // The complete stack was dropped
+                    getInventory().addPickBlock(stack.copy());
+                } else {
+                    // Fallback
+                    getInventory().insertStack(stack.copy());
+                }
 
-        // if the item has the bingo_vanish flag, it should not drop as an entity
-        if (stack.hasNbt() && stack.getNbt().getBoolean(ConstantsKt.NBT_BINGO_VANISH)) {
-            ItemStack cur = getInventory().getMainHandStack();
-            if (retainOwnership && (cur == null || cur.isEmpty())) {
-                // The complete stack was dropped
-                getInventory().addPickBlock(stack.copy());
-            } else {
-                // Fallback
-                getInventory().insertStack(stack.copy());
+                ci.setReturnValue(null);
+                ci.cancel();
             }
-
-            ci.setReturnValue(null);
-            ci.cancel();
         }
     }
 

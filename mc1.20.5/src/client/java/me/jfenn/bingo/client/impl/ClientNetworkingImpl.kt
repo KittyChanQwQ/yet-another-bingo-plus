@@ -14,8 +14,10 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
+import org.slf4j.Logger
 
 class ClientNetworkingImpl(
+    private val log: Logger,
     private val itemStackFactory: IItemStackFactory,
 ) : IClientNetworking {
 
@@ -36,6 +38,7 @@ class ClientNetworkingImpl(
         )
 
         init {
+            log.debug("[ClientNetworkingImpl] Registering C2S packet {}", converter.id.toString())
             try {
                 PayloadTypeRegistry.playC2S().register(id, codec)
             } catch (e: IllegalArgumentException) {
@@ -70,6 +73,7 @@ class ClientNetworkingImpl(
         )
 
         init {
+            log.debug("[ClientNetworkingImpl] Registering S2C packet {}", converter.id.toString())
             try {
                 PayloadTypeRegistry.playS2C().register(id, codec)
             } catch (e: IllegalArgumentException) {

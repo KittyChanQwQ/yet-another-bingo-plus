@@ -11,6 +11,8 @@ interface IItemStackFactory {
     fun createStack(item: Item, count: Int = 1): IItemStack
     fun forStack(stack: ItemStack?): IItemStack
 
+    fun createFilledMap(): IFilledMap
+    fun createFireworkRocket(): IFireworkRocket
     fun createWrittenBook(): IWrittenBook
 }
 
@@ -40,5 +42,7 @@ interface IItemStack {
 
     fun copy(): IItemStack
 
+    fun asFilledMap(): IFilledMap?
+    fun asFireworkRocket(): IFireworkRocket?
     fun asWrittenBook(): IWrittenBook?
 }

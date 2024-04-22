@@ -2,8 +2,8 @@ package me.jfenn.bingo.common.map
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.CardService
@@ -28,14 +28,14 @@ class BingoMapController(
     private val cardService: CardService,
     private val cardViewService: CardViewService,
     private val advancementManager: IAdvancementManager,
-    private val textSerializer: ITextSerializer,
     private val packetManager: ServerPacketEvents,
     private val itemStackFactory: IItemStackFactory,
+    private val mapService: IMapService,
 ) : BingoComponent() {
 
     fun updateCard(team: BingoTeam?) {
         val view = cardViewService.getMapView(team)
-        val map = team?.getMap(server) ?: state.getPreviewMap(server)
+        val map = team?.getMap(mapService) ?: state.getPreviewMap(mapService)
 
         if (cardViewService.needsUpdate(map, view)) {
             mapRenderService.update(team, map, view)

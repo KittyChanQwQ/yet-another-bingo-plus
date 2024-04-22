@@ -1,9 +1,8 @@
 package me.jfenn.bingo.api
 
-import me.jfenn.bingo.api.item.IItemStack
+import net.minecraft.item.map.MapState
 
 interface IMapService {
-    fun createFilledMap(mapId: Int, mapColor: Int?): IItemStack
-    fun isFilledMap(stack: IItemStack): Boolean
-    fun getMapId(stack: IItemStack): Int?
+    fun getNextMapId(): Int
+    fun putMapState(id: Int, state: MapState)
 }

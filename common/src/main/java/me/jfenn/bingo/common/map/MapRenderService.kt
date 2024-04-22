@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.Config
@@ -23,6 +24,7 @@ import kotlin.time.measureTime
 class MapRenderService(
     private val log: Logger,
     private val server: MinecraftServer,
+    private val mapService: IMapService,
 ) {
 
     companion object {
@@ -346,7 +348,7 @@ class MapRenderService(
             val state = MapState.of(1, true, server.overworld.registryKey)
             drawMapBorders(state, team)
 
-            server.overworld.putMapState(FilledMapItem.getMapName(map.mapId), state)
+            mapService.putMapState(map.mapId, state)
             map.mapState = state
             state
         }

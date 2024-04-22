@@ -1,6 +1,8 @@
 package me.jfenn.bingo.common.spawn
 
+import me.jfenn.bingo.api.EffectType
 import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.IStatusEffectsFactory
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
@@ -15,10 +17,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.giveOrEquipStack
 import me.jfenn.bingo.integrations.VanishIntegration
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.world.GameMode
@@ -49,6 +48,7 @@ class PlayerController(
     private val advancementManager: IAdvancementManager,
     private val vanishIntegration: VanishIntegration,
     private val itemStackFactory: IItemStackFactory,
+    private val statusEffectsFactory: IStatusEffectsFactory,
 ) : BingoComponent() {
 
     /**
@@ -80,13 +80,13 @@ class PlayerController(
         }
 
         if (rocketStack == null) {
-            player.giveItemStack(ItemStack(Items.FIREWORK_ROCKET, 2).also {
-                it.getOrCreateNbt().apply {
-                    putBoolean(NBT_BINGO_IGNORE, true)
-                    putBoolean(NBT_BINGO_VANISH, true)
-                    put("Fireworks", NbtCompound())
-                }
-            })
+            player.giveItemStack(
+                itemStackFactory.createFireworkRocket().apply {
+                    addCustomTag(NBT_BINGO_IGNORE)
+                    addCustomTag(NBT_BINGO_VANISH)
+                    fireworks = emptyList()
+                }.stack
+            )
         }
     }
 
@@ -134,12 +134,13 @@ class PlayerController(
     }
 
     private fun resetPlayerHealth(player: ServerPlayerEntity) {
-        player.activeStatusEffects.keys
+        val statusEffects = statusEffectsFactory.getStatusEffects(player)
+        statusEffects.getEffects()
             // Night vision needs to be filtered so that this doesn't cancel out [NightVisionController]
-            .filterNot { options.isNightVision && it == StatusEffects.NIGHT_VISION }
+            .filterNot { options.isNightVision && it.type == EffectType.NIGHT_VISION }
             // Avoid cancelling out effects from [CountdownController]
-            .filterNot { state.state == GameState.COUNTDOWN && (it == StatusEffects.SLOWNESS || it == StatusEffects.JUMP_BOOST) }
-            .forEach { player.removeStatusEffect(it) }
+            .filterNot { state.state == GameState.COUNTDOWN && (it.type == EffectType.SLOWNESS || it.type == EffectType.JUMP_BOOST) }
+            .forEach { statusEffects.removeEffect(it) }
 
         player.fireTicks = 0
         player.isOnFire = false

@@ -14,6 +14,7 @@ import net.minecraft.scoreboard.number.BlankNumberFormat
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import java.util.*
 
 class ScoreboardManager : IScoreboardManager {
 
@@ -80,10 +81,10 @@ class ScoreboardManager : IScoreboardManager {
         for (change in changes) {
             when (change) {
                 is ScoreChange.Create -> {
-                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, null, null))
+                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, Optional.empty(), Optional.empty()))
                 }
                 is ScoreChange.Update -> {
-                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, null, null))
+                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, Optional.empty(), Optional.empty()))
                 }
                 is ScoreChange.Remove -> {
                     player.networkHandler.sendPacket(ScoreboardScoreResetS2CPacket(change.name, handle.name))

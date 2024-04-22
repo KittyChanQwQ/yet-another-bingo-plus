@@ -25,23 +25,21 @@ import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.scope.BingoContext
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
-import me.jfenn.bingo.common.scoring.ScoredItemCheck
-import me.jfenn.bingo.common.timer.TimerCheck
 import me.jfenn.bingo.common.scoring.ScoreUpdateService
+import me.jfenn.bingo.common.scoring.ScoredItemCheck
 import me.jfenn.bingo.common.spawn.ChestController
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.SerializedPersistentStateFactory
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.CountdownController
 import me.jfenn.bingo.common.timer.CountdownService
+import me.jfenn.bingo.common.timer.TimerCheck
 import me.jfenn.bingo.common.timer.TimerPacketController
 import me.jfenn.bingo.integrations.ChunkyIntegration
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
-import net.minecraft.server.MinecraftServer
 import org.koin.core.Koin
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.scopedOf
@@ -53,7 +51,6 @@ import org.slf4j.LoggerFactory
 val commonModule = module {
     single { getKoin() }
     single { LoggerFactory.getLogger(MOD_ID) }
-    single { SerializedPersistentStateFactory(get()) }
     singleOf(::MigrationHandler)
 
     singleOf(::ConfigService)
@@ -85,10 +82,7 @@ val commonModule = module {
         scopedOf(::InteractionEntityEvents)
 
         scoped { get<BingoContext>().server }
-        scoped {
-            val world = get<MinecraftServer>().overworld
-            get<SerializedPersistentStateFactory>().fromWorld<BingoState>(world)
-        }
+        scoped { get<BingoContext>().state }
         scoped { get<BingoState>().options }
 
         scopedOf(::GameService)

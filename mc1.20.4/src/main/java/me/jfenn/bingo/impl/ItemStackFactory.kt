@@ -1,10 +1,11 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.item.IItemStack
-import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.api.ITextSerializer
+import me.jfenn.bingo.api.item.*
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.nbt.StringNbtReader
@@ -31,7 +32,13 @@ class ItemStackFactory(
         return ItemStackImpl(stack ?: ItemStack.EMPTY)
     }
 
-    inner class ItemStackImpl(
+    override fun createFilledMap(): IFilledMap = createStack(Items.FILLED_MAP, 1).asFilledMap()!!
+
+    override fun createFireworkRocket(): IFireworkRocket = createStack(Items.FIREWORK_ROCKET, 1).asFireworkRocket()!!
+
+    override fun createWrittenBook(): IWrittenBook = createStack(Items.WRITTEN_BOOK, 1).asWrittenBook()!!
+
+    open inner class ItemStackImpl(
         override val stack: ItemStack,
     ) : IItemStack {
         override val item: Item
@@ -104,5 +111,92 @@ class ItemStackFactory(
             return ItemStackImpl(stack.copy())
         }
 
+        override fun asFilledMap(): IFilledMap? {
+            return (this as? FilledMapImpl)
+                ?: takeIf { item == Items.FILLED_MAP }
+                    ?.let { FilledMapImpl(stack) }
+        }
+
+        override fun asFireworkRocket(): IFireworkRocket? {
+            return (this as? FireworkRocketImpl)
+                ?: takeIf { item == Items.FIREWORK_ROCKET }
+                    ?.let { FireworkRocketImpl(stack) }
+        }
+
+        override fun asWrittenBook(): IWrittenBook? {
+            return (this as? WrittenBookImpl)
+                ?: takeIf { item == Items.WRITTEN_BOOK }
+                    ?.let { WrittenBookImpl(stack) }
+        }
+    }
+
+    inner class WrittenBookImpl(
+        override val stack: ItemStack,
+    ) : ItemStackImpl(stack), IWrittenBook {
+        override var title: String?
+            get() = stack.nbt?.getString("title")
+            set(value) {
+                when {
+                    value != null -> stack.getOrCreateNbt().putString("title", value)
+                    else -> stack.nbt?.remove("title")
+                }
+            }
+
+        override var author: String?
+            get() = stack.nbt?.getString("author")
+            set(value) {
+                when {
+                    value != null -> stack.getOrCreateNbt().putString("author", value)
+                    else -> stack.nbt?.remove("author")
+                }
+            }
+
+        override fun setPages(pages: List<Text>) {
+            stack.getOrCreateNbt().apply {
+                put("pages", NbtList().apply {
+                    for (page in pages) {
+                        add(NbtString.of(textSerializer.toJson(page)))
+                    }
+                })
+            }
+        }
+    }
+
+    inner class FilledMapImpl(
+        override val stack: ItemStack,
+    ) : ItemStackImpl(stack), IFilledMap {
+        override var mapId: Int?
+            get() = stack.nbt?.getInt("map")
+            set(value) {
+                when {
+                    value != null -> stack.getOrCreateNbt().putInt("map", value)
+                    else -> stack.nbt?.remove("map")
+                }
+            }
+
+        override var mapColor: Int?
+            get() = stack.nbt?.getInt("MapColor")
+            set(value) {
+                when {
+                    value != null -> stack.getOrCreateNbt().putInt("MapColor", value)
+                    else -> stack.nbt?.remove("MapColor")
+                }
+            }
+
+    }
+
+    inner class FireworkRocketImpl(
+        override val stack: ItemStack,
+    ) : ItemStackImpl(stack), IFireworkRocket {
+        override var fireworks: List<Unit>?
+            get() = emptyList()
+            set(value) {
+                when {
+                    value != null -> {
+                        stack.getOrCreateNbt().put("Fireworks", NbtCompound())
+                    }
+                    else -> stack.nbt?.remove("Fireworks")
+                }
+            }
     }
 }
