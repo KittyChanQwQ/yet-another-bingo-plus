@@ -21,7 +21,10 @@ class ItemStackFactory(
     }
 
     override fun createStack(item: Identifier, count: Int): IItemStack {
-        return createStack(Registries.ITEM.get(item), count)
+        val itemInstance = Registries.ITEM.get(item)
+        if (itemInstance == Items.AIR && !item.path.equals("air", ignoreCase = true))
+            throw IllegalArgumentException("[ItemStackFactory] Item $item not found")
+        return createStack(itemInstance, count)
     }
 
     override fun createStack(item: Item, count: Int): IItemStack {

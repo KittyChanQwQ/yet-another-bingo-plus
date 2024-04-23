@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.config
 
 import me.jfenn.bingo.common.MOD_ID
-import me.jfenn.bingo.common.scope.BingoKoin
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger
@@ -75,6 +74,29 @@ class MigrationHandler(
         }
 
         migrations[3] = {
+            Config.readStream("advancements.tierlist.json").close()
+        }
+
+        migrations[4] = {
+            loader.configDir.resolve("bingo/all_items.tierlist.json")
+                .takeIfMd5("85984ea87c88d93cc9069d0cef529338")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("bingo/overworld-only.tierlist.json")
+                .takeIfMd5("08e90ebc0fc941be90cdfd3f57035983")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("bingo/simplified.tierlist.json")
+                .takeIfMd5("1c256401902baeb115b9a7d1547fc417")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("bingo/advancements.tierlist.json")
+                .takeIfMd5("000ba600d573dc29e3c12be51ce52ea9")
+                ?.deleteIfExists()
+
+            Config.readStream("all_items.tierlist.json").close()
+            Config.readStream("overworld-only.tierlist.json").close()
+            Config.readStream("simplified.tierlist.json").close()
             Config.readStream("advancements.tierlist.json").close()
         }
     }

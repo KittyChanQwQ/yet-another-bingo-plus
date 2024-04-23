@@ -129,8 +129,8 @@ class CardService(
             advancementManager.getAdvancement(server, Identifier(id))!!
             BingoCardEntry.AdvancementEntry(id, tier)
         } catch (e: Throwable) {
-            log.debug("Unable to locate advancement $id", e)
-            log.warn("Unable to locate advancement '$id', ignoring...")
+            log.debug("Unable to locate advancement '$id'", e)
+            log.warn("Unable to locate advancement '$id' from the tier list '${options.tierList}.tierlist.json', ignoring...")
             null
         }
     }
@@ -140,8 +140,8 @@ class CardService(
             itemStackFactory.createStack(id)
             BingoCardEntry.ItemEntry(id, tier)
         } catch (e: Throwable) {
-            log.debug("Unable to locate item $id", e)
-            log.warn("Unable to locate item '$id', ignoring...")
+            log.debug("Unable to locate item '$id'", e)
+            log.warn("Unable to locate item '$id' from the tier list '${options.tierList}.tierlist.json', ignoring...")
             null
         }
     }
