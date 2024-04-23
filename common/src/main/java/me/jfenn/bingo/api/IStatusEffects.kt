@@ -1,9 +1,10 @@
 package me.jfenn.bingo.api
 
+import net.minecraft.entity.LivingEntity
 import net.minecraft.server.network.ServerPlayerEntity
 
 interface IStatusEffectsFactory {
-    fun getStatusEffects(player: ServerPlayerEntity): IStatusEffects
+    fun getStatusEffects(entity: LivingEntity): IStatusEffects
 }
 
 interface IStatusEffects {
@@ -20,6 +21,7 @@ enum class EffectType {
     NIGHT_VISION,
     SLOWNESS,
     JUMP_BOOST,
+    INVISIBILITY,
     OTHER,
 }
 

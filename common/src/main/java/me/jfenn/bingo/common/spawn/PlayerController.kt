@@ -139,7 +139,7 @@ class PlayerController(
             // Night vision needs to be filtered so that this doesn't cancel out [NightVisionController]
             .filterNot { options.isNightVision && it.type == EffectType.NIGHT_VISION }
             // Avoid cancelling out effects from [CountdownController]
-            .filterNot { state.state == GameState.COUNTDOWN && (it.type == EffectType.SLOWNESS || it.type == EffectType.JUMP_BOOST) }
+            .filterNot { state.state == GameState.COUNTDOWN && it.type == EffectType.INVISIBILITY }
             .forEach { statusEffects.removeEffect(it) }
 
         player.fireTicks = 0
