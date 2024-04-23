@@ -124,6 +124,7 @@
         "minecraft:trident",
         "minecraft:turtle_egg",
         "minecraft:turtle_helmet",
+        "minecraft:turtle_scute",
         "minecraft:verdant_froglight",
         "minecraft:wild_armor_trim_smithing_template",
         "minecraft:wither_skeleton_skull"
@@ -265,6 +266,7 @@
         "minecraft:amethyst_block",
         "minecraft:amethyst_shard",
         "minecraft:anvil",
+        "minecraft:armadillo_scute",
         "minecraft:axolotl_bucket",
         "minecraft:azalea",
         "minecraft:azalea_leaves",
@@ -439,6 +441,7 @@
         "minecraft:tropical_fish_bucket",
         "minecraft:warped_fungus",
         "minecraft:warped_fungus_on_a_stick",
+        "minecraft:wolf_armor",
         "minecraft:writable_book",
         "minecraft:written_book"
     ],

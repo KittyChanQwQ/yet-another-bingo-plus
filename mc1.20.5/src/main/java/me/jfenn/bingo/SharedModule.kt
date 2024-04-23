@@ -20,10 +20,10 @@ val sharedModule = module {
     singleOf(::OfflinePlayerAccessor) bind IOfflinePlayerAccessor::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     singleOf(::ScoreboardManager) bind IScoreboardManager::class
+    single { StatusEffectsImpl } bind IStatusEffectsFactory::class
     singleOf(::StructureManager) bind IStructureManager::class
     singleOf(::TeamManager) bind ITeamManager::class
     singleOf(::TextSerializer) bind ITextSerializer::class
-    single { StatusEffectsImpl } bind IStatusEffectsFactory::class
 
     scope<BingoContext> {
         scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class)

@@ -96,6 +96,7 @@
         "minecraft:trident",
         "minecraft:turtle_egg",
         "minecraft:turtle_helmet",
+        "minecraft:turtle_scute",
         "minecraft:wild_armor_trim_smithing_template"
     ],
     "A": [
@@ -211,6 +212,7 @@
         "minecraft:amethyst_block",
         "minecraft:amethyst_shard",
         "minecraft:anvil",
+        "minecraft:armadillo_scute",
         "minecraft:axolotl_bucket",
         "minecraft:azalea",
         "minecraft:azalea_leaves",
@@ -382,6 +384,7 @@
         "minecraft:tropical_fish",
         "minecraft:tropical_fish_bucket",
         "minecraft:white_tulip",
+        "minecraft:wolf_armor",
         "minecraft:writable_book",
         "minecraft:written_book"
     ],

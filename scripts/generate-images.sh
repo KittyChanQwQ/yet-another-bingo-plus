@@ -11,8 +11,8 @@ TMP_DIR=$SCRIPT_DIR/tmp
 mkdir -p $TMP_DIR
 pushd $TMP_DIR
 
-# https://mcversions.net; 1.20.4
-[ -f client.jar ] || wget https://piston-data.mojang.com/v1/objects/fd19469fed4a4b4c15b2d5133985f0e3e7816a8a/client.jar
+# https://mcversions.net; 1.20.5-rc3
+[ -f client.jar ] || wget https://piston-data.mojang.com/v1/objects/67575e29d036041b1fe90b427770b87e8bdf116b/client.jar
 JAR_FILE="$(realpath client.jar)"
 
 [ -f $JAR_FILE ] || {

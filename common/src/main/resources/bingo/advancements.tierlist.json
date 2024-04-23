@@ -22,7 +22,8 @@
         "advancement!minecraft:adventure/spyglass_at_dragon",
         "advancement!minecraft:husbandry/silk_touch_nest",
         "advancement!minecraft:husbandry/allay_deliver_cake_to_note_block",
-        "advancement!minecraft:husbandry/leash_all_frog_variants"
+        "advancement!minecraft:husbandry/leash_all_frog_variants",
+        "advancement!minecraft:husbandry/whole_pack"
     ],
     "A": [
         "advancement!minecraft:story/shiny_gear",
@@ -56,6 +57,7 @@
         "advancement!minecraft:nether/obtain_crying_obsidian",
         "advancement!minecraft:nether/distract_piglin",
         "advancement!minecraft:nether/brew_potion",
+        "advancement!minecraft:adventure/brush_armadillo",
         "advancement!minecraft:adventure/voluntary_exile",
         "advancement!minecraft:adventure/read_power_of_chiseled_bookshelf",
         "advancement!minecraft:adventure/lightning_rod_with_villager_no_fire",
@@ -67,6 +69,8 @@
         "advancement!minecraft:adventure/walk_on_powder_snow_with_leather_boots",
         "advancement!minecraft:husbandry/safely_harvest_honey",
         "advancement!minecraft:husbandry/allay_deliver_item_to_player",
+        "advancement!minecraft:husbandry/repair_wolf_armor",
+        "advancement!minecraft:husbandry/remove_wolf_armor",
         "advancement!minecraft:husbandry/wax_on",
         "advancement!minecraft:husbandry/wax_off"
     ],

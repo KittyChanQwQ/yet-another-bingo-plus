@@ -1,20 +1,27 @@
 package me.jfenn.bingo.common.card
 
+import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import kotlin.random.Random
 
 class CardService(
     private val log: Logger,
     private val state: BingoState,
+    private val server: MinecraftServer,
     private val options: BingoOptions,
     private val teamService: TeamService,
     private val configService: ConfigService,
     private val tierListService: TierListService,
+    private val advancementManager: IAdvancementManager,
+    private val itemStackFactory: IItemStackFactory,
 ) {
     fun shuffleCard() {
         // Change the BINGO seed to a new value
@@ -101,17 +108,12 @@ class CardService(
             is TierListEntry.SingleEntry -> {
                 val isAdvancement = entry.item.startsWith(TierListConfig.ADVANCEMENT_PREFIX)
 
-                try {
-                    when {
-                        isAdvancement -> BingoCardEntry.AdvancementEntry(
-                            entry.item.removePrefix(TierListConfig.ADVANCEMENT_PREFIX),
-                            tier,
-                        )
-                        else -> BingoCardEntry.ItemEntry(entry.item, tier)
-                    }
-                } catch (e: IllegalArgumentException) {
-                    log.error(e.message)
-                    null
+                when {
+                    isAdvancement -> resolveAdvancement(
+                        entry.item.removePrefix(TierListConfig.ADVANCEMENT_PREFIX),
+                        tier,
+                    )
+                    else -> resolveItem(entry.item, tier)
                 }
             }
             is TierListEntry.MultiEntry -> {
@@ -122,4 +124,25 @@ class CardService(
         }
     }
 
+    private fun resolveAdvancement(id: String, tier: TierLabel): BingoCardEntry.AdvancementEntry? {
+        return try {
+            advancementManager.getAdvancement(server, Identifier(id))!!
+            BingoCardEntry.AdvancementEntry(id, tier)
+        } catch (e: Throwable) {
+            log.debug("Unable to locate advancement $id", e)
+            log.warn("Unable to locate advancement '$id', ignoring...")
+            null
+        }
+    }
+
+    private fun resolveItem(id: String, tier: TierLabel): BingoCardEntry.ItemEntry? {
+        return try {
+            itemStackFactory.createStack(id)
+            BingoCardEntry.ItemEntry(id, tier)
+        } catch (e: Throwable) {
+            log.debug("Unable to locate item $id", e)
+            log.warn("Unable to locate item '$id', ignoring...")
+            null
+        }
+    }
 }
