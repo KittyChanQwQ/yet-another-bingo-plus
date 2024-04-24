@@ -29,7 +29,12 @@ sealed class BingoCardEntry {
         return visualItem?.copy()?.also { stack ->
             stack.setDisplay(
                 name = formatName(),
-                lore = formatLore(),
+                lore = (formatLore() ?: emptyList())
+                    .plus(
+                        tier?.let { listOf(Text.literal("$it-tier").formatted(it.formatting)) }
+                            ?: emptyList()
+                    )
+                    .takeIf { it.isNotEmpty() },
             )
             stack.setHideFlags(255)
         }

@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.config
 
-import me.jfenn.bingo.common.utils.text.TextColor
+import net.minecraft.util.Formatting
 
 enum class TierLabel(
-    val formatting: TextColor,
+    val formatting: Formatting,
 ) {
-    S(TextColor.DARK_RED),
-    A(TextColor.RED),
-    B(TextColor.GOLD),
-    C(TextColor.YELLOW),
-    D(TextColor.GREEN),
+    S(Formatting.DARK_RED),
+    A(Formatting.RED),
+    B(Formatting.GOLD),
+    C(Formatting.YELLOW),
+    D(Formatting.GREEN),
 }

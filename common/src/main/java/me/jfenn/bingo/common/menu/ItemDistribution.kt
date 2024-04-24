@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.text.TextProvider
@@ -9,6 +10,7 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.Vec3d
 
 const val TIER_WIDTH = 0.5
@@ -19,6 +21,7 @@ fun MenuComponent.registerItemDistribution(
     itemDistributionProp: MutableProperty<List<Int>>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     cardService: CardService = koinScope.get(),
+    textSerializer: ITextSerializer = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     var itemDistribution by itemDistributionProp
@@ -57,11 +60,7 @@ fun MenuComponent.registerItemDistribution(
         }
 
         registerEntity(EntityType.TEXT_DISPLAY, position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
-            putString("text", TextInfo.toJsonString(
-                TextInfo.literal(tier.name)
-                    .formatted(tier.formatting)
-                    .apply { bold = true }
-            ))
+            putString("text", textSerializer.toJson(Text.literal(tier.name).formatted(tier.formatting, Formatting.BOLD)))
             putString("billboard", "fixed")
             putString("alignment", "center")
             putInt("background", 0)
