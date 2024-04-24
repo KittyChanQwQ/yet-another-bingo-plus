@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.api.item.IWrittenBook
@@ -17,11 +18,9 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
@@ -32,7 +31,6 @@ import org.slf4j.Logger
 class PlayerSettingsController(
     events: ScopedEvents,
     private val log: Logger,
-    private val server: MinecraftServer,
     private val state: BingoState,
     private val permissions: PermissionsIntegration,
     private val cardViewService: CardViewService,
@@ -41,6 +39,7 @@ class PlayerSettingsController(
     private val text: TextProvider,
     private val packetManager: ServerPacketEvents,
     private val itemStackFactory: IItemStackFactory,
+    private val playerManager: IPlayerManager,
 ) : BingoComponent() {
 
     private fun getIntroPage(player: ServerPlayerEntity) =
@@ -206,13 +205,13 @@ class PlayerSettingsController(
             if (state.state != GameState.PREGAME)
                 return@onGameTick
 
-            for (player in server.playerManager.playerList) {
+            for (player in playerManager.getPlayers()) {
                 var bookCount = 0
-                for (stack in player.allHeldStacks().mapNotNull { itemStackFactory.forStack(it).asWrittenBook() }) {
+                for (stack in player.allHeldStacks().mapNotNull { it.asWrittenBook() }) {
                     if (isBookItem(stack)) {
                         // prevent players from taking someone else's book...
-                        if (stack.author != scoreboardManager.getPlayerName(player))
-                            updateBookItem(player, stack)
+                        if (stack.author != scoreboardManager.getPlayerName(player.player))
+                            updateBookItem(player.player, stack)
 
                         bookCount++
 
@@ -224,16 +223,17 @@ class PlayerSettingsController(
                 }
 
                 if (bookCount == 0) {
-                    val bookItem = createBookItem(player)
-                    player.giveItemStack(bookItem.stack)
+                    val bookItem = createBookItem(player.player)
+                    player.giveItemStack(bookItem)
                 }
             }
         }
 
         events.onChangePlayerSettings { player ->
             if (state.state == GameState.PREGAME) {
-                player.allHeldStacks()
-                    .mapNotNull { itemStackFactory.forStack(it).asWrittenBook() }
+
+                playerManager.forPlayer(player).allHeldStacks()
+                    .mapNotNull { it.asWrittenBook() }
                     .filter { isBookItem(it) }
                     .forEach { updateBookItem(player, it) }
             }
@@ -256,8 +256,9 @@ class PlayerSettingsController(
 
         events.onPlayerChannelRegister { player ->
             if (state.state == GameState.PREGAME) {
-                player.allHeldStacks()
-                    .mapNotNull { itemStackFactory.forStack(it).asWrittenBook() }
+                playerManager.forPlayer(player)
+                    .allHeldStacks()
+                    .mapNotNull { it.asWrittenBook() }
                     .filter { isBookItem(it) }
                     .forEach { updateBookItem(player, it) }
             }

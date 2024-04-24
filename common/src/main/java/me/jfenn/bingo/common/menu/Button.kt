@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.text.TextProvider
@@ -24,6 +25,7 @@ fun MenuComponent.registerButton(
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
     textProvider: TextProvider = koinScope.get(),
+    playerManager: IPlayerManager = koinScope.get(),
     onClick: (player: ServerPlayerEntity) -> Unit,
 ) {
     val isActive by isActiveProp
@@ -37,7 +39,7 @@ fun MenuComponent.registerButton(
         interactionEntityEvents.onInteract(entity) { player ->
             if (permissionGetter(player)) {
                 onClick(player)
-                Sounds.playButtonSound(player, entity.pos)
+                Sounds.playButtonSound(playerManager, entity.pos, player.serverWorld)
             }
         }
     }

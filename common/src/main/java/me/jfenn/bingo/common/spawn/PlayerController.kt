@@ -1,8 +1,6 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.EffectType
-import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.api.IStatusEffectsFactory
+import me.jfenn.bingo.api.*
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
@@ -14,8 +12,6 @@ import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.utils.allHeldStacks
-import me.jfenn.bingo.common.utils.giveOrEquipStack
 import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
@@ -49,15 +45,15 @@ class PlayerController(
     private val vanishIntegration: VanishIntegration,
     private val itemStackFactory: IItemStackFactory,
     private val statusEffectsFactory: IStatusEffectsFactory,
+    private val playerManager: IPlayerManager,
 ) : BingoComponent() {
 
     /**
      * Equip the player with elytra and firework rockets.
      * Only runs if config.isElytra is true
      */
-    private fun giveElytra(player: ServerPlayerEntity) {
+    private fun giveElytra(player: IPlayerHandle) {
         val hasElytra = player.allHeldStacks()
-            .map { itemStackFactory.forStack(it) }
             .any { it.item == Items.ELYTRA && it.hasCustomTag(NBT_BINGO_VANISH) }
 
         if (!hasElytra) {
@@ -68,7 +64,7 @@ class PlayerController(
                     setUnbreakable(true)
                     addCustomTag(NBT_BINGO_IGNORE)
                     addCustomTag(NBT_BINGO_VANISH)
-                }.stack
+                }
             )
         }
 
@@ -85,7 +81,7 @@ class PlayerController(
                     addCustomTag(NBT_BINGO_IGNORE)
                     addCustomTag(NBT_BINGO_VANISH)
                     fireworks = emptyList()
-                }.stack
+                }
             )
         }
     }
@@ -249,7 +245,7 @@ class PlayerController(
                 if (state.state == GameState.PLAYING && player.health > 0f && !player.isSpectator) {
                     // if elytra mode is configured, give the player an elytra
                     if (options.isElytra && teamService.isPlaying(player))
-                        giveElytra(player)
+                        giveElytra(playerManager.forPlayer(player))
 
                     // if the player is spectating in adventure mode,
                     // they should be able to fly

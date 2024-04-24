@@ -80,7 +80,7 @@ class CountdownController(
                         putBoolean("PersistenceRequired", true)
                     })
                     val spawnPoint = team.spawnpoint ?: return@forEach
-                    with(spawnPoint) { marker.setPosition(x.toDouble() + 0.5, y.toDouble(), z.toDouble() + 0.5) }
+                    with(spawnPoint) { marker.setPosition(x.toDouble() + 0.5, y.toDouble() - 0.4, z.toDouble() + 0.5) }
                     world.spawnEntity(marker)
 
                     // Make the bat invisible

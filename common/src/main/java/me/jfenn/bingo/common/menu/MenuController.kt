@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.IStructureManager
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoTeam
@@ -48,6 +49,7 @@ class MenuController(
     private val state: BingoState,
     private val teamService: TeamService,
     private val text: TextProvider,
+    private val playerManager: IPlayerManager,
 ) : KoinComponent {
 
     private var menu: MenuInstance? = null
@@ -225,7 +227,7 @@ class MenuController(
             val effect = DustParticleEffect(Vector3f(color.r / 255f, color.g / 255f, color.b / 255f), 1f)
             (player.world as? ServerWorld)?.spawnParticles(player, effect, true, position.x, position.y, position.z, 10, 1.0, 1.0, 1.0, 0.2)
 
-            Sounds.playTeamChanged(player)
+            Sounds.playTeamChanged(playerManager.forPlayer(player))
             teamService.joinTeam(player, team)
         }
     }

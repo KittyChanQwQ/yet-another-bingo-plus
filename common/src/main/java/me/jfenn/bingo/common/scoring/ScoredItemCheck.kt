@@ -1,8 +1,9 @@
 package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.api.IOfflinePlayerAccessor
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.BingoTeam
@@ -15,10 +16,8 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
@@ -37,18 +36,18 @@ class ScoredItemCheck(
     private val gameService: GameService,
     private val teamService: TeamService,
     private val configService: ConfigService,
-    private val offlinePlayerAccessor: IOfflinePlayerAccessor,
+    private val playerManager: IPlayerManager,
     private val advancementManager: IAdvancementManager,
     private val textProvider: TextProvider,
     private val scoreUpdateService: ScoreUpdateService,
     private val itemStackFactory: IItemStackFactory,
 ) : BingoComponent() {
 
-    private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, ServerPlayerEntity>()
+    private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, IPlayerHandle>()
 
-    private fun getOfflinePlayer(profile: BingoPlayerProfile): ServerPlayerEntity {
+    private fun getOfflinePlayer(profile: BingoPlayerProfile): IPlayerHandle {
         // If the player is online, return the current player entity
-        val onlinePlayer = server.playerManager.getPlayer(UUID.fromString(profile.uuid))
+        val onlinePlayer = playerManager.getPlayer(UUID.fromString(profile.uuid))
         if (onlinePlayer != null) {
             // and set their offline cache entry
             offlinePlayerCache[profile] = onlinePlayer
@@ -62,9 +61,9 @@ class ScoredItemCheck(
         }
 
         // Otherwise, load their player data from the save (this can take a few ms...)
-        val player: ServerPlayerEntity
+        val player: IPlayerHandle
         measureTime {
-            player = offlinePlayerAccessor.getOfflinePlayer(server, profile)
+            player = playerManager.getOfflinePlayer(profile)
         }.also {
             log.info("Loading offline player data for ${profile.name} ($it)")
         }
@@ -76,14 +75,14 @@ class ScoredItemCheck(
     fun updateInventory(): Set<BingoTeam> {
         val updatedTeams = mutableSetOf<BingoTeam>()
 
-        for (player in server.playerManager.playerList) {
-            val team = teamService.getPlayerTeam(player) ?: continue
+        for (player in playerManager.getPlayers()) {
+            val team = teamService.getPlayerTeam(player.player) ?: continue
 
             // don't update teams that have already won
             if (team.isWinner()) continue
 
             // check inventory for new collected items
-            for (stack in player.allHeldStacks().map { itemStackFactory.forStack(it) }) {
+            for (stack in player.allHeldStacks()) {
                 // get the item tile, if it is on the card
                 val tile = state.card.itemIndex[stack.identifier] ?: continue
 
@@ -103,7 +102,7 @@ class ScoredItemCheck(
                     .also { isChanged ->
                         if (isChanged) {
                             updatedTeams.add(team)
-                            scoreUpdateService.sendItemCaptured(player, team, tile)
+                            scoreUpdateService.sendItemCaptured(player.player, team, tile)
                         }
                     }
             }
@@ -120,8 +119,7 @@ class ScoredItemCheck(
 
                     val teamPlayers = team.players.map { getOfflinePlayer(it) }
                     val hasTeamItem = teamPlayers.any { player ->
-                        player.inventory.containsAny { item.canSatisfy(itemStackFactory.forStack(it)) }
-                                || item.canSatisfy(itemStackFactory.forStack(player.currentScreenHandler.cursorStack))
+                        player.allHeldStacks().any { item.canSatisfy(it) }
                     }
 
                     // if noone on the team has the item anymore, mark it lost
@@ -156,14 +154,14 @@ class ScoredItemCheck(
                 val players = team.players.map { getOfflinePlayer(it) }
 
                 val isAnyObtained = players.any {
-                    advancementManager.isAnyObtained(it, advancement)
+                    advancementManager.isAnyObtained(it.player, advancement)
                 }
                 if (isAnyObtained) {
                     entry.markSeen(team)
                 }
 
                 val player = players.find {
-                    advancementManager.isDone(it, advancement)
+                    advancementManager.isDone(it.player, advancement)
                 }
 
                 // if the advancement is finished, and the tile is not locked
@@ -173,7 +171,7 @@ class ScoredItemCheck(
                         .also { isChanged ->
                             if (isChanged) {
                                 updatedTeams.add(team)
-                                scoreUpdateService.sendItemCaptured(player, team, entry)
+                                scoreUpdateService.sendItemCaptured(player.player, team, entry)
                             }
                         }
                 }

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common
 
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
@@ -39,6 +40,7 @@ class GameService(
     private val textProvider: TextProvider,
     private val packetManager: ServerPacketEvents,
     private val countdownService: CountdownService,
+    private val playerManager: IPlayerManager,
 ) {
 
     fun start(
@@ -190,25 +192,25 @@ class GameService(
             server.playerManager.broadcast(it, false)
         }
 
-        for (player in server.playerManager.playerList) {
+        for (player in playerManager.getPlayers()) {
             val packet = GameOverPacket(
                 title = winTitle,
                 subtitle = winMessage,
                 winner = winningTeam?.key,
                 duration = state.ingameDuration() ?: Duration.ZERO,
-                canSendRestart = server.isDedicated && permissions.hasPermission(player, Permission.COMMAND_RESTART),
-                isWinner = winningTeam?.includesPlayer(player) ?: false,
+                canSendRestart = server.isDedicated && permissions.hasPermission(player.player, Permission.COMMAND_RESTART),
+                isWinner = winningTeam?.includesPlayer(player.player) ?: false,
             )
 
             when {
-                packetManager.gameOverV2.send(player, packet) -> {}
-                packetManager.gameOverV1.send(player, packet) -> {
+                packetManager.gameOverV2.send(player.player, packet) -> {}
+                packetManager.gameOverV1.send(player.player, packet) -> {
                     Sounds.playGameOver(player)
                 }
                 else -> {
                     // send the winning team title message
-                    player.networkHandler.sendPacket(TitleS2CPacket(winTitle))
-                    player.networkHandler.sendPacket(SubtitleS2CPacket(winMessage))
+                    player.player.networkHandler.sendPacket(TitleS2CPacket(winTitle))
+                    player.player.networkHandler.sendPacket(SubtitleS2CPacket(winMessage))
                     Sounds.playGameOver(player)
                 }
             }

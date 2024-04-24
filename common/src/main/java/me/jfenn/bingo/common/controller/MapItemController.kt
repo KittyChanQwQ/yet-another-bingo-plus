@@ -1,5 +1,7 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
@@ -9,8 +11,6 @@ import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.utils.allHeldStacks
-import me.jfenn.bingo.common.utils.allInventorySlots
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 
@@ -20,27 +20,26 @@ class MapItemController(
     private val options: BingoOptions,
     private val cardViewService: CardViewService,
     private val mapItemService: MapItemService,
-    private val itemStackFactory: IItemStackFactory,
+    private val playerManager: IPlayerManager,
     private val teamService: TeamService,
     events: ScopedEvents,
 ) : BingoComponent() {
-    fun givePreviewCardItem(player: ServerPlayerEntity) {
-        if (cardViewService.supportsCardHud(player)) return
+    fun givePreviewCardItem(player: IPlayerHandle) {
+        if (cardViewService.supportsCardHud(player.player)) return
 
         val hasMap = player.allHeldStacks()
-            .map { itemStackFactory.forStack(it) }
             .any { mapItemService.isMapItem(it) }
 
         if (!hasMap) {
             val mapItem = mapItemService.createPreviewMapItem()
-            player.giveItemStack(mapItem.stack)
+            player.giveItemStack(mapItem)
         }
     }
 
-    fun removePreviewCardItem(player: ServerPlayerEntity) {
+    fun removePreviewCardItem(player: IPlayerHandle) {
         for ((slot, item) in player.allInventorySlots()) {
-            if (mapItemService.isPreviewMapItem(itemStackFactory.forStack(item)))
-                player.inventory.removeStack(slot)
+            if (mapItemService.isPreviewMapItem(item))
+                player.removeStack(slot)
         }
     }
 
@@ -48,12 +47,11 @@ class MapItemController(
      * Ensure that the player has their team's bingo map card.
      * Has no effect if the player already has a card
      */
-    fun giveMapCardItem(player: ServerPlayerEntity) {
-        if (cardViewService.supportsCardHud(player)) return
+    fun giveMapCardItem(player: IPlayerHandle) {
+        if (cardViewService.supportsCardHud(player.player)) return
 
-        val team = teamService.getPlayerTeam(player) ?: return
+        val team = teamService.getPlayerTeam(player.player) ?: return
         val hasMap = player.allHeldStacks()
-            .map { itemStackFactory.forStack(it) }
             .filter { mapItemService.isMapItem(it) }
             .mapNotNull {
                 if (mapItemService.isMapTeamItem(it, team)) {
@@ -71,7 +69,7 @@ class MapItemController(
         if (!hasMap) {
             // give the player a new map item
             val mapItem = mapItemService.createMapItem(team)
-            player.giveItemStack(mapItem.stack)
+            player.giveItemStack(mapItem)
         }
     }
 
@@ -80,18 +78,17 @@ class MapItemController(
      * in their hotbar slots. Indiscriminately replaces any existing
      * hotbar items.
      */
-    fun giveSpectatorMapItems(player: ServerPlayerEntity) {
-        if (cardViewService.supportsCardHud(player)) return
+    fun giveSpectatorMapItems(player: IPlayerHandle) {
+        if (cardViewService.supportsCardHud(player.player)) return
 
         state.getRegisteredTeams()
             .forEachIndexed { i, team ->
                 val hasMap = player.allHeldStacks()
-                    .map { itemStackFactory.forStack(it) }
                     .any { mapItemService.isMapTeamItem(it, team) }
 
                 if (!hasMap) {
                     val stack = mapItemService.createMapItem(team)
-                    player.getStackReference(i).set(stack.stack)
+                    player.setStack(i, stack)
                 }
             }
     }
@@ -99,16 +96,15 @@ class MapItemController(
     /**
      * Remove all bingo map items from the player
      */
-    fun removeAllMapItems(player: ServerPlayerEntity) {
+    fun removeAllMapItems(player: IPlayerHandle) {
         player.allHeldStacks()
-            .map { itemStackFactory.forStack(it) }
             .filter { mapItemService.isMapItem(it) }
             .forEach { it.count = 0 }
     }
 
     init {
         events.onEnter(GameState.POSTGAME) {
-            for (player in server.playerManager.playerList) {
+            for (player in playerManager.getPlayers()) {
                 // remove any existing maps in the player's inventory
                 removeAllMapItems(player)
 
@@ -118,8 +114,8 @@ class MapItemController(
         }
 
         events.onGameTick {
-            for (player in server.playerManager.playerList) {
-                val playerTeam = teamService.getPlayerTeam(player)
+            for (player in playerManager.getPlayers()) {
+                val playerTeam = teamService.getPlayerTeam(player.player)
 
                 if (player.isAlive && !player.isSpectator) {
                     if (state.state == GameState.PREGAME) {
@@ -128,10 +124,10 @@ class MapItemController(
                         } else {
                             removePreviewCardItem(player)
                         }
-                    } else if (playerTeam != null && cardViewService.isViewingTeamCard(player, playerTeam)) {
+                    } else if (playerTeam != null && cardViewService.isViewingTeamCard(player.player, playerTeam)) {
                         // give player a new map, if they don't have one?
                         giveMapCardItem(player)
-                    } else if (cardViewService.isViewingSpectatorCards(player)) {
+                    } else if (cardViewService.isViewingSpectatorCards(player.player)) {
                         giveSpectatorMapItems(player)
                     }
                 }
@@ -146,7 +142,7 @@ class MapItemController(
 
                 // If the player is using the client-side hud, make sure they don't have any map items
                 // (this might be false when the player is first connecting)
-                if (cardViewService.supportsCardHud(player))
+                if (cardViewService.supportsCardHud(player.player))
                     removeAllMapItems(player)
             }
         }

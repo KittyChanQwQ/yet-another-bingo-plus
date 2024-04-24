@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.timer
 
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -12,6 +13,7 @@ import net.minecraft.util.Formatting
 class CountdownService(
     private val packetManager: ServerPacketEvents,
     private val teamService: TeamService,
+    private val playerManager: IPlayerManager,
 ) {
 
     fun sendCountdownPacket(player: ServerPlayerEntity, packet: CountdownPacket) {
@@ -28,8 +30,8 @@ class CountdownService(
 
         when {
             packetManager.countdownV1.send(player, packet) -> {}
-            packet.secondsRemaining in 1..3 -> Sounds.playGameCountdown(player)
-            packet.secondsRemaining == 0 -> Sounds.playGameStarted(player)
+            packet.secondsRemaining in 1..3 -> Sounds.playGameCountdown(playerManager.forPlayer(player))
+            packet.secondsRemaining == 0 -> Sounds.playGameStarted(playerManager.forPlayer(player))
         }
     }
 

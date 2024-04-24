@@ -14,7 +14,6 @@ val sharedModule = module {
     singleOf(::AdvancementManager) bind IAdvancementManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
     singleOf(::ItemStackFactory) bind IItemStackFactory::class
-    singleOf(::OfflinePlayerAccessor) bind IOfflinePlayerAccessor::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     singleOf(::ScoreboardManager) bind IScoreboardManager::class
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
@@ -24,6 +23,7 @@ val sharedModule = module {
     singleOf(::TextSerializer) bind ITextSerializer::class
 
     scope<BingoContext> {
+        scopedOf(::PlayerManager) bind IPlayerManager::class
         scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class)
     }
 }

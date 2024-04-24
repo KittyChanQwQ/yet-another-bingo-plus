@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.spawn
 
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.card.BingoTeam
@@ -9,7 +10,6 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.utils.giveOrEquipStack
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
@@ -27,6 +27,7 @@ class SpawnService(
     private val config: BingoConfig,
     private val teamService: TeamService,
     private val itemStackFactory: IItemStackFactory,
+    private val playerManager: IPlayerManager,
 ) {
 
     fun getSpawnDimension(): ServerWorld {
@@ -158,7 +159,7 @@ class SpawnService(
                 // copy the stack for each player
                 val playerStack = stack.copy()
                 // if the item can be equipped (e.g. iron chestplate), put it in an equipment slot
-                player.giveOrEquipStack(playerStack.stack)
+                playerManager.forPlayer(player).giveOrEquipStack(playerStack)
             }
         }
     }

@@ -28,9 +28,7 @@
     "fennifith"
   ],
   "description": "Common cross-version functionality for the BINGO mod",
-  "mixins": [
-    "mixins.bingo-common.json"
-  ],
+  "mixins": [],
   "accessWidener": "bingo.accesswidener",
   "custom": {
     "modmenu": {

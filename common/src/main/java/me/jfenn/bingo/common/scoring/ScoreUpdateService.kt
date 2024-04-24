@@ -1,5 +1,8 @@
 package me.jfenn.bingo.common.scoring
 
+import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.api.PlayerSoundCategory
+import me.jfenn.bingo.api.PlayerSoundEvent
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.BingoTeam
@@ -12,9 +15,8 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
 import net.minecraft.util.Formatting
+import java.util.*
 
 class ScoreUpdateService(
     private val server: MinecraftServer,
@@ -22,6 +24,7 @@ class ScoreUpdateService(
     private val options: BingoOptions,
     private val textProvider: TextProvider,
     private val playerSettingsService: PlayerSettingsService,
+    private val playerManager: IPlayerManager,
 ) {
 
     fun sendItemCaptured(
@@ -49,29 +52,29 @@ class ScoreUpdateService(
         // decide if all players should get notified when a different team completes an item
         val sendToEveryone = options.showOtherTeamCompletions || options.showCompletedItems
         val playerList = when {
-            sendToEveryone -> server.playerManager.playerList
-            else -> team.players.mapNotNull { server.playerManager.getPlayer(it.uuid) }
+            sendToEveryone -> playerManager.getPlayers()
+            else -> team.players.mapNotNull { playerManager.getPlayer(UUID.fromString(it.uuid)) }
         }
 
         for (player in playerList) {
-            val isOnTeam = team.includesPlayer(player)
+            val isOnTeam = team.includesPlayer(player.player)
             val playerPacket = if (isOnTeam) packet else otherTeamPacket
 
             when {
-                packetManager.scoredItemV1.send(player, playerPacket) -> {}
+                packetManager.scoredItemV1.send(player.player, playerPacket) -> {}
                 else -> {
                     // play the doink sound
                     if (isOnTeam) {
                         val score = team.score.items
                         player.playSound(
-                            SoundEvents.ENTITY_PLAYER_LEVELUP,
-                            SoundCategory.RECORDS,
+                            PlayerSoundEvent.ENTITY_PLAYER_LEVELUP,
+                            PlayerSoundCategory.RECORDS,
                             1f, 1f + (score / 25f)
                         )
                     } else {
                         player.playSound(
-                            SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(),
-                            SoundCategory.RECORDS,
+                            PlayerSoundEvent.BLOCK_NOTE_BLOCK_BASS,
+                            PlayerSoundCategory.RECORDS,
                             1f, 1f
                         )
                     }
