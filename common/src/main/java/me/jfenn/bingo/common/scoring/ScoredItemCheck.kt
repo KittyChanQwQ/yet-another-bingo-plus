@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.scoring
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.BingoTeam
@@ -40,7 +39,6 @@ class ScoredItemCheck(
     private val advancementManager: IAdvancementManager,
     private val textProvider: TextProvider,
     private val scoreUpdateService: ScoreUpdateService,
-    private val itemStackFactory: IItemStackFactory,
 ) : BingoComponent() {
 
     private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, IPlayerHandle>()

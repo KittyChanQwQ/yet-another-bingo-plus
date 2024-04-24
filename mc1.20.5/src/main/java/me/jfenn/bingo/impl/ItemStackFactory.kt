@@ -86,8 +86,13 @@ class ItemStackFactory : IItemStackFactory {
         }
 
         override fun setHideFlags(hideFlags: Int) {
-            // TODO: might need [ENCHANTMENTS].hideFlags = true?
             stack[DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP] = Unit.INSTANCE
+            stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT).let {
+                stack[DataComponentTypes.ENCHANTMENTS] = it.withShowInTooltip(false)
+            }
+            stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT).let {
+                stack[DataComponentTypes.ATTRIBUTE_MODIFIERS] = it.withShowInTooltip(false)
+            }
         }
 
         override fun setNbtString(nbt: String?) {

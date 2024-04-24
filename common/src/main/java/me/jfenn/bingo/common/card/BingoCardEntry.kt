@@ -173,11 +173,13 @@ sealed class BingoCardEntry {
         @Transient
         override var visualItem: IItemStack? = null
 
+        @Transient
         var name: Text? = null
-        var description: Text? = null
+        @Transient
+        var description: List<Text>? = null
 
         override fun formatName(): Text? = name
-        override fun formatLore(): List<Text>? = description?.let { listOf(it) }
+        override fun formatLore(): List<Text>? = description
 
     }
 

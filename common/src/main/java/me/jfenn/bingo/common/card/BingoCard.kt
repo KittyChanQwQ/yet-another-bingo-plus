@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.card
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.state.TeamScore
-import net.minecraft.item.Item
 import net.minecraft.util.Identifier
 
 @Serializable
@@ -14,6 +13,9 @@ class BingoCard(
     init {
         assert(entries.size == 25) { "BINGO card was created with less than 25 entries! (${entries.size})" }
     }
+
+    @Transient
+    var isDirty = true
 
     /**
      * Index the card's item entries on their item for faster querying.
