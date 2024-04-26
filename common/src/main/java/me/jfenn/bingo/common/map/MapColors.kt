@@ -36,6 +36,8 @@ data class Color(val r: Int, val g: Int, val b: Int, val a: Int = 255) {
     }
 
     companion object {
+        val BLACK = fromInt(0xff000000.toInt())
+
         fun fromInt(i: Int): Color {
             return Color(
                 (i ushr 16) and 0xFF,

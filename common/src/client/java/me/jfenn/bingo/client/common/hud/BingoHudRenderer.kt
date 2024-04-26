@@ -23,32 +23,22 @@ class BingoHudRenderer {
     companion object {
         const val CARD_WIDTH = 118
         const val CARD_HEIGHT = 128
+
+        val BLACK_A40 = Color.BLACK.copy(a = 64)
     }
 
-    private var colorMap = emptyMap<String, String>()
+    private var outlineColorMap = emptyMap<String, Color>()
+    private var textColorMap = emptyMap<String, Int>()
+
+    private fun outlineColor(color: Formatting): Color {
+        return outlineColorMap[color.name]
+            ?: Color.fromInt(color.colorValue ?: 0).copy(a = 255)
+    }
 
     private fun textColor(color: Formatting?): Int {
-        (colorMap[color?.name ?: "null"] ?: colorMap["null"])
-            ?.substring(1)
-            ?.toUIntOrNull(16)
-            ?.let { return it.toInt() }
-
-        return when (color) {
-            Formatting.GOLD -> false
-            Formatting.DARK_GRAY -> true
-            Formatting.BLUE -> true
-            Formatting.GREEN -> false
-            Formatting.AQUA -> false
-            Formatting.RED -> true
-            Formatting.LIGHT_PURPLE -> false
-            Formatting.YELLOW -> false
-            else -> false
-        }.let {
-            when (it) {
-                true -> 0xa8ffffff.toInt()
-                false -> 0xa8000000.toInt()
-            }
-        }
+        return textColorMap[color?.name ?: "null"]
+            ?: textColorMap["null"]
+            ?: 0xff000000.toInt()
     }
 
     fun getItem(
@@ -192,10 +182,9 @@ class BingoHudRenderer {
             }
 
             if (showTeamOutlines) for ((i, teamColor) in tile.teamColors.withIndex()) {
-                val color = Color.fromInt(teamColor.colorValue ?: continue)
-                    .copy(a = 255)
+                val color = outlineColor(teamColor)
                 val colorValue = color.toInt()
-                val colorValueDark = color.mix(Color.fromInt(0x40_000000)).toInt()
+                val colorValueDark = color.mix(BLACK_A40).toInt()
 
                 val start = i * 38f / tile.teamColors.size
                 val end = (i+1) * 38f / tile.teamColors.size
@@ -256,15 +245,30 @@ class BingoHudRenderer {
     init {
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(object : SimpleSynchronousResourceReloadListener {
             override fun reload(manager: ResourceManager) {
-                val colorMap = manager.getResource(Identifier(MOD_ID_BINGO, "gui/text_colors.json"))
+                this@BingoHudRenderer.outlineColorMap = manager.getResource(Identifier(MOD_ID_BINGO, "gui/outline_colors.json"))
                     .getOrNull()
                     ?.inputStream
                     ?.use {
                         @OptIn(ExperimentalSerializationApi::class)
                         json.decodeFromStream<Map<String, String>>(it)
                     }
+                    ?.mapValues { (_, v) ->
+                        v.substring(1).toUInt(16).toInt()
+                            .let { Color.fromInt(it) }
+                    }
+                    ?: emptyMap()
 
-                this@BingoHudRenderer.colorMap = colorMap ?: emptyMap()
+                this@BingoHudRenderer.textColorMap = manager.getResource(Identifier(MOD_ID_BINGO, "gui/text_colors.json"))
+                    .getOrNull()
+                    ?.inputStream
+                    ?.use {
+                        @OptIn(ExperimentalSerializationApi::class)
+                        json.decodeFromStream<Map<String, String>>(it)
+                    }
+                    ?.mapValues { (_, v) ->
+                        v.substring(1).toUInt(16).toInt()
+                    }
+                    ?: emptyMap()
             }
 
             override fun getFabricId(): Identifier = Identifier(MOD_ID_BINGO, "hud_renderer")
