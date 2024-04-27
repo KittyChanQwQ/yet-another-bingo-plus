@@ -2,6 +2,7 @@ package me.jfenn.bingo.client.common.world
 
 import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.client.api.IWorldService
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.state.BingoState
@@ -16,6 +17,7 @@ import net.minecraft.util.Identifier
 class BingoWorldManager(
     private val buttonService: IButtonService,
     private val worldService: IWorldService,
+    private val config: BingoConfig,
 ) : BingoComponent() {
 
     init {
@@ -30,7 +32,7 @@ class BingoWorldManager(
         }
 
         ScreenEvents.AFTER_INIT.register { _, screen, _, height ->
-            if (screen is TitleScreen) {
+            if (screen is TitleScreen && config.client.showQuickStartButton) {
                 val buttons = Screens.getButtons(screen)
                 buttons.add(
                     buttonService.createButton(

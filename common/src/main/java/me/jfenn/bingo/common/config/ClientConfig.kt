@@ -5,6 +5,7 @@ import me.jfenn.bingo.generated.StringKey
 
 @Serializable
 data class ClientConfig(
+    var showQuickStartButton: Boolean = true,
     var cardScale: Float = 1f,
     var cardAlignment: CardAlignment = CardAlignment.TOP_LEFT,
     var cardOffsetX: Int = 0,
