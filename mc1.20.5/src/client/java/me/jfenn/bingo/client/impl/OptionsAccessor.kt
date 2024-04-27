@@ -4,13 +4,17 @@ import me.jfenn.bingo.client.api.IOptionsAccessor
 import net.minecraft.client.MinecraftClient
 
 object OptionsAccessor : IOptionsAccessor {
+    private val client = MinecraftClient.getInstance()
+
     override fun isDebugEnabled(): Boolean {
-        val client = MinecraftClient.getInstance()
         return client.inGameHud.debugHud.shouldShowDebugHud()
     }
 
     override fun isPlayerListPressed(): Boolean {
-        val client = MinecraftClient.getInstance()
         return client.options.playerListKey.isPressed
+    }
+
+    override fun isHudHidden(): Boolean {
+        return client.options.hudHidden
     }
 }

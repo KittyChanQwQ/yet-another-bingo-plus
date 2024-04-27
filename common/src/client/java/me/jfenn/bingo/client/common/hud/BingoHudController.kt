@@ -127,6 +127,8 @@ class BingoHudController(
 
             HudRenderCallback.EVENT.register { context, _ ->
                 // Do not draw the HUD if the F3 or chat overlay is shown
+                if (optionsAccessor.isHudHidden())
+                    return@register
                 if (config.client.hideOnF3 && optionsAccessor.isDebugEnabled())
                     return@register
                 if (config.client.hideOnChat && MinecraftClient.getInstance().currentScreen is ChatScreen)
