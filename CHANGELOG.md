@@ -1,3 +1,9 @@
+### 1.3.0-beta.2
+
+- Fixed the HUD still rendering when F1 is pressed
+
+- Added an option to hide the "Bingo!" quick-start button on the title screen
+
 ### New Features:
 
 - Added a small countdown period before the game starts (configurable in `game-options.json`)
