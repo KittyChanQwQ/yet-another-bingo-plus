@@ -17,6 +17,10 @@ class IntegrationController(
             chunkyIntegration.startPregen(server)
         }
 
+        events.onEnter(GameState.COUNTDOWN) {
+            chunkyIntegration.cancelTasks(server)
+        }
+
         events.onEnter(GameState.PLAYING) {
             chunkyIntegration.cancelTasks(server)
         }
