@@ -1,19 +1,29 @@
 package me.jfenn.bingo.impl
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
+import com.mojang.serialization.JsonOps
 import me.jfenn.bingo.api.item.*
+import net.minecraft.component.DataComponentType
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.*
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.Registries
 import net.minecraft.text.RawFilteredPair
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Unit
+import org.slf4j.Logger
 
-class ItemStackFactory : IItemStackFactory {
+class ItemStackFactory(
+    private val logger: Logger,
+) : IItemStackFactory {
+
     override fun createStack(item: String, count: Int): IItemStack {
         return createStack(Identifier(item), count)
     }
@@ -95,12 +105,75 @@ class ItemStackFactory : IItemStackFactory {
             }
         }
 
+        private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
+
         override fun setNbtString(nbt: String?) {
-            // TODO: I have no idea how to implement this
+            val compound = nbt?.let { StringNbtReader.parse(it) }
+            if (compound != null) {
+                stack[DataComponentTypes.CUSTOM_DATA] = NbtComponent.of(compound)
+            } else {
+                stack.remove(DataComponentTypes.CUSTOM_DATA)
+            }
         }
 
         override fun getNbtString(): String? {
-            return null
+            return stack[DataComponentTypes.CUSTOM_DATA]?.copyNbt()
+                ?.takeIf { it.keys.isNotEmpty() }
+                ?.toString()
+        }
+
+        override fun setComponentsString(components: Map<String, String?>) {
+            for ((key, value) in components) {
+                val id = Identifier.tryParse(key)
+                val type = id?.let { Registries.DATA_COMPONENT_TYPE.get(it) }
+
+                if (id == null || type == null) {
+                    logger.error("[ItemStackFactory] Error parsing item component $key for ${item.translationKey}: not a valid identifier")
+                    continue
+                }
+
+                if (value == null) {
+                    stack.remove(type)
+                    continue
+                }
+
+                val jsonElement = gson.fromJson(value, JsonElement::class.java)
+                val component = try {
+                    type.codec
+                        ?.decode(JsonOps.INSTANCE, jsonElement)
+                        ?.getOrThrow()
+                        ?.first
+                } catch (e: Throwable) {
+                    logger.error("[ItemStackFactory] Error parsing item component $key for ${item.translationKey}", e)
+                    null
+                }
+
+                stack.set(@Suppress("UNCHECKED_CAST") (type as DataComponentType<Any>), component)
+            }
+        }
+
+        override fun getComponentsString(): Map<String, String?>? {
+            val components = mutableMapOf<String, String?>()
+
+            for (component in stack.componentChanges.entrySet()) {
+                if (component.key.shouldSkipSerialization()) continue
+                val id = Registries.DATA_COMPONENT_TYPE.getId(component.key) ?: continue
+
+                stack.components
+                    .find { it.type == component.key }
+                    ?.encode(JsonOps.INSTANCE)
+                    ?.getOrThrow()
+
+                val jsonElement = stack.components
+                    .find { it.type == component.key }
+                    ?.encode(JsonOps.INSTANCE)
+                    ?.getOrThrow()
+                    ?.let { gson.toJson(it) }
+
+                components[id.toString()] = jsonElement
+            }
+
+            return components.takeIf { it.isNotEmpty() }
         }
 
         override fun copy(): IItemStack {

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 data class SpawnItem(
     val id: String,
     val nbt: String? = null,
+    val components: Map<String, String?>? = null,
     val count: Int = 1,
 ) {
 
@@ -19,6 +20,7 @@ data class SpawnItem(
             return SpawnItem(
                 id = itemStack.identifier.toString(),
                 nbt = itemStack.getNbtString(),
+                components = itemStack.getComponentsString(),
                 count = itemStack.count,
             )
         }
@@ -51,8 +53,18 @@ data class SpawnItem(
             for (itemStack in itemStacks) {
                 try {
                     itemStack.setNbtString(nbt)
-                } catch (e: Error) {
+                } catch (e: Throwable) {
                     log.error("spawnEquipmentItems nbt '${nbt}' could not be parsed", e)
+                }
+            }
+        }
+
+        if (!components.isNullOrEmpty()) {
+            for (itemStack in itemStacks) {
+                try {
+                    itemStack.setComponentsString(components)
+                } catch (e: Throwable) {
+                    log.error("spawnEquipmentItems components '${components}' could not be parsed", e)
                 }
             }
         }

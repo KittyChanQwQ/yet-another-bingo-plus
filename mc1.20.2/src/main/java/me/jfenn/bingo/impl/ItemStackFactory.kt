@@ -110,6 +110,9 @@ class ItemStackFactory(
             return stack.nbt?.toString()
         }
 
+        override fun setComponentsString(components: Map<String, String?>) = Unit
+        override fun getComponentsString(): Map<String, String?>? = null
+
         override fun copy(): IItemStack {
             return ItemStackImpl(stack.copy())
         }

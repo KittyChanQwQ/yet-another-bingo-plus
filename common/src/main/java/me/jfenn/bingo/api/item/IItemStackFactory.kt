@@ -40,6 +40,9 @@ interface IItemStack {
     fun setNbtString(nbt: String?)
     fun getNbtString(): String?
 
+    fun setComponentsString(components: Map<String, String?>)
+    fun getComponentsString(): Map<String, String?>?
+
     fun copy(): IItemStack
 
     fun asFilledMap(): IFilledMap?
