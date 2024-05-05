@@ -1,0 +1,49 @@
+{
+  "teams": {
+    "preview": {
+      "backgroundColor": "#80686868",
+      "textColor": "#ff233034",
+      "outlineColor": "#00000000"
+    },
+    "gold": {
+      "backgroundColor": "#80835a49",
+      "textColor": "#ffe9a03a",
+      "outlineColor": "#ffffaa00"
+    },
+    "dark_gray": {
+      "backgroundColor": "#806f7276",
+      "textColor": "#ff171b1c",
+      "outlineColor": "#ff555555"
+    },
+    "blue": {
+      "backgroundColor": "#802a3546",
+      "textColor": "#ff111e22",
+      "outlineColor": "#ff5555ff"
+    },
+    "green": {
+      "backgroundColor": "#80515d54",
+      "textColor": "#ff0f242a",
+      "outlineColor": "#ff1d901d"
+    },
+    "aqua": {
+      "backgroundColor": "#804d5a6c",
+      "textColor": "#ff211835",
+      "outlineColor": "#ff55ffff"
+    },
+    "red": {
+      "backgroundColor": "#80573838",
+      "textColor": "#ffe3a64b",
+      "outlineColor": "#ffff5555"
+    },
+    "light_purple": {
+      "backgroundColor": "#80856b73",
+      "textColor": "#ff48323d",
+      "outlineColor": "#ffff7cff"
+    },
+    "yellow": {
+      "backgroundColor": "#80916d38",
+      "textColor": "#ff5e2917",
+      "outlineColor": "#ffffff55"
+    }
+  }
+}

@@ -14,32 +14,19 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceType
-import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import kotlin.jvm.optionals.getOrNull
 
 class BingoHudRenderer {
 
     companion object {
-        const val CARD_WIDTH = 118
-        const val CARD_HEIGHT = 128
+        const val CARD_WIDTH = 122
+        const val CARD_HEIGHT = 132
 
         val BLACK_A40 = Color.BLACK.copy(a = 64)
     }
 
-    private var outlineColorMap = emptyMap<String, Color>()
-    private var textColorMap = emptyMap<String, Int>()
-
-    private fun outlineColor(color: Formatting): Color {
-        return outlineColorMap[color.name]
-            ?: Color.fromInt(color.colorValue ?: 0).copy(a = 255)
-    }
-
-    private fun textColor(color: Formatting?): Int {
-        return textColorMap[color?.name ?: "null"]
-            ?: textColorMap["null"]
-            ?: 0xff000000.toInt()
-    }
+    private var cardColors = BingoCardColors()
 
     fun getItem(
         x: Int,
@@ -48,8 +35,8 @@ class BingoHudRenderer {
         mouseX: Int,
         mouseY: Int,
     ): Pair<Int, Int>? {
-        val startX = x + (10 * cardScale)
-        val startY = y + (20 * cardScale)
+        val startX = x + (12 * cardScale)
+        val startY = y + (22 * cardScale)
 
         val tileX = (mouseX - startX)
             .takeIf { it >= 0f }
@@ -79,7 +66,9 @@ class BingoHudRenderer {
         mouseX: Int = -1,
         mouseY: Int = -1,
         showTeamOutlines: Boolean = true,
+        isFocused: Boolean = false,
     ) {
+        val colors = cardColors.getTeam(view.teamColor)
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.matrices.push()
@@ -87,39 +76,25 @@ class BingoHudRenderer {
         context.matrices.scale(cardScale, cardScale, cardScale)
 
         // Draw a translucent background behind all card items
-        context.fill(10, 20, 10 + 5*20, 20 + 5*20, 0x80505050.toInt())
+        context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.background.asInt)
 
+        val cardName = view.teamColor?.name?.lowercase() ?: "preview"
         service.drawTexture(
-            texture = Identifier("minecraft", "bingo/hud_card"),
-            x = 0,
-            y = 0,
-            u = 0f,
-            v = 0f,
+            texture = Identifier("minecraft", "bingo/card_$cardName"),
+            x = 0, y = 0,
+            u = 0f, v = 0f,
             width = CARD_WIDTH,
             height = CARD_HEIGHT,
             textureWidth = CARD_WIDTH,
             textureHeight = CARD_HEIGHT,
         )
 
-        view.teamColor?.let { color ->
-            service.drawTexture(
-                texture = Identifier("minecraft", "bingo/hud_frame_${color.name.lowercase()}"),
-                x = 0, y = 0,
-                u = 0f, v = 0f,
-                width = CARD_WIDTH,
-                height = CARD_HEIGHT,
-                textureWidth = CARD_WIDTH,
-                textureHeight = CARD_HEIGHT,
-            )
-        }
-
-        val teamNameColor = textColor(view.teamColor)
-        context.drawText(textRenderer, view.teamName, 10, 8, teamNameColor, false)
+        context.drawText(textRenderer, view.teamName, 12, 10, colors.text.asInt, false)
 
         for (tileX in 0..4) for (tileY in 0..4) {
             val tile = view.tile(tileX, tileY) ?: continue
-            val itemX = 10 + tileX*20
-            val itemY = 20 + tileY*20
+            val itemX = 12 + tileX*20
+            val itemY = 22 + tileY*20
 
             when {
                 tile.isFlashing -> context.fill(itemX, itemY, itemX + 18, itemY + 18, 0xffb24cd8.toInt())
@@ -182,9 +157,9 @@ class BingoHudRenderer {
             }
 
             if (showTeamOutlines) for ((i, teamColor) in tile.teamColors.withIndex()) {
-                val color = outlineColor(teamColor)
-                val colorValue = color.toInt()
-                val colorValueDark = color.mix(BLACK_A40).toInt()
+                val color = cardColors.getTeam(teamColor).outline
+                val colorValue = color.asInt
+                val colorValueDark = color.mix(BLACK_A40).asInt
 
                 val start = i * 38f / tile.teamColors.size
                 val end = (i+1) * 38f / tile.teamColors.size
@@ -222,6 +197,18 @@ class BingoHudRenderer {
             }
         }
 
+        if (isFocused) {
+            service.drawTexture(
+                texture = Identifier("minecraft", "bingo/card_outline"),
+                x = 0, y = 0,
+                u = 0f, v = 0f,
+                width = CARD_WIDTH,
+                height = CARD_HEIGHT,
+                textureWidth = CARD_WIDTH,
+                textureHeight = CARD_HEIGHT,
+            )
+        }
+
         context.matrices.pop()
 
         // Render the hover tooltips last, without the matrix translate/transform
@@ -245,30 +232,14 @@ class BingoHudRenderer {
     init {
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(object : SimpleSynchronousResourceReloadListener {
             override fun reload(manager: ResourceManager) {
-                this@BingoHudRenderer.outlineColorMap = manager.getResource(Identifier(MOD_ID_BINGO, "gui/outline_colors.json"))
+                this@BingoHudRenderer.cardColors = manager.getResource(Identifier(MOD_ID_BINGO, "gui/card_colors.json"))
                     .getOrNull()
                     ?.inputStream
                     ?.use {
                         @OptIn(ExperimentalSerializationApi::class)
-                        json.decodeFromStream<Map<String, String>>(it)
+                        json.decodeFromStream<BingoCardColors>(it)
                     }
-                    ?.mapValues { (_, v) ->
-                        v.substring(1).toUInt(16).toInt()
-                            .let { Color.fromInt(it) }
-                    }
-                    ?: emptyMap()
-
-                this@BingoHudRenderer.textColorMap = manager.getResource(Identifier(MOD_ID_BINGO, "gui/text_colors.json"))
-                    .getOrNull()
-                    ?.inputStream
-                    ?.use {
-                        @OptIn(ExperimentalSerializationApi::class)
-                        json.decodeFromStream<Map<String, String>>(it)
-                    }
-                    ?.mapValues { (_, v) ->
-                        v.substring(1).toUInt(16).toInt()
-                    }
-                    ?: emptyMap()
+                    ?: BingoCardColors()
             }
 
             override fun getFabricId(): Identifier = Identifier(MOD_ID_BINGO, "hud_renderer")

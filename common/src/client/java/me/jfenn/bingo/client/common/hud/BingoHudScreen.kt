@@ -59,10 +59,11 @@ class BingoHudScreen(
                 return@viewsWithPositions
 
             // Check if a button already exists for the view - otherwise, create one
+            val cardName = view.teamColor?.name?.lowercase() ?: "preview"
             val button = cardButtons[view.teamKey] ?: buttonService.createButton(
                 x, y, BingoHudRenderer.CARD_WIDTH, BingoHudRenderer.CARD_HEIGHT,
-                texture = Identifier("minecraft", "bingo/hud_card"),
-                focusedTexture = Identifier("minecraft", "bingo/hud_card_focused"),
+                texture = Identifier("minecraft", "bingo/card_$cardName"),
+                focusedTexture = Identifier("minecraft", "bingo/card_$cardName"),
                 onClick = {
                     state.selectedTeam = view.teamKey
                     close()
@@ -116,6 +117,7 @@ class BingoHudScreen(
         val drawService = drawServiceFactory.create(context)
 
         viewsWithPositions { view, x, y ->
+            val button = cardButtons[view.teamKey]
             renderer.drawCard(
                 context,
                 drawService,
@@ -126,11 +128,16 @@ class BingoHudScreen(
                 mouseX = mouseX,
                 mouseY = mouseY,
                 showTeamOutlines = state.display?.display?.size?.let { it <= 1 } == true,
+                isFocused = button?.isHovered == true || button?.isFocused == true,
             )
         }
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (!JeiIntegration.hasJEI()) {
+            return super.mouseClicked(mouseX, mouseY, button)
+        }
+
         var ret = false
 
         viewsWithPositions { view, x, y ->

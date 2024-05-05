@@ -18,7 +18,11 @@ data class Color(val r: Int, val g: Int, val b: Int, val a: Int = 255) {
     }
 
     fun toInt(): Int {
-        return rgb(r, g, b)
+        return asInt
+    }
+
+    val asInt by lazy {
+        rgb(r, g, b)
     }
 
     val asByte by lazy {
