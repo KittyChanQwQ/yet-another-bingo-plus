@@ -249,19 +249,20 @@ class ScoredItemCheck(
     }
 
     private fun broadcastCardCompleted(team: BingoTeam) {
-        val message = textProvider.string(StringKey.GameMessageCompletedCard, team.teamOrPlayerName())
+        val message = textProvider.string(StringKey.GameMessageCompletedCard, teamService.getTeamOrPlayerName(team))
 
         server.playerManager.playerList
             .forEach { it.sendMessage(message, false) }
     }
 
     private fun broadcastScoreLeadingTeam(team: BingoTeam) {
+        val teamName = teamService.getTeamOrPlayerName(team)
         val score = team.score
         val message = when {
             options.showCompletedItems -> {
-                textProvider.string(StringKey.GameMessageLeadingWithScore, team.teamOrPlayerName(), textProvider.itemCount(score.items))
+                textProvider.string(StringKey.GameMessageLeadingWithScore, teamName, textProvider.itemCount(score.items))
             }
-            else -> textProvider.string(StringKey.GameMessageLeading, team.teamOrPlayerName())
+            else -> textProvider.string(StringKey.GameMessageLeading, teamName)
         }.formatted(Formatting.YELLOW)
 
         server.playerManager.playerList
@@ -270,12 +271,13 @@ class ScoredItemCheck(
     }
 
     private fun broadcastScoreTiedTeam(team: BingoTeam) {
+        val teamName = teamService.getTeamOrPlayerName(team)
         val score = team.score
         val message = when {
             options.showCompletedItems -> {
-                textProvider.string(StringKey.GameMessageLeadingTiedWithScore, team.teamOrPlayerName(), textProvider.itemCount(score.items))
+                textProvider.string(StringKey.GameMessageLeadingTiedWithScore, teamName, textProvider.itemCount(score.items))
             }
-            else -> textProvider.string(StringKey.GameMessageLeadingTied, team.teamOrPlayerName())
+            else -> textProvider.string(StringKey.GameMessageLeadingTied, teamName)
         }.formatted(Formatting.YELLOW)
 
         server.playerManager.playerList

@@ -4,6 +4,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.minecraft.item.map.MapState
+import net.minecraft.text.Text
 
 @Serializable
 data class BingoMap(
@@ -11,7 +12,7 @@ data class BingoMap(
 ) {
 
     @Transient
-    var view: CardView = CardView(null, null, "", mutableListOf())
+    var view: CardView = CardView(null, null, Text.empty(), mutableListOf())
 
     @Transient
     var updatedAt: Instant = Instant.fromEpochMilliseconds(0L)

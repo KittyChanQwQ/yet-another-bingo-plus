@@ -1,12 +1,11 @@
-package me.jfenn.bingo.common.controller
+package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
-import me.jfenn.bingo.common.scoreboard.ScoreboardService
+import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
@@ -81,7 +80,7 @@ class ScoreboardController(
                         val score = team.score
 
                         if (isMultipleTeams) {
-                            textProvider.raw(StringKey.ScoreboardTeam, "${team.formatting}${team.name}")
+                            textProvider.raw(StringKey.ScoreboardTeam, "${team.formatting}${team.symbol} ${textProvider.raw(team.name)}")
                                 .also { add(it) }
                         }
                         textProvider.raw(StringKey.ScoreboardItemsScored, "${team.formatting}${score.items}")
@@ -93,7 +92,7 @@ class ScoreboardController(
 
                     val leadingTeam = ScoreService.getLeading(state)
                     if (options.showLeadingTeam && isMultipleTeams) {
-                        val teamName = leadingTeam?.let { it.formatting.toString() + it.name }
+                        val teamName = leadingTeam?.let { "${it.formatting}${it.symbol} ${textProvider.raw(it.name)}" }
                             ?: "${Formatting.WHITE}${textProvider.raw(StringKey.ScoreboardLeadingTeamTie)}"
                         textProvider.raw(StringKey.ScoreboardLeadingTeam, teamName)
                             .also { add(it) }

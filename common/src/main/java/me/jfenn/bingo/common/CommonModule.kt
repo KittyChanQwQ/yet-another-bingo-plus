@@ -24,6 +24,7 @@ import me.jfenn.bingo.common.map.MapRenderService
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.scope.BingoContext
 import me.jfenn.bingo.common.scope.ScopeManager
+import me.jfenn.bingo.common.scoreboard.ScoreboardController
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.scoring.ScoreUpdateService
 import me.jfenn.bingo.common.scoring.ScoredItemCheck

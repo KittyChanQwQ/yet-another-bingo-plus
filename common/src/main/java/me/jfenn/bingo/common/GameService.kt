@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common
 
+import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
@@ -154,13 +155,13 @@ class GameService(
             Text.empty()
                 .takeIf { options.isRankedMode }
                 ?: winningTeam?.let { winner ->
-                    textProvider.string(StringKey.GameEndCompletedCard, winner.teamOrPlayerName())
+                    textProvider.string(StringKey.GameEndCompletedCard, teamService.getTeamOrPlayerName(winner))
                 }
                 ?: ScoreService.getLeadingByLines(state)?.let { leader ->
-                    textProvider.string(StringKey.GameEndWonWithMoreLines, leader.teamOrPlayerName())
+                    textProvider.string(StringKey.GameEndWonWithMoreLines, teamService.getTeamOrPlayerName(leader))
                 }
                 ?: ScoreService.getLeadingByItems(state)?.let { leader ->
-                    textProvider.string(StringKey.GameEndWonWithMoreItems, leader.teamOrPlayerName())
+                    textProvider.string(StringKey.GameEndWonWithMoreItems, teamService.getTeamOrPlayerName(leader))
                 }
                 ?: textProvider.string(StringKey.GameEndDraw)
         ).formatted(Formatting.YELLOW)
@@ -183,8 +184,31 @@ class GameService(
 
             if (options.isRankedMode) {
                 yield(Text.empty())
-                for (text in state.formatWinners())
-                    yield(Text.empty().append("  ").append(text))
+                // List all teams that have completed the card
+                state.getRegisteredTeams()
+                    .filter { it.isWinner() }
+                    .mapNotNull { team ->
+                        team.winner?.let { team to it }
+                    }
+                    .sortedBy { (_, win) -> win.instant }
+                    .forEachIndexed { index, (team, win) ->
+                        val duration = win.instant - (state.startedAt ?: Clock.System.now())
+                        Text.empty()
+                            .append(Text.literal("${index+1}. ").formatted(Formatting.GRAY))
+                            .append(teamService.getTeamOrPlayerName(team))
+                            .append(" - ${duration.formatString()}")
+                            .also { yield(it) }
+                    }
+
+                // List any teams that started the card but did not finish
+                state.getRegisteredTeams()
+                    .filter { !it.isWinner() }
+                    .forEach { team ->
+                        Text.empty()
+                            .append(Text.literal("DNF - ").formatted(Formatting.GRAY))
+                            .append(teamService.getTeamOrPlayerName(team))
+                            .also { yield(it) }
+                    }
             }
 
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))

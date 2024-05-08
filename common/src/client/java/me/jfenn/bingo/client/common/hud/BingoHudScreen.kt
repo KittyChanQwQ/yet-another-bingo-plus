@@ -68,7 +68,7 @@ class BingoHudScreen(
                     state.selectedTeam = view.teamKey
                     close()
                 },
-                message = Text.literal(view.teamName),
+                message = view.teamName,
             )
 
             button.x = x

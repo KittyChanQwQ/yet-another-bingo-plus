@@ -6,6 +6,7 @@ import me.jfenn.bingo.api.PlayerSoundEvent
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.BingoPlayerProfile
 import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -25,6 +26,7 @@ class ScoreUpdateService(
     private val textProvider: TextProvider,
     private val playerSettingsService: PlayerSettingsService,
     private val playerManager: IPlayerManager,
+    private val teamService: TeamService,
 ) {
 
     fun sendItemCaptured(
@@ -88,7 +90,8 @@ class ScoreUpdateService(
     fun sendLineCaptured(team: BingoTeam) {
         if (!options.showCompletedLines) return
 
-        val message = textProvider.string(StringKey.GameMessageScoredLine, team.teamOrPlayerName(), textProvider.lineCount(team.score.lines))
+        val teamName = teamService.getTeamOrPlayerName(team)
+        val message = textProvider.string(StringKey.GameMessageScoredLine, teamName, textProvider.lineCount(team.score.lines))
             .formatted(Formatting.YELLOW)
 
         server.playerManager.playerList

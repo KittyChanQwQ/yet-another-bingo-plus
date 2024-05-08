@@ -16,7 +16,6 @@ import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.text.TextInfo
 import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
@@ -28,6 +27,8 @@ import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.text.Text
+import net.minecraft.text.Texts
 import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
@@ -187,7 +188,11 @@ class MenuController(
             .apply {
                 readNbt(NbtCompound().apply {
                     put("Pos", position.add(0.0, 1.5, 0.0).toNbt())
-                    putString("text", text.serialized(team.text()))
+                    putString("text", text.serialized(
+                        text.string(StringKey.TeamName, Text.empty().append("${team.symbol} ").append(text.string(team.name)))
+                            .formatted(team.formatting)
+                            .let { Texts.bracketed(it) }
+                    ))
                     putString("billboard", "vertical")
                     putString("alignment", "center")
                     putInt("background", 0)

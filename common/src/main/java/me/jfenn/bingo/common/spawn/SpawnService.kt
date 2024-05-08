@@ -98,7 +98,7 @@ class SpawnService(
     fun getTeamSpawnpoint(team: BingoTeam): BlockPos? {
         val world = getSpawnDimension()
         val spawnpoint = team.spawnpoint ?: run {
-            log.warn("[SpawnService] Team ${team.name} does not have a stored spawn point! Finding a new spawn position...")
+            log.warn("[SpawnService] Team ${team.id} does not have a stored spawn point! Finding a new spawn position...")
 
             // Get the chunk of an existing spawnpoint
             val (x, y) = state.getRegisteredTeams()

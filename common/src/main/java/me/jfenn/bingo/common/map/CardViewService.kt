@@ -8,7 +8,8 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.utils.formatTitle
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.MinecraftServer
@@ -22,6 +23,7 @@ class CardViewService(
     private val state: BingoState,
     private val teamService: TeamService,
     private val permissions: PermissionsIntegration,
+    private val textProvider: TextProvider,
 ) {
 
     companion object {
@@ -34,8 +36,7 @@ class CardViewService(
      */
     fun supportsCardHud(player: ServerPlayerEntity): Boolean {
         return config.supportClientHud &&
-                ServerPlayNetworking.canSend(player, CardDisplayPacket.V1.id) &&
-                ServerPlayNetworking.canSend(player, CardUpdatePacket.V1.id)
+                ServerPlayNetworking.canSend(player, CardDisplayPacket.V1.id)
     }
 
     fun isViewingPreviewCard()
@@ -87,7 +88,9 @@ class CardViewService(
         return CardView(
             teamKey = team?.key,
             teamColor = team?.mapColor,
-            teamName = team?.name?.let { "${it.formatTitle()} Team" } ?: "Preview Card",
+            teamName = team
+                ?.let { textProvider.string(StringKey.CardTeamCard, textProvider.string(it.name)) }
+                ?: textProvider.string(StringKey.CardPreviewCard),
             tiles = state.card.entries
                 .map { entry -> getTileState(team, entry) }
                 .toMutableList()

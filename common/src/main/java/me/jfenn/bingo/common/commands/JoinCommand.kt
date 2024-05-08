@@ -50,7 +50,7 @@ class JoinCommand : BaseCommand() {
 
         for (team in BingoTeam.TEAM_BLOCKS.values) {
             joinCommand = joinCommand.then(
-                LiteralArgumentBuilder.literal<ServerCommandSource>(team.name.lowercase())
+                LiteralArgumentBuilder.literal<ServerCommandSource>(team.id.removePrefix("bingo_"))
                     .then(
                         CommandManager.argument("player", EntityArgumentType.player())
                             .require(
@@ -63,11 +63,12 @@ class JoinCommand : BaseCommand() {
 
                                 val textProvider = get<TextProvider>()
                                 val scoreboardManager = get<IScoreboardManager>()
+                                val teamService = get<TeamService>()
                                 ctx.source.player?.sendMessage(
                                     textProvider.string(
                                         StringKey.CommandJoinSuccess,
                                         scoreboardManager.getPlayerName(player),
-                                        team.text(),
+                                        teamService.getTeamName(team),
                                     )
                                 )
                                 1

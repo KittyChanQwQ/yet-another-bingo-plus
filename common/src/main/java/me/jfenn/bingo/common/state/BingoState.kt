@@ -4,10 +4,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IMapService
-import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.card.BingoCardEntry
-import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.BingoTeamKey
+import me.jfenn.bingo.common.card.*
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
@@ -103,34 +100,6 @@ data class BingoState(
 
         return Text.literal(secondsRemaining.formatString())
             .formatted(Formatting.BOLD, if (secondsRemaining.inWholeSeconds <= 30 && secondsRemaining.inWholeSeconds % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
-    }
-
-    fun formatWinners(): List<Text> = buildList {
-        // List all teams that have completed the card
-        getRegisteredTeams()
-            .filter { it.isWinner() }
-            .mapNotNull { team ->
-                team.winner?.let { team to it }
-            }
-            .sortedBy { (_, win) -> win.instant }
-            .forEachIndexed { index, (team, win) ->
-                val duration = win.instant - (startedAt ?: Clock.System.now())
-                Text.empty()
-                    .append(Text.literal("${index+1}. ").formatted(Formatting.GRAY))
-                    .append(team.teamOrPlayerName())
-                    .append(" - ${duration.formatString()}")
-                    .also { add(it) }
-            }
-
-        // List any teams that started the card but did not finish
-        getRegisteredTeams()
-            .filter { !it.isWinner() }
-            .forEach { team ->
-                Text.empty()
-                    .append(Text.literal("DNF - ").formatted(Formatting.GRAY))
-                    .append(team.text())
-                    .also { add(it) }
-            }
     }
 
 }

@@ -9,6 +9,7 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import kotlin.math.ceil
 
@@ -29,11 +30,28 @@ class TeamService(
         return getPlayerTeam(player) != null
     }
 
+    fun getTeamName(team: BingoTeam): Text {
+        return textProvider.string(StringKey.TeamName, textProvider.string(team.name))
+            .formatted(team.formatting)
+            .let { Texts.bracketed(it) }
+    }
+
+    fun getTeamOrPlayerName(team: BingoTeam): Text {
+        val player = team.players
+            .takeIf { it.size == 1 }
+            ?.first()
+            ?: return getTeamName(team)
+
+        return Text.literal(player.name)
+            .formatted(team.formatting)
+            .let { Texts.bracketed(it) }
+    }
+
     fun createTeam(team: BingoTeam): ITeamHandle {
         return teamManager.createTeam(
             server,
             teamName = team.id,
-            displayName = Text.of(team.name.substring(0, 1) + team.name.substring(1).lowercase()),
+            displayName = textProvider.string(team.name),
             color = team.formatting,
         )
     }
@@ -51,7 +69,7 @@ class TeamService(
         teamManager.setPlayerTeam(player, createTeam(team))
         team.players.add(playerProfile)
         player.sendMessage(
-            textProvider.string(StringKey.LobbyTeamChanged, team.text())
+            textProvider.string(StringKey.LobbyTeamChanged, getTeamName(team))
                 .formatted(Formatting.YELLOW)
         )
 

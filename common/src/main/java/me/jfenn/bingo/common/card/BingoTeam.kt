@@ -10,12 +10,10 @@ import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.state.TeamWinner
 import me.jfenn.bingo.common.utils.FormattingSerializer
 import me.jfenn.bingo.common.utils.text.TextColor
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -28,7 +26,8 @@ value class BingoTeamKey(
 @Serializable
 data class BingoTeam(
     val id: String,
-    val name: String,
+    val name: StringKey,
+    val symbol: String,
     @Serializable(with = FormattingSerializer::class)
     val mapColor: Formatting,
     val textColor: TextColor,
@@ -61,35 +60,6 @@ data class BingoTeam(
         return fromPlayer(player) == this
     }
 
-    fun teamOrPlayerName(): Text {
-        return if (players.size == 1) {
-            val player = players.firstOrNull() ?: return text()
-
-            Text.empty()
-                .append("[")
-                .append(Text.literal(player.name).formatted(formatting))
-                .append("]")
-        } else text()
-    }
-
-    fun text(): Text {
-        val text = Text.empty()
-            .append("[")
-            .append(Text.literal("$name team").formatted(formatting))
-            .append("]")
-
-        text.style = Style.EMPTY.withHoverEvent(
-            HoverEvent(
-                HoverEvent.Action.SHOW_TEXT,
-                Text.literal(
-                    players.joinToString(", ") { it.name }
-                )
-            )
-        )
-
-        return text
-    }
-
     fun broadcastMessage(server: MinecraftServer, text: Text) {
         server.playerManager.playerList
             .filter { includesPlayer(it) }
@@ -98,14 +68,14 @@ data class BingoTeam(
 
     companion object {
 
-        val BLUE get() = BingoTeam("bingo_blue", "BLUE", Formatting.BLUE, TextColor.BLUE)
-        val RED get() = BingoTeam("bingo_red", "RED", Formatting.RED, TextColor.RED)
-        val GREEN get() = BingoTeam("bingo_green", "GREEN", Formatting.GREEN, TextColor.GREEN)
-        val YELLOW get() = BingoTeam("bingo_yellow", "YELLOW", Formatting.YELLOW, TextColor.YELLOW)
-        val PINK get() = BingoTeam("bingo_pink", "PINK", Formatting.LIGHT_PURPLE, TextColor.LIGHT_PURPLE)
-        val AQUA get() = BingoTeam("bingo_aqua", "AQUA", Formatting.AQUA, TextColor.AQUA)
-        val ORANGE get() = BingoTeam("bingo_orange", "ORANGE", Formatting.GOLD, TextColor.GOLD)
-        val GRAY get() = BingoTeam("bingo_gray", "GRAY", Formatting.DARK_GRAY, TextColor.GRAY)
+        val BLUE get() = BingoTeam("bingo_blue", StringKey.TeamBlue, "\uD83C\uDF0A", Formatting.BLUE, TextColor.BLUE)
+        val RED get() = BingoTeam("bingo_red", StringKey.TeamRed, "\uD83D\uDD25", Formatting.RED, TextColor.RED)
+        val GREEN get() = BingoTeam("bingo_green", StringKey.TeamGreen, "\uD83C\uDF42", Formatting.GREEN, TextColor.GREEN)
+        val YELLOW get() = BingoTeam("bingo_yellow", StringKey.TeamYellow, "\uD83D\uDC1D", Formatting.YELLOW, TextColor.YELLOW)
+        val PINK get() = BingoTeam("bingo_pink", StringKey.TeamPink, "\uD83C\uDF3A", Formatting.LIGHT_PURPLE, TextColor.LIGHT_PURPLE)
+        val AQUA get() = BingoTeam("bingo_aqua", StringKey.TeamAqua, "\uD83C\uDF44", Formatting.AQUA, TextColor.AQUA)
+        val ORANGE get() = BingoTeam("bingo_orange", StringKey.TeamOrange, "\uD83C\uDFF0", Formatting.GOLD, TextColor.GOLD)
+        val GRAY get() = BingoTeam("bingo_gray", StringKey.TeamGray, "\uD83E\uDEA8", Formatting.DARK_GRAY, TextColor.GRAY)
 
         val TEAM_BLOCKS get() = mapOf(
             Blocks.BLUE_CARPET to BLUE,
@@ -122,11 +92,6 @@ data class BingoTeam(
             val scope = BingoKoin.getScope(player.server) ?: return null
             val teamService = scope.get<TeamService>()
             return teamService.getPlayerTeam(player)
-        }
-
-        fun fromPlayer(server: MinecraftServer, player: PlayerEntity): BingoTeam? {
-            return server.playerManager.getPlayer(player.uuid)
-                ?.let { fromPlayer(it) }
         }
     }
 

@@ -6,8 +6,6 @@ import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.utils.LruHashMap
-import me.jfenn.bingo.common.utils.text.TextColor
-import net.minecraft.item.FilledMapItem
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
@@ -18,7 +16,6 @@ import java.awt.image.BufferedImage
 import java.io.InputStream
 import javax.imageio.ImageIO
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 class MapRenderService(
@@ -370,7 +367,7 @@ class MapRenderService(
         }
     }.also {
         if (it >= 1.milliseconds) {
-            log.info("Re-drawing map_${team?.map?.mapId} for team ${team?.name} ($it)")
+            log.info("Re-drawing map_${team?.map?.mapId} for team ${team?.id?.removePrefix("bingo_")} ($it)")
         }
     }
 

@@ -115,6 +115,10 @@ class BingoHudController(
                 state.views[packet.view.teamKey] = packet.view
             }
 
+            packetEvents.cardUpdateV2.onPacket { (packet) ->
+                state.views[packet.view.teamKey] = packet.view
+            }
+
             packetEvents.gameOverV1.onPacket { (packet) ->
                 state.gameOverPacket = packet
                 MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, packet, canEscape = false))

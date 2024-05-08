@@ -1,16 +1,13 @@
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.common.card.BingoTeamKey
-import me.jfenn.bingo.common.event.packet.PacketConverter
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
-import net.minecraft.network.PacketByteBuf
+import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
 
 data class CardView(
     val teamKey: BingoTeamKey?,
     val teamColor: Formatting?,
-    val teamName: String,
+    val teamName: Text,
     val tiles: MutableList<CardTile>,
 ) {
 

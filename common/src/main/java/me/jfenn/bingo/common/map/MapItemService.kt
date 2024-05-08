@@ -7,13 +7,15 @@ import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.state.BingoState
-import net.minecraft.text.Text
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.util.Formatting
 
 class MapItemService(
     private val state: BingoState,
     private val itemStackFactory: IItemStackFactory,
     private val mapService: IMapService,
+    private val textProvider: TextProvider,
 ) {
 
     fun createPreviewMapItem(): IItemStack {
@@ -22,7 +24,7 @@ class MapItemService(
         val item = itemStackFactory.createFilledMap().apply {
             mapId = previewMap.mapId
             setDisplay(
-                name = Text.literal("Preview Bingo Card").formatted(Formatting.ITALIC),
+                name = textProvider.string(StringKey.CardPreviewCard).formatted(Formatting.ITALIC),
                 lore = null,
             )
             addCustomTag(NBT_BINGO_IGNORE)
@@ -45,7 +47,7 @@ class MapItemService(
             mapId = teamMap.mapId
             mapColor = team.formatting.colorValue
             setDisplay(
-                name = Text.literal("Bingo Card (${team.name.lowercase()})")
+                name = textProvider.string(StringKey.CardTeamCard, textProvider.string(team.name))
                     .formatted(team.formatting, Formatting.ITALIC),
                 lore = null,
             )

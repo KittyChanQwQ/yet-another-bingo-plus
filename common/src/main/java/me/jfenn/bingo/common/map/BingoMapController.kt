@@ -13,6 +13,7 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -33,7 +34,14 @@ class BingoMapController(
     private val mapService: IMapService,
 ) : BingoComponent() {
 
-    fun updateCard(team: BingoTeam?) {
+    private fun sendUpdate(player: ServerPlayerEntity, updatePacket: CardUpdatePacket) {
+        when {
+            packetManager.cardUpdateV2.send(player, updatePacket) -> {}
+            packetManager.cardUpdateV1.send(player, updatePacket) -> {}
+        }
+    }
+
+    private fun updateCard(team: BingoTeam?) {
         val view = cardViewService.getMapView(team)
         val map = team?.getMap(mapService) ?: state.getPreviewMap(mapService)
 
@@ -44,7 +52,7 @@ class BingoMapController(
             for (player in server.playerManager.playerList) {
                 if (cardViewService.isViewingCard(player, team) && cardViewService.supportsCardHud(player)) {
                     // yes, every send() needs its own PacketByteBuf() instance, otherwise we get Scary Errors
-                    packetManager.cardUpdateV1.send(player, updatePacket)
+                    sendUpdate(player, updatePacket)
                 }
             }
 
@@ -115,7 +123,7 @@ class BingoMapController(
 
                 for (team in displayTeams) {
                     val view = cardViewService.getMapView(team)
-                    packetManager.cardUpdateV1.send(player, CardUpdatePacket(view))
+                    sendUpdate(player, CardUpdatePacket(view))
                 }
             }
         }

@@ -1,15 +1,16 @@
 package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.world.GameMode
 
 class ScoreboardService(
@@ -19,11 +20,12 @@ class ScoreboardService(
     private val cardViewService: CardViewService,
     private val mapItemService: MapItemService,
     private val itemStackFactory: IItemStackFactory,
+    private val textProvider: TextProvider,
 ) {
 
     fun getScoreboardObjective(team: BingoTeam?) : IObjectiveHandle {
-        val objectiveName = "bingo_sidebar_" + team?.name
-        val objective = scoreboardManager.createDummyObjective(server, objectiveName, Text.literal("Minecraft BINGO"))
+        val objectiveName = "bingo_sidebar_" + team?.id?.removePrefix("bingo_")
+        val objective = scoreboardManager.createDummyObjective(server, objectiveName, textProvider.string(StringKey.ScoreboardName))
         return objective
     }
 

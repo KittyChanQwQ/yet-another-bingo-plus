@@ -260,7 +260,7 @@ class SpreadPlayers(
             val team = teams[i]
             val startChunk = groups[i]
 
-            log.info("Spawning team ${team.name} near chunk $startChunk")
+            log.info("Spawning team ${team.id} near chunk $startChunk")
 
             val chunkLocatorMs = measureTimeMillis {
                 team.spawnpoint = BlockPosition.fromBlockPos(
@@ -268,7 +268,7 @@ class SpreadPlayers(
                 )
             }
 
-            log.info("Found a spawn location for ${team.name} in ${chunkLocatorMs}ms")
+            log.info("Found a spawn location for ${team.id} in ${chunkLocatorMs}ms")
         }
     }
 
