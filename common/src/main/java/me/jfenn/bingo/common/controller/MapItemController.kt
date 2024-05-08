@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -11,11 +10,8 @@ import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 
 class MapItemController(
-    private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
     private val cardViewService: CardViewService,

@@ -89,7 +89,7 @@ class CardViewService(
             teamKey = team?.key,
             teamColor = team?.mapColor,
             teamName = team
-                ?.let { textProvider.string(StringKey.CardTeamCard, textProvider.string(it.name)) }
+                ?.let { textProvider.string(StringKey.TeamName, textProvider.string(it.name)) }
                 ?: textProvider.string(StringKey.CardPreviewCard),
             tiles = state.card.entries
                 .map { entry -> getTileState(team, entry) }

@@ -92,14 +92,14 @@ data class BingoOptions(
     }
 
     fun formatFeatures(): String {
-        val features = buildList {
-            if (isElytra) add("Elytra")
-            if (isNightVision) add("NightVis")
-            if (isKeepInventory) add("KeepInv")
-            if (isPvpEnabled) add("PvP")
+        return buildString {
+            if (isElytra) append("Elytra, ")
+            if (isNightVision) append("NightVis, ")
+            if (isKeepInventory) append("KeepInv, ")
+            if (isPvpEnabled) append("PvP, ")
         }
-
-        return features.joinToString(", ").ifEmpty { "None" }
+            .removeSuffix(", ")
+            .ifEmpty { "None" }
     }
 
     fun copyFrom(options: BingoOptions) {
