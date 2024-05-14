@@ -39,7 +39,7 @@ fun MenuComponent.registerButton(
         interactionEntityEvents.onInteract(entity) { player ->
             if (permissionGetter(player)) {
                 onClick(player)
-                Sounds.playButtonSound(playerManager, entity.pos, player.serverWorld)
+                Sounds.playButtonSound(playerManager, player, entity.pos, player.serverWorld)
             }
         }
     }

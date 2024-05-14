@@ -16,7 +16,14 @@ interface IPlayerManager {
 
     fun getOfflinePlayer(profile: BingoPlayerProfile): IPlayerHandle
 
-    fun playToAround(sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float, position: Triple<Double, Double, Double>, world: ServerWorld)
+    /**
+     * Sends a sound manually to [player], and broadcasts a
+     * sound event to surrounding players.
+     *
+     * If lobbyChaosProtection=true, this will result in
+     * only [player] hearing the sound.
+     */
+    fun playToAround(player: ServerPlayerEntity?, sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float, position: Triple<Double, Double, Double>, world: ServerWorld)
 
 }
 

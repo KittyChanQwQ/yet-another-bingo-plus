@@ -64,6 +64,7 @@ class PlayerManager(
     }
 
     override fun playToAround(
+        player: ServerPlayerEntity?,
         sound: PlayerSoundEvent,
         category: PlayerSoundCategory,
         volume: Float,
@@ -74,7 +75,8 @@ class PlayerManager(
         val (x, y, z) = position
         val soundEntry = Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_LEVER_CLICK)
         val packet = PlaySoundS2CPacket(soundEntry, category.toSoundCategory(), x, y, z, volume, pitch, server.overworld.seed)
-        server.playerManager.sendToAround(null, x, y, z, soundEntry.value().getDistanceToTravel(volume).toDouble(), world.registryKey, packet)
+        player?.networkHandler?.sendPacket(packet)
+        server.playerManager.sendToAround(player, x, y, z, soundEntry.value().getDistanceToTravel(volume).toDouble(), world.registryKey, packet)
     }
 
     inner class PlayerHandle(

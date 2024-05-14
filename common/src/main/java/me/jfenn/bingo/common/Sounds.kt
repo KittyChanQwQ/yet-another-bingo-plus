@@ -4,14 +4,15 @@ import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.PlayerSoundCategory
 import me.jfenn.bingo.api.PlayerSoundEvent
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.Vec3d
 
 object Sounds {
 
-    fun playButtonSound(playerManager: IPlayerManager, fromPosition: Vec3d, fromWorld: ServerWorld) {
-        // This is sent manually to bypass the lobby chaos protection
+    fun playButtonSound(playerManager: IPlayerManager, player: ServerPlayerEntity, fromPosition: Vec3d, fromWorld: ServerWorld) {
         playerManager.playToAround(
+            player,
             PlayerSoundEvent.BLOCK_LEVER_CLICK,
             PlayerSoundCategory.MAIN,
             0.3f,
