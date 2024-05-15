@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.config.TierLabel
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.LruHashMap
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
@@ -22,6 +23,7 @@ class MapRenderService(
     private val log: Logger,
     private val server: MinecraftServer,
     private val mapService: IMapService,
+    private val state: BingoState,
 ) {
 
     companion object {
@@ -311,10 +313,11 @@ class MapRenderService(
             }
         }
 
-        if (tile.teamColors.isNotEmpty()) {
+        val teams = tile.teamKeys.mapNotNull { state.teams[it] }
+        if (teams.isNotEmpty()) {
             for (innerT in 0..innerMax*2 + 1) {
-                val tileTeamX = innerT * tile.teamColors.size / (innerMax*2 + 1)
-                val itemTeam = tile.teamColors.getOrNull(tileTeamX) ?: continue
+                val tileTeamX = innerT * teams.size / (innerMax*2 + 1)
+                val itemTeam = teams.getOrNull(tileTeamX)?.mapColor ?: continue
                 val variant = if (innerT % 2 == 0) 2 else 3
                 val color = (getMapColor(itemTeam)*4 + variant).toUByte().toByte()
 

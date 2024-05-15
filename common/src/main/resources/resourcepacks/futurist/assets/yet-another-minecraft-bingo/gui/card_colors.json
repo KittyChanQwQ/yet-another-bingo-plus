@@ -1,47 +1,41 @@
 {
+  "default": {
+    "backgroundColor": "#80505050"
+  },
   "teams": {
     "preview": {
-      "backgroundColor": "#80505050",
       "textColor": "#a8ffffff",
       "outlineColor": "#00000000"
     },
-    "gold": {
-      "backgroundColor": "#80505050",
+    "orange": {
       "textColor": "#ffffaa00",
       "outlineColor": "#ffffaa00"
     },
-    "dark_gray": {
-      "backgroundColor": "#80505050",
+    "gray": {
       "textColor": "#ffdfdfdf",
       "outlineColor": "#ff555555"
     },
     "blue": {
-      "backgroundColor": "#80505050",
       "textColor": "#ffa7a5ff",
       "outlineColor": "#ff5555ff"
     },
     "green": {
-      "backgroundColor": "#80505050",
       "textColor": "#ff55ff55",
       "outlineColor": "#ff1d901d"
     },
     "aqua": {
-      "backgroundColor": "#80505050",
       "textColor": "#ff55ffff",
       "outlineColor": "#ff55ffff"
     },
     "red": {
-      "backgroundColor": "#80505050",
       "textColor": "#ffff5555",
       "outlineColor": "#ffff5555"
     },
-    "light_purple": {
-      "backgroundColor": "#80505050",
+    "pink": {
       "textColor": "#ffff7cff",
       "outlineColor": "#ffff7cff"
     },
     "yellow": {
-      "backgroundColor": "#80505050",
       "textColor": "#ffffff55",
       "outlineColor": "#ffffff55"
     }

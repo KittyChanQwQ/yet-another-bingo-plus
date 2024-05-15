@@ -78,8 +78,8 @@ class CardViewService(
             isLocked = options.isLockoutMode && entry.teams.isNotEmpty() && team != null && !entry.hasAchieved(team),
             isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
             isAchieved = team != null && entry.hasAchieved(team),
-            teamColors = if (options.showOtherTeamCompletions && state.state != GameState.POSTGAME)
-                entry.teams.filter { it != team?.key }.mapNotNull { state.teams[it]?.formatting }
+            teamKeys = if (options.showOtherTeamCompletions && state.state != GameState.POSTGAME)
+                entry.teams.filter { it != team?.key }
             else emptyList(),
         )
     }

@@ -5,12 +5,12 @@
       "textColor": "#ff233034",
       "outlineColor": "#00000000"
     },
-    "gold": {
+    "orange": {
       "backgroundColor": "#80835a49",
       "textColor": "#ffe9a03a",
       "outlineColor": "#ffffaa00"
     },
-    "dark_gray": {
+    "gray": {
       "backgroundColor": "#806f7276",
       "textColor": "#ff171b1c",
       "outlineColor": "#ff555555"
@@ -35,7 +35,7 @@
       "textColor": "#ffe3a64b",
       "outlineColor": "#ffff5555"
     },
-    "light_purple": {
+    "pink": {
       "backgroundColor": "#80856b73",
       "textColor": "#ff48323d",
       "outlineColor": "#ffff7cff"

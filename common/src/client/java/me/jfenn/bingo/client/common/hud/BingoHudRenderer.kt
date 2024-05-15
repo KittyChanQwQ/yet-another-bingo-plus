@@ -4,6 +4,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.utils.json
@@ -68,7 +69,7 @@ class BingoHudRenderer {
         showTeamOutlines: Boolean = true,
         isFocused: Boolean = false,
     ) {
-        val colors = cardColors.getTeam(view.teamColor)
+        val colors = cardColors.teamColors[view.teamKey ?: BingoTeamKey("preview")] ?: BingoCardColors.DEFAULTS
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.matrices.push()
@@ -76,9 +77,9 @@ class BingoHudRenderer {
         context.matrices.scale(cardScale, cardScale, cardScale)
 
         // Draw a translucent background behind all card items
-        context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.background.asInt)
+        context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.backgroundColor.asIntWithAlpha)
 
-        val cardName = view.teamColor?.name?.lowercase() ?: "preview"
+        val cardName = view.teamKey?.label ?: "preview"
         service.drawTexture(
             texture = Identifier("minecraft", "bingo/card_$cardName"),
             x = 0, y = 0,
@@ -89,7 +90,7 @@ class BingoHudRenderer {
             textureHeight = CARD_HEIGHT,
         )
 
-        context.drawText(textRenderer, view.teamName, 12, 10, colors.text.asInt, false)
+        context.drawText(textRenderer, view.teamName, 12, 10, colors.textColor.asIntWithAlpha, false)
 
         for (tileX in 0..4) for (tileY in 0..4) {
             val tile = view.tile(tileX, tileY) ?: continue
@@ -97,8 +98,8 @@ class BingoHudRenderer {
             val itemY = 22 + tileY*20
 
             when {
-                tile.isFlashing -> context.fill(itemX, itemY, itemX + 18, itemY + 18, 0xffb24cd8.toInt())
-                tile.isAchieved -> context.fill(itemX, itemY, itemX + 18, itemY + 18, 0xff55FF55.toInt())
+                tile.isFlashing -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileFlashingColor.asInt)
+                tile.isAchieved -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileAchievedColor.asInt)
             }
 
             if (tile.isAdvancement) {
@@ -133,8 +134,16 @@ class BingoHudRenderer {
                 context.drawItemInSlot(textRenderer, stack, itemX, itemY)
             }
 
-            if (tile.isAchieved && !tile.isFlashing && mouseX == -1 && mouseY == -1)
-                context.fill(RenderLayer.getGuiOverlay(), itemX, itemY, itemX + 18, itemY + 18, 0x4055FF55)
+            if (tile.isAchieved && !tile.isFlashing && mouseX == -1 && mouseY == -1) {
+                context.fill(
+                    RenderLayer.getGuiOverlay(),
+                    itemX,
+                    itemY,
+                    itemX + 18,
+                    itemY + 18,
+                    colors.tileAchievedColor.copy(a = colors.tileAchievedColor.a / 4).asIntWithAlpha
+                )
+            }
 
             if (tile.isMultiItem) {
                 service.drawTexture(
@@ -156,13 +165,13 @@ class BingoHudRenderer {
                 )
             }
 
-            if (showTeamOutlines) for ((i, teamColor) in tile.teamColors.withIndex()) {
-                val color = cardColors.getTeam(teamColor).outline
+            if (showTeamOutlines) for ((i, team) in tile.teamKeys.withIndex()) {
+                val color = cardColors.teamColors[team]?.outlineColor ?: Color.TRANSPARENT
                 val colorValue = color.asInt
                 val colorValueDark = color.mix(BLACK_A40).asInt
 
-                val start = i * 38f / tile.teamColors.size
-                val end = (i+1) * 38f / tile.teamColors.size
+                val start = i * 38f / tile.teamKeys.size
+                val end = (i+1) * 38f / tile.teamKeys.size
 
                 if (start < 19f) {
                     val lineStart = start.toInt()
@@ -178,8 +187,8 @@ class BingoHudRenderer {
                     context.drawVerticalLine((itemX-1) + 19, (itemY-1) + lineStart, (itemY-1) + lineEnd, colorValueDark)
                 }
 
-                val start2 = i * 34f / tile.teamColors.size
-                val end2 = (i+1) * 34f / tile.teamColors.size
+                val start2 = i * 34f / tile.teamKeys.size
+                val end2 = (i+1) * 34f / tile.teamKeys.size
 
                 if (start2 < 17f) {
                     val lineStart = start2.toInt()

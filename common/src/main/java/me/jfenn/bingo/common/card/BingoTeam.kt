@@ -21,7 +21,9 @@ import net.minecraft.util.Formatting
 @JvmInline
 value class BingoTeamKey(
     val id: String,
-)
+) {
+    val label get() = id.split('_').last()
+}
 
 @Serializable
 data class BingoTeam(

@@ -2,6 +2,8 @@ package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.IPacketBuf
+import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.config.TierLabel
 import net.minecraft.util.Formatting
 
@@ -15,7 +17,7 @@ data class CardTile(
     val isLocked: Boolean,
     val isFlashing: Boolean,
     val isAchieved: Boolean,
-    val teamColors: List<Formatting>,
+    val teamKeys: List<BingoTeamKey>,
 ) {
     fun toPacketBuf(buf: IPacketBuf) {
         if (item != null) {
@@ -40,9 +42,9 @@ data class CardTile(
         buf.writeBoolean(isFlashing)
         buf.writeBoolean(isAchieved)
 
-        buf.writeInt(teamColors.size)
-        for (team in teamColors) {
-            buf.writeString(team.name)
+        buf.writeInt(teamKeys.size)
+        for (team in teamKeys) {
+            buf.writeString(team.id)
         }
     }
 
@@ -62,7 +64,15 @@ data class CardTile(
                 isLocked = buf.readBoolean(),
                 isFlashing = buf.readBoolean(),
                 isAchieved = buf.readBoolean(),
-                teamColors = List(buf.readInt()) { Formatting.valueOf(buf.readString()) },
+                teamKeys = List(buf.readInt()) {
+                    val color = buf.readString().lowercase()
+                    when (color) {
+                        "light_purple" -> "pink"
+                        "gold" -> "orange"
+                        "dark_gray" -> "gray"
+                        else -> color.removePrefix("bingo_")
+                    }.let { BingoTeamKey("bingo_$it") }
+                },
             )
         }
     }
