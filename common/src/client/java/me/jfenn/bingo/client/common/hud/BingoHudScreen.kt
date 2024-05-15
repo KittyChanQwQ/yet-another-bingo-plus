@@ -134,10 +134,6 @@ class BingoHudScreen(
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (!JeiIntegration.hasJEI()) {
-            return super.mouseClicked(mouseX, mouseY, button)
-        }
-
         var ret = false
 
         viewsWithPositions { view, x, y ->
@@ -145,9 +141,8 @@ class BingoHudScreen(
             val tile = view.tile(tileX, tileY) ?: return@viewsWithPositions
             val stack = tile.item ?: return@viewsWithPositions
             if (!tile.isAdvancement) {
-                jei.openJeiRecipe(stack.stack)
+                ret = jei.openJeiRecipe(stack.stack)
             }
-            ret = true
         }
 
         return ret || super.mouseClicked(mouseX, mouseY, button)

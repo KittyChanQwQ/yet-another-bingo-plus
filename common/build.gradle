@@ -28,6 +28,7 @@ dependencies {
     }
 
     modCompileOnlyApi(libs.jei)
+    modCompileOnlyApi(libs.roughlyenoughitems)
 }
 
 tasks.register('bingoDatapack', Zip) {

@@ -53,7 +53,7 @@ class CardUpdatePacket(
             val tiles = view.tiles.toList()
             dest.writeInt(tiles.size)
             for (tile in tiles) {
-                tile.toPacketBuf(dest)
+                tile.toPacketBufV1(dest)
             }
         }
 
@@ -101,7 +101,7 @@ class CardUpdatePacket(
             val tiles = view.tiles.toList()
             dest.writeInt(tiles.size)
             for (tile in tiles) {
-                tile.toPacketBuf(dest)
+                tile.toPacketBufV2(dest)
             }
         }
 
