@@ -36,8 +36,8 @@ class BingoHudRenderer {
         mouseX: Int,
         mouseY: Int,
     ): Pair<Int, Int>? {
-        val startX = x + (12 * cardScale)
-        val startY = y + (22 * cardScale)
+        val startX = x + (11 * cardScale)
+        val startY = y + (21 * cardScale)
 
         val tileX = (mouseX - startX)
             .takeIf { it >= 0f }
@@ -223,18 +223,9 @@ class BingoHudRenderer {
         // Render the hover tooltips last, without the matrix translate/transform
         val (tileX, tileY) = getItem(x, y, cardScale, mouseX, mouseY) ?: return
         val tile = view.tile(tileX, tileY) ?: return
-        val itemX = 10 + tileX * 20
-        val itemY = 20 + tileY * 20
 
-        val mouseItemX = x + itemX * cardScale
-        val mouseItemRangeX = mouseItemX.toInt() until (mouseItemX + 20*cardScale).toInt()
-        val mouseItemY = y + itemY * cardScale
-        val mouseItemRangeY = mouseItemY.toInt() until (mouseItemY + 20*cardScale).toInt()
-
-        if (mouseX in mouseItemRangeX && mouseY in mouseItemRangeY) {
-            tile.item?.stack?.let { stack ->
-                context.drawItemTooltip(textRenderer, stack, mouseX, mouseY)
-            }
+        tile.item?.stack?.let { stack ->
+            context.drawItemTooltip(textRenderer, stack, mouseX, mouseY)
         }
     }
 
