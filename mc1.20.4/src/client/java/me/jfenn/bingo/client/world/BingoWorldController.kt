@@ -33,7 +33,7 @@ class BingoWorldController(
             }
         }
 
-        ScreenEvents.AFTER_INIT.register { client, screen, _, height ->
+        ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
             val state = worldState.state
 
             log.debug(
