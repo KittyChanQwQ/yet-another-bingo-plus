@@ -98,4 +98,4 @@ The very pretty Bingo Card HUD and "Bingo!" button textures were made by [@marce
 
 Parts of this mod are inspired from [Extremelyd1/minecraft-bingo](https://github.com/Extremelyd1/minecraft-bingo), the awesome Spigot/Paper version of this gamemode.
 
-The logo design was inspired from [Aikoyori/ProgrammingVTuberLogos](https://github.com/Aikoyori/ProgrammingVTuberLogos)
+The logo design was inspired by [Aikoyori/ProgrammingVTuberLogos](https://github.com/Aikoyori/ProgrammingVTuberLogos)
