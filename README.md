@@ -23,7 +23,7 @@ Make sure this is not installed on an existing world or you will lose your data!
 <tbody>
 <tr>
 <td>
-<img alt="A screenshot of Minecraft game with a BINGO card in the corner" src="https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot-with-hud-2.png" />
+<img alt="A screenshot of Minecraft game with a BINGO card in the corner" src="https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot-with-hud-3.png" />
 </td>
 <td>
 
@@ -63,7 +63,7 @@ lines to win the game.
 
 *When using this mod in single-player, make sure to install [Mod Menu](https://modrinth.com/mod/modmenu) and [YetAnotherConfigLib](https://modrinth.com/mod/yacl) to use the built-in config screen!*
 
-![A configuration menu for the Bingo GUI options](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/config-menu-2.png)
+![A configuration menu for the Bingo GUI options](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/config-menu-3.png)
 
 On the first startup, the mod will create its initial config files in `./config/bingo/...`. No initial setup is needed
 to use the mod; it should run out of the box.
