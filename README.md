@@ -1,4 +1,4 @@
-# Yet Another Minecraft BINGO
+![Yet Another Bingo for Minecraft](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/banner-with-card.png)
 
 [![Requires Fabric API](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/requires/fabric-api_vector.svg)](https://modrinth.com/mod/fabric-api)
 [![Available on GitLab](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/gitlab_vector.svg)](https://gitlab.com/horrific-tweaks/bingo)
@@ -23,7 +23,7 @@ Make sure this is not installed on an existing world or you will lose your data!
 <tbody>
 <tr>
 <td>
-<img alt="A screenshot of Minecraft savanna with a BINGO card in the corner" src="https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot_with_hud.png" />
+<img alt="A screenshot of Minecraft game with a BINGO card in the corner" src="https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot-with-hud-2.png" />
 </td>
 <td>
 
@@ -63,7 +63,7 @@ lines to win the game.
 
 *When using this mod in single-player, make sure to install [Mod Menu](https://modrinth.com/mod/modmenu) and [YetAnotherConfigLib](https://modrinth.com/mod/yacl) to use the built-in config screen!*
 
-![A configuration menu for the Bingo GUI options](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/config-menu.png)
+![A configuration menu for the Bingo GUI options](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/config-menu-2.png)
 
 On the first startup, the mod will create its initial config files in `./config/bingo/...`. No initial setup is needed
 to use the mod; it should run out of the box.
@@ -94,5 +94,8 @@ BINGO commands (operator-only):
 
 ## Credits
 
-Parts of this mod are inspired from [Extremelyd1/minecraft-bingo](https://github.com/Extremelyd1/minecraft-bingo),
-the awesome Spigot/Paper version of this gamemode.
+The very pretty Bingo Card HUD and "Bingo!" button textures were made by [@marceles](https://marceles.carrd.co)! 
+
+Parts of this mod are inspired from [Extremelyd1/minecraft-bingo](https://github.com/Extremelyd1/minecraft-bingo), the awesome Spigot/Paper version of this gamemode.
+
+The logo design was inspired from [Aikoyori/ProgrammingVTuberLogos](https://github.com/Aikoyori/ProgrammingVTuberLogos)

@@ -6,13 +6,13 @@ description: A reference page for all of the game commands provided in Yet Anoth
 
 ## Player commands
 
-| Command | Description                                                                                                         |
-|---------|---------------------------------------------------------------------------------------------------------------------|
-| `/coords` | Prints the player's current coordinates in the team chat.                                                           |
-| `/coords list` | Displays a list of the team's previous "/coords" messages.                                                          |
-| `/all` or `/g` | Sends a message outside of the team chat.                                                                           |
-| `/spectator`   | Toggle between creative/spectator gamemodes after a game (or when spectating a game, if Vanish is installed).       |
-| `/bingo set <option> <true/false>` | Changes a player setting (e.g. `scoreMessages` or `scoreboardAutoHide`). These options are also shown in the lobby. |
+| Command                             | Description                                                                                                         |
+|-------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| `/coords`                           | Prints the player's current coordinates in the team chat.                                                           |
+| `/coords list`                      | Displays a list of the team's previous "/coords" messages.                                                          |
+| `/all` or `/g`                      | Sends a message outside of the team chat.                                                                           |
+| `/spectator`                        | Toggle between creative/spectator gamemodes after a game (or when spectating a game, if Vanish is installed).       |
+| `/bingoprefs <option> <true/false>` | Changes a player setting (e.g. `scoreMessages` or `scoreboardAutoHide`). These options are also shown in the lobby. |
 
 ## Operator-only commands
 
