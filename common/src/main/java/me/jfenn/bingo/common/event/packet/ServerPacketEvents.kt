@@ -24,5 +24,7 @@ class ServerPacketEvents(
 
     val sendPlayerSettingsV1 = serverNetworking.registerC2S(PlayerSettings.V1_C2S)
     val receivePlayerSettingsV1 = serverNetworking.registerS2C(PlayerSettings.V1_S2C)
+    val sendPlayerSettingsV2 = serverNetworking.registerC2S(PlayerSettings.V2)
+    val receivePlayerSettingsV2 = serverNetworking.registerS2C(PlayerSettings.V2)
 
 }

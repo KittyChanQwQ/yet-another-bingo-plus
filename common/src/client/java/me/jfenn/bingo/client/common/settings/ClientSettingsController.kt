@@ -12,13 +12,22 @@ class ClientSettingsController(
 
     init {
         packetEvents.receivePlayerSettingsV1.onPacket { (packet) ->
-            log.debug("[ClientSettingsController] Received a settings update from the server...")
+            log.debug("[ClientSettingsController] Received a settings update (v1) from the server...")
+            clientSettings.update(packet, sendPacket = false)
+        }
+
+        packetEvents.receivePlayerSettingsV2.onPacket { (packet) ->
+            log.debug("[ClientSettingsController] Received a settings update (v2) from the server...")
             clientSettings.update(packet, sendPacket = false)
         }
 
         C2SPlayChannelEvents.REGISTER.register { _, _, _, _ ->
             log.debug("[ClientSettingsController] Sending initial settings to the server...")
-            packetEvents.sendPlayerSettingsV1.send(clientSettings.getSettings())
+            val settings = clientSettings.getSettings()
+            when {
+                packetEvents.sendPlayerSettingsV2.send(settings) -> {}
+                packetEvents.sendPlayerSettingsV1.send(settings) -> {}
+            }
         }
     }
 

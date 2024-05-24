@@ -239,7 +239,10 @@ class PlayerSettingsController(
             }
 
             val settings = playerSettingsService.getPlayer(player)
-            packetManager.receivePlayerSettingsV1.send(player, settings)
+            when {
+                packetManager.receivePlayerSettingsV2.send(player, settings) -> {}
+                packetManager.receivePlayerSettingsV1.send(player, settings) -> {}
+            }
         }
 
         events.onPlayerSettingsPacket {

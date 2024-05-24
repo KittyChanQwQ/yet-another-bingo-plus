@@ -1,8 +1,10 @@
 package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.common.event.packet.PacketConverter
+import me.jfenn.bingo.common.utils.json
 import net.minecraft.util.Identifier
 
 @Serializable
@@ -48,5 +50,19 @@ data class PlayerSettings(
         override val id: Identifier = Identifier("bingo", "update_settings_c2s")
         override fun fromPacketBuf(buf: IPacketBuf) = V1_S2C.fromPacketBuf(buf)
         override fun toPacketBuf(source: PlayerSettings, dest: IPacketBuf) = V1_S2C.toPacketBuf(source, dest)
+    }
+
+    object V2 : PacketConverter<PlayerSettings> {
+        override val id: Identifier = Identifier("bingo", "update_settings_v2")
+
+        override fun fromPacketBuf(buf: IPacketBuf): PlayerSettings {
+            val str = buf.readString()
+            return json.decodeFromString(str)
+        }
+
+        override fun toPacketBuf(source: PlayerSettings, dest: IPacketBuf) {
+            val str = json.encodeToString(source)
+            dest.writeString(str)
+        }
     }
 }

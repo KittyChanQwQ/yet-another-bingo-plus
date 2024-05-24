@@ -24,7 +24,10 @@ class ClientSettingsService(
 
         if (sendPacket) {
             log.debug("[ClientSettingsService] Sending settings update for player")
-            packetEvents.sendPlayerSettingsV1.send(settings)
+            when {
+                packetEvents.sendPlayerSettingsV2.send(settings) -> {}
+                packetEvents.sendPlayerSettingsV1.send(settings) -> {}
+            }
         }
     }
 

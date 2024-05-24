@@ -133,6 +133,12 @@ class EventManager(
             )
         }
 
+        packetEvents.sendPlayerSettingsV2.onPacket { (player, packet) ->
+            getEvents(player.server)?.onPlayerSettingsPacket?.invoke(
+                SettingsUpdateEvent(player, packet)
+            )
+        }
+
         S2CPlayChannelEvents.REGISTER.register { handler, _, server, _ ->
             val player = handler.player
             server.execute {
