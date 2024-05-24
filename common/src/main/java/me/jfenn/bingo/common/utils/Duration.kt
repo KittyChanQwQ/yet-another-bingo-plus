@@ -32,3 +32,12 @@ fun Duration.formatStringSmall(): String {
         }
     }
 }
+
+fun Duration.formatHHMMSS(): String {
+    return toComponents { _, hours, minutes, seconds, _ ->
+        when {
+            hours > 0 -> String.format("%d:%02d:%02d", hours, minutes, seconds)
+            else -> String.format("%d:%02d", minutes, seconds)
+        }
+    }
+}

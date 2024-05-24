@@ -1,7 +1,6 @@
 package me.jfenn.bingo.mixinhandler
 
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
-import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
@@ -16,13 +15,8 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.BlockPos
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 
 object PlayerManagerMixinHandler {
-
-    private val log: Logger = LoggerFactory.getLogger(MOD_ID)
 
     fun shouldPreventLobbyChaos(server: MinecraftServer): Boolean {
         val scope = BingoKoin.getScope(server) ?: return false

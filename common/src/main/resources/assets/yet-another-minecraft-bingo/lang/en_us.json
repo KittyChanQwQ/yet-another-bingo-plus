@@ -134,6 +134,7 @@
   "bingo.game.message.leading_with_score": "%s is in the lead with %s!",
   "bingo.game.message.leading_tied": "%s is tied in the lead!",
   "bingo.game.message.leading_tied_with_score": "%s is tied in the lead with %s!",
+  "bingo.game.message.captured_item": "%s captured %s",
   "bingo.game.message.scored_line": "%s has scored %s!",
   "bingo.game.message.completed_card": "%s has completed their card!",
   "bingo.game.start": "BINGO Start!",

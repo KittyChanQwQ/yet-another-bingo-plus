@@ -10,12 +10,15 @@ import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
+import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import java.util.*
 
@@ -23,16 +26,28 @@ class ScoreUpdateService(
     private val server: MinecraftServer,
     private val packetManager: ServerPacketEvents,
     private val options: BingoOptions,
+    private val state: BingoState,
     private val textProvider: TextProvider,
     private val playerSettingsService: PlayerSettingsService,
     private val playerManager: IPlayerManager,
     private val teamService: TeamService,
 ) {
 
+    private fun formatWithTime(message: Text): Text {
+        return Text.empty()
+            .append(
+                Texts.bracketed(state.formatTimeElapsed())
+                    .formatted(Formatting.GRAY)
+            )
+            .append(" ")
+            .append(message)
+    }
+
     fun sendItemCaptured(
         scoredPlayer: ServerPlayerEntity,
         team: BingoTeam,
         entry: BingoCardEntry,
+        itemName: Text,
     ) {
         val packet = ScoredItemPacket(
             player = BingoPlayerProfile.fromPlayer(scoredPlayer),
@@ -57,6 +72,14 @@ class ScoreUpdateService(
             sendToEveryone -> playerManager.getPlayers()
             else -> team.players.mapNotNull { playerManager.getPlayer(UUID.fromString(it.uuid)) }
         }
+
+        val chatMessage = textProvider.string(
+            StringKey.GameMessageCapturedItem,
+            Text.literal("${team.symbol} ${packet.player.name}")
+                .formatted(team.formatting),
+            Texts.bracketed(itemName),
+        )
+            .let { formatWithTime(it) }
 
         for (player in playerList) {
             val isOnTeam = team.includesPlayer(player.player)
@@ -83,7 +106,10 @@ class ScoreUpdateService(
                 }
             }
 
-            // TODO: send a "<player> scored <item>" chat message?
+            // Send players a message that the item was captured
+            if (playerSettingsService.getPlayer(player.player).itemMessages) {
+                player.player.sendMessage(chatMessage, false)
+            }
         }
     }
 
@@ -93,9 +119,55 @@ class ScoreUpdateService(
         val teamName = teamService.getTeamOrPlayerName(team)
         val message = textProvider.string(StringKey.GameMessageScoredLine, teamName, textProvider.lineCount(team.score.lines))
             .formatted(Formatting.YELLOW)
+            .let { formatWithTime(it) }
 
         server.playerManager.playerList
             .filter { playerSettingsService.getPlayer(it).scoreMessages }
+            .forEach {
+                it.sendMessage(message, false)
+            }
+    }
+
+    fun sendCardCompleted(team: BingoTeam) {
+        val message = textProvider.string(StringKey.GameMessageCompletedCard, teamService.getTeamOrPlayerName(team))
+            .formatted(Formatting.YELLOW)
+            .let { formatWithTime(it) }
+
+        server.playerManager.playerList
+            .forEach { it.sendMessage(message, false) }
+    }
+
+    fun sendTeamLeading(team: BingoTeam) {
+        val teamName = teamService.getTeamOrPlayerName(team)
+        val score = team.score
+        val message = when {
+            options.showCompletedItems -> {
+                textProvider.string(StringKey.GameMessageLeadingWithScore, teamName, textProvider.itemCount(score.items))
+            }
+            else -> textProvider.string(StringKey.GameMessageLeading, teamName)
+        }
+            .formatted(Formatting.YELLOW)
+            .let { formatWithTime(it) }
+
+        server.playerManager.playerList
+            .filter { playerSettingsService.getPlayer(it).leadingMessages }
+            .forEach { it.sendMessage(message, false) }
+    }
+
+    fun sendTeamTied(team: BingoTeam) {
+        val teamName = teamService.getTeamOrPlayerName(team)
+        val score = team.score
+        val message = when {
+            options.showCompletedItems -> {
+                textProvider.string(StringKey.GameMessageLeadingTiedWithScore, teamName, textProvider.itemCount(score.items))
+            }
+            else -> textProvider.string(StringKey.GameMessageLeadingTied, teamName)
+        }
+            .formatted(Formatting.YELLOW)
+            .let { formatWithTime(it) }
+
+        server.playerManager.playerList
+            .filter { playerSettingsService.getPlayer(it).leadingMessages }
             .forEach { it.sendMessage(message, false) }
     }
 

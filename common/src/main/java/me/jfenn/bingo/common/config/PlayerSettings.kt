@@ -13,6 +13,7 @@ data class PlayerSettings(
     var scoreboardAutoHide: Boolean = false,
     var leadingMessages: Boolean = true,
     var scoreMessages: Boolean = true,
+    var itemMessages: Boolean = scoreMessages,
     var nightVision: Boolean = true,
 ) {
     object V1_S2C : PacketConverter<PlayerSettings> {
