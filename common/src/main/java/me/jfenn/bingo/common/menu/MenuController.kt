@@ -72,9 +72,6 @@ class MenuController(
                 return@onEnter
             }
 
-            // always load the spawn chunks
-            lobbyWorld.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
-
             val lobbySpawnPos = getLobbySpawnPosition()
             state.lobbySpawnPos = lobbySpawnPos
 
@@ -136,7 +133,7 @@ class MenuController(
                     val entry = zipStream.nextEntry ?: break
                     if (entry.isDirectory) break
 
-                    val entryName = entry.name.removePrefix("Bingo Lobby/")
+                    val entryName = entry.name.substringAfter('/')
 
                     if (
                         entryName.startsWith("entities/") ||
@@ -150,6 +147,7 @@ class MenuController(
 
                         Files.createDirectories(outPath.parent)
 
+                        log.debug("Copying file -> {}", outPath)
                         try {
                             Files.copy(zipStream, outPath, StandardCopyOption.REPLACE_EXISTING)
                         } catch (e: IOException) {

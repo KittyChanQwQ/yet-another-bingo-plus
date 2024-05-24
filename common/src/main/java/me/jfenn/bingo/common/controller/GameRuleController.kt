@@ -53,8 +53,6 @@ class GameRuleController(
         events.onEnter(GameState.COUNTDOWN) {
             // reset overworld time
             server.overworld.timeOfDay = 0
-
-            // TODO: freeze ticks during countdown
         }
 
         events.onEnter(GameState.PLAYING) { prevState ->

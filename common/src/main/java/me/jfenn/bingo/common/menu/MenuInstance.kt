@@ -46,7 +46,6 @@ class MenuInstance(
 
     fun cleanup() {
         menuComponent.despawn()
-        world.chunkManager.removePersistentTickets()
     }
 
     fun <T: Entity> spawn(info: MenuEntityHandle<T>, nbt: NbtCompound): T? {
