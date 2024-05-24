@@ -387,6 +387,24 @@ class YetAnotherConfigLibIntegrationImpl(
                                     .controller { BooleanControllerBuilder.create(it) }
                                     .build(),
                             )
+                            .option(
+                                Option.createBuilder<Boolean>()
+                                    .name(text.string(StringKey.PlayerSettingsMessagesItems))
+                                    .description(
+                                        OptionDescription.of(
+                                            text.string(StringKey.PlayerSettingsMessagesItemsDescription)
+                                        )
+                                    )
+                                    .binding(
+                                        defaultPlayerSettings.itemMessages,
+                                        { playerSettings.itemMessages },
+                                        {
+                                            clientSettings.update(playerSettings.copy(itemMessages = it))
+                                        }
+                                    )
+                                    .controller { BooleanControllerBuilder.create(it) }
+                                    .build(),
+                            )
                             .build()
                     )
                     .build(),

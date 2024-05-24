@@ -44,6 +44,7 @@ class BingoPrefsCommand : BaseCommand() {
             PlayerSettings::scoreboardAutoHide,
             PlayerSettings::leadingMessages,
             PlayerSettings::scoreMessages,
+            PlayerSettings::itemMessages,
             PlayerSettings::nightVision,
         )
 

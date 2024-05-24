@@ -42,6 +42,8 @@
   "bingo.player_settings.messages.leading.description": "Send chat messages when the leading team is changed.",
   "bingo.player_settings.messages.lines": "Line Scored",
   "bingo.player_settings.messages.lines.description": "Send chat messages when a line is scored.",
+  "bingo.player_settings.messages.items": "Item Scored",
+  "bingo.player_settings.messages.items.description": "Send chat messages when any item is scored.",
   "bingo.player_settings.night_vision": "Night Vision",
   "bingo.player_settings.night_vision.description": "Receive night vision when the feature is enabled, spectating, or post-game.",
   "bingo.sound_settings": "Sounds",

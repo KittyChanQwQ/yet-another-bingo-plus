@@ -163,6 +163,13 @@ class PlayerSettingsController(
                         it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(PlayerSettings::scoreMessages, !settings.scoreMessages)))
                     }
             )
+            .append("\n")
+            .append(
+                toggleText(settings.itemMessages, StringKey.PlayerSettingsMessagesItems, StringKey.PlayerSettingsMessagesItemsDescription)
+                    .also {
+                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(PlayerSettings::itemMessages, !settings.itemMessages)))
+                    }
+            )
             .append("\n\n")
             .append(
                 toggleText(settings.nightVision, StringKey.PlayerSettingsNightVision, StringKey.PlayerSettingsNightVisionDescription)
