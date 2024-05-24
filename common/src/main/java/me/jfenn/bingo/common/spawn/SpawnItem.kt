@@ -49,16 +49,6 @@ data class SpawnItem(
             }
         }.toList()
 
-        if (nbt != null && nbt != "{}") {
-            for (itemStack in itemStacks) {
-                try {
-                    itemStack.setNbtString(nbt)
-                } catch (e: Throwable) {
-                    log.error("spawnEquipmentItems nbt '${nbt}' could not be parsed", e)
-                }
-            }
-        }
-
         if (!components.isNullOrEmpty()) {
             for (itemStack in itemStacks) {
                 try {
@@ -66,6 +56,15 @@ data class SpawnItem(
                 } catch (e: Throwable) {
                     log.error("spawnEquipmentItems components '${components}' could not be parsed", e)
                 }
+            }
+        }
+
+        val itemNbt = nbt?.takeIf { it != "{}" }
+        for (itemStack in itemStacks) {
+            try {
+                itemStack.setNbtString(itemNbt)
+            } catch (e: Throwable) {
+                log.error("spawnEquipmentItems nbt '${nbt}' could not be parsed", e)
             }
         }
 

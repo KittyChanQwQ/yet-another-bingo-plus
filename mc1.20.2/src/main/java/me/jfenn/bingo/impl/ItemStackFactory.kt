@@ -103,7 +103,7 @@ class ItemStackFactory(
         }
 
         override fun setNbtString(nbt: String?) {
-            stack.nbt = StringNbtReader.parse(nbt)
+            stack.nbt = nbt?.let { StringNbtReader.parse(it) }
         }
 
         override fun getNbtString(): String? {
