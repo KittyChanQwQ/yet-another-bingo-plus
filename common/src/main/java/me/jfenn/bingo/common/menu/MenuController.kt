@@ -1,13 +1,14 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.ILevelStorage
 import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.IStructureManager
+import me.jfenn.bingo.common.LOBBY_WORLD_ID
+import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.card.BingoTeam
 import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BlockPosition
-import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -33,11 +34,15 @@ import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Vec3d
+import net.minecraft.world.Heightmap
+import net.minecraft.world.chunk.ChunkStatus
 import org.joml.Vector3f
 import org.koin.core.component.KoinComponent
 import org.slf4j.Logger
+import java.io.IOException
 import java.nio.file.Files
-import kotlin.io.path.name
+import java.nio.file.StandardCopyOption
+import java.util.zip.ZipInputStream
 import kotlin.system.measureTimeMillis
 
 class MenuController(
@@ -46,11 +51,11 @@ class MenuController(
     private val log: Logger,
     private val server: MinecraftServer,
     private val interactionEntityEvents: InteractionEntityEvents,
-    private val structureManager: IStructureManager,
     private val state: BingoState,
     private val teamService: TeamService,
     private val text: TextProvider,
     private val playerManager: IPlayerManager,
+    private val levelStorage: ILevelStorage,
 ) : KoinComponent {
 
     private var menu: MenuInstance? = null
@@ -58,6 +63,8 @@ class MenuController(
     private val koinScope = scopeManager.getScope(server)!!
 
     init {
+        prepareLobbyFiles()
+
         events.onEnter(GameState.PREGAME)  {
             // this *shouldn't* happen... just being safe to prevent double-entities
             if (menu != null) {
@@ -68,7 +75,6 @@ class MenuController(
             // always load the spawn chunks
             lobbyWorld.chunkManager.addTicket(ChunkTicketType.START, ChunkPos(0, 0), 11, Unit.INSTANCE)
 
-            spawnLobbyStructure()
             val lobbySpawnPos = getLobbySpawnPosition()
             state.lobbySpawnPos = lobbySpawnPos
 
@@ -115,44 +121,59 @@ class MenuController(
         }
     }
 
-    private fun spawnLobbyStructure() = measureTimeMillis {
-        val lobbyDir = Config.configDir.resolve("lobby")
-        if (!Files.exists(lobbyDir))
-            lobbyDir.toFile().mkdirs()
+    private fun prepareLobbyFiles() = measureTimeMillis {
+        log.info("Preparing the BINGO lobby...")
 
-        val lobbyFile = Files.list(lobbyDir)
-            .map { it.name }
-            .toList()
-            .toMutableSet()
-            .apply { add("lobby.nbt") }
-            .random()
-
-        log.info("Spawning lobby structure '$lobbyFile'")
-
-        // get a random NBT structure from the config, and read as string
-        val lobbyFileStream = lobbyDir.resolve(lobbyFile)
-            .toFile()
-            .takeIf { it.exists() }
-            ?.inputStream()
+        val storageDir = levelStorage.getLevelSaveDir(LOBBY_WORLD_ID)
             ?: run {
-                // if there aren't any custom NBT files, read the default (lobby.nbt) from resources
-                javaClass.getResourceAsStream("/bingo/lobby/lobby.nbt")
-                    ?: throw RuntimeException("Unable to obtain lobby.nbt resource")
+                log.error("Unable to find world storage dir for $LOBBY_WORLD_ID")
+                return@measureTimeMillis
             }
 
-        structureManager.placeStructure(lobbyWorld, BlockPosition(0, 25, 0), lobbyFileStream)
+        this::class.java.getResourceAsStream("/$MOD_ID_BINGO/lobby_world.zip")?.use { stream ->
+            ZipInputStream(stream).use { zipStream ->
+                while (true) {
+                    val entry = zipStream.nextEntry ?: break
+                    if (entry.isDirectory) break
+
+                    val entryName = entry.name.removePrefix("Bingo Lobby/")
+
+                    if (
+                        entryName.startsWith("entities/") ||
+                        entryName.startsWith("region/")
+                    ) {
+                        val outPath = storageDir.resolve(entryName)
+                        if (!outPath.startsWith(storageDir)) {
+                            log.error("[MenuController] Tried to create a file outside of the world location: $outPath")
+                            continue
+                        }
+
+                        Files.createDirectories(outPath.parent)
+
+                        try {
+                            Files.copy(zipStream, outPath, StandardCopyOption.REPLACE_EXISTING)
+                        } catch (e: IOException) {
+                            log.error("[MenuController] Error copying lobby file $entryName", e)
+                        }
+                    }
+
+                    zipStream.closeEntry()
+                }
+            }
+
+        } ?: run {
+            log.error("[MenuController] Unable to find bingo lobby_world.zip in resources")
+        }
     }.also {
         log.info("Done (${it}ms)!")
     }
 
-    fun getLobbySpawnPosition(): BlockPosition {
-        // Search for spawnpoint
-        val spawnY = (0..24)
-            .asSequence()
-            .filter { y -> lobbyWorld.getBlockState(BlockPos(0, y, 0)).isSolidBlock(lobbyWorld, BlockPos.ORIGIN) }
-            .max()
+    private fun getLobbySpawnPosition(): BlockPosition {
+        val chunk = lobbyWorld.getChunk(0, 0, ChunkStatus.FULL)
+        val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING)
+        val spawnY = heightmap.get(0, 0)
 
-        return BlockPosition(0, spawnY+1, 0)
+        return BlockPosition(0, spawnY, 0)
             .also { log.info("Set lobby spawnpoint to $it") }
     }
 
@@ -161,7 +182,7 @@ class MenuController(
     private fun spawnTeamEntities(menu: MenuInstance) {
         // Search for team join entities
         for (x in -24..24) {
-            for (y in -24..24) {
+            for (y in 0..48) {
                 for (z in -24..24) {
                     val isLodestone = lobbyWorld.getBlockState(BlockPos(x, y-1, z)).block == Blocks.LODESTONE
                     if (!isLodestone) continue

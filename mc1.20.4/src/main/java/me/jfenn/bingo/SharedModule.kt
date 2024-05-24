@@ -24,6 +24,6 @@ val sharedModule = module {
 
     scope<BingoContext> {
         scopedOf(::PlayerManager) bind IPlayerManager::class
-        scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class)
+        scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, ILevelStorage::class)
     }
 }

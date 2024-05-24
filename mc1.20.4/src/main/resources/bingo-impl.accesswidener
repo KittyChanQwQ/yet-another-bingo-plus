@@ -1,5 +1,7 @@
 accessWidener v2 named
 
+accessible field net/minecraft/server/MinecraftServer session Lnet/minecraft/world/level/storage/LevelStorage$Session;
+
 accessible method net/minecraft/client/gui/screen/world/CreateWorldScreen getDataPackTempDir ()Ljava/nio/file/Path;
 accessible method net/minecraft/client/gui/screen/world/CreateWorldScreen getScannedPack (Lnet/minecraft/resource/DataConfiguration;)Lcom/mojang/datafixers/util/Pair;
 accessible method net/minecraft/client/gui/screen/world/CreateWorldScreen applyDataPacks (Lnet/minecraft/resource/ResourcePackManager;ZLjava/util/function/Consumer;)V
