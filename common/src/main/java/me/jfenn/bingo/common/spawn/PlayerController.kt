@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -41,6 +42,7 @@ class PlayerController(
     private val options: BingoOptions,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
+    private val cardViewService: CardViewService,
     private val advancementManager: IAdvancementManager,
     private val vanishIntegration: VanishIntegration,
     private val itemStackFactory: IItemStackFactory,
@@ -98,10 +100,13 @@ class PlayerController(
             GameState.COUNTDOWN -> GameMode.ADVENTURE
             GameState.PLAYING -> when {
                 isOnTeam -> GameMode.SURVIVAL
-                vanishIntegration.isInstalled() -> GameMode.ADVENTURE
+                !cardViewService.supportsCardHud(player) && vanishIntegration.isInstalled() -> GameMode.ADVENTURE
                 else -> GameMode.SPECTATOR
             }
-            GameState.POSTGAME -> GameMode.CREATIVE
+            GameState.POSTGAME -> when {
+                cardViewService.supportsCardHud(player) -> GameMode.SPECTATOR
+                else -> GameMode.CREATIVE
+            }
         }
 
         if (
