@@ -242,6 +242,11 @@ class PlayerController(
                     updateGameMode(player)
                 }
 
+                // ensure that players don't run out of hunger in the lobby
+                if (state.state == GameState.PREGAME && player.hungerManager.foodLevel < 10) {
+                    player.hungerManager.foodLevel = 10
+                }
+
                 if (state.state == GameState.PLAYING && player.health > 0f && !player.isSpectator) {
                     // if elytra mode is configured, give the player an elytra
                     if (options.isElytra && teamService.isPlaying(player))
