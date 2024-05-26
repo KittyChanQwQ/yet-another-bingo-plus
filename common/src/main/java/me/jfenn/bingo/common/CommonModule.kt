@@ -34,10 +34,7 @@ import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.timer.CountdownController
-import me.jfenn.bingo.common.timer.CountdownService
-import me.jfenn.bingo.common.timer.TimerCheck
-import me.jfenn.bingo.common.timer.TimerPacketController
+import me.jfenn.bingo.common.timer.*
 import me.jfenn.bingo.integrations.ChunkyIntegration
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
@@ -119,6 +116,7 @@ val commonModule = module {
         scopedOf(::CountdownController)
         scopedOf(::TimerCheck)
         scopedOf(::TimerPacketController)
+        scopedOf(::WaitUntilLoadedController)
 
         scopedOf(::ScoredItemCheck)
         scopedOf(::ScoreUpdateService)
@@ -166,6 +164,7 @@ fun Scope.commonInit() {
     get<CountdownController>()
     get<TimerCheck>()
     get<TimerPacketController>()
+    get<WaitUntilLoadedController>()
 
     get<RestartTimerController>()
     get<CommandTreeHandler>()

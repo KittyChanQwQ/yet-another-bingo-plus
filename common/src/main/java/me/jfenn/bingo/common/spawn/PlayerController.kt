@@ -96,7 +96,8 @@ class PlayerController(
         log.debug("updateGameMode(${player.uuidAsString}, forceReset=$forceReset)")
 
         val gameMode = when (state.state) {
-            GameState.PREGAME -> GameMode.ADVENTURE
+            GameState.PREGAME,
+            GameState.LOADING,
             GameState.COUNTDOWN -> GameMode.ADVENTURE
             GameState.PLAYING -> when {
                 isOnTeam -> GameMode.SURVIVAL

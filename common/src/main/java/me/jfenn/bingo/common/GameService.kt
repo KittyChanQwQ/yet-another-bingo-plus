@@ -15,8 +15,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.GameOverPacket
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.timer.CountdownPacket
-import me.jfenn.bingo.common.timer.CountdownService
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
@@ -40,7 +38,6 @@ class GameService(
     private val permissions: PermissionsIntegration,
     private val textProvider: TextProvider,
     private val packetManager: ServerPacketEvents,
-    private val countdownService: CountdownService,
     private val playerManager: IPlayerManager,
 ) {
 
@@ -88,17 +85,8 @@ class GameService(
         spawnService.createSpawnpoints()
         chestService.createChestSpawnpoints()
 
-        // change to the playing state
-        if (options.startCountdownSeconds > 0) {
-            state.changeState(events, GameState.COUNTDOWN)
-        } else {
-            state.changeState(events, GameState.PLAYING)
-
-            val packet = CountdownPacket(0)
-            for (player in server.playerManager.playerList) {
-                countdownService.sendCountdownPacket(player, packet)
-            }
-        }
+        // change to the loading state (until all players have loaded terrain)
+        state.changeState(events, GameState.LOADING)
 
         broadcastStart()
 
