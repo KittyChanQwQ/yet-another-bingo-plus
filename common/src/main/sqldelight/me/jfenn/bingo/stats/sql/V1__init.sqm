@@ -1,0 +1,22 @@
+CREATE TABLE Game (
+    id UUID NOT NULL PRIMARY KEY,
+    started_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    ended_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    minecraft_version VARCHAR(64) NOT NULL,
+    bingo_version VARCHAR(64) NOT NULL
+);
+
+CREATE TABLE GameTeam (
+    id UUID NOT NULL PRIMARY KEY,
+    game UUID NOT NULL REFERENCES Game(id) ON DELETE CASCADE,
+    name VARCHAR(128) NOT NULL,
+    is_winner BOOLEAN NOT NULL
+);
+
+CREATE TABLE GamePlayer (
+    team UUID NOT NULL REFERENCES GameTeam(id) ON DELETE CASCADE,
+    minecraft_id UUID NOT NULL,
+    minecraft_name VARCHAR(128) NOT NULL,
+    captured_items INT NOT NULL,
+    PRIMARY KEY (team, minecraft_id)
+);

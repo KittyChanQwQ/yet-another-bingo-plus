@@ -1,5 +1,8 @@
 [versions]
 insert-koin = "3.5.0"
+h2 = "2.1.214"
+flyway = "10.8.1"
+sqldelight = "2.0.2"
 
 [libraries]
 insert-koin-core = { module = "io.insert-koin:koin-core-jvm", version.ref = "insert-koin" }
@@ -12,6 +15,11 @@ jei = { module = "mezz.jei:jei-1.20.4-fabric", version = "17.3.0.49" }
 roughlyenoughitems = { module = "me.shedaniel:RoughlyEnoughItems-api-fabric", version = "15.0.728" }
 # https://github.com/lucko/fabric-permissions-api
 fabric-permissions-api = { module = "me.lucko:fabric-permissions-api", version = "0.3.20230723" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+sqldelight-hsql = { module = "app.cash.sqldelight:hsql-dialect", version.ref = "sqldelight" }
+sqldelight-jdbc = { module = "app.cash.sqldelight:jdbc-driver", version.ref = "sqldelight" }
 
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "1.9.0" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }

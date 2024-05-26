@@ -2,12 +2,24 @@ import java.nio.file.Files
 
 plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.sqldelight)
     id 'bingo.mod'
 }
 
 loom.accessWidenerPath = file("src/main/resources/bingo.accesswidener")
 
 base.archivesName.set("${project.archives_base_name}-common")
+
+sqldelight {
+    databases {
+        create("Stats") {
+            packageName.set("me.jfenn.bingo.stats.sql")
+            dialect(libs.sqldelight.hsql.get().toString())
+            deriveSchemaFromMigrations.set(true)
+            migrationOutputDirectory = layout.buildDirectory.dir("resources/main/yet-another-minecraft-bingo/migrations")
+        }
+    }
+}
 
 dependencies {
     implementation libs.insert.koin.core
@@ -38,16 +50,10 @@ tasks.register('bingoDatapack', Zip) {
     destinationDirectory.set(file('src/main/resources/bingo'))
 }
 
-tasks.processResources.dependsOn(tasks.bingoDatapack)
-tasks.sourcesJar.dependsOn(tasks.bingoDatapack)
-
 tasks.register('bingoImages', Copy) {
     from zipTree(file("images.zip"))
     into file("src/main/resources/bingo/images")
 }
-
-tasks.processResources.dependsOn(tasks.bingoImages)
-tasks.sourcesJar.dependsOn(tasks.bingoImages)
 
 // This is a mess, but it generates safe enum entries for every key in /resources/.../lang/en_us.json
 // which ensures that I can't make typos on any of the thousands of string keys in there.
@@ -98,11 +104,6 @@ tasks.register("bingoLangFiles") {
     }
 }
 
-tasks.processResources.dependsOn(tasks.bingoLangFiles)
-tasks.sourcesJar.dependsOn(tasks.bingoLangFiles)
-tasks.compileClientKotlin.dependsOn(tasks.bingoLangFiles)
-tasks.compileKotlin.dependsOn(tasks.bingoLangFiles)
-
 tasks.register("bingoConstants") {
     def constantsKtFile = layout.buildDirectory.file("generated/main/java/me/jfenn/bingo/generated/Constants.kt").get().asFile
     inputs.property("version", project.mod_version)
@@ -117,7 +118,21 @@ tasks.register("bingoConstants") {
     }
 }
 
-tasks.processResources.dependsOn(tasks.bingoConstants)
-tasks.sourcesJar.dependsOn(tasks.bingoConstants)
-tasks.compileClientKotlin.dependsOn(tasks.bingoConstants)
-tasks.compileKotlin.dependsOn(tasks.bingoConstants)
+tasks.processResources.configure {
+    dependsOn("generateMainStatsMigrations")
+    dependsOn(tasks.bingoDatapack)
+    dependsOn(tasks.bingoImages)
+    dependsOn(tasks.bingoLangFiles)
+    dependsOn(tasks.bingoConstants)
+}
+tasks.sourcesJar.configure {
+    dependsOn(tasks.processResources)
+}
+tasks.compileClientKotlin.configure {
+    dependsOn(tasks.bingoLangFiles)
+    dependsOn(tasks.bingoConstants)
+}
+tasks.compileKotlin.configure {
+    dependsOn(tasks.bingoLangFiles)
+    dependsOn(tasks.bingoConstants)
+}
