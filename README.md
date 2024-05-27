@@ -1,3 +1,15 @@
+<table>
+<tbody>
+<td>
+
+### Looking for a modpack?
+
+Check out [Yet Another BINGO: Ultimate](https://modrinth.com/modpack/yet-another-bingo-ultimate) for an opinionated collection of helpful bingo mods!
+
+</td>
+</tbody>
+</table>
+
 ![Yet Another Bingo for Minecraft](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/banner-with-card.png)
 
 [![Requires Fabric API](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/requires/fabric-api_vector.svg)](https://modrinth.com/mod/fabric-api)
@@ -94,7 +106,7 @@ BINGO commands (operator-only):
 
 ## Credits
 
-The very pretty Bingo Card HUD and "Bingo!" button textures were made by [@marceles](https://marceles.carrd.co)! 
+The very pretty Bingo Card HUD and "Bingo!" button textures were made by [@marceles](https://marceles.carrd.co)!
 
 Parts of this mod are inspired from [Extremelyd1/minecraft-bingo](https://github.com/Extremelyd1/minecraft-bingo), the awesome Spigot/Paper version of this gamemode.
 
