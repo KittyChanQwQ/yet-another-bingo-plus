@@ -33,6 +33,10 @@ data class BingoConfig(
 
     val integrations: IntegrationsConfig = IntegrationsConfig(),
 
+    val databaseUrl: String? = null,
+    val databaseUser: String? = null,
+    val databasePass: String? = null,
+
     // only applies to client
     val client: ClientConfig = ClientConfig(),
 )

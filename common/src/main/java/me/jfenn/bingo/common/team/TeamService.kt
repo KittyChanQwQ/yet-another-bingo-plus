@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.card
+package me.jfenn.bingo.common.team
 
 import me.jfenn.bingo.api.ITeamHandle
 import me.jfenn.bingo.api.ITeamManager

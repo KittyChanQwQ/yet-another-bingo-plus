@@ -5,7 +5,7 @@ import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.BingoCardEntry
-import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents

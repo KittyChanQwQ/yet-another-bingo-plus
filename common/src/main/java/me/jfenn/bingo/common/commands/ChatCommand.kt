@@ -4,10 +4,9 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.api.IScoreboardManager
-import me.jfenn.bingo.api.ITeamManager
 import me.jfenn.bingo.common.scope.BingoKoin
-import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents

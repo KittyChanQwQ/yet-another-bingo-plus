@@ -4,15 +4,15 @@ import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.GameService
-import me.jfenn.bingo.common.card.BingoPlayerProfile
-import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.state.TeamScore
+import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
@@ -68,7 +68,7 @@ class ScoredItemCheck(
         return player
     }
 
-    fun updateInventory(): Set<BingoTeam> {
+    private fun updateInventory(): Set<BingoTeam> {
         val updatedTeams = mutableSetOf<BingoTeam>()
 
         for (player in playerManager.getPlayers()) {
@@ -93,19 +93,23 @@ class ScoredItemCheck(
                 if (options.isLockoutMode && tile.hasAnyAchieved())
                     continue
 
-                tile.setAchieved(team, true)
-                    // if the tile has changed, mark updatedTeams
-                    .also { isChanged ->
-                        if (isChanged) {
-                            updatedTeams.add(team)
-                            scoreUpdateService.sendItemCaptured(
-                                scoredPlayer = player.player,
-                                team = team,
-                                entry = tile,
-                                itemName = stack.displayName,
-                            )
-                        }
-                    }
+                val isChanged = tile.setAchieved(team, true)
+
+                // if the tile has changed, mark updatedTeams
+                if (isChanged) {
+                    updatedTeams.add(team)
+
+                    // record the player that captured the tile
+                    val profile = BingoPlayerProfile.fromPlayer(player.player)
+                    tile.players.add(profile)
+
+                    scoreUpdateService.sendItemCaptured(
+                        scoredPlayer = profile,
+                        team = team,
+                        entry = tile,
+                        itemName = stack.displayName,
+                    )
+                }
             }
         }
 
@@ -125,9 +129,13 @@ class ScoredItemCheck(
 
                     // if noone on the team has the item anymore, mark it lost
                     if (!hasTeamItem) {
-                        item.setAchieved(team, false)
-                            // if the tile has changed, mark updatedTeams
-                            .also { isChanged -> if (isChanged) updatedTeams.add(team) }
+                        val isChanged = item.setAchieved(team, false)
+                        // if the tile has changed, mark updatedTeams
+                        if (isChanged) {
+                            updatedTeams.add(team)
+                            // since the tile was lost, remove the team's players from the tile
+                            item.players.removeAll(team.players)
+                        }
                     }
                 }
             }
@@ -141,7 +149,7 @@ class ScoredItemCheck(
         return updatedTeams
     }
 
-    fun updateAdvancements(): Set<BingoTeam> {
+    private fun updateAdvancements(): Set<BingoTeam> {
         val updatedTeams = mutableSetOf<BingoTeam>()
 
         for ((identifier, entry) in state.card.advancementIndex) {
@@ -167,27 +175,35 @@ class ScoredItemCheck(
 
                 // if the advancement is finished, and the tile is not locked
                 if (player != null && !(options.isLockoutMode && entry.hasAnyAchieved())) {
-                    entry.setAchieved(team, true)
-                        // if the tile has changed, mark updatedTeams
-                        .also { isChanged ->
-                            if (isChanged) {
-                                updatedTeams.add(team)
-                                scoreUpdateService.sendItemCaptured(
-                                    scoredPlayer = player.player,
-                                    team = team,
-                                    entry = entry,
-                                    itemName = advancement.name ?: Text.literal(identifier.toString()),
-                                )
-                            }
-                        }
+                    val isChanged = entry.setAchieved(team, true)
+
+                    // if the tile has changed, mark updatedTeams
+                    if (isChanged) {
+                        updatedTeams.add(team)
+
+                        // record the player that captured the tile
+                        val profile = BingoPlayerProfile.fromPlayer(player.player)
+                        entry.players.add(profile)
+
+                        scoreUpdateService.sendItemCaptured(
+                            scoredPlayer = profile,
+                            team = team,
+                            entry = entry,
+                            itemName = advancement.name ?: Text.literal(identifier.toString()),
+                        )
+                    }
                 }
 
                 // if noone on the team has the advancement anymore, and the game is in inventory mode
                 // then mark it as lost...
                 if (player == null && options.isInventoryMode) {
-                    entry.setAchieved(team, false)
-                        // if the tile has changed, mark updatedTeams
-                        .also { isChanged -> if (isChanged) updatedTeams.add(team) }
+                    val isChanged = entry.setAchieved(team, false)
+                    // if the tile has changed, mark updatedTeams
+                    if (isChanged) {
+                        updatedTeams.add(team)
+                        // since the tile was lost, remove the team's players from the tile
+                        entry.players.removeAll(team.players)
+                    }
                 }
             }
         }
@@ -200,7 +216,7 @@ class ScoredItemCheck(
         return updatedTeams
     }
 
-    fun updateScores() {
+    private fun updateScores() {
         val prevLeadingTeam = ScoreService.getLeading(state)
         val prevTeamScores = state.teams.mapValues { (_, team) -> team.score }
 

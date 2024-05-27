@@ -9,9 +9,9 @@ import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.config.TierListService

@@ -3,13 +3,10 @@ package me.jfenn.bingo.common.card
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.utils.text.TextInfo
+import me.jfenn.bingo.common.team.BingoTeam
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.NbtList
-import net.minecraft.nbt.NbtString
 
 class CardInventory(
     val options: BingoOptions,

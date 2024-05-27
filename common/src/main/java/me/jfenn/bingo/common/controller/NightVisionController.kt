@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.EffectType
 import me.jfenn.bingo.api.IStatusEffectsFactory
-import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService

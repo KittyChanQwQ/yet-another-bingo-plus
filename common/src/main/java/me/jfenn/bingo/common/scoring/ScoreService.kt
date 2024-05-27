@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.state.BingoState
 
 object ScoreService {

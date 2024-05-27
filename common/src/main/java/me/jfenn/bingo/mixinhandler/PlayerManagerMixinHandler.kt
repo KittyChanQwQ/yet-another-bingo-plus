@@ -1,8 +1,8 @@
 package me.jfenn.bingo.mixinhandler
 
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
-import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.spawn.SpawnService

@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.card
+package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IMapService

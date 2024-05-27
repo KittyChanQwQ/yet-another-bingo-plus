@@ -5,7 +5,6 @@ import me.jfenn.bingo.common.autorestart.RestartOnLeaveController
 import me.jfenn.bingo.common.autorestart.RestartTimerController
 import me.jfenn.bingo.common.autorestart.RestartTimerState
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.MigrationHandler
@@ -33,6 +32,9 @@ import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.stats.ConnectionFactory
+import me.jfenn.bingo.common.team.TeamController
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.*
 import me.jfenn.bingo.integrations.ChunkyIntegration
@@ -83,11 +85,13 @@ val commonModule = module {
         scoped { get<BingoContext>().state }
         scoped { get<BingoState>().options }
 
+        scopedOf(::ConnectionFactory)
+        scoped { get<ConnectionFactory>().create() }
+
         scopedOf(::GameService)
         scopedOf(::MapItemService)
         scopedOf(::MapRenderService)
         scopedOf(::CardViewService)
-        scopedOf(::TeamService)
         scopedOf(::CardService)
         scopedOf(::ScoreboardService)
         scopedOf(::PlayerSettingsService)
@@ -108,9 +112,11 @@ val commonModule = module {
 
         scopedOf(::ChestService)
         scopedOf(::ChestController)
-
         scopedOf(::SpawnService)
         scopedOf(::PlayerController)
+
+        scopedOf(::TeamService)
+        scopedOf(::TeamController)
 
         scopedOf(::CountdownService)
         scopedOf(::CountdownController)
@@ -160,6 +166,8 @@ fun Scope.commonInit() {
     get<ScoreboardController>()
 
     get<ScoredItemCheck>()
+
+    get<TeamController>()
 
     get<CountdownController>()
     get<TimerCheck>()

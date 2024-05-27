@@ -2,8 +2,8 @@ package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.card.BingoPlayerProfile
-import me.jfenn.bingo.common.card.BingoTeamKey
+import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.event.packet.PacketConverter
 import me.jfenn.bingo.common.state.TeamScore
 import net.minecraft.util.Formatting

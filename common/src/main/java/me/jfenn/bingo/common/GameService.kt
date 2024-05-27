@@ -2,8 +2,8 @@ package me.jfenn.bingo.common
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents

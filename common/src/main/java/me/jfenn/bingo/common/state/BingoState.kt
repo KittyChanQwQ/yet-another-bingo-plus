@@ -6,23 +6,25 @@ import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
-import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.BingoTeamKey
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.BingoMap
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.util.*
 import kotlin.random.Random
 import kotlin.time.Duration
 
 @Serializable
 data class BingoState(
+    val gameId: String = UUID.randomUUID().toString(),
     var seed: Long = Random.nextLong(),
     var state: GameState = GameState.PREGAME,
     var startedAt: Instant? = null,
@@ -36,6 +38,8 @@ data class BingoState(
     var card: BingoCard = BingoCard(
         entries = List(25) { BingoCardEntry.FreeSpace() }
     ),
+    // Stores a set of recently-joined player UUIDs for [PlayerController]
+    val playersJoinedIds: MutableSet<String> = mutableSetOf(),
 ) {
 
     fun getRegisteredTeams(): List<BingoTeam> {

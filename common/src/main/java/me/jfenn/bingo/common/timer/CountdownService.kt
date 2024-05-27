@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.timer
 
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket

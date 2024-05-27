@@ -3,14 +3,13 @@ package me.jfenn.bingo.common.commands
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration

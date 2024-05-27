@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.scoreboard
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService

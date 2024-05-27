@@ -4,8 +4,6 @@ import me.jfenn.bingo.api.*
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
-import me.jfenn.bingo.common.card.BingoPlayerProfile
-import me.jfenn.bingo.common.card.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -13,6 +11,7 @@ import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
@@ -20,7 +19,6 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
 import org.slf4j.Logger
-import java.util.*
 
 /**
  * Controls player gamemode, status, and inventory setup.
@@ -180,7 +178,6 @@ class PlayerController(
     }
 
     private val lobbyWorld get() = server.lobbyWorld!!
-    private val playersJoinedIds = mutableSetOf<UUID>()
 
     init {
         events.onPlayerJoin { player ->
@@ -191,7 +188,7 @@ class PlayerController(
             }
 
             // schedule an updateGameMode (handled in the next onGameTick)
-            playersJoinedIds.add(player.uuid)
+            state.playersJoinedIds.add(player.uuidAsString)
         }
 
         events.onPlayerRespawn { player ->
@@ -240,11 +237,10 @@ class PlayerController(
 
         events.onGameTick {
             for (player in server.playerManager.playerList) {
-                val playerTeam = teamService.getPlayerTeam(player)
-
                 // If the player has just joined, update their gamemode
-                if (player.uuid in playersJoinedIds) {
-                    playersJoinedIds.remove(player.uuid)
+                val playerUuid = player.uuidAsString
+                if (playerUuid in state.playersJoinedIds) {
+                    state.playersJoinedIds.remove(playerUuid)
                     updateGameMode(player)
                 }
 
@@ -270,21 +266,6 @@ class PlayerController(
                             player.sendAbilitiesUpdate()
                         }
                     }
-                }
-
-                // If the player has switched teams, update the player UUID sets...
-                // (this is necessary because teams could be changed without us knowing, using /team join)
-                val playerProfile = BingoPlayerProfile.fromPlayer(player)
-                val isTeamChanged = state.teams.values.any { team ->
-                    if (playerTeam?.key == team.key) {
-                        team.players.add(playerProfile)
-                    } else {
-                        team.players.remove(playerProfile)
-                    }
-                }
-                if (isTeamChanged) {
-                    teamService.onTeamChanged(player)
-                    updateGameMode(player)
                 }
             }
         }

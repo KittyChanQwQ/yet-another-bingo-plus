@@ -7,6 +7,9 @@ import kotlinx.serialization.Transient
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.config.TierLabel
+import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
@@ -16,6 +19,8 @@ import kotlin.time.Duration
 sealed class BingoCardEntry {
 
     open val teams = HashSet<BingoTeamKey>()
+    open val players = HashSet<BingoPlayerProfile>()
+
     private val teamsSeen = HashSet<BingoTeamKey>()
 
     abstract val visualItem: IItemStack?

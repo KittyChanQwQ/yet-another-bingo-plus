@@ -1,9 +1,8 @@
 package me.jfenn.bingo.common.text
 
 import me.jfenn.bingo.api.IPacketBuf
-import me.jfenn.bingo.common.card.BingoTeamKey
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.event.packet.PacketConverter
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import kotlin.time.Duration

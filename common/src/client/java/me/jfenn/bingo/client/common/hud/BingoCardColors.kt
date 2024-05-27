@@ -2,8 +2,8 @@ package me.jfenn.bingo.client.common.hud
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.BingoTeamKey
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.map.Color
 import kotlin.reflect.KProperty1
 

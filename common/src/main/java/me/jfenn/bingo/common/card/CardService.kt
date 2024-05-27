@@ -4,6 +4,7 @@ import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity

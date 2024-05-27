@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spectator.SpectatorInventoryScreenHandler

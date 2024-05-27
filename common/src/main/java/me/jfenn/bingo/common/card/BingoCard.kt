@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.card
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.state.TeamScore
+import me.jfenn.bingo.common.team.BingoTeam
 import net.minecraft.util.Identifier
 
 @Serializable

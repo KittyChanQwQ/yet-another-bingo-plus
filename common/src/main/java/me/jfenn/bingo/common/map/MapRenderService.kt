@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.MOD_ID
-import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.state.BingoState

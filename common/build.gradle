@@ -12,9 +12,9 @@ base.archivesName.set("${project.archives_base_name}-common")
 
 sqldelight {
     databases {
-        create("Stats") {
+        create("StatsDatabase") {
             packageName.set("me.jfenn.bingo.stats.sql")
-            dialect(libs.sqldelight.hsql.get().toString())
+            dialect(libs.sqldelight.sqlite.get().toString())
             deriveSchemaFromMigrations.set(true)
             migrationOutputDirectory = layout.buildDirectory.dir("resources/main/yet-another-minecraft-bingo/migrations")
         }
@@ -119,7 +119,7 @@ tasks.register("bingoConstants") {
 }
 
 tasks.processResources.configure {
-    dependsOn("generateMainStatsMigrations")
+    dependsOn("generateMainStatsDatabaseMigrations")
     dependsOn(tasks.bingoDatapack)
     dependsOn(tasks.bingoImages)
     dependsOn(tasks.bingoLangFiles)

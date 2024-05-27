@@ -51,6 +51,17 @@ dependencies {
         modImplementation(fabricApi.module(it, project.fabric_version))
     }
 
+    implementation libs.hikari
+    implementation libs.flyway.core
+    implementation libs.sqldelight.jdbc
+    implementation libs.sqlite
+    if (!project.name.equals("common")) {
+        include libs.hikari
+        include libs.flyway.core
+        include libs.sqldelight.jdbc
+        include libs.sqlite
+    }
+
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
     if (!project.name.equals("common")) {
         include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"

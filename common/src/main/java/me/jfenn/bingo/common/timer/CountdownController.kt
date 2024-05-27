@@ -5,7 +5,7 @@ import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.EffectType
 import me.jfenn.bingo.api.IStatusEffectsFactory
 import me.jfenn.bingo.api.ITickManager
-import me.jfenn.bingo.common.card.BingoTeamKey
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent

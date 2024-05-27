@@ -7,7 +7,7 @@ import me.jfenn.bingo.api.PlayerSoundCategory
 import me.jfenn.bingo.api.PlayerSoundEvent
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.card.BingoPlayerProfile
+import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.MobEntity
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket

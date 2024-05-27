@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.common.card.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.config.BlockPosition
 import net.minecraft.block.Blocks
 import net.minecraft.server.world.ServerWorld

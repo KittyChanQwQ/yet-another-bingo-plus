@@ -3,14 +3,13 @@ package me.jfenn.bingo.client.common.hud
 import me.jfenn.bingo.client.api.IButtonService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.integrations.jei.JeiIntegration
-import me.jfenn.bingo.common.card.BingoTeamKey
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.koin.core.Koin
 import kotlin.math.ceil

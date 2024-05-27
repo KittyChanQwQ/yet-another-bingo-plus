@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.card
 
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.BingoTeam
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory

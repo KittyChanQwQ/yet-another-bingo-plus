@@ -4,9 +4,9 @@ import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.PlayerSoundCategory
 import me.jfenn.bingo.api.PlayerSoundEvent
 import me.jfenn.bingo.common.card.BingoCardEntry
-import me.jfenn.bingo.common.card.BingoPlayerProfile
-import me.jfenn.bingo.common.card.BingoTeam
-import me.jfenn.bingo.common.card.TeamService
+import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -44,13 +44,13 @@ class ScoreUpdateService(
     }
 
     fun sendItemCaptured(
-        scoredPlayer: ServerPlayerEntity,
+        scoredPlayer: BingoPlayerProfile,
         team: BingoTeam,
         entry: BingoCardEntry,
         itemName: Text,
     ) {
         val packet = ScoredItemPacket(
-            player = BingoPlayerProfile.fromPlayer(scoredPlayer),
+            player = scoredPlayer,
             isViewerOnTeam = true,
             team = team.key,
             teamColor = team.formatting,
