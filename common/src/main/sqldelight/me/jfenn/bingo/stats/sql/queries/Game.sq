@@ -1,2 +1,23 @@
 upsert:
 INSERT OR REPLACE INTO Game VALUES ?;
+
+totalStatsByPlayer:
+SELECT
+sum(g.duration) AS duration,
+count(IIF(g.is_forfeit = 0, 1, NULL)) AS games,
+count(IIF(t.is_winner = 1 AND g.is_forfeit = 0 AND g.is_draw = 0, 1, NULL)) AS wins,
+count(IIF(t.is_winner = 0 AND g.is_forfeit = 0 AND g.is_draw = 0, 1, NULL)) AS losses
+FROM Game g
+JOIN GameTeam t ON t.game_id = g.id
+JOIN GamePlayer p ON p.game_id = g.id AND p.team_id = t.id AND p.minecraft_id = ?;
+
+monthlyStatsByPlayer:
+SELECT
+sum(g.duration) AS duration,
+count(IIF(g.is_forfeit = 0, 1, NULL)) AS games,
+count(IIF(t.is_winner = 1 AND g.is_forfeit = 0 AND g.is_draw = 0, 1, NULL)) AS wins,
+count(IIF(t.is_winner = 0 AND g.is_forfeit = 0 AND g.is_draw = 0, 1, NULL)) AS losses
+FROM Game g
+JOIN GameTeam t ON t.game_id = g.id
+JOIN GamePlayer p ON p.game_id = g.id AND p.team_id = t.id AND p.minecraft_id = ?
+WHERE strftime("%Y %m", g.started_at) = strftime("%Y %m", ?);

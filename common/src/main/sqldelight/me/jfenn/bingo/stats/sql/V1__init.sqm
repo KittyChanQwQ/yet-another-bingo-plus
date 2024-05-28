@@ -4,7 +4,7 @@ CREATE TABLE Game (
     bingo_options_hash TEXT NOT NULL,
     started_at TEXT NOT NULL,
     ended_at TEXT NOT NULL,
-    duration TEXT NOT NULL,
+    duration INTEGER NOT NULL,
     player_count INTEGER NOT NULL,
     is_draw INTEGER NOT NULL,
     is_forfeit INTEGER NOT NULL

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.stats
 
+import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
@@ -35,13 +36,21 @@ class WriteStatsController(
         // the game is a draw if nobody won and there is more than one team
         val isDraw = teams.none { it.isWinner() } && teams.size > 1
         val options = json.encodeToString(state.options)
+        val startedAt = state.startedAt ?: run {
+            log.error("state.startedAt is null!")
+            Clock.System.now()
+        }
+        val endedAt = state.endedAt ?: run {
+            log.error("state.endedAt is null!")
+            Clock.System.now()
+        }
         val insertGame = Game(
             id = state.gameId,
             bingo_options = options,
             bingo_options_hash = hashSha(options),
-            started_at = json.encodeToString(state.startedAt),
-            ended_at = json.encodeToString(state.endedAt),
-            duration = json.encodeToString(state.ingameDuration()),
+            started_at = startedAt.toString(),
+            ended_at = endedAt.toString(),
+            duration = state.ingameDuration()?.inWholeMilliseconds ?: 0L,
             player_count = teams.sumOf { it.players.size.toLong() },
             is_draw = if (isDraw) 1L else 0L,
             is_forfeit = if (state.isForfeit) 1L else 0L,
