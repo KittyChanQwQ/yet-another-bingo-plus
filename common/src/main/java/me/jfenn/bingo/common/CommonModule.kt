@@ -33,6 +33,7 @@ import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.ConnectionFactory
+import me.jfenn.bingo.common.stats.WriteStatsController
 import me.jfenn.bingo.common.team.TeamController
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
@@ -87,6 +88,7 @@ val commonModule = module {
 
         scopedOf(::ConnectionFactory)
         scoped { get<ConnectionFactory>().create() }
+        scopedOf(::WriteStatsController)
 
         scopedOf(::GameService)
         scopedOf(::MapItemService)
@@ -166,6 +168,9 @@ fun Scope.commonInit() {
     get<ScoreboardController>()
 
     get<ScoredItemCheck>()
+
+    get<ConnectionFactory>()
+    get<WriteStatsController>()
 
     get<TeamController>()
 

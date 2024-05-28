@@ -94,6 +94,7 @@ class GameService(
     }
 
     fun end(reason: Text?) {
+        state.endedAt = Clock.System.now()
         broadcastEnd(reason)
         state.changeState(events, GameState.POSTGAME)
     }

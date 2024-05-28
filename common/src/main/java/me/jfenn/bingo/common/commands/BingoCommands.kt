@@ -349,6 +349,8 @@ class BingoCommands : BaseCommand() {
                     )
                     .executesInScope {
                         val gameService = get<GameService>()
+                        val state = get<BingoState>()
+                        state.isForfeit = true
                         gameService.end(null)
                         1
                     }

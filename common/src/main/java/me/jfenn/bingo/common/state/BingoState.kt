@@ -29,6 +29,7 @@ data class BingoState(
     var state: GameState = GameState.PREGAME,
     var startedAt: Instant? = null,
     var updatedAt: Instant? = null,
+    var endedAt: Instant? = null,
     var lobbySpawnPos: BlockPosition = BlockPosition(0, 0, 0),
     var timeOffline: Duration = Duration.ZERO,
     val options: BingoOptions = ConfigService().options,
@@ -40,6 +41,8 @@ data class BingoState(
     ),
     // Stores a set of recently-joined player UUIDs for [PlayerController]
     val playersJoinedIds: MutableSet<String> = mutableSetOf(),
+    // Stores if the game was ended manually (with "/bingo end")
+    var isForfeit: Boolean = false,
 ) {
 
     fun getRegisteredTeams(): List<BingoTeam> {
