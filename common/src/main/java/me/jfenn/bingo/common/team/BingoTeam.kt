@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IMapService
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
@@ -60,12 +61,6 @@ data class BingoTeam(
 
     fun includesPlayer(player: ServerPlayerEntity): Boolean {
         return fromPlayer(player) == this
-    }
-
-    fun broadcastMessage(server: MinecraftServer, text: Text) {
-        server.playerManager.playerList
-            .filter { includesPlayer(it) }
-            .forEach { it.sendMessage(text) }
     }
 
     companion object {

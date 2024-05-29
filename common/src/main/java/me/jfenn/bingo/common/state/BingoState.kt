@@ -13,6 +13,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import net.minecraft.text.MutableText
@@ -24,7 +25,7 @@ import kotlin.time.Duration
 
 @Serializable
 data class BingoState(
-    val gameId: String = UUID.randomUUID().toString(),
+    val gameId: UuidAsString = UUID.randomUUID(),
     var seed: Long = Random.nextLong(),
     var state: GameState = GameState.PREGAME,
     var startedAt: Instant? = null,
@@ -40,7 +41,7 @@ data class BingoState(
         entries = List(25) { BingoCardEntry.FreeSpace() }
     ),
     // Stores a set of recently-joined player UUIDs for [PlayerController]
-    val playersJoinedIds: MutableSet<String> = mutableSetOf(),
+    val playersJoinedIds: MutableSet<UuidAsString> = mutableSetOf(),
     // Stores if the game was ended manually (with "/bingo end")
     var isForfeit: Boolean = false,
 ) {

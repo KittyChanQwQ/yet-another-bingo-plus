@@ -1,6 +1,7 @@
 package me.jfenn.bingo
 
 import me.jfenn.bingo.api.*
+import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.scope.BingoContext
 import me.jfenn.bingo.impl.*
@@ -15,6 +16,7 @@ val sharedModule = module {
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
 
     singleOf(::AdvancementManager) bind IAdvancementManager::class
+    singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
     singleOf(::ItemStackFactory) bind IItemStackFactory::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class

@@ -1,23 +1,31 @@
 upsert:
 INSERT OR REPLACE INTO Game VALUES ?;
 
+allGamesByPlayer:
+SELECT g.id FROM Game g
+WHERE EXISTS (SELECT * FROM GamePlayer p WHERE p.game_id = g.id AND p.minecraft_id = ?)
+ORDER BY g.started_at DESC
+LIMIT :limit OFFSET :offset;
+
 totalStatsByPlayer:
 SELECT
 sum(g.duration) AS duration,
+sum(p.captured_items) AS items,
 count(IIF(g.is_forfeit = 0, 1, NULL)) AS games,
 count(IIF(t.is_winner = 1 AND g.is_forfeit = 0 AND g.is_draw = 0, 1, NULL)) AS wins,
 count(IIF(t.is_winner = 0 AND g.is_forfeit = 0 AND g.is_draw = 0, 1, NULL)) AS losses
 FROM Game g
-JOIN GameTeam t ON t.game_id = g.id
-JOIN GamePlayer p ON p.game_id = g.id AND p.team_id = t.id AND p.minecraft_id = ?;
+JOIN GamePlayer p ON p.game_id = g.id AND p.minecraft_id = ?
+JOIN GameTeam t ON t.id = p.team_id AND t.game_id = g.id;
 
 monthlyStatsByPlayer:
 SELECT
 sum(g.duration) AS duration,
+sum(p.captured_items) AS items,
 count(IIF(g.is_forfeit = 0, 1, NULL)) AS games,
 count(IIF(t.is_winner = 1 AND g.is_forfeit = 0 AND g.is_draw = 0, 1, NULL)) AS wins,
 count(IIF(t.is_winner = 0 AND g.is_forfeit = 0 AND g.is_draw = 0, 1, NULL)) AS losses
 FROM Game g
-JOIN GameTeam t ON t.game_id = g.id
-JOIN GamePlayer p ON p.game_id = g.id AND p.team_id = t.id AND p.minecraft_id = ?
+JOIN GamePlayer p ON p.game_id = g.id AND p.minecraft_id = ?
+JOIN GameTeam t ON t.id = p.team_id AND t.game_id = g.id
 WHERE strftime("%Y %m", g.started_at) = strftime("%Y %m", ?);

@@ -5,20 +5,20 @@ import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.stats.data.GameInfo
+import me.jfenn.bingo.common.stats.data.GamePlayerInfo
+import me.jfenn.bingo.common.stats.data.GameTeamInfo
 import me.jfenn.bingo.common.utils.json
-import me.jfenn.bingo.stats.sql.Game
-import me.jfenn.bingo.stats.sql.GamePlayer
-import me.jfenn.bingo.stats.sql.GameTeam
-import me.jfenn.bingo.stats.sql.StatsDatabase
 import org.slf4j.Logger
 import java.security.MessageDigest
 import java.util.*
+import kotlin.time.Duration
 import kotlin.time.measureTime
 
 class WriteStatsController(
     private val log: Logger,
     private val state: BingoState,
-    private val db: StatsDatabase,
+    private val stats: StatsService,
     events: ScopedEvents,
 ) {
     private fun hashSha(string: String): String {
@@ -28,13 +28,11 @@ class WriteStatsController(
     }
 
     private fun writeGameResult() {
-        val insertPlayers = mutableListOf<GamePlayer>()
-        val insertTeams = mutableListOf<GameTeam>()
+        val insertTeams = mutableListOf<GameTeamInfo>()
+        val insertPlayers = mutableListOf<GamePlayerInfo>()
 
         val teams = state.getRegisteredTeams()
 
-        // the game is a draw if nobody won and there is more than one team
-        val isDraw = teams.none { it.isWinner() } && teams.size > 1
         val options = json.encodeToString(state.options)
         val startedAt = state.startedAt ?: run {
             log.error("state.startedAt is null!")
@@ -44,47 +42,44 @@ class WriteStatsController(
             log.error("state.endedAt is null!")
             Clock.System.now()
         }
-        val insertGame = Game(
+        val insertGame = GameInfo(
             id = state.gameId,
-            bingo_options = options,
-            bingo_options_hash = hashSha(options),
-            started_at = startedAt.toString(),
-            ended_at = endedAt.toString(),
-            duration = state.ingameDuration()?.inWholeMilliseconds ?: 0L,
-            player_count = teams.sumOf { it.players.size.toLong() },
-            is_draw = if (isDraw) 1L else 0L,
-            is_forfeit = if (state.isForfeit) 1L else 0L,
+            bingoOptions = options,
+            bingoOptionsHash = hashSha(options),
+            startedAt = startedAt,
+            endedAt = endedAt,
+            duration = state.ingameDuration() ?: Duration.ZERO,
+            playerCount = teams.sumOf { it.players.size },
+            // the game is a draw if nobody won and there is more than one team
+            isDraw = teams.none { it.isWinner() } && teams.size > 1,
+            isForfeit = state.isForfeit,
         )
 
         for (team in teams) {
-            val insertTeam = GameTeam(
+            val insertTeam = GameTeamInfo(
                 id = team.id,
-                game_id = insertGame.id,
+                gameId = insertGame.id,
                 name = team.name.key,
-                is_winner = if (team.isWinner()) 1L else 0L
+                isWinner = team.isWinner()
             ).also { insertTeams.add(it) }
 
             for (player in team.players) {
                 val itemCount = state.card.entries.count { it.players.contains(player) }
-                insertPlayers.add(GamePlayer(
-                    team_id = insertTeam.id,
-                    game_id = insertGame.id,
-                    minecraft_id = player.uuid,
-                    minecraft_name = player.name,
-                    captured_items = itemCount.toLong(),
+                insertPlayers.add(GamePlayerInfo(
+                    teamId = insertTeam.id,
+                    gameId = insertGame.id,
+                    minecraftId = player.uuid,
+                    minecraftName = player.name,
+                    capturedItems = itemCount,
                 ))
             }
         }
 
-        db.transaction {
-            db.gameQueries.upsert(insertGame)
-            for (insertTeam in insertTeams) {
-                db.gameTeamQueries.upsert(insertTeam)
-            }
-            for (insertPlayer in insertPlayers) {
-                db.gamePlayerQueries.upsert(insertPlayer)
-            }
-        }
+        stats.insertGame(
+            game = insertGame,
+            teams = insertTeams,
+            players = insertPlayers,
+        )
     }
 
     init {

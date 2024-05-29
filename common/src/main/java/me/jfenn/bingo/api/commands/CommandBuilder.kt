@@ -1,0 +1,73 @@
+package me.jfenn.bingo.api.commands
+
+import me.jfenn.bingo.api.IPlayerHandle
+import net.minecraft.server.MinecraftServer
+import net.minecraft.text.Text
+import org.koin.core.scope.Scope
+
+class CommandBuilder(
+    private val parent: CommandNode
+) {
+
+    fun literal(name: String, configure: CommandBuilder.() -> Unit) {
+        val node = CommandNode.Literal(name)
+        CommandBuilder(node).configure()
+        parent.children += node
+    }
+
+    fun text(name: String, configure: CommandBuilder.(arg: CommandArgument<Text>) -> Unit) {
+        val arg = CommandArgument.Text(name)
+        val node = CommandNode.RequiredArgument(arg)
+        CommandBuilder(node).configure(arg)
+        parent.children += node
+    }
+
+    fun player(name: String, configure: CommandBuilder.(arg: CommandArgument<IPlayerHandle>) -> Unit) {
+        val arg = CommandArgument.Player(name)
+        val node = CommandNode.RequiredArgument(arg)
+        CommandBuilder(node).configure(arg)
+        parent.children += node
+    }
+
+    fun requires(callback: IExecutionSource.() -> Boolean) {
+        parent.requires = callback
+    }
+
+    fun executes(callback: IExecutionContext.() -> Unit) {
+        parent.callback = callback
+    }
+}
+
+sealed class CommandNode {
+    val children = mutableListOf<CommandNode>()
+    var requires: (IExecutionSource.() -> Boolean)? = null
+    var callback: (IExecutionContext.() -> Unit)? = null
+
+    class Root : CommandNode()
+    class Literal(val name: String) : CommandNode()
+    class RequiredArgument<T>(val arg: CommandArgument<T>) : CommandNode()
+}
+
+sealed class CommandArgument<T> {
+    abstract val name: String
+
+    class Text(
+        override val name: String,
+    ) : CommandArgument<net.minecraft.text.Text>()
+
+    class Player(
+        override val name: String,
+    ) : CommandArgument<IPlayerHandle>()
+}
+
+interface IExecutionSource {
+    val server: MinecraftServer
+    val scope: Scope
+    val player: IPlayerHandle?
+}
+
+interface IExecutionContext : IExecutionSource {
+    fun sendMessage(text: Text)
+    fun sendFeedback(text: Text)
+    fun <T> getArgument(arg: CommandArgument<T>): T
+}

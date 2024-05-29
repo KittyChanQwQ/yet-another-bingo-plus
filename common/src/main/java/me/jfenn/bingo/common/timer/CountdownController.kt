@@ -5,18 +5,17 @@ import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.EffectType
 import me.jfenn.bingo.api.IStatusEffectsFactory
 import me.jfenn.bingo.api.ITickManager
-import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.MinecraftServer
-import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
 class CountdownController(
@@ -97,7 +96,7 @@ class CountdownController(
                     marker
                 }
 
-                for (player in team.players.mapNotNull { server.playerManager.getPlayer(UUID.fromString(it.uuid)) }) {
+                for (player in team.players.mapNotNull { server.playerManager.getPlayer(it.uuid) }) {
                     player.startRiding(entity, true)
                 }
             }

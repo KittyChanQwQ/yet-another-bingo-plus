@@ -32,6 +32,9 @@ interface IPlayerHandle {
     val isAlive: Boolean
     val isSpectator: Boolean
 
+    val uuid: UUID
+    val name: String
+
     fun allHeldStacks(): Sequence<IItemStack>
     fun allInventorySlots(): Sequence<Pair<Int, IItemStack>>
 

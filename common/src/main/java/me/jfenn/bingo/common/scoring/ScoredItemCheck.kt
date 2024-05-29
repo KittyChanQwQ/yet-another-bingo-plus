@@ -43,7 +43,7 @@ class ScoredItemCheck(
 
     private fun getOfflinePlayer(profile: BingoPlayerProfile): IPlayerHandle {
         // If the player is online, return the current player entity
-        val onlinePlayer = playerManager.getPlayer(UUID.fromString(profile.uuid))
+        val onlinePlayer = playerManager.getPlayer(profile.uuid)
         if (onlinePlayer != null) {
             // and set their offline cache entry
             offlinePlayerCache[profile] = onlinePlayer
@@ -100,7 +100,7 @@ class ScoredItemCheck(
                     updatedTeams.add(team)
 
                     // record the player that captured the tile
-                    val profile = BingoPlayerProfile.fromPlayer(player.player)
+                    val profile = BingoPlayerProfile.fromPlayer(player)
                     tile.players.add(profile)
 
                     scoreUpdateService.sendItemCaptured(
@@ -182,7 +182,7 @@ class ScoredItemCheck(
                         updatedTeams.add(team)
 
                         // record the player that captured the tile
-                        val profile = BingoPlayerProfile.fromPlayer(player.player)
+                        val profile = BingoPlayerProfile.fromPlayer(player)
                         entry.players.add(profile)
 
                         scoreUpdateService.sendItemCaptured(

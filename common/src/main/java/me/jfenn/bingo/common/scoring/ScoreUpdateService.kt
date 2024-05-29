@@ -70,7 +70,7 @@ class ScoreUpdateService(
         val sendToEveryone = options.showOtherTeamCompletions || options.showCompletedItems
         val playerList = when {
             sendToEveryone -> playerManager.getPlayers()
-            else -> team.players.mapNotNull { playerManager.getPlayer(UUID.fromString(it.uuid)) }
+            else -> team.players.mapNotNull { playerManager.getPlayer(it.uuid) }
         }
 
         val chatMessage = textProvider.string(

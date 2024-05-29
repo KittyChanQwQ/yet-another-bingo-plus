@@ -1,18 +1,19 @@
 package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
-import net.minecraft.server.network.ServerPlayerEntity
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.common.utils.UuidAsString
 
 @Serializable
 data class BingoPlayerProfile(
-    val uuid: String,
+    val uuid: UuidAsString,
     val name: String,
 ) {
     companion object {
-        fun fromPlayer(playerEntity: ServerPlayerEntity): BingoPlayerProfile {
+        fun fromPlayer(playerEntity: IPlayerHandle): BingoPlayerProfile {
             return BingoPlayerProfile(
-                uuid = playerEntity.uuidAsString,
-                name = playerEntity.gameProfile.name,
+                uuid = playerEntity.uuid,
+                name = playerEntity.name,
             )
         }
     }

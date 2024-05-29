@@ -188,7 +188,7 @@ class PlayerController(
             }
 
             // schedule an updateGameMode (handled in the next onGameTick)
-            state.playersJoinedIds.add(player.uuidAsString)
+            state.playersJoinedIds.add(player.uuid)
         }
 
         events.onPlayerRespawn { player ->
@@ -238,7 +238,7 @@ class PlayerController(
         events.onGameTick {
             for (player in server.playerManager.playerList) {
                 // If the player has just joined, update their gamemode
-                val playerUuid = player.uuidAsString
+                val playerUuid = player.uuid
                 if (playerUuid in state.playersJoinedIds) {
                     state.playersJoinedIds.remove(playerUuid)
                     updateGameMode(player)

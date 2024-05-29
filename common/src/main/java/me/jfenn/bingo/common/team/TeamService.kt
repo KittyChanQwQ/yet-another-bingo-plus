@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.team
 
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.ITeamHandle
 import me.jfenn.bingo.api.ITeamManager
 import me.jfenn.bingo.common.commands.CommandTreeHandler
@@ -19,6 +20,7 @@ class TeamService(
     private val teamManager: ITeamManager,
     private val commandTreeHandler: CommandTreeHandler,
     private val textProvider: TextProvider,
+    private val playerManager: IPlayerManager
 ) {
 
     fun getPlayerTeam(player: ServerPlayerEntity): BingoTeam? {
@@ -59,7 +61,7 @@ class TeamService(
     fun joinTeam(player: ServerPlayerEntity, teamTemplate: BingoTeam) {
         if (getPlayerTeam(player)?.key == teamTemplate.key) return
         val team = state.registerTeam(teamTemplate)
-        val playerProfile = BingoPlayerProfile.fromPlayer(player)
+        val playerProfile = BingoPlayerProfile.fromPlayer(playerManager.forPlayer(player))
 
         // Remove player from their existing team
         getPlayerTeam(player)

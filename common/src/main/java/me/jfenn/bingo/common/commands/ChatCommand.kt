@@ -5,10 +5,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.common.scope.BingoKoin
-import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
@@ -26,15 +26,15 @@ class ChatCommand : BaseCommand() {
             team: BingoTeam,
             message: Text,
         ) {
-            val server = player.server
-
             val messageText = Text.empty()
                 .append(Text.empty().append("TEAM ").append(player.displayName).formatted(team.formatting))
                 .append(Text.literal(": "))
                 .append(message)
 
             // broadcast message to team
-            team.broadcastMessage(server, messageText)
+            player.server.playerManager.playerList
+                .filter { team.includesPlayer(player) }
+                .forEach { it.sendMessage(messageText) }
         }
     }
 

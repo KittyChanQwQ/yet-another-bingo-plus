@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.event.packet.PacketConverter
 import me.jfenn.bingo.common.state.TeamScore
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
+import java.util.*
 
 data class ScoredItemPacket(
     val player: BingoPlayerProfile,
@@ -23,7 +24,7 @@ data class ScoredItemPacket(
         override fun fromPacketBuf(buf: IPacketBuf): ScoredItemPacket {
             return ScoredItemPacket(
                 player = BingoPlayerProfile(
-                    uuid = buf.readString(),
+                    uuid = UUID.fromString(buf.readString()),
                     name = buf.readString(),
                 ),
                 isViewerOnTeam = buf.readBoolean(),
@@ -38,7 +39,7 @@ data class ScoredItemPacket(
         }
 
         override fun toPacketBuf(source: ScoredItemPacket, dest: IPacketBuf) {
-            dest.writeString(source.player.uuid)
+            dest.writeString(source.player.uuid.toString())
             dest.writeString(source.player.name)
             dest.writeBoolean(source.isViewerOnTeam)
             dest.writeString(source.team.id)

@@ -33,6 +33,7 @@ import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.ConnectionFactory
+import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.stats.WriteStatsController
 import me.jfenn.bingo.common.team.TeamController
 import me.jfenn.bingo.common.team.TeamService
@@ -77,6 +78,7 @@ val commonModule = module {
     singleOf(::JoinCommand)
     singleOf(::SpectatorCommand)
     singleOf(::RestartCommand)
+    singleOf(::BingoStatsCommand)
 
     scope<BingoContext> {
         scopedOf(::ScopedEvents)
@@ -88,6 +90,7 @@ val commonModule = module {
 
         scopedOf(::ConnectionFactory)
         scoped { get<ConnectionFactory>().create() }
+        scopedOf(::StatsService)
         scopedOf(::WriteStatsController)
 
         scopedOf(::GameService)
@@ -150,6 +153,7 @@ fun Koin.commonInit() {
     get<JoinCommand>()
     get<SpectatorCommand>()
     get<RestartCommand>()
+    get<BingoStatsCommand>()
 }
 
 fun Scope.commonInit() {
