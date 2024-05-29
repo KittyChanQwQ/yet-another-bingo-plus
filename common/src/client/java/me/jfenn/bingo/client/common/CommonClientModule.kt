@@ -9,6 +9,7 @@ import me.jfenn.bingo.client.common.settings.ClientSettingsService
 import me.jfenn.bingo.client.common.sound.ClientSounds
 import me.jfenn.bingo.client.common.sound.ScorePacketReceiver
 import me.jfenn.bingo.client.common.sound.SoundService
+import me.jfenn.bingo.client.common.stats.ClientStatsSyncController
 import me.jfenn.bingo.client.common.world.BingoWorldManager
 import me.jfenn.bingo.client.integrations.YetAnotherConfigLibIntegration
 import me.jfenn.bingo.client.integrations.jei.JeiIntegration
@@ -28,6 +29,8 @@ val commonClientModule = module {
     singleOf(::SoundService)
     singleOf(::ClientSounds) withOptions { createdAtStart() }
     singleOf(::ScorePacketReceiver) withOptions { createdAtStart() }
+
+    singleOf(::ClientStatsSyncController) withOptions { createdAtStart() }
 
     singleOf(::BingoWorldManager) withOptions { createdAtStart() }
 

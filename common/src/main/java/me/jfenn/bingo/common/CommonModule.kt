@@ -21,7 +21,7 @@ import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.map.MapRenderService
 import me.jfenn.bingo.common.menu.MenuController
-import me.jfenn.bingo.common.scope.BingoContext
+import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.scoreboard.ScoreboardController
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
@@ -34,6 +34,7 @@ import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.ConnectionFactory
 import me.jfenn.bingo.common.stats.StatsService
+import me.jfenn.bingo.common.stats.StatsSyncController
 import me.jfenn.bingo.common.stats.WriteStatsController
 import me.jfenn.bingo.common.team.TeamController
 import me.jfenn.bingo.common.team.TeamService
@@ -80,17 +81,19 @@ val commonModule = module {
     singleOf(::RestartCommand)
     singleOf(::BingoStatsCommand)
 
-    scope<BingoContext> {
+    singleOf(::ConnectionFactory)
+    single { get<ConnectionFactory>().create() }
+    singleOf(::StatsService)
+
+    scope<BingoScope> {
         scopedOf(::ScopedEvents)
         scopedOf(::InteractionEntityEvents)
 
-        scoped { get<BingoContext>().server }
-        scoped { get<BingoContext>().state }
+        scoped { get<BingoScope>().server }
+        scoped { get<BingoScope>().state }
         scoped { get<BingoState>().options }
 
-        scopedOf(::ConnectionFactory)
-        scoped { get<ConnectionFactory>().create() }
-        scopedOf(::StatsService)
+        scopedOf(::StatsSyncController)
         scopedOf(::WriteStatsController)
 
         scopedOf(::GameService)
@@ -154,6 +157,9 @@ fun Koin.commonInit() {
     get<SpectatorCommand>()
     get<RestartCommand>()
     get<BingoStatsCommand>()
+
+    get<ConnectionFactory>()
+    get<StatsService>()
 }
 
 fun Scope.commonInit() {
@@ -173,7 +179,7 @@ fun Scope.commonInit() {
 
     get<ScoredItemCheck>()
 
-    get<ConnectionFactory>()
+    get<StatsSyncController>()
     get<WriteStatsController>()
 
     get<TeamController>()

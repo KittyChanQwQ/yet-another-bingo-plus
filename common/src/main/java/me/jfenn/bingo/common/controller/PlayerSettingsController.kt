@@ -207,6 +207,18 @@ class PlayerSettingsController(
         })
     }
 
+    private fun receivePlayerSettings(player: ServerPlayerEntity, settings: PlayerSettings) {
+        if (permissions.hasPermission(player, Permission.CONFIGURE_PLAYER)) {
+            log.debug("[PlayerSettingsController] Server - processing settings change from {}", player)
+            playerSettingsService.setPlayer(player, settings)
+        } else {
+            log.debug(
+                "[PlayerSettingsController] Server - denying settings change from {} due to permissions",
+                player
+            )
+        }
+    }
+
     init {
         events.onGameTick {
             if (state.state != GameState.PREGAME)
@@ -252,16 +264,12 @@ class PlayerSettingsController(
             }
         }
 
-        events.onPlayerSettingsPacket {
-            if (permissions.hasPermission(it.player, Permission.CONFIGURE_PLAYER)) {
-                log.debug("[PlayerSettingsController] Server - processing settings change from {}", it.player)
-                playerSettingsService.setPlayer(it.player, it.settings)
-            } else {
-                log.debug(
-                    "[PlayerSettingsController] Server - denying settings change from {} due to permissions",
-                    it.player
-                )
-            }
+        events.onPacket(packetManager.sendPlayerSettingsV1) {
+            receivePlayerSettings(it.player, it.packet)
+        }
+
+        events.onPacket(packetManager.sendPlayerSettingsV2) {
+            receivePlayerSettings(it.player, it.packet)
         }
 
         events.onPlayerChannelRegister { player ->

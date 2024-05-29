@@ -22,6 +22,10 @@ class ReturnEventListener<T, R> {
         listeners.add(callback)
     }
 
+    fun unregister(callback: (T) -> R) {
+        listeners.remove(callback)
+    }
+
 }
 
 typealias EventListener<T> = ReturnEventListener<T, Unit>

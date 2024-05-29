@@ -1,6 +1,14 @@
 upsert:
 INSERT OR REPLACE INTO Game VALUES ?;
 
+checkIfIdsExist:
+SELECT g.id FROM Game g
+WHERE g.id IN ?
+AND EXISTS (SELECT * FROM GamePlayer p WHERE p.game_id = g.id AND p.minecraft_id = ?);
+
+findById:
+SELECT * FROM Game WHERE id = ?;
+
 allGamesByPlayer:
 SELECT g.id FROM Game g
 WHERE EXISTS (SELECT * FROM GamePlayer p WHERE p.game_id = g.id AND p.minecraft_id = ?)

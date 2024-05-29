@@ -49,20 +49,23 @@ class ScopeManager(
             )
 
             log.info("[ScopeManager] Starting server scope...")
-            val ctx = BingoContext(server, state)
+            val ctx = BingoScope(server, state)
             val scopeId = getScopeId(server)
-            val scope = koin.createScope<BingoContext>(scopeId, ctx)
+            val scope = koin.createScope<BingoScope>(scopeId, ctx)
             scope.commonInit()
 
+            val events = scope.get<ScopedEvents>()
+            scope.registerCallback(events)
+
             // re-run state entry listeners
-            scope.get<ScopedEvents>().onStateChange(state.state to state.state)
+            events.onStateChange(state.state to state.state)
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
             val scope = getScope(server) ?: return@register
             log.info("[ScopeManager] Closing server scope...")
             onCleanup(scope)
-            koin.deleteScope(getScopeId(server))
+            scope.close()
         }
     }
 

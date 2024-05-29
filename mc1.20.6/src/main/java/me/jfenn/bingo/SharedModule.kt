@@ -3,7 +3,7 @@ package me.jfenn.bingo
 import me.jfenn.bingo.api.*
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.scope.BingoContext
+import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.impl.*
 import me.jfenn.bingo.impl.networking.ServerNetworkingImpl
 import org.koin.core.module.dsl.scopedOf
@@ -26,7 +26,7 @@ val sharedModule = module {
     singleOf(::TeamManager) bind ITeamManager::class
     singleOf(::TextSerializer) bind ITextSerializer::class
 
-    scope<BingoContext> {
+    scope<BingoScope> {
         scopedOf(::PlayerManager) bind IPlayerManager::class
         scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, ILevelStorage::class)
     }

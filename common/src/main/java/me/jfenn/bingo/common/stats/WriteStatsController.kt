@@ -3,12 +3,17 @@ package me.jfenn.bingo.common.stats
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.data.GameInfo
 import me.jfenn.bingo.common.stats.data.GamePlayerInfo
 import me.jfenn.bingo.common.stats.data.GameTeamInfo
+import me.jfenn.bingo.common.stats.data.PlayerGameSummary
+import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.utils.json
+import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import java.security.MessageDigest
 import java.util.*
@@ -19,12 +24,31 @@ class WriteStatsController(
     private val log: Logger,
     private val state: BingoState,
     private val stats: StatsService,
+    private val packets: ServerPacketEvents,
+    private val server: MinecraftServer,
     events: ScopedEvents,
-) {
+) : BingoComponent() {
     private fun hashSha(string: String): String {
         val md = MessageDigest.getInstance("SHA-512")
         val digest = md.digest(string.toByteArray())
         return HexFormat.of().formatHex(digest)
+    }
+
+    private fun broadcastResult(
+        gameInfo: GameInfo,
+        teamInfo: GameTeamInfo,
+        playerInfo: GamePlayerInfo,
+    ) {
+        // TODO: if player.uuid is also the server host (in singleplayer/lan), there's no need to send this packet
+        val player = server.playerManager.getPlayer(playerInfo.minecraftId) ?: return
+
+        packets.statsGameV1S2C.send(player, StatsGamePacket(
+            PlayerGameSummary(
+                game = gameInfo,
+                team = teamInfo,
+                player = playerInfo,
+            )
+        ))
     }
 
     private fun writeGameResult() {
@@ -65,13 +89,16 @@ class WriteStatsController(
 
             for (player in team.players) {
                 val itemCount = state.card.entries.count { it.players.contains(player) }
-                insertPlayers.add(GamePlayerInfo(
+                val insertPlayer = GamePlayerInfo(
                     teamId = insertTeam.id,
                     gameId = insertGame.id,
                     minecraftId = player.uuid,
                     minecraftName = player.name,
                     capturedItems = itemCount,
-                ))
+                )
+
+                broadcastResult(insertGame, insertTeam, insertPlayer)
+                insertPlayers.add(insertPlayer)
             }
         }
 

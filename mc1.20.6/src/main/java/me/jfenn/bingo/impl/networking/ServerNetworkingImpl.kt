@@ -1,6 +1,9 @@
 package me.jfenn.bingo.impl.networking
 
-import me.jfenn.bingo.api.*
+import me.jfenn.bingo.api.IServerNetworking
+import me.jfenn.bingo.api.IServerPacketHandlerC2S
+import me.jfenn.bingo.api.IServerPacketHandlerS2C
+import me.jfenn.bingo.api.ServerPacket
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.event.packet.PacketConverter
 import me.jfenn.bingo.common.utils.EventListener
@@ -26,7 +29,7 @@ class ServerNetworkingImpl(
     inner class ServerPacketHandlerC2S<T>(
         private val converter: PacketConverter<T>,
     ) : IServerPacketHandlerC2S<T> {
-        private val event = EventListener<ServerPacket<T>>()
+        override val onPacket = EventListener<ServerPacket<T>>()
 
         private val id = CustomPayload.id<BingoPayload<T>>(converter.id.toString())
         private val codec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
@@ -47,12 +50,10 @@ class ServerNetworkingImpl(
                 val player = ctx.player()
                 val data = ServerPacket(player, packet.value)
                 player.server.execute {
-                    event(data)
+                    onPacket(data)
                 }
             }
         }
-
-        override fun onPacket(receiver: (ServerPacket<T>) -> Unit) = event(receiver)
     }
 
     inner class ServerPacketHandlerS2C<T>(

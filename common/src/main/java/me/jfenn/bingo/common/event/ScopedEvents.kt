@@ -1,5 +1,7 @@
 package me.jfenn.bingo.common.event
 
+import me.jfenn.bingo.api.IServerPacketHandlerC2S
+import me.jfenn.bingo.api.ServerPacket
 import me.jfenn.bingo.common.event.model.*
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
@@ -11,11 +13,13 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.ActionResult
 import net.minecraft.util.TypedActionResult
+import org.koin.core.scope.Scope
+import org.koin.core.scope.ScopeCallback
 import org.slf4j.Logger
 
 class ScopedEvents(
     private val log: Logger,
-) : BingoComponent() {
+) : BingoComponent(), ScopeCallback {
 
     val onGameTick = EventListener<Unit>()
     val onUpdateTick = EventListener<Unit>()
@@ -37,7 +41,7 @@ class ScopedEvents(
     val onChangeConfig = EventListener<Unit>()
     val onChangePlayerSettings = EventListener<ServerPlayerEntity>()
 
-    val onPlayerSettingsPacket = EventListener<SettingsUpdateEvent>()
+    val onClose = EventListener<Unit>()
 
     init {
         onStateChange { (from, to) ->
@@ -55,5 +59,14 @@ class ScopedEvents(
                 callback(from)
             }
         }
+    }
+
+    fun <T> onPacket(packet: IServerPacketHandlerC2S<T>, callback: (ServerPacket<T>) -> Unit) {
+        packet.onPacket(callback)
+        onClose { packet.onPacket.unregister(callback) }
+    }
+
+    override fun onScopeClose(scope: Scope) {
+        onClose.invoke(Unit)
     }
 }

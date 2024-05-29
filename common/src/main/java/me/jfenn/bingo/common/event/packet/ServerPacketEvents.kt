@@ -5,6 +5,8 @@ import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.map.CardDisplayPacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.scoring.ScoredItemPacket
+import me.jfenn.bingo.common.stats.packets.StatsGamePacket
+import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
 import me.jfenn.bingo.common.text.GameOverPacket
 import me.jfenn.bingo.common.timer.CountdownPacket
 import me.jfenn.bingo.common.timer.TimerPacket
@@ -26,5 +28,10 @@ class ServerPacketEvents(
     val receivePlayerSettingsV1 = serverNetworking.registerS2C(PlayerSettings.V1_S2C)
     val sendPlayerSettingsV2 = serverNetworking.registerC2S(PlayerSettings.V2)
     val receivePlayerSettingsV2 = serverNetworking.registerS2C(PlayerSettings.V2)
+
+    val statsGameV1C2S = serverNetworking.registerC2S(StatsGamePacket.V1)
+    val statsGameV1S2C = serverNetworking.registerS2C(StatsGamePacket.V1)
+    val statsIndexV1C2S = serverNetworking.registerC2S(StatsIndexPacket.V1)
+    val statsIndexV1S2C = serverNetworking.registerS2C(StatsIndexPacket.V1)
 
 }

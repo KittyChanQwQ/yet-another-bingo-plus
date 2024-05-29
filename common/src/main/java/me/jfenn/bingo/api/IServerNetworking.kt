@@ -1,6 +1,7 @@
 package me.jfenn.bingo.api
 
 import me.jfenn.bingo.common.event.packet.PacketConverter
+import me.jfenn.bingo.common.utils.EventListener
 import net.minecraft.server.network.ServerPlayerEntity
 
 interface IServerNetworking {
@@ -9,7 +10,7 @@ interface IServerNetworking {
 }
 
 interface IServerPacketHandlerC2S<T> {
-    fun onPacket(receiver: (ServerPacket<T>) -> Unit)
+    val onPacket: EventListener<ServerPacket<T>>
 }
 
 interface IServerPacketHandlerS2C<T> {

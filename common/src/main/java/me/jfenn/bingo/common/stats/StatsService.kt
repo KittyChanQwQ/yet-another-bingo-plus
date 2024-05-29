@@ -1,18 +1,44 @@
 package me.jfenn.bingo.common.stats
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.common.stats.data.GameInfo
-import me.jfenn.bingo.common.stats.data.GamePlayerInfo
-import me.jfenn.bingo.common.stats.data.GameTeamInfo
-import me.jfenn.bingo.common.stats.data.PlayerStatsSummary
+import me.jfenn.bingo.common.stats.data.*
 import me.jfenn.bingo.stats.sql.StatsDatabase
-import java.util.UUID
+import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 class StatsService(
     private val db: StatsDatabase,
 ) {
+
+    fun checkIfIdsExist(playerUuid: UUID, gameIds: Set<UUID>): Set<UUID> {
+        val existingIds = db.gameQueries.checkIfIdsExist(
+            id = gameIds.map { it.toString() },
+            minecraft_id = playerUuid.toString(),
+        ).executeAsList()
+            .map { UUID.fromString(it) }
+            .toSet()
+
+        return gameIds - existingIds
+    }
+
+    fun findById(gameId: UUID, playerId: UUID): PlayerGameSummary? {
+        val game = db.gameQueries.findById(gameId.toString())
+            .executeAsOneOrNull()
+            ?: return null
+        val player = db.gamePlayerQueries.findById(minecraft_id = playerId.toString(), game_id = gameId.toString())
+            .executeAsOneOrNull()
+            ?: return null
+        val team = db.gameTeamQueries.findById(id = player.team_id, game_id = gameId.toString())
+            .executeAsOneOrNull()
+            ?: return null
+
+        return PlayerGameSummary(
+            game = GameInfo(game),
+            team = GameTeamInfo(team),
+            player = GamePlayerInfo(player),
+        )
+    }
 
     fun insertGame(
         game: GameInfo,
@@ -30,7 +56,10 @@ class StatsService(
         }
     }
 
-    fun fetchGamesByPlayer(playerUuid: UUID, itemsPerPage: Long = 10L) = sequence {
+    fun fetchGamesByPlayer(
+        playerUuid: UUID,
+        itemsPerPage: Long = 10L
+    ) = sequence {
         for (offset in 0L until Long.MAX_VALUE step itemsPerPage) {
             val games = db.gameQueries.allGamesByPlayer(
                 minecraft_id = playerUuid.toString(),
@@ -40,7 +69,7 @@ class StatsService(
 
             if (games.isEmpty()) break
 
-            yieldAll(games)
+            yield(games.map { UUID.fromString(it) })
         }
     }
 

@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariDataSource
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.stats.sql.StatsDatabase
 import net.fabricmc.loader.api.FabricLoader
 import org.flywaydb.core.Flyway
@@ -54,14 +53,6 @@ class ConnectionFactory(
     fun close() {
         log.info("[ConnectionFactory] Closing stats data source...")
         dataSource.close()
-    }
-
-    companion object {
-       init {
-           ScopeManager.onCleanup {
-               it.get<ConnectionFactory>().close()
-           }
-       }
     }
 
 }

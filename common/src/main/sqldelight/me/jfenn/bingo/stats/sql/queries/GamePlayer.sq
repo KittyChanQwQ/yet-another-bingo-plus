@@ -1,2 +1,5 @@
 upsert:
 INSERT OR REPLACE INTO GamePlayer VALUES ?;
+
+findById:
+SELECT * FROM GamePlayer WHERE minecraft_id = ? AND game_id = ?;
