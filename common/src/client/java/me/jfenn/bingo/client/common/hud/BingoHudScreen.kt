@@ -59,7 +59,7 @@ class BingoHudScreen(
                 return@viewsWithPositions
 
             // Check if a button already exists for the view - otherwise, create one
-            val cardName = view.teamColor?.name?.lowercase() ?: "preview"
+            val cardName = view.teamKey?.label ?: "preview"
             val button = cardButtons[view.teamKey] ?: buttonService.createButton(
                 x, y, BingoHudRenderer.CARD_WIDTH, BingoHudRenderer.CARD_HEIGHT,
                 texture = Identifier("minecraft", "bingo/card_$cardName"),
