@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
@@ -36,6 +37,7 @@ data class BingoState(
     var card: BingoCard = BingoCard(
         entries = List(25) { BingoCardEntry.FreeSpace() }
     ),
+    var endReason: GameEndReason? = null,
 ) {
 
     fun getRegisteredTeams(): List<BingoTeam> {

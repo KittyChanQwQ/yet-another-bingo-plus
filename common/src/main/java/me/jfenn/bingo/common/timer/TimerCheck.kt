@@ -1,14 +1,13 @@
 package me.jfenn.bingo.common.timer
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.game.GameEndReason
+import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.generated.StringKey
 import org.slf4j.Logger
 import kotlin.time.Duration.Companion.seconds
 
@@ -22,7 +21,6 @@ class TimerCheck(
     private val options: BingoOptions,
     private val gameService: GameService,
     private val log: Logger,
-    private val textProvider: TextProvider,
 ) : BingoComponent() {
 
     init {
@@ -54,7 +52,7 @@ class TimerCheck(
             val timeLimit = options.timeLimit
             if (timeLimit != null && duration >= timeLimit) {
                 // end the game!
-                gameService.end(textProvider.string(StringKey.GameEndReasonTimer))
+                gameService.end(GameEndReason.TIMER)
             }
         }
     }

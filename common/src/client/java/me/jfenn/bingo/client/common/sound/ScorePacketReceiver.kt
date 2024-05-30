@@ -1,11 +1,20 @@
 package me.jfenn.bingo.client.common.sound
 
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
+import me.jfenn.bingo.common.game.GameOverPacket
 
 class ScorePacketReceiver(
     clientPacketEvents: ClientPacketEvents,
     private val soundService: SoundService,
 ) {
+
+    fun onGameOver(packet: GameOverPacket) {
+        when {
+            packet.isUpdate -> {}
+            packet.isWinner -> soundService.play(ClientSounds.Key.GAME_WON)
+            else -> soundService.play(ClientSounds.Key.GAME_LOST)
+        }
+    }
 
     init {
         clientPacketEvents.scoredItemV1.onPacket { (packet) ->
@@ -20,17 +29,15 @@ class ScorePacketReceiver(
         }
 
         clientPacketEvents.gameOverV1.onPacket { (packet) ->
-            when {
-                packet.isWinner -> soundService.play(ClientSounds.Key.GAME_WON)
-                else -> soundService.play(ClientSounds.Key.GAME_LOST)
-            }
+            onGameOver(packet)
         }
 
         clientPacketEvents.gameOverV2.onPacket { (packet) ->
-            when {
-                packet.isWinner -> soundService.play(ClientSounds.Key.GAME_WON)
-                else -> soundService.play(ClientSounds.Key.GAME_LOST)
-            }
+            onGameOver(packet)
+        }
+
+        clientPacketEvents.gameOverV3.onPacket { (packet) ->
+            onGameOver(packet)
         }
 
         clientPacketEvents.timerV1.onPacket { (packet) ->
