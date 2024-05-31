@@ -41,7 +41,7 @@ class PlayerManager(
         val player = ServerPlayerEntity(
             server,
             server.overworld,
-            GameProfile(UUID.fromString(profile.uuid), profile.name)
+            GameProfile(profile.uuid, profile.name)
         )
 
         server.playerManager.loadPlayerData(player)
@@ -86,6 +86,10 @@ class PlayerManager(
             get() = player.isAlive
         override val isSpectator: Boolean
             get() = player.isSpectator
+        override val uuid: UUID
+            get() = player.uuid
+        override val name: String
+            get() = player.entityName
 
         override fun allHeldStacks(): Sequence<IItemStack> {
             return sequence {
