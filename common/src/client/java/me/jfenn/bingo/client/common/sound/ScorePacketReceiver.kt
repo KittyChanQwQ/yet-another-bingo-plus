@@ -8,9 +8,9 @@ class ScorePacketReceiver(
     private val soundService: SoundService,
 ) {
 
-    fun onGameOver(packet: GameOverPacket) {
+    private fun onGameOver(packet: GameOverPacket) {
         when {
-            packet.isUpdate -> {}
+            packet.isUpdate -> {} // if the packet is an update packet, do nothing
             packet.isWinner -> soundService.play(ClientSounds.Key.GAME_WON)
             else -> soundService.play(ClientSounds.Key.GAME_LOST)
         }

@@ -16,6 +16,11 @@ data class GameOverPacket(
     val duration: Duration,
     val canSendRestart: Boolean,
     val isWinner: Boolean,
+    /**
+     * Whether the packet is sent because of a game state change;
+     * - false indicates that the client should open the game over screen
+     * - true indicates that the client should update its data without opening the screen
+     */
     val isUpdate: Boolean,
 ) {
     object V1 : PacketConverter<GameOverPacket> {
