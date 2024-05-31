@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -40,6 +41,7 @@ data class BingoState(
     var card: BingoCard = BingoCard(
         entries = List(25) { BingoCardEntry.FreeSpace() }
     ),
+    var endReason: GameEndReason? = null,
     // Stores a set of recently-joined player UUIDs for [PlayerController]
     val playersJoinedIds: MutableSet<UuidAsString> = mutableSetOf(),
     // Stores if the game was ended manually (with "/bingo end")

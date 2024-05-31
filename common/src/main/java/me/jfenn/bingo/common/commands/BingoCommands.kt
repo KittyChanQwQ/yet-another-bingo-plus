@@ -6,7 +6,7 @@ import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.common.GameService
+import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.team.BingoTeam

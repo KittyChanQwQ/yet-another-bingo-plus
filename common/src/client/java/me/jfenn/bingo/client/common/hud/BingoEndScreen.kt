@@ -3,7 +3,7 @@ package me.jfenn.bingo.client.common.hud
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.api.IWorldService
 import me.jfenn.bingo.common.map.CardView
-import me.jfenn.bingo.common.text.GameOverPacket
+import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient

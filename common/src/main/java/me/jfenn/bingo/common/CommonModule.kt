@@ -16,6 +16,9 @@ import me.jfenn.bingo.common.event.EventManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.game.GameOverController
+import me.jfenn.bingo.common.game.GameOverService
+import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.map.BingoMapController
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
@@ -97,6 +100,9 @@ val commonModule = module {
         scopedOf(::WriteStatsController)
 
         scopedOf(::GameService)
+        scopedOf(::GameOverService)
+        scopedOf(::GameOverController)
+
         scopedOf(::MapItemService)
         scopedOf(::MapRenderService)
         scopedOf(::CardViewService)
@@ -176,6 +182,8 @@ fun Scope.commonInit() {
     get<PlayerSettingsController>()
     get<PlayerSpectatorController>()
     get<ScoreboardController>()
+
+    get<GameOverController>()
 
     get<ScoredItemCheck>()
 

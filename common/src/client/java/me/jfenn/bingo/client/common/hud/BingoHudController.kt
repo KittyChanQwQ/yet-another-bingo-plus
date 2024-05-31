@@ -5,6 +5,7 @@ import me.jfenn.bingo.client.api.IOptionsAccessor
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -105,6 +106,14 @@ class BingoHudController(
         }
     }
 
+    private fun onGameOver(packet: GameOverPacket) {
+        state.gameOverPacket = packet
+        if (!packet.isUpdate) {
+            // when the game first ends, open the end screen
+            MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, packet, canEscape = false))
+        }
+    }
+
     init {
         if (config.supportClientHud) {
             packetEvents.cardDisplayV1.onPacket {
@@ -120,13 +129,15 @@ class BingoHudController(
             }
 
             packetEvents.gameOverV1.onPacket { (packet) ->
-                state.gameOverPacket = packet
-                MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, packet, canEscape = false))
+                onGameOver(packet)
             }
 
             packetEvents.gameOverV2.onPacket { (packet) ->
-                state.gameOverPacket = packet
-                MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, packet, canEscape = false))
+                onGameOver(packet)
+            }
+
+            packetEvents.gameOverV3.onPacket { (packet) ->
+                onGameOver(packet)
             }
 
             HudRenderCallback.EVENT.register { context, _ ->

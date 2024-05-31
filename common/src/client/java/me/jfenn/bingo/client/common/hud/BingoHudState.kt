@@ -3,7 +3,7 @@ package me.jfenn.bingo.client.common.hud
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.map.CardDisplayPacket
 import me.jfenn.bingo.common.map.CardView
-import me.jfenn.bingo.common.text.GameOverPacket
+import me.jfenn.bingo.common.game.GameOverPacket
 
 class BingoHudState(
     var display: CardDisplayPacket? = null,

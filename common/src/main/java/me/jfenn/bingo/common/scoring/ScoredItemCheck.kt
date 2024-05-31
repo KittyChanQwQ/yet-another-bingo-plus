@@ -3,9 +3,10 @@ package me.jfenn.bingo.common.scoring
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.common.GameService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.game.GameEndReason
+import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -13,12 +14,9 @@ import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
-import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.slf4j.Logger
-import java.util.*
 import kotlin.time.measureTime
 
 /**
@@ -35,7 +33,6 @@ class ScoredItemCheck(
     private val teamService: TeamService,
     private val playerManager: IPlayerManager,
     private val advancementManager: IAdvancementManager,
-    private val textProvider: TextProvider,
     private val scoreUpdateService: ScoreUpdateService,
 ) : BingoComponent() {
 
@@ -247,14 +244,14 @@ class ScoredItemCheck(
 
             if (isWinner && !options.isRankedMode) {
                 // end the game, since a team has won
-                gameService.end(textProvider.string(StringKey.GameEndReasonBingo))
+                gameService.end(GameEndReason.BINGO)
                 return
             }
         }
 
         // check if the game is in a stalemate
         if (ScoreService.isLockout(state)) {
-            gameService.end(textProvider.string(StringKey.GameEndReasonLockout))
+            gameService.end(GameEndReason.LOCKOUT)
             return
         }
 
