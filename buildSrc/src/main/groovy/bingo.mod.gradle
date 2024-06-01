@@ -10,6 +10,11 @@ base {
     archivesName = project.archives_base_name
 }
 
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 loom {
     splitEnvironmentSourceSets()
 
@@ -51,14 +56,19 @@ dependencies {
         modImplementation(fabricApi.module(it, project.fabric_version))
     }
 
-    implementation libs.hikari
-    implementation libs.flyway.core
-    implementation libs.sqldelight.jdbc
-    implementation libs.sqlite
+    api libs.hikari
+    api libs.flyway.core
+    api libs.sqldelight.jdbc
+    api libs.sqlite
     if (!project.name.equals("common")) {
         include libs.hikari
         include libs.flyway.core
+        // jackson-databind is a runtime dependency for flyway
+        include libs.jackson.core
+        include libs.jackson.databind
+        include libs.jackson.annotations
         include libs.sqldelight.jdbc
+        include libs.sqldelight.runtime
         include libs.sqlite
     }
 

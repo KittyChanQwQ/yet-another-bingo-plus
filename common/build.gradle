@@ -10,15 +10,25 @@ loom.accessWidenerPath = file("src/main/resources/bingo.accesswidener")
 
 base.archivesName.set("${project.archives_base_name}-common")
 
+def sqlMigrationsDir = layout.buildDirectory.dir("generated/sqldelight/migrations")
+
 sqldelight {
     databases {
         create("StatsDatabase") {
             packageName.set("me.jfenn.bingo.stats.sql")
             dialect(libs.sqldelight.sqlite.get().toString())
             deriveSchemaFromMigrations.set(true)
-            migrationOutputDirectory = layout.buildDirectory.dir("resources/main/yet-another-minecraft-bingo/migrations")
+            migrationOutputDirectory = sqlMigrationsDir
         }
     }
+}
+
+tasks.register('bingoMigrations', Zip) {
+    dependsOn("generateMainStatsDatabaseMigrations")
+    from sqlMigrationsDir
+    include '**/*'
+    archiveFileName.set('migrations.zip')
+    destinationDirectory.set(layout.buildDirectory.dir("resources/main/yet-another-minecraft-bingo"))
 }
 
 dependencies {
@@ -119,7 +129,7 @@ tasks.register("bingoConstants") {
 }
 
 tasks.processResources.configure {
-    dependsOn("generateMainStatsDatabaseMigrations")
+    dependsOn(tasks.bingoMigrations)
     dependsOn(tasks.bingoDatapack)
     dependsOn(tasks.bingoImages)
     dependsOn(tasks.bingoLangFiles)

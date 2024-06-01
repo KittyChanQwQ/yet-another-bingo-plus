@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common
 
+import me.jfenn.bingo.api.ICloseEvent
 import me.jfenn.bingo.common.autorestart.RestartCommand
 import me.jfenn.bingo.common.autorestart.RestartOnLeaveController
 import me.jfenn.bingo.common.autorestart.RestartTimerController
@@ -43,6 +44,7 @@ import me.jfenn.bingo.common.team.TeamController
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.*
+import me.jfenn.bingo.impl.ServerCloseEvent
 import me.jfenn.bingo.integrations.ChunkyIntegration
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
@@ -51,6 +53,7 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.scope.Scope
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 
@@ -146,6 +149,10 @@ val commonModule = module {
 
         scopedOf(::CommandTreeHandler)
     }
+}
+
+val commonServerModule = module {
+    single { ServerCloseEvent } bind ICloseEvent::class
 }
 
 fun Koin.commonInit() {
