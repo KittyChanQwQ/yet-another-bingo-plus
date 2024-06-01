@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.common.stats
 
+import me.jfenn.bingo.api.ICloseEvent
 import me.jfenn.bingo.client.api.ISessionAccessor
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -7,7 +8,6 @@ import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.stats.data.PlayerGameSummary
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents
 import org.slf4j.Logger
 import java.util.*
@@ -20,6 +20,7 @@ class ClientStatsSyncController(
     private val packets: ClientPacketEvents,
     private val stats: StatsService,
     sessionAccessor: ISessionAccessor,
+    closeEvent: ICloseEvent,
 ) : BingoComponent() {
 
     private val playerUuid = sessionAccessor.getPlayerUuid()
@@ -38,7 +39,12 @@ class ClientStatsSyncController(
             packets.statsIndexV1C2S.send(packet)
 
             // sleep to avoid overloading the connection
-            Thread.sleep(Random.nextLong(20L, 100L))
+            try {
+                Thread.sleep(Random.nextLong(20L, 100L))
+            } catch (e: InterruptedException) {
+                log.warn("[ClientStatsSyncController] broadcastKnownIds interrupted!")
+                break
+            }
         }
     }
 
@@ -65,7 +71,12 @@ class ClientStatsSyncController(
             packets.statsGameV1C2S.send(packet)
 
             // sleep to avoid overloading the connection
-            Thread.sleep(Random.nextLong(20L, 100L))
+            try {
+                Thread.sleep(Random.nextLong(20L, 100L))
+            } catch (e: InterruptedException) {
+                log.warn("[ClientStatsSyncController] sendRequestedIds interrupted!")
+                break
+            }
         }
     }
 
@@ -95,8 +106,10 @@ class ClientStatsSyncController(
             insertReceivedGame(it.packet.game)
         }
 
-        ClientLifecycleEvents.CLIENT_STOPPING.register {
-            executor.awaitTermination(5L, TimeUnit.SECONDS)
+        closeEvent.onClose {
+            log.info("[ClientStatsSyncController] Closing executor thread")
+            executor.shutdown()
+            executor.awaitTermination(5, TimeUnit.SECONDS)
         }
     }
 }

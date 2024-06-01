@@ -33,7 +33,12 @@ class StatsSyncController(
             packets.statsIndexV1S2C.send(player, packet)
 
             // sleep to avoid overloading the connection
-            Thread.sleep(Random.nextLong(20L, 100L))
+            try {
+                Thread.sleep(Random.nextLong(20L, 100L))
+            } catch (e: InterruptedException) {
+                log.warn("[StatsSyncController] broadcastKnownIds interrupted!")
+                break
+            }
         }
     }
 
@@ -60,7 +65,12 @@ class StatsSyncController(
             packets.statsGameV1S2C.send(player, packet)
 
             // sleep to avoid overloading the connection
-            Thread.sleep(Random.nextLong(20L, 100L))
+            try {
+                Thread.sleep(Random.nextLong(20L, 100L))
+            } catch (e: InterruptedException) {
+                log.warn("[StatsSyncController] sendRequestedIds interrupted!")
+                break
+            }
         }
     }
 
@@ -90,7 +100,9 @@ class StatsSyncController(
         }
 
         events.onClose {
-            executor.awaitTermination(5L, TimeUnit.SECONDS)
+            log.info("[StatsSyncController] Closing executor thread")
+            executor.shutdown()
+            executor.awaitTermination(5, TimeUnit.SECONDS)
         }
     }
 }
