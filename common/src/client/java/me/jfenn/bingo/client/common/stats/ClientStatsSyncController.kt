@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.common.stats
 
-import me.jfenn.bingo.api.ICloseEvent
+import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.client.api.ISessionAccessor
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -11,22 +11,20 @@ import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
 import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents
 import org.slf4j.Logger
 import java.util.*
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 class ClientStatsSyncController(
     private val log: Logger,
     private val packets: ClientPacketEvents,
     private val stats: StatsService,
+    executors: IExecutors,
     sessionAccessor: ISessionAccessor,
-    closeEvent: ICloseEvent,
 ) : BingoComponent() {
 
     private val playerUuid = sessionAccessor.getPlayerUuid()
         ?: UUID.fromString("00000000-0000-0000-0000-000000000000")
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private val executor = executors.io
 
     private fun broadcastKnownIds() = executor.submit {
         for (ids in stats.fetchGamesByPlayer(playerUuid)) {
@@ -104,12 +102,6 @@ class ClientStatsSyncController(
 
         packets.statsGameV1S2C.onPacket {
             insertReceivedGame(it.packet.game)
-        }
-
-        closeEvent.onClose {
-            log.info("[ClientStatsSyncController] Closing executor thread")
-            executor.shutdown()
-            executor.awaitTermination(5, TimeUnit.SECONDS)
         }
     }
 }

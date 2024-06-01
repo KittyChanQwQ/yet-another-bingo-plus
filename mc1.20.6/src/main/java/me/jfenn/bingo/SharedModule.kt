@@ -18,6 +18,7 @@ val sharedModule = module {
     singleOf(::AdvancementManager) bind IAdvancementManager::class
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
+    single { Executors } bind IExecutors::class
     singleOf(::ItemStackFactory) bind IItemStackFactory::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     singleOf(::ScoreboardManager) bind IScoreboardManager::class

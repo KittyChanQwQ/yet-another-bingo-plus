@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.stats
 
+import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -9,18 +10,17 @@ import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
 import net.minecraft.server.network.ServerPlayerEntity
 import org.slf4j.Logger
 import java.util.*
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 class StatsSyncController(
     private val log: Logger,
     private val packets: ServerPacketEvents,
     private val stats: StatsService,
+    executors: IExecutors,
     events: ScopedEvents,
 ) : BingoComponent() {
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private val executor = executors.io
 
     private fun broadcastKnownIds(player: ServerPlayerEntity) = executor.submit {
         for (ids in stats.fetchGamesByPlayer(player.uuid)) {
@@ -97,12 +97,6 @@ class StatsSyncController(
 
         events.onPacket(packets.statsGameV1C2S) {
             insertReceivedGame(it.packet.game)
-        }
-
-        events.onClose {
-            log.info("[StatsSyncController] Closing executor thread")
-            executor.shutdown()
-            executor.awaitTermination(5, TimeUnit.SECONDS)
         }
     }
 }
