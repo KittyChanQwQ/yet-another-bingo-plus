@@ -15,6 +15,7 @@ import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.Registries
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.RawFilteredPair
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -281,8 +282,8 @@ class ItemStackFactory(
     inner class PlayerHeadImpl(
         override val stack: ItemStack,
     ) : ItemStackImpl(stack), IPlayerHead {
-        override fun setSkullOwner(playerId: UUID, playerName: String) {
-            stack[DataComponentTypes.PROFILE] = ProfileComponent(GameProfile(playerId, playerName))
+        override fun setSkullOwner(player: ServerPlayerEntity) {
+            stack[DataComponentTypes.PROFILE] = ProfileComponent(player.gameProfile)
         }
     }
 }

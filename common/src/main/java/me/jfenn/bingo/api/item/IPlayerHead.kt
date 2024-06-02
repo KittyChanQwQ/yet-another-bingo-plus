@@ -1,7 +1,7 @@
 package me.jfenn.bingo.api.item
 
-import java.util.*
+import net.minecraft.server.network.ServerPlayerEntity
 
 interface IPlayerHead : IItemStack {
-    fun setSkullOwner(playerId: UUID, playerName: String)
+    fun setSkullOwner(player: ServerPlayerEntity)
 }

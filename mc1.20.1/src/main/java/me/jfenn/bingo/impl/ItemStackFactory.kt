@@ -10,9 +10,9 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.Registries
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import java.util.*
 
 class ItemStackFactory(
     private val textSerializer: ITextSerializer,
@@ -218,8 +218,8 @@ class ItemStackFactory(
     inner class PlayerHeadImpl(
         override val stack: ItemStack,
     ) : ItemStackImpl(stack), IPlayerHead {
-        override fun setSkullOwner(playerId: UUID, playerName: String) {
-            stack.getOrCreateNbt().putString("SkullOwner", playerName)
+        override fun setSkullOwner(player: ServerPlayerEntity) {
+            stack.getOrCreateNbt().putString("SkullOwner", player.entityName)
         }
     }
 }
