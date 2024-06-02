@@ -3,6 +3,7 @@ package me.jfenn.bingo.impl
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
+import com.mojang.authlib.GameProfile
 import com.mojang.serialization.JsonOps
 import me.jfenn.bingo.api.item.*
 import net.minecraft.component.DataComponentType
@@ -19,6 +20,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Unit
 import org.slf4j.Logger
+import java.util.*
 
 class ItemStackFactory(
     private val logger: Logger,
@@ -48,6 +50,8 @@ class ItemStackFactory(
     override fun createFireworkRocket(): IFireworkRocket = createStack(Items.FIREWORK_ROCKET, 1).asFireworkRocket()!!
 
     override fun createWrittenBook(): IWrittenBook = createStack(Items.WRITTEN_BOOK, 1).asWrittenBook()!!
+
+    override fun createPlayerHead(): IPlayerHead = createStack(Items.PLAYER_HEAD, 1).asPlayerHead()!!
 
     open inner class ItemStackImpl(
         override val stack: ItemStack,
@@ -198,6 +202,12 @@ class ItemStackFactory(
                     ?.let { WrittenBookImpl(stack) }
         }
 
+        override fun asPlayerHead(): IPlayerHead? {
+            return (this as? PlayerHeadImpl)
+                ?: takeIf { item == Items.PLAYER_HEAD }
+                    ?.let { PlayerHeadImpl(stack) }
+        }
+
     }
 
     inner class WrittenBookImpl(
@@ -266,5 +276,13 @@ class ItemStackFactory(
             set(value) {
                 stack[DataComponentTypes.FIREWORKS] = value?.let { FireworksComponent(0, emptyList()) }
             }
+    }
+
+    inner class PlayerHeadImpl(
+        override val stack: ItemStack,
+    ) : ItemStackImpl(stack), IPlayerHead {
+        override fun setSkullOwner(playerId: UUID, playerName: String) {
+            stack[DataComponentTypes.PROFILE] = ProfileComponent(GameProfile(playerId, playerName))
+        }
     }
 }

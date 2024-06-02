@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.stats.data
 
+import me.jfenn.bingo.common.team.BingoTeamKey
 import kotlin.time.Duration
 
 class PlayerStatsSummary(
@@ -13,4 +14,7 @@ class PlayerStatsSummary(
     val monthlyGames: Long,
     val monthlyWins: Long,
     val monthlyLosses: Long,
+    val favoriteTeam: BingoTeamKey?,
+    val favoriteTeamPercentage: Float,
+    val winStreak: Long,
 )

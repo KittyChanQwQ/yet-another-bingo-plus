@@ -14,6 +14,7 @@ interface IItemStackFactory {
     fun createFilledMap(): IFilledMap
     fun createFireworkRocket(): IFireworkRocket
     fun createWrittenBook(): IWrittenBook
+    fun createPlayerHead(): IPlayerHead
 }
 
 interface IItemStack {
@@ -48,4 +49,5 @@ interface IItemStack {
     fun asFilledMap(): IFilledMap?
     fun asFireworkRocket(): IFireworkRocket?
     fun asWrittenBook(): IWrittenBook?
+    fun asPlayerHead(): IPlayerHead?
 }

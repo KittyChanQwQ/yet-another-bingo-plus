@@ -2,6 +2,7 @@ package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.api.item.*
+import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -12,6 +13,7 @@ import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import java.util.*
 
 class ItemStackFactory(
     private val textSerializer: ITextSerializer,
@@ -40,6 +42,8 @@ class ItemStackFactory(
     override fun createFireworkRocket(): IFireworkRocket = createStack(Items.FIREWORK_ROCKET, 1).asFireworkRocket()!!
 
     override fun createWrittenBook(): IWrittenBook = createStack(Items.WRITTEN_BOOK, 1).asWrittenBook()!!
+
+    override fun createPlayerHead(): IPlayerHead = createStack(Items.PLAYER_HEAD, 1).asPlayerHead()!!
 
     open inner class ItemStackImpl(
         override val stack: ItemStack,
@@ -134,6 +138,12 @@ class ItemStackFactory(
                 ?: takeIf { item == Items.WRITTEN_BOOK }
                     ?.let { WrittenBookImpl(stack) }
         }
+
+        override fun asPlayerHead(): IPlayerHead? {
+            return (this as? PlayerHeadImpl)
+                ?: takeIf { item == Items.PLAYER_HEAD }
+                    ?.let { PlayerHeadImpl(stack) }
+        }
     }
 
     inner class WrittenBookImpl(
@@ -204,5 +214,13 @@ class ItemStackFactory(
                     else -> stack.nbt?.remove("Fireworks")
                 }
             }
+    }
+
+    inner class PlayerHeadImpl(
+        override val stack: ItemStack,
+    ) : ItemStackImpl(stack), IPlayerHead {
+        override fun setSkullOwner(playerId: UUID, playerName: String) {
+            stack.getOrCreateNbt().putString("SkullOwner", playerName)
+        }
     }
 }

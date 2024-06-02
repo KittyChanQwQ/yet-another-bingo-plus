@@ -1,15 +1,22 @@
 package me.jfenn.bingo.common.stats
 
 import kotlinx.datetime.Clock
+import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.common.stats.data.*
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.stats.sql.StatsDatabase
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 class StatsService(
     private val db: StatsDatabase,
+    executors: IExecutors,
 ) {
+
+    private val executor = executors.io
 
     fun checkIfIdsExist(playerUuid: UUID, gameIds: Set<UUID>): Set<UUID> {
         val existingIds = db.gameQueries.checkIfIdsExist(
@@ -76,6 +83,9 @@ class StatsService(
     fun getPlayerSummary(playerUuid: UUID): PlayerStatsSummary {
         val total = db.gameQueries.totalStatsByPlayer(playerUuid.toString()).executeAsOne()
         val monthly = db.gameQueries.monthlyStatsByPlayer(playerUuid.toString(), Clock.System.now().toString()).executeAsOne()
+        val favoriteTeam = db.gamePlayerQueries.findFavoriteTeam(playerUuid.toString()).executeAsOneOrNull()
+        val currentStreak = db.gameQueries.latestWinStreakByPlayer(playerUuid.toString()).executeAsOneOrNull()
+
         return PlayerStatsSummary(
             totalPlaytime = total.duration?.milliseconds ?: Duration.ZERO,
             totalItems = total.items ?: 0L,
@@ -87,7 +97,16 @@ class StatsService(
             monthlyGames = monthly.games,
             monthlyWins = monthly.wins,
             monthlyLosses = monthly.losses,
+            favoriteTeam = favoriteTeam?.id?.let { BingoTeamKey(it) },
+            favoriteTeamPercentage = favoriteTeam?.let { it.count / it.total.toFloat() } ?: 0f,
+            winStreak = currentStreak ?: 0L,
         )
+    }
+
+    fun getPlayerSummaryAsync(playerId: UUID): CompletableFuture<PlayerStatsSummary> {
+        return CompletableFuture<PlayerStatsSummary>()
+            .completeAsync({ getPlayerSummary(playerId) }, executor)
+            .orTimeout(10L, TimeUnit.SECONDS)
     }
 
 }

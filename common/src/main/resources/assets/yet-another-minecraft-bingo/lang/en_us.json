@@ -176,5 +176,14 @@
   "bingo.sound.game_lost": "Bingo Game Lost",
   "bingo.sound.timer_tick": "Clock ticks...",
   "bingo.sound.start_countdown": "Bingo countdown...",
-  "bingo.sound.start_release": "Bingo started!"
+  "bingo.sound.start_release": "Bingo started!",
+  "bingo.stats.monthly": "Monthly",
+  "bingo.stats.all_time": "All Time",
+  "bingo.stats.playtime": "Playtime",
+  "bingo.stats.games": "Games",
+  "bingo.stats.win_loss": "Win/Loss",
+  "bingo.stats.items": "Items",
+  "bingo.stats.win_streak": "Win Streak",
+  "bingo.stats.win_streak_value": "%s of %s",
+  "bingo.stats.favorite_team": "Favorite Team"
 }
