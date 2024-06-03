@@ -82,7 +82,7 @@ val commonModule = module {
     singleOf(::JoinCommand)
     singleOf(::SpectatorCommand)
     singleOf(::RestartCommand)
-    singleOf(::BingoStatsCommand)
+    singleOf(::StatsCommand)
 
     singleOf(::ConnectionFactory)
     single { get<ConnectionFactory>().create() }
@@ -167,7 +167,7 @@ fun Koin.commonInit() {
     get<JoinCommand>()
     get<SpectatorCommand>()
     get<RestartCommand>()
-    get<BingoStatsCommand>()
+    get<StatsCommand>()
 
     get<ConnectionFactory>()
     get<StatsService>()
