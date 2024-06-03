@@ -68,6 +68,7 @@ class BingoHudRenderer {
         mouseY: Int = -1,
         showTeamOutlines: Boolean = true,
         isFocused: Boolean = false,
+        isMouseOver: Boolean = false,
     ) {
         val colors = cardColors.teamColors[view.teamKey ?: BingoTeamKey("preview")] ?: BingoCardColors.DEFAULTS
         val textRenderer = MinecraftClient.getInstance().textRenderer
@@ -220,12 +221,17 @@ class BingoHudRenderer {
 
         context.matrices.pop()
 
-        // Render the hover tooltips last, without the matrix translate/transform
-        val (tileX, tileY) = getItem(x, y, cardScale, mouseX, mouseY) ?: return
-        val tile = view.tile(tileX, tileY) ?: return
+        if (isMouseOver) {
+            // Render the hover tooltips last, without the matrix translate/transform
+            val (tileX, tileY) = getItem(x, y, cardScale, mouseX, mouseY) ?: return
+            val tile = view.tile(tileX, tileY) ?: return
 
-        tile.item?.stack?.let { stack ->
-            context.drawItemTooltip(textRenderer, stack, mouseX, mouseY)
+            tile.item?.stack?.let { stack ->
+                context.matrices.push()
+                context.matrices.translate(0f, 0f, 2000f)
+                context.drawItemTooltip(textRenderer, stack, mouseX, mouseY)
+                context.matrices.pop()
+            }
         }
     }
 

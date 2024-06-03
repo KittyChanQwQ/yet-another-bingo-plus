@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack
 import org.slf4j.Logger
 
 interface JeiIntegration {
+    fun isInstalled(): Boolean
     fun openJeiRecipe(stack: ItemStack): Boolean
 
     companion object {
@@ -28,6 +29,7 @@ interface JeiIntegration {
 }
 
 class JeiIntegrationDummy : JeiIntegration {
+    override fun isInstalled(): Boolean = false
     override fun openJeiRecipe(stack: ItemStack) = false
 }
 
@@ -36,6 +38,8 @@ class JeiIntegrationImpl(
 ) : JeiIntegration {
 
     private val plugin = JeiEntrypoint
+
+    override fun isInstalled(): Boolean = true
 
     override fun openJeiRecipe(stack: ItemStack): Boolean {
         val runtime = plugin.runtime ?: run {
@@ -55,6 +59,7 @@ class JeiIntegrationImpl(
 }
 
 class ReiIntegrationImpl: JeiIntegration {
+    override fun isInstalled(): Boolean = true
     override fun openJeiRecipe(stack: ItemStack): Boolean {
         return ViewSearchBuilder.builder()
             .addRecipesFor(EntryStacks.of(stack))

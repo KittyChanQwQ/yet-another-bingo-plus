@@ -1,8 +1,6 @@
 package me.jfenn.bingo.client.common.hud
 
-import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.client.api.IWorldService
-import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -11,7 +9,6 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import org.koin.core.Koin
-import kotlin.math.ceil
 
 class BingoEndScreen(
     koin: Koin,
@@ -20,37 +17,27 @@ class BingoEndScreen(
     private val text: TextProvider = koin.get(),
 ) : Screen(text.string(StringKey.CardTitle)) {
 
-    private val drawServiceFactory = koin.get<IDrawServiceFactory>()
-    private val state = koin.get<BingoHudState>()
-    private val renderer = koin.get<BingoHudRenderer>()
     private val worldService = koin.get<IWorldService>()
 
     companion object {
         private const val BUTTON_WIDTH = 120
     }
 
-    private fun viewsWithPositions(callback: (view: CardView, x: Int, y: Int) -> Unit) {
-        val views = (state.display?.display ?: emptyList())
-            .mapNotNull { state.views[it] }
+    private val cardsWidget = BingoCardsWidget(
+        koin,
 
-        val rows = 1
-        val columns = ceil(views.size / rows.toFloat()).toInt()
+        x = width/2,
+        y = height/2,
+        width = width * 6/10,
+        height = BingoHudRenderer.CARD_HEIGHT,
+        screen = this,
 
-        val screenX = width/2 - (BingoHudRenderer.CARD_WIDTH * columns)/2
-        val screenY = height/2 - (BingoHudRenderer.CARD_HEIGHT * rows)/2
+        onTileClick = { false },
+        onViewClick = null,
+    )
 
-        for ((i, view) in views.withIndex()) {
-            val col = i % columns
-            val row = i / columns
-
-            val x = screenX + (col * BingoHudRenderer.CARD_WIDTH)
-            val y = screenY + (row * BingoHudRenderer.CARD_HEIGHT)
-            callback(view, x, y)
-        }
-    }
-
-    var dismissButton: ButtonWidget? = null
-    var restartButton: ButtonWidget? = null
+    private var dismissButton: ButtonWidget? = null
+    private var restartButton: ButtonWidget? = null
 
     private fun reopenWorld() {
         val client = client ?: return
@@ -144,21 +131,10 @@ class BingoEndScreen(
 
         context.matrices.pop()
 
-        val drawService = drawServiceFactory.create(context)
-
-        viewsWithPositions { view, x, y ->
-            renderer.drawCard(
-                context,
-                drawService,
-                view,
-                x = x,
-                y = y,
-                cardScale = 1f,
-                mouseX = mouseX,
-                mouseY = mouseY,
-                showTeamOutlines = false,
-            )
-        }
+        cardsWidget.x = width/2
+        cardsWidget.y = height/2
+        cardsWidget.width = width * 6/10
+        cardsWidget.render(context, mouseX, mouseY, delta)
     }
 
     override fun shouldPause() = false
