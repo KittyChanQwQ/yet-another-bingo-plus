@@ -37,6 +37,9 @@ data class BingoConfig(
     val databaseUser: String? = null,
     val databasePass: String? = null,
 
+    // whether to sync game stats with any connected servers/clients
+    var syncStats: Boolean = true,
+
     // only applies to client
     val client: ClientConfig = ClientConfig(),
 )

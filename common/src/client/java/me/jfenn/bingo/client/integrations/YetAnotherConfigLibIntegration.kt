@@ -412,6 +412,31 @@ class YetAnotherConfigLibIntegrationImpl(
             )
             .category(
                 ConfigCategory.createBuilder()
+                    .name(text.string(StringKey.StatsSettings))
+                    .tooltip(text.string(StringKey.StatsSettingsTooltip))
+                    .option(
+                        Option.createBuilder<Boolean>()
+                            .name(text.string(StringKey.StatsSettingsSync))
+                            .description(
+                                OptionDescription.of(
+                                    text.string(StringKey.StatsSettingsSyncDescription)
+                                )
+                            )
+                            .binding(
+                                defaultConfig.syncStats,
+                                { config.syncStats },
+                                {
+                                    config.syncStats = it
+                                    configService.writeConfig(config)
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build()
+                    )
+                    .build()
+            )
+            .category(
+                ConfigCategory.createBuilder()
                     .name(text.string(StringKey.SoundSettings))
                     .tooltip(text.string(StringKey.SoundSettingsTooltip))
                     .groups(

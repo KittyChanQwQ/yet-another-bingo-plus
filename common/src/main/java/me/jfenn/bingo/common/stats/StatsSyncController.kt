@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.stats
 
 import me.jfenn.bingo.api.IExecutors
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -14,6 +15,7 @@ import kotlin.random.Random
 
 class StatsSyncController(
     private val log: Logger,
+    private val config: BingoConfig,
     private val packets: ServerPacketEvents,
     private val stats: StatsService,
     executors: IExecutors,
@@ -84,11 +86,13 @@ class StatsSyncController(
 
     init {
         events.onPlayerChannelRegister { player ->
+            if (!config.syncStats) return@onPlayerChannelRegister
             if (!packets.statsIndexV1S2C.isSupported(player)) return@onPlayerChannelRegister
             broadcastKnownIds(player)
         }
 
         events.onPacket(packets.statsIndexV1C2S) {
+            if (!config.syncStats) return@onPacket
             when (it.packet.action) {
                 StatsIndexPacket.Action.BROADCAST -> checkForMissingIds(it.player, it.packet.games)
                 StatsIndexPacket.Action.REQUEST -> sendRequestedIds(it.player, it.packet.games)
@@ -96,6 +100,7 @@ class StatsSyncController(
         }
 
         events.onPacket(packets.statsGameV1C2S) {
+            if (!config.syncStats) return@onPacket
             insertReceivedGame(it.packet.game)
         }
     }
