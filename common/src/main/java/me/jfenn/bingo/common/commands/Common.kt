@@ -2,8 +2,7 @@ package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import me.jfenn.bingo.api.commands.CommandBuilder
-import me.jfenn.bingo.api.commands.IExecutionContext
+import me.jfenn.bingo.api.commands.IExecutionSource
 import me.jfenn.bingo.common.PermissionKey
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
@@ -58,4 +57,15 @@ inline fun <T: ArgumentBuilder<ServerCommandSource, T>> T.executesInScope(
 
         callback.invoke(scope, ctx)
     }
+}
+
+fun IExecutionSource.hasState(vararg requiredState: GameState): Boolean {
+    val state = scope.get<BingoState>()
+    return requiredState.contains(state.state)
+}
+
+fun IExecutionSource.hasPermission(key: PermissionKey): Boolean {
+    val player = player ?: return false
+    val permissions = scope.get<PermissionsIntegration>()
+    return permissions.hasPermission(player, key)
 }

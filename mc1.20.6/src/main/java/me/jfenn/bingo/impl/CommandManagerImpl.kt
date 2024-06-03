@@ -5,8 +5,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.CommandSyntaxException
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.commands.*
 import me.jfenn.bingo.common.scope.BingoKoin
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -15,6 +13,7 @@ import net.minecraft.command.argument.EntityArgumentType
 import net.minecraft.command.argument.TextArgumentType
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import org.koin.core.scope.Scope
 import org.slf4j.Logger
@@ -104,9 +103,7 @@ open class ExecutionSourceImpl(
     override val server: MinecraftServer = source.server
     override val scope: Scope = BingoKoin.getScope(source.server)
         ?: throw IllegalArgumentException("No scope registered for this server!")
-    override val player: IPlayerHandle? = source.player?.let {
-        scope.get<IPlayerManager>().forPlayer(it)
-    }
+    override val player: ServerPlayerEntity? = source.player
 }
 
 class ExecutionContextImpl(
@@ -122,9 +119,7 @@ class ExecutionContextImpl(
         @Suppress("UNCHECKED_CAST")
         return when (arg) {
             is CommandArgument.Text -> TextArgumentType.getTextArgument(ctx, arg.name) as T
-            is CommandArgument.Player -> EntityArgumentType.getPlayer(ctx, arg.name)
-                .let { scope.get<IPlayerManager>().forPlayer(it) }
-                as T
+            is CommandArgument.Player -> EntityArgumentType.getPlayer(ctx, arg.name) as T
         }
     }
 }

@@ -28,7 +28,7 @@ abstract class BaseCommand : KoinComponent {
             for (command in commands)
                 dispatcher.register(command)
 
-            log.debug("Registered [${this::class.simpleName}]")
+            log.debug("Registered [{}]", this::class.simpleName)
         }
     }
 }

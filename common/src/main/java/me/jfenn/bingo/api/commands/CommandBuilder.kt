@@ -1,7 +1,7 @@
 package me.jfenn.bingo.api.commands
 
-import me.jfenn.bingo.api.IPlayerHandle
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import org.koin.core.scope.Scope
 
@@ -22,7 +22,7 @@ class CommandBuilder(
         parent.children += node
     }
 
-    fun player(name: String, configure: CommandBuilder.(arg: CommandArgument<IPlayerHandle>) -> Unit) {
+    fun player(name: String, configure: CommandBuilder.(arg: CommandArgument<ServerPlayerEntity>) -> Unit) {
         val arg = CommandArgument.Player(name)
         val node = CommandNode.RequiredArgument(arg)
         CommandBuilder(node).configure(arg)
@@ -57,13 +57,13 @@ sealed class CommandArgument<T> {
 
     class Player(
         override val name: String,
-    ) : CommandArgument<IPlayerHandle>()
+    ) : CommandArgument<ServerPlayerEntity>()
 }
 
 interface IExecutionSource {
     val server: MinecraftServer
     val scope: Scope
-    val player: IPlayerHandle?
+    val player: ServerPlayerEntity?
 }
 
 interface IExecutionContext : IExecutionSource {

@@ -1,6 +1,7 @@
 package me.jfenn.bingo
 
 import me.jfenn.bingo.api.*
+import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.impl.*
@@ -12,6 +13,7 @@ import org.koin.dsl.module
 
 val sharedModule = module {
     singleOf(::AdvancementManager) bind IAdvancementManager::class
+    singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
     single { Executors } bind IExecutors::class
     singleOf(::ItemStackFactory) bind IItemStackFactory::class

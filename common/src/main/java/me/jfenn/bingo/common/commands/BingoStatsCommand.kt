@@ -1,8 +1,10 @@
 package me.jfenn.bingo.common.commands
 
 import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.utils.formatString
 import net.minecraft.text.Text
@@ -27,15 +29,23 @@ class BingoStatsCommand(
         commandManager.register("bingo") {
             literal("stats") {
                 player("player") { playerArg ->
+                    requires {
+                        hasPermission(Permission.STATS_VIEW_PLAYER)
+                    }
                     executes {
                         val player = getArgument(playerArg)
-                        getStatsSummary(player)
+                        scope.get<IPlayerManager>().forPlayer(player)
+                            .let { getStatsSummary(it) }
                     }
                 }
 
+                requires {
+                    hasPermission(Permission.STATS_VIEW_SELF)
+                }
                 executes {
                     val player = player ?: throw IllegalArgumentException("Must be called on player")
-                    getStatsSummary(player)
+                    scope.get<IPlayerManager>().forPlayer(player)
+                        .let { getStatsSummary(it) }
                 }
             }
         }

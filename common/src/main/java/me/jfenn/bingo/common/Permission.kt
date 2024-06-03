@@ -2,7 +2,6 @@ package me.jfenn.bingo.common
 
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.memberProperties
 
 class PermissionKey(
     val permission: String,
@@ -49,6 +48,12 @@ object Permission {
 
     /** View all team cards in spectator */
     val SPECTATOR_VIEW_CARDS = PermissionKey("$MOD_ID.spectator.view_cards", PermissionDefault.ALLOW)
+
+    /** View a player's own statistics */
+    val STATS_VIEW_SELF = PermissionKey("$MOD_ID.stats.view_self", PermissionDefault.ALLOW)
+
+    /** View another player's statistics */
+    val STATS_VIEW_PLAYER = PermissionKey("$MOD_ID.stats.view_player", PermissionDefault.OPERATORS)
 
     fun getPermissions() = this::class.declaredMemberProperties
         .filter { it.returnType == PermissionKey::class }
