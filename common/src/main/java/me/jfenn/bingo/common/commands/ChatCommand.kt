@@ -33,7 +33,7 @@ class ChatCommand : BaseCommand() {
 
             // broadcast message to team
             player.server.playerManager.playerList
-                .filter { team.includesPlayer(player) }
+                .filter { team.includesPlayer(it) }
                 .forEach { it.sendMessage(messageText) }
         }
     }

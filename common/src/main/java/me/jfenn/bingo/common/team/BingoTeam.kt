@@ -60,7 +60,7 @@ data class BingoTeam(
     fun isWinner(): Boolean = this.winner != null
 
     fun includesPlayer(player: ServerPlayerEntity): Boolean {
-        return fromPlayer(player) == this
+        return players.any { it.uuid == player.uuid }
     }
 
     companion object {
