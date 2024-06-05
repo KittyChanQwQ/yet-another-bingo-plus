@@ -131,7 +131,7 @@ class MenuController(
             ZipInputStream(stream).use { zipStream ->
                 while (true) {
                     val entry = zipStream.nextEntry ?: break
-                    if (entry.isDirectory) break
+                    if (entry.isDirectory) continue
 
                     val entryName = entry.name.substringAfter('/')
 
