@@ -81,7 +81,7 @@ class WriteStatsController(
 
         for (team in teams) {
             val insertTeam = GameTeamInfo(
-                id = team.id,
+                id = team.key,
                 gameId = insertGame.id,
                 name = team.name.key,
                 isWinner = team.isWinner()

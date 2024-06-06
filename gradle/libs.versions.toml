@@ -3,6 +3,8 @@ insert-koin = "3.5.0"
 flyway = "10.8.1"
 sqldelight = "2.0.2"
 jackson = "2.16.0"
+mockk = "1.13.11"
+assertk = "0.28.1"
 
 [libraries]
 insert-koin-core = { module = "io.insert-koin:koin-core-jvm", version.ref = "insert-koin" }
@@ -25,6 +27,9 @@ sqldelight-jdbc = { module = "app.cash.sqldelight:jdbc-driver", version.ref = "s
 sqldelight-sqlite = { module = "app.cash.sqldelight:sqlite-3-38-dialect", version.ref = "sqldelight" }
 sqldelight-runtime = { module = "app.cash.sqldelight:runtime-jvm", version.ref = "sqldelight" }
 sqlite = { module = "org.xerial:sqlite-jdbc", version = "3.46.0.0" }
+
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
 
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "1.9.0" }

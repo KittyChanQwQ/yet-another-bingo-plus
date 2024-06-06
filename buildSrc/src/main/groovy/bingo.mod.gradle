@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     id "org.jetbrains.kotlin.jvm"
     id "fabric-loom"
@@ -10,9 +12,23 @@ base {
     archivesName = project.archives_base_name
 }
 
-tasks.withType(AbstractArchiveTask) {
+tasks.withType(AbstractArchiveTask).configureEach {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+}
+
+sourceSets {
+    testmod {
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.runtimeClasspath
+        compileClasspath += main.output
+        runtimeClasspath += main.output
+
+        // Include :common/testmod sources in mc* version modules
+        if (project.name.toString().startsWith("mc")) {
+            java.srcDir project(":common").sourceSets.testmod.java
+        }
+    }
 }
 
 loom {
@@ -25,13 +41,28 @@ loom {
         }
     }
 
+    runs {
+        gametestServer {
+            server()
+            source sourceSets.testmod
+
+            name "Game Test"
+
+            // Enable the gametest runner
+            vmArg "-Dfabric-api.gametest"
+            vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get()}/junit.xml"
+            runDir "build/gametest"
+        }
+    }
+
     log4jConfigs.from file("../buildSrc/src/main/resources/log4j-debug.xml")
 }
 
 dependencies {
-    // testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    // testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    // testImplementation "org.jetbrains.kotlin:kotlin-test"
+    compileOnly libs.mockk
+    testmodImplementation libs.mockk
+    compileOnly libs.assertk
+    testmodImplementation libs.assertk
 
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -39,22 +70,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
-    Set<String> fabricModules = [
-            "fabric-api-base",
-            "fabric-command-api-v1",
-            "fabric-entity-events-v1",
-            "fabric-events-interaction-v0",
-            "fabric-key-binding-api-v1",
-            "fabric-lifecycle-events-v1",
-            "fabric-rendering-v1",
-            "fabric-resource-loader-v0",
-            "fabric-message-api-v1",
-            "fabric-networking-api-v1",
-            "fabric-screen-api-v1"
-    ]
-    fabricModules.forEach {
-        modImplementation(fabricApi.module(it, project.fabric_version))
-    }
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     api libs.hikari
     api libs.flyway.core
@@ -102,7 +118,7 @@ if (project.name.toString() == "common" || project.name.toString() == "mc1.20.1"
 println("Using Java version $javaVersion")
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release.set(javaVersion)
+    it.options.release = javaVersion
 }
 
 java {
@@ -118,14 +134,10 @@ java {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(javaVersion))
-    }
 }
 
-test {
-    useJUnitPlatform()
+if (project.name.toString().startsWith("mc")) {
+    tasks.test.dependsOn tasks.runGametestServer
 }
 
 jar {

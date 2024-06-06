@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.stats
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.common.stats.data.*
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -80,9 +81,9 @@ class StatsService(
         }
     }
 
-    fun getPlayerSummary(playerUuid: UUID): PlayerStatsSummary {
+    fun getPlayerSummary(playerUuid: UUID, now: Instant = Clock.System.now()): PlayerStatsSummary {
         val total = db.gameQueries.totalStatsByPlayer(playerUuid.toString()).executeAsOne()
-        val monthly = db.gameQueries.monthlyStatsByPlayer(playerUuid.toString(), Clock.System.now().toString()).executeAsOne()
+        val monthly = db.gameQueries.monthlyStatsByPlayer(playerUuid.toString(), now.toString()).executeAsOne()
         val favoriteTeam = db.gamePlayerQueries.findFavoriteTeam(playerUuid.toString()).executeAsOneOrNull()
         val currentStreak = db.gameQueries.latestWinStreakByPlayer(playerUuid.toString()).executeAsOneOrNull()
 

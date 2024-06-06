@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
@@ -25,6 +26,7 @@ class ChatCommand : BaseCommand() {
             player: ServerPlayerEntity,
             team: BingoTeam,
             message: Text,
+            server: MinecraftServer = player.server,
         ) {
             val messageText = Text.empty()
                 .append(Text.empty().append("TEAM ").append(player.displayName).formatted(team.formatting))
@@ -32,7 +34,7 @@ class ChatCommand : BaseCommand() {
                 .append(message)
 
             // broadcast message to team
-            player.server.playerManager.playerList
+            server.playerManager.playerList
                 .filter { team.includesPlayer(it) }
                 .forEach { it.sendMessage(messageText) }
         }

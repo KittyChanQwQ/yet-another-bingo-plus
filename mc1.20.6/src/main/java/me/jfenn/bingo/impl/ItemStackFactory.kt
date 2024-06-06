@@ -164,11 +164,6 @@ class ItemStackFactory(
                 if (component.key.shouldSkipSerialization()) continue
                 val id = Registries.DATA_COMPONENT_TYPE.getId(component.key) ?: continue
 
-                stack.components
-                    .find { it.type == component.key }
-                    ?.encode(JsonOps.INSTANCE)
-                    ?.getOrThrow()
-
                 val jsonElement = stack.components
                     .find { it.type == component.key }
                     ?.encode(JsonOps.INSTANCE)
@@ -223,7 +218,7 @@ class ItemStackFactory(
                         ?: RawFilteredPair.of(""),
                     original?.author ?: "",
                     original?.generation ?: 0,
-                    original?.pages ?: emptyList(),
+                    original?.pages() ?: emptyList(),
                     original?.resolved ?: true
                 )
             }
@@ -236,7 +231,7 @@ class ItemStackFactory(
                     original?.title ?: RawFilteredPair.of(""),
                     value ?: "",
                     original?.generation ?: 0,
-                    original?.pages ?: emptyList(),
+                    original?.pages() ?: emptyList(),
                     original?.resolved ?: true
                 )
             }
