@@ -11,8 +11,8 @@ import net.minecraft.util.Identifier
 import kotlin.jvm.optionals.getOrNull
 
 class AdvancementManager : IAdvancementManager {
-    override fun getAdvancement(server: MinecraftServer, id: Identifier): IAdvancementHandle? {
-        return server.advancementLoader.get(id)
+    override fun getAdvancement(server: MinecraftServer, id: String): IAdvancementHandle? {
+        return server.advancementLoader.get(Identifier(id))
             ?.let { AdvancementHandle(it) }
     }
 

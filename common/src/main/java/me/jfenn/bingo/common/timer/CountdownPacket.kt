@@ -9,7 +9,7 @@ class CountdownPacket(
     val secondsRemaining: Int,
 ) {
     object V1 : PacketConverter<CountdownPacket> {
-        override val id = Identifier(MOD_ID_BINGO, "countdown")
+        override val id = Identifier.of(MOD_ID_BINGO, "countdown")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): CountdownPacket {
             return CountdownPacket(buf.readInt())

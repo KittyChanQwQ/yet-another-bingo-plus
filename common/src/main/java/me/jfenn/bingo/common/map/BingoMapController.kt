@@ -67,13 +67,13 @@ class BingoMapController(
                 // first populate entry item stacks, if missing...
                 for (itemEntry in state.card.getAllEntriesOf<BingoCardEntry.ItemEntry>()) {
                     // If the entry doesn't have a visualItem yet, set it to match the item
-                    val stack = itemStackFactory.createStack(itemEntry.identifierInstance)
+                    val stack = itemStackFactory.createStack(itemEntry.identifier)
                     itemEntry.visualItem = stack
                 }
 
                 for (advancementEntry in state.card.getAllEntriesOf<BingoCardEntry.AdvancementEntry>()) {
                     // If the entry doesn't have a visualItem yet, set it to match the advancement
-                    val advancement = advancementManager.getAdvancement(server, advancementEntry.identifierInstance)
+                    val advancement = advancementManager.getAdvancement(server, advancementEntry.identifier)
                         ?: continue
 
                     advancementEntry.visualItem = itemStackFactory.forStack(advancement.displayIcon)

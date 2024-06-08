@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier
 @JeiPlugin
 object JeiEntrypoint : IModPlugin {
 
-    private val IDENTIFIER = Identifier(MOD_ID, "yet-another-minecraft-bingo")
+    private val IDENTIFIER = Identifier.of(MOD_ID, "yet-another-minecraft-bingo")!!
 
     var runtime: IJeiRuntime? = null
 

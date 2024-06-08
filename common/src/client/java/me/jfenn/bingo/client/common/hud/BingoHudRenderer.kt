@@ -4,9 +4,9 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.map.Color
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.json
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
@@ -25,6 +25,11 @@ class BingoHudRenderer {
         const val CARD_HEIGHT = 132
 
         val BLACK_A40 = Color.BLACK.copy(a = 64)
+
+        val CARD_COLORS_ID = Identifier.of(MOD_ID_BINGO, "gui/card_colors.json")!!
+        val ADVANCEMENT_FRAME_ID = Identifier.of("minecraft", "bingo/image_frame_advancement")!!
+        val FRAME_MULTI_ID = Identifier.of("minecraft", "bingo/image_frame_multi")!!
+        val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")!!
     }
 
     private var cardColors = BingoCardColors()
@@ -82,7 +87,7 @@ class BingoHudRenderer {
 
         val cardName = view.teamKey?.label ?: "preview"
         service.drawTexture(
-            texture = Identifier("minecraft", "bingo/card_$cardName"),
+            texture = Identifier.of("minecraft", "bingo/card_$cardName")!!,
             x = 0, y = 0,
             u = 0f, v = 0f,
             width = CARD_WIDTH,
@@ -105,7 +110,7 @@ class BingoHudRenderer {
 
             if (tile.isAdvancement) {
                 service.drawTexture(
-                    texture = Identifier("minecraft", "bingo/image_frame_advancement"),
+                    texture = ADVANCEMENT_FRAME_ID,
                     x = itemX - 1, y = itemY - 1,
                     u = 0f, v = 0f,
                     width = 20, height = 20,
@@ -115,8 +120,8 @@ class BingoHudRenderer {
 
             if (tile.isHidden) {
                 val texture = tile.itemTier
-                    ?.let { Identifier("minecraft", "bingo/image_hidden_${it.name.lowercase()}") }
-                    ?: Identifier("minecraft", "bingo/image_hidden")
+                    ?.let { Identifier.of("minecraft", "bingo/image_hidden_${it.name.lowercase()}")!! }
+                    ?: Identifier.of("minecraft", "bingo/image_hidden")!!
 
                 service.drawTexture(
                     texture = texture,
@@ -148,7 +153,7 @@ class BingoHudRenderer {
 
             if (tile.isMultiItem) {
                 service.drawTexture(
-                    texture = Identifier("minecraft", "bingo/image_frame_multi"),
+                    texture = FRAME_MULTI_ID,
                     x = itemX - 1, y = itemY - 1, z = 300,
                     u = 0f, v = 0f,
                     width = 20, height = 20,
@@ -158,7 +163,7 @@ class BingoHudRenderer {
 
             if (tile.isLocked) {
                 service.drawTexture(
-                    texture = Identifier("minecraft", "bingo/image_frame_locked"),
+                    texture = FRAME_LOCKED_ID,
                     x = itemX - 1, y = itemY - 1, z = 301,
                     u = 0f, v = 0f,
                     width = 20, height = 20,
@@ -238,7 +243,7 @@ class BingoHudRenderer {
     init {
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(object : SimpleSynchronousResourceReloadListener {
             override fun reload(manager: ResourceManager) {
-                this@BingoHudRenderer.cardColors = manager.getResource(Identifier(MOD_ID_BINGO, "gui/card_colors.json"))
+                this@BingoHudRenderer.cardColors = manager.getResource(CARD_COLORS_ID)
                     .getOrNull()
                     ?.inputStream
                     ?.use {
@@ -248,7 +253,7 @@ class BingoHudRenderer {
                     ?: BingoCardColors()
             }
 
-            override fun getFabricId(): Identifier = Identifier(MOD_ID_BINGO, "hud_renderer")
+            override fun getFabricId(): Identifier = Identifier.of(MOD_ID_BINGO, "hud_renderer")!!
         })
     }
 

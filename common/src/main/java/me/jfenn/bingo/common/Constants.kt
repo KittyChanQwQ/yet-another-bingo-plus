@@ -9,7 +9,7 @@ const val MOD_ID = "bingo"
 
 const val MOD_ID_BINGO = "yet-another-minecraft-bingo"
 
-val LOBBY_WORLD_ID = Identifier("bingo", "lobby")
+val LOBBY_WORLD_ID = Identifier.of("bingo", "lobby")!!
 val MinecraftServer.lobbyWorld get() = worlds.find { it.registryKey.value == LOBBY_WORLD_ID }
 
 // if true, item should be ignored when checking for bingo items

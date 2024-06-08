@@ -11,20 +11,6 @@
         "adapter": "kotlin",
         "value": "me.jfenn.bingo.client.integrations.jei.JeiEntrypoint"
       }
-    ],
-    "fabric-gametest": [
-      {
-        "adapter": "kotlin",
-        "value": "me.jfenn.bingo.common.commands.ChatCommandTest"
-      },
-      {
-        "adapter": "kotlin",
-        "value": "me.jfenn.bingo.common.stats.StatsServiceTest"
-      },
-      {
-        "adapter": "kotlin",
-        "value": "me.jfenn.bingo.common.text.TextProviderTest"
-      }
     ]
   },
   "depends": {

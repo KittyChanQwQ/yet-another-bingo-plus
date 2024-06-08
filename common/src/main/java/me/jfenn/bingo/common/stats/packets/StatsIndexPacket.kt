@@ -26,7 +26,7 @@ data class StatsIndexPacket(
     }
 
     object V1 : PacketConverter<StatsIndexPacket> {
-        override val id = Identifier(MOD_ID_BINGO, "stats_index")
+        override val id = Identifier.of(MOD_ID_BINGO, "stats_index")!!
 
         override fun toPacketBuf(source: StatsIndexPacket, dest: IPacketBuf) {
             dest.writeInt(

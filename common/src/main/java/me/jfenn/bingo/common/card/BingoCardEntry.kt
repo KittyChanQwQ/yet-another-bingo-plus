@@ -12,7 +12,6 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
 import kotlin.time.Duration
 
 @Serializable
@@ -137,13 +136,6 @@ sealed class BingoCardEntry {
         override val tier: TierLabel,
     ): BingoCardEntry() {
 
-        @Transient
-        val identifierInstance = try {
-            Identifier(identifier)
-        } catch (e: Throwable) {
-            throw IllegalArgumentException("Could not parse identifier '$identifier'")
-        }
-
         // To be populated by [BingoCardController] once we have a server reference
         @Transient
         override var visualItem: IItemStack? = null
@@ -171,13 +163,6 @@ sealed class BingoCardEntry {
         val identifier: String,
         override val tier: TierLabel,
     ): BingoCardEntry() {
-
-        @Transient
-        val identifierInstance = try {
-            Identifier(identifier)
-        } catch (e: Throwable) {
-            throw IllegalArgumentException("Could not parse identifier '$identifier'")
-        }
 
         // To be populated by [BingoCardController] once we have a server reference
         @Transient

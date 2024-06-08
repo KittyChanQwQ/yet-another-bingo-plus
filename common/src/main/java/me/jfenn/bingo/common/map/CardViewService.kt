@@ -2,12 +2,13 @@ package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCardEntry
-import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
@@ -24,6 +25,7 @@ class CardViewService(
     private val teamService: TeamService,
     private val permissions: PermissionsIntegration,
     private val textProvider: TextProvider,
+    private val packets: ServerPacketEvents,
 ) {
 
     companion object {
@@ -36,7 +38,7 @@ class CardViewService(
      */
     fun supportsCardHud(player: ServerPlayerEntity): Boolean {
         return config.supportClientHud &&
-                ServerPlayNetworking.canSend(player, CardDisplayPacket.V1.id)
+                packets.cardDisplayV1.isSupported(player)
     }
 
     fun isViewingPreviewCard()

@@ -2,10 +2,10 @@ package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.team.BingoPlayerProfile
-import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.event.packet.PacketConverter
 import me.jfenn.bingo.common.state.TeamScore
+import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import java.util.*
@@ -16,10 +16,10 @@ data class ScoredItemPacket(
     val team: BingoTeamKey,
     val teamColor: Formatting,
     val score: TeamScore,
-    val item: Identifier?,
+    val itemId: String?,
 ) {
     object V1 : PacketConverter<ScoredItemPacket> {
-        override val id = Identifier(MOD_ID_BINGO, "score_update")
+        override val id = Identifier.of(MOD_ID_BINGO, "score_update")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): ScoredItemPacket {
             return ScoredItemPacket(
@@ -34,7 +34,7 @@ data class ScoredItemPacket(
                     items = buf.readInt(),
                     lines = buf.readInt(),
                 ),
-                item = if (buf.readBoolean()) { Identifier(buf.readString()) } else null,
+                itemId = if (buf.readBoolean()) { buf.readString() } else null,
             )
         }
 
@@ -48,9 +48,9 @@ data class ScoredItemPacket(
             dest.writeInt(source.score.items)
             dest.writeInt(source.score.lines)
 
-            if (source.item != null) {
+            if (source.itemId != null) {
                 dest.writeBoolean(true)
-                dest.writeString(source.item.toString())
+                dest.writeString(source.itemId)
             } else {
                 dest.writeBoolean(false)
             }

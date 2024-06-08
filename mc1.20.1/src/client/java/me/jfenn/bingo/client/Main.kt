@@ -30,6 +30,7 @@ object Main : ClientModInitializer {
         singleOf(::ButtonService) bind IButtonService::class
         singleOf(::ClientNetworkingImpl) bind IClientNetworking::class
         single { DrawService } bind IDrawServiceFactory::class
+        singleOf(::HudCallbackImpl) bind IHudCallback::class
         single { OptionsAccessor } bind IOptionsAccessor::class
         single { SessionAccessor } bind ISessionAccessor::class
 

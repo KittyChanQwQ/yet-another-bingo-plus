@@ -7,6 +7,8 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 interface IDrawService {
+    val context: DrawContext
+
     fun drawTexture(
         texture: Identifier,
         x: Int, y: Int, z: Int = 0,

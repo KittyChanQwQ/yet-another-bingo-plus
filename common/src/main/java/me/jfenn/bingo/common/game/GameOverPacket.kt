@@ -24,7 +24,7 @@ data class GameOverPacket(
     val isUpdate: Boolean,
 ) {
     object V1 : PacketConverter<GameOverPacket> {
-        override val id = Identifier("bingo", "game_over")
+        override val id = Identifier.of("bingo", "game_over")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): GameOverPacket {
             return GameOverPacket(
@@ -55,7 +55,7 @@ data class GameOverPacket(
     }
 
     object V2 : PacketConverter<GameOverPacket> {
-        override val id = Identifier("bingo", "game_over_v2")
+        override val id = Identifier.of("bingo", "game_over_v2")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): GameOverPacket {
             return GameOverPacket(
@@ -87,7 +87,7 @@ data class GameOverPacket(
     }
 
     object V3 : PacketConverter<GameOverPacket> {
-        override val id = Identifier(MOD_ID_BINGO, "game_over_v3")
+        override val id = Identifier.of(MOD_ID_BINGO, "game_over_v3")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): GameOverPacket {
             return GameOverPacket(

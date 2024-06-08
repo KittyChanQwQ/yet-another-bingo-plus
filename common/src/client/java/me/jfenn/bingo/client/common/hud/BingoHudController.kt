@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
-import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.client.api.IDrawService
+import me.jfenn.bingo.client.api.IHudCallback
 import me.jfenn.bingo.client.api.IOptionsAccessor
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
@@ -12,11 +13,9 @@ import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.fabricmc.fabric.api.client.rendering.v1.InvalidateRenderStateCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
@@ -25,12 +24,12 @@ import org.lwjgl.glfw.GLFW
 
 class BingoHudController(
     private val koin: Koin,
-    private val drawServiceFactory: IDrawServiceFactory,
     private val optionsAccessor: IOptionsAccessor,
     private val config: BingoConfig,
     private val renderer: BingoHudRenderer,
     private val state: BingoHudState,
     private val text: TextProvider,
+    hud: IHudCallback,
     packetEvents: ClientPacketEvents,
 ) : BingoComponent() {
 
@@ -43,10 +42,11 @@ class BingoHudController(
         )
     )
 
-    private fun drawHud(context: DrawContext) {
-        val drawService = drawServiceFactory.create(context)
+    private fun drawHud(drawService: IDrawService) {
         val teamKeys = state.display?.display
         if (teamKeys.isNullOrEmpty()) return
+
+        val context = drawService.context
 
         // If the selected team is one of the displayed cards, try to find its view state...
         val selectedTeam = state.selectedTeam
@@ -140,16 +140,16 @@ class BingoHudController(
                 onGameOver(packet)
             }
 
-            HudRenderCallback.EVENT.register { context, _ ->
+            hud.onRender {
                 // Do not draw the HUD if the F3 or chat overlay is shown
                 if (optionsAccessor.isHudHidden())
-                    return@register
+                    return@onRender
                 if (config.client.hideOnF3 && optionsAccessor.isDebugEnabled())
-                    return@register
+                    return@onRender
                 if (config.client.hideOnChat && MinecraftClient.getInstance().currentScreen is ChatScreen)
-                    return@register
+                    return@onRender
 
-                drawHud(context)
+                drawHud(it.drawService)
             }
 
             ClientPlayConnectionEvents.JOIN.register { _, _, client ->

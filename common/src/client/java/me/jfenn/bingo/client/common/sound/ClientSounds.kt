@@ -21,7 +21,7 @@ class ClientSounds {
     }
 
     private val soundEvents = Key.entries.associateWith {
-        SoundEvent.of(Identifier(MOD_ID_BINGO, it.name.lowercase()))
+        SoundEvent.of(Identifier.of(MOD_ID_BINGO, it.name.lowercase())!!)
     }
 
     operator fun get(key: Key) = soundEvents[key]!!

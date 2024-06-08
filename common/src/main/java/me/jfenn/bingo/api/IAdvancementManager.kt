@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier
 
 interface IAdvancementManager {
 
-    fun getAdvancement(server: MinecraftServer, id: Identifier): IAdvancementHandle?
+    fun getAdvancement(server: MinecraftServer, id: String): IAdvancementHandle?
 
     fun isAnyObtained(player: ServerPlayerEntity, advancement: IAdvancementHandle): Boolean
 

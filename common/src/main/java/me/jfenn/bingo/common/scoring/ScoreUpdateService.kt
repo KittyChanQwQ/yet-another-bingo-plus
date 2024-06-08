@@ -4,23 +4,20 @@ import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.PlayerSoundCategory
 import me.jfenn.bingo.api.PlayerSoundEvent
 import me.jfenn.bingo.common.card.BingoCardEntry
-import me.jfenn.bingo.common.team.BingoPlayerProfile
-import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.TeamScore
+import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
-import java.util.*
 
 class ScoreUpdateService(
     private val server: MinecraftServer,
@@ -55,15 +52,15 @@ class ScoreUpdateService(
             team = team.key,
             teamColor = team.formatting,
             score = team.score.copy(items = team.score.items + 1),
-            item = entry.visualItem
-                ?.item
-                ?.let { Registries.ITEM.getId(it) }
+            itemId = entry.visualItem
+                ?.identifier
+                ?.toString()
         )
 
         // unless showOtherTeamCompletions=true, the exact scored item should be hidden from other teams
         val otherTeamPacket = when {
             options.showOtherTeamCompletions -> packet.copy(isViewerOnTeam = false)
-            else -> packet.copy(isViewerOnTeam = false, score = TeamScore.ZERO, item = null)
+            else -> packet.copy(isViewerOnTeam = false, score = TeamScore.ZERO, itemId = null)
         }
 
         // decide if all players should get notified when a different team completes an item

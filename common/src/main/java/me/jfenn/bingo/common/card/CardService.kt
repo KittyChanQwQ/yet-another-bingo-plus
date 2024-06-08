@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.card
 
+import kotlinx.serialization.Transient
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.config.*
@@ -127,7 +128,7 @@ class CardService(
 
     private fun resolveAdvancement(id: String, tier: TierLabel): BingoCardEntry.AdvancementEntry? {
         return try {
-            advancementManager.getAdvancement(server, Identifier(id))!!
+            advancementManager.getAdvancement(server, id)!!
             BingoCardEntry.AdvancementEntry(id, tier)
         } catch (e: Throwable) {
             log.debug("Unable to locate advancement '$id'", e)

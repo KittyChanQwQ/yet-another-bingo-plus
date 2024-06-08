@@ -12,7 +12,7 @@ class CardUpdatePacket(
 ) {
 
     object V1 : PacketConverter<CardUpdatePacket> {
-        override val id: Identifier = Identifier("bingo", "update_card")
+        override val id: Identifier = Identifier.of("bingo", "update_card")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): CardUpdatePacket {
             val teamKey = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null
@@ -60,7 +60,7 @@ class CardUpdatePacket(
     }
 
     object V2 : PacketConverter<CardUpdatePacket> {
-        override val id: Identifier = Identifier("bingo", "update_card_v2")
+        override val id: Identifier = Identifier.of("bingo", "update_card_v2")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): CardUpdatePacket {
             val teamKey = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null

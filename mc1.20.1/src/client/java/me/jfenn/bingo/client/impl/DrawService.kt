@@ -6,7 +6,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
 
 class DrawService(
-    val context: DrawContext,
+    override val context: DrawContext,
 ) : IDrawService {
 
     companion object : IDrawServiceFactory {

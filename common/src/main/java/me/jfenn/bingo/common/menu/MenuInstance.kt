@@ -31,7 +31,7 @@ class MenuInstance(
     // if the lobby world doesn't exist, the mod should error before this point!
     val world get() = server.lobbyWorld!!
 
-    val menuComponent = component(koinScope) {
+    private val menuComponent = component(koinScope) {
         registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.45))
         registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.45))
     }

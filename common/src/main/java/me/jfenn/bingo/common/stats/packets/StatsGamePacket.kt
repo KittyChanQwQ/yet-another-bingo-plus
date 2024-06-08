@@ -15,7 +15,7 @@ data class StatsGamePacket(
     val game: PlayerGameSummary,
 ) {
     object V1 : PacketConverter<StatsGamePacket> {
-        override val id = Identifier(MOD_ID_BINGO, "stats_game")
+        override val id = Identifier.of(MOD_ID_BINGO, "stats_game")!!
 
         override fun toPacketBuf(source: StatsGamePacket, dest: IPacketBuf) {
             dest.writeString(json.encodeToString(source.game))

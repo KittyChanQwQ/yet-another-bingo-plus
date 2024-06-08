@@ -77,7 +77,7 @@ class ScoredItemCheck(
             // check inventory for new collected items
             for (stack in player.allHeldStacks()) {
                 // get the item tile, if it is on the card
-                val tile = state.card.itemIndex[stack.identifier] ?: continue
+                val tile = state.card.itemIndex[stack.identifier.toString()] ?: continue
 
                 // if the item hasn't been achieved and can be satisfied, mark it as collected
                 if (tile.canSatisfy(stack)) {

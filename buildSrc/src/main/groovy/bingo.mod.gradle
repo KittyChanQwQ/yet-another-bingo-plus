@@ -1,5 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-
 plugins {
     id "org.jetbrains.kotlin.jvm"
     id "fabric-loom"
@@ -23,11 +21,6 @@ sourceSets {
         runtimeClasspath += main.runtimeClasspath
         compileClasspath += main.output
         runtimeClasspath += main.output
-
-        // Include :common/testmod sources in mc* version modules
-        if (project.name.toString().startsWith("mc")) {
-            java.srcDir project(":common").sourceSets.testmod.java
-        }
     }
 }
 
@@ -136,8 +129,8 @@ java {
     }
 }
 
-if (project.name.toString().startsWith("mc")) {
-    tasks.test.dependsOn tasks.runGametestServer
+if (project.name.toString() == "common") {
+    // tasks.test.dependsOn tasks.runGametestServer
 }
 
 jar {

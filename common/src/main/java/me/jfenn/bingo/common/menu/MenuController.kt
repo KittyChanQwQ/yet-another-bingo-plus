@@ -5,17 +5,18 @@ import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.Color
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey
@@ -34,7 +35,6 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.Heightmap
 import net.minecraft.world.chunk.ChunkStatus
 import org.joml.Vector3f
-import org.koin.core.component.KoinComponent
 import org.slf4j.Logger
 import java.io.IOException
 import java.nio.file.Files
@@ -53,7 +53,7 @@ class MenuController(
     private val text: TextProvider,
     private val playerManager: IPlayerManager,
     private val levelStorage: ILevelStorage,
-) : KoinComponent {
+) : BingoComponent() {
 
     private var menu: MenuInstance? = null
     private val lobbyWorld get() = server.lobbyWorld!!
@@ -72,12 +72,13 @@ class MenuController(
             val lobbySpawnPos = getLobbySpawnPosition()
             state.lobbySpawnPos = lobbySpawnPos
 
+            log.info("[MenuController] Spawning lobby menu at $lobbySpawnPos")
             val menuInstance = MenuInstance(
                 log = log,
                 koinScope = koinScope,
                 server = server,
                 interactionEntityEvents = interactionEntityEvents,
-                spawnPos = BlockPosition(10, 10, 10),
+                spawnPos = lobbySpawnPos,
             )
             menu = menuInstance
             spawnTeamEntities(menuInstance)

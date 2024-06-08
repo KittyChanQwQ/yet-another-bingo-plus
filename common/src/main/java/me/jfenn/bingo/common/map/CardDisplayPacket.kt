@@ -12,7 +12,7 @@ data class CardDisplayPacket(
 ) {
 
     object V1 : PacketConverter<CardDisplayPacket> {
-        override val id = Identifier("bingo", "display_cards")
+        override val id = Identifier.of("bingo", "display_cards")!!
 
         override fun toPacketBuf(source: CardDisplayPacket, dest: IPacketBuf) {
             dest.writeInt(source.teamInfo.size)

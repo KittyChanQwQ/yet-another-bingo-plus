@@ -9,7 +9,7 @@ class TimerPacket(
     val secondsRemaining: Int,
 ) {
     object V1 : PacketConverter<TimerPacket> {
-        override val id = Identifier(MOD_ID_BINGO, "timer")
+        override val id = Identifier.of(MOD_ID_BINGO, "timer")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): TimerPacket {
             return TimerPacket(buf.readInt())

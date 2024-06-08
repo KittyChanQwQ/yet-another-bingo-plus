@@ -19,7 +19,7 @@ data class PlayerSettings(
     var nightVision: Boolean = true,
 ) {
     object V1_S2C : PacketConverter<PlayerSettings> {
-        override val id: Identifier = Identifier("bingo", "update_settings_s2c")
+        override val id: Identifier = Identifier.of("bingo", "update_settings_s2c")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): PlayerSettings {
             buf.readInt()
@@ -47,13 +47,13 @@ data class PlayerSettings(
     }
 
     object V1_C2S : PacketConverter<PlayerSettings> {
-        override val id: Identifier = Identifier("bingo", "update_settings_c2s")
+        override val id: Identifier = Identifier.of("bingo", "update_settings_c2s")!!
         override fun fromPacketBuf(buf: IPacketBuf) = V1_S2C.fromPacketBuf(buf)
         override fun toPacketBuf(source: PlayerSettings, dest: IPacketBuf) = V1_S2C.toPacketBuf(source, dest)
     }
 
     object V2 : PacketConverter<PlayerSettings> {
-        override val id: Identifier = Identifier("bingo", "update_settings_v2")
+        override val id: Identifier = Identifier.of("bingo", "update_settings_v2")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): PlayerSettings {
             val str = buf.readString()
