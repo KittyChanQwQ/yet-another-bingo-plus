@@ -3,9 +3,9 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.api.ILevelStorage
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
-import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -133,7 +133,7 @@ class MenuController(
                 return@measureTime
             }
 
-        this::class.java.getResourceAsStream("/$MOD_ID_BINGO/lobby_world.zip")?.use { stream ->
+        Config.readStream("lobby_world.zip", shouldWriteDefault = false).use { stream ->
             ZipInputStream(stream).use { zipStream ->
                 while (true) {
                     val entry = zipStream.nextEntry ?: break
@@ -164,9 +164,6 @@ class MenuController(
                     zipStream.closeEntry()
                 }
             }
-
-        } ?: run {
-            log.error("[MenuController] Unable to find bingo lobby_world.zip in resources")
         }
     }
 
