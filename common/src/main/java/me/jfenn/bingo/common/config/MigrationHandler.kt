@@ -1,12 +1,14 @@
 package me.jfenn.bingo.common.config
 
 import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.MOD_ID_BINGO
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger
 import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.isRegularFile
@@ -66,16 +68,9 @@ class MigrationHandler(
             loader.configDir.resolve("bingo/simplified.tierlist.json")
                 .takeIfMd5("707151ae1614dc508ad264677be397e2")
                 ?.deleteIfExists()
-
-            Config.readStream("all_items.tierlist.json").close()
-            Config.readStream("nether-only.tierlist.json").close()
-            Config.readStream("overworld-only.tierlist.json").close()
-            Config.readStream("simplified.tierlist.json").close()
         }
 
-        migrations[3] = {
-            Config.readStream("advancements.tierlist.json").close()
-        }
+        migrations[3] = {}
 
         migrations[4] = {
             loader.configDir.resolve("bingo/all_items.tierlist.json")
@@ -93,11 +88,19 @@ class MigrationHandler(
             loader.configDir.resolve("bingo/advancements.tierlist.json")
                 .takeIfMd5("000ba600d573dc29e3c12be51ce52ea9")
                 ?.deleteIfExists()
+        }
 
-            Config.readStream("all_items.tierlist.json").close()
-            Config.readStream("overworld-only.tierlist.json").close()
-            Config.readStream("simplified.tierlist.json").close()
-            Config.readStream("advancements.tierlist.json").close()
+        migrations[5] = {
+            // move the "config/bingo" dir to "config/yet-another-minecraft-bingo"
+            val originalDir = loader.configDir.resolve(MOD_ID)
+            val newDir = loader.configDir.resolve(MOD_ID_BINGO)
+            if (originalDir.resolve("game-options.json").toFile().let { it.exists() && it.isDirectory }) {
+                log.info("[MigrationHandler] Renaming config/$MOD_ID -> config/$MOD_ID_BINGO")
+                newDir.toFile().deleteRecursively()
+                Files.move(originalDir, newDir, StandardCopyOption.REPLACE_EXISTING)
+            } else {
+                log.warn("[MigrationHandler] Not renaming config/$MOD_ID as it does not exist.")
+            }
         }
     }
 
@@ -131,6 +134,13 @@ class MigrationHandler(
         configService.options = configService.options.copy()
         configService.optionsDefault = configService.optionsDefault.copy()
         configService.playerConfig = configService.playerConfig.copy()
+
+        // - tierlist files should be re-generated on each launch if removed:
+        Config.readStream("advancements.tierlist.json").close()
+        Config.readStream("all_items.tierlist.json").close()
+        Config.readStream("overworld-only.tierlist.json").close()
+        Config.readStream("simplified.tierlist.json").close()
+        Config.readStream("advancements.tierlist.json").close()
     }
 
 }

@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.stats
 import app.cash.sqldelight.driver.jdbc.asJdbcDriver
 import com.zaxxer.hikari.HikariDataSource
 import me.jfenn.bingo.api.ICloseEvent
-import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.utils.measureTime
@@ -28,7 +27,7 @@ class ConnectionFactory(
         .configDir
         .absolutePathString()
         .let { configDir ->
-            "jdbc:sqlite:$configDir/$MOD_ID/stats.db"
+            "jdbc:sqlite:$configDir/$MOD_ID_BINGO/stats.db"
         }
 
     private val url = config.databaseUrl ?: defaultUrl

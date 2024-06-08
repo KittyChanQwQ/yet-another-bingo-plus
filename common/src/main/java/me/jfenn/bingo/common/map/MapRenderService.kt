@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.config.TierLabel
@@ -59,13 +60,13 @@ class MapRenderService(
 
         private fun readTileImage(itemPath: String): InputStream {
             return Config.readStream("images/${itemPath}.png", false) {
-                MapRenderService::class.java.getResourceAsStream("/bingo/images/${itemPath}.png")
+                MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/images/${itemPath}.png")
                     ?: throw IllegalArgumentException("Cannot find default texture for ${itemPath}.png")
             }
         }
 
         val IMAGE_FRAME_ADVANCEMENT: ByteArray = run {
-            val image = MapRenderService::class.java.getResourceAsStream("/bingo/image_frame_advancement.png")
+            val image = MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/image_frame_advancement.png")
                 .use { ImageIO.read(it) }
 
             val arr = ByteArray(IMAGE_SIZE*IMAGE_SIZE)
@@ -92,16 +93,16 @@ class MapRenderService(
         companion object {
             val EMPTY = BingoTileImage()
 
-            val FALLBACK = MapRenderService::class.java.getResourceAsStream("/bingo/image_fallback.png")
+            val FALLBACK = MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/image_fallback.png")
                     .use { ImageIO.read(it) }
                     .let { fromBufferedImage(it) }
 
-            val HIDDEN = MapRenderService::class.java.getResourceAsStream("/bingo/image_hidden.png")
+            val HIDDEN = MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/image_hidden.png")
                 .use { ImageIO.read(it) }
                 .let { fromBufferedImage(it) }
 
             val HIDDEN_TIERS = TierLabel.entries.associateWith { tier ->
-                MapRenderService::class.java.getResourceAsStream("/bingo/image_hidden_${tier.name.lowercase()}.png")
+                MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/image_hidden_${tier.name.lowercase()}.png")
                     .use { ImageIO.read(it) }
                     .let { fromBufferedImage(it) }
             }

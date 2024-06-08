@@ -4,7 +4,7 @@
   "name": "Yet Another Minecraft BINGO",
   "version": "$version",
   "environment": "*",
-  "icon": "bingo/icon.png",
+  "icon": "yet-another-minecraft-bingo/icon.png",
   "entrypoints": {
     "server": [
       {

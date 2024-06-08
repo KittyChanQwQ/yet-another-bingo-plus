@@ -57,12 +57,12 @@ tasks.register('bingoDatapack', Zip) {
     from 'datapack'
     include '**/*'
     archiveFileName.set('datapack.zip')
-    destinationDirectory.set(file('src/main/resources/bingo'))
+    destinationDirectory.set(file('src/main/resources/yet-another-minecraft-bingo'))
 }
 
 tasks.register('bingoImages', Copy) {
     from zipTree(file("images.zip"))
-    into file("src/main/resources/bingo/images")
+    into file("src/main/resources/yet-another-minecraft-bingo/images")
 }
 
 // This is a mess, but it generates safe enum entries for every key in /resources/.../lang/en_us.json

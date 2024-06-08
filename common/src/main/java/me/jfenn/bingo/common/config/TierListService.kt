@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
+import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.utils.json
 import org.slf4j.Logger
@@ -14,7 +15,7 @@ class TierListService(
     companion object {
         fun readTierLists() : List<String> {
             return Config.configDir
-                .resolve("bingo")
+                .resolve(MOD_ID_BINGO)
                 .toFile()
                 .listFiles()
                 .orEmpty()
@@ -26,7 +27,7 @@ class TierListService(
 
     private fun readTierList(name: String): TierListConfig? {
         val file = Config.configDir
-            .resolve("bingo/$name.tierlist.json")
+            .resolve("$MOD_ID_BINGO/$name.tierlist.json")
             .toFile()
 
         val config = runCatching {

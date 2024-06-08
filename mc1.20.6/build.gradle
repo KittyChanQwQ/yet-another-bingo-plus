@@ -6,7 +6,7 @@ plugins {
 
 processResources {
     from("../common/src/main/resources") {
-        include "bingo/icon.png"
+        include "yet-another-minecraft-bingo/icon.png"
     }
 }
 
