@@ -12,17 +12,15 @@ import net.minecraft.util.math.Vec3d
 import org.koin.core.scope.Scope
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
 
 class MenuInstance(
     private val log: Logger,
     koinScope: Scope,
     private val server: MinecraftServer,
     private val interactionEntityEvents: InteractionEntityEvents,
-    private val spawnPos: BlockPosition,
+    private val menuPos: BlockPosition,
+    private val instanceTag: String,
 ) {
-
-    val instanceTag = "bingo-${UUID.randomUUID()}"
 
     companion object {
         val log = LoggerFactory.getLogger(this::class.java)!!
@@ -32,8 +30,8 @@ class MenuInstance(
     val world get() = server.lobbyWorld!!
 
     private val menuComponent = component(koinScope) {
-        registerPlayerCount(Vec3d(0.0, spawnPos.y + 3.0, -4.45))
-        registerMenuPage(Vec3d(0.0, spawnPos.y + 2.0, -4.45))
+        registerPlayerCount(Vec3d(menuPos.x.toDouble(), menuPos.y + 2.0, menuPos.z + 0.55))
+        registerMenuPage(Vec3d(menuPos.x.toDouble(), menuPos.y + 1.0, menuPos.z + 0.55))
     }
 
     fun tick() {

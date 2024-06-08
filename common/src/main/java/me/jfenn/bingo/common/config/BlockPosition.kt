@@ -15,6 +15,14 @@ data class BlockPosition(
 
     }
 
+    fun move(x: Int = 0, y: Int = 0, z: Int = 0): BlockPosition {
+        return this.copy(
+            x = this.x + x,
+            y = this.y + y,
+            z = this.z + z,
+        )
+    }
+
     fun toBlockPos() = BlockPos(x, y, z)
 
     fun toChunkPos() = Pair(x / 16, y / 16)
