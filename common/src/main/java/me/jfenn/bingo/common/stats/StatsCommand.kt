@@ -6,7 +6,6 @@ import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
-import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
@@ -31,11 +30,11 @@ class StatsCommand(
         sendMessage(
             Text.literal("  ")
                 .append(textProvider.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.totalGames}, ")
+                .append(": ${summary.totalGames.formatLargeNumber()}, ")
                 .append(textProvider.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.totalWins}/${summary.totalLosses}, ")
+                .append(": ${summary.totalWins.formatLargeNumber()}/${summary.totalLosses.formatLargeNumber()}, ")
                 .append(textProvider.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.totalItems}")
+                .append(": ${summary.totalItems.formatLargeNumber()}")
         )
         sendMessage(
             Text.literal("  ")
@@ -48,11 +47,11 @@ class StatsCommand(
         sendMessage(
             Text.literal("  ")
                 .append(textProvider.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.monthlyGames}, ")
+                .append(": ${summary.monthlyGames.formatLargeNumber()}, ")
                 .append(textProvider.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.monthlyWins}/${summary.monthlyLosses}, ")
+                .append(": ${summary.monthlyWins.formatLargeNumber()}/${summary.monthlyLosses.formatLargeNumber()}, ")
                 .append(textProvider.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.monthlyItems}")
+                .append(": ${summary.monthlyItems.formatLargeNumber()}")
         )
         sendMessage(
             Text.literal("  ")

@@ -165,17 +165,17 @@ class StatsLobbyController(
 
             Text.empty()
                 .append(textProvider.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.totalGames}")
+                .append(": ${summary.totalGames.formatLargeNumber()}")
                 .also { add(it) }
 
             Text.empty()
                 .append(textProvider.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.totalWins}/${summary.totalLosses}")
+                .append(": ${summary.totalWins.formatLargeNumber()}/${summary.totalLosses.formatLargeNumber()}")
                 .also { add(it) }
 
             Text.empty()
                 .append(textProvider.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.totalItems}")
+                .append(": ${summary.totalItems.formatLargeNumber()}")
                 .also { add(it) }
 
             Text.empty()
@@ -200,17 +200,17 @@ class StatsLobbyController(
 
             Text.empty()
                 .append(textProvider.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.monthlyGames}")
+                .append(": ${summary.monthlyGames.formatLargeNumber()}")
                 .also { add(it) }
 
             Text.empty()
                 .append(textProvider.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.monthlyWins}/${summary.monthlyLosses}")
+                .append(": ${summary.monthlyWins.formatLargeNumber()}/${summary.monthlyLosses.formatLargeNumber()}")
                 .also { add(it) }
 
             Text.empty()
                 .append(textProvider.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.monthlyItems}")
+                .append(": ${summary.monthlyItems.formatLargeNumber()}")
                 .also { add(it) }
 
             Text.empty()
