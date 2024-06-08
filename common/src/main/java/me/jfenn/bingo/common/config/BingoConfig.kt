@@ -16,6 +16,8 @@ data class BingoConfig(
 
     // stops sounds from being sent to other players in the lobby
     val preventLobbyChaos: Boolean = false,
+    // gives players a tutorial/settings book when they join the lobby
+    val lobbyTutorialBook: Boolean = true,
 
     val nightVisionInSpectator: Boolean = true,
     val nightVisionInPostgame: Boolean = true,

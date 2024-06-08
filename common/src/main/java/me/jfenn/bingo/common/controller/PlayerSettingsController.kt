@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.BingoPrefsCommand
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -32,6 +33,7 @@ class PlayerSettingsController(
     events: ScopedEvents,
     private val log: Logger,
     private val state: BingoState,
+    private val config: BingoConfig,
     private val permissions: PermissionsIntegration,
     private val cardViewService: CardViewService,
     private val scoreboardManager: IScoreboardManager,
@@ -222,6 +224,8 @@ class PlayerSettingsController(
     init {
         events.onGameTick {
             if (state.state != GameState.PREGAME)
+                return@onGameTick
+            if (!config.lobbyTutorialBook)
                 return@onGameTick
 
             for (player in playerManager.getPlayers()) {
