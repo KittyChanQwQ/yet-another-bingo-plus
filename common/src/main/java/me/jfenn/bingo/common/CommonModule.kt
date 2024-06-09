@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.event.EventManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.game.BingoStartCommand
 import me.jfenn.bingo.common.game.GameOverController
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.game.GameService
@@ -78,6 +79,7 @@ val commonModule = module {
     singleOf(::BingoCommands)
     singleOf(::BingoOptionsCommands)
     singleOf(::BingoPrefsCommand)
+    singleOf(::BingoStartCommand)
     singleOf(::ChatCommand)
     singleOf(::CoordsCommand)
     singleOf(::JoinCommand)
@@ -164,6 +166,7 @@ fun Koin.commonInit() {
     get<BingoCommands>()
     get<BingoOptionsCommands>()
     get<BingoPrefsCommand>()
+    get<BingoStartCommand>()
     get<ChatCommand>()
     get<CoordsCommand>()
     get<JoinCommand>()

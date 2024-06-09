@@ -31,7 +31,7 @@ class GameService(
 ) {
 
     fun start(
-        sendFeedback: (String) -> Unit = {},
+        sendFeedback: (StringKey) -> Unit = {},
         allowSpectators: Boolean = false,
     ): Boolean {
         val playersWithoutATeam = server.playerManager.playerList
@@ -40,7 +40,7 @@ class GameService(
         if (playersWithoutATeam.isNotEmpty() && !allowSpectators) {
             // If there's more than one player, teams need to be set up manually!
             if (server.playerManager.playerList.size > 1) {
-                sendFeedback("Some players have not picked a team! Run '/bingo shuffleteams' or sneak+click to ignore.")
+                sendFeedback(StringKey.CommandStartMissingTeams)
                 return false
             }
 
@@ -51,13 +51,13 @@ class GameService(
         }
 
         // if the game has already been started, ignore
-        if (state.startedAt != null) {
-            sendFeedback("The game has already been started! (if this is a bug, try restarting the server...)")
+        if (state.state != GameState.PREGAME) {
+            sendFeedback(StringKey.CommandStartAlreadyStarted)
             return false
         }
 
         if (!options.isValid()) {
-            sendFeedback("Item distribution must add up to 25!")
+            sendFeedback(StringKey.CommandStartInvalidDistribution)
             return false
         }
 

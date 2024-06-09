@@ -292,24 +292,6 @@ class BingoCommands : BaseCommand() {
                     }
             )
             .then(
-                // Start the game, if in pre-game
-                LiteralArgumentBuilder.literal<ServerCommandSource>("start")
-                    .require(
-                        requireState(GameState.PREGAME),
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .executesInScope { ctx ->
-                        val gameService = get<GameService>()
-                        // Start the game!
-                        gameService.start(
-                            sendFeedback = {
-                                ctx.source.player?.sendWarningMessage(it)
-                            },
-                        )
-                        1
-                    }
-            )
-            .then(
                 // End the game, if running
                 LiteralArgumentBuilder.literal<ServerCommandSource>("end")
                     .require(

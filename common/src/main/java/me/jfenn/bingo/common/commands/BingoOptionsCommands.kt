@@ -5,6 +5,7 @@ import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
@@ -15,7 +16,7 @@ import net.minecraft.util.Formatting
 class BingoOptionsCommands(
     commandManager: ICommandManager,
     private val textProvider: TextProvider,
-) {
+) : BingoComponent() {
 
     private fun IExecutionContext.setGoal(goal: BingoGoal) {
         val state = scope.get<BingoState>()
@@ -35,8 +36,7 @@ class BingoOptionsCommands(
         commandManager.register("bingo") {
             literal("goal") {
                 requires {
-                    hasState(GameState.PREGAME, GameState.PLAYING)
-                    hasPermission(Permission.CONFIGURE_GAME)
+                    hasState(GameState.PREGAME, GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
                 }
                 integer("count", min = 1, max = 25) { countArg ->
                     literal("items") {

@@ -1,16 +1,16 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.sendWarningMessage
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.Vec3d
 
 fun MenuComponent.registerMenuPage(
@@ -142,8 +142,11 @@ fun MenuComponent.registerMenuPage(
     ) { player ->
         // Start the game!
         gameService.start(
-            sendFeedback = {
-                player.sendWarningMessage(it)
+            sendFeedback = { key ->
+                Text.literal("⚠  ")
+                    .append(text.string(key).formatted(Formatting.ITALIC))
+                    .formatted(Formatting.YELLOW)
+                    .also { player.sendMessage(it) }
             },
             allowSpectators = player.isSneaking,
         )
