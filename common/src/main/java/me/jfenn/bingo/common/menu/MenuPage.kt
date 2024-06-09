@@ -37,24 +37,22 @@ fun MenuComponent.registerMenuPage(
                 permissionGetter = permissionGetter,
             )
             registerFeatures(
-                position = position.add(-1.5, 0.0, 0.0),
+                position = position.add(-1.3, 0.0, 0.0),
                 options = options,
                 permissionGetter = permissionGetter,
             )
-            registerEnumMenu(
-                title = text.string(StringKey.OptionsGoal),
-                valueProp = propertyRef(options::goal),
-                valueText = { text.string(it.string) },
+            registerGoal(
                 position = position.add(0.6, 0.0, 0.0),
+                options = options,
                 permissionGetter = permissionGetter,
             )
             registerTimer(
                 timerMinutesProp = propertyRef(options::timeLimit),
-                position = position.add(2.3, 0.0, 0.0),
+                position = position.add(2.0, 0.0, 0.0),
                 permissionGetter = permissionGetter,
             )
             registerTeams(
-                position = position.add(3.6, 0.0, 0.0),
+                position = position.add(3.5, 0.0, 0.0),
                 permissionGetter = permissionGetter,
             )
         },

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.impl
 
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
@@ -35,14 +36,19 @@ class CommandManagerImpl(
         var builder: ArgumentBuilder<ServerCommandSource, *> = when (command) {
             is CommandNode.Literal -> LiteralArgumentBuilder.literal(command.name)
             is CommandNode.RequiredArgument<*> -> {
-                when (command.arg) {
+                when (val arg = command.arg) {
                     is CommandArgument.Text -> RequiredArgumentBuilder.argument(
-                        command.arg.name,
+                        arg.name,
                         TextArgumentType.text()
                     )
 
+                    is CommandArgument.Integer -> RequiredArgumentBuilder.argument(
+                        arg.name,
+                        IntegerArgumentType.integer(arg.min, arg.max)
+                    )
+
                     is CommandArgument.Player -> RequiredArgumentBuilder.argument(
-                        command.arg.name,
+                        arg.name,
                         EntityArgumentType.player()
                     )
                 }
@@ -119,6 +125,7 @@ class ExecutionContextImpl(
         @Suppress("UNCHECKED_CAST")
         return when (arg) {
             is CommandArgument.Text -> TextArgumentType.getTextArgument(ctx, arg.name) as T
+            is CommandArgument.Integer -> IntegerArgumentType.getInteger(ctx, arg.name) as T
             is CommandArgument.Player -> EntityArgumentType.getPlayer(ctx, arg.name) as T
         }
     }

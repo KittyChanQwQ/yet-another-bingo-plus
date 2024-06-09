@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
+import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
@@ -83,7 +84,10 @@ data class BingoState(
      */
     fun updateWinner(team: BingoTeam): Boolean {
         val score = team.score
-        val isWinner = score.lines >= options.goal.numLines
+        val isWinner = when (val goal = options.cardGoal) {
+            is BingoGoal.Items -> score.items >= goal.items
+            is BingoGoal.Lines -> score.lines >= goal.lines
+        }
 
         if (isWinner && team.winner == null) {
             team.winner = TeamWinner(

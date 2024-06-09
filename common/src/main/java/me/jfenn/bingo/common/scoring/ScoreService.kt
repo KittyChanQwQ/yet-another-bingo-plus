@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.BingoTeam
 
 object ScoreService {
 
@@ -21,26 +22,45 @@ object ScoreService {
             ?: 0
 
         // if noone can beat or tie with the leading team, then it is a lockout (the leading team has won)
-        val isLockout = state.getRegisteredTeams()
-            .filter { it.key != leadingTeam?.key }
-            .none { team ->
-                val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
-                // if a team can capture more lines, and it would either tie or beat the current team
-                possibleLines > team.score.lines && possibleLines >= leadingTeamLines
+        val isLockout = when (state.options.cardGoal) {
+            // this is only applicable if the goal type is Lines
+            is BingoGoal.Items -> false
+            is BingoGoal.Lines -> {
+                state.getRegisteredTeams()
+                    .filter { it.key != leadingTeam?.key }
+                    .none { team ->
+                        val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
+                        // if a team can capture more lines, and it would either tie or beat the current team
+                        possibleLines > team.score.lines && possibleLines >= leadingTeamLines
+                    }
             }
+        }
 
-        val isGoalImpossible = state.getRegisteredTeams()
-            .none { team ->
-                val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
-                // if no team can capture the amount of lines needed for the win condition
-                possibleLines >= state.options.goal.numLines
+        val isGoalImpossible = when (val goal = state.options.cardGoal) {
+            is BingoGoal.Items -> {
+                state.getRegisteredTeams().none { team ->
+
+                    val possibleItems = state.card.entries.count { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
+                    // if no team can capture the amount of items needed for the win condition
+                    possibleItems >= goal.items
+                }
             }
+            is BingoGoal.Lines -> {
+                state.getRegisteredTeams().none { team ->
+                    val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
+                    // if no team can capture the amount of lines needed for the win condition
+                    possibleLines >= goal.lines
+                }
+            }
+        }
 
         return isLockout || isGoalImpossible
     }
 
     fun getLeading(state: BingoState, allowTies: Boolean = false): BingoTeam? {
-        return getLeadingByLines(state, allowTies) ?: getLeadingByItems(state, allowTies)
+        return getLeadingByLines(state, allowTies)
+            ?.takeIf { state.options.cardGoal is BingoGoal.Lines }
+            ?: getLeadingByItems(state, allowTies)
     }
 
     fun getLeadingByLines(state: BingoState, allowTies: Boolean = false): BingoTeam? {

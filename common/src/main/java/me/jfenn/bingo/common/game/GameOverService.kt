@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.game
 
+import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
@@ -42,9 +43,11 @@ class GameOverService(
                     ?: winningTeam?.let { winner ->
                         textProvider.string(StringKey.GameEndCompletedCard, teamService.getTeamOrPlayerName(winner))
                     }
-                    ?: ScoreService.getLeadingByLines(state)?.let { leader ->
-                        textProvider.string(StringKey.GameEndWonWithMoreLines, teamService.getTeamOrPlayerName(leader))
-                    }
+                    ?: ScoreService.getLeadingByLines(state)
+                        ?.takeIf { state.options.cardGoal is BingoGoal.Lines }
+                        ?.let { leader ->
+                            textProvider.string(StringKey.GameEndWonWithMoreLines, teamService.getTeamOrPlayerName(leader))
+                        }
                     ?: ScoreService.getLeadingByItems(state)?.let { leader ->
                         textProvider.string(StringKey.GameEndWonWithMoreItems, teamService.getTeamOrPlayerName(leader))
                     }

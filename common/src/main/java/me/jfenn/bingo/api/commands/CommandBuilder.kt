@@ -22,6 +22,18 @@ class CommandBuilder(
         parent.children += node
     }
 
+    fun integer(
+        name: String,
+        min: Int = Int.MIN_VALUE,
+        max: Int = Int.MAX_VALUE,
+        configure: CommandBuilder.(arg: CommandArgument<Int>) -> Unit
+    ) {
+        val arg = CommandArgument.Integer(name, min, max)
+        val node = CommandNode.RequiredArgument(arg)
+        CommandBuilder(node).configure(arg)
+        parent.children += node
+    }
+
     fun player(name: String, configure: CommandBuilder.(arg: CommandArgument<ServerPlayerEntity>) -> Unit) {
         val arg = CommandArgument.Player(name)
         val node = CommandNode.RequiredArgument(arg)
@@ -54,6 +66,12 @@ sealed class CommandArgument<T> {
     class Text(
         override val name: String,
     ) : CommandArgument<net.minecraft.text.Text>()
+
+    class Integer(
+        override val name: String,
+        val min: Int,
+        val max: Int,
+    ) : CommandArgument<Int>()
 
     class Player(
         override val name: String,

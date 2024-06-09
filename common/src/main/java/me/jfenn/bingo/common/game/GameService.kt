@@ -113,7 +113,7 @@ class GameService(
 
             Text.empty()
                 .append("  ")
-                .append(textProvider.string(StringKey.ScoreboardGoal, textProvider.string(options.goal.string)))
+                .append(textProvider.string(StringKey.ScoreboardGoal, options.cardGoal.format(textProvider)))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 

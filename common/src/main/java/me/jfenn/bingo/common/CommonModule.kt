@@ -76,6 +76,7 @@ val commonModule = module {
     factoryOf(ChunkyIntegration::create)
 
     singleOf(::BingoCommands)
+    singleOf(::BingoOptionsCommands)
     singleOf(::BingoPrefsCommand)
     singleOf(::ChatCommand)
     singleOf(::CoordsCommand)
@@ -161,6 +162,7 @@ fun Koin.commonInit() {
     get<RestartOnLeaveController>()
 
     get<BingoCommands>()
+    get<BingoOptionsCommands>()
     get<BingoPrefsCommand>()
     get<ChatCommand>()
     get<CoordsCommand>()

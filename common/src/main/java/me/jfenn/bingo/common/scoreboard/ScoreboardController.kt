@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -8,6 +7,7 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
@@ -69,7 +69,7 @@ class ScoreboardController(
                             if (i == 0) str else "  ${Formatting.YELLOW}$str"
                         }
                         .also { addAll(it) }
-                    textProvider.raw(StringKey.ScoreboardGoal, "${Formatting.YELLOW}" + textProvider.raw(options.goal.string))
+                    textProvider.raw(StringKey.ScoreboardGoal, "${Formatting.YELLOW}" + options.cardGoal.format(textProvider).string)
                         .also { add(it) }
                     if (options.showRemainingTime && options.timeLimit != null) {
                         textProvider.raw(StringKey.ScoreboardTimeLeft, "${Formatting.YELLOW}${state.formatTimeRemaining().string}")

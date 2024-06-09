@@ -6,20 +6,19 @@ import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.config.TierListService
-import me.jfenn.bingo.common.config.WinCondition
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.item.Items
@@ -176,36 +175,6 @@ class BingoCommands : BaseCommand() {
                                 1
                             }
                     )
-            )
-            .then(
-                // Change the win condition setting (while the game is running)
-                LiteralArgumentBuilder.literal<ServerCommandSource>("goal")
-                    .require(
-                        requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .let {
-                        val options = WinCondition.entries
-                            .map { wincon ->
-                                LiteralArgumentBuilder.literal<ServerCommandSource>(wincon.name.lowercase())
-                                    .executesInScope { ctx ->
-                                        val options = get<BingoOptions>()
-                                        val events = get<ScopedEvents>()
-
-                                        options.goal = wincon
-                                        events.onChangeConfig(Unit)
-                                        ctx.source.player?.sendInfoMessage("Goal: ${wincon.name}")
-                                        1
-                                    }
-                            }
-                            .toMutableList()
-
-                        var last = it
-                        while (options.isNotEmpty())
-                            last = last.then(options.removeLast())
-
-                        last
-                    }
             )
             .then(
                 // Change the time limit setting (while the game is running)

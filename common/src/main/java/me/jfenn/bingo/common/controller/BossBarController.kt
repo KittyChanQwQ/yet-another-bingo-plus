@@ -65,7 +65,7 @@ class BossBarController(
                 }
             }
 
-            val goalText = textProvider.string(options.goal.string).formatted(Formatting.BOLD)
+            val goalText = Text.empty().append(options.cardGoal.format(textProvider)).formatted(Formatting.BOLD)
             bossBar.name = when {
                 options.showRemainingTime -> {
                     textProvider.string(StringKey.BossbarTimeRemainingOrGoal, state.formatTimeRemaining(), goalText)

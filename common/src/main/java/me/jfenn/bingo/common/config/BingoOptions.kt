@@ -11,8 +11,7 @@ import kotlin.time.Duration
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
 data class BingoOptions(
-    @JsonNames("winCondition")
-    var goal: WinCondition = WinCondition.THREE_LINES,
+    var cardGoal: BingoGoal = BingoGoal.Lines(3),
     var timeLimit: Duration? = null,
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
     var tierList: String = "all_items",

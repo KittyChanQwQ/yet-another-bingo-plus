@@ -10,49 +10,32 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 
+object TeamCountState {
+    var teamCount: Int = 3
+}
+
 fun MenuComponent.registerTeams(
     position: Vec3d,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     teamService: TeamService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
-    var teamCount = 3
-
-    registerButton(
-        position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
-        text = Text.literal("+"),
+    registerNumberInput(
+        position = position,
+        valueProp = propertyRef(TeamCountState::teamCount),
+        minValueProp = ConstantProperty(1),
+        maxValueProp = ConstantProperty(BingoTeam.TEAM_BLOCKS.size),
+        format = { text.string(StringKey.OptionsTeamsCount, it) },
         permissionGetter = permissionGetter,
-    ) {
-        teamCount = (teamCount + 1).coerceIn(1, BingoTeam.TEAM_BLOCKS.size)
-        markDirty()
-    }
-
-    registerButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
-        text = Text.literal("-"),
-        permissionGetter = permissionGetter,
-    ) {
-        teamCount = (teamCount - 1).coerceIn(1, BingoTeam.TEAM_BLOCKS.size)
-        markDirty()
-    }
+    )
 
     registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 3 * MENU_ITEM_HEIGHT), 0.0),
         text = text.string(StringKey.OptionsTeamsShuffle),
         permissionGetter = permissionGetter,
     ) { player ->
-        teamService.shuffleTeams(teamCount)
+        teamService.shuffleTeams(TeamCountState.teamCount)
         player.sendInfoMessage("Teams have been shuffled!")
-    }
-
-    registerEntity(EntityType.TEXT_DISPLAY, position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
-        putString("text", text.serialized(
-            text.string(StringKey.OptionsTeamsCount, teamCount)
-        ))
-        putString("billboard", "fixed")
-        putString("alignment", "center")
-        putInt("background", 0)
-        putBoolean("shadow", true)
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
