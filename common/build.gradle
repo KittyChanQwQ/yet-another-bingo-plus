@@ -69,10 +69,17 @@ tasks.register('bingoImages', Copy) {
 // which ensures that I can't make typos on any of the thousands of string keys in there.
 sourceSets {
     main {
-        java {
-            srcDir "${buildDir}/generated/main/java"
-        }
+        java.srcDir "${buildDir}/generated/main/java"
+        resources.srcDir "${buildDir}/generated/main/resources"
     }
+}
+
+tasks.register("bingoLangServerTranslations", Copy) {
+    // copy the lang files from assets to data to support https://github.com/NucleoidMC/Server-Translations
+    def langDir = "src/main/resources/assets/yet-another-minecraft-bingo/lang"
+    from langDir
+    include "*.json"
+    into layout.buildDirectory.file("generated/main/resources/data/yet-another-minecraft-bingo/lang")
 }
 
 tasks.register("bingoLangFiles") {
@@ -132,6 +139,7 @@ tasks.processResources.configure {
     dependsOn(tasks.bingoMigrations)
     dependsOn(tasks.bingoDatapack)
     dependsOn(tasks.bingoImages)
+    dependsOn(tasks.bingoLangServerTranslations)
     dependsOn(tasks.bingoLangFiles)
     dependsOn(tasks.bingoConstants)
 }
@@ -139,10 +147,12 @@ tasks.sourcesJar.configure {
     dependsOn(tasks.processResources)
 }
 tasks.compileClientKotlin.configure {
+    dependsOn(tasks.bingoLangServerTranslations)
     dependsOn(tasks.bingoLangFiles)
     dependsOn(tasks.bingoConstants)
 }
 tasks.compileKotlin.configure {
+    dependsOn(tasks.bingoLangServerTranslations)
     dependsOn(tasks.bingoLangFiles)
     dependsOn(tasks.bingoConstants)
 }
