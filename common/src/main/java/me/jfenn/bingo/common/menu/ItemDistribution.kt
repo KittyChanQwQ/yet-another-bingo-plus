@@ -4,8 +4,6 @@ import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.text.TextColor
-import me.jfenn.bingo.common.utils.text.TextInfo
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
@@ -69,14 +67,13 @@ fun MenuComponent.registerItemDistribution(
 
         registerEntity(EntityType.TEXT_DISPLAY, position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0)) {
             val color = when {
-                itemDistribution.sum() == 25 -> TextColor.WHITE
-                itemDistribution.sum() < 25 -> TextColor.YELLOW
-                else -> TextColor.RED
+                itemDistribution.sum() == 25 -> Formatting.WHITE
+                itemDistribution.sum() < 25 -> Formatting.YELLOW
+                else -> Formatting.RED
             }
 
-            putString("text", TextInfo.toJsonString(
-                TextInfo.literal(itemDistribution[i].toString())
-                    .formatted(color)
+            putString("text", text.serialized(
+                Text.literal(itemDistribution[i].toString()).formatted(color)
             ))
 
             putString("billboard", "fixed")

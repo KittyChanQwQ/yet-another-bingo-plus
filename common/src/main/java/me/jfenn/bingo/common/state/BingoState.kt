@@ -15,9 +15,11 @@ import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -112,18 +114,22 @@ data class BingoState(
         return Text.literal(duration.formatHHMMSS())
     }
 
-    fun formatTimeRemaining(): Text {
+    fun formatTimeRemaining(
+        textProvider: TextProvider,
+        normalColor: Formatting = Formatting.WHITE,
+        alertColor: Formatting = Formatting.RED,
+    ): MutableText {
         val timeLimit = options.timeLimit
-            ?: return Text.literal("(No Time Limit)").formatted(Formatting.BOLD)
+            ?: return textProvider.string(StringKey.TimerNoTimeLimit)
 
-        val duration = ingameDuration() ?: return Text.literal(timeLimit.formatString())
+        val duration = ingameDuration() ?: return Text.literal(timeLimit.formatString()).formatted(normalColor)
         val secondsRemaining = timeLimit - duration
 
         if (duration >= timeLimit || state == GameState.POSTGAME)
-            return Text.literal("(Game Over)").formatted(Formatting.BOLD)
+            return textProvider.string(StringKey.TimerGameOver)
 
         return Text.literal(secondsRemaining.formatString())
-            .formatted(Formatting.BOLD, if (secondsRemaining.inWholeSeconds <= 30 && secondsRemaining.inWholeSeconds % 2 == 0L) { Formatting.RED } else { Formatting.WHITE })
+            .formatted(if (secondsRemaining.inWholeSeconds <= 30 && secondsRemaining.inWholeSeconds % 2 == 0L) { alertColor } else { normalColor })
     }
 
 }

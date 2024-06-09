@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IMapService
-import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
@@ -13,9 +12,7 @@ import me.jfenn.bingo.common.utils.FormattingSerializer
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 @Serializable

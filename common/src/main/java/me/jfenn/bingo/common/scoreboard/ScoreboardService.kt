@@ -2,15 +2,17 @@ package me.jfenn.bingo.common.scoreboard
 
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.world.GameMode
 
 class ScoreboardService(
@@ -21,6 +23,7 @@ class ScoreboardService(
     private val mapItemService: MapItemService,
     private val itemStackFactory: IItemStackFactory,
     private val textProvider: TextProvider,
+    private val textSerializer: ITextSerializer,
 ) {
 
     fun getScoreboardObjective(team: BingoTeam?) : IObjectiveHandle {
@@ -50,14 +53,19 @@ class ScoreboardService(
 
     fun setScoreboardContents(
         objective: IObjectiveHandle,
-        contents: List<String>,
+        contents: List<Text>,
         players: List<ServerPlayerEntity>,
     ) {
+        val contentItems = contents.map {
+            ScoreboardView.ScoreboardItem(textSerializer.toRawString(it), it)
+        }
+
         // update the server-side objective
-        scoreboardManager.setScoreboardText(server, objective, contents)
+        //   note: the "value" is currently unused in this function
+        scoreboardManager.setScoreboardText(server, objective, contentItems.map { ScoreChange.Create(it.string, it.text, 0) })
 
         val view = scoreboardViews.getOrPut(objective.name) { ScoreboardView() }
-        val changes = view.updateContents(contents)
+        val changes = view.updateContents(contentItems)
 
         for (player in players) {
             if (!view.players.contains(player.uuid)) {
@@ -71,7 +79,7 @@ class ScoreboardService(
 
                 // if the player is new, send scoreboard create packets
                 scoreboardManager.sendObjectiveCreate(player, objective)
-                scoreboardManager.sendScoreChanges(player, objective, view.createChanges(contents))
+                scoreboardManager.sendScoreChanges(player, objective, view.createChanges(contentItems))
             } else {
                 // otherwise, update scores that the player should already have
                 scoreboardManager.sendScoreChanges(player, objective, changes)

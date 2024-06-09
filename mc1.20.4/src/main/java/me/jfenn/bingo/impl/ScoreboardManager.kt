@@ -7,6 +7,7 @@ import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardScoreResetS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardScoreUpdateS2CPacket
+import net.minecraft.scoreboard.ScoreHolder
 import net.minecraft.scoreboard.ScoreboardCriterion
 import net.minecraft.scoreboard.ScoreboardDisplaySlot
 import net.minecraft.scoreboard.ScoreboardObjective
@@ -32,18 +33,25 @@ class ScoreboardManager : IScoreboardManager {
         return ObjectiveHandle(objective)
     }
 
-    override fun setScoreboardText(server: MinecraftServer, handle: IObjectiveHandle, textLines: List<String>) {
+    override fun setScoreboardText(server: MinecraftServer, handle: IObjectiveHandle, textLines: List<ScoreChange.Create>) {
         require(handle is ObjectiveHandle)
 
         // Remove any previous sidebar lines that have been changed
         for (score in server.scoreboard.getScoreboardEntries(handle.objective)) {
-            if (!textLines.contains(score.owner)) {
+            if (textLines.none { it.name == score.owner }) {
                 server.scoreboard.removeScore({ score.owner }, handle.objective)
             }
         }
 
         textLines.forEachIndexed { i, text ->
-            val score = server.scoreboard.getOrCreateScore({ text }, handle.objective, true)
+            val score = server.scoreboard.getOrCreateScore(
+                object : ScoreHolder {
+                    override fun getNameForScoreboard(): String = text.name
+                    override fun getDisplayName(): Text = text.text
+                },
+                handle.objective,
+                true
+            )
             score.score = textLines.size - i - 1
         }
     }
@@ -80,10 +88,10 @@ class ScoreboardManager : IScoreboardManager {
         for (change in changes) {
             when (change) {
                 is ScoreChange.Create -> {
-                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, null, null))
+                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, change.text, null))
                 }
                 is ScoreChange.Update -> {
-                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, null, null))
+                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, change.text, null))
                 }
                 is ScoreChange.Remove -> {
                     player.networkHandler.sendPacket(ScoreboardScoreResetS2CPacket(change.name, handle.name))

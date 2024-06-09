@@ -28,18 +28,18 @@ class ScoreboardManager : IScoreboardManager {
         return ObjectiveHandle(objective)
     }
 
-    override fun setScoreboardText(server: MinecraftServer, handle: IObjectiveHandle, textLines: List<String>) {
+    override fun setScoreboardText(server: MinecraftServer, handle: IObjectiveHandle, textLines: List<ScoreChange.Create>) {
         require(handle is ObjectiveHandle)
 
         // Remove any previous sidebar lines that have been changed
         for (score in server.scoreboard.getAllPlayerScores(handle.objective)) {
-            if (!textLines.contains(score.playerName)) {
+            if (textLines.none { it.name == score.playerName }) {
                 server.scoreboard.resetPlayerScore(score.playerName, handle.objective)
             }
         }
 
         textLines.forEachIndexed { i, text ->
-            val score = server.scoreboard.getPlayerScore(text, handle.objective)
+            val score = server.scoreboard.getPlayerScore(text.name, handle.objective)
             score.score = textLines.size - i - 1
         }
     }

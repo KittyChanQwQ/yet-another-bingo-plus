@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoreboard
 
+import net.minecraft.text.Text
 import java.util.*
 
 class ScoreboardView {
@@ -8,33 +9,38 @@ class ScoreboardView {
 
     private var contents: Map<String, Int> = emptyMap()
 
-    fun createChanges(list: List<String>): List<ScoreChange>
-        = list.mapIndexed { i, text -> ScoreChange.Create(text, list.size - i) }
+    class ScoreboardItem(
+        val string: String,
+        val text: Text,
+    )
 
-    fun updateContents(newList: List<String>): List<ScoreChange> {
+    fun createChanges(list: List<ScoreboardItem>): List<ScoreChange>
+        = list.mapIndexed { i, item -> ScoreChange.Create(item.string, item.text, list.size - i) }
+
+    fun updateContents(newList: List<ScoreboardItem>): List<ScoreChange> {
         val changes = mutableListOf<ScoreChange>()
 
         for ((i, newText) in newList.withIndex()) {
             val newIndex = newList.size - i
-            val prevIndex = contents[newText]
+            val prevIndex = contents[newText.string]
             if (prevIndex == newIndex) continue
 
             if (prevIndex != null) {
-                changes.add(ScoreChange.Update(newText, newIndex))
+                changes.add(ScoreChange.Update(newText.string, newText.text, newIndex))
             } else {
-                changes.add(ScoreChange.Create(newText, newIndex))
+                changes.add(ScoreChange.Create(newText.string, newText.text, newIndex))
             }
         }
 
-        for ((oldText, i) in contents) {
-            if (!newList.contains(oldText)) {
-                changes.add(ScoreChange.Remove(oldText, i))
+        for ((oldString, i) in contents) {
+            if (newList.none { it.string == oldString }) {
+                changes.add(ScoreChange.Remove(oldString, null, i))
             }
         }
 
         contents = newList.withIndex()
             .associate { (i, text) ->
-                text to (newList.size - i)
+                text.string to (newList.size - i)
             }
 
         return changes

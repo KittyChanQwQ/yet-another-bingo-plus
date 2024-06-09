@@ -9,7 +9,7 @@ interface IScoreboardManager {
 
     fun createDummyObjective(server: MinecraftServer, name: String, displayName: Text): IObjectiveHandle
 
-    fun setScoreboardText(server: MinecraftServer, handle: IObjectiveHandle, textLines: List<String>)
+    fun setScoreboardText(server: MinecraftServer, handle: IObjectiveHandle, textLines: List<ScoreChange.Create>)
 
     fun sendObjectiveCreate(player: ServerPlayerEntity, handle: IObjectiveHandle)
 

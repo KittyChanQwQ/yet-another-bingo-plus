@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
@@ -102,12 +103,12 @@ class GameService(
                 .also { yield(it) }
 
             Text.literal("  ")
-                .append(textProvider.string(StringKey.ScoreboardMode, options.formatGameMode()))
+                .append(textProvider.string(StringKey.ScoreboardMode, options.formatGameMode().map { textProvider.string(it) }.joinText()))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
             Text.literal("  ")
-                .append(textProvider.string(StringKey.ScoreboardFeatures, options.formatFeatures()))
+                .append(textProvider.string(StringKey.ScoreboardFeatures, options.formatFeatures().map { textProvider.string(it) }.joinText()))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 

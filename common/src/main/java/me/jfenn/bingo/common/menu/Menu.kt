@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
-import me.jfenn.bingo.common.utils.text.TextInfo
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.server.MinecraftServer

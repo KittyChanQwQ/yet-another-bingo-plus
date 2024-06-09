@@ -78,13 +78,15 @@ class ScoreboardManager : IScoreboardManager {
     override fun sendScoreChanges(player: ServerPlayerEntity, handle: IObjectiveHandle, changes: List<ScoreChange>) {
         require(handle is ObjectiveHandle)
 
+        Text.empty().toString()
+
         for (change in changes) {
             when (change) {
                 is ScoreChange.Create -> {
-                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, Optional.empty(), Optional.empty()))
+                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, Optional.of(change.text), Optional.empty()))
                 }
                 is ScoreChange.Update -> {
-                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, Optional.empty(), Optional.empty()))
+                    player.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, Optional.of(change.text), Optional.empty()))
                 }
                 is ScoreChange.Remove -> {
                     player.networkHandler.sendPacket(ScoreboardScoreResetS2CPacket(change.name, handle.name))

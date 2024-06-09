@@ -4,6 +4,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.spawn.SpawnItem
+import me.jfenn.bingo.generated.StringKey
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.memberProperties
 import kotlin.time.Duration
@@ -79,26 +80,26 @@ data class BingoOptions(
         return itemDistribution.sum() <= 25
     }
 
-    fun formatGameMode(): String {
+    fun formatGameMode(): List<StringKey> {
         val gameMode = buildList {
-            if (isLockoutMode) add("Lockout")
-            if (isInventoryMode) add("Inventory")
-            if (isRankedMode) add("Ranked")
-            if (isHiddenItemsMode) add("Hidden Items")
+            if (isLockoutMode) add(StringKey.OptionsModeLockout)
+            if (isInventoryMode) add(StringKey.OptionsModeInventory)
+            if (isRankedMode) add(StringKey.OptionsModeRanked)
+            if (isHiddenItemsMode) add(StringKey.OptionsModeHiddenItems)
         }
 
-        return gameMode.joinToString(", ").ifEmpty { "Standard" }
+        return gameMode.ifEmpty { listOf(StringKey.OptionsModeStandard) }
     }
 
-    fun formatFeatures(): String {
-        return buildString {
-            if (isElytra) append("Elytra, ")
-            if (isNightVision) append("NightVis, ")
-            if (isKeepInventory) append("KeepInv, ")
-            if (isPvpEnabled) append("PvP, ")
+    fun formatFeatures(): List<StringKey> {
+        val features = buildList {
+            if (isElytra) add(StringKey.OptionsElytra)
+            if (isNightVision) add(StringKey.OptionsNightVisShort)
+            if (isKeepInventory) add(StringKey.OptionsKeepInventoryShort)
+            if (isPvpEnabled) add(StringKey.OptionsAllowPvpShort)
         }
-            .removeSuffix(", ")
-            .ifEmpty { "None" }
+
+        return features.ifEmpty { listOf(StringKey.OptionsFeaturesNone) }
     }
 
     fun copyFrom(options: BingoOptions) {
