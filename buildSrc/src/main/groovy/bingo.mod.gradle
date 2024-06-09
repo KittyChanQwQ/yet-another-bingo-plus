@@ -130,7 +130,7 @@ java {
 }
 
 if (project.name.toString() == "common") {
-    // tasks.test.dependsOn tasks.runGametestServer
+    tasks.test.dependsOn tasks.runGametestServer
 }
 
 jar {

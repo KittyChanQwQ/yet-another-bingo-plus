@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "yet-another-minecraft-bingo-common",
+  "id": "yet-another-minecraft-bingo-test",
   "name": "Yet Another Minecraft BINGO",
   "version": "0.0.0",
   "environment": "*",
-  "icon": "bingo/icon.png",
+  "icon": "yet-another-minecraft-bingo/icon.png",
   "entrypoints": {
     "fabric-gametest": [
       {
@@ -26,6 +26,5 @@
     "fennifith"
   ],
   "description": "Common cross-version functionality for the BINGO mod",
-  "mixins": [],
-  "accessWidener": "bingo.accesswidener"
+  "mixins": []
 }
