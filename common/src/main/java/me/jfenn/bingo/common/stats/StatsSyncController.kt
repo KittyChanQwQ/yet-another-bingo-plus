@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
 import net.minecraft.server.network.ServerPlayerEntity
 import org.slf4j.Logger
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
 class StatsSyncController(
@@ -24,6 +25,8 @@ class StatsSyncController(
 ) : BingoComponent() {
 
     private val executor = executors.io
+
+    private val pendingPlayerIds = Collections.newSetFromMap(ConcurrentHashMap<UUID, Boolean>())
 
     private fun broadcastHash(player: ServerPlayerEntity) = executor.submit {
         log.info("[StatsSyncController] Broadcasting stats hash to player {}", player.uuid)
@@ -98,7 +101,15 @@ class StatsSyncController(
         events.onPlayerChannelRegister { player ->
             if (!config.syncStats) return@onPlayerChannelRegister
             if (!packets.statsHashV1S2C.isSupported(player)) return@onPlayerChannelRegister
+            // Ensure that broadcastHash is only started once per login
+            if (pendingPlayerIds.contains(player.uuid)) return@onPlayerChannelRegister
+
+            pendingPlayerIds.add(player.uuid)
             broadcastHash(player)
+        }
+
+        events.onPlayerLeave { player ->
+            pendingPlayerIds.remove(player.uuid)
         }
 
         events.onPacket(packets.statsHashV1C2S) {
