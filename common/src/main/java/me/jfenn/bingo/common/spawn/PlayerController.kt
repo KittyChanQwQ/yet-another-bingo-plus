@@ -210,9 +210,9 @@ class PlayerController(
             }
         }
 
-        // Transition from PREGAME -> COUNTDOWN
-        events.onEnter(GameState.COUNTDOWN) { prevState ->
-            if (prevState == GameState.COUNTDOWN) return@onEnter
+        // Transition from PREGAME -> LOADING
+        events.onEnter(GameState.LOADING) { prevState ->
+            if (prevState == GameState.LOADING) return@onEnter
 
             for (player in server.playerManager.playerList) {
                 updateGameMode(player, forceReset = true)
