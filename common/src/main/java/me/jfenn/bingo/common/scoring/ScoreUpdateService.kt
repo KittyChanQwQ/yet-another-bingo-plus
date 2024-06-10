@@ -70,14 +70,6 @@ class ScoreUpdateService(
             else -> team.players.mapNotNull { playerManager.getPlayer(it.uuid) }
         }
 
-        val chatMessage = textProvider.string(
-            StringKey.GameMessageCapturedItem,
-            Text.literal("${team.symbol} ${packet.player.name}")
-                .formatted(team.formatting),
-            Texts.bracketed(itemName),
-        )
-            .let { formatWithTime(it) }
-
         for (player in playerList) {
             val isOnTeam = team.includesPlayer(player.player)
             val playerPacket = if (isOnTeam) packet else otherTeamPacket
@@ -102,11 +94,29 @@ class ScoreUpdateService(
                     }
                 }
             }
+        }
 
-            // Send players a message that the item was captured
-            if (playerSettingsService.getPlayer(player.player).itemMessages) {
-                player.player.sendMessage(chatMessage, false)
-            }
+        // Send players a message that the item was captured
+        for (player in playerList) {
+            // if the player has item messages turned off, skip them...
+            if (!playerSettingsService.getPlayer(player.player).itemMessages)
+                continue
+
+            val isOnTeam = team.includesPlayer(player.player)
+            val itemText = when {
+                // if playing in hidden items mode, don't reveal the item to the other teams!
+                state.options.isHiddenItemsMode && !isOnTeam -> Text.literal("*****").formatted(Formatting.OBFUSCATED)
+                else -> itemName
+            }.let { Texts.bracketed(it) }
+
+            val chatMessage = textProvider.string(
+                StringKey.GameMessageCapturedItem,
+                Text.literal("${team.symbol} ${packet.player.name}")
+                    .formatted(team.formatting),
+                itemText,
+            ).let { formatWithTime(it) }
+
+            player.player.sendMessage(chatMessage, false)
         }
     }
 
