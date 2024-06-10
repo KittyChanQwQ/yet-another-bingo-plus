@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.scoring.ScoredItemPacket
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
 import me.jfenn.bingo.common.game.GameOverPacket
+import me.jfenn.bingo.common.stats.packets.StatsCheckPacket
 import me.jfenn.bingo.common.timer.CountdownPacket
 import me.jfenn.bingo.common.timer.TimerPacket
 
@@ -30,6 +31,8 @@ class ServerPacketEvents(
     val sendPlayerSettingsV2 = serverNetworking.registerC2S(PlayerSettings.V2)
     val receivePlayerSettingsV2 = serverNetworking.registerS2C(PlayerSettings.V2)
 
+    val statsHashV1C2S = serverNetworking.registerC2S(StatsCheckPacket.V1)
+    val statsHashV1S2C = serverNetworking.registerS2C(StatsCheckPacket.V1)
     val statsGameV1C2S = serverNetworking.registerC2S(StatsGamePacket.V1)
     val statsGameV1S2C = serverNetworking.registerS2C(StatsGamePacket.V1)
     val statsIndexV1C2S = serverNetworking.registerC2S(StatsIndexPacket.V1)

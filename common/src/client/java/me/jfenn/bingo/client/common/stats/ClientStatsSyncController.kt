@@ -7,9 +7,9 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.stats.data.PlayerGameSummary
+import me.jfenn.bingo.common.stats.packets.StatsCheckPacket
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
-import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents
 import org.slf4j.Logger
 import java.util.*
 import kotlin.random.Random
@@ -28,7 +28,17 @@ class ClientStatsSyncController(
 
     private val executor = executors.io
 
-    private fun broadcastKnownIds() = executor.submit {
+    private fun sendKnownIdsIfMismatch(check: StatsCheckPacket) = executor.submit {
+        val hash = stats.fetchGamesByPlayerSha512(playerUuid)
+        if (hash == check.hashSha512) {
+            log.info("[ClientStatsSyncController] Hash matched! No sync required.")
+            return@submit
+        }
+
+        log.info("[ClientStatsSyncController] Hash mismatch - starting sync...")
+        // Send a hash packet back to the server so that it knows the hashes are mismatched
+        packets.statsHashV1C2S.send(StatsCheckPacket(hashSha512 = hash))
+
         for (ids in stats.fetchGamesByPlayer(playerUuid)) {
             val packet = StatsIndexPacket(
                 action = StatsIndexPacket.Action.BROADCAST,
@@ -89,11 +99,9 @@ class ClientStatsSyncController(
     }
 
     init {
-        C2SPlayChannelEvents.REGISTER.register { _, _, _, _ ->
-            if (!config.syncStats) return@register
-            if (packets.statsIndexV1C2S.isSupported()) {
-                broadcastKnownIds()
-            }
+        packets.statsHashV1S2C.onPacket {
+            if (!config.syncStats) return@onPacket
+            sendKnownIdsIfMismatch(it.packet)
         }
 
         packets.statsIndexV1S2C.onPacket {

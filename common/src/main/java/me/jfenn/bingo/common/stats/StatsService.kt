@@ -6,6 +6,7 @@ import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.common.stats.data.*
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.stats.sql.StatsDatabase
+import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -66,7 +67,7 @@ class StatsService(
 
     fun fetchGamesByPlayer(
         playerUuid: UUID,
-        itemsPerPage: Long = 10L
+        itemsPerPage: Long = 100L
     ) = sequence {
         for (offset in 0L until Long.MAX_VALUE step itemsPerPage) {
             val games = db.gameQueries.allGamesByPlayer(
@@ -79,6 +80,21 @@ class StatsService(
 
             yield(games.map { UUID.fromString(it) })
         }
+    }
+
+    /**
+     * Generate an SHA-256 hash of all game IDs played by the player,
+     * for syncing purposes.
+     */
+    fun fetchGamesByPlayerSha512(playerId: UUID): String {
+        val md = MessageDigest.getInstance("SHA-512")
+        for (games in fetchGamesByPlayer(playerId)) {
+            for (game in games) {
+                md.update(game.toString().toByteArray())
+            }
+        }
+        val digest = md.digest()
+        return HexFormat.of().formatHex(digest)
     }
 
     fun getPlayerSummary(playerUuid: UUID, now: Instant = Clock.System.now()): PlayerStatsSummary {

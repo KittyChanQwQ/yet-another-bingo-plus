@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.stats.data.PlayerGameSummary
+import me.jfenn.bingo.common.stats.packets.StatsCheckPacket
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
 import net.minecraft.server.network.ServerPlayerEntity
@@ -24,7 +25,16 @@ class StatsSyncController(
 
     private val executor = executors.io
 
-    private fun broadcastKnownIds(player: ServerPlayerEntity) = executor.submit {
+    private fun broadcastHash(player: ServerPlayerEntity) = executor.submit {
+        log.info("[StatsSyncController] Broadcasting stats hash to player {}", player.uuid)
+        val hash = stats.fetchGamesByPlayerSha512(player.uuid)
+        val packet = StatsCheckPacket(hashSha512 = hash)
+        packets.statsHashV1S2C.send(player, packet)
+    }
+
+    private fun sendKnownIds(player: ServerPlayerEntity) = executor.submit {
+        log.info("[StatsSyncController] Client responded with a hash mismatch - starting sync for player {}", player.uuid)
+
         for (ids in stats.fetchGamesByPlayer(player.uuid)) {
             val packet = StatsIndexPacket(
                 action = StatsIndexPacket.Action.BROADCAST,
@@ -87,8 +97,13 @@ class StatsSyncController(
     init {
         events.onPlayerChannelRegister { player ->
             if (!config.syncStats) return@onPlayerChannelRegister
-            if (!packets.statsIndexV1S2C.isSupported(player)) return@onPlayerChannelRegister
-            broadcastKnownIds(player)
+            if (!packets.statsHashV1S2C.isSupported(player)) return@onPlayerChannelRegister
+            broadcastHash(player)
+        }
+
+        events.onPacket(packets.statsHashV1C2S) {
+            if (!config.syncStats) return@onPacket
+            sendKnownIds(it.player)
         }
 
         events.onPacket(packets.statsIndexV1C2S) {

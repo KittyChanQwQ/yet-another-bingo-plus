@@ -16,7 +16,6 @@ import kotlin.io.path.pathString
 
 class MigrationHandler(
     private val log: Logger,
-    private val configService: ConfigService,
     private val config: BingoConfig,
 ) {
 
@@ -94,7 +93,7 @@ class MigrationHandler(
             // move the "config/bingo" dir to "config/yet-another-minecraft-bingo"
             val originalDir = loader.configDir.resolve(MOD_ID)
             val newDir = loader.configDir.resolve(MOD_ID_BINGO)
-            if (originalDir.resolve("game-options.json").toFile().let { it.exists() && it.isDirectory }) {
+            if (originalDir.resolve("game-options.json").toFile().exists()) {
                 log.info("[MigrationHandler] Renaming config/$MOD_ID -> config/$MOD_ID_BINGO")
                 newDir.toFile().deleteRecursively()
                 Files.move(originalDir, newDir, StandardCopyOption.REPLACE_EXISTING)
@@ -130,7 +129,8 @@ class MigrationHandler(
             migrations[i]?.invoke(config)
         }
 
-        configService.config = config.copy(version = maxVersion)
+        val configService = ConfigService()
+        configService.config = configService.config.copy(version = maxVersion)
         configService.options = configService.options.copy()
         configService.optionsDefault = configService.optionsDefault.copy()
         configService.playerConfig = configService.playerConfig.copy()
