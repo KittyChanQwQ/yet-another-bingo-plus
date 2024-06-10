@@ -9,6 +9,8 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import org.koin.core.Koin
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 class BingoEndScreen(
     koin: Koin,
@@ -105,6 +107,9 @@ class BingoEndScreen(
 
         super.render(context, mouseX, mouseY, delta)
 
+        val cardTop = (height/2) - (BingoHudRenderer.CARD_HEIGHT/2)
+        val titleY = min((cardTop * 0.75f).roundToInt(), cardTop - 11*2)
+
         context.matrices.push()
         context.matrices.scale(2f, 2f, 2f)
 
@@ -114,7 +119,7 @@ class BingoEndScreen(
             textRenderer,
             gameOver.title,
             (width/8) - (textRenderer.getWidth(gameOver.title)/2),
-            (height/8) - (BingoHudRenderer.CARD_HEIGHT/8) - 16,
+            (titleY/4) - 9,
             0xff_ffffff.toInt(),
             false,
         )
@@ -124,7 +129,7 @@ class BingoEndScreen(
             textRenderer,
             gameOver.subtitle,
             (width/4) - (textRenderer.getWidth(gameOver.subtitle)/2),
-            (height/4) - (BingoHudRenderer.CARD_HEIGHT/4) - 14,
+            (titleY/2) + 2,
             0xff_ffffff.toInt(),
             false,
         )

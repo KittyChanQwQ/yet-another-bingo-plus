@@ -169,7 +169,7 @@ class MenuController(
 
     private fun searchLobbyBlocks() = sequence {
         for (x in -24..24) {
-            for (y in 0..48) {
+            for (y in -64..48) {
                 for (z in -24..24) {
                     yield(BlockPosition(x, y, z))
                 }

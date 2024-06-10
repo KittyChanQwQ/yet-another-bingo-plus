@@ -69,10 +69,10 @@ class GameService(
             val team = teamService.getPlayerTeam(player)
             player.networkHandler.sendPacket(
                 TitleS2CPacket(
-                    Text.literal("BINGO").formatted(team?.formatting ?: Formatting.WHITE)
+                    textProvider.string(StringKey.GameAnnounceBingo).formatted(team?.formatting ?: Formatting.WHITE)
                 )
             )
-            player.networkHandler.sendPacket(SubtitleS2CPacket(Text.literal("Game is starting!")))
+            player.networkHandler.sendPacket(SubtitleS2CPacket(textProvider.string(StringKey.GameAnnounceStarting)))
         }
 
         // spread player teams to spawnpoint
