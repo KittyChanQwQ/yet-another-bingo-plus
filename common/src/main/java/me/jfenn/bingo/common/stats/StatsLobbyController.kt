@@ -1,5 +1,7 @@
 package me.jfenn.bingo.common.stats
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -17,6 +19,7 @@ import net.minecraft.entity.EntityType
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.decoration.ArmorStandEntity
 import net.minecraft.entity.decoration.DisplayEntity
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
@@ -26,6 +29,7 @@ import net.minecraft.util.math.Vec3d
 import org.slf4j.Logger
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import kotlin.time.Duration.Companion.seconds
 
 class StatsLobbyController(
     private val log: Logger,
@@ -37,8 +41,14 @@ class StatsLobbyController(
     private val itemStackFactory: IItemStackFactory,
     events: ScopedEvents
 ) {
+    companion object {
+        private val DURATION_DELAY = 5.seconds
+        private val DURATION_RESET = 10.seconds
+    }
+
     private var lobbyWorld = server.lobbyWorld!!
     private var showingPlayer: UUID? = null
+    private var showingStartedAt: Instant = Instant.DISTANT_PAST
 
     private var pendingStats: CompletableFuture<PlayerStatsSummary>? = null
 
@@ -124,14 +134,15 @@ class StatsLobbyController(
         })
     }
 
+    private fun getArmorStand() = lobbyWorld.iterateEntities()
+        ?.filterIsInstance<ArmorStandEntity>()
+        ?.firstOrNull()
+
     private fun spawnSummary(
         player: ServerPlayerEntity,
         summary: PlayerStatsSummary,
     ) {
-        val armorStand = lobbyWorld.iterateEntities()
-            ?.filterIsInstance<ArmorStandEntity>()
-            ?.minByOrNull { it.distanceTo(player) }
-
+        val armorStand = getArmorStand()
         if (armorStand == null) {
             log.warn("[StatsLobbyController] Could not display player stats; no armor stand found")
             return
@@ -249,26 +260,48 @@ class StatsLobbyController(
             .let { rightEntity?.updateText(it) }
     }
 
-    private fun tickPlayer(player: ServerPlayerEntity): Boolean {
-        if (player.world != lobbyWorld)
-            return false
+    private fun resetSummary() {
+        leftEntity?.updateText(Text.empty())
+        rightEntity?.updateText(Text.empty())
+        nameEntity?.updateText(Text.empty())
+        getArmorStand()?.equipStack(EquipmentSlot.HEAD, ItemStack.EMPTY)
+    }
 
-        val isOnPressurePlate = lobbyWorld.getBlockState(player.blockPos).block == Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE
-        if (!isOnPressurePlate)
-            return false
+    private fun tickPlayer(player: ServerPlayerEntity) {
+        val now = Clock.System.now()
+        // if the stats are already being shown for this player, return
+        if (showingPlayer == player.uuid) {
+            showingStartedAt = now
+            return
+        }
 
-        if (showingPlayer == player.uuid)
-            return true
+        // if the last change was less than DURATION_DELAY ago... then don't let another player change it yet
+        if (now - showingStartedAt < DURATION_DELAY) {
+            return
+        }
 
         log.info("[StatsLobbyController] Fetching summary for player ${player.uuid}...")
         showingPlayer = player.uuid
+        showingStartedAt = now
         pendingStats = stats.getPlayerSummaryAsync(player.uuid)
-        return true
     }
 
     private fun tickPlayers() {
-        for (player in server.playerManager.playerList) {
-            if (tickPlayer(player)) return
+        val player = server.playerManager.playerList
+            .filter { it.world == lobbyWorld }
+            .find { player ->
+                lobbyWorld.getBlockState(player.blockPos).block == Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE
+            }
+
+        if (player != null) {
+            tickPlayer(player)
+            return
+        }
+
+        // if no player is activating the stats and DURATION_RESET has passed...
+        if (Clock.System.now() - showingStartedAt > DURATION_RESET && showingPlayer != null) {
+            showingPlayer = null
+            resetSummary()
         }
     }
 
