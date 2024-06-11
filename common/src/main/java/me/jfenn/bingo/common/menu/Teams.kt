@@ -3,11 +3,11 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.Vec3d
 
 object TeamCountState {
@@ -35,7 +35,11 @@ fun MenuComponent.registerTeams(
         permissionGetter = permissionGetter,
     ) { player ->
         teamService.shuffleTeams(TeamCountState.teamCount)
-        player.sendInfoMessage("Teams have been shuffled!")
+        player.sendMessage(
+            Text.literal("ℹ  ")
+                .append(text.string(StringKey.OptionsTeamsShuffleMessage).formatted(Formatting.ITALIC))
+                .formatted(Formatting.AQUA)
+        )
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {

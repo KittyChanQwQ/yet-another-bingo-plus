@@ -68,5 +68,6 @@ fun MenuComponent.registerTimer(
         putString("alignment", "center")
         putInt("background", 0)
         putBoolean("shadow", true)
+        putInt("line_width", 50)
     }
 }

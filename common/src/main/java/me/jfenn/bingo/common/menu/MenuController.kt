@@ -248,7 +248,8 @@ class MenuController(
                 readNbt(NbtCompound().apply {
                     put("Pos", position.add(0.0, 1.5, 0.0).toNbt())
                     putString("text", text.serialized(
-                        text.string(StringKey.TeamName, Text.empty().append("${team.symbol} ").append(text.string(team.name)))
+                        Text.literal("${team.symbol} ")
+                            .append(text.string(StringKey.TeamName, text.string(team.name)))
                             .formatted(team.formatting)
                             .let { Texts.bracketed(it) }
                     ))

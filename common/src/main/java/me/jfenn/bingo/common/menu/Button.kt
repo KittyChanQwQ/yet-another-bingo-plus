@@ -4,6 +4,7 @@ import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.toNbt
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtFloat
 import net.minecraft.nbt.NbtList
@@ -19,7 +20,7 @@ fun MenuComponent.registerButton(
     text: Text,
     textProp: Property<Text> = computedProperty { text },
     isActiveProp: Property<Boolean> = ConstantProperty(false),
-    width: Float = max(MENU_HITBOX_WIDTH, text.string.length * 0.15f),
+    width: Float = (text.string.length * 0.15f).coerceIn(MENU_HITBOX_WIDTH, 2f),
     height: Float = MENU_HITBOX_HEIGHT,
     facing: Direction = Direction.SOUTH,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
@@ -57,6 +58,12 @@ fun MenuComponent.registerButton(
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", (if (isActive) 0xA0_FFFFFFu else 0x00_000000u).toInt())
+        put("transformation", listOf(
+            .8f, 0f, 0f, 0f,
+            0f, .8f, 0f, 0f,
+            0f, 0f, .8f, 0f,
+            0f, 0f, 0f, 1f,
+        ).toNbt())
     }
 }
 
