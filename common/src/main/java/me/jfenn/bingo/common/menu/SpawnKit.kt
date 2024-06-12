@@ -5,11 +5,13 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.spawn.SpawnItem
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
+import org.joml.Matrix4f
 
 fun MenuComponent.registerSpawnKit(
     position: Vec3d,
@@ -25,6 +27,7 @@ fun MenuComponent.registerSpawnKit(
         putString("alignment", "center")
         putInt("background", 0)
         putBoolean("shadow", true)
+        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
     }
 
     registerToggleButton(

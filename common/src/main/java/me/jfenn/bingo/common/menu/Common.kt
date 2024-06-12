@@ -11,11 +11,13 @@ import java.util.*
 import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
 
+const val MENU_TEXT_SCALE = 0.8f
+
 const val MENU_HITBOX_HEIGHT = 0.25f
 const val MENU_HITBOX_WIDTH = 1f
 
 const val MENU_ITEM_OFFSET = 0.5
-const val MENU_ITEM_HEIGHT = 0.3
+const val MENU_ITEM_HEIGHT = 0.25
 
 interface Property<T> {
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T

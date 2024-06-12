@@ -1,11 +1,13 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
+import org.joml.Matrix4f
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -58,6 +60,7 @@ fun MenuComponent.registerTimer(
         putString("alignment", "center")
         putInt("background", 0)
         putBoolean("shadow", true)
+        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
     }
 
     registerEntity(EntityType.TEXT_DISPLAY, position) {
@@ -69,5 +72,6 @@ fun MenuComponent.registerTimer(
         putInt("background", 0)
         putBoolean("shadow", true)
         putInt("line_width", 50)
+        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
     }
 }

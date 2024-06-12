@@ -13,6 +13,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
+import org.joml.Matrix4f
 import kotlin.math.max
 
 fun MenuComponent.registerButton(
@@ -58,12 +59,7 @@ fun MenuComponent.registerButton(
         putString("billboard", "fixed")
         putString("alignment", "center")
         putInt("background", (if (isActive) 0xA0_FFFFFFu else 0x00_000000u).toInt())
-        put("transformation", listOf(
-            .8f, 0f, 0f, 0f,
-            0f, .8f, 0f, 0f,
-            0f, 0f, .8f, 0f,
-            0f, 0f, 0f, 1f,
-        ).toNbt())
+        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
     }
 }
 
