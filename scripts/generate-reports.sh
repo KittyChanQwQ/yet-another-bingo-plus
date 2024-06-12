@@ -8,8 +8,8 @@ DOCS_DIR=$(realpath $SCRIPT_DIR/../docs)
 pushd $TMP_DIR
 
 # Download the Minecraft Server jar
-# https://mcversions.net; 1.20.5-rc3
-[ -f server.jar ] || wget https://piston-data.mojang.com/v1/objects/7d735a8eda6797ed196141b76e96b46546bde091/server.jar
+# https://mcversions.net; 1.21-rc1
+[ -f server.jar ] || wget https://piston-data.mojang.com/v1/objects/902101d2fb0f968b9c0ddb8b8cff9afef23f72c7/server.jar
 
 # Generate report files (or --all)
 java -DbundlerMainClass=net.minecraft.data.Main -jar server.jar --reports

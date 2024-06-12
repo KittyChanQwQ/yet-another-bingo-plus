@@ -101,6 +101,20 @@ class MigrationHandler(
                 log.warn("[MigrationHandler] Not renaming config/$MOD_ID as it does not exist.")
             }
         }
+
+        migrations[6] = {
+            loader.configDir.resolve("$MOD_ID_BINGO/advancements.tierlist.json")
+                .takeIfMd5("19ea980bff9cd124ece633189d2257a2")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("$MOD_ID_BINGO/all_items.tierlist.json")
+                .takeIfMd5("4e1fbf43d0995bc3b4c85b985c9b6c1f")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("$MOD_ID_BINGO/simplified.tierlist.json")
+                .takeIfMd5("0135d16de992bdfea1d7c79d6c5b7054")
+                ?.deleteIfExists()
+        }
     }
 
     private fun Path.takeIfMd5(md5Str: String): Path? {
@@ -138,9 +152,7 @@ class MigrationHandler(
         // - tierlist files should be re-generated on each launch if removed:
         Config.readStream("advancements.tierlist.json").close()
         Config.readStream("all_items.tierlist.json").close()
-        Config.readStream("overworld-only.tierlist.json").close()
         Config.readStream("simplified.tierlist.json").close()
-        Config.readStream("advancements.tierlist.json").close()
     }
 
 }

@@ -11,8 +11,8 @@ TMP_DIR=$SCRIPT_DIR/tmp
 mkdir -p $TMP_DIR
 pushd $TMP_DIR
 
-# https://mcversions.net; 1.20.5-rc3
-[ -f client.jar ] || wget https://piston-data.mojang.com/v1/objects/67575e29d036041b1fe90b427770b87e8bdf116b/client.jar
+# https://mcversions.net; 1.21-rc1
+[ -f client.jar ] || wget https://piston-data.mojang.com/v1/objects/4ad5ef18f48b5e901de19fa1767933255e35c5f2/client.jar
 JAR_FILE="$(realpath client.jar)"
 
 [ -f $JAR_FILE ] || {
@@ -29,7 +29,7 @@ ITEMS_FILE="$(realpath $SCRIPT_DIR/data/items.json)"
 IMAGE_MASK_DIR="$(realpath $SCRIPT_DIR/data/masks)"
 IMAGE_OVERRIDE_DIR="$(realpath $SCRIPT_DIR/data/images)"
 
-OUT_DIR="$(realpath $SCRIPT_DIR/../common/src/main/resources/bingo/images)"
+OUT_DIR="$(realpath $SCRIPT_DIR/../common/src/main/resources/yet-another-minecraft-bingo/images)"
 mkdir -p $OUT_DIR
 
 # get a file path to an image from the provided texture id
