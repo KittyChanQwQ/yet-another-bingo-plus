@@ -131,7 +131,7 @@ sealed class BingoCardEntry {
     }
 
     @Serializable
-    data class ItemEntry @Throws(IllegalArgumentException::class) constructor(
+    data class ItemEntry(
         val identifier: String,
         override val tier: TierLabel,
     ): BingoCardEntry() {
@@ -159,7 +159,7 @@ sealed class BingoCardEntry {
     }
 
     @Serializable
-    data class AdvancementEntry @Throws(IllegalArgumentException::class) constructor(
+    data class AdvancementEntry(
         val identifier: String,
         override val tier: TierLabel,
     ): BingoCardEntry() {

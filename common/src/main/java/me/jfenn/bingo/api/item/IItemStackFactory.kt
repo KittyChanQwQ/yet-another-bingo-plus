@@ -2,10 +2,13 @@ package me.jfenn.bingo.api.item
 
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 interface IItemStackFactory {
+    fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean
+
     fun createStack(item: String, count: Int = 1): IItemStack
     fun createStack(item: Identifier, count: Int = 1): IItemStack
     fun createStack(item: Item, count: Int = 1): IItemStack

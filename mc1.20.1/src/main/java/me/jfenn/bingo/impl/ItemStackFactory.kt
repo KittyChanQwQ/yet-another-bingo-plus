@@ -10,13 +10,34 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.Registries
+import net.minecraft.resource.featuretoggle.FeatureFlags
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import org.slf4j.Logger
 
 class ItemStackFactory(
     private val textSerializer: ITextSerializer,
+    private val logger: Logger,
 ) : IItemStackFactory {
+    override fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean {
+        val itemInstance = try {
+            Registries.ITEM.get(Identifier(item))
+        } catch (e: Throwable) {
+            logger.error("[ItemStackFactory] Item '$item' not found", e)
+            return false
+        }
+
+        val features = listOf(FeatureFlags.BUNDLE)
+        return features.all {
+            when {
+                itemInstance.requiredFeatures.contains(it) -> server.overworld.enabledFeatures.contains(it)
+                else -> true
+            }
+        }
+    }
+
     override fun createStack(item: String, count: Int): IItemStack {
         return createStack(Identifier(item), count)
     }

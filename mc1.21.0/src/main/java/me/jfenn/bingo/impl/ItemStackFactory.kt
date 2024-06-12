@@ -14,6 +14,8 @@ import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.Registries
+import net.minecraft.resource.featuretoggle.FeatureFlags
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.RawFilteredPair
 import net.minecraft.text.Text
@@ -24,6 +26,22 @@ import org.slf4j.Logger
 class ItemStackFactory(
     private val logger: Logger,
 ) : IItemStackFactory {
+    override fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean {
+        val itemInstance = try {
+            Registries.ITEM.get(Identifier.of(item))
+        } catch (e: Throwable) {
+            logger.error("[ItemStackFactory] Item '$item' not found", e)
+            return false
+        }
+
+        val features = listOf(FeatureFlags.TRADE_REBALANCE, FeatureFlags.BUNDLE)
+        return features.all {
+            when {
+                itemInstance.requiredFeatures.contains(it) -> server.overworld.enabledFeatures.contains(it)
+                else -> true
+            }
+        }
+    }
 
     override fun createStack(item: String, count: Int): IItemStack {
         return createStack(Identifier.of(item), count)

@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.card
 
-import kotlinx.serialization.Transient
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.config.*
@@ -10,7 +9,6 @@ import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import kotlin.random.Random
 
@@ -138,11 +136,9 @@ class CardService(
     }
 
     private fun resolveItem(id: String, tier: TierLabel): BingoCardEntry.ItemEntry? {
-        return try {
-            itemStackFactory.createStack(id)
+        return if (itemStackFactory.isEnabledInWorld(id, server)) {
             BingoCardEntry.ItemEntry(id, tier)
-        } catch (e: Throwable) {
-            log.debug("Unable to locate item '$id'", e)
+        } else {
             log.warn("Unable to locate item '$id' from the tier list '${options.tierList}.tierlist.json', ignoring...")
             null
         }
