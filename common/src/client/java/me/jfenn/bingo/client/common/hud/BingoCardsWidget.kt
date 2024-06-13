@@ -136,6 +136,7 @@ class BingoCardsWidget(
                 showTeamOutlines = isSingleView,
                 isFocused = isHovered && !isSingleView && onViewClick != null,
                 isMouseOver = isHovered,
+                isGui = true, // uses an alternative card texture with a shadow to reduce clutter when overlapped
             )
         }
     }

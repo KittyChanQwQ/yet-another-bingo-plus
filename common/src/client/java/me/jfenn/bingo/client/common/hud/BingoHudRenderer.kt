@@ -74,6 +74,7 @@ class BingoHudRenderer {
         showTeamOutlines: Boolean = true,
         isFocused: Boolean = false,
         isMouseOver: Boolean = false,
+        isGui: Boolean = false,
     ) {
         val colors = cardColors.teamColors[view.teamKey ?: BingoTeamKey("preview")] ?: BingoCardColors.DEFAULTS
         val textRenderer = MinecraftClient.getInstance().textRenderer
@@ -85,9 +86,8 @@ class BingoHudRenderer {
         // Draw a translucent background behind all card items
         context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.backgroundColor.asIntWithAlpha)
 
-        val cardName = view.teamKey?.label ?: "preview"
         service.drawTexture(
-            texture = Identifier.of("minecraft", "bingo/card_$cardName")!!,
+            texture = if (isGui) colors.cardTextureGui else colors.cardTexture,
             x = 0, y = 0,
             u = 0f, v = 0f,
             width = CARD_WIDTH,
@@ -214,7 +214,7 @@ class BingoHudRenderer {
 
         if (isFocused) {
             service.drawTexture(
-                texture = Identifier("minecraft", "bingo/card_outline"),
+                texture = colors.cardTextureOutline,
                 x = 0, y = 0,
                 u = 0f, v = 0f,
                 width = CARD_WIDTH,

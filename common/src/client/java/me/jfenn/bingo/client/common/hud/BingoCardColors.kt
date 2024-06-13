@@ -2,9 +2,10 @@ package me.jfenn.bingo.client.common.hud
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.map.Color
+import net.minecraft.util.Identifier
 import kotlin.reflect.KProperty1
 
 @Serializable
@@ -25,6 +26,9 @@ data class BingoCardColors(
         val backgroundColor: String? = null,
         val textColor: String? = null,
         val outlineColor: String? = null,
+        val cardTexture: String? = null,
+        val cardTextureGui: String? = null,
+        val cardTextureOutline: String? = null,
     )
 
     class TeamColors (
@@ -33,6 +37,9 @@ data class BingoCardColors(
         val backgroundColor: Color = Color.BLACK,
         val textColor: Color = Color.BLACK,
         val outlineColor: Color = Color.TRANSPARENT,
+        val cardTexture: Identifier = Identifier.of("minecraft", "bingo/card_preview")!!,
+        val cardTextureGui: Identifier = Identifier.of("minecraft", "bingo/card_preview")!!,
+        val cardTextureOutline: Identifier = Identifier.of("minecraft", "bingo/card_outline")!!,
     )
 
     @Transient
@@ -42,8 +49,11 @@ data class BingoCardColors(
         team?.let { property.get(it) }
             ?: property.get(default)
 
+    private fun String.parseIdentifier(): Identifier =
+        Identifier.of(substringBefore(':'), substringAfter(':'))!!
+
     @Transient
-    val teamColors = teamsByKey.mapValues { (_, team) ->
+    val teamColors = teamsByKey.mapValues { (teamKey, team) ->
         TeamColors(
             tileAchievedColor = getValue(team, Team::tileAchievedColor)
                 ?.let { Color.fromString(it) }
@@ -60,6 +70,16 @@ data class BingoCardColors(
             outlineColor = getValue(team, Team::outlineColor)
                 ?.let { Color.fromString(it) }
                 ?: DEFAULTS.outlineColor,
+            cardTexture = getValue(team, Team::cardTexture)
+                ?.parseIdentifier()
+                ?: Identifier.of("minecraft", "bingo/card_${teamKey.label}")!!,
+            cardTextureGui = getValue(team, Team::cardTextureGui)
+                ?.parseIdentifier()
+                ?: getValue(team, Team::cardTexture)?.parseIdentifier()
+                ?: Identifier.of("minecraft", "bingo/card_${teamKey.label}")!!,
+            cardTextureOutline = getValue(team, Team::cardTextureOutline)
+                ?.parseIdentifier()
+                ?: DEFAULTS.cardTextureOutline,
         )
     }
 
