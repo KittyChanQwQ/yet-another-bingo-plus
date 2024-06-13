@@ -62,7 +62,7 @@ class StatsSyncController(
 
         // if there are ids missing, send the client a packet to request them
         if (missingIds.isNotEmpty()) {
-            log.info("[StatsSyncController] Requesting missing gameIds from the client")
+            log.info("[StatsSyncController] Requesting {} missing gameIds from the client", missingIds.size)
             packets.statsIndexV1S2C.send(player, StatsIndexPacket(StatsIndexPacket.Action.REQUEST, missingIds))
         }
     }
@@ -90,6 +90,7 @@ class StatsSyncController(
     }
 
     private fun insertReceivedGame(game: PlayerGameSummary) {
+        log.info("[StatsSyncController] Inserting gameId={}, playerId={}", game.game.id, game.player.minecraftId)
         stats.insertGame(
             game = game.game,
             teams = listOf(game.team),

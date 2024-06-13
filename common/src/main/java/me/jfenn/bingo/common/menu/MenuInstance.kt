@@ -83,13 +83,9 @@ class MenuInstance(
     }
 
     fun despawn(info: MenuEntityHandle<*>) {
+        interactionEntityEvents.INTERACT_LISTENERS.remove(info.id)
         val entity = world.getEntity(info.id)
-        if (entity != null && entity.type == info.type) {
-            interactionEntityEvents.INTERACT_LISTENERS.remove(info.id)
-            entity.kill()
-        } else {
-            log.error("Entity type ${info.type} does not match the entity being despawned")
-        }
+        entity?.discard()
     }
 
 }
