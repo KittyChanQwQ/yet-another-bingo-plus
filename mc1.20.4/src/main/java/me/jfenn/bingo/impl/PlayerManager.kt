@@ -119,7 +119,7 @@ class PlayerManager(
 
             // if the item can be equipped (e.g. iron chestplate), put it in an equipment slot
             val slot = MobEntity.getPreferredEquipmentSlot(itemStack)
-            if (player.canEquip(itemStack) && slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND) {
+            if (slot != null && player.canEquip(itemStack) && slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND) {
                 player.equipStack(slot, itemStack)
             } else {
                 // otherwise, put it in the player's inventory
