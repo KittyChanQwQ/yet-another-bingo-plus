@@ -3,11 +3,9 @@ package me.jfenn.bingo.common.team
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
-import net.minecraft.server.MinecraftServer
 
 class TeamController(
     private val teamService: TeamService,
-    private val server: MinecraftServer,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     events: ScopedEvents,

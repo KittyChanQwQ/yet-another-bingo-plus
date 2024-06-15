@@ -67,6 +67,11 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
             return;
         }
 
+        // if isLobbyMode=false, never delete any world data
+        if (!MinecraftServerMixinHandler.INSTANCE.shouldDeleteWorld(server)) {
+            return;
+        }
+
         // if a game is running, the server should restart normally to save all world data
         if (MinecraftServerMixinHandler.INSTANCE.isGamePlaying(server)) {
             return;

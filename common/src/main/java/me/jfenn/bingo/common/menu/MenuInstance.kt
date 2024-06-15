@@ -2,10 +2,9 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.event.InteractionEntityEvents
-import me.jfenn.bingo.common.lobbyWorld
 import net.minecraft.entity.Entity
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.server.MinecraftServer
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Vec3d
@@ -16,7 +15,7 @@ import org.slf4j.LoggerFactory
 class MenuInstance(
     private val log: Logger,
     koinScope: Scope,
-    private val server: MinecraftServer,
+    private val world: ServerWorld,
     private val interactionEntityEvents: InteractionEntityEvents,
     private val menuPos: BlockPosition,
     private val instanceTag: String,
@@ -25,9 +24,6 @@ class MenuInstance(
     companion object {
         val log = LoggerFactory.getLogger(this::class.java)!!
     }
-
-    // if the lobby world doesn't exist, the mod should error before this point!
-    val world get() = server.lobbyWorld!!
 
     private val menuComponent = component(koinScope) {
         registerPlayerCount(Vec3d(menuPos.x.toDouble(), menuPos.y + 2.0, menuPos.z + 0.55))

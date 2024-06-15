@@ -90,6 +90,8 @@ class PlayerController(
         player: ServerPlayerEntity,
         forceReset: Boolean = false,
     ) {
+        val lobbyWorld = server.lobbyWorld ?: return
+
         val isOnTeam = teamService.isPlaying(player)
         log.debug("updateGameMode(${player.uuidAsString}, forceReset=$forceReset)")
 
@@ -177,10 +179,10 @@ class PlayerController(
         }
     }
 
-    private val lobbyWorld get() = server.lobbyWorld!!
-
     init {
         events.onPlayerJoin { player ->
+            val lobbyWorld = server.lobbyWorld ?: return@onPlayerJoin
+
             // if in pregame, move to the lobby world
             if (state.state == GameState.PREGAME) {
                 val spawnPos = state.lobbySpawnPos.toBlockPos()
@@ -192,6 +194,8 @@ class PlayerController(
         }
 
         events.onPlayerRespawn { player ->
+            val lobbyWorld = server.lobbyWorld ?: return@onPlayerRespawn
+
             // if in pregame, move to the lobby world
             if (state.state == GameState.PREGAME) {
                 val spawnPos = state.lobbySpawnPos.toBlockPos()
@@ -245,7 +249,7 @@ class PlayerController(
                 }
 
                 // ensure that players don't run out of hunger in the lobby
-                if (state.state == GameState.PREGAME && player.hungerManager.foodLevel < 10) {
+                if (state.isLobbyMode && state.state == GameState.PREGAME && player.hungerManager.foodLevel < 10) {
                     player.hungerManager.foodLevel = 10
                 }
 
@@ -256,7 +260,7 @@ class PlayerController(
 
                     // if the player is spectating in adventure mode,
                     // they should be able to fly
-                    if (player.interactionManager.gameMode == GameMode.ADVENTURE) {
+                    if (state.isLobbyMode && player.interactionManager.gameMode == GameMode.ADVENTURE) {
                         val isSpectating = !teamService.isPlaying(player)
                         if (isSpectating) {
                             resetPlayerHealth(player)

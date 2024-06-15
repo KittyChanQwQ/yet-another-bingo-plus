@@ -7,7 +7,9 @@ import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
@@ -16,6 +18,7 @@ import net.minecraft.text.Text
 import net.minecraft.world.GameMode
 
 class ScoreboardService(
+    private val state: BingoState,
     private val server: MinecraftServer,
     private val scoreboardManager: IScoreboardManager,
     private val playerSettingsService: PlayerSettingsService,
@@ -24,6 +27,7 @@ class ScoreboardService(
     private val itemStackFactory: IItemStackFactory,
     private val textProvider: TextProvider,
     private val textSerializer: ITextSerializer,
+    private val teamService: TeamService,
 ) {
 
     fun getScoreboardObjective(team: BingoTeam?) : IObjectiveHandle {
@@ -33,6 +37,11 @@ class ScoreboardService(
     }
 
     fun shouldDisplayScoreboard(player: ServerPlayerEntity) : Boolean {
+        // if the player is not on a team and isLobbyMode=false, then they should not see the scoreboard
+        val isOnTeam = teamService.isPlaying(player)
+        if (!state.isLobbyMode && !isOnTeam) return false
+
+        // if the player has turned the scoreboard off
         val settings = playerSettingsService.getPlayer(player)
         if (!settings.scoreboard) return false
         if (!settings.scoreboardAutoHide) return true

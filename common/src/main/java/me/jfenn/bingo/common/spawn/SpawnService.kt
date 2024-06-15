@@ -3,13 +3,13 @@ package me.jfenn.bingo.common.spawn
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
-import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
@@ -62,8 +62,13 @@ class SpawnService(
     }
 
     fun teleportToLobby(player: ServerPlayerEntity) {
+        val lobbyWorld = server.lobbyWorld
+        if (lobbyWorld == null) {
+            log.error("[SpawnService] Attempted teleportToLobby, but the lobby world is null!")
+            return
+        }
+
         val spawn = state.lobbySpawnPos
-        val lobbyWorld = server.lobbyWorld!!
         player.teleport(lobbyWorld, spawn.x.toDouble(), spawn.y.toDouble(), spawn.z.toDouble(), 180f, 0f)
         player.setSpawnPoint(
             lobbyWorld.registryKey,
@@ -73,6 +78,11 @@ class SpawnService(
     }
 
     fun teleportPlayer(player: ServerPlayerEntity) {
+        if (!state.isLobbyMode) {
+            log.error("[SpawnService] Attempted teleportPlayer, but isLobbyMode=false!")
+            return
+        }
+
         val world = getSpawnDimension()
 
         val team = teamService.getPlayerTeam(player)
@@ -96,6 +106,11 @@ class SpawnService(
     }
 
     fun getTeamSpawnpoint(team: BingoTeam): BlockPos? {
+        if (!state.isLobbyMode) {
+            log.error("[SpawnService] Attempted getTeamSpawnpoint, but isLobbyMode=false!")
+            return null
+        }
+
         val world = getSpawnDimension()
         val spawnpoint = team.spawnpoint ?: run {
             log.warn("[SpawnService] Team ${team.id} does not have a stored spawn point! Finding a new spawn position...")

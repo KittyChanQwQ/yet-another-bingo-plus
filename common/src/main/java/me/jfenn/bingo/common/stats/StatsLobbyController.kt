@@ -46,7 +46,6 @@ class StatsLobbyController(
         private val DURATION_RESET = 10.seconds
     }
 
-    private var lobbyWorld = server.lobbyWorld!!
     private var showingPlayer: UUID? = null
     private var showingStartedAt: Instant = Instant.DISTANT_PAST
 
@@ -58,6 +57,8 @@ class StatsLobbyController(
 
     private var nameEntityUuid: UUID? = null
     private val nameEntity: DisplayEntity.TextDisplayEntity? get() {
+        val lobbyWorld = server.lobbyWorld ?: return null
+
         if (nameEntityUuid != null)
             return lobbyWorld.getEntity(nameEntityUuid) as? DisplayEntity.TextDisplayEntity
 
@@ -78,6 +79,8 @@ class StatsLobbyController(
 
     private var leftEntityUuid: UUID? = null
     private val leftEntity: DisplayEntity.TextDisplayEntity? get() {
+        val lobbyWorld = server.lobbyWorld ?: return null
+
         if (leftEntityUuid != null)
             return lobbyWorld.getEntity(leftEntityUuid) as? DisplayEntity.TextDisplayEntity
 
@@ -104,6 +107,8 @@ class StatsLobbyController(
 
     private var rightEntityUuid: UUID? = null
     private val rightEntity: DisplayEntity.TextDisplayEntity? get() {
+        val lobbyWorld = server.lobbyWorld ?: return null
+
         if (rightEntityUuid != null)
             return lobbyWorld.getEntity(rightEntityUuid) as? DisplayEntity.TextDisplayEntity
 
@@ -134,7 +139,8 @@ class StatsLobbyController(
         })
     }
 
-    private fun getArmorStand() = lobbyWorld.iterateEntities()
+    private fun getArmorStand() = server.lobbyWorld
+        ?.iterateEntities()
         ?.filterIsInstance<ArmorStandEntity>()
         ?.firstOrNull()
 
@@ -287,6 +293,8 @@ class StatsLobbyController(
     }
 
     private fun tickPlayers() {
+        val lobbyWorld = server.lobbyWorld ?: return
+
         val player = server.playerManager.playerList
             .filter { it.world == lobbyWorld }
             .find { player ->

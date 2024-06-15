@@ -25,7 +25,7 @@ class BingoWorldManager(
             val state = scope.get<BingoState>()
             val server = scope.get<MinecraftServer>()
 
-            if (state.state != GameState.PLAYING && worldService.isBingoWorld(server)) {
+            if (state.state != GameState.PLAYING && worldService.isBingoWorld(server) && state.isLobbyMode) {
                 // If the game is not in progress, delete it!
                 worldService.deleteSave(server)
             }

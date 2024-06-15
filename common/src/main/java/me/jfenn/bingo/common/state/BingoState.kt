@@ -29,6 +29,7 @@ import kotlin.time.Duration
 
 @Serializable
 data class BingoState(
+    var isLobbyMode: Boolean = false,
     val gameId: UuidAsString = UUID.randomUUID(),
     var seed: Long = Random.nextLong(),
     var state: GameState = GameState.PREGAME,

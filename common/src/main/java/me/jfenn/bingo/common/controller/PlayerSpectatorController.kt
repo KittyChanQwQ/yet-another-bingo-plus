@@ -1,12 +1,12 @@
 package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spectator.SpectatorInventoryScreenHandler
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.block.*
 import net.minecraft.entity.vehicle.ChestBoatEntity
@@ -28,6 +28,7 @@ class PlayerSpectatorController(
 
     init {
         events.onUseBlock {
+            if (state.isLobbyMode) return@onUseBlock null
             val player = it.player as? ServerPlayerEntity ?: return@onUseBlock null
             if (state.state != GameState.PLAYING) return@onUseBlock null
             if (teamService.isPlaying(player)) return@onUseBlock null
@@ -93,6 +94,7 @@ class PlayerSpectatorController(
         }
 
         events.onUseEntity {
+            if (state.isLobbyMode) return@onUseEntity null
             val player = it.player as? ServerPlayerEntity ?: return@onUseEntity null
             if (state.state != GameState.PLAYING) return@onUseEntity null
             if (teamService.isPlaying(player)) return@onUseEntity null
@@ -132,6 +134,7 @@ class PlayerSpectatorController(
         }
 
         events.onAttackEntity {
+            if (state.isLobbyMode) return@onAttackEntity null
             val player = it.player as? ServerPlayerEntity ?: return@onAttackEntity null
             if (state.state != GameState.PLAYING) return@onAttackEntity null
             if (teamService.isPlaying(player)) return@onAttackEntity null

@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.CardViewService
@@ -10,6 +9,7 @@ import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamService
 
 class MapItemController(
     private val state: BingoState,
@@ -20,7 +20,7 @@ class MapItemController(
     private val teamService: TeamService,
     events: ScopedEvents,
 ) : BingoComponent() {
-    fun givePreviewCardItem(player: IPlayerHandle) {
+    private fun givePreviewCardItem(player: IPlayerHandle) {
         if (cardViewService.supportsCardHud(player.player)) return
 
         val hasMap = player.allHeldStacks()
@@ -32,7 +32,7 @@ class MapItemController(
         }
     }
 
-    fun removePreviewCardItem(player: IPlayerHandle) {
+    private fun removePreviewCardItem(player: IPlayerHandle) {
         for ((slot, item) in player.allInventorySlots()) {
             if (mapItemService.isPreviewMapItem(item))
                 player.removeStack(slot)
@@ -43,9 +43,7 @@ class MapItemController(
      * Ensure that the player has their team's bingo map card.
      * Has no effect if the player already has a card
      */
-    fun giveMapCardItem(player: IPlayerHandle) {
-        if (cardViewService.supportsCardHud(player.player)) return
-
+    private fun giveMapCardItem(player: IPlayerHandle) {
         val team = teamService.getPlayerTeam(player.player) ?: return
         val hasMap = player.allHeldStacks()
             .filter { mapItemService.isMapItem(it) }
@@ -74,9 +72,7 @@ class MapItemController(
      * in their hotbar slots. Indiscriminately replaces any existing
      * hotbar items.
      */
-    fun giveSpectatorMapItems(player: IPlayerHandle) {
-        if (cardViewService.supportsCardHud(player.player)) return
-
+    private fun giveSpectatorMapItems(player: IPlayerHandle) {
         state.getRegisteredTeams()
             .forEachIndexed { i, team ->
                 val hasMap = player.allHeldStacks()
@@ -84,7 +80,13 @@ class MapItemController(
 
                 if (!hasMap) {
                     val stack = mapItemService.createMapItem(team)
-                    player.setStack(i, stack)
+                    if (state.isLobbyMode) {
+                        // if isLobbyMode=true, then it's okay to replace hotbar items...
+                        player.setStack(i, stack)
+                    } else {
+                        // otherwise, give the cards without overwriting their inventory
+                        player.giveItemStack(stack)
+                    }
                 }
             }
     }
@@ -92,7 +94,7 @@ class MapItemController(
     /**
      * Remove all bingo map items from the player
      */
-    fun removeAllMapItems(player: IPlayerHandle) {
+    private fun removeAllMapItems(player: IPlayerHandle) {
         player.allHeldStacks()
             .filter { mapItemService.isMapItem(it) }
             .forEach { it.count = 0 }
@@ -104,8 +106,12 @@ class MapItemController(
                 // remove any existing maps in the player's inventory
                 removeAllMapItems(player)
 
-                // give all maps for active teams to the player
-                giveSpectatorMapItems(player)
+                when {
+                    // give all maps for active teams to the player
+                    !cardViewService.supportsCardHud(player.player) -> giveSpectatorMapItems(player)
+                    // if isLobbyMode=false, give the player a bingo map as a memento
+                    !state.isLobbyMode -> giveMapCardItem(player)
+                }
             }
         }
 
@@ -121,10 +127,13 @@ class MapItemController(
                             removePreviewCardItem(player)
                         }
                     } else if (playerTeam != null && cardViewService.isViewingTeamCard(player.player, playerTeam)) {
-                        // give player a new map, if they don't have one?
-                        giveMapCardItem(player)
+                        // if the player isn't using the card hud, then...
+                        if (!cardViewService.supportsCardHud(player.player))
+                            // give player a new map, if they don't have one?
+                            giveMapCardItem(player)
                     } else if (cardViewService.isViewingSpectatorCards(player.player)) {
-                        giveSpectatorMapItems(player)
+                        if (!cardViewService.supportsCardHud(player.player))
+                            giveSpectatorMapItems(player)
                     }
                 }
 

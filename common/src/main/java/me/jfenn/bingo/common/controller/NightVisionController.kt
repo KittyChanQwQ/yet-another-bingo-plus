@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.EffectType
 import me.jfenn.bingo.api.IStatusEffectsFactory
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
@@ -10,6 +9,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 
@@ -33,9 +33,9 @@ class NightVisionController(
             config.nightVisionInPostgame || config.nightVisionInSpectator || options.isNightVision
         ) {
             val shouldHaveNightVision = (
-                    (state.state == GameState.PLAYING && !isOnTeam && config.nightVisionInSpectator) ||
-                            (state.state == GameState.POSTGAME && config.nightVisionInPostgame) ||
-                            (state.state == GameState.PLAYING && options.isNightVision)
+                    (state.state == GameState.PLAYING && !isOnTeam && config.nightVisionInSpectator && state.isLobbyMode) ||
+                            (state.state == GameState.POSTGAME && config.nightVisionInPostgame && state.isLobbyMode) ||
+                            (state.state == GameState.PLAYING && isOnTeam && options.isNightVision)
                     ) && playerSettingsService.getPlayer(player).nightVision
 
             val statusEffects = statusEffectsFactory.getStatusEffects(player)

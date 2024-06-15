@@ -75,9 +75,11 @@ class GameService(
             player.networkHandler.sendPacket(SubtitleS2CPacket(textProvider.string(StringKey.GameAnnounceStarting)))
         }
 
-        // spread player teams to spawnpoint
-        spawnService.createSpawnpoints()
-        chestService.createChestSpawnpoints()
+        if (state.isLobbyMode) {
+            // spread player teams to spawnpoint
+            spawnService.createSpawnpoints()
+            chestService.createChestSpawnpoints()
+        }
 
         // change to the loading state (until all players have loaded terrain)
         state.changeState(events, GameState.LOADING)

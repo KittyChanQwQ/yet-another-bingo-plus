@@ -34,11 +34,9 @@ class ScopeManager(
 
     init {
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
-            val packExists = server.lobbyWorld != null
-            if (!packExists) {
-                log.error("$MOD_ID datapack not found, exiting...")
-                return@register
-            }
+            val isLobbyMode = server.lobbyWorld != null
+            if (isLobbyMode) log.info("[ScopeManager] $MOD_ID.zip datapack exists - starting with isLobbyMode=true")
+            else log.info("[ScopeManager] $MOD_ID.zip datapack does not exist - starting with isLobbyMode=false")
 
             // obtain the bingo game state from the save file
             val state: BingoState = persistentStateManager.getFromWorld(
@@ -47,6 +45,7 @@ class ScopeManager(
                 clazz = BingoState::class,
                 default = { BingoState() },
             )
+            state.isLobbyMode = isLobbyMode
 
             log.info("[ScopeManager] Starting server scope...")
             val ctx = BingoScope(server, state)

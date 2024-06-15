@@ -33,12 +33,14 @@ class LobbyChaosController(
 
     init {
         events.onPlayerJoin { player ->
+            if (!state.isLobbyMode) return@onPlayerJoin
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
                 player.sendMessage(textProvider.string(StringKey.LobbySoundsMuted))
             }
         }
 
         events.onUseBlock {
+            if (!state.isLobbyMode) return@onUseBlock null
             val player = it.player as? ServerPlayerEntity ?: return@onUseBlock null
 
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {

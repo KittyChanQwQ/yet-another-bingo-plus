@@ -26,12 +26,15 @@ class GameRuleController(
     }
 
     fun writeToServer(server: MinecraftServer, options: BingoOptions) {
+        if (!state.isLobbyMode) return
         server.isPvpEnabled = options.isPvpEnabled
         server.gameRules.get(GameRules.KEEP_INVENTORY).set(options.isKeepInventory, server)
     }
 
     init {
         events.onEnter(GameState.PREGAME) {
+            if (!state.isLobbyMode) return@onEnter
+
             // remove overworld spawn tickets
             server.overworld.chunkManager.removePersistentTickets()
 
@@ -51,11 +54,15 @@ class GameRuleController(
         }
 
         events.onEnter(GameState.COUNTDOWN) {
+            if (!state.isLobbyMode) return@onEnter
+
             // reset overworld time
             server.overworld.timeOfDay = 0
         }
 
         events.onEnter(GameState.PLAYING) { prevState ->
+            if (!state.isLobbyMode) return@onEnter
+
             // revert the lobby gamerule changes
             server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(true, server)
             server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(true, server)

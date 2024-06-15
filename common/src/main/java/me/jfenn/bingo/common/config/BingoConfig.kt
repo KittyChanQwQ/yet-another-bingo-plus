@@ -44,4 +44,7 @@ data class BingoConfig(
 
     // only applies to client
     val client: ClientConfig = ClientConfig(),
+
+    // only applies to dedicated server
+    val server: ServerConfig = ServerConfig(),
 )

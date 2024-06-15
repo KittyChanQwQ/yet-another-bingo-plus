@@ -57,7 +57,6 @@ class MenuController(
 ) : BingoComponent() {
 
     private var menu: MenuInstance? = null
-    private val lobbyWorld get() = server.lobbyWorld!!
     private val koinScope = scopeManager.getScope(server)!!
 
     private val instanceTag = "bingo-${UUID.randomUUID()}"
@@ -72,16 +71,22 @@ class MenuController(
                 return@onEnter
             }
 
-            val lobbySpawnPos = getLobbySpawnPosition()
+            val lobbyWorld = server.lobbyWorld
+            if (lobbyWorld == null) {
+                log.error("[MenuController] Not spawning lobby, as the dimension does not exist")
+                return@onEnter
+            }
+
+            val lobbySpawnPos = getLobbySpawnPosition(lobbyWorld)
             state.lobbySpawnPos = lobbySpawnPos
 
-            val menuPos = getMenuPosition()
+            val menuPos = getMenuPosition(lobbyWorld)
             if (menuPos != null) {
                 log.info("[MenuController] Spawning lobby menu at $menuPos")
                 val menuInstance = MenuInstance(
                     log = log,
                     koinScope = koinScope,
-                    server = server,
+                    world = lobbyWorld,
                     interactionEntityEvents = interactionEntityEvents,
                     menuPos = menuPos,
                     instanceTag = instanceTag,
@@ -91,10 +96,11 @@ class MenuController(
                 log.warn("[MenuController] Not spawning menu entities as the lobby has no menu position.")
             }
 
-            spawnTeamEntities()
+            spawnTeamEntities(lobbyWorld)
         }
 
         events.onEntityLoad { (entity, world) ->
+            val lobbyWorld = server.lobbyWorld ?: return@onEntityLoad
             val bingoTag = entity.commandTags.find { it.startsWith("bingo-") }
                 ?: return@onEntityLoad
 
@@ -177,7 +183,7 @@ class MenuController(
         }
     }
 
-    private fun getMenuPosition(): BlockPosition? = log.measureTime("[MenuController] Locating menu position...") {
+    private fun getMenuPosition(lobbyWorld: ServerWorld): BlockPosition? = log.measureTime("[MenuController] Locating menu position...") {
         // Find a column of three vertical wall_sign blocks for the menu position
         for (pos in searchLobbyBlocks()) {
             val blocks = listOf(
@@ -200,7 +206,7 @@ class MenuController(
         null
     }.also { log.info("Set menu position to $it") }
 
-    private fun getLobbySpawnPosition(): BlockPosition = log.measureTime("[MenuController] Locating spawn position...") {
+    private fun getLobbySpawnPosition(lobbyWorld: ServerWorld): BlockPosition = log.measureTime("[MenuController] Locating spawn position...") {
         // If a player head is in the lobby structure, use it as the player spawn
         for (pos in searchLobbyBlocks()) {
             val blockPos = pos.toBlockPos()
@@ -221,7 +227,7 @@ class MenuController(
 
     private val teamPositions = mutableMapOf<BingoTeamKey, BlockPos>()
 
-    private fun spawnTeamEntities() = log.measureTime("[MenuController] Locating team entities...") {
+    private fun spawnTeamEntities(lobbyWorld: ServerWorld) = log.measureTime("[MenuController] Locating team entities...") {
         // Search for team join entities
        for ((x, y, z) in searchLobbyBlocks()) {
             val isLodestone = lobbyWorld.getBlockState(BlockPos(x, y-1, z)).block == Blocks.LODESTONE
