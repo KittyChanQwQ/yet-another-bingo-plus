@@ -69,7 +69,7 @@ class PlayerController(
         }
 
         // also give rocket
-        val rocketStack = player.allHeldStacks().find { it.item == Items.FIREWORK_ROCKET }
+        val rocketStack = player.allHeldStacks().find { it.item == Items.FIREWORK_ROCKET && it.hasCustomTag(NBT_BINGO_VANISH) }
 
         if (rocketStack != null && rocketStack.count < 2) {
             rocketStack.count = 2
