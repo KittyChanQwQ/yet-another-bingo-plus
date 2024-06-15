@@ -34,19 +34,52 @@ server.properties
 When the server starts up, it looks for specific blocks in a 48x48 box around the world origin to use for
 specific functionality...
 
+<div class="figure-wrap">
+<figure>
+
 ### Spawnpoint
 
 The world spawn can be changed by placing a `minecraft:player_head` at the location you want players to spawn
 in the lobby.
+
+</figure>
+<figure>
+
+![A Minecraft player head on top of a grass block](./lobby-structure-spawnpoint.png)
+
+</figure>
+</div>
+
+<div class="figure-wrap">
+<figure>
 
 ### Game Menu
 
 The game menu looks for three vertical `minecraft:oak_wall_sign` (an oak sign placed against a wall) blocks
 to set its position. It has a total height of 4 blocks and a width of 14.
 
+</figure>
+<figure>
+
+![Three oak signs placed above each other on a wall](./lobby-structure-menu.png)
+
+</figure>
+</div>
+
+<div class="figure-wrap">
+<figure>
+
 ### Team Pickers
 
 The "team picker" entities can be created by placing a colored carpet on top of a lodestone block.
+
+</figure>
+<figure>
+
+![A green carpet on top of a lodestone block](./lobby-structure-team.png)
+
+</figure>
+</div>
 
 This only works for the set teams included in the mod; i.e.
 - Blue Team (`minecraft:blue_carpet`)
