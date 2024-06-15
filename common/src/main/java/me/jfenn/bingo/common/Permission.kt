@@ -16,6 +16,8 @@ enum class PermissionDefault {
 
 object Permission {
 
+    val CONFIGURE_LOBBY = PermissionKey("$MOD_ID.configure.lobby", PermissionDefault.OPERATORS)
+
     /** "/bingo ..." commands (& lobby game menu) */
     val CONFIGURE_GAME = PermissionKey("$MOD_ID.configure.game", PermissionDefault.OPERATORS)
 
