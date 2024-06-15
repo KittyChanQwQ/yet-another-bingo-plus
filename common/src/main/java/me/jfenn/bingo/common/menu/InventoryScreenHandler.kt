@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
+import me.jfenn.bingo.common.NBT_BINGO_KEEP
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.utils.EventListener
 import net.minecraft.entity.player.PlayerEntity
@@ -28,6 +29,7 @@ class InventoryScreenHandler(
             // remove bingo flags when in a config inventory
             stack.removeCustomTag(NBT_BINGO_IGNORE)
             stack.removeCustomTag(NBT_BINGO_VANISH)
+            stack.removeCustomTag(NBT_BINGO_KEEP)
             inventory.setStack(i, stack.stack)
         }
 

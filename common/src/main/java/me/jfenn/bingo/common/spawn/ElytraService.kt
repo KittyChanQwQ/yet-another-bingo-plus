@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.spawn
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
+import me.jfenn.bingo.common.NBT_BINGO_KEEP
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import net.minecraft.item.Items
 
@@ -26,6 +27,7 @@ class ElytraService(
                     setUnbreakable(true)
                     addCustomTag(NBT_BINGO_IGNORE)
                     addCustomTag(NBT_BINGO_VANISH)
+                    addCustomTag(NBT_BINGO_KEEP)
                 }
             )
         }
@@ -44,6 +46,7 @@ class ElytraService(
                 itemStackFactory.createFireworkRocket().apply {
                     addCustomTag(NBT_BINGO_IGNORE)
                     addCustomTag(NBT_BINGO_VANISH)
+                    addCustomTag(NBT_BINGO_KEEP)
                     fireworks = emptyList()
                 }
             )

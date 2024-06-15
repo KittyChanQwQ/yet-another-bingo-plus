@@ -20,6 +20,7 @@
   "bingo.card.team_card": "Bingo Card (%s)",
   "bingo.intro.welcome": "Welcome to %s!",
   "bingo.intro.welcome_link": "Yet Another MC BINGO",
+  "bingo.intro.use_config_commands": "Use the '/bingo' command to configure the game.",
   "bingo.intro.use_config_menu": "Use the menu in front of you to configure the game.",
   "bingo.intro.read_how_to_play": "Read %s on the wiki.",
   "bingo.intro.read_how_to_play_link": "how to play",

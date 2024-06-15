@@ -22,13 +22,15 @@ public abstract class PlayerEntityMixin {
     public void dropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> ci) {
         if ((Object) this instanceof ServerPlayerEntity player) {
             if (PlayerEntityMixinHandler.INSTANCE.shouldVanishDrop(player, stack)) {
-                ItemStack cur = getInventory().getMainHandStack();
-                if (retainOwnership && (cur == null || cur.isEmpty())) {
-                    // The complete stack was dropped
-                    getInventory().addPickBlock(stack.copy());
-                } else {
-                    // Fallback
-                    getInventory().insertStack(stack.copy());
+                if (PlayerEntityMixinHandler.INSTANCE.shouldKeepDrop(player, stack)) {
+                    ItemStack cur = getInventory().getMainHandStack();
+                    if (retainOwnership && (cur == null || cur.isEmpty())) {
+                        // The complete stack was dropped
+                        getInventory().addPickBlock(stack.copy());
+                    } else {
+                        // Fallback
+                        getInventory().insertStack(stack.copy());
+                    }
                 }
 
                 ci.setReturnValue(null);

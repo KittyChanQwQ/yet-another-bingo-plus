@@ -7,6 +7,7 @@ import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_CARD_PREFIX
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
+import me.jfenn.bingo.common.NBT_BINGO_KEEP
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.state.BingoState
@@ -36,6 +37,7 @@ class MapItemService(
             setHideFlags(255)
             addCustomTag(NBT_BINGO_IGNORE)
             addCustomTag(NBT_BINGO_VANISH)
+            addCustomTag(NBT_BINGO_KEEP)
             addCustomTag(NBT_BINGO_CARD_PREFIX + state.card.id.toString())
         }
 
@@ -77,6 +79,7 @@ class MapItemService(
                 ),
             )
             setHideFlags(255)
+            addCustomTag(NBT_BINGO_IGNORE)
         }
 
         return item
@@ -96,6 +99,7 @@ class MapItemService(
             setHideFlags(255)
             addCustomTag(NBT_BINGO_IGNORE)
             addCustomTag(NBT_BINGO_VANISH)
+            addCustomTag(NBT_BINGO_KEEP)
             addCustomTag(NBT_BINGO_CARD_PREFIX + state.card.id.toString())
         }
 

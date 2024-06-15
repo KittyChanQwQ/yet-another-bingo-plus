@@ -21,6 +21,9 @@ import me.jfenn.bingo.common.game.BingoStartCommand
 import me.jfenn.bingo.common.game.GameOverController
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.game.GameService
+import me.jfenn.bingo.common.infobook.InfoBookCommand
+import me.jfenn.bingo.common.infobook.InfoBookController
+import me.jfenn.bingo.common.infobook.InfoBookService
 import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.scope.BingoScope
@@ -80,6 +83,7 @@ val commonModule = module {
     singleOf(::SpectatorCommand)
     singleOf(::RestartCommand)
     singleOf(::StatsCommand)
+    singleOf(::InfoBookCommand)
 
     singleOf(::ConnectionFactory)
     single { get<ConnectionFactory>().create() }
@@ -100,6 +104,9 @@ val commonModule = module {
         scopedOf(::GameService)
         scopedOf(::GameOverService)
         scopedOf(::GameOverController)
+
+        scopedOf(::InfoBookController)
+        scopedOf(::InfoBookService)
 
         scopedOf(::MapItemService)
         scopedOf(::MapRenderService)
@@ -168,6 +175,7 @@ fun Koin.commonInit() {
     get<SpectatorCommand>()
     get<RestartCommand>()
     get<StatsCommand>()
+    get<InfoBookCommand>()
 
     get<ConnectionFactory>()
     get<StatsService>()
@@ -189,6 +197,8 @@ fun Scope.commonInit() {
     get<ScoreboardController>()
 
     get<GameOverController>()
+
+    get<InfoBookController>()
 
     get<ScoredItemCheck>()
 

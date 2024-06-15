@@ -16,7 +16,11 @@ val MinecraftServer.lobbyWorld get() = worlds.find { it.registryKey.value == LOB
 const val NBT_BINGO_IGNORE = "bingo_ignore"
 // if true, item should not drop as an entity
 const val NBT_BINGO_VANISH = "bingo_vanish"
+// if true, player should normally be unable to remove the item from their inventory
+const val NBT_BINGO_KEEP = "bingo_keep"
 
+// indicates the bingo tutorial book item
+const val NBT_BINGO_INFO_BOOK = "bingo_info_book"
 // prefixes bingo card items with the card UUID
 const val NBT_BINGO_CARD_PREFIX = "bingo_card_"
 
