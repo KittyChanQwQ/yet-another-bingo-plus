@@ -36,7 +36,7 @@ class InfoBookService(
                 text.string(
                     StringKey.IntroWelcome,
                     text.string(StringKey.IntroWelcomeLink).formatted(Formatting.DARK_GREEN, Formatting.UNDERLINE).also {
-                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://minecraft.horrific.dev/bingo/"))
+                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, URL_WIKI))
                     },
                 ).formatted(Formatting.BOLD)
             )
@@ -57,7 +57,7 @@ class InfoBookService(
                 text.string(
                     StringKey.IntroReadHowToPlay,
                     text.string(StringKey.IntroReadHowToPlayLink).formatted(Formatting.DARK_GREEN, Formatting.UNDERLINE).also {
-                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://minecraft.horrific.dev/bingo/what-is-bingo"))
+                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, URL_WIKI_WHAT_IS_BINGO))
                     },
                 )
             )

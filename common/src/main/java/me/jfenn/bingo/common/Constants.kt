@@ -24,6 +24,9 @@ const val NBT_BINGO_INFO_BOOK = "bingo_info_book"
 // prefixes bingo card items with the card UUID
 const val NBT_BINGO_CARD_PREFIX = "bingo_card_"
 
+const val URL_WIKI = "https://minecraft.horrific.dev/bingo/"
+const val URL_WIKI_WHAT_IS_BINGO = "https://minecraft.horrific.dev/bingo/what-is-bingo"
+
 val BINGO_WORLD_PREFIX = "${Formatting.GREEN}[BINGO]${Formatting.WHITE}"
 
 val KEYBIND_OPEN_CARD = StringKey.KeybindOpenCard.key

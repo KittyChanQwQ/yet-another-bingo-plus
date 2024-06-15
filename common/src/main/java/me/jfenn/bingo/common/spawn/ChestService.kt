@@ -46,6 +46,7 @@ class ChestService(
 
     private fun createChestSpawnpoint(team: BingoTeam): BlockPosition? {
         if (!options.isTeamKit) return null
+        if (!state.isLobbyMode) return null
         val world = getSpawnDimension()
         val spawnpoint = team.spawnpoint ?: run {
             log.error("[ChestService] createChestSpawnpoint - Cannot create a team chest, as the team does not have a spawn point!")
@@ -91,6 +92,7 @@ class ChestService(
 
     fun createChestBlock(team: BingoTeam) {
         if (!options.isTeamKit) return
+        if (!state.isLobbyMode) return
         val world = getSpawnDimension()
         val chestSpawnpoint = team.chestSpawnpoint ?: createChestSpawnpoint(team) ?: run {
             log.error("[ChestService] createChestBlock - Cannot create a team chest, as there is no chestSpawnpoint.")

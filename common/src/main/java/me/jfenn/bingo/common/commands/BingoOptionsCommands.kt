@@ -23,7 +23,7 @@ class BingoOptionsCommands(
         state.options.cardGoal = goal
 
         val events = scope.get<ScopedEvents>()
-        events.onChangeConfig(Unit)
+        events.onChangeOptions(Unit)
 
         // Send a message that the goal was changed
         Text.literal("ℹ  ")

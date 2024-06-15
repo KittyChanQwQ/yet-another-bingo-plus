@@ -126,7 +126,7 @@ class MenuController(
             menu = null
         }
 
-        events.onChangeConfig {
+        events.onChangeOptions {
             menu?.markDirty()
         }
 

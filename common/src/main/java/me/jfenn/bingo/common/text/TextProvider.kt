@@ -59,14 +59,14 @@ class TextProvider(
 
     fun serialized(text: Text) = textSerializer.toJson(text)
 
-    fun itemCount(number: Int): Text {
+    fun itemCount(number: Int): MutableText {
         return when (number) {
             1 -> string(StringKey.GameItemSingle)
             else -> string(StringKey.GameItemCount, number)
         }
     }
 
-    fun lineCount(number: Int): Text {
+    fun lineCount(number: Int): MutableText {
         return when (number) {
             1 -> string(StringKey.GameLineSingle)
             else -> string(StringKey.GameLineCount, number)

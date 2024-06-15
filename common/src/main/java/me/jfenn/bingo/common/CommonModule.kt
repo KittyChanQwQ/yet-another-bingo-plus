@@ -73,7 +73,9 @@ val commonModule = module {
     factoryOf(VanishIntegration::create)
     factoryOf(ChunkyIntegration::create)
 
+    singleOf(::BingoCommand)
     singleOf(::BingoCommands)
+    singleOf(::BingoModeCommand)
     singleOf(::BingoOptionsCommands)
     singleOf(::BingoPrefsCommand)
     singleOf(::BingoStartCommand)
@@ -165,7 +167,9 @@ fun Koin.commonInit() {
     get<ServerPacketEvents>()
     get<RestartOnLeaveController>()
 
+    get<BingoCommand>()
     get<BingoCommands>()
+    get<BingoModeCommand>()
     get<BingoOptionsCommands>()
     get<BingoPrefsCommand>()
     get<BingoStartCommand>()

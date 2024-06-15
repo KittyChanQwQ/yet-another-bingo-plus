@@ -38,7 +38,7 @@ class ScopedEvents(
 
     val onStateChange = EventListener<Pair<GameState, GameState>>()
 
-    val onChangeConfig = EventListener<Unit>()
+    val onChangeOptions = EventListener<Unit>()
     val onChangePlayerSettings = EventListener<ServerPlayerEntity>()
 
     val onClose = EventListener<Unit>()

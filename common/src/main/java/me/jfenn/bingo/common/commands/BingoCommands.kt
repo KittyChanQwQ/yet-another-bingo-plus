@@ -62,7 +62,7 @@ class BingoCommands : BaseCommand() {
                             }
 
                             options.itemDistribution = itemDist
-                            events.onChangeConfig(Unit)
+                            events.onChangeOptions(Unit)
                             cardService.generateCard()
                             ctx.source.player?.sendInfoMessage("Item distribution changed: $itemDist")
                             1
@@ -91,7 +91,7 @@ class BingoCommands : BaseCommand() {
                                     val cardService = get<CardService>()
 
                                     options.tierList = listName
-                                    events.onChangeConfig(Unit)
+                                    events.onChangeOptions(Unit)
                                     cardService.generateCard()
                                     ctx.source.player?.sendInfoMessage("Item tier list changed: $listName")
                                     1
@@ -122,7 +122,7 @@ class BingoCommands : BaseCommand() {
 
                                 val isElytra = BoolArgumentType.getBool(ctx, "true/false")
                                 options.isElytra = isElytra
-                                events.onChangeConfig(Unit)
+                                events.onChangeOptions(Unit)
 
                                 // if Elytra mode is turned off during a game, remove all players' elytra
                                 if (!isElytra) {
@@ -156,7 +156,7 @@ class BingoCommands : BaseCommand() {
 
                                 val isNightVision = BoolArgumentType.getBool(ctx, "true/false")
                                 options.isNightVision = isNightVision
-                                events.onChangeConfig(Unit)
+                                events.onChangeOptions(Unit)
 
                                 // if night vision is changed, update all players
                                 if (state.state == GameState.PLAYING) {
@@ -188,7 +188,7 @@ class BingoCommands : BaseCommand() {
 
                                 val minutes = IntegerArgumentType.getInteger(ctx, "minutes")
                                 options.timeLimit = minutes.minutes
-                                events.onChangeConfig(Unit)
+                                events.onChangeOptions(Unit)
                                 ctx.source.player?.sendInfoMessage("Time limit: $minutes minutes")
                                 1
                             }
@@ -200,7 +200,7 @@ class BingoCommands : BaseCommand() {
                                 val events = get<ScopedEvents>()
 
                                 options.timeLimit = null
-                                events.onChangeConfig(Unit)
+                                events.onChangeOptions(Unit)
                                 ctx.source.player?.sendInfoMessage("Time limit: Off")
                                 1
                             }
