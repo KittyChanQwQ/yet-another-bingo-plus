@@ -17,7 +17,7 @@ Pre-generation will begin as soon as the server starts up. Any pre-generation ta
 Make sure that you have enough storage space to do this! The default settings will need at least **12GB of disk space** to fully pre-generate the world.
 :::
 
-The pre-generation worlds/distance can be changed in the `bingo/config.json` config. It can also be turned off entirely, if you'd prefer to run the Chunky commands yourself.
+The pre-generation worlds/distance can be changed in the `yet-another-minecraft-bingo/config.json` config. It can also be turned off entirely, if you'd prefer to run the Chunky commands yourself.
 
 ```json
 "integrations": {

@@ -60,7 +60,7 @@ If you start to see **constant lag** at some point during a game, then your serv
 
 ### Shutdown Behavior
 
-If you've turned off auto-save, the server will normally try to save all chunks at once while shutting down. If this takes an excessive amount of time, you can configure [`"unsafeSkipWorldClose": true`](./config-extra#unsafeskipworldclose) in `/config/bingo/config.json` to skip this behavior.
+If you've turned off auto-save, the server will normally try to save all chunks at once while shutting down. If this takes an excessive amount of time, you can configure [`"unsafeSkipWorldClose": true`](./config-extra#unsafeskipworldclose) in `/config/yet-another-minecraft-bingo/config.json` to skip this behavior.
 
 ## Server Profiling
 

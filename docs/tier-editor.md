@@ -10,13 +10,13 @@ import Config from './components/Config.vue'
 
 # Tier List Editor
 
-Use this page to generate your own item tier lists to use with the mod. These files can be downloaded and placed in your server's config directory - located in `./config/bingo/overworld.tierlist.json`.
+Use this page to generate your own item tier lists to use with the mod. These files can be downloaded and placed in your server's config directory - located in `./config/yet-another-minecraft-bingo/overworld.tierlist.json`.
 
-Any files ending with `.tierlist.json` in `./config/bingo/` will be shown as a tier list option in the game.
+Any files ending with `.tierlist.json` in `./config/yet-another-minecraft-bingo/` will be shown as a tier list option in the game.
 
 ```txt{4-5}
 🗀 config/
- └ 🗀 bingo/
+ └ 🗀 yet-another-minecraft-bingo/
    ├ 🗀 images/
    ├ overworld.tierlist.json
    └ nether.tierlist.json

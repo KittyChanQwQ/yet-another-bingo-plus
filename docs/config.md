@@ -8,7 +8,7 @@ The BINGO mod creates several config files the first time you start it up:
 
 ```txt{3-6}
 🗀 config/
- └ 🗀 bingo/
+ └ 🗀 yet-another-minecraft-bingo/
    ├ config.json
    ├ game-options.json
    ├ game-options-default.json

@@ -6,7 +6,7 @@ description: A list of the customizable behavior in Yet Another Minecraft BINGO'
 
 ```txt{3}
 🗀 config/
- └ 🗀 bingo/
+ └ 🗀 yet-another-minecraft-bingo/
    ├ config.json
    ├ game-options.json
    └ player-settings.json
@@ -31,6 +31,11 @@ Adds NBT tags to all spawn kit items, which prevents them from being scored. How
 (default: false)
 
 Turns off sounds that can be caused by other players in the pre-game lobby. This prevents large groups from causing a racket, and is a nice option for streamers to avoid distractions.
+
+## `"lobbyTutorialBook"`
+(default: true)
+
+Gives players a book that explains how to play the game and adjust player settings when in the lobby.
 
 ## `"nightVisionInSpectator"`
 (default: true)
@@ -73,3 +78,8 @@ Controls whether the mod's [Chunky integration](./mods/chunky) is enabled. If th
 (default: `"minecraft:overworld": 8000, "minecraft:the_nether": 1000`)
 
 Specifies the dimensions and distance (in blocks) that Chunky should automatically pre-generate, if the `"chunky"` config is `true`.
+
+## `"syncStats"`
+(default: true)
+
+Whether to sync player statistics (playtime, win/loss, items scored) with any connected clients. Turning this off will only update the statistics for games that are played on the server.

@@ -1,37 +1,52 @@
 ---
-description: Configure a custom game lobby in Yet Another Minecraft BINGO, using an NBT structure file.
+description: Configure a custom game lobby in Yet Another Minecraft BINGO, using a world zip file.
 ---
 
-# Lobby Structure
+# Lobby World
 
-The lobby structure used as the game's spawn area can also be customized by adding an
-[NBT structure file](https://minecraft.wiki/wiki/Structure_Block)
-to the config.
+The lobby used as the game's spawn area can also be customized by adding an
+`lobby_world.zip` file to the mod's config folder.
 
-These files can be created with a structure block, which will place a `.nbt` file in your world save, under
-`.minecraft/saves/(WorldName)/generated/`. This file can then be copied to the BINGO
-config directory, under `./config/bingo/lobby/lobby.nbt`.
+To start, it is recommended that you download the [default lobby_world.zip](https://gitlab.com/horrific-tweaks/bingo/-/blob/main/common/src/main/resources/yet-another-minecraft-bingo/lobby_world.zip?ref_type=heads)
+and extract it into your Minecraft `saves/` folder. This should make the lobby show up as a creative world
+in your singleplayer world list.
 
-```txt{4-5}
+Once you've made your changes, you can export it for the bingo mod by either re-zipping the world save or
+using "Edit > Make Backup" from the world list, which will place a zip in your `backups/` folder.
+
+You can then place the resulting zip into `./config/yet-another-minecraft-bingo/lobby_world.zip`, and
+the server will use it in place of the default lobby.
+
+```txt{5}
 🗀 config/
- └ 🗀 bingo/
+ └ 🗀 yet-another-minecraft-bingo/
    ├ 🗀 images/
-   ├ 🗀 lobby/
-   │ └ lobby.nbt
    ├ config.json
+   ├ lobby_world.zip
    └ player-settings.json
 🗀 mods/
 🗀 world/
 server.properties
 ```
 
-> If there are multiple files in this directory, one will be chosen at random each time
-> the server starts up.
+## Lobby Behavior
 
-## Team Pickers
+When the server starts up, it looks for specific blocks in a 48x48 box around the world origin to use for
+specific functionality...
 
-The "team picker" entities can be created anywhere in the structure, by placing a colored carpet on top of a lodestone
-block.
+### Spawnpoint
+
+The world spawn can be changed by placing a `minecraft:player_head` at the location you want players to spawn
+in the lobby.
+
+### Game Menu
+
+The game menu looks for three vertical `minecraft:oak_wall_sign` (an oak sign placed against a wall) blocks
+to set its position. It has a total height of 4 blocks and a width of 14.
+
+### Team Pickers
+
+The "team picker" entities can be created by placing a colored carpet on top of a lodestone block.
 
 This only works for the set teams included in the mod; i.e.
 - Blue Team (`minecraft:blue_carpet`)
@@ -43,12 +58,7 @@ This only works for the set teams included in the mod; i.e.
 - Orange Team (`minecraft:orange_carpet`)
 - Gray Team (`minecraft:light_gray_carpet`)
 
-## Spawnpoint
+### Stats
 
-The world spawn and menu placement are always at fixed locations, so these need to be kept in mind when
-building the lobby structure.
-
-The structure will be centered on `(0,0)`. The game will search for the highest solid block at `(0,0)`, which will be
-used as the world spawn.
-
-From the world spawn, the game menu is placed along `x=-5` at the same height. It has a height of 4 blocks and a width of 14.
+The statistics menu will activate whenever a player walks over an iron pressure plate. It will look for
+the nearest armor stand entity and spawn its other display entities around it.
