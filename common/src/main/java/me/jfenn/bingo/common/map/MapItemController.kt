@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.config.BingoOptions
@@ -14,6 +15,8 @@ class MapItemController(
     private val options: BingoOptions,
     private val cardViewService: CardViewService,
     private val mapItemService: MapItemService,
+    private val mapRenderService: MapRenderService,
+    private val mapService: IMapService,
     private val playerManager: IPlayerManager,
     private val teamService: TeamService,
     events: ScopedEvents,
@@ -112,11 +115,25 @@ class MapItemController(
                 if (state.isLobbyMode && !cardViewService.supportsCardHud(player.player)) {
                     giveSpectatorMapItems(player)
                 }
-                // if isLobbyMode=false, give the players a "memento card" after each game
-                if (!state.isLobbyMode) {
-                    val team = teamService.getPlayerTeam(player.player) ?: continue
+            }
+
+            // if isLobbyMode=false, give the players a "memento card" after each game
+            if (!state.isLobbyMode) {
+                for (team in state.getRegisteredTeams()) {
+                    // ensure that the map is drawn *without* any flashing/purple tiles
+                    // (since the map is never redrawn after this event)
+                    val map = team.getMap(mapService)
+                    val view = map.view.copy(
+                        tiles = map.view.tiles.map {
+                            it.copy(isFlashing = false)
+                        }.toMutableList(),
+                    )
+                    mapRenderService.update(team, map, view)
+
                     val mapItem = mapItemService.createMementoMapItem(team)
-                    player.giveItemStack(mapItem)
+                    team.players
+                        .mapNotNull { playerManager.getPlayer(it.uuid) }
+                        .forEach { it.giveItemStack(mapItem.copy()) }
                 }
             }
         }
