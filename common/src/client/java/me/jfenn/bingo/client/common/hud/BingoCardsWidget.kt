@@ -17,12 +17,13 @@ class BingoCardsWidget(
     var width: Int,
     var height: Int,
 
+    var views: List<CardView> = emptyList(),
+
     val onTileClick: (CardTile) -> Boolean,
     val onViewClick: ((CardView) -> Boolean)?,
 
     private val screen: Screen,
     private val drawServiceFactory: IDrawServiceFactory = koin.get(),
-    private val state: BingoHudState = koin.get(),
     private val renderer: BingoHudRenderer = koin.get()
 ) {
 
@@ -35,9 +36,6 @@ class BingoCardsWidget(
     private fun viewsWithPositions(
         callback: (view: CardView, x: Int, y: Int, z: Int) -> Unit
     ) {
-        val views = (state.display?.display ?: emptyList())
-            .mapNotNull { state.views[it] }
-
         if (views.isEmpty()) return
 
         val xMin = x - (width/2)
@@ -100,7 +98,7 @@ class BingoCardsWidget(
         if (isInBounds(x, mouseY)) {
             val boundaryMin = x - width*.5f
             val boundaryMax = x + width*.5f
-            val baseVelocity = 0.01f / (1 + (state.display?.display?.size ?: 0))
+            val baseVelocity = 0.01f / (1 + views.size)
             val velocity = when {
                 mouseX < boundaryMin -> (mouseX - boundaryMin) * baseVelocity
                 mouseX > boundaryMax -> (mouseX - boundaryMax) * baseVelocity
@@ -122,7 +120,7 @@ class BingoCardsWidget(
 
         viewsWithPositions { view, x, y, z ->
             val isHovered = hoveredView != null && hoveredView.teamKey == view.teamKey
-            val isSingleView = state.display?.display?.size?.let { it <= 1 } == true
+            val isSingleView = views.size <= 1
             renderer.drawCard(
                 context,
                 drawService,

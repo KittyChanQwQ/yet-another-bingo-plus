@@ -34,23 +34,65 @@ class CountdownController(
 
     private val entityMap = mutableMapOf<BingoTeamKey, Entity>()
 
+    private fun forcePlayersInvisible() {
+        for (player in server.playerManager.playerList) {
+            // Make the player invisible during the countdown
+            // (otherwise, the player blocks other players' visibility)
+            val statusEffects = statusEffectsFactory.getStatusEffects(player)
+            statusEffects.addEffect(
+                type = EffectType.INVISIBILITY,
+                duration = -1,
+                amplifier = 0,
+                ambient = false,
+                visible = false,
+            )
+        }
+    }
+
+    private fun forcePlayersOnBats() {
+        state.getRegisteredTeams().forEach { team ->
+            val entity = entityMap.getOrPut(team.key) {
+                // Create a new bat entity in the spawn dimension
+                val world = spawnService.getSpawnDimension()
+                val marker = EntityType.BAT.create(world) ?: return@forEach
+                marker.readNbt(NbtCompound().apply {
+                    putBoolean("Invulnerable", true)
+                    putBoolean("NoGravity", true)
+                    putBoolean("Silent", true)
+                    putBoolean("NoAI", true)
+                    putBoolean("PersistenceRequired", true)
+                })
+                val spawnPoint = team.spawnpoint ?: return@forEach
+                with(spawnPoint) { marker.setPosition(x.toDouble() + 0.5, y.toDouble() - 0.4, z.toDouble() + 0.5) }
+                world.spawnEntity(marker)
+
+                // Make the bat invisible
+                statusEffectsFactory.getStatusEffects(marker).apply {
+                    addEffect(
+                        type = EffectType.INVISIBILITY,
+                        duration = -1,
+                        amplifier = 0,
+                        ambient = false,
+                        visible = false,
+                    )
+                }
+
+                marker
+            }
+
+            for (player in team.players.mapNotNull { server.playerManager.getPlayer(it.uuid) }) {
+                player.startRiding(entity, true)
+            }
+        }
+    }
+
     init {
         events.onEnter(GameState.COUNTDOWN) {
             countdownUntil = Clock.System.now() + options.startCountdownSeconds.seconds
             prevSeconds = -1
 
-            for (player in server.playerManager.playerList) {
-                // Make the player invisible during the countdown
-                // (otherwise, the player blocks other players' visibility)
-                val statusEffects = statusEffectsFactory.getStatusEffects(player)
-                statusEffects.addEffect(
-                    type = EffectType.INVISIBILITY,
-                    duration = -1,
-                    amplifier = 0,
-                    ambient = false,
-                    visible = false,
-                )
-            }
+            if (state.isLobbyMode)
+                forcePlayersInvisible()
         }
 
         events.onStateChange { (_, toState) ->
@@ -66,40 +108,8 @@ class CountdownController(
         events.onGameTick {
             if (state.state != GameState.COUNTDOWN) return@onGameTick
 
-            state.getRegisteredTeams().forEach { team ->
-                val entity = entityMap.getOrPut(team.key) {
-                    // Create a new bat entity in the spawn dimension
-                    val world = spawnService.getSpawnDimension()
-                    val marker = EntityType.BAT.create(world) ?: return@forEach
-                    marker.readNbt(NbtCompound().apply {
-                        putBoolean("Invulnerable", true)
-                        putBoolean("NoGravity", true)
-                        putBoolean("Silent", true)
-                        putBoolean("NoAI", true)
-                        putBoolean("PersistenceRequired", true)
-                    })
-                    val spawnPoint = team.spawnpoint ?: return@forEach
-                    with(spawnPoint) { marker.setPosition(x.toDouble() + 0.5, y.toDouble() - 0.4, z.toDouble() + 0.5) }
-                    world.spawnEntity(marker)
-
-                    // Make the bat invisible
-                    statusEffectsFactory.getStatusEffects(marker).apply {
-                        addEffect(
-                            type = EffectType.INVISIBILITY,
-                            duration = -1,
-                            amplifier = 0,
-                            ambient = false,
-                            visible = false,
-                        )
-                    }
-
-                    marker
-                }
-
-                for (player in team.players.mapNotNull { server.playerManager.getPlayer(it.uuid) }) {
-                    player.startRiding(entity, true)
-                }
-            }
+            if (state.isLobbyMode)
+                forcePlayersOnBats()
 
             if (server.ticks % 20 != 0) return@onGameTick
 

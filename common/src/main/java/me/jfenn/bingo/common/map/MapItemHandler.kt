@@ -1,9 +1,8 @@
-package me.jfenn.bingo.common.controller
+package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.scope.BingoComponent
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem

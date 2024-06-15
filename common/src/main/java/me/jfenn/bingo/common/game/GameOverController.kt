@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
@@ -29,6 +30,7 @@ class GameOverController(
     private val teamService: TeamService,
     private val textProvider: TextProvider,
     private val gameOverService: GameOverService,
+    private val cardViewService: CardViewService,
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
     private val packetManager: ServerPacketEvents,
@@ -101,12 +103,15 @@ class GameOverController(
         val info = gameOverService.getGameInfo()
 
         for (player in playerManager.getPlayers()) {
+            // Ensure that the player is sent updated card data
+            cardViewService.sendUpdatePackets(player.player)
+
             val packet = GameOverPacket(
                 title = info.title,
                 subtitle = info.message,
                 winner = info.winningTeam?.key,
                 duration = state.ingameDuration() ?: Duration.ZERO,
-                canSendRestart = server.isDedicated && permissions.hasPermission(
+                canSendRestart = server.isDedicated && state.isLobbyMode && permissions.hasPermission(
                     player.player,
                     Permission.COMMAND_RESTART
                 ),

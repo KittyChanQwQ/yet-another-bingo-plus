@@ -93,6 +93,12 @@ class GameService(
         state.endReason = reason
         state.endedAt = Clock.System.now()
         state.changeState(events, GameState.POSTGAME)
+
+        // if lobbyMode=false, immediately change state back to PREGAME once the POSTGAME events are sent
+        if (!state.isLobbyMode) {
+            state.reset()
+            state.changeState(events, GameState.PREGAME)
+        }
     }
 
     private fun broadcastStart() {

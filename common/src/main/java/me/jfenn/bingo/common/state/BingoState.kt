@@ -30,7 +30,7 @@ import kotlin.time.Duration
 @Serializable
 data class BingoState(
     var isLobbyMode: Boolean = false,
-    val gameId: UuidAsString = UUID.randomUUID(),
+    var gameId: UuidAsString = UUID.randomUUID(),
     var seed: Long = Random.nextLong(),
     var state: GameState = GameState.PREGAME,
     var startedAt: Instant? = null,
@@ -131,6 +131,27 @@ data class BingoState(
 
         return Text.literal(secondsRemaining.formatString())
             .formatted(if (secondsRemaining.inWholeSeconds <= 30 && secondsRemaining.inWholeSeconds % 2 == 0L) { alertColor } else { normalColor })
+    }
+
+    /**
+     * If a game is over & we want to reset this to its default state
+     * without restarting...
+     * (should only be called when isLobbyMode=false)
+     */
+    fun reset() {
+        // set a new gameId & seed
+        gameId = UUID.randomUUID()
+        seed = Random.nextLong()
+        startedAt = null
+        updatedAt = null
+        endedAt = null
+        timeOffline = Duration.ZERO
+        teams.clear()
+        // previewMap we don't clear, as it can be reused...
+        // [BingoMapController] calls generateCard when entering PREGAME, so this card should be immediately replaced
+        card = BingoCard(entries = List(25) { BingoCardEntry.FreeSpace() })
+        endReason = null
+        isForfeit = false
     }
 
 }

@@ -6,7 +6,6 @@ import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
@@ -14,6 +13,7 @@ import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.config.TierListService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameService
+import me.jfenn.bingo.common.spawn.ElytraService
 import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -21,7 +21,6 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.common.utils.sendWarningMessage
-import net.minecraft.item.Items
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
@@ -116,24 +115,19 @@ class BingoCommands : BaseCommand() {
                             BoolArgumentType.bool()
                         )
                             .executesInScope { ctx ->
-                                val state = get<BingoState>()
                                 val options = get<BingoOptions>()
                                 val events = get<ScopedEvents>()
                                 val playerManager = get<IPlayerManager>()
+                                val elytraService = get<ElytraService>()
 
                                 val isElytra = BoolArgumentType.getBool(ctx, "true/false")
                                 options.isElytra = isElytra
                                 events.onChangeConfig(Unit)
 
                                 // if Elytra mode is turned off during a game, remove all players' elytra
-                                if (state.state == GameState.PLAYING && !isElytra) {
+                                if (!isElytra) {
                                     for (player in playerManager.getPlayers()) {
-                                        player.allHeldStacks()
-                                            .filter { it.item == Items.ELYTRA || it.item == Items.FIREWORK_ROCKET }
-                                            .filter { it.hasCustomTag(NBT_BINGO_VANISH) }
-                                            .forEach {
-                                                it.count = 0
-                                            }
+                                        elytraService.takeElytra(player)
                                     }
                                 }
 

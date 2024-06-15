@@ -27,14 +27,14 @@ class BossBarController(
     private val textProvider: TextProvider,
 ) : BingoComponent() {
 
-    private val ID = Identifier.of("fennifith", "bingo")
+    private val bossbarId = Identifier.of("fennifith", "bingo")
 
-    fun getBossbar(): CommandBossBar {
+    private fun getBossbar(): CommandBossBar {
         // if the boss bar already exists, recreate it
-        server.bossBarManager.get(ID)
+        server.bossBarManager.get(bossbarId)
             ?.also { server.bossBarManager.remove(it) }
 
-        return server.bossBarManager.add(ID, Text.literal("Time Remaining"))
+        return server.bossBarManager.add(bossbarId, Text.literal("Time Remaining"))
             .apply {
                 color = BossBar.Color.WHITE
                 style = BossBar.Style.PROGRESS

@@ -1,19 +1,16 @@
 package me.jfenn.bingo.common.map
 
-import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.BingoCardEntry
-import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -29,17 +26,9 @@ class BingoMapController(
     private val cardService: CardService,
     private val cardViewService: CardViewService,
     private val advancementManager: IAdvancementManager,
-    private val packetManager: ServerPacketEvents,
     private val itemStackFactory: IItemStackFactory,
     private val mapService: IMapService,
 ) : BingoComponent() {
-
-    private fun sendUpdate(player: ServerPlayerEntity, updatePacket: CardUpdatePacket) {
-        when {
-            packetManager.cardUpdateV2.send(player, updatePacket) -> {}
-            packetManager.cardUpdateV1.send(player, updatePacket) -> {}
-        }
-    }
 
     private fun updateCard(team: BingoTeam?) {
         val view = cardViewService.getMapView(team)
@@ -47,17 +36,11 @@ class BingoMapController(
 
         if (cardViewService.needsUpdate(map, view)) {
             mapRenderService.update(team, map, view)
-
-            val updatePacket = CardUpdatePacket(view)
-            for (player in server.playerManager.playerList) {
-                if (cardViewService.isViewingCard(player, team) && cardViewService.supportsCardHud(player)) {
-                    // yes, every send() needs its own PacketByteBuf() instance, otherwise we get Scary Errors
-                    sendUpdate(player, updatePacket)
-                }
-            }
-
-            map.updatedAt = Clock.System.now()
             map.view = view
+
+            for (player in server.playerManager.playerList) {
+                cardViewService.sendUpdatePackets(player)
+            }
         }
     }
 
@@ -106,25 +89,8 @@ class BingoMapController(
         events.onUpdateTick {
             // Periodically send all valid cards to all players
             // to fix any missed events...
-
             for (player in server.playerManager.playerList) {
-                if (!cardViewService.supportsCardHud(player))
-                    continue
-
-                val teams = state.getRegisteredTeams()
-                val displayTeams = (teams + null).filter { cardViewService.isViewingCard(player, it) }
-
-                val packet = CardDisplayPacket(
-                    teamInfo = teams.associate { it.key to it.textColor },
-                    display = displayTeams.map { it?.key },
-                )
-
-                packetManager.cardDisplayV1.send(player, packet)
-
-                for (team in displayTeams) {
-                    val view = cardViewService.getMapView(team)
-                    sendUpdate(player, CardUpdatePacket(view))
-                }
+                cardViewService.sendUpdatePackets(player)
             }
         }
 

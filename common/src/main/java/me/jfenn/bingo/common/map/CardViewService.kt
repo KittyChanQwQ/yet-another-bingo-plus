@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.config.BingoConfig
@@ -18,10 +19,11 @@ import kotlin.time.Duration.Companion.seconds
 
 class CardViewService(
     private val server: MinecraftServer,
-    private val options: BingoOptions,
     private val config: BingoConfig,
+    private val options: BingoOptions,
     private val state: BingoState,
     private val teamService: TeamService,
+    private val mapService: IMapService,
     private val permissions: PermissionsIntegration,
     private val textProvider: TextProvider,
     private val packets: ServerPacketEvents,
@@ -38,6 +40,31 @@ class CardViewService(
     fun supportsCardHud(player: ServerPlayerEntity): Boolean {
         return config.supportClientHud &&
                 packets.cardDisplayV1.isSupported(player)
+    }
+
+    fun sendUpdatePackets(player: ServerPlayerEntity) {
+        if (!supportsCardHud(player))
+            return
+
+        val teams = state.getRegisteredTeams()
+        val displayTeams = (teams + null).filter { isViewingCard(player, it) }
+
+        val packet = CardDisplayPacket(
+            teamInfo = teams.associate { it.key to it.textColor },
+            display = displayTeams.map { it?.key },
+        )
+
+        packets.cardDisplayV1.send(player, packet)
+
+        for (team in displayTeams) {
+            val map = team?.getMap(mapService) ?: state.getPreviewMap(mapService)
+            val view = map.view
+            val updatePacket = CardUpdatePacket(view)
+            when {
+                packets.cardUpdateV2.send(player, updatePacket) -> {}
+                packets.cardUpdateV1.send(player, updatePacket) -> {}
+            }
+        }
     }
 
     fun isViewingPreviewCard()

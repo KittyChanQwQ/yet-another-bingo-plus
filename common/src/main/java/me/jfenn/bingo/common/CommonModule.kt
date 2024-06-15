@@ -21,10 +21,7 @@ import me.jfenn.bingo.common.game.BingoStartCommand
 import me.jfenn.bingo.common.game.GameOverController
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.game.GameService
-import me.jfenn.bingo.common.map.BingoMapController
-import me.jfenn.bingo.common.map.CardViewService
-import me.jfenn.bingo.common.map.MapItemService
-import me.jfenn.bingo.common.map.MapRenderService
+import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.common.scope.ScopeManager
@@ -32,10 +29,7 @@ import me.jfenn.bingo.common.scoreboard.ScoreboardController
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.scoring.ScoreUpdateService
 import me.jfenn.bingo.common.scoring.ScoredItemCheck
-import me.jfenn.bingo.common.spawn.ChestController
-import me.jfenn.bingo.common.spawn.ChestService
-import me.jfenn.bingo.common.spawn.PlayerController
-import me.jfenn.bingo.common.spawn.SpawnService
+import me.jfenn.bingo.common.spawn.*
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.*
 import me.jfenn.bingo.common.team.TeamController
@@ -130,6 +124,7 @@ val commonModule = module {
 
         scopedOf(::ChestService)
         scopedOf(::ChestController)
+        scopedOf(::ElytraService)
         scopedOf(::SpawnService)
         scopedOf(::PlayerController)
 

@@ -157,6 +157,11 @@ class SpawnService(
      * Equip the player with any configured spawn equipment
      */
     fun giveSpawnEquipment(players: List<ServerPlayerEntity>) {
+        if (!state.isLobbyMode) {
+            log.error("[SpawnService] Attempted giveSpawnEquipment, but isLobbyMode=false!")
+            return
+        }
+
         if (!options.isPlayerKit) return
 
         val itemStacks = options.playerKitItems

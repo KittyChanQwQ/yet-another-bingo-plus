@@ -15,9 +15,6 @@ data class BingoMap(
     var view: CardView = CardView(null, null, Text.empty(), mutableListOf())
 
     @Transient
-    var updatedAt: Instant = Instant.fromEpochMilliseconds(0L)
-
-    @Transient
     var mapState: MapState? = null
 
 }

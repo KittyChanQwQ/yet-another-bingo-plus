@@ -41,56 +41,22 @@ class PlayerController(
     private val spawnService: SpawnService,
     private val teamService: TeamService,
     private val cardViewService: CardViewService,
+    private val elytraService: ElytraService,
     private val advancementManager: IAdvancementManager,
     private val vanishIntegration: VanishIntegration,
-    private val itemStackFactory: IItemStackFactory,
     private val statusEffectsFactory: IStatusEffectsFactory,
     private val playerManager: IPlayerManager,
 ) : BingoComponent() {
-
-    /**
-     * Equip the player with elytra and firework rockets.
-     * Only runs if config.isElytra is true
-     */
-    private fun giveElytra(player: IPlayerHandle) {
-        val hasElytra = player.allHeldStacks()
-            .any { it.item == Items.ELYTRA && it.hasCustomTag(NBT_BINGO_VANISH) }
-
-        if (!hasElytra) {
-            // insert elytra in armor slot
-            player.giveOrEquipStack(
-                itemStackFactory.createStack(Items.ELYTRA).apply {
-                    // unbreakable (should not take damage)
-                    setUnbreakable(true)
-                    addCustomTag(NBT_BINGO_IGNORE)
-                    addCustomTag(NBT_BINGO_VANISH)
-                }
-            )
-        }
-
-        // also give rocket
-        val rocketStack = player.allHeldStacks().find { it.item == Items.FIREWORK_ROCKET && it.hasCustomTag(NBT_BINGO_VANISH) }
-
-        if (rocketStack != null && rocketStack.count < 2) {
-            rocketStack.count = 2
-        }
-
-        if (rocketStack == null) {
-            player.giveItemStack(
-                itemStackFactory.createFireworkRocket().apply {
-                    addCustomTag(NBT_BINGO_IGNORE)
-                    addCustomTag(NBT_BINGO_VANISH)
-                    fireworks = emptyList()
-                }
-            )
-        }
-    }
 
     fun updateGameMode(
         player: ServerPlayerEntity,
         forceReset: Boolean = false,
     ) {
         val lobbyWorld = server.lobbyWorld ?: return
+        if (!state.isLobbyMode) {
+            log.error("[PlayerController] Attempted updateGameMode, but isLobbyMode=false!")
+            return
+        }
 
         val isOnTeam = teamService.isPlaying(player)
         log.debug("updateGameMode(${player.uuidAsString}, forceReset=$forceReset)")
@@ -236,6 +202,11 @@ class PlayerController(
         events.onEnter(GameState.POSTGAME) {
             for (player in server.playerManager.playerList) {
                 updateGameMode(player)
+
+                if (!state.isLobbyMode) {
+                    // if running with isLobbyMode=false, take the elytra back after a game
+                    elytraService.takeElytra(playerManager.forPlayer(player))
+                }
             }
         }
 
@@ -256,7 +227,7 @@ class PlayerController(
                 if (state.state == GameState.PLAYING && player.health > 0f && !player.isSpectator) {
                     // if elytra mode is configured, give the player an elytra
                     if (options.isElytra && teamService.isPlaying(player))
-                        giveElytra(playerManager.forPlayer(player))
+                        elytraService.giveElytra(playerManager.forPlayer(player))
 
                     // if the player is spectating in adventure mode,
                     // they should be able to fly

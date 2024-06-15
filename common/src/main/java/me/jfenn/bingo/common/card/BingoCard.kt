@@ -4,7 +4,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.team.BingoTeam
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.common.utils.UuidAsString
+import java.util.*
 
 @Serializable
 class BingoCard(
@@ -14,6 +15,8 @@ class BingoCard(
     init {
         assert(entries.size == 25) { "BINGO card was created with less than 25 entries! (${entries.size})" }
     }
+
+    val id: UuidAsString = UUID.randomUUID()
 
     @Transient
     var isDirty = true

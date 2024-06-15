@@ -4,6 +4,7 @@ import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatStringSmall
@@ -24,6 +25,7 @@ class RestartTimerController(
     private val timerState: RestartTimerState,
     private val config: BingoConfig,
     private val text: TextProvider,
+    state: BingoState,
 ) : BingoComponent() {
 
     private val sentWarnings = mutableSetOf<Int>()
@@ -42,7 +44,7 @@ class RestartTimerController(
     }
 
     init {
-        if (FabricLoader.getInstance().environmentType == EnvType.SERVER) {
+        if (FabricLoader.getInstance().environmentType == EnvType.SERVER && state.isLobbyMode) {
             events.onEnter(GameState.POSTGAME) {
                 val shutdownSeconds = config.shutDownWhenGameOverSeconds ?: return@onEnter
 

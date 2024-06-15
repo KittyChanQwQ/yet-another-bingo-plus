@@ -48,6 +48,9 @@ class BingoHudScreen(
 
         super.render(context, mouseX, mouseY, delta)
 
+        cardsWidget.views = state.display?.display
+            ?.mapNotNull { state.views[it] }
+            ?: emptyList()
         cardsWidget.x = width/2
         cardsWidget.y = height/2
         cardsWidget.width = width * 6/10

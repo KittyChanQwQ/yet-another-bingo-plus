@@ -20,6 +20,7 @@ class BingoEndScreen(
 ) : Screen(text.string(StringKey.CardTitle)) {
 
     private val worldService = koin.get<IWorldService>()
+    private val state: BingoHudState = koin.get()
 
     companion object {
         private const val BUTTON_WIDTH = 120
@@ -135,6 +136,17 @@ class BingoEndScreen(
         )
 
         context.matrices.pop()
+
+        // Add any new views to the cardsWidget, but do not take away previously-seen views
+        cardsWidget.views = (
+                (state.display?.display ?: emptyList())
+                    .mapNotNull { state.views[it] }
+                + cardsWidget.views
+            )
+            // do not show the preview card on the Game Over screen
+            .filter { it.teamKey != null }
+            // prevent any duplicate cards (uses newly-sent cards first)
+            .distinctBy { it.teamKey?.id }
 
         cardsWidget.x = width/2
         cardsWidget.y = height/2

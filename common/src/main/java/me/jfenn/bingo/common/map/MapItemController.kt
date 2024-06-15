@@ -1,11 +1,9 @@
-package me.jfenn.bingo.common.controller
+package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.map.CardViewService
-import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -44,6 +42,8 @@ class MapItemController(
      * Has no effect if the player already has a card
      */
     private fun giveMapCardItem(player: IPlayerHandle) {
+        if (cardViewService.supportsCardHud(player.player)) return
+
         val team = teamService.getPlayerTeam(player.player) ?: return
         val hasMap = player.allHeldStacks()
             .filter { mapItemService.isMapItem(it) }
@@ -73,6 +73,8 @@ class MapItemController(
      * hotbar items.
      */
     private fun giveSpectatorMapItems(player: IPlayerHandle) {
+        if (cardViewService.supportsCardHud(player.player)) return
+
         state.getRegisteredTeams()
             .forEachIndexed { i, team ->
                 val hasMap = player.allHeldStacks()
@@ -106,11 +108,15 @@ class MapItemController(
                 // remove any existing maps in the player's inventory
                 removeAllMapItems(player)
 
-                when {
-                    // give all maps for active teams to the player
-                    !cardViewService.supportsCardHud(player.player) -> giveSpectatorMapItems(player)
-                    // if isLobbyMode=false, give the player a bingo map as a memento
-                    !state.isLobbyMode -> giveMapCardItem(player)
+                // give all maps for active teams to the player
+                if (state.isLobbyMode && !cardViewService.supportsCardHud(player.player)) {
+                    giveSpectatorMapItems(player)
+                }
+                // if isLobbyMode=false, give the players a "memento card" after each game
+                if (!state.isLobbyMode) {
+                    val team = teamService.getPlayerTeam(player.player) ?: continue
+                    val mapItem = mapItemService.createMementoMapItem(team)
+                    player.giveItemStack(mapItem)
                 }
             }
         }
@@ -127,12 +133,10 @@ class MapItemController(
                             removePreviewCardItem(player)
                         }
                     } else if (playerTeam != null && cardViewService.isViewingTeamCard(player.player, playerTeam)) {
-                        // if the player isn't using the card hud, then...
-                        if (!cardViewService.supportsCardHud(player.player))
-                            // give player a new map, if they don't have one?
-                            giveMapCardItem(player)
+                        // give player a new map, if they don't have one?
+                        giveMapCardItem(player)
                     } else if (cardViewService.isViewingSpectatorCards(player.player)) {
-                        if (!cardViewService.supportsCardHud(player.player))
+                        if (state.isLobbyMode)
                             giveSpectatorMapItems(player)
                     }
                 }

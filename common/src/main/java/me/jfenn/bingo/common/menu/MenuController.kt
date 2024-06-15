@@ -62,12 +62,19 @@ class MenuController(
     private val instanceTag = "bingo-${UUID.randomUUID()}"
 
     init {
-        prepareLobbyFiles()
+        if (state.isLobbyMode) {
+            prepareLobbyFiles()
+        }
 
         events.onEnter(GameState.PREGAME)  {
             // this *shouldn't* happen... just being safe to prevent double-entities
             if (menu != null) {
                 log.error("BUG: GameState.PREGAME onEnter handler has been invoked already!")
+                return@onEnter
+            }
+
+            if (!state.isLobbyMode) {
+                log.info("[MenuController] Not spawning lobby, as isLobbyMode=false")
                 return@onEnter
             }
 
