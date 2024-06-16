@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -10,6 +11,7 @@ import me.jfenn.bingo.common.team.TeamService
 
 class MapItemController(
     private val state: BingoState,
+    private val config: BingoConfig,
     private val cardViewService: CardViewService,
     private val mapItemService: MapItemService,
     private val playerManager: IPlayerManager,
@@ -113,12 +115,11 @@ class MapItemController(
             }
 
             // if isLobbyMode=false, give the players a "memento card" after each game
-            if (!state.isLobbyMode) {
-                for (team in state.getRegisteredTeams()) {
+            if (!state.isLobbyMode && config.giveMementoInSurvival) {
+                for (player in playerManager.getPlayers()) {
+                    val team = teamService.getPlayerTeam(player.player) ?: continue
                     val mapItem = mapItemService.createMementoMapItem(team)
-                    team.players
-                        .mapNotNull { playerManager.getPlayer(it.uuid) }
-                        .forEach { it.giveItemStack(mapItem.copy()) }
+                    player.giveItemStack(mapItem)
                 }
             }
         }

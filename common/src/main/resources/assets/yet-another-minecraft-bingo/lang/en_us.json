@@ -18,6 +18,8 @@
   "bingo.card.preview_card": "Preview Card",
   "bingo.card.team_card_title": "%s Team",
   "bingo.card.team_card": "Bingo Card (%s)",
+  "bingo.card.team_card_memento_lost": "Relic of a Lost Bingo",
+  "bingo.card.team_card_memento_won": "Trophy of the Bingo Victor",
   "bingo.intro.welcome": "Welcome to %s!",
   "bingo.intro.welcome_link": "Yet Another MC BINGO",
   "bingo.intro.use_config_commands": "Use the '/bingo' command to configure the game.",

@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
@@ -43,16 +42,6 @@ data class BingoTeam(
     val key get() = BingoTeamKey(id)
 
     val formatting get() = Formatting.valueOf(textColor.name)
-
-    fun getMap(mapService: IMapService): BingoMap {
-        return this.map ?: run {
-            val map = BingoMap(
-                mapId = mapService.getNextMapId(),
-            )
-            this.map = map
-            return@run map
-        }
-    }
 
     fun isWinner(): Boolean = this.winner != null
 

@@ -9,7 +9,9 @@ import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -20,6 +22,7 @@ class MapItemService(
     private val mapService: IMapService,
     private val textProvider: TextProvider,
     private val gameOverService: GameOverService,
+    private val teamService: TeamService,
 ) {
 
     fun createPreviewMapItem(): IItemStack {
@@ -61,18 +64,28 @@ class MapItemService(
     }
 
     fun createMementoMapItem(team: BingoTeam): IItemStack {
-        val teamMap = team.getMap(mapService)
+        val teamMap = teamService.getTeamMap(team)
         val gameInfo = gameOverService.getGameInfo()
 
         val item = itemStackFactory.createFilledMap().apply {
             mapId = teamMap.mapId
             mapColor = team.formatting.colorValue
             setDisplay(
-                name = textProvider.string(StringKey.CardTeamCard, textProvider.string(team.name))
-                    .formatted(team.formatting, Formatting.ITALIC),
+                name = textProvider.string(
+                    when {
+                        team.winner != null -> StringKey.CardTeamCardMementoWon
+                        else -> StringKey.CardTeamCardMementoLost
+                    }
+                ).formatted(team.formatting, Formatting.ITALIC),
                 lore = listOf(
-                    gameInfo.title,
+                    Text.literal("${team.symbol} ")
+                        .append(teamService.getTeamOrPlayerName(team))
+                        .formatted(team.formatting)
+                        .styled { it.withItalic(false) },
+                    Text.empty(),
+                    gameInfo.title.copy().formatted(Formatting.WHITE),
                     gameInfo.message,
+                    Text.literal(state.ingameDuration()?.formatString() ?: ""),
                     Text.literal(state.startedAt?.format(timeFormat) ?: "")
                 ),
             )
@@ -84,7 +97,7 @@ class MapItemService(
     }
 
     fun createMapItem(team: BingoTeam): IItemStack {
-        val teamMap = team.getMap(mapService)
+        val teamMap = teamService.getTeamMap(team)
 
         val item = itemStackFactory.createFilledMap().apply {
             mapId = teamMap.mapId
@@ -106,7 +119,7 @@ class MapItemService(
     }
 
     fun isMapTeamItem(stack: IItemStack, team: BingoTeam): Boolean {
-        val teamMap = team.getMap(mapService)
+        val teamMap = teamService.getTeamMap(team)
 
         return isMapItem(stack) && stack.asFilledMap()?.mapId == teamMap.mapId
     }

@@ -22,6 +22,8 @@ class BingoCommand(
     private fun getOptionsText(
         options: BingoOptions,
     ): List<Text> = buildList {
+        add(Text.empty())
+
         text.string(StringKey.FullName)
             .append(" v$BINGO_VERSION")
             .formatted(Formatting.DARK_GREEN, Formatting.UNDERLINE).also {
@@ -29,18 +31,29 @@ class BingoCommand(
             }
             .let { add(it) }
 
-        text.string(StringKey.OptionsGameMode)
-            .append(": ")
-            .append(
-                options.formatGameMode()
-                    .map { text.string(it) }
-                    .joinText()
-                    .formatted(Formatting.YELLOW)
-            )
+        add(Text.empty())
+
+        text.string(
+            StringKey.ScoreboardMode,
+            options.formatGameMode()
+                .map { text.string(it) }
+                .joinText()
+                .formatted(Formatting.YELLOW)
+        )
             .formatted(Formatting.GRAY)
             .also {
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo mode"))
             }
+            .let { add(it) }
+
+        text.string(
+            StringKey.ScoreboardFeatures,
+            options.formatFeatures()
+                .map { text.string(it) }
+                .joinText()
+                .formatted(Formatting.YELLOW)
+        )
+            .formatted(Formatting.GRAY)
             .let { add(it) }
 
         text.string(StringKey.OptionsGoal)
@@ -92,6 +105,8 @@ class BingoCommand(
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo tierlist"))
             }
             .let { add(it) }
+
+        add(Text.empty())
     }
 
     init {

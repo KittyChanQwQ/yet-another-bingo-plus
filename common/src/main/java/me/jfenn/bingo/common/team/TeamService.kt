@@ -1,9 +1,11 @@
 package me.jfenn.bingo.common.team
 
+import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.ITeamHandle
 import me.jfenn.bingo.api.ITeamManager
 import me.jfenn.bingo.common.commands.CommandTreeHandler
+import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -12,15 +14,18 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
+import org.slf4j.Logger
 import kotlin.math.ceil
 
 class TeamService(
+    private val log: Logger,
     private val server: MinecraftServer,
     private val state: BingoState,
     private val teamManager: ITeamManager,
     private val commandTreeHandler: CommandTreeHandler,
     private val textProvider: TextProvider,
-    private val playerManager: IPlayerManager
+    private val playerManager: IPlayerManager,
+    private val mapService: IMapService,
 ) {
 
     fun getPlayerTeam(player: ServerPlayerEntity): BingoTeam? {
@@ -30,6 +35,18 @@ class TeamService(
 
     fun isPlaying(player: ServerPlayerEntity): Boolean {
         return getPlayerTeam(player) != null
+    }
+
+    fun getTeamMap(team: BingoTeam): BingoMap {
+        return team.map ?: run {
+            val map = BingoMap(
+                mapId = mapService.getNextMapId(),
+            )
+
+            log.info("Creating a map for team ${team.key.id} - mapId=${map.mapId}")
+            team.map = map
+            return@run map
+        }
     }
 
     fun getTeamName(team: BingoTeam): Text {

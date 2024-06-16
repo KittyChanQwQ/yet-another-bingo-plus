@@ -19,6 +19,9 @@ data class BingoConfig(
     // gives players a tutorial/settings book when they join the lobby
     val lobbyTutorialBook: Boolean = true,
 
+    // gives players a "memento" card after the game ends (if isLobbyMode=false)
+    val giveMementoInSurvival: Boolean = true,
+
     val nightVisionInSpectator: Boolean = true,
     val nightVisionInPostgame: Boolean = true,
 

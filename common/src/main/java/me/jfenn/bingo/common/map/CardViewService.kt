@@ -68,7 +68,10 @@ class CardViewService(
         packets.cardDisplayV1.send(player, packet)
 
         for (team in displayTeams) {
-            val map = team?.getMap(mapService) ?: state.getPreviewMap(mapService)
+            val map = team
+                ?.let { teamService.getTeamMap(it) }
+                ?: state.getPreviewMap(mapService)
+
             val view = map.view
             val updatePacket = CardUpdatePacket(view)
             when {
@@ -141,7 +144,7 @@ class CardViewService(
         forceNotFlashing: Boolean = false,
     ) {
         var view = getMapView(team)
-        val map = team?.getMap(mapService) ?: state.getPreviewMap(mapService)
+        val map = team?.let { teamService.getTeamMap(it) } ?: state.getPreviewMap(mapService)
 
         if (forceNotFlashing) {
             view = view.copy(
