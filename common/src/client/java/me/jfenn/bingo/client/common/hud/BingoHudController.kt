@@ -118,6 +118,13 @@ class BingoHudController(
         if (config.supportClientHud) {
             packetEvents.cardDisplayV1.onPacket {
                 state.display = it.packet
+
+                // if there are no teams being displayed (BingoMapController sends when entering PREGAME)
+                // reset the HUD state completely
+                // (which clears the gameOverPacket state)
+                if (it.packet.display.isEmpty()) {
+                    state.reset()
+                }
             }
 
             packetEvents.cardUpdateV1.onPacket { (packet) ->

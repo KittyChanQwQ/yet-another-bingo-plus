@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.boss.BossBar
@@ -24,6 +25,7 @@ class BossBarController(
     private val options: BingoOptions,
     private val state: BingoState,
     private val playerSettingsService: PlayerSettingsService,
+    private val teamService: TeamService,
     private val textProvider: TextProvider,
 ) : BingoComponent() {
 
@@ -45,9 +47,9 @@ class BossBarController(
 
     private val bossBar by lazy { getBossbar() }
 
-    fun updateBossBar(player: ServerPlayerEntity) {
+    private fun updateBossBar(player: ServerPlayerEntity) {
         val settings = playerSettingsService.getPlayer(player)
-        if (settings.bossbar)
+        if (settings.bossbar && (state.isLobbyMode || teamService.isPlaying(player)))
             bossBar.addPlayer(player)
         else bossBar.removePlayer(player)
     }
@@ -57,6 +59,9 @@ class BossBarController(
         events.onChangePlayerSettings { player -> updateBossBar(player) }
 
         events.onUpdateTick {
+            for (player in server.playerManager.playerList)
+                updateBossBar(player)
+
             if (options.showRemainingTime) {
                 val timeLimit = options.timeLimit
                 val duration = state.ingameDuration()

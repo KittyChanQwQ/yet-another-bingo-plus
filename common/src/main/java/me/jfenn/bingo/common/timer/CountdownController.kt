@@ -96,7 +96,8 @@ class CountdownController(
         }
 
         events.onStateChange { (_, toState) ->
-            tickManager.setFrozen(toState == GameState.COUNTDOWN)
+            if (state.isLobbyMode)
+                tickManager.setFrozen(toState == GameState.COUNTDOWN)
 
             // Remove all spawn marker entities when the game starts
             for ((_, entity) in entityMap) {

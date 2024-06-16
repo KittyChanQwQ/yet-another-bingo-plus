@@ -3,7 +3,9 @@ package me.jfenn.bingo.common.scoreboard
 import net.minecraft.text.Text
 import java.util.*
 
-class ScoreboardView {
+class ScoreboardView(
+    val objectiveName: String,
+) {
 
     var players = setOf<UUID>()
 

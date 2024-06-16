@@ -49,6 +49,11 @@ class ScoreboardController(
     }
 
     init {
+        events.onEnter(GameState.PREGAME) {
+            // reset the scoreboard views when entering a new game
+            scoreboardService.clearScoreboards()
+        }
+
         events.onUpdateTick {
             val activeTeams = state.getRegisteredTeams()
             val isMultipleTeams = state.state == GameState.PREGAME || activeTeams.size > 1

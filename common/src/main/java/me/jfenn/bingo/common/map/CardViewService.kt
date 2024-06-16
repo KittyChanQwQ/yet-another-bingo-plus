@@ -24,6 +24,7 @@ class CardViewService(
     private val state: BingoState,
     private val teamService: TeamService,
     private val mapService: IMapService,
+    private val mapRenderService: MapRenderService,
     private val permissions: PermissionsIntegration,
     private val textProvider: TextProvider,
     private val packets: ServerPacketEvents,
@@ -40,6 +41,16 @@ class CardViewService(
     fun supportsCardHud(player: ServerPlayerEntity): Boolean {
         return config.supportClientHud &&
                 packets.cardDisplayV1.isSupported(player)
+    }
+
+    /**
+     * Send an empty CardDisplayPacket to clear the HUD state
+     */
+    fun sendClearDisplayPacket(player: ServerPlayerEntity) {
+        packets.cardDisplayV1.send(player, CardDisplayPacket(
+            teamInfo = emptyMap(),
+            display = emptyList(),
+        ))
     }
 
     fun sendUpdatePackets(player: ServerPlayerEntity) {
@@ -125,11 +136,27 @@ class CardViewService(
         )
     }
 
-    fun needsUpdate(
-        map: BingoMap,
-        view: CardView,
-    ): Boolean {
-        return map.view != view
+    fun updateCard(
+        team: BingoTeam?,
+        forceNotFlashing: Boolean = false,
+    ) {
+        var view = getMapView(team)
+        val map = team?.getMap(mapService) ?: state.getPreviewMap(mapService)
+
+        if (forceNotFlashing) {
+            view = view.copy(
+                tiles = map.view.tiles.map {
+                    it.copy(isFlashing = false)
+                }.toMutableList(),
+            )
+        }
+
+        mapRenderService.update(team, map, view)
+        map.view = view
+
+        for (player in server.playerManager.playerList) {
+            sendUpdatePackets(player)
+        }
     }
 
 }

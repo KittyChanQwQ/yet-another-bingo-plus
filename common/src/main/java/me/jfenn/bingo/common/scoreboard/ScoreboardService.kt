@@ -73,7 +73,7 @@ class ScoreboardService(
         //   note: the "value" is currently unused in this function
         scoreboardManager.setScoreboardText(server, objective, contentItems.map { ScoreChange.Create(it.string, it.text, 0) })
 
-        val view = scoreboardViews.getOrPut(objective.name) { ScoreboardView() }
+        val view = scoreboardViews.getOrPut(objective.name) { ScoreboardView(objective.name) }
         val changes = view.updateContents(contentItems)
 
         for (player in players) {
@@ -105,4 +105,14 @@ class ScoreboardService(
         view.players = playerUuids
     }
 
+    fun clearScoreboards() {
+        for (view in scoreboardViews.values) {
+            val objective = scoreboardManager.createDummyObjective(server, view.objectiveName, Text.empty())
+            for (playerId in view.players) {
+                val player = server.playerManager.getPlayer(playerId) ?: continue
+                scoreboardManager.sendObjectiveDelete(player, objective)
+            }
+        }
+        scoreboardViews.clear()
+    }
 }

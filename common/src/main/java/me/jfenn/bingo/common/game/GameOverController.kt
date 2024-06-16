@@ -100,12 +100,14 @@ class GameOverController(
     private fun sendGameOverPacket(
         isUpdate: Boolean,
     ) {
+        // Ensure that all players are sent updated card data
+        for (team in state.getRegisteredTeams()) {
+            cardViewService.updateCard(team, forceNotFlashing = true)
+        }
+
         val info = gameOverService.getGameInfo()
 
         for (player in playerManager.getPlayers()) {
-            // Ensure that the player is sent updated card data
-            cardViewService.sendUpdatePackets(player.player)
-
             val packet = GameOverPacket(
                 title = info.title,
                 subtitle = info.message,

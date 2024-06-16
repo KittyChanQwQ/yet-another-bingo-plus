@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.CardService
@@ -9,7 +8,6 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.team.BingoTeam
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -22,27 +20,11 @@ class BingoMapController(
     events: ScopedEvents,
     private val server: MinecraftServer,
     private val state: BingoState,
-    private val mapRenderService: MapRenderService,
     private val cardService: CardService,
     private val cardViewService: CardViewService,
     private val advancementManager: IAdvancementManager,
     private val itemStackFactory: IItemStackFactory,
-    private val mapService: IMapService,
 ) : BingoComponent() {
-
-    private fun updateCard(team: BingoTeam?) {
-        val view = cardViewService.getMapView(team)
-        val map = team?.getMap(mapService) ?: state.getPreviewMap(mapService)
-
-        if (cardViewService.needsUpdate(map, view)) {
-            mapRenderService.update(team, map, view)
-            map.view = view
-
-            for (player in server.playerManager.playerList) {
-                cardViewService.sendUpdatePackets(player)
-            }
-        }
-    }
 
     init {
         events.onGameTick {
@@ -78,11 +60,11 @@ class BingoMapController(
             // update all card map images
             if (state.state == GameState.PREGAME) {
                 // if in pregame, update the preview card!
-                updateCard(null)
+                cardViewService.updateCard(null)
             }
 
             for (team in state.getRegisteredTeams()) {
-                updateCard(team)
+                cardViewService.updateCard(team)
             }
         }
 
@@ -96,6 +78,15 @@ class BingoMapController(
 
         events.onEnter(GameState.PREGAME) {
             cardService.generateCard()
+            for (player in server.playerManager.playerList) {
+                cardViewService.sendClearDisplayPacket(player)
+            }
+        }
+
+        events.onEnter(GameState.POSTGAME) {
+            for (team in state.getRegisteredTeams()) {
+                cardViewService.updateCard(team)
+            }
         }
     }
 }
