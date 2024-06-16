@@ -10,7 +10,6 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -46,7 +45,7 @@ public abstract class PlayerManagerMixin {
     @Inject(at = @At(value = "RETURN"), method = "loadPlayerData", cancellable = true)
     private void loadPlayerData(ServerPlayerEntity player, CallbackInfoReturnable<NbtCompound> ci) {
         // Provide default player data (for the lobby dimension / spawnpoint) if null
-        if (ci.getReturnValue() == null && PlayerManagerMixinHandler.INSTANCE.isPregame(server)) {
+        if (ci.getReturnValue() == null && PlayerManagerMixinHandler.INSTANCE.shouldSpawnInLobby(server)) {
             NbtCompound nbt = PlayerManagerMixinHandler.INSTANCE.getPregameSpawnData(server);
             player.readNbt(nbt);
             ci.setReturnValue(nbt);
@@ -60,7 +59,7 @@ public abstract class PlayerManagerMixin {
         if (alive) {
             // the player is exiting through the end portal...
             // if the spawnpoint is also in the end, then respawn them in the overworld
-            if (PlayerManagerMixinHandler.INSTANCE.isEndSpawnDimension(player.server)) {
+            if (PlayerManagerMixinHandler.INSTANCE.shouldOverrideEndRespawn(player.server)) {
                 var overworld = player.server.getOverworld();
                 player.setSpawnPoint(overworld.getRegistryKey(), overworld.getSpawnPos(), overworld.getSpawnAngle(), false, false);
             }
@@ -72,13 +71,15 @@ public abstract class PlayerManagerMixin {
         try {
             var spawnWorld = player.server.getWorld(player.getSpawnPointDimension());
             var spawnPosition = player.getSpawnPointPosition();
-            targetRespawn = PlayerEntity.findRespawnPosition(
-                    spawnWorld != null ? spawnWorld : server.getOverworld(),
-                    spawnPosition != null ? spawnPosition : BlockPos.ORIGIN,
-                    player.getSpawnAngle(),
-                    player.isSpawnForced(),
-                    alive
-            );
+            if (spawnWorld != null && spawnPosition != null) {
+                targetRespawn = PlayerEntity.findRespawnPosition(
+                        spawnWorld,
+                        spawnPosition,
+                        player.getSpawnAngle(),
+                        player.isSpawnForced(),
+                        alive
+                );
+            }
         } catch (Throwable e) {
             log.error("Exception thrown during PlayerEntity.findRespawnPosition", e);
         }

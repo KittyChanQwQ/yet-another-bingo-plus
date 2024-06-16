@@ -44,7 +44,7 @@ public abstract class PlayerManagerMixin {
     @Inject(at = @At(value = "RETURN"), method = "loadPlayerData", cancellable = true)
     private void loadPlayerData(ServerPlayerEntity player, CallbackInfoReturnable<NbtCompound> ci) {
         // Provide default player data (for the lobby dimension / spawnpoint) if null
-        if (ci.getReturnValue() == null && PlayerManagerMixinHandler.INSTANCE.isPregame(server)) {
+        if (ci.getReturnValue() == null && PlayerManagerMixinHandler.INSTANCE.shouldSpawnInLobby(server)) {
             NbtCompound nbt = PlayerManagerMixinHandler.INSTANCE.getPregameSpawnData(server);
             player.readNbt(nbt);
             ci.setReturnValue(nbt);
@@ -58,7 +58,7 @@ public abstract class PlayerManagerMixin {
         if (alive) {
             // the player is exiting through the end portal...
             // if the spawnpoint is also in the end, then respawn them in the overworld
-            if (PlayerManagerMixinHandler.INSTANCE.isEndSpawnDimension(player.server)) {
+            if (PlayerManagerMixinHandler.INSTANCE.shouldOverrideEndRespawn(player.server)) {
                 var overworld = player.server.getOverworld();
                 player.setSpawnPoint(overworld.getRegistryKey(), overworld.getSpawnPos(), overworld.getSpawnAngle(), false, false);
             }

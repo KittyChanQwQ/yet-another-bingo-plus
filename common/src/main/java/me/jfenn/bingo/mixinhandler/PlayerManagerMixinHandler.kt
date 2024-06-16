@@ -1,13 +1,13 @@
 package me.jfenn.bingo.mixinhandler
 
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
-import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtFloat
@@ -28,10 +28,10 @@ object PlayerManagerMixinHandler {
                 state.state == GameState.PREGAME
     }
 
-    fun isPregame(server: MinecraftServer): Boolean {
+    fun shouldSpawnInLobby(server: MinecraftServer): Boolean {
         val scope = BingoKoin.getScope(server) ?: return false
         val state = scope.get<BingoState>()
-        return state.state == GameState.PREGAME
+        return state.isLobbyMode && state.state == GameState.PREGAME
     }
 
     fun getPregameSpawnData(server: MinecraftServer): NbtCompound? {
@@ -56,21 +56,28 @@ object PlayerManagerMixinHandler {
         return nbt
     }
 
-    fun isEndSpawnDimension(server: MinecraftServer): Boolean {
+    fun shouldOverrideEndRespawn(server: MinecraftServer): Boolean {
         val scope = BingoKoin.getScope(server) ?: run {
             println("BUG: PlayerManagerMixinHandler.isEndSpawnDimension")
             return false
         }
 
+        val state = scope.get<BingoState>()
         val spawnService = scope.get<SpawnService>()
         val dimension = spawnService.getSpawnDimension()
-        return dimension.registryKey.value.path == "the_end"
+        return state.isLobbyMode && dimension.registryKey.value.path == "the_end"
     }
 
     fun setPlayerSpawnpoint(player: ServerPlayerEntity) {
         val scope = BingoKoin.getScope(player.server) ?: return
+        val state = scope.get<BingoState>()
         val spawnService = scope.get<SpawnService>()
         val teamService = scope.get<TeamService>()
+
+        if (!state.isLobbyMode) {
+            // if isLobbyMode=false, mixins should never overwrite the player spawnpoint
+            return
+        }
 
         // find the player's bingo team spawnpoint, if possible
         val team: BingoTeam = teamService.getPlayerTeam(player) ?: return
