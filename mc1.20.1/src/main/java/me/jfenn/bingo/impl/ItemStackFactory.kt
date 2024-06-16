@@ -211,11 +211,11 @@ class ItemStackFactory(
             }
 
         override var mapColor: Int?
-            get() = stack.nbt?.getInt("MapColor")
+            get() = stack.nbt?.getCompound("display")?.getInt("MapColor")
             set(value) {
                 when {
-                    value != null -> stack.getOrCreateNbt().putInt("MapColor", value)
-                    else -> stack.nbt?.remove("MapColor")
+                    value != null -> stack.getOrCreateSubNbt("display").putInt("MapColor", value)
+                    else -> stack.nbt?.getCompound("display")?.remove("MapColor")
                 }
             }
 
