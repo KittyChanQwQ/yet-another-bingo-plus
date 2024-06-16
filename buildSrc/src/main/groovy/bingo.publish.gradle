@@ -24,6 +24,7 @@ modrinth {
         optional.project "yacl"
         optional.project "jei"
         optional.project "rei"
+        optional.project "emi"
     }
     syncBodyFrom = rootProject.file("README.md").text
 }
