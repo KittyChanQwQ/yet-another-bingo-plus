@@ -1,5 +1,7 @@
 package me.jfenn.bingo.client.integrations.jei
 
+import dev.emi.emi.api.EmiApi
+import dev.emi.emi.api.stack.EmiStack
 import me.shedaniel.rei.api.client.view.ViewSearchBuilder
 import me.shedaniel.rei.api.common.util.EntryStacks
 import mezz.jei.api.constants.VanillaTypes
@@ -18,10 +20,13 @@ interface JeiIntegration {
 
         private fun hasREI() = FabricLoader.getInstance().isModLoaded("roughlyenoughitems")
 
+        private fun hasEMI() = FabricLoader.getInstance().isModLoaded("emi")
+
         fun create(log: Logger): JeiIntegration {
             return when {
                 hasJEI() -> JeiIntegrationImpl(log)
                 hasREI() -> ReiIntegrationImpl()
+                hasEMI() -> EmiIntegrationImpl()
                 else -> JeiIntegrationDummy()
             }
         }
@@ -64,5 +69,13 @@ class ReiIntegrationImpl: JeiIntegration {
         return ViewSearchBuilder.builder()
             .addRecipesFor(EntryStacks.of(stack))
             .open()
+    }
+}
+
+class EmiIntegrationImpl: JeiIntegration {
+    override fun isInstalled(): Boolean = true
+    override fun openJeiRecipe(stack: ItemStack): Boolean {
+        EmiApi.displayRecipes(EmiStack.of(stack))
+        return true
     }
 }
