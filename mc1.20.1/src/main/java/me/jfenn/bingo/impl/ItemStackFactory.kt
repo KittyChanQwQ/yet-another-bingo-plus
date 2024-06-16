@@ -99,7 +99,7 @@ class ItemStackFactory(
         }
 
         override fun setDisplay(name: Text?, lore: List<Text>?) {
-            stack.getOrCreateNbt().apply {
+            stack.getOrCreateSubNbt("display").apply {
                 if (name != null) {
                     putString("Name", textSerializer.toJson(name))
                 }
