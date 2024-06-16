@@ -23,7 +23,8 @@ object PlayerManagerMixinHandler {
         val config = scope.get<BingoConfig>()
         val state = scope.get<BingoState>()
 
-        return config.preventLobbyChaos &&
+        return state.isLobbyMode &&
+                config.preventLobbyChaos &&
                 state.state == GameState.PREGAME
     }
 
