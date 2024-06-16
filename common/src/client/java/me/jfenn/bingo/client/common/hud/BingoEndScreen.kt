@@ -1,7 +1,6 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IWorldService
-import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
@@ -14,13 +13,12 @@ import kotlin.math.roundToInt
 
 class BingoEndScreen(
     koin: Koin,
-    private val gameOver: GameOverPacket,
+    private val gameOver: BingoHudState.GameOver,
     private val canEscape: Boolean = false,
     private val text: TextProvider = koin.get(),
 ) : Screen(text.string(StringKey.CardTitle)) {
 
     private val worldService = koin.get<IWorldService>()
-    private val state: BingoHudState = koin.get()
 
     companion object {
         private const val BUTTON_WIDTH = 120
@@ -46,7 +44,7 @@ class BingoEndScreen(
         val client = client ?: return
         when {
             client.isInSingleplayer -> worldService.disconnectAndReopen()
-            gameOver.canSendRestart -> worldService.restartServer()
+            gameOver.packet.canSendRestart -> worldService.restartServer()
             else -> worldService.disconnect()
         }
     }
@@ -69,7 +67,7 @@ class BingoEndScreen(
         val restartButton = restartButton ?: ButtonWidget.builder(
             when {
                 client.isInSingleplayer -> text.string(StringKey.WorldNewGame)
-                gameOver.canSendRestart -> text.string(StringKey.WorldRestart)
+                gameOver.packet.canSendRestart -> text.string(StringKey.WorldRestart)
                 else -> text.string(StringKey.WorldDisconnect)
             }
         ) {
@@ -118,8 +116,8 @@ class BingoEndScreen(
         context.matrices.scale(2f, 2f, 2f)
         context.drawText(
             textRenderer,
-            gameOver.title,
-            (width/8) - (textRenderer.getWidth(gameOver.title)/2),
+            gameOver.packet.title,
+            (width/8) - (textRenderer.getWidth(gameOver.packet.title)/2),
             (titleY/4) - 9,
             0xff_ffffff.toInt(),
             false,
@@ -128,8 +126,8 @@ class BingoEndScreen(
 
         context.drawText(
             textRenderer,
-            gameOver.subtitle,
-            (width/4) - (textRenderer.getWidth(gameOver.subtitle)/2),
+            gameOver.packet.subtitle,
+            (width/4) - (textRenderer.getWidth(gameOver.packet.subtitle)/2),
             (titleY/2) + 2,
             0xff_ffffff.toInt(),
             false,
@@ -137,17 +135,7 @@ class BingoEndScreen(
 
         context.matrices.pop()
 
-        // Add any new views to the cardsWidget, but do not take away previously-seen views
-        cardsWidget.views = (
-                (state.display?.display ?: emptyList())
-                    .mapNotNull { state.views[it] }
-                + cardsWidget.views
-            )
-            // do not show the preview card on the Game Over screen
-            .filter { it.teamKey != null }
-            // prevent any duplicate cards (uses newly-sent cards first)
-            .distinctBy { it.teamKey?.id }
-
+        cardsWidget.views = gameOver.views
         cardsWidget.x = width/2
         cardsWidget.y = height/2
         cardsWidget.width = width * 6/10

@@ -106,11 +106,39 @@ class BingoHudController(
         }
     }
 
+    private fun updateGameOverViews() {
+        val gameOver = state.gameOver ?: return
+
+        // Add any new views to the gameOver screen, but do not take away previously-seen views
+        // - this is a compatibility fix for previous server versions
+        //   that do not ensure all cards are sent before the game over screen
+        gameOver.views = (
+                (state.display?.display ?: emptyList())
+                    .mapNotNull { state.views[it] }
+                        + gameOver.views
+                )
+            // do not show the preview card on the Game Over screen
+            .filter { it.teamKey != null }
+            // prevent any duplicate cards (uses newly-sent cards first)
+            .distinctBy { it.teamKey?.id }
+    }
+
     private fun onGameOver(packet: GameOverPacket) {
-        state.gameOverPacket = packet
+        val views = (
+                (state.display?.display ?: emptyList())
+                    .mapNotNull { state.views[it] }
+                        + (state.gameOver?.views ?: emptyList())
+                )
+            // do not show the preview card on the Game Over screen
+            .filter { it.teamKey != null }
+            // prevent any duplicate cards (uses newly-sent cards first)
+            .distinctBy { it.teamKey?.id }
+
+        val gameOver = BingoHudState.GameOver(packet, views)
+        state.gameOver = gameOver
         if (!packet.isUpdate) {
             // when the game first ends, open the end screen
-            MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, packet, canEscape = false))
+            MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, gameOver, canEscape = false))
         }
     }
 
@@ -118,6 +146,7 @@ class BingoHudController(
         if (config.supportClientHud) {
             packetEvents.cardDisplayV1.onPacket {
                 state.display = it.packet
+                updateGameOverViews()
 
                 // if there are no teams being displayed (BingoMapController sends when entering PREGAME)
                 // reset the HUD state completely
@@ -129,10 +158,12 @@ class BingoHudController(
 
             packetEvents.cardUpdateV1.onPacket { (packet) ->
                 state.views[packet.view.teamKey] = packet.view
+                updateGameOverViews()
             }
 
             packetEvents.cardUpdateV2.onPacket { (packet) ->
                 state.views[packet.view.teamKey] = packet.view
+                updateGameOverViews()
             }
 
             packetEvents.gameOverV1.onPacket { (packet) ->
@@ -189,7 +220,7 @@ class BingoHudController(
                         return@register
                     }
 
-                    val hudScreen = state.gameOverPacket
+                    val hudScreen = state.gameOver
                         ?.let { BingoEndScreen(koin, it, canEscape = true) }
                         ?: BingoHudScreen(koin)
 

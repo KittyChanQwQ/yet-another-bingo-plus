@@ -9,12 +9,17 @@ class BingoHudState(
     var display: CardDisplayPacket? = null,
     val views: MutableMap<BingoTeamKey?, CardView> = mutableMapOf(),
     var selectedTeam: BingoTeamKey? = null,
-    var gameOverPacket: GameOverPacket? = null,
+    var gameOver: GameOver? = null,
 ) {
     fun reset() {
         display = null
         views.clear()
         selectedTeam = null
-        gameOverPacket = null
+        gameOver = null
     }
+
+    class GameOver(
+        var packet: GameOverPacket,
+        var views: List<CardView>,
+    )
 }
