@@ -37,7 +37,7 @@ class BingoModeCommand(
                     .joinText()
             )
             .formatted(Formatting.AQUA)
-            .let { sendFeedback(it) }
+            .let { sendMessage(it) }
     }
 
     init {

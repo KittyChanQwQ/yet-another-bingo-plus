@@ -67,8 +67,8 @@ class CardViewService(
         }
     }
 
-    fun isViewingPreviewCard()
-        = state.state == GameState.PREGAME && options.showPreviewCard
+    fun isViewingPreviewCard(player: ServerPlayerEntity)
+        = state.state == GameState.PREGAME && options.showPreviewCard && (state.isLobbyMode || teamService.isPlaying(player))
 
     fun isViewingTeamCard(player: ServerPlayerEntity, team: BingoTeam)
         = state.state == GameState.PLAYING && team.includesPlayer(player)
@@ -81,7 +81,7 @@ class CardViewService(
     }
 
     fun isViewingCard(player: ServerPlayerEntity, team: BingoTeam?): Boolean {
-        return (team == null && isViewingPreviewCard()) ||
+        return (team == null && isViewingPreviewCard(player)) ||
                 (team != null && isViewingTeamCard(player, team)) ||
                 (team != null && isViewingSpectatorCards(player))
     }

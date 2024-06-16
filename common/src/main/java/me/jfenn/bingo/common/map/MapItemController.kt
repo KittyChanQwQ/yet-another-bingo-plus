@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -12,7 +11,6 @@ import me.jfenn.bingo.common.team.TeamService
 
 class MapItemController(
     private val state: BingoState,
-    private val options: BingoOptions,
     private val cardViewService: CardViewService,
     private val mapItemService: MapItemService,
     private val mapRenderService: MapRenderService,
@@ -141,28 +139,21 @@ class MapItemController(
         events.onGameTick {
             for (player in playerManager.getPlayers()) {
                 val playerTeam = teamService.getPlayerTeam(player.player)
+                val canHaveCards = player.isAlive && !player.isSpectator
 
-                if (player.isAlive && !player.isSpectator) {
-                    if (state.state == GameState.PREGAME) {
-                        if (cardViewService.isViewingPreviewCard()) {
-                            givePreviewCardItem(player)
-                        } else {
-                            removePreviewCardItem(player)
-                        }
-                    } else if (playerTeam != null && cardViewService.isViewingTeamCard(player.player, playerTeam)) {
+                if (canHaveCards && cardViewService.isViewingPreviewCard(player.player)) {
+                    givePreviewCardItem(player)
+                } else {
+                    removePreviewCardItem(player)
+                }
+
+                if (canHaveCards) {
+                    if (playerTeam != null && cardViewService.isViewingTeamCard(player.player, playerTeam)) {
                         // give player a new map, if they don't have one?
                         giveMapCardItem(player)
                     } else if (cardViewService.isViewingSpectatorCards(player.player)) {
                         if (state.isLobbyMode)
                             giveSpectatorMapItems(player)
-                    }
-                }
-
-                if (state.state == GameState.PREGAME && player.isAlive) {
-                    if (options.showPreviewCard) {
-                        givePreviewCardItem(player)
-                    } else {
-                        removePreviewCardItem(player)
                     }
                 }
 
