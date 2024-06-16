@@ -71,7 +71,7 @@ class BingoLobbyCommand(
                                 configService.writeConfig(configService.config.apply {
                                     server.isLobbyMode = true
                                 })
-                                server.shutdown()
+                                server.stop(false)
                             } else {
                                 sendMessage(text.string(StringKey.CommandLobbyMustRun).formatted(Formatting.RED))
                                 throw IllegalArgumentException("Has not read the warnings")
