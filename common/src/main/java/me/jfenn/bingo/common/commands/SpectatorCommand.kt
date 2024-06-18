@@ -2,9 +2,9 @@ package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
@@ -46,8 +46,15 @@ class SpectatorCommand : BaseCommand() {
                 requirePermission(Permission.COMMAND_SPECTATOR),
                 requireInScope { source ->
                     val player = source.player ?: return@requireInScope false
-                    !get<TeamService>().isPlaying(player) ||
-                            get<BingoState>().state == GameState.POSTGAME
+                    val state = get<BingoState>()
+                    val teamService = get<TeamService>()
+
+                    // only available to players if:
+                    // - the server is in lobby mode
+                    // - AND EITHER:
+                    //   * the player is not on a team (spectating)
+                    //   * the game state is POSTGAME
+                    state.isLobbyMode && (!teamService.isPlaying(player) || state.state == GameState.POSTGAME)
                 },
             )
             .executesInScope { ctx ->
