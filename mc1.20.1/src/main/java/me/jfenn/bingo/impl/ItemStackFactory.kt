@@ -23,7 +23,7 @@ class ItemStackFactory(
 ) : IItemStackFactory {
     override fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean {
         val itemInstance = try {
-            Registries.ITEM.get(Identifier(item))
+            createStack(item, 1).item
         } catch (e: Throwable) {
             logger.error("[ItemStackFactory] Item '$item' not found", e)
             return false
