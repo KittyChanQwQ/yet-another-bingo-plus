@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "InteractionEntityMixin",
-    "MinecraftServerMixin",
+    "MinecraftServerUnsafeSkipCloseMixin",
+    "MinecraftServerSkipStartRegionMixin",
     "PlayerEntityMixin",
     "PlayerManagerMixin",
     "ServerPlayNetworkHandlerMixin"

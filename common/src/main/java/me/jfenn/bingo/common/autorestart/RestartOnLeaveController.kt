@@ -23,7 +23,9 @@ class RestartOnLeaveController(
             // if the last player is disconnecting after a bingo game, shut down the server
             if (server.isRunning && config.shutDownWhenEveryoneDisconnects && state.state == GameState.POSTGAME && server.currentPlayerCount <= 1) {
                 log.info("[RestartOnLeaveController] Last player has disconnected and 'shutDownWhenEveryoneDisconnects' is true; Shutting down the server...")
-                server.stop(false)
+                server.execute {
+                    server.stop(false)
+                }
             }
         }
     }

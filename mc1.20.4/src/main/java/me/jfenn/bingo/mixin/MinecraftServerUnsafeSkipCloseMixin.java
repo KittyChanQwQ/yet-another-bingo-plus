@@ -1,6 +1,5 @@
 package me.jfenn.bingo.mixin;
 
-import me.jfenn.bingo.common.ConstantsKt;
 import me.jfenn.bingo.common.WorldDeleter;
 import me.jfenn.bingo.common.config.ConfigService;
 import me.jfenn.bingo.common.scope.BingoKoin;
@@ -11,8 +10,8 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.ServerNetworkIo;
-import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.profiler.Recorder;
 import net.minecraft.world.level.storage.LevelStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,19 +26,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.io.IOException;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin {
+public abstract class MinecraftServerUnsafeSkipCloseMixin {
 
     @Unique
-    private final Logger log = LoggerFactory.getLogger(MinecraftServerMixin.class);
-
-    @Inject(at = @At(value = "HEAD"), method = "prepareStartRegion", cancellable = true)
-    private void prepareStartRegion(WorldGenerationProgressListener worldGenerationProgressListener, CallbackInfo ci) {
-        MinecraftServer server = (MinecraftServer) (Object) this;
-        if (server.isDedicated() || server.getSaveProperties().getLevelName().startsWith(ConstantsKt.getBINGO_WORLD_PREFIX())) {
-            // The start region worldgen isn't all that useful in bingo, since the game starts at random coords anyway. So it doesn't really help.
-            ci.cancel();
-        }
-    }
+    private final Logger log = LoggerFactory.getLogger(MinecraftServerUnsafeSkipCloseMixin.class);
 
     @Shadow
     private boolean saving;
@@ -61,7 +51,11 @@ public abstract class MinecraftServerMixin {
     }
 
     @Shadow @Final
-    protected LevelStorage.Session session;
+    public LevelStorage.Session session;
+
+    @Shadow private Recorder recorder;
+
+    @Shadow public abstract void forceStopRecorder();
 
     @Inject(at = @At(value = "HEAD"), method = "shutdown", cancellable = true)
     public void shutdown(CallbackInfo ci) {
@@ -78,11 +72,19 @@ public abstract class MinecraftServerMixin {
             return;
         }
 
-        // tell Fabric to invoke SERVER_STOPPING, which *might* not be the first mixin
-        ServerLifecycleEvents.SERVER_STOPPING.invoker().onServerStopping(this.playerManager.getServer());
+        try {
+            // tell Fabric to invoke SERVER_STOPPING, which *might* not be the first mixin
+            ServerLifecycleEvents.SERVER_STOPPING.invoker().onServerStopping(server);
+        } catch (Throwable e) {
+            log.error("Error on SERVER_STOPPING", e);
+        }
 
         // many of the shutdown tasks can be skipped, since we don't care if all the world data is saved
         log.info("Stopping server");
+
+        if (this.recorder != null && this.recorder.isActive()) {
+            this.forceStopRecorder();
+        }
 
         if (this.networkIo != null) {
             this.networkIo.stop();
@@ -92,7 +94,11 @@ public abstract class MinecraftServerMixin {
 
         if (this.playerManager != null) {
             log.info("Disconnecting players");
-            this.playerManager.disconnectAllPlayers();
+            try {
+                this.playerManager.disconnectAllPlayers();
+            } catch (Throwable e) {
+                log.error("Error on disconnectAllPlayers", e);
+            }
         }
 
         if (new ConfigService().getConfig().getUnsafeSkipWorldClose()) {
@@ -103,7 +109,7 @@ public abstract class MinecraftServerMixin {
 
             try {
                 // tell Fabric to invoke SERVER_STOPPED (otherwise this would not reach its mixin)
-                ServerLifecycleEvents.SERVER_STOPPED.invoker().onServerStopped(this.playerManager.getServer());
+                ServerLifecycleEvents.SERVER_STOPPED.invoker().onServerStopped(server);
             } catch (Throwable e) {
                 log.error("Error on SERVER_STOPPED", e);
             }
@@ -141,7 +147,7 @@ public abstract class MinecraftServerMixin {
 
         try {
             // tell Fabric to invoke SERVER_STOPPED (otherwise this would not reach its mixin)
-            ServerLifecycleEvents.SERVER_STOPPED.invoker().onServerStopped(this.playerManager.getServer());
+            ServerLifecycleEvents.SERVER_STOPPED.invoker().onServerStopped(server);
         } catch (Throwable e) {
             log.error("Error on SERVER_STOPPED", e);
         }
