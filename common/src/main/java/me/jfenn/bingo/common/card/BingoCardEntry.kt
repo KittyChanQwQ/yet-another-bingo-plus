@@ -136,7 +136,7 @@ sealed class BingoCardEntry {
         override val tier: TierLabel,
     ): BingoCardEntry() {
 
-        // To be populated by [BingoCardController] once we have a server reference
+        // To be populated by [BingoMapController] once we have a server reference
         @Transient
         override var visualItem: IItemStack? = null
 
@@ -164,7 +164,7 @@ sealed class BingoCardEntry {
         override val tier: TierLabel,
     ): BingoCardEntry() {
 
-        // To be populated by [BingoCardController] once we have a server reference
+        // To be populated by [BingoMapController] once we have a server reference
         @Transient
         override var visualItem: IItemStack? = null
 
