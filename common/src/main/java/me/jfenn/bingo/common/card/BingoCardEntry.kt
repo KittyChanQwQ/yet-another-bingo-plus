@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import kotlin.time.Duration
@@ -126,7 +127,7 @@ sealed class BingoCardEntry {
         override fun isFlashing(team: BingoTeam?, duration: Duration): Boolean = false
 
         override fun formatName(): Text {
-            return Text.literal("Free Space")
+            return Text.translatableWithFallback(StringKey.CardFreeSpace.key, "Free Space")
         }
     }
 
@@ -186,7 +187,8 @@ sealed class BingoCardEntry {
         override val visualItem: IItemStack? get() = innerEntries.firstOrNull()?.visualItem
 
         override fun formatName(): Text {
-            return Text.literal("One of:").formatted(Formatting.GRAY)
+            return Text.translatableWithFallback(StringKey.CardOneOf.key, "One of:")
+                .formatted(Formatting.GRAY)
         }
 
         override fun formatLore(): List<Text> {
