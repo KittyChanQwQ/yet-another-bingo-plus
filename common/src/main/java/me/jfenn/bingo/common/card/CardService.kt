@@ -136,7 +136,15 @@ class CardService(
     }
 
     private fun resolveItem(id: String, tier: TierLabel): BingoCardEntry.ItemEntry? {
-        return if (itemStackFactory.isEnabledInWorld(id, server)) {
+        val isEnabled = try {
+            // this might throw if id is not a valid identifier
+            itemStackFactory.isEnabledInWorld(id, server)
+        } catch (e: Throwable) {
+            log.debug("Unable to locate item '$id'", e)
+            false
+        }
+
+        return if (isEnabled) {
             BingoCardEntry.ItemEntry(id, tier)
         } else {
             log.warn("Unable to locate item '$id' from the tier list '${options.tierList}.tierlist.json', ignoring...")
