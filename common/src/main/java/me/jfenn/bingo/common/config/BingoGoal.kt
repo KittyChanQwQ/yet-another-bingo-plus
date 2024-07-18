@@ -15,7 +15,7 @@ sealed class BingoGoal {
 
     companion object {
         const val MAX_ITEMS = 25
-        const val MAX_LINES = 12
+        const val MAX_LINES = 11
     }
 
     fun string(): StringKey {
