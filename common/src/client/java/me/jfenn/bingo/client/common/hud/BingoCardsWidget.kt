@@ -34,7 +34,7 @@ class BingoCardsWidget(
     private val cardsAreaWidth get() = screen.width - cardsAreaMargin*2
 
     private fun viewsWithPositions(
-        callback: (view: CardView, x: Int, y: Int, z: Int) -> Unit
+        callback: (view: CardView, x: Int, y: Int, z: Int, xDelta: Float) -> Unit
     ) {
         if (views.isEmpty()) return
 
@@ -61,26 +61,28 @@ class BingoCardsWidget(
         for ((i, view) in views.withIndex()) {
             val xOffset = i * BingoHudRenderer.CARD_WIDTH + widthOffset
 
-            val x = screenX + xOffset.roundToInt()
+            val x = screenX + xOffset
             val y = screenY
 
             val zIndex = zOrder.indexOf(i)
             val z = 201 * (views.size - zIndex)
 
             val xCoerced = when {
-                x < xMin -> x.coerceAtLeast(xMin - 4 * (views.size - i - 1))
-                x > xMax -> x.coerceAtMost(xMax + 4 * i)
+                x < xMin -> x.coerceAtLeast(xMin - 4f * (views.size - i - 1))
+                x > xMax -> x.coerceAtMost(xMax + 4f * i)
                 else -> x
             }
 
-            callback(view, xCoerced, y, z)
+            val xFloored = xCoerced.toInt()
+
+            callback(view, xFloored, y, z, xCoerced - xFloored)
         }
     }
 
     private fun getHoveredView(mouseX: Int, mouseY: Int): CardView? {
         var hoveredView: CardView? = null
         var hoveredZ = 0
-        viewsWithPositions { view, x, y, z ->
+        viewsWithPositions { view, x, y, z, _ ->
             if (
                 mouseX in x..(x + BingoHudRenderer.CARD_WIDTH) &&
                 mouseY in y..(y + BingoHudRenderer.CARD_HEIGHT) &&
@@ -118,7 +120,10 @@ class BingoCardsWidget(
 
         val hoveredView = getHoveredView(mouseX, mouseY)
 
-        viewsWithPositions { view, x, y, z ->
+        viewsWithPositions { view, x, y, z, xDelta ->
+            context.matrices.push()
+            context.matrices.translate(xDelta, 0f, 0f)
+
             val isHovered = hoveredView != null && hoveredView.teamKey == view.teamKey
             val isSingleView = views.size <= 1
             renderer.drawCard(
@@ -136,6 +141,8 @@ class BingoCardsWidget(
                 isMouseOver = isHovered,
                 isGui = true, // uses an alternative card texture with a shadow to reduce clutter when overlapped
             )
+
+            context.matrices.pop()
         }
     }
 
@@ -149,7 +156,7 @@ class BingoCardsWidget(
 
         var isHandled = false
 
-        viewsWithPositions { view, x, y, _ ->
+        viewsWithPositions { view, x, y, _, _ ->
             if (hoveredView.teamKey != view.teamKey) return@viewsWithPositions
             val (tileX, tileY) = renderer.getItem(x, y, 1f, mouseX.toInt(), mouseY.toInt()) ?: return@viewsWithPositions
             val tile = view.tile(tileX, tileY) ?: return@viewsWithPositions

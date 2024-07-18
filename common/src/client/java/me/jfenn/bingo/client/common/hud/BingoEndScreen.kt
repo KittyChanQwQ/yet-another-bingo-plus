@@ -37,6 +37,8 @@ class BingoEndScreen(
         onViewClick = null,
     )
 
+    private val fireworkRenderer = BingoEndFireworkRenderer()
+
     private var dismissButton: ButtonWidget? = null
     private var restartButton: ButtonWidget? = null
 
@@ -140,6 +142,10 @@ class BingoEndScreen(
         cardsWidget.y = height/2
         cardsWidget.width = width * 6/10
         cardsWidget.render(context, mouseX, mouseY, delta)
+
+        if (gameOver.packet.isWinner) {
+            fireworkRenderer.render(context, textRenderer, width, height, delta)
+        }
     }
 
     override fun shouldPause() = false
