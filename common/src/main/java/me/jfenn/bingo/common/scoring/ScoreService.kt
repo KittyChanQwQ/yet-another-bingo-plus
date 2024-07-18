@@ -16,6 +16,16 @@ object ScoreService {
         // if there's only one team, then the game shouldn't end by lockout...
         if (state.getRegisteredTeams().size <= 1) return false
 
+        if (state.card.entries.all { it.hasAnyAchieved() }) {
+            // if the entire card is full, then it is a lockout (regardless of the goal)
+            return true
+        }
+
+        // if the goal is "full card", disregard any stalemate conditions
+        // (otherwise the game would end instantly)
+        if (state.options.cardGoal.isFullCard())
+            return false
+
         val leadingTeam = getLeadingByLines(state, allowTies = false)
         val leadingTeamLines = leadingTeam?.score?.lines
             ?: state.getRegisteredTeams().maxOfOrNull { it.score.lines }
@@ -39,7 +49,6 @@ object ScoreService {
         val isGoalImpossible = when (val goal = state.options.cardGoal) {
             is BingoGoal.Items -> {
                 state.getRegisteredTeams().none { team ->
-
                     val possibleItems = state.card.entries.count { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
                     // if no team can capture the amount of items needed for the win condition
                     possibleItems >= goal.items
