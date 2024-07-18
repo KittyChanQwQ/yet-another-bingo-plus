@@ -108,16 +108,6 @@ class BingoHudRenderer {
                 tile.isAchieved -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileAchievedColor.asInt)
             }
 
-            if (tile.isAdvancement) {
-                service.drawTexture(
-                    texture = ADVANCEMENT_FRAME_ID,
-                    x = itemX - 1, y = itemY - 1,
-                    u = 0f, v = 0f,
-                    width = 20, height = 20,
-                    textureWidth = 20, textureHeight = 20,
-                )
-            }
-
             if (tile.isHidden) {
                 val texture = tile.itemTier
                     ?.let { Identifier.of("minecraft", "bingo/image_hidden_${it.name.lowercase()}")!! }
@@ -148,6 +138,16 @@ class BingoHudRenderer {
                     itemX + 18,
                     itemY + 18,
                     colors.tileAchievedColor.copy(a = colors.tileAchievedColor.a / 4).asIntWithAlpha
+                )
+            }
+
+            if (tile.isAdvancement) {
+                service.drawTexture(
+                    texture = ADVANCEMENT_FRAME_ID,
+                    x = itemX - 1, y = itemY - 1, z = 300,
+                    u = 0f, v = 0f,
+                    width = 20, height = 20,
+                    textureWidth = 20, textureHeight = 20,
                 )
             }
 
