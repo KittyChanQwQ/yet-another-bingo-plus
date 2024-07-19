@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common
 
+import me.jfenn.bingo.common.datapack.ServerProps
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.LoggerFactory
@@ -14,18 +15,18 @@ object WorldDeleter {
     private val log = LoggerFactory.getLogger(this::class.java)
 
     private val FILES_TO_RM = listOf(
-        "world/advancements",
-        "world/data",
-        "world/DIM1",
-        "world/DIM-1",
-        "world/dimensions",
-        "world/entities",
-        "world/playerdata",
-        "world/poi",
-        "world/region",
-        "world/stats",
-        "world/level.dat",
-        "world/level.dat_old",
+        "advancements",
+        "data",
+        "DIM1",
+        "DIM-1",
+        "dimensions",
+        "entities",
+        "playerdata",
+        "poi",
+        "region",
+        "stats",
+        "level.dat",
+        "level.dat_old",
     )
 
     fun invoke() {
@@ -34,7 +35,7 @@ object WorldDeleter {
             return
         }
 
-        val gameDir = FabricLoader.getInstance().gameDir
+        val gameDir = FabricLoader.getInstance().gameDir.resolve(ServerProps.levelName)
         log.info("Deleting world files in dir: ${gameDir.toAbsolutePath()}")
 
         measureTime {

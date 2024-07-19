@@ -17,7 +17,7 @@ class ServerDatapackManager(
         // If the env is on a dedicated server, we need to install the datapack manually
         val loader = FabricLoader.getInstance()
         if (loader.environmentType == EnvType.SERVER) {
-            val datapackPath = loader.gameDir.resolve("world/datapacks/$MOD_ID.zip")
+            val datapackPath = loader.gameDir.resolve("${ServerProps.levelName}/datapacks/$MOD_ID.zip")
             if (config.server.isLobbyMode) {
                 log.info("[ServerDatapackManager] isLobbyMode=true - Installing the $MOD_ID datapack in $datapackPath")
                 DatapackService.copyDataPack(datapackPath)
