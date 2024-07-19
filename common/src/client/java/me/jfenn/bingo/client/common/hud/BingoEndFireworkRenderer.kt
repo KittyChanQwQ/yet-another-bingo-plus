@@ -10,7 +10,6 @@ import kotlin.math.sin
 
 class BingoEndFireworkRenderer {
 
-    private val starDeceleration = 0.9
     private val starVelocityScale = 1.5
 
     private val colors = listOf(
@@ -26,9 +25,9 @@ class BingoEndFireworkRenderer {
         var x: Double,
         var y: Double,
         var rot: Double,
-        var xVel: Double,
-        var yVel: Double,
-        var rotVel: Double,
+        val xVel: Double,
+        val yVel: Double,
+        val rotVel: Double,
         val color: Int,
     )
 
@@ -57,11 +56,6 @@ class BingoEndFireworkRenderer {
             star.x += star.xVel * delta
             star.y += star.yVel * delta
             star.rot += star.rotVel * delta
-
-            val deceleration = (starDeceleration * (1f / delta)).coerceAtMost(1.0)
-            star.xVel *= deceleration
-            star.yVel *= deceleration
-            star.rotVel *= deceleration
 
             star.y += 0.2
 
