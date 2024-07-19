@@ -178,6 +178,10 @@ class BingoHudController(
                 onGameOver(packet)
             }
 
+            packetEvents.gameOverV4.onPacket { (packet) ->
+                onGameOver(packet)
+            }
+
             hud.onRender {
                 // Do not draw the HUD if the F3 or chat overlay is shown
                 if (optionsAccessor.isHudHidden())

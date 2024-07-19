@@ -40,6 +40,10 @@ class ScorePacketReceiver(
             onGameOver(packet)
         }
 
+        clientPacketEvents.gameOverV4.onPacket { (packet) ->
+            onGameOver(packet)
+        }
+
         clientPacketEvents.timerV1.onPacket { (packet) ->
             if (packet.secondsRemaining in 1..20 && packet.secondsRemaining % 2 != 0) {
                 val volume = 1f - (packet.secondsRemaining / 20f)

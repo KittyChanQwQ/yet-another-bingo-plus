@@ -103,7 +103,7 @@ val commonModule = module {
 
         scopedOf(::StatsLobbyController)
         scopedOf(::StatsSyncController)
-        scopedOf(::WriteStatsController)
+        scopedOf(::WriteStatsService)
 
         scopedOf(::GameService)
         scopedOf(::GameOverService)
@@ -212,7 +212,6 @@ fun Scope.commonInit() {
 
     get<StatsLobbyController>()
     get<StatsSyncController>()
-    get<WriteStatsController>()
 
     get<TeamController>()
 

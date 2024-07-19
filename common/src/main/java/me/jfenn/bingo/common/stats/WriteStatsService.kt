@@ -2,11 +2,9 @@ package me.jfenn.bingo.common.stats
 
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
-import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.data.GameInfo
 import me.jfenn.bingo.common.stats.data.GamePlayerInfo
 import me.jfenn.bingo.common.stats.data.GameTeamInfo
@@ -20,13 +18,12 @@ import java.util.*
 import kotlin.time.Duration
 import kotlin.time.measureTime
 
-class WriteStatsController(
+class WriteStatsService(
     private val log: Logger,
     private val state: BingoState,
     private val stats: StatsService,
     private val packets: ServerPacketEvents,
     private val server: MinecraftServer,
-    events: ScopedEvents,
 ) : BingoComponent() {
     private fun hashSha(string: String): String {
         val md = MessageDigest.getInstance("SHA-512")
@@ -109,14 +106,12 @@ class WriteStatsController(
         )
     }
 
-    init {
-        events.onEnter(GameState.POSTGAME) {
-            log.info("Writing game result to stats.db...")
-            measureTime {
-                writeGameResult()
-            }.also {
-                log.info("Done! ($it)")
-            }
+    fun writeGame() {
+        log.info("Writing game result to stats.db...")
+        measureTime {
+            writeGameResult()
+        }.also {
+            log.info("Done! ($it)")
         }
     }
 }

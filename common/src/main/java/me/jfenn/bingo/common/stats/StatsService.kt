@@ -97,6 +97,13 @@ class StatsService(
         return HexFormat.of().formatHex(digest)
     }
 
+    fun getPlayerWinStreak(playerUuid: UUID): Int {
+        return db.gameQueries.latestWinStreakByPlayer(playerUuid.toString())
+            .executeAsOneOrNull()
+            ?.toInt()
+            ?: 0
+    }
+
     fun getPlayerSummary(playerUuid: UUID, now: Instant = Clock.System.now()): PlayerStatsSummary {
         val total = db.gameQueries.totalStatsByPlayer(playerUuid.toString()).executeAsOne()
         val monthly = db.gameQueries.monthlyStatsByPlayer(playerUuid.toString(), now.toString()).executeAsOne()

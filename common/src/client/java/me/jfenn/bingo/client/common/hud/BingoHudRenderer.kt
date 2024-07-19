@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.common.hud
 
+import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.api.IDrawService
@@ -7,7 +8,9 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.client.MinecraftClient
@@ -16,9 +19,13 @@ import net.minecraft.client.render.RenderLayer
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceType
 import net.minecraft.util.Identifier
+import org.joml.AxisAngle4f
+import org.joml.Quaternionf
 import kotlin.jvm.optionals.getOrNull
 
-class BingoHudRenderer {
+class BingoHudRenderer(
+    private val text: TextProvider,
+) {
 
     companion object {
         const val CARD_WIDTH = 122
@@ -61,6 +68,15 @@ class BingoHudRenderer {
         return Pair(tileX, tileY)
     }
 
+    private val winColors = listOf(
+        0xFF_F5C0A3.toInt(),
+        0xFF_A3F5A3.toInt(),
+        0xFF_A3F5C7.toInt(),
+        0xFF_A3ABF5.toInt(),
+        0xFF_CCA3F5.toInt(),
+        0xFF_F5A3D6.toInt(),
+    )
+
     fun drawCard(
         context: DrawContext,
         service: IDrawService,
@@ -75,6 +91,7 @@ class BingoHudRenderer {
         isFocused: Boolean = false,
         isMouseOver: Boolean = false,
         isGui: Boolean = false,
+        isWinner: Boolean = false,
     ) {
         val colors = cardColors.teamColors[view.teamKey ?: BingoTeamKey("preview")] ?: BingoCardColors.DEFAULTS
         val textRenderer = MinecraftClient.getInstance().textRenderer
@@ -97,6 +114,17 @@ class BingoHudRenderer {
         )
 
         context.drawText(textRenderer, view.teamName, 12, 10, colors.textColor.asIntWithAlpha, false)
+
+        if (isWinner) {
+            context.matrices.push()
+            context.matrices.translate(95.0, -4.0, 0.0)
+            context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
+
+            val winIndex = Clock.System.now().epochSeconds % winColors.size
+            context.drawText(textRenderer, text.string(StringKey.CardWinner), 0, 0, winColors[winIndex.toInt()], true)
+
+            context.matrices.pop()
+        }
 
         for (tileX in 0..4) for (tileY in 0..4) {
             val tile = view.tile(tileX, tileY) ?: continue

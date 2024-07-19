@@ -3,6 +3,7 @@ package me.jfenn.bingo.client.common.hud
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
+import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import org.koin.core.Koin
@@ -18,6 +19,7 @@ class BingoCardsWidget(
     var height: Int,
 
     var views: List<CardView> = emptyList(),
+    var winner: BingoTeamKey? = null,
 
     val onTileClick: (CardTile) -> Boolean,
     val onViewClick: ((CardView) -> Boolean)?,
@@ -140,6 +142,7 @@ class BingoCardsWidget(
                 isFocused = isHovered && !isSingleView && onViewClick != null,
                 isMouseOver = isHovered,
                 isGui = true, // uses an alternative card texture with a shadow to reduce clutter when overlapped
+                isWinner = winner != null && winner == view.teamKey,
             )
 
             context.matrices.pop()

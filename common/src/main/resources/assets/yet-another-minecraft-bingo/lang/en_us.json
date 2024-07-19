@@ -24,6 +24,7 @@
   "bingo.card.no_cards": "There are no Bingo Cards to display...",
   "bingo.card.free_space": "Free Space",
   "bingo.card.one_of": "One of:",
+  "bingo.card.winner": "WINNER!",
   "bingo.intro.welcome": "Welcome to %s!",
   "bingo.intro.welcome_link": "Yet Another MC BINGO",
   "bingo.intro.use_config_commands": "Use the '/bingo' command to configure the game.",
@@ -213,5 +214,6 @@
   "bingo.stats.items": "Items",
   "bingo.stats.win_streak": "Win Streak",
   "bingo.stats.win_streak_value": "%s of %s",
-  "bingo.stats.favorite_team": "Favorite Team"
+  "bingo.stats.favorite_team": "Favorite Team",
+  "bingo.stats.game_duration": "Game Duration"
 }

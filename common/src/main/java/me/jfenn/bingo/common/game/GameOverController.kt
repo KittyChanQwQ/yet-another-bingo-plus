@@ -10,6 +10,8 @@ import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.stats.StatsService
+import me.jfenn.bingo.common.stats.WriteStatsService
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
@@ -34,6 +36,8 @@ class GameOverController(
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
     private val packetManager: ServerPacketEvents,
+    private val stats: StatsService,
+    private val writeStatsService: WriteStatsService,
     events: ScopedEvents,
 ) {
 
@@ -108,6 +112,11 @@ class GameOverController(
         val info = gameOverService.getGameInfo()
 
         for (player in playerManager.getPlayers()) {
+            val winStreak = stats.getPlayerWinStreak(player.uuid)
+            val isWinner = info.winningTeam?.includesPlayer(player.player) ?: false
+
+            println("winStreak: $winStreak")
+
             val packet = GameOverPacket(
                 title = info.title,
                 subtitle = info.message,
@@ -117,19 +126,19 @@ class GameOverController(
                     player.player,
                     Permission.COMMAND_RESTART
                 ),
-                isWinner = info.winningTeam?.includesPlayer(player.player) ?: false,
+                isWinner = isWinner,
                 isUpdate = isUpdate,
+                winStreak = winStreak,
+                seed = server.overworld.seed,
             )
 
-            if (isUpdate) {
-                // if this is an update packet, this should only be sent to v3 clients
-                // (for v2/below, this would re-open the end screen on each update)
-                packetManager.gameOverV3.send(player.player, packet)
-                continue
-            }
-
             when {
+                packetManager.gameOverV4.send(player.player, packet) -> {}
                 packetManager.gameOverV3.send(player.player, packet) -> {}
+                isUpdate -> {
+                    // if this is an update packet, this should only be sent to v3 clients
+                    // (for v2/below, this would re-open the end screen on each update)
+                }
                 packetManager.gameOverV2.send(player.player, packet) -> {}
                 packetManager.gameOverV1.send(player.player, packet) -> {
                     Sounds.playGameOver(player)
@@ -146,6 +155,7 @@ class GameOverController(
 
     init {
         events.onEnter(GameState.POSTGAME) {
+            writeStatsService.writeGame()
             broadcastGameOver()
             sendGameOverPacket(isUpdate = false)
         }

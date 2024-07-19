@@ -1,13 +1,18 @@
 package me.jfenn.bingo.client.common.hud
 
+import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.api.IWorldService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
+import org.joml.AxisAngle4f
+import org.joml.Quaternionf
 import org.koin.core.Koin
+import kotlin.math.PI
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -73,7 +78,7 @@ class BingoEndScreen(
                 else -> text.string(StringKey.WorldDisconnect)
             }
         ) {
-            it.active = false;
+            it.active = false
             reopenWorld()
         }
             .width(BUTTON_WIDTH)
@@ -98,6 +103,78 @@ class BingoEndScreen(
         updateButtons()
     }
 
+    private fun renderGameDuration(context: DrawContext, titleY: Int) {
+        context.matrices.push()
+        context.matrices.translate(width * 0.2f, titleY.toFloat(), 0f)
+        context.matrices.multiply(Quaternionf(AxisAngle4f(-.25f, 0f, 0f, 1f)))
+        context.matrices.push()
+        context.matrices.scale(2f, 2f, 1f)
+
+        val gameDuration = gameOver.packet.duration.formatString()
+        context.drawText(
+            textRenderer,
+            gameDuration,
+            -textRenderer.getWidth(gameDuration)/2, 0,
+            0xFF_A3F5A3.toInt(),
+            true,
+        )
+
+        context.matrices.pop()
+
+        val title = text.string(StringKey.StatsGameDuration)
+        context.drawText(textRenderer, title, -textRenderer.getWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
+        context.matrices.pop()
+    }
+
+    private fun renderWinStreak(context: DrawContext, titleY: Int) {
+        context.matrices.push()
+        context.matrices.translate(width * 0.8f, titleY.toFloat(), 0f)
+        context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
+        context.matrices.push()
+        context.matrices.scale(2f, 2f, 1f)
+
+        val winStreak = gameOver.packet.winStreak.toString()
+        context.drawText(
+            textRenderer,
+            winStreak,
+            -textRenderer.getWidth(winStreak)/2, 0,
+            0xFF_F5A3D6.toInt(),
+            true,
+        )
+
+        context.matrices.pop()
+
+        val title = text.string(StringKey.StatsWinStreak)
+        context.drawText(textRenderer, title, -textRenderer.getWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
+        context.matrices.pop()
+
+        if (gameOver.packet.winStreak > 1 && gameOver.packet.isWinner) {
+            context.matrices.push()
+            context.matrices.translate(width * 0.8f, titleY.toFloat() + 12, 0f)
+            context.matrices.multiply(Quaternionf(AxisAngle4f(
+                Clock.System.now().toEpochMilliseconds()
+                    .mod(2000)
+                    .div(2000f)
+                    .times(2*PI.toFloat()),
+                0f, 0f, 1f
+            )))
+            context.matrices.scale(8f, 8f, 1f)
+            context.matrices.push()
+            context.matrices.translate(-2.5, -3.5, 0.0)
+
+            context.drawText(
+                textRenderer,
+                "◆",
+                0, 0,
+                0x30_F5A3D6.toInt(),
+                false,
+            )
+
+            context.matrices.pop()
+            context.matrices.pop()
+        }
+    }
+
     override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
         if (context == null) return
         try {
@@ -113,31 +190,30 @@ class BingoEndScreen(
 
         context.matrices.push()
         context.matrices.scale(2f, 2f, 2f)
-
-        context.matrices.push()
-        context.matrices.scale(2f, 2f, 2f)
         context.drawText(
             textRenderer,
             gameOver.packet.title,
-            (width/8) - (textRenderer.getWidth(gameOver.packet.title)/2),
-            (titleY/4) - 9,
+            (width/4) - (textRenderer.getWidth(gameOver.packet.title)/2),
+            (titleY/2) - 9,
             0xff_ffffff.toInt(),
-            false,
+            true,
         )
         context.matrices.pop()
 
         context.drawText(
             textRenderer,
             gameOver.packet.subtitle,
-            (width/4) - (textRenderer.getWidth(gameOver.packet.subtitle)/2),
-            (titleY/2) + 2,
+            (width/2) - (textRenderer.getWidth(gameOver.packet.subtitle)/2),
+            titleY + 4,
             0xff_ffffff.toInt(),
-            false,
+            true,
         )
 
-        context.matrices.pop()
+        renderGameDuration(context, titleY - 9)
+        renderWinStreak(context, titleY - 9)
 
         cardsWidget.views = gameOver.views
+        cardsWidget.winner = gameOver.packet.winner
         cardsWidget.x = width/2
         cardsWidget.y = height/2
         cardsWidget.width = width * 6/10

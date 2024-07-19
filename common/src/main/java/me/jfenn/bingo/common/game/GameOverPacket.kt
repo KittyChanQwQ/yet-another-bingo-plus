@@ -22,6 +22,8 @@ data class GameOverPacket(
      * - true indicates that the client should update its data without opening the screen
      */
     val isUpdate: Boolean,
+    val winStreak: Int,
+    val seed: Long?,
 ) {
     object V1 : PacketConverter<GameOverPacket> {
         override val id = Identifier.of("bingo", "game_over")!!
@@ -35,6 +37,8 @@ data class GameOverPacket(
                 canSendRestart = buf.readBoolean(),
                 isWinner = false,
                 isUpdate = false,
+                winStreak = 0,
+                seed = null,
             )
         }
 
@@ -66,6 +70,8 @@ data class GameOverPacket(
                 canSendRestart = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = false,
+                winStreak = 0,
+                seed = null,
             )
         }
 
@@ -98,6 +104,8 @@ data class GameOverPacket(
                 canSendRestart = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
+                winStreak = 0,
+                seed = null,
             )
         }
 
@@ -116,6 +124,49 @@ data class GameOverPacket(
             dest.writeBoolean(source.canSendRestart)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
+        }
+    }
+
+    object V4 : PacketConverter<GameOverPacket> {
+        override val id = Identifier.of(MOD_ID_BINGO, "game_over_v4")!!
+
+        override fun fromPacketBuf(buf: IPacketBuf): GameOverPacket {
+            return GameOverPacket(
+                title = buf.readText(),
+                subtitle = buf.readText(),
+                winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
+                duration = buf.readLong().milliseconds,
+                canSendRestart = buf.readBoolean(),
+                isWinner = buf.readBoolean(),
+                isUpdate = buf.readBoolean(),
+                winStreak = buf.readInt(),
+                seed = if (buf.readBoolean()) buf.readLong() else null,
+            )
+        }
+
+        override fun toPacketBuf(source: GameOverPacket, dest: IPacketBuf) {
+            dest.writeText(source.title)
+            dest.writeText(source.subtitle)
+
+            if (source.winner != null) {
+                dest.writeBoolean(true)
+                dest.writeString(source.winner.id)
+            } else {
+                dest.writeBoolean(false)
+            }
+
+            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isWinner)
+            dest.writeBoolean(source.isUpdate)
+            dest.writeInt(source.winStreak)
+
+            if (source.seed != null) {
+                dest.writeBoolean(true)
+                dest.writeLong(source.seed)
+            } else {
+                dest.writeBoolean(false)
+            }
         }
     }
 }
