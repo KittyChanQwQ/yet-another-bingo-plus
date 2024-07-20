@@ -127,8 +127,7 @@ class BingoEndScreen(
     }
 
     private fun renderWinStreak(context: DrawContext, titleY: Int) {
-        if (gameOver.packet.winStreak == 0)
-            return
+        val winStreak = gameOver.packet.winStreak ?: return
 
         context.matrices.push()
         context.matrices.translate(width * 0.8f, titleY.toFloat(), 0f)
@@ -136,11 +135,10 @@ class BingoEndScreen(
         context.matrices.push()
         context.matrices.scale(2f, 2f, 1f)
 
-        val winStreak = gameOver.packet.winStreak.toString()
         context.drawText(
             textRenderer,
-            winStreak,
-            -textRenderer.getWidth(winStreak)/2, 0,
+            "$winStreak",
+            -textRenderer.getWidth("$winStreak")/2, 0,
             0xFF_F5A3D6.toInt(),
             true,
         )
@@ -151,7 +149,7 @@ class BingoEndScreen(
         context.drawText(textRenderer, title, -textRenderer.getWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
         context.matrices.pop()
 
-        if (gameOver.packet.winStreak > 1 && gameOver.packet.isWinner) {
+        if (winStreak > 1 && gameOver.packet.isWinner) {
             context.matrices.push()
             context.matrices.translate(width * 0.8f, titleY.toFloat() + 12, 0f)
             context.matrices.multiply(Quaternionf(AxisAngle4f(

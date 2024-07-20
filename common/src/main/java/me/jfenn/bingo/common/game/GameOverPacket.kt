@@ -22,7 +22,7 @@ data class GameOverPacket(
      * - true indicates that the client should update its data without opening the screen
      */
     val isUpdate: Boolean,
-    val winStreak: Int,
+    val winStreak: Int?,
     val seed: Long?,
 ) {
     object V1 : PacketConverter<GameOverPacket> {
@@ -37,7 +37,7 @@ data class GameOverPacket(
                 canSendRestart = buf.readBoolean(),
                 isWinner = false,
                 isUpdate = false,
-                winStreak = 0,
+                winStreak = null,
                 seed = null,
             )
         }
@@ -70,7 +70,7 @@ data class GameOverPacket(
                 canSendRestart = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = false,
-                winStreak = 0,
+                winStreak = null,
                 seed = null,
             )
         }
@@ -104,7 +104,7 @@ data class GameOverPacket(
                 canSendRestart = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
-                winStreak = 0,
+                winStreak = null,
                 seed = null,
             )
         }
@@ -139,7 +139,7 @@ data class GameOverPacket(
                 canSendRestart = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
-                winStreak = buf.readInt(),
+                winStreak = if (buf.readBoolean()) buf.readInt() else null,
                 seed = if (buf.readBoolean()) buf.readLong() else null,
             )
         }
@@ -159,7 +159,13 @@ data class GameOverPacket(
             dest.writeBoolean(source.canSendRestart)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
-            dest.writeInt(source.winStreak)
+
+            if (source.winStreak != null) {
+                dest.writeBoolean(true)
+                dest.writeInt(source.winStreak)
+            } else {
+                dest.writeBoolean(false)
+            }
 
             if (source.seed != null) {
                 dest.writeBoolean(true)

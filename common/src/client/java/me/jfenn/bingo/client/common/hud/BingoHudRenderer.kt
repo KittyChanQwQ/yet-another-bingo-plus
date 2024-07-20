@@ -18,6 +18,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceType
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
@@ -117,7 +118,7 @@ class BingoHudRenderer(
 
         if (isWinner) {
             context.matrices.push()
-            context.matrices.translate(95.0, -4.0, 0.0)
+            context.matrices.translate(90.0, -4.0, 1000.0)
             context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
 
             val winIndex = Clock.System.now().epochSeconds % winColors.size
@@ -253,6 +254,19 @@ class BingoHudRenderer(
         }
 
         context.matrices.pop()
+
+        // Render the team's player list if the title is hovered over
+        if (
+            isMouseOver &&
+            mouseX in x..(x + CARD_WIDTH*0.7*cardScale).toInt() &&
+            mouseY in y..(y+20*cardScale).toInt() &&
+            view.players.isNotEmpty()
+        ) {
+            context.matrices.push()
+            context.matrices.translate(0f, 0f, 2000f)
+            context.drawTooltip(textRenderer, view.players.map { Text.literal(it.name) }, mouseX, mouseY)
+            context.matrices.pop()
+        }
 
         if (isMouseOver) {
             // Render the hover tooltips last, without the matrix translate/transform

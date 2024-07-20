@@ -166,6 +166,11 @@ class BingoHudController(
                 updateGameOverViews()
             }
 
+            packetEvents.cardUpdateV3.onPacket { (packet) ->
+                state.views[packet.view.teamKey] = packet.view
+                updateGameOverViews()
+            }
+
             packetEvents.gameOverV1.onPacket { (packet) ->
                 onGameOver(packet)
             }

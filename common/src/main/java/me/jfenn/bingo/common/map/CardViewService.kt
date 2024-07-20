@@ -75,6 +75,7 @@ class CardViewService(
             val view = map.view
             val updatePacket = CardUpdatePacket(view)
             when {
+                packets.cardUpdateV3.send(player, updatePacket) -> {}
                 packets.cardUpdateV2.send(player, updatePacket) -> {}
                 packets.cardUpdateV1.send(player, updatePacket) -> {}
             }
@@ -135,7 +136,8 @@ class CardViewService(
                 ?: textProvider.string(StringKey.CardPreviewCard),
             tiles = state.card.entries
                 .map { entry -> getTileState(team, entry) }
-                .toMutableList()
+                .toMutableList(),
+            players = team?.players?.toList() ?: emptyList(),
         )
     }
 

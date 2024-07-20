@@ -19,6 +19,7 @@ class ClientPacketEvents(
     val cardDisplayV1 = clientNetworking.registerS2C(CardDisplayPacket.V1)
     val cardUpdateV1 = clientNetworking.registerS2C(CardUpdatePacket.V1)
     val cardUpdateV2 = clientNetworking.registerS2C(CardUpdatePacket.V2)
+    val cardUpdateV3 = clientNetworking.registerS2C(CardUpdatePacket.V3)
     val gameOverV1 = clientNetworking.registerS2C(GameOverPacket.V1)
     val gameOverV2 = clientNetworking.registerS2C(GameOverPacket.V2)
     val gameOverV3 = clientNetworking.registerS2C(GameOverPacket.V3)
