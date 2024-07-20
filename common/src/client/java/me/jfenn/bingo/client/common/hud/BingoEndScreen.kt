@@ -127,6 +127,9 @@ class BingoEndScreen(
     }
 
     private fun renderWinStreak(context: DrawContext, titleY: Int) {
+        if (gameOver.packet.winStreak == 0)
+            return
+
         context.matrices.push()
         context.matrices.translate(width * 0.8f, titleY.toFloat(), 0f)
         context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
