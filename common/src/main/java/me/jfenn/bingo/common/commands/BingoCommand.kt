@@ -99,7 +99,7 @@ class BingoCommand(
 
         text.string(StringKey.OptionsTierList)
             .append(": ")
-            .append(Text.literal(options.tierList.formatTitle()).formatted(Formatting.YELLOW))
+            .append(Text.literal(options.tierLists.joinToString { it.formatTitle() }).formatted(Formatting.YELLOW))
             .formatted(Formatting.GRAY)
             .also {
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo tierlist"))

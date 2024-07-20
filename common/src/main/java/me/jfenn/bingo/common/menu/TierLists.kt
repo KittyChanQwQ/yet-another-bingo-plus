@@ -32,25 +32,34 @@ fun MenuComponent.registerTierLists(
     val pages = TierListService.readTierLists().chunked(4)
 
     // Update options.tierList/tierListPage to ensure that there is a tier list selected
-    options.tierListPage = pages.indexOfFirst { it.contains(options.tierList) }
+    options.tierListPage = pages.indexOfFirst { it.contains(options.tierLists.firstOrNull()) }
         .takeIf { it != -1 }
         ?: 0
 
     val page by computedProperty { options.tierListPage.coerceIn(pages.indices) }
 
     for (i in 0..3) {
-        registerButton(
+        val toggleProp = DelegatedProperty(
+            getter = { options.tierLists.contains(pages[page].getOrNull(i)) },
+            setter = { isEnabled ->
+                val list = pages[page].getOrNull(i) ?: return@DelegatedProperty
+                when {
+                    isEnabled -> options.tierLists += list
+                    options.tierLists.size > 1 -> options.tierLists -= list
+                }
+            }
+        )
+
+        registerToggleButton(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
             text = Text.literal(""),
             textProp = computedProperty {
                 (pages[page].getOrNull(i)?.formatTitle() ?: "")
                     .let { Text.literal(it) }
             },
-            isActiveProp = computedProperty { options.tierList == pages[page].getOrNull(i) },
+            toggleProp = toggleProp,
             permissionGetter = permissionGetter,
         ) {
-            val listName = pages[page].getOrNull(i) ?: return@registerButton
-            options.tierList = listName
             markDirty()
 
             // when changed, update the bingo card

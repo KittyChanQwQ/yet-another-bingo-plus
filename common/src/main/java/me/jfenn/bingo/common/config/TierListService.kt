@@ -50,7 +50,7 @@ class TierListService(
         }
         .toMap()
 
-    fun getTierLists(names: List<String>): TierListConfig {
+    fun getTierLists(names: Set<String>): TierListConfig {
         var config = TierListConfig.EMPTY
 
         names.sorted()

@@ -15,7 +15,7 @@ data class BingoOptions(
     var cardGoal: BingoGoal = BingoGoal.Lines(3),
     var timeLimit: Duration? = null,
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
-    var tierList: String = "all_items",
+    var tierLists: Set<String> = setOf("all_items"),
     var tierListPage: Int = 0,
 
     // game mode settings
@@ -70,14 +70,17 @@ data class BingoOptions(
 ) {
 
     init {
-        // Verify that the chosen tier list actually exists
+        // Verify that the chosen tier list(s) actually exist
         val tierLists = TierListService.readTierLists()
-        if (this.tierList !in tierLists)
-            tierLists.firstOrNull()?.let { this.tierList = it }
+        this.tierLists = this.tierLists
+            .filter { tierLists.contains(it) }
+            .toSet()
+            .takeIf { it.isNotEmpty() }
+            ?: setOfNotNull(tierLists.firstOrNull())
     }
 
     fun isValid(): Boolean {
-        return itemDistribution.sum() <= 25
+        return itemDistribution.sum() <= 25 && tierLists.isNotEmpty()
     }
 
     fun formatGameMode(): List<StringKey> {

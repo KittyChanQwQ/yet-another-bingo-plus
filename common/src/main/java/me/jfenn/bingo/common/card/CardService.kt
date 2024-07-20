@@ -75,9 +75,7 @@ class CardService(
         val random = Random(seed)
         log.info("Using random BINGO card seed: $seed")
 
-        val tiers = tierListService.tierLists[options.tierList]
-            ?: TierListConfig.EMPTY
-
+        val tiers = tierListService.getTierLists(options.tierLists)
         val items = mutableListOf<BingoCardEntry>()
 
         // Pick the given number of items from the tier list for each tier
@@ -130,7 +128,7 @@ class CardService(
             BingoCardEntry.AdvancementEntry(id, tier)
         } catch (e: Throwable) {
             log.debug("Unable to locate advancement '$id'", e)
-            log.warn("Unable to locate advancement '$id' from the tier list '${options.tierList}.tierlist.json', ignoring...")
+            log.warn("Unable to locate advancement '$id' from the tier lists ${options.tierLists}, ignoring...")
             null
         }
     }
@@ -147,7 +145,7 @@ class CardService(
         return if (isEnabled) {
             BingoCardEntry.ItemEntry(id, tier)
         } else {
-            log.warn("Unable to locate item '$id' from the tier list '${options.tierList}.tierlist.json', ignoring...")
+            log.warn("Unable to locate item '$id' from the tier lists ${options.tierLists}, ignoring...")
             null
         }
     }

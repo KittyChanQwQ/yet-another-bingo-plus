@@ -10,7 +10,6 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.TierLabel
-import me.jfenn.bingo.common.config.TierListService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.spawn.ElytraService
@@ -73,34 +72,6 @@ class BingoCommands : BaseCommand() {
 
                         last
                     })
-            )
-            .then(
-                run {
-                    var listCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("tierlist")
-                        .require(
-                            requireState(GameState.PREGAME, GameState.PLAYING),
-                            requirePermission(Permission.CONFIGURE_GAME),
-                        )
-
-                    for (listName in TierListService.readTierLists()) {
-                        listCommand = listCommand.then(
-                            LiteralArgumentBuilder.literal<ServerCommandSource>(listName)
-                                .executesInScope { ctx ->
-                                    val options = get<BingoOptions>()
-                                    val events = get<ScopedEvents>()
-                                    val cardService = get<CardService>()
-
-                                    options.tierList = listName
-                                    events.onChangeOptions(Unit)
-                                    cardService.generateCard()
-                                    ctx.source.player?.sendInfoMessage("Item tier list changed: $listName")
-                                    1
-                                }
-                        )
-                    }
-
-                    listCommand
-                }
             )
             .then(
                 // Change the elytra mode feature setting (while the game is running)

@@ -14,7 +14,6 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
-import kotlin.math.max
 
 fun MenuComponent.registerButton(
     position: Vec3d,
@@ -66,11 +65,13 @@ fun MenuComponent.registerButton(
 fun MenuComponent.registerToggleButton(
     position: Vec3d,
     text: Text,
+    textProp: Property<Text> = computedProperty { text },
     toggleProp: MutableProperty<Boolean>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     onClick: (player: ServerPlayerEntity) -> Unit = {},
 ) {
     val isActive by toggleProp
+    val buttonText by textProp
 
     registerButton(
         position = position,
@@ -78,7 +79,7 @@ fun MenuComponent.registerToggleButton(
         textProp = computedProperty {
             Text.empty()
                 .append(if (isActive) "✔ " else "✗ ")
-                .append(text)
+                .append(buttonText)
         },
         isActiveProp = toggleProp,
         permissionGetter = permissionGetter,
