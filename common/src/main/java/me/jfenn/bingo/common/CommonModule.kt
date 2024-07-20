@@ -7,10 +7,7 @@ import me.jfenn.bingo.common.autorestart.RestartTimerController
 import me.jfenn.bingo.common.autorestart.RestartTimerState
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commands.*
-import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.config.MigrationHandler
-import me.jfenn.bingo.common.config.PlayerSettingsService
-import me.jfenn.bingo.common.config.TierListService
+import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
@@ -60,7 +57,6 @@ val commonModule = module {
     singleOf(::ConfigService)
     single { get<ConfigService>().config }
     single { get<ConfigService>().config.client }
-    singleOf(::TierListService)
     singleOf(::TextProvider)
 
     singleOf(::ServerDatapackManager)
@@ -87,7 +83,11 @@ val commonModule = module {
     singleOf(::SpectatorCommand)
     singleOf(::RestartCommand)
     singleOf(::StatsCommand)
+    singleOf(::TierListCommand)
     singleOf(::InfoBookCommand)
+
+    singleOf(::TierListState)
+    singleOf(::TierListManager)
 
     singleOf(::ConnectionFactory)
     single { get<ConnectionFactory>().create() }
@@ -183,7 +183,10 @@ fun Koin.commonInit() {
     get<SpectatorCommand>()
     get<RestartCommand>()
     get<StatsCommand>()
+    get<TierListCommand>()
     get<InfoBookCommand>()
+
+    get<TierListManager>()
 
     get<ConnectionFactory>()
     get<StatsService>()

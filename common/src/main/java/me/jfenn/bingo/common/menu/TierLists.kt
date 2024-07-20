@@ -2,9 +2,8 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.TierListService
+import me.jfenn.bingo.common.config.TierListState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType
@@ -19,6 +18,7 @@ fun MenuComponent.registerTierLists(
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     cardService: CardService = koinScope.get(),
     text: TextProvider = koinScope.get(),
+    tierLists: TierListState = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", text.serialized(text.string(StringKey.OptionsTierList)))
@@ -29,10 +29,10 @@ fun MenuComponent.registerTierLists(
         put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
     }
 
-    val pages = TierListService.readTierLists().chunked(4)
+    val pages = tierLists.tierLists.keys.chunked(4)
 
     // Update options.tierList/tierListPage to ensure that there is a tier list selected
-    options.tierListPage = pages.indexOfFirst { it.contains(options.tierLists.firstOrNull()) }
+    options.tierListPage = pages.indexOfFirst { it.contains(options.tierLists.keys.firstOrNull()) }
         .takeIf { it != -1 }
         ?: 0
 
@@ -44,7 +44,7 @@ fun MenuComponent.registerTierLists(
             setter = { isEnabled ->
                 val list = pages[page].getOrNull(i) ?: return@DelegatedProperty
                 when {
-                    isEnabled -> options.tierLists += list
+                    isEnabled -> options.tierLists += (list to 1)
                     options.tierLists.size > 1 -> options.tierLists -= list
                 }
             }
@@ -54,8 +54,7 @@ fun MenuComponent.registerTierLists(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
             text = Text.literal(""),
             textProp = computedProperty {
-                (pages[page].getOrNull(i)?.formatTitle() ?: "")
-                    .let { Text.literal(it) }
+                pages[page].getOrNull(i)?.let { tierLists.title(it) }
             },
             toggleProp = toggleProp,
             permissionGetter = permissionGetter,

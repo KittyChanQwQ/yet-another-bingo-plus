@@ -10,6 +10,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import org.slf4j.Logger
+import kotlin.math.ceil
 import kotlin.random.Random
 
 class CardService(
@@ -19,7 +20,7 @@ class CardService(
     private val options: BingoOptions,
     private val teamService: TeamService,
     private val configService: ConfigService,
-    private val tierListService: TierListService,
+    private val tierListService: TierListState,
     private val advancementManager: IAdvancementManager,
     private val itemStackFactory: IItemStackFactory,
 ) {
@@ -75,17 +76,46 @@ class CardService(
         val random = Random(seed)
         log.info("Using random BINGO card seed: $seed")
 
-        val tiers = tierListService.getTierLists(options.tierLists)
+        // Collect the selected tier list configs by weight
+        val tiers = options.tierLists.entries
+            .mapNotNull { (name, weight) ->
+                val list = tierListService.tierLists[name]
+                if (list == null) {
+                    log.error("Unable to find tier list '$name'!")
+                    return@mapNotNull null
+                }
+
+                list to weight.coerceAtLeast(1)
+            }
+
+        val tiersWeightTotal = tiers.sumOf { it.second }
+        assert(tiersWeightTotal > 0) { "There must be at least one tier list selected!" }
+
         val items = mutableListOf<BingoCardEntry>()
 
         // Pick the given number of items from the tier list for each tier
         for ((tierIndex, tier) in TierLabel.entries.withIndex()) {
-            val tierCount = dist[tierIndex]
+            var tierCountRemaining = dist[tierIndex]
+            var tierWeightRemaining = tiersWeightTotal
 
-            tiers.pick(tier, excludedItems, random)
-                .mapNotNull { entry -> createEntry(tier, entry) }
-                .take(tierCount)
-                .forEach { items.add(it) }
+            // For each tier list, calculate the number of items it should pick for this tier
+            // - shuffled to ensure that list priority is randomized
+            for ((list, weight) in tiers.shuffled(random)) {
+                val ratio = weight.toDouble() / tierWeightRemaining
+                val itemCount = ceil(ratio * tierCountRemaining).toInt()
+
+                // The actual number of items might differ from the expected amount, if the tier list
+                // does not have enough entries in it
+                val tierItems = list.pick(tier, excludedItems, random)
+                    .mapNotNull { entry -> createEntry(tier, entry) }
+                    .take(itemCount)
+                    .toList()
+
+                items.addAll(tierItems)
+
+                tierCountRemaining -= tierItems.size
+                tierWeightRemaining -= weight
+            }
         }
 
         if (items.size < dist.sum()) {

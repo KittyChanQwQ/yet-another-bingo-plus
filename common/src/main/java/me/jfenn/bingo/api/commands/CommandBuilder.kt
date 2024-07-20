@@ -15,6 +15,17 @@ class CommandBuilder(
         parent.children += node
     }
 
+    fun string(
+        name: String,
+        suggestions: (IExecutionContext.() -> List<String>)?,
+        configure: CommandBuilder.(arg: CommandArgument<String>) -> Unit
+    ) {
+        val arg = CommandArgument.String(name, suggestions)
+        val node = CommandNode.RequiredArgument(arg)
+        CommandBuilder(node).configure(arg)
+        parent.children += node
+    }
+
     fun text(name: String, configure: CommandBuilder.(arg: CommandArgument<Text>) -> Unit) {
         val arg = CommandArgument.Text(name)
         val node = CommandNode.RequiredArgument(arg)
@@ -61,20 +72,25 @@ sealed class CommandNode {
 }
 
 sealed class CommandArgument<T> {
-    abstract val name: String
+    abstract val name: kotlin.String
+
+    class String(
+        override val name: kotlin.String,
+        val suggestions: (IExecutionContext.() -> List<kotlin.String>)?,
+    ) : CommandArgument<kotlin.String>()
 
     class Text(
-        override val name: String,
+        override val name: kotlin.String,
     ) : CommandArgument<net.minecraft.text.Text>()
 
     class Integer(
-        override val name: String,
+        override val name: kotlin.String,
         val min: Int,
         val max: Int,
     ) : CommandArgument<Int>()
 
     class Player(
-        override val name: String,
+        override val name: kotlin.String,
     ) : CommandArgument<ServerPlayerEntity>()
 }
 

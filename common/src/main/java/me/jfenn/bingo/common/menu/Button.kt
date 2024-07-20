@@ -65,7 +65,7 @@ fun MenuComponent.registerButton(
 fun MenuComponent.registerToggleButton(
     position: Vec3d,
     text: Text,
-    textProp: Property<Text> = computedProperty { text },
+    textProp: Property<Text?> = computedProperty { text },
     toggleProp: MutableProperty<Boolean>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     onClick: (player: ServerPlayerEntity) -> Unit = {},
@@ -77,9 +77,11 @@ fun MenuComponent.registerToggleButton(
         position = position,
         text = text,
         textProp = computedProperty {
-            Text.empty()
-                .append(if (isActive) "✔ " else "✗ ")
-                .append(buttonText)
+            buttonText?.let {
+                Text.empty()
+                    .append(if (isActive) "✔ " else "✗ ")
+                    .append(it)
+            } ?: Text.empty()
         },
         isActiveProp = toggleProp,
         permissionGetter = permissionGetter,

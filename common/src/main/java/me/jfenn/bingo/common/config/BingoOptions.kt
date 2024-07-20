@@ -4,7 +4,10 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.spawn.SpawnItem
+import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
+import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.memberProperties
 import kotlin.time.Duration
@@ -15,7 +18,7 @@ data class BingoOptions(
     var cardGoal: BingoGoal = BingoGoal.Lines(3),
     var timeLimit: Duration? = null,
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
-    var tierLists: Set<String> = setOf("all_items"),
+    var tierLists: Map<String, Int> = mapOf("all_items" to 1),
     var tierListPage: Int = 0,
 
     // game mode settings
@@ -69,18 +72,29 @@ data class BingoOptions(
     var startCountdownSeconds: Int = 8,
 ) {
 
-    init {
-        // Verify that the chosen tier list(s) actually exist
-        val tierLists = TierListService.readTierLists()
-        this.tierLists = this.tierLists
-            .filter { tierLists.contains(it) }
-            .toSet()
-            .takeIf { it.isNotEmpty() }
-            ?: setOfNotNull(tierLists.firstOrNull())
-    }
-
     fun isValid(): Boolean {
         return itemDistribution.sum() <= 25 && tierLists.isNotEmpty()
+    }
+
+    fun formatTierLists(state: TierListState) : MutableText {
+        val lists = tierLists
+            .filter { (name, _) -> state.tierLists.containsKey(name) }
+            .map { (name, weight) -> name to weight.coerceAtLeast(1) }
+            .toMap()
+
+        val showPercentage = lists.size > 1
+        val total = lists.values.sum()
+
+        return lists.entries
+            .map { (name, weight) ->
+                when {
+                    showPercentage -> Text.empty()
+                        .append(state.title(name))
+                        .append(String.format(" (%.0f%%)", weight * 100f / total))
+                    else -> state.title(name)
+                }
+            }
+            .joinText()
     }
 
     fun formatGameMode(): List<StringKey> {

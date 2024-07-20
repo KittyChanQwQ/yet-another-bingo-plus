@@ -4,9 +4,9 @@ import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.common.URL_WIKI
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.TierLabel
+import me.jfenn.bingo.common.config.TierListState
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
@@ -18,6 +18,7 @@ import java.util.*
 class BingoCommand(
     commandManager: ICommandManager,
     private val text: TextProvider,
+    private val tierListState: TierListState,
 ) : BingoComponent() {
     private fun getOptionsText(
         options: BingoOptions,
@@ -99,7 +100,7 @@ class BingoCommand(
 
         text.string(StringKey.OptionsTierList)
             .append(": ")
-            .append(Text.literal(options.tierLists.joinToString { it.formatTitle() }).formatted(Formatting.YELLOW))
+            .append(options.formatTierLists(tierListState).formatted(Formatting.YELLOW))
             .formatted(Formatting.GRAY)
             .also {
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo tierlist"))

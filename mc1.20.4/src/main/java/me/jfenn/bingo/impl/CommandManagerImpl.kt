@@ -1,15 +1,20 @@
 package me.jfenn.bingo.impl
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.CommandSyntaxException
+import com.mojang.brigadier.suggestion.SuggestionProvider
+import com.mojang.brigadier.suggestion.Suggestions
+import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.jfenn.bingo.api.commands.*
 import me.jfenn.bingo.common.scope.BingoKoin
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.command.CommandRegistryAccess
+import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.EntityArgumentType
 import net.minecraft.command.argument.TextArgumentType
 import net.minecraft.server.MinecraftServer
@@ -18,6 +23,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import org.koin.core.scope.Scope
 import org.slf4j.Logger
+import java.util.concurrent.CompletableFuture
 
 class CommandManagerImpl(
     private val log: Logger,
@@ -37,6 +43,16 @@ class CommandManagerImpl(
             is CommandNode.Literal -> LiteralArgumentBuilder.literal(command.name)
             is CommandNode.RequiredArgument<*> -> {
                 when (val arg = command.arg) {
+                    is CommandArgument.String -> RequiredArgumentBuilder.argument<ServerCommandSource?, String?>(
+                        arg.name,
+                        StringArgumentType.string()
+                    ).let {
+                        when (val suggestions = arg.suggestions) {
+                            null -> it
+                            else -> it.suggests(SuggestionProviderImpl(suggestions))
+                        }
+                    }
+
                     is CommandArgument.Text -> RequiredArgumentBuilder.argument(
                         arg.name,
                         TextArgumentType.text()
@@ -103,6 +119,26 @@ class CommandManagerImpl(
     }
 }
 
+class SuggestionProviderImpl(
+    private val callback: IExecutionContext.() -> List<String>,
+) : SuggestionProvider<ServerCommandSource> {
+    override fun getSuggestions(
+        context: CommandContext<ServerCommandSource>,
+        builder: SuggestionsBuilder
+    ): CompletableFuture<Suggestions> {
+        val ctx = ExecutionContextImpl(context)
+        val suggestions = callback.invoke(ctx)
+
+        for (suggestion in suggestions) {
+            if (CommandSource.shouldSuggest(builder.remaining, suggestion)) {
+                builder.suggest(suggestion)
+            }
+        }
+
+        return builder.buildFuture()
+    }
+}
+
 open class ExecutionSourceImpl(
     source: ServerCommandSource,
 ) : IExecutionSource {
@@ -124,6 +160,7 @@ class ExecutionContextImpl(
     override fun <T> getArgument(arg: CommandArgument<T>): T {
         @Suppress("UNCHECKED_CAST")
         return when (arg) {
+            is CommandArgument.String -> StringArgumentType.getString(ctx, arg.name) as T
             is CommandArgument.Text -> TextArgumentType.getTextArgument(ctx, arg.name) as T
             is CommandArgument.Integer -> IntegerArgumentType.getInteger(ctx, arg.name) as T
             is CommandArgument.Player -> EntityArgumentType.getPlayer(ctx, arg.name) as T
