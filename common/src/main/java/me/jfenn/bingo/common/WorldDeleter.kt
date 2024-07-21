@@ -1,9 +1,13 @@
 package me.jfenn.bingo.common
 
+import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.datapack.ServerProps
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.LoggerFactory
+import java.nio.file.Path
+import kotlin.io.path.listDirectoryEntries
 import kotlin.time.measureTime
 
 /**
@@ -12,22 +16,26 @@ import kotlin.time.measureTime
  */
 object WorldDeleter {
 
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = LoggerFactory.getLogger("bingo")
 
-    private val FILES_TO_RM = listOf(
-        "advancements",
-        "data",
-        "DIM1",
-        "DIM-1",
-        "dimensions",
-        "entities",
-        "playerdata",
-        "poi",
-        "region",
-        "stats",
-        "level.dat",
-        "level.dat_old",
-    )
+    private val config = Config.read(BingoConfig::class, "$MOD_ID_BINGO/config.json")
+
+    private fun deleteMatching(cwd: Path, path: String) {
+        val part = path.substringBefore("/")
+        val after = if (path.length > part.length + 1) {
+            path.substring(part.length + 1)
+        } else ""
+
+        val matches = cwd.listDirectoryEntries(part)
+        for (match in matches) {
+            if (after.isEmpty()) {
+                log.debug("Deleting file {}", match)
+                match.toFile().deleteRecursively()
+            } else {
+                deleteMatching(match, after)
+            }
+        }
+    }
 
     fun invoke() {
         if (FabricLoader.getInstance().environmentType == EnvType.CLIENT) {
@@ -39,9 +47,8 @@ object WorldDeleter {
         log.info("Deleting world files in dir: ${gameDir.toAbsolutePath()}")
 
         measureTime {
-            for (fileName in FILES_TO_RM) {
-                val file = gameDir.resolve(fileName).toFile()
-                file.deleteRecursively()
+            for (fileName in config.server.filesToReset) {
+                deleteMatching(gameDir, fileName)
             }
         }.also {
             log.info("Done ($it)")
