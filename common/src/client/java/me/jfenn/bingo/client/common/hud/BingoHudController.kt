@@ -154,7 +154,8 @@ class BingoHudController(
     }
 
     private fun onScoreMessage(packet: ScoreMessagePacket) {
-        if (!packet.isViewerOnTeam) return
+        if (!packet.isViewerOnTeam && !config.client.messageFromOtherTeams)
+            return
 
         val scoreMessage = BingoHudState.ScoreMessage(
             createdAt = Clock.System.now(),
