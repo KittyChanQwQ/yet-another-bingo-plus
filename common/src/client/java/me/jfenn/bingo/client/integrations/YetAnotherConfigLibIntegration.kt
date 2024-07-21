@@ -88,25 +88,6 @@ class YetAnotherConfigLibIntegrationImpl(
                         OptionGroup.createBuilder()
                             .name(text.string(StringKey.ConfigGuiHudSettings))
                             .options(listOf(
-                                Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.ConfigSupportClientHud))
-                                    .description(
-                                        OptionDescription.of(
-                                            text.string(StringKey.ConfigSupportClientHudDescription),
-                                            Text.empty(),
-                                            text.string(StringKey.ConfigNeedsRestart).formatted(Formatting.YELLOW),
-                                        )
-                                    )
-                                    .binding(
-                                        defaultConfig.supportClientHud,
-                                        { config.supportClientHud },
-                                        {
-                                            config.supportClientHud = it
-                                            configService.writeConfig(config)
-                                        }
-                                    )
-                                    .controller { BooleanControllerBuilder.create(it).coloured(true) }
-                                    .build(),
                                 Option.createBuilder<Float>()
                                     .name(text.string(StringKey.ConfigCardScale))
                                     .description(
@@ -308,27 +289,6 @@ class YetAnotherConfigLibIntegrationImpl(
                             .controller { BooleanControllerBuilder.create(it) }
                             .build()
                     )
-                    .let { builder ->
-                        Option.createBuilder<Boolean>()
-                            .name(text.string(StringKey.PlayerSettingsScoreboardAutoHide))
-                            .description(
-                                OptionDescription.of(
-                                    text.string(StringKey.PlayerSettingsScoreboardAutoHideDescription)
-                                )
-                            )
-                            .binding(
-                                defaultPlayerSettings.scoreboardAutoHide,
-                                { playerSettings.scoreboardAutoHide },
-                                {
-                                    clientSettings.update(playerSettings.copy(scoreboardAutoHide = it))
-                                }
-                            )
-                            .controller { BooleanControllerBuilder.create(it) }
-                            .build()
-                            .takeIf { !config.supportClientHud }
-                            ?.let { builder.option(it) }
-                            ?: builder
-                    }
                     .option(
                         Option.createBuilder<Boolean>()
                             .name(text.string(StringKey.PlayerSettingsNightVision))
@@ -351,6 +311,29 @@ class YetAnotherConfigLibIntegrationImpl(
                         OptionGroup.createBuilder()
                             .collapsed(false)
                             .name(text.string(StringKey.PlayerSettingsMessages))
+                            .option(
+                                Option.createBuilder<Int>()
+                                    .name(text.string(StringKey.PlayerSettingsMessagesDuration))
+                                    .description(
+                                        OptionDescription.of(
+                                            text.string(StringKey.PlayerSettingsMessagesDurationDescription)
+                                        )
+                                    )
+                                    .binding(
+                                        defaultConfig.client.messageDurationSeconds,
+                                        { config.client.messageDurationSeconds },
+                                        {
+                                            config.client.messageDurationSeconds = it
+                                            configService.writeConfig(config)
+                                        }
+                                    )
+                                    .controller {
+                                        IntegerSliderControllerBuilder.create(it)
+                                            .range(1, 30)
+                                            .step(1)
+                                    }
+                                    .build(),
+                            )
                             .option(
                                 Option.createBuilder<Boolean>()
                                     .name(text.string(StringKey.PlayerSettingsMessagesLeading))
@@ -400,6 +383,25 @@ class YetAnotherConfigLibIntegrationImpl(
                                         { playerSettings.itemMessages },
                                         {
                                             clientSettings.update(playerSettings.copy(itemMessages = it))
+                                        }
+                                    )
+                                    .controller { BooleanControllerBuilder.create(it) }
+                                    .build(),
+                            )
+                            .option(
+                                Option.createBuilder<Boolean>()
+                                    .name(text.string(StringKey.PlayerSettingsMessagesShowOtherTeams))
+                                    .description(
+                                        OptionDescription.of(
+                                            text.string(StringKey.PlayerSettingsMessagesShowOtherTeamsDescription)
+                                        )
+                                    )
+                                    .binding(
+                                        defaultConfig.client.messageFromOtherTeams,
+                                        { config.client.messageFromOtherTeams },
+                                        {
+                                            config.client.messageFromOtherTeams = it
+                                            configService.writeConfig(config)
                                         }
                                     )
                                     .controller { BooleanControllerBuilder.create(it) }

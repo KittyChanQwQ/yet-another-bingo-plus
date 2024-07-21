@@ -115,8 +115,6 @@ class GameOverController(
             val winStreak = stats.getPlayerWinStreak(player.uuid)
             val isWinner = info.winningTeam?.includesPlayer(player.player) ?: false
 
-            println("winStreak: $winStreak")
-
             val packet = GameOverPacket(
                 title = info.title,
                 subtitle = info.message,

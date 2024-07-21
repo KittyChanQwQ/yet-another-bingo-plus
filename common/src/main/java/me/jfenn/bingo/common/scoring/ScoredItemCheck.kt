@@ -15,7 +15,6 @@ import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 import org.slf4j.Logger
 import kotlin.time.measureTime
 
@@ -103,8 +102,7 @@ class ScoredItemCheck(
                     scoreUpdateService.sendItemCaptured(
                         scoredPlayer = profile,
                         team = team,
-                        entry = tile,
-                        itemName = stack.displayName,
+                        item = stack,
                     )
                 }
             }
@@ -185,8 +183,7 @@ class ScoredItemCheck(
                         scoreUpdateService.sendItemCaptured(
                             scoredPlayer = profile,
                             team = team,
-                            entry = entry,
-                            itemName = advancement.name ?: Text.literal(identifier.toString()),
+                            item = entry.visualItem(),
                         )
                     }
                 }

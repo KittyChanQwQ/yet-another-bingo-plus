@@ -4,6 +4,7 @@ import me.jfenn.bingo.api.ICloseEvent
 import me.jfenn.bingo.client.common.hud.BingoHudController
 import me.jfenn.bingo.client.common.hud.BingoHudRenderer
 import me.jfenn.bingo.client.common.hud.BingoHudState
+import me.jfenn.bingo.client.common.hud.BingoMessageRenderer
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.settings.ClientSettingsController
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
@@ -27,6 +28,7 @@ val commonClientModule = module {
 
     single { BingoHudState() }
     singleOf(::BingoHudRenderer)
+    singleOf(::BingoMessageRenderer)
     singleOf(::BingoHudController) withOptions { createdAtStart() }
 
     singleOf(::SoundService)

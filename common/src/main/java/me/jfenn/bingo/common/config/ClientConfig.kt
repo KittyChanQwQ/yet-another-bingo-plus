@@ -14,6 +14,8 @@ data class ClientConfig(
     var showMultipleCards: Boolean = false,
     var hideOnF3: Boolean = true,
     var hideOnChat: Boolean = false,
+    var messageFromOtherTeams: Boolean = true,
+    var messageDurationSeconds: Int = 5,
     var soundVolumes: MutableMap<String, Float> = mutableMapOf(),
 ) {
 

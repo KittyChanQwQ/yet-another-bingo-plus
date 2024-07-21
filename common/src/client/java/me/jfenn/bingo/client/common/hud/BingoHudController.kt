@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.common.hud
 
+import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.client.api.IHudCallback
 import me.jfenn.bingo.client.api.IOptionsAccessor
@@ -8,6 +9,7 @@ import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -27,6 +29,7 @@ class BingoHudController(
     private val optionsAccessor: IOptionsAccessor,
     private val config: BingoConfig,
     private val renderer: BingoHudRenderer,
+    private val itemScoredRenderer: BingoMessageRenderer,
     private val state: BingoHudState,
     private val text: TextProvider,
     hud: IHudCallback,
@@ -79,6 +82,14 @@ class BingoHudController(
             // if the client can only see one card, enable team outlines
             // inverse: if the client can see every card, we don't need to show the outlines
             showTeamOutlines = !config.client.showMultipleCards || state.display?.display?.size?.let { it <= 1 } == true,
+        )
+
+        itemScoredRenderer.drawMessages(
+            drawService,
+            x = x.toInt(),
+            y = y.toInt() + (BingoHudRenderer.CARD_HEIGHT * cardScale * (1 - config.client.cardAlignment.y)).toInt(),
+            z = config.client.cardOverlap.z,
+            isAboveCard = config.client.cardAlignment.y > 0,
         )
 
         // Attempt to draw additional cards if showMultipleCards=true
@@ -142,99 +153,112 @@ class BingoHudController(
         }
     }
 
+    private fun onScoreMessage(packet: ScoreMessagePacket) {
+        if (!packet.isViewerOnTeam) return
+
+        val scoreMessage = BingoHudState.ScoreMessage(
+            createdAt = Clock.System.now(),
+            packet = packet,
+        )
+
+        state.messages.add(scoreMessage)
+    }
+
     init {
-        if (config.supportClientHud) {
-            packetEvents.cardDisplayV1.onPacket {
-                state.display = it.packet
-                updateGameOverViews()
+        packetEvents.cardDisplayV1.onPacket {
+            state.display = it.packet
+            updateGameOverViews()
 
-                // if there are no teams being displayed (BingoMapController sends when entering PREGAME)
-                // reset the HUD state completely
-                // (which clears the gameOverPacket state)
-                if (it.packet.display.isEmpty()) {
-                    state.reset()
+            // if there are no teams being displayed (BingoMapController sends when entering PREGAME)
+            // reset the HUD state completely
+            // (which clears the gameOverPacket state)
+            if (it.packet.display.isEmpty()) {
+                state.reset()
+            }
+        }
+
+        packetEvents.cardUpdateV1.onPacket { (packet) ->
+            state.views[packet.view.teamKey] = packet.view
+            updateGameOverViews()
+        }
+
+        packetEvents.cardUpdateV2.onPacket { (packet) ->
+            state.views[packet.view.teamKey] = packet.view
+            updateGameOverViews()
+        }
+
+        packetEvents.cardUpdateV3.onPacket { (packet) ->
+            state.views[packet.view.teamKey] = packet.view
+            updateGameOverViews()
+        }
+
+        packetEvents.scoreMessageV1.onPacket { (packet) ->
+            onScoreMessage(packet)
+        }
+
+        packetEvents.gameOverV1.onPacket { (packet) ->
+            onGameOver(packet)
+        }
+
+        packetEvents.gameOverV2.onPacket { (packet) ->
+            onGameOver(packet)
+        }
+
+        packetEvents.gameOverV3.onPacket { (packet) ->
+            onGameOver(packet)
+        }
+
+        packetEvents.gameOverV4.onPacket { (packet) ->
+            onGameOver(packet)
+        }
+
+        hud.onRender {
+            // Do not draw the HUD if the F3 or chat overlay is shown
+            if (optionsAccessor.isHudHidden())
+                return@onRender
+            if (config.client.hideOnF3 && optionsAccessor.isDebugEnabled())
+                return@onRender
+            if (config.client.hideOnChat && MinecraftClient.getInstance().currentScreen is ChatScreen)
+                return@onRender
+
+            drawHud(it.drawService)
+        }
+
+        ClientPlayConnectionEvents.JOIN.register { _, _, client ->
+            client.execute { state.reset() }
+        }
+
+        ClientPlayConnectionEvents.DISCONNECT.register { _, client ->
+            client.execute { state.reset() }
+        }
+
+        ServerLifecycleEvents.SERVER_STARTED.register { _ ->
+            MinecraftClient.getInstance().execute { state.reset() }
+        }
+
+        ServerLifecycleEvents.SERVER_STOPPED.register { _ ->
+            MinecraftClient.getInstance().execute { state.reset() }
+        }
+
+        InvalidateRenderStateCallback.EVENT.register {
+            MinecraftClient.getInstance().execute { state.reset() }
+        }
+
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            if (client.isPaused) return@register
+
+            if (openCardKey.wasPressed()) {
+                val display = state.display?.display
+                if (display.isNullOrEmpty()) {
+                    client.player?.sendMessage(text.string(StringKey.CardNoCards), true)
+                    return@register
                 }
-            }
 
-            packetEvents.cardUpdateV1.onPacket { (packet) ->
-                state.views[packet.view.teamKey] = packet.view
-                updateGameOverViews()
-            }
+                val hudScreen = state.gameOver
+                    ?.let { BingoEndScreen(koin, it, canEscape = true) }
+                    ?: BingoHudScreen(koin)
 
-            packetEvents.cardUpdateV2.onPacket { (packet) ->
-                state.views[packet.view.teamKey] = packet.view
-                updateGameOverViews()
-            }
-
-            packetEvents.cardUpdateV3.onPacket { (packet) ->
-                state.views[packet.view.teamKey] = packet.view
-                updateGameOverViews()
-            }
-
-            packetEvents.gameOverV1.onPacket { (packet) ->
-                onGameOver(packet)
-            }
-
-            packetEvents.gameOverV2.onPacket { (packet) ->
-                onGameOver(packet)
-            }
-
-            packetEvents.gameOverV3.onPacket { (packet) ->
-                onGameOver(packet)
-            }
-
-            packetEvents.gameOverV4.onPacket { (packet) ->
-                onGameOver(packet)
-            }
-
-            hud.onRender {
-                // Do not draw the HUD if the F3 or chat overlay is shown
-                if (optionsAccessor.isHudHidden())
-                    return@onRender
-                if (config.client.hideOnF3 && optionsAccessor.isDebugEnabled())
-                    return@onRender
-                if (config.client.hideOnChat && MinecraftClient.getInstance().currentScreen is ChatScreen)
-                    return@onRender
-
-                drawHud(it.drawService)
-            }
-
-            ClientPlayConnectionEvents.JOIN.register { _, _, client ->
-                client.execute { state.reset() }
-            }
-
-            ClientPlayConnectionEvents.DISCONNECT.register { _, client ->
-                client.execute { state.reset() }
-            }
-
-            ServerLifecycleEvents.SERVER_STARTED.register { _ ->
-                MinecraftClient.getInstance().execute { state.reset() }
-            }
-
-            ServerLifecycleEvents.SERVER_STOPPED.register { _ ->
-                MinecraftClient.getInstance().execute { state.reset() }
-            }
-
-            InvalidateRenderStateCallback.EVENT.register {
-                MinecraftClient.getInstance().execute { state.reset() }
-            }
-
-            ClientTickEvents.END_CLIENT_TICK.register { client ->
-                if (client.isPaused) return@register
-
-                if (openCardKey.wasPressed()) {
-                    val display = state.display?.display
-                    if (display.isNullOrEmpty()) {
-                        client.player?.sendMessage(text.string(StringKey.CardNoCards), true)
-                        return@register
-                    }
-
-                    val hudScreen = state.gameOver
-                        ?.let { BingoEndScreen(koin, it, canEscape = true) }
-                        ?: BingoHudScreen(koin)
-
-                    client.setScreen(hudScreen)
-                }
+                client.setScreen(hudScreen)
             }
         }
     }

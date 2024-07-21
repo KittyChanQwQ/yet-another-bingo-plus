@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.scoring
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.PlayerSoundCategory
 import me.jfenn.bingo.api.PlayerSoundEvent
-import me.jfenn.bingo.common.card.BingoCardEntry
+import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -43,8 +43,7 @@ class ScoreUpdateService(
     fun sendItemCaptured(
         scoredPlayer: BingoPlayerProfile,
         team: BingoTeam,
-        entry: BingoCardEntry,
-        itemName: Text,
+        item: IItemStack?,
     ) {
         val packet = ScoredItemPacket(
             player = scoredPlayer,
@@ -52,9 +51,7 @@ class ScoreUpdateService(
             team = team.key,
             teamColor = team.formatting,
             score = team.score.copy(items = team.score.items + 1),
-            itemId = entry.visualItem
-                ?.identifier
-                ?.toString()
+            itemId = item?.identifier?.toString(),
         )
 
         // unless showOtherTeamCompletions=true, the exact scored item should be hidden from other teams
@@ -106,7 +103,7 @@ class ScoreUpdateService(
             val itemText = when {
                 // if playing in hidden items mode, don't reveal the item to the other teams!
                 state.options.isHiddenItemsMode && !isOnTeam -> Text.literal("*****").formatted(Formatting.OBFUSCATED)
-                else -> itemName
+                else -> item?.displayName ?: Text.empty()
             }.let { Texts.bracketed(it) }
 
             val chatMessage = textProvider.string(
@@ -116,7 +113,18 @@ class ScoreUpdateService(
                 itemText,
             ).let { formatWithTime(it) }
 
-            player.player.sendMessage(chatMessage, false)
+            val scoreMessage = ScoreMessagePacket(
+                player = scoredPlayer,
+                isViewerOnTeam = isOnTeam,
+                item = item,
+                messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
+                message = chatMessage,
+            )
+
+            when {
+                packetManager.scoreMessageV1.send(player.player, scoreMessage) -> {}
+                else -> player.player.sendMessage(chatMessage, false)
+            }
         }
     }
 
@@ -128,10 +136,21 @@ class ScoreUpdateService(
             .formatted(Formatting.YELLOW)
             .let { formatWithTime(it) }
 
+        val scoreMessage = ScoreMessagePacket(
+            player = null,
+            isViewerOnTeam = true,
+            item = null,
+            messageType = ScoreMessagePacket.MessageType.LINE_SCORED,
+            message = message,
+        )
+
         server.playerManager.playerList
             .filter { playerSettingsService.getPlayer(it).scoreMessages }
             .forEach {
-                it.sendMessage(message, false)
+                when {
+                    packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
+                    else -> it.sendMessage(message, false)
+                }
             }
     }
 
@@ -140,8 +159,21 @@ class ScoreUpdateService(
             .formatted(Formatting.YELLOW)
             .let { formatWithTime(it) }
 
+        val scoreMessage = ScoreMessagePacket(
+            player = null,
+            isViewerOnTeam = true,
+            item = null,
+            messageType = ScoreMessagePacket.MessageType.CARD_COMPLETED,
+            message = message,
+        )
+
         server.playerManager.playerList
-            .forEach { it.sendMessage(message, false) }
+            .forEach {
+                when {
+                    packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
+                    else -> it.sendMessage(message, false)
+                }
+            }
     }
 
     fun sendTeamLeading(team: BingoTeam) {
@@ -156,9 +188,22 @@ class ScoreUpdateService(
             .formatted(Formatting.YELLOW)
             .let { formatWithTime(it) }
 
+        val scoreMessage = ScoreMessagePacket(
+            player = null,
+            isViewerOnTeam = true,
+            item = null,
+            messageType = ScoreMessagePacket.MessageType.LEADING_TEAM,
+            message = message,
+        )
+
         server.playerManager.playerList
             .filter { playerSettingsService.getPlayer(it).leadingMessages }
-            .forEach { it.sendMessage(message, false) }
+            .forEach {
+                when {
+                    packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
+                    else -> it.sendMessage(message, false)
+                }
+            }
     }
 
     fun sendTeamTied(team: BingoTeam) {
@@ -173,9 +218,22 @@ class ScoreUpdateService(
             .formatted(Formatting.YELLOW)
             .let { formatWithTime(it) }
 
+        val scoreMessage = ScoreMessagePacket(
+            player = null,
+            isViewerOnTeam = true,
+            item = null,
+            messageType = ScoreMessagePacket.MessageType.LEADING_TEAM,
+            message = message,
+        )
+
         server.playerManager.playerList
             .filter { playerSettingsService.getPlayer(it).leadingMessages }
-            .forEach { it.sendMessage(message, false) }
+            .forEach {
+                when {
+                    packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
+                    else -> it.sendMessage(message, false)
+                }
+            }
     }
 
 }

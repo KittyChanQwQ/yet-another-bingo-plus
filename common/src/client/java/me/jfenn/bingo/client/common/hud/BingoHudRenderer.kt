@@ -38,6 +38,7 @@ class BingoHudRenderer(
         val ADVANCEMENT_FRAME_ID = Identifier.of("minecraft", "bingo/image_frame_advancement")!!
         val FRAME_MULTI_ID = Identifier.of("minecraft", "bingo/image_frame_multi")!!
         val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")!!
+        val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")!!
     }
 
     private var cardColors = BingoCardColors()
@@ -140,7 +141,7 @@ class BingoHudRenderer(
             if (tile.isHidden) {
                 val texture = tile.itemTier
                     ?.let { Identifier.of("minecraft", "bingo/image_hidden_${it.name.lowercase()}")!! }
-                    ?: Identifier.of("minecraft", "bingo/image_hidden")!!
+                    ?: IMAGE_HIDDEN_ID
 
                 service.drawTexture(
                     texture = texture,
