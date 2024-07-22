@@ -31,6 +31,9 @@ class GameRuleController(
         server.gameRules.get(GameRules.KEEP_INVENTORY).set(options.isKeepInventory, server)
     }
 
+    private var announceAdvancements = false
+    private var showDeathMessages = false
+
     init {
         events.onEnter(GameState.PREGAME) {
             if (!state.isLobbyMode) return@onEnter
@@ -39,7 +42,10 @@ class GameRuleController(
             server.overworld.chunkManager.removePersistentTickets()
 
             // hide spammy messages in the lobby
+            announceAdvancements = server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).get()
             server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(false, server)
+
+            showDeathMessages = server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).get()
             server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(false, server)
 
             // set up server with the initial config game rules
@@ -64,8 +70,8 @@ class GameRuleController(
             if (!state.isLobbyMode) return@onEnter
 
             // revert the lobby gamerule changes
-            server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(true, server)
-            server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(true, server)
+            server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(announceAdvancements, server)
+            server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(showDeathMessages, server)
 
             // update server to match config choices
             server.isPvpEnabled = options.isPvpEnabled
