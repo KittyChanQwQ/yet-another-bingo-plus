@@ -5,21 +5,24 @@ import me.jfenn.bingo.api.ITeamManager
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import net.minecraft.server.MinecraftServer
 
 class TeamController(
     private val teamService: TeamService,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     private val teamManager: ITeamManager,
+    private val server: MinecraftServer,
     events: ScopedEvents,
 ) {
     init {
         events.onEnter(GameState.PREGAME) {
             // clear the team of all online players when entering PREGAME
             // (so that they must rejoin a team for the next game)
-            playerManager.getPlayers().forEach {
-                teamManager.setPlayerTeam(it.player, null)
+            for (team in BingoTeam.TEAM_BLOCKS.values) {
+                teamManager.deleteTeam(server, team.key.id)
             }
+            state.teams.clear()
         }
 
         events.onGameTick {

@@ -39,6 +39,9 @@ object Permission {
     /** "/restart" command */
     val COMMAND_RESTART = PermissionKey("$MOD_ID.command.restart", PermissionDefault.OPERATORS)
 
+    /** "/bingo debug" command */
+    val COMMAND_DEBUG = PermissionKey("$MOD_ID.command.debug", PermissionDefault.OPERATORS)
+
     /** Make sounds in the lobby, even if lobbyChaosPrevention=true */
     val BYPASS_CHAOS_PREVENTION = PermissionKey("$MOD_ID.lobby.bypass_chaos_prevention", PermissionDefault.OPERATORS)
 

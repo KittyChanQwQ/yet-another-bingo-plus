@@ -20,6 +20,11 @@ class TeamManager : ITeamManager {
         )
     }
 
+    override fun deleteTeam(server: MinecraftServer, teamName: String) {
+        val team = server.scoreboard.getTeam(teamName)
+        if (team != null) server.scoreboard.removeTeam(team)
+    }
+
     override fun getPlayerTeam(player: ServerPlayerEntity): TeamHandle? {
         return player.server.scoreboard.getScoreHolderTeam(player.nameForScoreboard)
             ?.let { TeamHandle(it) }

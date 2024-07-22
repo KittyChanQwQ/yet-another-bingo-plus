@@ -71,6 +71,7 @@ val commonModule = module {
 
     singleOf(::BingoCommand)
     singleOf(::BingoCommands)
+    singleOf(::BingoDebugCommand)
     singleOf(::BingoLobbyCommand)
     singleOf(::BingoModeCommand)
     singleOf(::BingoOptionsCommands)
@@ -172,6 +173,7 @@ fun Koin.commonInit() {
 
     get<BingoCommand>()
     get<BingoCommands>()
+    get<BingoDebugCommand>()
     get<BingoLobbyCommand>()
     get<BingoModeCommand>()
     get<BingoOptionsCommands>()
