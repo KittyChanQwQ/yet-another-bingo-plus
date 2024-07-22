@@ -100,11 +100,14 @@ class ScoreUpdateService(
                 continue
 
             val isOnTeam = team.includesPlayer(player.player)
-            val itemText = when {
+            val visibleItem = when {
                 // if playing in hidden items mode, don't reveal the item to the other teams!
-                state.options.isHiddenItemsMode && !isOnTeam -> Text.literal("*****").formatted(Formatting.OBFUSCATED)
-                else -> item?.displayName ?: Text.empty()
-            }.let { Texts.bracketed(it) }
+                state.options.isHiddenItemsMode && !isOnTeam -> null
+                else -> item
+            }
+            val itemText = Texts.bracketed(
+                visibleItem?.displayName ?: Text.literal("*****").formatted(Formatting.OBFUSCATED)
+            )
 
             val chatMessage = textProvider.string(
                 StringKey.GameMessageCapturedItem,
@@ -116,7 +119,7 @@ class ScoreUpdateService(
             val scoreMessage = ScoreMessagePacket(
                 player = scoredPlayer,
                 isViewerOnTeam = isOnTeam,
-                item = item,
+                item = visibleItem,
                 messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
                 message = chatMessage,
             )
