@@ -188,9 +188,8 @@ class ScoredItemCheck(
                     }
                 }
 
-                // if noone on the team has the advancement anymore, and the game is in inventory mode
-                // then mark it as lost...
-                if (player == null && options.isInventoryMode) {
+                // if noone on the team has the advancement anymore, then mark it as lost...
+                if (player == null) {
                     val isChanged = entry.setAchieved(team, false)
                     // if the tile has changed, mark updatedTeams
                     if (isChanged) {
