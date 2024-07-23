@@ -105,7 +105,7 @@ class BingoEndScreen(
 
     private fun renderGameDuration(context: DrawContext, titleY: Int) {
         context.matrices.push()
-        context.matrices.translate(width * 0.2f, titleY.toFloat(), 0f)
+        context.matrices.translate(width * 0.2f - 20f, titleY.toFloat(), 0f)
         context.matrices.multiply(Quaternionf(AxisAngle4f(-.25f, 0f, 0f, 1f)))
         context.matrices.push()
         context.matrices.scale(2f, 2f, 1f)
@@ -130,7 +130,7 @@ class BingoEndScreen(
         val winStreak = gameOver.packet.winStreak ?: return
 
         context.matrices.push()
-        context.matrices.translate(width * 0.8f, titleY.toFloat(), 0f)
+        context.matrices.translate(width * 0.8f + 20f, titleY.toFloat(), 0f)
         context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
         context.matrices.push()
         context.matrices.scale(2f, 2f, 1f)
