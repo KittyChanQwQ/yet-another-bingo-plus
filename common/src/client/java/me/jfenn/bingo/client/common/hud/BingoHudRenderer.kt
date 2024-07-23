@@ -100,7 +100,7 @@ class BingoHudRenderer(
 
         context.matrices.push()
         context.matrices.translate(x.toFloat(), y.toFloat(), z.toFloat())
-        context.matrices.scale(cardScale, cardScale, cardScale)
+        context.matrices.scale(cardScale, cardScale, 1f)
 
         // Draw a translucent background behind all card items
         context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.backgroundColor.asIntWithAlpha)

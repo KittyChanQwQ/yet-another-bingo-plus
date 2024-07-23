@@ -89,6 +89,7 @@ class BingoHudController(
             x = x.toInt(),
             y = y.toInt() + (BingoHudRenderer.CARD_HEIGHT * cardScale * (1 - config.client.cardAlignment.y)).toInt(),
             z = config.client.cardOverlap.z,
+            messageScale = config.client.messageScale,
             isAboveCard = config.client.cardAlignment.y > 0,
         )
 

@@ -105,8 +105,9 @@ class YetAnotherConfigLibIntegrationImpl(
                                     )
                                     .controller {
                                         FloatSliderControllerBuilder.create(it)
+                                            .formatValue { value -> Text.literal(String.format("%.0f%%", value*100)) }
                                             .range(0.25f, 4.0f)
-                                            .step(0.1f)
+                                            .step(0.05f)
                                     }
                                     .build(),
                                 Option.createBuilder<CardAlignment>()
@@ -247,66 +248,6 @@ class YetAnotherConfigLibIntegrationImpl(
                             ))
                             .build()
                     )
-                    .build()
-            )
-            .category(
-                ConfigCategory.createBuilder()
-                    .name(text.string(StringKey.PlayerSettings))
-                    .tooltip(text.string(StringKey.PlayerSettingsTooltip))
-                    .option(
-                        Option.createBuilder<Boolean>()
-                            .name(text.string(StringKey.PlayerSettingsBossbar))
-                            .description(
-                                OptionDescription.of(
-                                    text.string(StringKey.PlayerSettingsBossbarDescription)
-                                )
-                            )
-                            .binding(
-                                defaultPlayerSettings.bossbar,
-                                { playerSettings.bossbar },
-                                {
-                                    clientSettings.update(playerSettings.copy(bossbar = it))
-                                }
-                            )
-                            .controller { BooleanControllerBuilder.create(it) }
-                            .build()
-                    )
-                    .option(
-                        Option.createBuilder<Boolean>()
-                            .name(text.string(StringKey.PlayerSettingsScoreboard))
-                            .description(
-                                OptionDescription.of(
-                                    text.string(StringKey.PlayerSettingsScoreboardDescription)
-                                )
-                            )
-                            .binding(
-                                defaultPlayerSettings.scoreboard,
-                                { playerSettings.scoreboard },
-                                {
-                                    clientSettings.update(playerSettings.copy(scoreboard = it))
-                                }
-                            )
-                            .controller { BooleanControllerBuilder.create(it) }
-                            .build()
-                    )
-                    .option(
-                        Option.createBuilder<Boolean>()
-                            .name(text.string(StringKey.PlayerSettingsNightVision))
-                            .description(
-                                OptionDescription.of(
-                                    text.string(StringKey.PlayerSettingsNightVisionDescription)
-                                )
-                            )
-                            .binding(
-                                defaultPlayerSettings.nightVision,
-                                { playerSettings.nightVision },
-                                {
-                                    clientSettings.update(playerSettings.copy(nightVision = it))
-                                }
-                            )
-                            .controller { BooleanControllerBuilder.create(it) }
-                            .build(),
-                    )
                     .group(
                         OptionGroup.createBuilder()
                             .collapsed(false)
@@ -331,6 +272,30 @@ class YetAnotherConfigLibIntegrationImpl(
                                         IntegerSliderControllerBuilder.create(it)
                                             .range(1, 30)
                                             .step(1)
+                                    }
+                                    .build(),
+                            )
+                            .option(
+                                Option.createBuilder<Float>()
+                                    .name(text.string(StringKey.PlayerSettingsMessagesScale))
+                                    .description(
+                                        OptionDescription.of(
+                                            text.string(StringKey.PlayerSettingsMessagesScaleDescription)
+                                        )
+                                    )
+                                    .binding(
+                                        defaultConfig.client.messageScale,
+                                        { config.client.messageScale },
+                                        {
+                                            config.client.messageScale = it
+                                            configService.writeConfig(config)
+                                        }
+                                    )
+                                    .controller {
+                                        FloatSliderControllerBuilder.create(it)
+                                            .formatValue { value -> Text.literal(String.format("%.0f%%", value*100)) }
+                                            .range(0.25f, 4.0f)
+                                            .step(0.05f)
                                     }
                                     .build(),
                             )
@@ -408,6 +373,66 @@ class YetAnotherConfigLibIntegrationImpl(
                                     .build(),
                             )
                             .build()
+                    )
+                    .build()
+            )
+            .category(
+                ConfigCategory.createBuilder()
+                    .name(text.string(StringKey.PlayerSettings))
+                    .tooltip(text.string(StringKey.PlayerSettingsTooltip))
+                    .option(
+                        Option.createBuilder<Boolean>()
+                            .name(text.string(StringKey.PlayerSettingsBossbar))
+                            .description(
+                                OptionDescription.of(
+                                    text.string(StringKey.PlayerSettingsBossbarDescription)
+                                )
+                            )
+                            .binding(
+                                defaultPlayerSettings.bossbar,
+                                { playerSettings.bossbar },
+                                {
+                                    clientSettings.update(playerSettings.copy(bossbar = it))
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build()
+                    )
+                    .option(
+                        Option.createBuilder<Boolean>()
+                            .name(text.string(StringKey.PlayerSettingsScoreboard))
+                            .description(
+                                OptionDescription.of(
+                                    text.string(StringKey.PlayerSettingsScoreboardDescription)
+                                )
+                            )
+                            .binding(
+                                defaultPlayerSettings.scoreboard,
+                                { playerSettings.scoreboard },
+                                {
+                                    clientSettings.update(playerSettings.copy(scoreboard = it))
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build()
+                    )
+                    .option(
+                        Option.createBuilder<Boolean>()
+                            .name(text.string(StringKey.PlayerSettingsNightVision))
+                            .description(
+                                OptionDescription.of(
+                                    text.string(StringKey.PlayerSettingsNightVisionDescription)
+                                )
+                            )
+                            .binding(
+                                defaultPlayerSettings.nightVision,
+                                { playerSettings.nightVision },
+                                {
+                                    clientSettings.update(playerSettings.copy(nightVision = it))
+                                }
+                            )
+                            .controller { BooleanControllerBuilder.create(it) }
+                            .build(),
                     )
                     .build(),
 

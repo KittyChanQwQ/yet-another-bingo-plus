@@ -31,6 +31,7 @@ class BingoMessageRenderer(
         x: Int,
         y: Int,
         z: Int,
+        messageScale: Float,
         isAboveCard: Boolean,
     ) {
         val context = drawService.context
@@ -40,6 +41,7 @@ class BingoMessageRenderer(
 
         context.matrices.push()
         context.matrices.translate(x.toFloat(), y.toFloat(), z.toFloat())
+        context.matrices.scale(messageScale, messageScale, 1f)
 
         var itemY = if (isAboveCard) -ITEM_HEIGHT else 0
         for (message in state.messages.reversed().take(5)) {
