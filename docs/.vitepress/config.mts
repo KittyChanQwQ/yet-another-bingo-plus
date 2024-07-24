@@ -50,7 +50,16 @@ export default defineConfig({
           { text: 'What is Minecraft BINGO?', link: '/what-is-bingo' },
           { text: 'Getting Started', link: '/getting-started' },
           { text: 'Command Cheatsheet', link: '/command-cheatsheet' },
+        ],
+      },
+      {
+        text: 'Server',
+        collapsed: false,
+        items: [
+          { text: 'Server Setup', link: '/server-setup' },
           { text: 'Server Optimization', link: '/optimization' },
+          { text: 'Functions', link: '/functions' },
+          { text: 'Lobby Structure', link: '/lobby-structure' },
         ],
       },
       {
@@ -64,7 +73,6 @@ export default defineConfig({
             { text: 'Item Distribution', link: '/item-distribution' },
           ] },
           { text: 'Item Images', link: '/item-images' },
-          { text: 'Lobby Structure', link: '/lobby-structure' },
         ],
       },
       {

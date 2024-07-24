@@ -79,7 +79,23 @@ Controls whether the mod's [Chunky integration](./mods/chunky) is enabled. If th
 
 Specifies the dimensions and distance (in blocks) that Chunky should automatically pre-generate, if the `"chunky"` config is `true`.
 
+## `"databaseUrl"` / `"databaseUser"` / `"databasePass"`
+(default: null)
+
+Provides a [JDBC database URL](https://docs.oracle.com/javase/tutorial/jdbc/basics/connecting.html), username, and password. Currently, only SQLite is supported. By default, this uses a `stats.db` file in the mod's config directory.
+
 ## `"syncStats"`
 (default: true)
 
 Whether to sync player statistics (playtime, win/loss, items scored) with any connected clients. Turning this off will only update the statistics for games that are played on the server.
+
+## `"server"`
+
+### `"isLobbyMode"`
+(default: false)
+
+Controls whether ["Lobby Mode"](./server-setup) is enabled.
+
+### `"filesToReset"`
+
+A list of files to delete when the server restarts, provided that `"isLobbyMode"` is true. Entries can use `*` wildcards to refer to multiple files - e.g. `DIM*` matches every file or directory that starts with "DIM".
