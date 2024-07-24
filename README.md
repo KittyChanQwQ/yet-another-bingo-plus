@@ -18,18 +18,10 @@ Check out [Yet Another BINGO: Ultimate](https://modrinth.com/modpack/yet-another
 
 *For an introduction to Minecraft BINGO, read "[What is Minecraft BINGO?](https://minecraft.horrific.dev/bingo/what-is-bingo.html)" on the wiki!*
 
-This is a multiplayer BINGO item hunt mod + lobby, which works on the client or on a dedicated server.
+This is a multiplayer BINGO/Lockout mod + lobby, which works on the client or on a dedicated server.
 
 - When installed on a server, players do not need any mods or resource packs to join.
-- When installed on the client, it provides additional functionality for server games, and can run games in singleplayer or on LAN.
-
-```txt
-⚠️⚠️⚠️ WARNING ⚠️⚠️⚠️
-
-This mod **deletes the world folder** when installed on a server!
-It is meant to be hosted on a dedicated server for short, temporary games.
-Make sure this is not installed on an existing world or you will lose your data!
-```
+- When installed on the client, it provides additional functionality for server games, and can run local games in singleplayer or LAN.
 
 <table>
 <tbody>
@@ -77,11 +69,11 @@ lines to win the game.
 
 ![A configuration menu for the Bingo GUI options](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/config-menu-3.png)
 
-On the first startup, the mod will create its initial config files in `./config/bingo/...`. No initial setup is needed
-to use the mod; it should run out of the box.
+No initial setup is needed  to use the mod; it should run out of the box. The config files live in
+`./config/yet-another-minecraft-bingo`.
 
 The items used to generate bingo card items at different tiers can be customized in the `*.tierlist.json` files. Once
-placed in the `./config/bingo/` directory, they can be enabled in-game using the "Tier List" menu.
+placed in the `./config/yet-another-minecraft-bingo/` directory, they can be enabled in-game using the "Tier List" menu.
 
 > There's a nifty [configuration tool](https://minecraft.horrific.dev/bingo/tier-editor.html) I've set up that'll let you
 > change these tier lists in a drag-and-drop interface rather than editing the files in text.
