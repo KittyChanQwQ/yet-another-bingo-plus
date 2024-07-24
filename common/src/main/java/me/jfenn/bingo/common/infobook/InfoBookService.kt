@@ -6,10 +6,12 @@ import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.api.item.IWrittenBook
 import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.commands.BingoPrefsCommand
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
@@ -21,6 +23,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 class InfoBookService(
+    private val config: BingoConfig,
     private val state: BingoState,
     private val text: TextProvider,
     private val permissions: PermissionsIntegration,
@@ -209,7 +212,10 @@ class InfoBookService(
         stack.addCustomTag(NBT_BINGO_INFO_BOOK)
         stack.addCustomTag(NBT_BINGO_IGNORE)
         stack.addCustomTag(NBT_BINGO_VANISH)
-        if (state.isLobbyMode) stack.addCustomTag(NBT_BINGO_KEEP)
+
+        if (state.isLobbyMode && state.state == GameState.PREGAME && config.lobbyTutorialBook)
+            stack.addCustomTag(NBT_BINGO_KEEP)
+
         stack.title =  text.raw(StringKey.FullName)
         stack.author = scoreboardManager.getPlayerName(player)
         updateBookItem(player, stack)
