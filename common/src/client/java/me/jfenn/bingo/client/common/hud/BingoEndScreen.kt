@@ -151,7 +151,7 @@ class BingoEndScreen(
 
         if (winStreak > 1 && gameOver.packet.isWinner) {
             context.matrices.push()
-            context.matrices.translate(width * 0.8f, titleY.toFloat() + 12, 0f)
+            context.matrices.translate(width * 0.8f + 20f, titleY.toFloat() + 12, 0f)
             context.matrices.multiply(Quaternionf(AxisAngle4f(
                 Clock.System.now().toEpochMilliseconds()
                     .mod(2000)
