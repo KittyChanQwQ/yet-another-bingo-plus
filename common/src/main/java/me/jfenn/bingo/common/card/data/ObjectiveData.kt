@@ -28,4 +28,10 @@ sealed class ObjectiveData {
         val objectives: List<String>,
     ) : ObjectiveData()
 
+    @Serializable
+    @SerialName("inverse")
+    data class Inverse(
+        val objective: String,
+    ) : ObjectiveData()
+
 }

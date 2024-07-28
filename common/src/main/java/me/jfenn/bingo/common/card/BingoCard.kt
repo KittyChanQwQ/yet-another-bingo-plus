@@ -25,6 +25,9 @@ class BingoCard(
 
     inline fun <reified T : BingoObjective> objectivesByInstance() = objectives.values.filterIsInstance<T>()
 
+    @Transient
+    val itemObjectives = objectivesByInstance<BingoObjective.ItemEntry>().associateBy { it.itemId }
+
     /**
      * Gets the card entry at the provided x/y index.
      *

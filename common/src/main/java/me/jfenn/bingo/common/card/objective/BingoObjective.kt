@@ -32,7 +32,8 @@ sealed class BingoObjective {
     fun visualItem(tier: TierLabel?): IItemStack? {
         return this.display.item?.copy()?.also { stack ->
             stack.setDisplay(
-                name = this.display.name?.copy()?.styled { it.withItalic(false) },
+                name = this.display.name
+                    ?.takeIf { it != stack.displayName },
                 lore = this.display.lore
                     .plus(
                         tier?.let { listOf(it.text()) }
@@ -184,5 +185,21 @@ sealed class BingoObjective {
 
         override val dependsOnObjectives: List<String>
             get() = objectives
+    }
+
+    @Serializable
+    @SerialName("inverse")
+    data class InverseEntry(
+        override val id: String,
+        val objective: String,
+        val displayData: ObjectiveDisplay.Data?,
+    ): BingoObjective() {
+        val teamsOnceAchieved = HashSet<BingoTeamKey>()
+
+        @Transient
+        override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+
+        override val dependsOnObjectives: List<String>
+            get() = listOf(objective)
     }
 }

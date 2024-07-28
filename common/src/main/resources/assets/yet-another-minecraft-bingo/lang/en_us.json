@@ -23,8 +23,9 @@
   "bingo.card.title": "Bingo Card",
   "bingo.card.no_cards": "There are no Bingo Cards to display...",
   "bingo.card.free_space": "Free Space",
-  "bingo.card.one_of": "One of:",
-  "bingo.card.all_of": "All of:",
+  "bingo.objective.one_of": "One of: %s",
+  "bingo.objective.all_of": "All of: %s",
+  "bingo.objective.inverse": "Never obtain %s",
   "bingo.card.winner": "WINNER!",
   "bingo.intro.welcome": "Welcome to %s!",
   "bingo.intro.welcome_link": "Yet Another MC BINGO",
@@ -225,5 +226,6 @@
   "bingo.stats.game_duration": "Game Duration",
   "bingo.tierlist.advancements": "Advancements",
   "bingo.tierlist.all_items": "All Items",
-  "bingo.tierlist.simplified": "Simplified"
+  "bingo.tierlist.simplified": "Simplified",
+  "bingo.tierlist.challenge": "Challenge"
 }

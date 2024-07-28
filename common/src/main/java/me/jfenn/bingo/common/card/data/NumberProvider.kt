@@ -6,6 +6,8 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 
 @Serializable
 sealed class NumberProvider {
+
+    @Serializable
     @SerialName("random")
     class Random(
         val min: Int = 1,
@@ -16,6 +18,7 @@ sealed class NumberProvider {
         }
     }
 
+    @Serializable
     @SerialName("constant")
     class Constant(val value: Int) : NumberProvider() {
         override fun resolve(state: CardGeneratorState) = value

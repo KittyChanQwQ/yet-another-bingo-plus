@@ -10,8 +10,6 @@ class ObjectiveDisplay {
         val lore: List<Text> = emptyList(),
         val item: IItemStack? = null,
     ) {
-        val displayName get() = name ?: item?.displayName
-
         companion object {
             val EMPTY = Resolved(
                 name = null,

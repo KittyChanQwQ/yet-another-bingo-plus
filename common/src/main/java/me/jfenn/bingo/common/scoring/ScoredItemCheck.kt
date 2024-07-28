@@ -120,6 +120,12 @@ class ScoredItemCheck(
             }
         }
 
+        events.onEnter(GameState.PLAYING) {
+            // Run one tick when the game starts
+            // - this prevents notification spam for tiles that the player has already captured at the start of the game
+            objectiveManager.tick(state.card)
+        }
+
         events.onEnter(GameState.POSTGAME) {
             // Mark all goals as "seen" when game ends
             // (if hidden items is true, players should see all items after the game)

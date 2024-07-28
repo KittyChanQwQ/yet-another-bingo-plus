@@ -4,6 +4,7 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -12,6 +13,7 @@ import net.minecraft.util.Formatting
 
 class AllOfObjectiveManager(
     private val state: BingoState,
+    private val options: BingoOptions,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val text: TextProvider,
@@ -33,12 +35,9 @@ class AllOfObjectiveManager(
                 ?.let { objectiveDisplayService.resolve(objective.id, it) }
                 ?: run {
                     val objectives = objective.objectives.mapNotNull { card.objectives[it] }
-                    val displayNames = objectives.mapNotNull { it.display.displayName }
+                    val displayNames = objectives.mapNotNull { it.display.name }
                     ObjectiveDisplay.Resolved(
-                        name = text.string(StringKey.CardAllOf)
-                            .append(" ")
-                            .append(displayNames.firstOrNull() ?: Text.empty())
-                            .append(", ...")
+                        name = text.string(StringKey.ObjectiveAllOf, Text.empty().append(displayNames.firstOrNull() ?: Text.empty()).append(", ..."))
                             .formatted(Formatting.GRAY, Formatting.ITALIC),
                         lore = displayNames,
                         item = objectives.firstNotNullOfOrNull { it.display.item },
@@ -57,12 +56,17 @@ class AllOfObjectiveManager(
                 val player = team.players.find { player ->
                     objectives.all { it.players.contains(player) }
                 }
+                val hasAchieved = player != null
+
+                // If lockout mode, prevent new teams from achieving the objective
+                if (hasAchieved && options.isLockoutMode && objective.hasAnyAchieved())
+                    continue
 
                 if (hasSeen) objective.markSeen(team.key)
-                objective.setAchieved(team.key, player != null)
+                objective.setAchieved(team.key, hasAchieved)
 
-                if (player != null) {
-                    objective.players.add(player)
+                if (hasAchieved) {
+                    player?.let { objective.players.add(it) }
                 } else {
                     objective.players.removeAll(team.players)
                 }

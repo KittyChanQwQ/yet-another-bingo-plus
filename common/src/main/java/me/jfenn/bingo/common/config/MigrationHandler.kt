@@ -152,6 +152,7 @@ class MigrationHandler(
         // - tierlist files should be re-generated on each launch if removed:
         Config.readStream("advancements.tierlist.json").close()
         Config.readStream("all_items.tierlist.json").close()
+        Config.readStream("challenge.tierlist.json").close()
         Config.readStream("simplified.tierlist.json").close()
     }
 
