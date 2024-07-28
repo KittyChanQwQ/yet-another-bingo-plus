@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.card.objective
 
+import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
@@ -107,6 +108,8 @@ class ItemObjectiveManager(
     }
 
     override fun tick(card: BingoCard) {
+        val now = Clock.System.now()
+
         for (player in playerManager.getPlayers()) {
             val team = teamService.getPlayerTeam(player.player) ?: continue
 
@@ -137,7 +140,7 @@ class ItemObjectiveManager(
                     if (isChanged) {
                         // record the player that captured the tile
                         val profile = BingoPlayerProfile.fromPlayer(player)
-                        objective.players.add(profile)
+                        objective.addPlayer(profile, now)
                     }
                 }
             }
@@ -163,7 +166,7 @@ class ItemObjectiveManager(
                         // if the tile has changed, mark updatedTeams
                         if (isChanged) {
                             // since the tile was lost, remove the team's players from the tile
-                            objective.players.removeAll(team.players)
+                            objective.removePlayers(team.players)
                         }
                     }
                 }

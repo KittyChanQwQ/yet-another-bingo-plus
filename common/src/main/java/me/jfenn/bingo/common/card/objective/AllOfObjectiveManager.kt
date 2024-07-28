@@ -56,23 +56,29 @@ class AllOfObjectiveManager(
 
             for (team in state.getRegisteredTeams()) {
                 val hasSeen = objectives.any { it.hasSeen(team.key) }
-
-                val player = team.players.find { player ->
-                    objectives.all { it.players.contains(player) }
-                }
-                val hasAchieved = player != null
+                val hasAchieved = objectives.all { it.hasAchieved(team.key) }
 
                 // If lockout mode, prevent new teams from achieving the objective
                 if (hasAchieved && options.isLockoutMode && objective.hasAnyAchieved())
                     continue
 
                 if (hasSeen) objective.markSeen(team.key)
-                objective.setAchieved(team.key, hasAchieved)
+                val hasChanged = objective.setAchieved(team.key, hasAchieved)
 
                 if (hasAchieved) {
-                    player?.let { objective.players.add(it) }
+                    if (hasChanged) {
+                        objectives
+                            .flatMap { it.players.entries }
+                            .groupBy { it.key }
+                            .mapNotNull { (key, value) ->
+                                value.maxOfOrNull { it.value }?.let { key to it }
+                            }
+                            .forEach { (key, value) ->
+                                objective.addPlayer(key, value)
+                            }
+                    }
                 } else {
-                    objective.players.removeAll(team.players)
+                    objective.removePlayers(team.players)
                 }
             }
         }

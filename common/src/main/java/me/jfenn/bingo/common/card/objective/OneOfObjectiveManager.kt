@@ -6,12 +6,14 @@ import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 class OneOfObjectiveManager(
+    private val state: BingoState,
     private val options: BingoOptions,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
@@ -52,21 +54,33 @@ class OneOfObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.OneOfEntry>()) {
             val objectives = objective.oneOfObjectives.mapNotNull { card.objectives[it] }
 
-            val teams = objectives.flatMap { it.teamsSeen }.toSet() + objective.teamsSeen
-            for (team in teams) {
-                val hasSeen = objectives.any { it.hasSeen(team) }
-                val hasAchieved = objectives.any { it.hasAchieved(team) }
+            for (team in state.getRegisteredTeams()) {
+                val hasSeen = objectives.any { it.hasSeen(team.key) }
+                val hasAchieved = objectives.any { it.hasAchieved(team.key) }
 
                 // If lockout mode, prevent new teams from achieving the objective
                 if (hasAchieved && options.isLockoutMode && objective.hasAnyAchieved())
                     continue
 
-                if (hasSeen) objective.markSeen(team)
-                objective.setAchieved(team, hasAchieved)
-            }
+                if (hasSeen) objective.markSeen(team.key)
+                val hasChanged = objective.setAchieved(team.key, hasAchieved)
 
-            objective.players.clear()
-            objective.players.addAll(objectives.flatMap { it.players })
+                if (hasAchieved) {
+                    if (hasChanged) {
+                        objectives
+                            .flatMap { it.players.entries }
+                            .groupBy { it.key }
+                            .mapNotNull { (key, value) ->
+                                value.maxOfOrNull { it.value }?.let { key to it }
+                            }
+                            .forEach { (key, value) ->
+                                objective.addPlayer(key, value)
+                            }
+                    }
+                } else {
+                    objective.removePlayers(team.players)
+                }
+            }
         }
     }
 }

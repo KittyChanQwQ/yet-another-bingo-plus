@@ -11,8 +11,10 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
+import java.util.UUID
 import kotlin.time.Duration
 
 @Serializable
@@ -27,7 +29,7 @@ sealed class BingoObjective {
     /** Includes teams that have previously achieved and then lost the objective */
     val teamsOnceAchieved = HashSet<BingoTeamKey>()
     /** Includes players that have currently achieved the objective */
-    val players = HashSet<BingoPlayerProfile>()
+    val players = HashMap<UuidAsString, Instant>()
 
     @Transient
     open val display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
@@ -53,7 +55,7 @@ sealed class BingoObjective {
         }
     }
 
-    open fun hasAchieved(player: BingoPlayerProfile): Boolean = players.contains(player)
+    open fun hasAchieved(player: BingoPlayerProfile): Boolean = players.containsKey(player.uuid)
     open fun hasAchieved(team: BingoTeamKey): Boolean = teams.contains(team)
 
     /**
@@ -77,6 +79,20 @@ sealed class BingoObjective {
 
     open fun hasAnyAchieved() = teams.isNotEmpty()
     fun hasNoneAchieved() = !hasAnyAchieved()
+
+    fun addPlayer(player: UUID, instant: Instant) {
+        players[player] = instant
+    }
+
+    fun addPlayer(player: BingoPlayerProfile, instant: Instant) {
+        addPlayer(player.uuid, instant)
+    }
+
+    fun removePlayers(iterable: Iterable<BingoPlayerProfile>) {
+        for (player in iterable) {
+            players.remove(player.uuid)
+        }
+    }
 
     /**
      * Checks if the [team] has seen the item on

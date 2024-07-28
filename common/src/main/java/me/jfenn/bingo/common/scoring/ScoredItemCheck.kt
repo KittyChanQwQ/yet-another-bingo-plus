@@ -46,7 +46,12 @@ class ScoredItemCheck(
                 ?.filter { it.updatedAt(team.key) > tickStart && it.hasAchieved(team.key) && !it.teamsOnceAchieved.contains(team.key) }
                 ?.forEach { objective ->
                     // find the player that captured the objective
-                    val player = objective.players.find { team.players.contains(it) }
+                    val player = objective.players
+                        .mapNotNull { (uuid, instant) ->
+                            team.players.find { it.uuid == uuid }?.let { it to instant }
+                        }
+                        .maxByOrNull { (_, instant) -> instant }
+                        ?.first
                         ?: return@forEach
 
                     scoreUpdateService.sendItemCaptured(
