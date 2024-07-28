@@ -5,7 +5,6 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BlockPosition
@@ -42,9 +41,7 @@ data class BingoState(
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
     var previewMap: BingoMap? = null,
     // This is a temporary card that should be overwritten by `CardService.generate()`
-    var card: BingoCard = BingoCard(
-        entries = List(25) { BingoCardEntry.FreeSpace() }
-    ),
+    var card: BingoCard = BingoCard.EMPTY,
     var endReason: GameEndReason? = null,
     // Stores a set of recently-joined player UUIDs for [PlayerController]
     val playersJoinedIds: MutableSet<UuidAsString> = mutableSetOf(),
@@ -149,7 +146,7 @@ data class BingoState(
         teams.clear()
         // previewMap we don't clear, as it can be reused...
         // [BingoMapController] calls generateCard when entering PREGAME, so this card should be immediately replaced
-        card = BingoCard(entries = List(25) { BingoCardEntry.FreeSpace() })
+        card = BingoCard.EMPTY
         endReason = null
         isForfeit = false
     }

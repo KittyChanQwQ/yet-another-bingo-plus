@@ -1,0 +1,13 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": "\"Any Netherite Armor\"",
+    "item": "minecraft:netherite_chestplate"
+  },
+  "objectives": [
+    "minecraft:netherite_boots",
+    "minecraft:netherite_chestplate",
+    "minecraft:netherite_helmet",
+    "minecraft:netherite_leggings"
+  ]
+}

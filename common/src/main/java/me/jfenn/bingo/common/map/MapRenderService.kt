@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.config.Config
-import me.jfenn.bingo.common.config.TierLabel
+import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.LruHashMap
 import net.minecraft.item.map.MapState

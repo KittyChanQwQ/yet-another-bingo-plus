@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.config
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
+import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.spawn.SpawnItem
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey

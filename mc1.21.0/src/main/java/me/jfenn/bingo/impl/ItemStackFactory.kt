@@ -30,7 +30,6 @@ class ItemStackFactory(
         val itemInstance = try {
             createStack(item, 1).item
         } catch (e: Throwable) {
-            logger.error("[ItemStackFactory] Item '$item' not found", e)
             return false
         }
 

@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 
 @Serializable
 sealed class BingoGoal {

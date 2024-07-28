@@ -1,8 +1,9 @@
-package me.jfenn.bingo.common.config
+package me.jfenn.bingo.common.card.tierlist
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.utils.json
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener

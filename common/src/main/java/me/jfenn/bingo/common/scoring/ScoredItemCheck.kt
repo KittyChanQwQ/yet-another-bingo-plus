@@ -1,8 +1,7 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
+import kotlinx.datetime.Clock
+import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameEndReason
@@ -10,13 +9,6 @@ import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.state.TeamScore
-import me.jfenn.bingo.common.team.BingoPlayerProfile
-import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.TeamService
-import net.minecraft.server.MinecraftServer
-import org.slf4j.Logger
-import kotlin.time.measureTime
 
 /**
  * Searches for items in each player's inventory that can
@@ -24,204 +16,49 @@ import kotlin.time.measureTime
  */
 class ScoredItemCheck(
     events: ScopedEvents,
-    private val log: Logger,
-    private val server: MinecraftServer,
     private val options: BingoOptions,
     private val state: BingoState,
     private val gameService: GameService,
-    private val teamService: TeamService,
-    private val playerManager: IPlayerManager,
-    private val advancementManager: IAdvancementManager,
     private val scoreUpdateService: ScoreUpdateService,
+    private val objectiveManager: BingoObjectiveManager
 ) : BingoComponent() {
 
-    private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, IPlayerHandle>()
-
-    private fun getOfflinePlayer(profile: BingoPlayerProfile): IPlayerHandle {
-        // If the player is online, return the current player entity
-        val onlinePlayer = playerManager.getPlayer(profile.uuid)
-        if (onlinePlayer != null) {
-            // and set their offline cache entry
-            offlinePlayerCache[profile] = onlinePlayer
-            return onlinePlayer
-        }
-
-        // If the player is in the offline cache, return it
-        val cachedPlayer = offlinePlayerCache[profile]
-        if (cachedPlayer != null) {
-            return cachedPlayer
-        }
-
-        // Otherwise, load their player data from the save (this can take a few ms...)
-        val player: IPlayerHandle
-        measureTime {
-            player = playerManager.getOfflinePlayer(profile)
-        }.also {
-            log.info("Loading offline player data for ${profile.name} ($it)")
-        }
-
-        offlinePlayerCache[profile] = player
-        return player
-    }
-
-    private fun updateInventory(): Set<BingoTeam> {
-        val updatedTeams = mutableSetOf<BingoTeam>()
-
-        for (player in playerManager.getPlayers()) {
-            val team = teamService.getPlayerTeam(player.player) ?: continue
-
-            // don't update teams that have already won
-            if (team.isWinner()) continue
-
-            // check inventory for new collected items
-            for (stack in player.allHeldStacks()) {
-                // get the item tile, if it is on the card
-                val tile = state.card.itemIndex[stack.identifier.toString()] ?: continue
-
-                // if the item hasn't been achieved and can be satisfied, mark it as collected
-                if (tile.canSatisfy(stack)) {
-                    tile.markSeen(team)
-                } else {
-                    continue
-                }
-
-                // if the gamemode is lockout, tiles cannot be collected by >1 team
-                if (options.isLockoutMode && tile.hasAnyAchieved())
-                    continue
-
-                val isChanged = tile.setAchieved(team, true)
-
-                // if the tile has changed, mark updatedTeams
-                if (isChanged) {
-                    updatedTeams.add(team)
-
-                    // record the player that captured the tile
-                    val profile = BingoPlayerProfile.fromPlayer(player)
-                    tile.players.add(profile)
-
-                    scoreUpdateService.sendItemCaptured(
-                        scoredPlayer = profile,
-                        team = team,
-                        item = stack,
-                    )
-                }
-            }
-        }
-
-        // if isInventoryMode, we need to check that each team still has all their items
-        // and mark them as lost if not
-        if (options.isInventoryMode) {
-            for (item in state.card.itemIndex.values) {
-                for (teamKey in item.teams.toSet()) {
-                    val team = state.teams[teamKey] ?: continue
-                    // don't update teams that have already won
-                    if (team.isWinner()) continue
-
-                    val teamPlayers = team.players.map { getOfflinePlayer(it) }
-                    val hasTeamItem = teamPlayers.any { player ->
-                        player.allHeldStacks().any { item.canSatisfy(it) }
-                    }
-
-                    // if noone on the team has the item anymore, mark it lost
-                    if (!hasTeamItem) {
-                        val isChanged = item.setAchieved(team, false)
-                        // if the tile has changed, mark updatedTeams
-                        if (isChanged) {
-                            updatedTeams.add(team)
-                            // since the tile was lost, remove the team's players from the tile
-                            item.players.removeAll(team.players)
-                        }
-                    }
-                }
-            }
-        }
-
-        // update the stored score for each team
-        for (team in updatedTeams) {
-            state.updateScore(team)
-        }
-
-        return updatedTeams
-    }
-
-    private fun updateAdvancements(): Set<BingoTeam> {
-        val updatedTeams = mutableSetOf<BingoTeam>()
-
-        for ((identifier, entry) in state.card.advancementIndex) {
-            val advancement = advancementManager.getAdvancement(server, identifier)
-                ?: continue
-
-            for (team in state.getRegisteredTeams()) {
-                // don't update teams that have already won
-                if (team.isWinner()) continue
-
-                val players = team.players.map { getOfflinePlayer(it) }
-
-                val isAnyObtained = players.any {
-                    advancementManager.isAnyObtained(it.player, advancement)
-                }
-                if (isAnyObtained) {
-                    entry.markSeen(team)
-                }
-
-                val player = players.find {
-                    advancementManager.isDone(it.player, advancement)
-                }
-
-                // if the advancement is finished, and the tile is not locked
-                if (player != null && !(options.isLockoutMode && entry.hasAnyAchieved())) {
-                    val isChanged = entry.setAchieved(team, true)
-
-                    // if the tile has changed, mark updatedTeams
-                    if (isChanged) {
-                        updatedTeams.add(team)
-
-                        // record the player that captured the tile
-                        val profile = BingoPlayerProfile.fromPlayer(player)
-                        entry.players.add(profile)
-
-                        scoreUpdateService.sendItemCaptured(
-                            scoredPlayer = profile,
-                            team = team,
-                            item = entry.visualItem(),
-                        )
-                    }
-                }
-
-                // if noone on the team has the advancement anymore, then mark it as lost...
-                if (player == null) {
-                    val isChanged = entry.setAchieved(team, false)
-                    // if the tile has changed, mark updatedTeams
-                    if (isChanged) {
-                        updatedTeams.add(team)
-                        // since the tile was lost, remove the team's players from the tile
-                        entry.players.removeAll(team.players)
-                    }
-                }
-            }
-        }
-
-        // update the stored score for each team
-        for (team in updatedTeams) {
-            state.updateScore(team)
-        }
-
-        return updatedTeams
-    }
-
     private fun updateScores() {
+        val card = state.card
         val prevLeadingTeam = ScoreService.getLeading(state)
-        val prevTeamScores = state.teams.mapValues { (_, team) -> team.score }
+        val tickStart = Clock.System.now()
 
-        val updatedTeams = updateInventory() + updateAdvancements()
+        // Update all objectives
+        objectiveManager.tick(card)
+
+        val rootObjectives = state.card.entries.mapNotNull { state.card.objectives[it.objectiveId] }
+
+        // find teams where any card objective has been modified since the last tick
+        val updatedTeams = state.getRegisteredTeams()
+            .filter { team -> rootObjectives.maxOf { it.updatedAt(team.key) } > tickStart }
 
         // if there are no updated teams, we can skip the remaining checks...
         if (updatedTeams.isEmpty()) return
 
         for (team in updatedTeams) {
+            // iterate through all updated objectives on the card
+            rootObjectives
+                .filter { it.updatedAt(team.key) > tickStart }
+                .forEach { objective ->
+                    // find the player that captured the objective
+                    val player = objective.players.find { team.players.contains(it) }
+                        ?: return@forEach
+
+                    scoreUpdateService.sendItemCaptured(
+                        scoredPlayer = player,
+                        team = team,
+                        item = objective.visualItem(null),
+                    )
+                }
+
             // update the score for each modified team
-            val scoreBefore = prevTeamScores[team.key] ?: TeamScore.ZERO
-            val scoreAfter = team.score
+            val scoreBefore = team.score
+            val scoreAfter = state.updateScore(team)
 
             // if the team has scored a line, post a message
             if (scoreAfter.lines > scoreBefore.lines) {
@@ -267,17 +104,29 @@ class ScoredItemCheck(
 
     init {
         events.onGameTick {
+            // Initialize objectives
+            if (!state.card.isInitialized) {
+                // No, this isn't a bug...
+                // init() needs to be called multiple times to populate display info on dependent objectives
+                objectiveManager.init(state.card)
+                objectiveManager.init(state.card)
+                objectiveManager.init(state.card)
+
+                state.card.isInitialized = true
+            }
+
             if (state.state == GameState.PLAYING) {
                 updateScores()
             }
         }
 
         events.onEnter(GameState.POSTGAME) {
-            // Mark all items as "seen" when game ends
+            // Mark all goals as "seen" when game ends
             // (if hidden items is true, players should see all items after the game)
-            for (team in state.teams.values) {
-                for (item in state.card.itemIndex.values) {
-                    item.markSeen(team)
+            val teamKeys = state.teams.keys
+            for (goal in state.card.objectives.values) {
+                for (team in teamKeys) {
+                    goal.markSeen(team)
                 }
             }
         }

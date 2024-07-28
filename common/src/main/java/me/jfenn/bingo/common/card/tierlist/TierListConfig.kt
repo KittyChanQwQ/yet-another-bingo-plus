@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.config
+package me.jfenn.bingo.common.card.tierlist
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

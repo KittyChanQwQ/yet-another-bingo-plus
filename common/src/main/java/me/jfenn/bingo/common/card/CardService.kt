@@ -1,12 +1,17 @@
 package me.jfenn.bingo.common.card
 
-import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.config.*
+import kotlinx.serialization.encodeToString
+import me.jfenn.bingo.common.card.objective.BingoObjective
+import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
+import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.card.tierlist.TierListEntry
+import me.jfenn.bingo.common.card.tierlist.TierListState
+import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.utils.json
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import org.slf4j.Logger
@@ -16,13 +21,11 @@ import kotlin.random.Random
 class CardService(
     private val log: Logger,
     private val state: BingoState,
-    private val server: MinecraftServer,
     private val options: BingoOptions,
     private val teamService: TeamService,
     private val configService: ConfigService,
     private val tierListService: TierListState,
-    private val advancementManager: IAdvancementManager,
-    private val itemStackFactory: IItemStackFactory,
+    private val objectiveManager: BingoObjectiveManager,
 ) {
     fun shuffleCard() {
         // Change the BINGO seed to a new value
@@ -74,6 +77,7 @@ class CardService(
         } else mutableSetOf()
 
         val random = Random(seed)
+        val state = CardGeneratorState(random)
         log.info("Using random BINGO card seed: $seed")
 
         // Collect the selected tier list configs by weight
@@ -92,6 +96,7 @@ class CardService(
         assert(tiersWeightTotal > 0) { "There must be at least one tier list selected!" }
 
         val items = mutableListOf<BingoCardEntry>()
+        val objectives = mutableMapOf<String, BingoObjective>()
 
         // Pick the given number of items from the tier list for each tier
         for ((tierIndex, tier) in TierLabel.entries.withIndex()) {
@@ -107,11 +112,23 @@ class CardService(
                 // The actual number of items might differ from the expected amount, if the tier list
                 // does not have enough entries in it
                 val tierItems = list.pick(tier, excludedItems, random)
-                    .mapNotNull { entry -> createEntry(tier, entry) }
+                    .filterIsInstance<TierListEntry.SingleEntry>()
+                    .mapNotNull { entry ->
+                        val objectiveId = entry.item.substringAfterLast("!")
+                        createGoal(objectiveId, state)?.let { Pair(objectiveId, it) }
+                    }
                     .take(itemCount)
                     .toList()
 
-                items.addAll(tierItems)
+                for ((objectiveId, goalDependencies) in tierItems) {
+                    objectives.putAll(goalDependencies)
+                    items.add(
+                        BingoCardEntry(
+                            objectiveId = objectiveId,
+                            tier = tier,
+                        )
+                    )
+                }
 
                 tierCountRemaining -= tierItems.size
                 tierWeightRemaining -= weight
@@ -124,59 +141,42 @@ class CardService(
         }
 
         // if the card has less than 25 entries, add free spaces until it is full
-        while (items.size < 25)
-            items.add(BingoCardEntry.FreeSpace())
+        val freeSpace = BingoObjective.FreeSpace()
+        while (items.size < 25) {
+            objectives[freeSpace.id] = freeSpace
+            items.add(BingoCardEntry(
+                objectiveId = freeSpace.id,
+                tier = null,
+            ))
+        }
 
         items.shuffle(random)
-        return BingoCard(items)
+        return BingoCard(items, objectives)
     }
 
-    private fun createEntry(tier: TierLabel, entry: TierListEntry): BingoCardEntry? {
-        return when (entry) {
-            is TierListEntry.SingleEntry -> {
-                val isAdvancement = entry.item.startsWith(TierListConfig.ADVANCEMENT_PREFIX)
-
-                when {
-                    isAdvancement -> resolveAdvancement(
-                        entry.item.removePrefix(TierListConfig.ADVANCEMENT_PREFIX),
-                        tier,
-                    )
-                    else -> resolveItem(entry.item, tier)
-                }
-            }
-            is TierListEntry.MultiEntry -> {
-                val innerEntries = entry.items.mapNotNull { createEntry(tier, TierListEntry.SingleEntry(it)) }
-
-                BingoCardEntry.MultiEntry(innerEntries, tier)
-            }
-        }
-    }
-
-    private fun resolveAdvancement(id: String, tier: TierLabel): BingoCardEntry.AdvancementEntry? {
-        return try {
-            advancementManager.getAdvancement(server, id)!!
-            BingoCardEntry.AdvancementEntry(id, tier)
-        } catch (e: Throwable) {
-            log.debug("Unable to locate advancement '$id'", e)
-            log.warn("Unable to locate advancement '$id' from the tier lists ${options.tierLists}, ignoring...")
-            null
-        }
-    }
-
-    private fun resolveItem(id: String, tier: TierLabel): BingoCardEntry.ItemEntry? {
-        val isEnabled = try {
-            // this might throw if id is not a valid identifier
-            itemStackFactory.isEnabledInWorld(id, server)
-        } catch (e: Throwable) {
-            log.debug("Unable to locate item '$id'", e)
-            false
+    private fun createGoal(
+        objectiveId: String,
+        state: CardGeneratorState,
+        objectives: MutableMap<String, BingoObjective> = mutableMapOf(),
+    ): Map<String, BingoObjective>? {
+        val objective = objectiveManager.find(objectiveId, state)
+        if (objective == null) {
+            log.warn("[CardService] Could not locate objective '$objectiveId'")
+            return null
         }
 
-        return if (isEnabled) {
-            BingoCardEntry.ItemEntry(id, tier)
-        } else {
-            log.warn("Unable to locate item '$id' from the tier lists ${options.tierLists}, ignoring...")
-            null
+        objectives[objectiveId] = objective
+
+        val isResolved = objective.dependsOnObjectives.all {
+            objectives.containsKey(it) || createGoal(it, state, objectives) != null
         }
+
+        // if any goal dependencies fail to resolve, return null
+        if (!isResolved) {
+            log.warn("[CardService] Could not resolve all dependencies for objective '$objectiveId'")
+            return null
+        }
+
+        return objectives
     }
 }

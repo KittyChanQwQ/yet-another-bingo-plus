@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.TierListState
+import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey

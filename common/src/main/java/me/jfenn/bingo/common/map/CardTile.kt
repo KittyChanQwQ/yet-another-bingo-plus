@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.config.TierLabel
+import me.jfenn.bingo.common.card.tierlist.TierLabel
 
 data class CardTile(
     val item: IItemStack?,
@@ -84,6 +84,19 @@ data class CardTile(
     }
 
     companion object {
+        val EMPTY = CardTile(
+            item = null,
+            itemTier = null,
+            isFreeSpace = false,
+            isAdvancement = false,
+            isMultiItem = false,
+            isHidden = false,
+            isLocked = false,
+            isFlashing = false,
+            isAchieved = false,
+            teamKeys = emptyList(),
+        )
+
         fun fromPacketBuf(buf: IPacketBuf): CardTile {
             return CardTile(
                 item = if (buf.readBoolean()) {

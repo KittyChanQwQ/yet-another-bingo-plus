@@ -1,5 +1,6 @@
-package me.jfenn.bingo.common.config
+package me.jfenn.bingo.common.card.tierlist
 
+import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 enum class TierLabel(
@@ -9,5 +10,7 @@ enum class TierLabel(
     A(Formatting.RED),
     B(Formatting.GOLD),
     C(Formatting.YELLOW),
-    D(Formatting.GREEN),
+    D(Formatting.GREEN);
+
+    fun text(): Text = Text.literal("$this-tier").formatted(formatting)
 }

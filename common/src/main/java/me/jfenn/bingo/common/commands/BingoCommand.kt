@@ -3,8 +3,8 @@ package me.jfenn.bingo.common.commands
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.common.URL_WIKI
 import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.TierLabel
-import me.jfenn.bingo.common.config.TierListState
+import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText

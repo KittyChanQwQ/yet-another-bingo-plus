@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCardEntry
+import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -104,25 +105,23 @@ class CardViewService(
     private fun getTileState(
         team: BingoTeam?,
         entry: BingoCardEntry,
+        objective: BingoObjective,
     ) : CardTile {
-        val isFreeSpace = entry is BingoCardEntry.FreeSpace
-        val isHidden = options.isHiddenItemsMode && (team == null || !entry.hasSeen(team)) && !isFreeSpace
+        val isFreeSpace = objective is BingoObjective.FreeSpace
+        val isHidden = options.isHiddenItemsMode && (team == null || !objective.hasSeen(team.key)) && !isFreeSpace
 
         return CardTile(
-            item = if (isHidden) null else entry.visualItem(),
+            item = if (isHidden) null else objective.visualItem(entry.tier),
             itemTier = entry.tier.takeIf { options.showHiddenTiers },
             isFreeSpace = isFreeSpace,
-            isAdvancement = !isHidden && (
-                    entry is BingoCardEntry.AdvancementEntry ||
-                            (entry as? BingoCardEntry.MultiEntry)?.innerEntries?.firstOrNull() is BingoCardEntry.AdvancementEntry
-            ),
-            isMultiItem = !isHidden && entry is BingoCardEntry.MultiEntry,
+            isAdvancement = !isHidden && objective is BingoObjective.AdvancementEntry,
+            isMultiItem = !isHidden && (objective is BingoObjective.OneOfEntry || objective is BingoObjective.AllOfEntry),
             isHidden = isHidden,
-            isLocked = options.isLockoutMode && entry.teams.isNotEmpty() && team != null && !entry.hasAchieved(team),
-            isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
-            isAchieved = team != null && entry.hasAchieved(team),
+            isLocked = options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key),
+            isFlashing = objective.isFlashing(team?.key, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
+            isAchieved = team != null && objective.hasAchieved(team.key),
             teamKeys = if (options.showOtherTeamCompletions && state.state != GameState.POSTGAME)
-                entry.teams.filter { it != team?.key }
+                objective.teams.filter { it != team?.key }
             else emptyList(),
         )
     }
@@ -135,7 +134,11 @@ class CardViewService(
                 ?.let { textProvider.string(StringKey.CardTeamCardTitle, textProvider.string(it.name)) }
                 ?: textProvider.string(StringKey.CardPreviewCard),
             tiles = state.card.entries
-                .map { entry -> getTileState(team, entry) }
+                .map { entry ->
+                    val goal = state.card.objectives[entry.objectiveId]
+                    goal?.let { getTileState(team, entry, it) }
+                        ?: CardTile.EMPTY
+                }
                 .toMutableList(),
             players = team?.players?.toList() ?: emptyList(),
         )

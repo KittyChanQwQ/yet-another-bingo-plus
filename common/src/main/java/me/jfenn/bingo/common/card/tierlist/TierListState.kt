@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.config
+package me.jfenn.bingo.common.card.tierlist
 
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.utils.formatTitle

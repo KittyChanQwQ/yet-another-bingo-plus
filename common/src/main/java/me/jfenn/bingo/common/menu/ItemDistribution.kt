@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.config.TierLabel
+import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.entity.EntityType

@@ -15,17 +15,14 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import org.slf4j.Logger
 
 class ItemStackFactory(
     private val textSerializer: ITextSerializer,
-    private val logger: Logger,
 ) : IItemStackFactory {
     override fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean {
         val itemInstance = try {
             createStack(item, 1).item
         } catch (e: Throwable) {
-            logger.error("[ItemStackFactory] Item '$item' not found", e)
             return false
         }
 
