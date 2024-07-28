@@ -22,7 +22,7 @@ class InverseObjectiveManager(
 
         return BingoObjective.InverseEntry(
             id = id,
-            objective = data.objective,
+            inverseObjective = data.objective,
             displayData = data.display,
         )
     }
@@ -32,7 +32,7 @@ class InverseObjectiveManager(
             objective.display = objective.displayData
                 ?.let { objectiveDisplayService.resolve(objective.id, it) }
                 ?: run {
-                    card.objectives[objective.objective]?.let { objective ->
+                    card.objectives[objective.inverseObjective]?.let { objective ->
                         ObjectiveDisplay.Resolved(
                             name = text.string(StringKey.ObjectiveInverse, objective.display.name ?: Text.empty())
                                 .formatted(Formatting.GRAY, Formatting.ITALIC),
@@ -45,7 +45,7 @@ class InverseObjectiveManager(
 
     override fun tick(card: BingoCard) {
         for (objective in card.objectivesByInstance<BingoObjective.InverseEntry>()) {
-            val inverse = card.objectives[objective.objective] ?: continue
+            val inverse = card.objectives[objective.inverseObjective] ?: continue
 
             for (team in state.getRegisteredTeams()) {
                 val hasSeen = inverse.hasSeen(team.key)

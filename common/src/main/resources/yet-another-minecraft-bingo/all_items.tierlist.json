@@ -3,27 +3,6 @@
         "minecraft:amethyst_cluster",
         "minecraft:bee_nest",
         "minecraft:blue_ice",
-        [
-            "minecraft:brain_coral",
-            "minecraft:bubble_coral",
-            "minecraft:fire_coral",
-            "minecraft:horn_coral",
-            "minecraft:tube_coral"
-        ],
-        [
-            "minecraft:brain_coral_block",
-            "minecraft:bubble_coral_block",
-            "minecraft:fire_coral_block",
-            "minecraft:horn_coral_block",
-            "minecraft:tube_coral_block"
-        ],
-        [
-            "minecraft:brain_coral_fan",
-            "minecraft:bubble_coral_fan",
-            "minecraft:fire_coral_fan",
-            "minecraft:horn_coral_fan",
-            "minecraft:tube_coral_fan"
-        ],
         "minecraft:breeze_rod",
         "minecraft:brown_mushroom_block",
         "minecraft:burn_pottery_sherd",
@@ -32,30 +11,8 @@
         "minecraft:coal_ore",
         "minecraft:conduit",
         "minecraft:copper_ore",
-        [
-            "minecraft:creeper_banner_pattern",
-            "minecraft:flower_banner_pattern",
-            "minecraft:globe_banner_pattern",
-            "minecraft:mojang_banner_pattern",
-            "minecraft:piglin_banner_pattern",
-            "minecraft:skull_banner_pattern"
-        ],
         "minecraft:crimson_nylium",
         "minecraft:danger_pottery_sherd",
-        [
-            "minecraft:dead_brain_coral",
-            "minecraft:dead_bubble_coral",
-            "minecraft:dead_fire_coral",
-            "minecraft:dead_horn_coral",
-            "minecraft:dead_tube_coral"
-        ],
-        [
-            "minecraft:dead_brain_coral_fan",
-            "minecraft:dead_bubble_coral_fan",
-            "minecraft:dead_fire_coral_fan",
-            "minecraft:dead_horn_coral_fan",
-            "minecraft:dead_tube_coral_fan"
-        ],
         "minecraft:deepslate_coal_ore",
         "minecraft:deepslate_copper_ore",
         "minecraft:deepslate_diamond_ore",
@@ -138,7 +95,12 @@
         "minecraft:verdant_froglight",
         "minecraft:wild_armor_trim_smithing_template",
         "minecraft:wind_charge",
-        "minecraft:wither_skeleton_skull"
+        "minecraft:wither_skeleton_skull",
+        "yet-another-minecraft-bingo:simplified/one_of_coral",
+        "yet-another-minecraft-bingo:simplified/one_of_coral_block",
+        "yet-another-minecraft-bingo:simplified/one_of_coral_fan",
+        "yet-another-minecraft-bingo:simplified/one_of_dead_coral",
+        "yet-another-minecraft-bingo:simplified/one_of_dead_coral_fan"
     ],
     "A": [
         "minecraft:ancient_debris",
@@ -223,13 +185,6 @@
         "minecraft:cyan_wool",
         "minecraft:dark_prismarine",
         "minecraft:daylight_detector",
-        [
-            "minecraft:dead_brain_coral_block",
-            "minecraft:dead_bubble_coral_block",
-            "minecraft:dead_fire_coral_block",
-            "minecraft:dead_horn_coral_block",
-            "minecraft:dead_tube_coral_block"
-        ],
         "minecraft:diamond",
         "minecraft:diamond_axe",
         "minecraft:diamond_block",
@@ -376,7 +331,8 @@
         "minecraft:weeping_vines",
         "minecraft:wet_sponge",
         "minecraft:white_candle",
-        "minecraft:yellow_candle"
+        "minecraft:yellow_candle",
+        "yet-another-minecraft-bingo:simplified/one_of_dead_coral_block"
     ],
     "B": [
         "minecraft:activator_rail",
@@ -1407,39 +1363,12 @@
             "minecraft:yellow_bed"
         ],
         [
-            "minecraft:brain_coral",
-            "minecraft:brain_coral_block",
-            "minecraft:brain_coral_fan",
-            "minecraft:bubble_coral",
-            "minecraft:bubble_coral_block",
-            "minecraft:bubble_coral_fan",
-            "minecraft:fire_coral",
-            "minecraft:fire_coral_block",
-            "minecraft:fire_coral_fan",
-            "minecraft:horn_coral",
-            "minecraft:horn_coral_block",
-            "minecraft:horn_coral_fan",
-            "minecraft:tube_coral",
-            "minecraft:tube_coral_block",
-            "minecraft:tube_coral_fan"
-        ],
-        [
-            "minecraft:dead_brain_coral",
-            "minecraft:dead_brain_coral_block",
-            "minecraft:dead_brain_coral_fan",
-            "minecraft:dead_bubble_coral",
-            "minecraft:dead_bubble_coral_block",
-            "minecraft:dead_bubble_coral_fan",
-            "minecraft:dead_bush",
-            "minecraft:dead_fire_coral",
-            "minecraft:dead_fire_coral_block",
-            "minecraft:dead_fire_coral_fan",
-            "minecraft:dead_horn_coral",
-            "minecraft:dead_horn_coral_block",
-            "minecraft:dead_horn_coral_fan",
-            "minecraft:dead_tube_coral",
-            "minecraft:dead_tube_coral_block",
-            "minecraft:dead_tube_coral_fan"
+            "yet-another-minecraft-bingo:simplified/one_of_coral",
+            "yet-another-minecraft-bingo:simplified/one_of_coral_block",
+            "yet-another-minecraft-bingo:simplified/one_of_coral_fan",
+            "yet-another-minecraft-bingo:simplified/one_of_dead_coral",
+            "yet-another-minecraft-bingo:simplified/one_of_dead_coral_block",
+            "yet-another-minecraft-bingo:simplified/one_of_dead_coral_fan"
         ],
         [
             "minecraft:cobblestone",

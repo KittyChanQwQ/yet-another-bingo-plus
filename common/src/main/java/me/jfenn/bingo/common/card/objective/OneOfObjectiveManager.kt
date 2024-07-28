@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.card.objective
 
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
+import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.config.BingoOptions
@@ -14,6 +15,7 @@ class OneOfObjectiveManager(
     private val options: BingoOptions,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
+    private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
 ) : IObjectiveManager {
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
@@ -22,7 +24,7 @@ class OneOfObjectiveManager(
 
         return BingoObjective.OneOfEntry(
             id = id,
-            objectives = data.objectives,
+            oneOfObjectives = tagExpansionService.expandItemTags(data.objectives),
             displayData = data.display,
         )
     }
@@ -32,7 +34,7 @@ class OneOfObjectiveManager(
             objective.display = objective.displayData
                 ?.let { objectiveDisplayService.resolve(objective.id, it) }
                 ?: run {
-                    val objectives = objective.objectives.mapNotNull { card.objectives[it] }
+                    val objectives = objective.oneOfObjectives.mapNotNull { card.objectives[it] }
                     val displayNames = objectives.mapNotNull { it.display.name }
                     ObjectiveDisplay.Resolved(
                         name = text.string(StringKey.ObjectiveOneOf, Text.empty().append(displayNames.firstOrNull() ?: Text.empty()).append(", ..."))
@@ -46,7 +48,7 @@ class OneOfObjectiveManager(
 
     override fun tick(card: BingoCard) {
         for (objective in card.objectivesByInstance<BingoObjective.OneOfEntry>()) {
-            val objectives = objective.objectives.mapNotNull { card.objectives[it] }
+            val objectives = objective.oneOfObjectives.mapNotNull { card.objectives[it] }
 
             val teams = objectives.flatMap { it.teamsSeen }.toSet() + objective.teamsSeen
             for (team in teams) {

@@ -104,28 +104,30 @@ class ItemObjectiveManager(
 
             // check inventory for new collected items
             for (stack in player.allHeldStacks()) {
-                // get the item tile, if it is on the card
+                // get any objectives for the itemId, if it is on the card
                 val itemId = stack.identifier.toString()
-                val objective = card.itemObjectives[itemId] ?: continue
+                val objectives = card.itemObjectives[itemId] ?: continue
 
-                // if the item hasn't been achieved and can be satisfied, mark it as collected
-                if (canSatisfy(stack, objective)) {
-                    objective.markSeen(team.key)
-                } else {
-                    continue
-                }
+                for (objective in objectives) {
+                    // if the item hasn't been achieved and can be satisfied, mark it as collected
+                    if (canSatisfy(stack, objective)) {
+                        objective.markSeen(team.key)
+                    } else {
+                        continue
+                    }
 
-                // if the gamemode is lockout, tiles cannot be collected by >1 team
-                if (options.isLockoutMode && objective.hasAnyAchieved())
-                    continue
+                    // if the gamemode is lockout, tiles cannot be collected by >1 team
+                    if (options.isLockoutMode && objective.hasAnyAchieved())
+                        continue
 
-                val isChanged = objective.setAchieved(team.key, true)
+                    val isChanged = objective.setAchieved(team.key, true)
 
-                // if the tile has changed, mark updatedTeams
-                if (isChanged) {
-                    // record the player that captured the tile
-                    val profile = BingoPlayerProfile.fromPlayer(player)
-                    objective.players.add(profile)
+                    // if the tile has changed, mark updatedTeams
+                    if (isChanged) {
+                        // record the player that captured the tile
+                        val profile = BingoPlayerProfile.fromPlayer(player)
+                        objective.players.add(profile)
+                    }
                 }
             }
         }

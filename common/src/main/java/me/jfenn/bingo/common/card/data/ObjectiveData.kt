@@ -19,13 +19,13 @@ sealed class ObjectiveData {
     @Serializable
     @SerialName("one_of")
     data class OneOf(
-        val objectives: List<String>,
+        val objectives: Set<String>,
     ) : ObjectiveData()
 
     @Serializable
     @SerialName("all_of")
     data class AllOf(
-        val objectives: List<String>,
+        val objectives: Set<String>,
     ) : ObjectiveData()
 
     @Serializable

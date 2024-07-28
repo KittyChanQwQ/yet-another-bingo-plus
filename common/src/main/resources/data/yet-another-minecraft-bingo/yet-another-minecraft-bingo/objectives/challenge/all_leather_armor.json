@@ -1,0 +1,13 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": "\"All Leather Armor\"",
+    "item": "minecraft:leather_chestplate"
+  },
+  "objectives": [
+    "minecraft:leather_boots",
+    "minecraft:leather_chestplate",
+    "minecraft:leather_helmet",
+    "minecraft:leather_leggings"
+  ]
+}

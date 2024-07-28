@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.card.objective
 
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
+import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.config.BingoOptions
@@ -16,6 +17,7 @@ class AllOfObjectiveManager(
     private val options: BingoOptions,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
+    private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
 ) : IObjectiveManager {
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
@@ -24,7 +26,7 @@ class AllOfObjectiveManager(
 
         return BingoObjective.AllOfEntry(
             id = id,
-            objectives = data.objectives,
+            allOfObjectives = tagExpansionService.expandItemTags(data.objectives),
             displayData = data.display,
         )
     }
@@ -34,7 +36,7 @@ class AllOfObjectiveManager(
             objective.display = objective.displayData
                 ?.let { objectiveDisplayService.resolve(objective.id, it) }
                 ?: run {
-                    val objectives = objective.objectives.mapNotNull { card.objectives[it] }
+                    val objectives = objective.allOfObjectives.mapNotNull { card.objectives[it] }
                     val displayNames = objectives.mapNotNull { it.display.name }
                     ObjectiveDisplay.Resolved(
                         name = text.string(StringKey.ObjectiveAllOf, Text.empty().append(displayNames.firstOrNull() ?: Text.empty()).append(", ..."))
@@ -47,8 +49,8 @@ class AllOfObjectiveManager(
     }
 
     override fun tick(card: BingoCard) {
-        for (objective in card.objectivesByInstance<BingoObjective.OneOfEntry>()) {
-            val objectives = objective.objectives.mapNotNull { card.objectives[it] }
+        for (objective in card.objectivesByInstance<BingoObjective.AllOfEntry>()) {
+            val objectives = objective.allOfObjectives.mapNotNull { card.objectives[it] }
 
             for (team in state.getRegisteredTeams()) {
                 val hasSeen = objectives.any { it.hasSeen(team.key) }

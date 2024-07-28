@@ -71,6 +71,8 @@
         "yet-another-minecraft-bingo:simplified/one_of_coral",
         "yet-another-minecraft-bingo:simplified/one_of_coral_block",
         "yet-another-minecraft-bingo:simplified/one_of_coral_fan",
+        "yet-another-minecraft-bingo:simplified/one_of_dead_coral",
+        "yet-another-minecraft-bingo:simplified/one_of_dead_coral_fan",
         "yet-another-minecraft-bingo:simplified/one_of_froglight",
         "yet-another-minecraft-bingo:simplified/one_of_music_disc",
         "yet-another-minecraft-bingo:simplified/one_of_netherite_armor",
@@ -461,7 +463,9 @@
             "yet-another-minecraft-bingo:simplified/one_of_coral",
             "yet-another-minecraft-bingo:simplified/one_of_coral_block",
             "yet-another-minecraft-bingo:simplified/one_of_coral_fan",
-            "yet-another-minecraft-bingo:simplified/one_of_dead_coral_block"
+            "yet-another-minecraft-bingo:simplified/one_of_dead_coral",
+            "yet-another-minecraft-bingo:simplified/one_of_dead_coral_block",
+            "yet-another-minecraft-bingo:simplified/one_of_dead_coral_fan"
         ],
         [
             "minecraft:acacia_log",

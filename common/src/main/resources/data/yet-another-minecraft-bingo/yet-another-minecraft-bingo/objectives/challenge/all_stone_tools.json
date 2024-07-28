@@ -1,0 +1,14 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": "\"All Stone Tools\"",
+    "item": "minecraft:stone_pickaxe"
+  },
+  "objectives": [
+    "minecraft:stone_axe",
+    "minecraft:stone_hoe",
+    "minecraft:stone_pickaxe",
+    "minecraft:stone_shovel",
+    "minecraft:stone_sword"
+  ]
+}

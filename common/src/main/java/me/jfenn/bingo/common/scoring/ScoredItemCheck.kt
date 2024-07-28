@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.scoring
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -23,14 +24,11 @@ class ScoredItemCheck(
     private val objectiveManager: BingoObjectiveManager
 ) : BingoComponent() {
 
-    private fun updateScores() {
-        val card = state.card
+    private fun updateScores(
+        tickStart: Instant,
+        sendUpdates: Boolean,
+    ) {
         val prevLeadingTeam = ScoreService.getLeading(state)
-        val tickStart = Clock.System.now()
-
-        // Update all objectives
-        objectiveManager.tick(card)
-
         val rootObjectives = state.card.entries.mapNotNull { state.card.objectives[it.objectiveId] }
 
         // find teams where any card objective has been modified since the last tick
@@ -43,8 +41,9 @@ class ScoredItemCheck(
         for (team in updatedTeams) {
             // iterate through all updated objectives on the card
             rootObjectives
-                .filter { it.updatedAt(team.key) > tickStart }
-                .forEach { objective ->
+                .takeIf { sendUpdates }
+                ?.filter { it.updatedAt(team.key) > tickStart }
+                ?.forEach { objective ->
                     // find the player that captured the objective
                     val player = objective.players.find { team.players.contains(it) }
                         ?: return@forEach
@@ -61,7 +60,7 @@ class ScoredItemCheck(
             val scoreAfter = state.updateScore(team)
 
             // if the team has scored a line, post a message
-            if (scoreAfter.lines > scoreBefore.lines) {
+            if (scoreAfter.lines > scoreBefore.lines && sendUpdates) {
                 scoreUpdateService.sendLineCaptured(team)
             }
         }
@@ -70,7 +69,7 @@ class ScoredItemCheck(
         for (team in updatedTeams) {
             val isWinner = state.updateWinner(team)
 
-            if (isWinner && options.isRankedMode) {
+            if (isWinner && options.isRankedMode && sendUpdates) {
                 // announce that another team has completed their card
                 scoreUpdateService.sendCardCompleted(team)
             }
@@ -90,7 +89,7 @@ class ScoredItemCheck(
 
         // check if the leading team has changed, and announce the leader
         val leadingTeam = ScoreService.getLeading(state)
-        if (prevLeadingTeam != leadingTeam && options.showLeadingTeam && state.getRegisteredTeams().size > 1) {
+        if (prevLeadingTeam != leadingTeam && options.showLeadingTeam && state.getRegisteredTeams().size > 1 && sendUpdates) {
             // if the leading team should be shown, announce the new leader
             if (leadingTeam != null) {
                 scoreUpdateService.sendTeamLeading(leadingTeam)
@@ -116,7 +115,15 @@ class ScoredItemCheck(
             }
 
             if (state.state == GameState.PLAYING) {
-                updateScores()
+                val tickStart = Clock.System.now()
+
+                // Update all objectives
+                objectiveManager.tick(state.card)
+
+                updateScores(
+                    tickStart = tickStart,
+                    sendUpdates = true,
+                )
             }
         }
 
@@ -124,6 +131,11 @@ class ScoredItemCheck(
             // Run one tick when the game starts
             // - this prevents notification spam for tiles that the player has already captured at the start of the game
             objectiveManager.tick(state.card)
+
+            updateScores(
+                tickStart = Instant.DISTANT_PAST,
+                sendUpdates = false,
+            )
         }
 
         events.onEnter(GameState.POSTGAME) {

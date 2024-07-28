@@ -26,6 +26,7 @@ class CardService(
     private val configService: ConfigService,
     private val tierListService: TierListState,
     private val objectiveManager: BingoObjectiveManager,
+    private val tagExpansionService: TagExpansionService,
 ) {
     fun shuffleCard() {
         // Change the BINGO seed to a new value
@@ -84,6 +85,8 @@ class CardService(
         val tiers = options.tierLists.entries
             .mapNotNull { (name, weight) ->
                 val list = tierListService.tierLists[name]
+                    ?.expandTags(tagExpansionService)
+
                 if (list == null) {
                     log.error("Unable to find tier list '$name'!")
                     return@mapNotNull null

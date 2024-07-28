@@ -75,9 +75,7 @@ sealed class BingoObjective {
      * Marks the tile as seen by the provided [team].
      */
     open fun markSeen(team: BingoTeamKey) {
-        if (teamsSeen.add(team)) {
-            markDirty(team)
-        }
+        teamsSeen.add(team)
     }
 
     @Transient
@@ -163,35 +161,35 @@ sealed class BingoObjective {
     @SerialName("one_of")
     data class OneOfEntry(
         override val id: String,
-        val objectives: List<String>,
+        val oneOfObjectives: Set<String>,
         val displayData: ObjectiveDisplay.Data?,
     ): BingoObjective() {
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
 
         override val dependsOnObjectives: List<String>
-            get() = objectives
+            get() = oneOfObjectives.toList()
     }
 
     @Serializable
     @SerialName("all_of")
     data class AllOfEntry(
         override val id: String,
-        val objectives: List<String>,
+        val allOfObjectives: Set<String>,
         val displayData: ObjectiveDisplay.Data?,
     ): BingoObjective() {
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
 
         override val dependsOnObjectives: List<String>
-            get() = objectives
+            get() = allOfObjectives.toList()
     }
 
     @Serializable
     @SerialName("inverse")
     data class InverseEntry(
         override val id: String,
-        val objective: String,
+        val inverseObjective: String,
         val displayData: ObjectiveDisplay.Data?,
     ): BingoObjective() {
         val teamsOnceAchieved = HashSet<BingoTeamKey>()
@@ -200,6 +198,6 @@ sealed class BingoObjective {
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
 
         override val dependsOnObjectives: List<String>
-            get() = listOf(objective)
+            get() = listOf(inverseObjective)
     }
 }

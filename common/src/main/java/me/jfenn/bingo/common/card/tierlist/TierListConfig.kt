@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.card.tierlist
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.common.card.TagExpansionService
 import java.util.*
 import kotlin.random.Random
 
@@ -29,8 +30,6 @@ data class TierListConfig(
             d = emptySet(),
             groups = emptyList(),
         )
-
-        const val ADVANCEMENT_PREFIX = "advancement!"
     }
 
     fun combine(other: TierListConfig): TierListConfig {
@@ -101,53 +100,26 @@ data class TierListConfig(
         }
     }
 
-    fun pick(distribution: List<Int>, excludingItems: Set<String>, random: Random): List<Pair<TierListEntry, TierLabel>> {
-        val excluding = excludingItems.toMutableSet()
-        val ret = mutableListOf<Pair<TierListEntry, TierLabel>>()
+    fun expandTags(
+        expansionService: TagExpansionService,
+    ) : TierListConfig {
+        return this.copy(
+            s = this.s.flatMap { expandTags(expansionService, it) }.toSet(),
+            a = this.a.flatMap { expandTags(expansionService, it) }.toSet(),
+            b = this.b.flatMap { expandTags(expansionService, it) }.toSet(),
+            c = this.c.flatMap { expandTags(expansionService, it) }.toSet(),
+            d = this.d.flatMap { expandTags(expansionService, it) }.toSet(),
+            groups = this.groups.map { expansionService.expandItemTags(it) },
+        )
+    }
 
-        // for each tier...
-        for ((tierIndex, tier) in TierLabel.entries.withIndex()) {
-            // get the expected number of items
-            val count = distribution.getOrNull(tierIndex) ?: 0
-            val items = getTier(tier)
-
-            val itemWeights = getWeightedSet(items)
-
-            // choose random items up to the expected count...
-            var countAdded = 0
-            while (countAdded < count && itemWeights.isNotEmpty()) {
-                val itemWeightTotal = itemWeights.sumOf { it.second }
-                val choice = random.nextDouble(0.0, itemWeightTotal)
-
-                // get the index of the random weight in the tier list
-                var i = 0
-                var itemWeightSum = 0.0
-                for ((_, weight) in itemWeights) {
-                    itemWeightSum += weight
-                    if (itemWeightSum >= choice)
-                        break
-
-                    i++
-                }
-
-                i = i.coerceAtMost(itemWeights.size - 1)
-                val (item, _) = itemWeights.removeAt(i)
-                // skip excluded items
-                if (item.asList().any { excluding.contains(it) }) continue
-
-                // add the item to the list
-                ret.add(item to tier)
-                countAdded++
-
-                // if the chosen item is in any item groups, exclude all of those groups
-                excluding.addAll(item.asList())
-                for (group in groups.filter { group -> item.asList().any { group.contains(it) } }) {
-                    excluding.addAll(group)
-                }
-            }
+    private fun expandTags(
+        expansionService: TagExpansionService,
+        entry: TierListEntry,
+    ): List<TierListEntry> {
+        return when (entry) {
+            is TierListEntry.SingleEntry -> expansionService.expandItemTag(entry.item).map { TierListEntry.SingleEntry(it) }
         }
-
-        return ret
     }
 
 }

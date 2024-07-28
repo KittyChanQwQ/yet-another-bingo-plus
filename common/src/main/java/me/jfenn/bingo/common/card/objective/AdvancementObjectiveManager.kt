@@ -62,8 +62,8 @@ class AdvancementObjectiveManager(
     }
 
     override fun tick(card: BingoCard) {
-        for (goal in card.objectivesByInstance<BingoObjective.AdvancementEntry>()) {
-            val advancement = goal.advancement ?: continue
+        for (objective in card.objectivesByInstance<BingoObjective.AdvancementEntry>()) {
+            val advancement = objective.advancement ?: continue
 
             for (team in state.getRegisteredTeams()) {
                 // don't update teams that have already won
@@ -75,7 +75,7 @@ class AdvancementObjectiveManager(
                     advancementManager.isAnyObtained(it.player, advancement)
                 }
                 if (isAnyObtained) {
-                    goal.markSeen(team.key)
+                    objective.markSeen(team.key)
                 }
 
                 val player = players.find {
@@ -83,24 +83,24 @@ class AdvancementObjectiveManager(
                 }
 
                 // if the advancement is finished, and the tile is not locked
-                if (player != null && !(options.isLockoutMode && goal.hasAnyAchieved())) {
-                    val isChanged = goal.setAchieved(team.key, true)
+                if (player != null && !(options.isLockoutMode && objective.hasAnyAchieved())) {
+                    val isChanged = objective.setAchieved(team.key, true)
 
                     // if the tile has changed, mark updatedTeams
                     if (isChanged) {
                         // record the player that captured the tile
                         val profile = BingoPlayerProfile.fromPlayer(player)
-                        goal.players.add(profile)
+                        objective.players.add(profile)
                     }
                 }
 
                 // if noone on the team has the advancement anymore, then mark it as lost...
                 if (player == null) {
-                    val isChanged = goal.setAchieved(team.key, false)
+                    val isChanged = objective.setAchieved(team.key, false)
                     // if the tile has changed, mark updatedTeams
                     if (isChanged) {
                         // since the tile was lost, remove the team's players from the tile
-                        goal.players.removeAll(team.players)
+                        objective.players.removeAll(team.players)
                     }
                 }
             }

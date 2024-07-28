@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.autorestart.RestartOnLeaveController
 import me.jfenn.bingo.common.autorestart.RestartTimerController
 import me.jfenn.bingo.common.autorestart.RestartTimerState
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryManager
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.card.objective.*
@@ -101,6 +102,7 @@ val commonModule = module {
     singleOf(::ObjectiveRegistryManager)
     singleOf(::TierListState)
     singleOf(::TierListManager)
+    singleOf(::TagExpansionService)
 
     singleOf(::ConnectionFactory)
     single { get<ConnectionFactory>().create() }
