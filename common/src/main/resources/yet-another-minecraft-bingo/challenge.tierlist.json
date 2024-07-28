@@ -4,19 +4,23 @@
     ],
     "A": [
         "yet-another-minecraft-bingo:challenge/all_diamond_armor",
-        "yet-another-minecraft-bingo:challenge/all_diamond_tools"
+        "yet-another-minecraft-bingo:challenge/all_diamond_tools",
+        "yet-another-minecraft-bingo:challenge/all_seeds",
+        "yet-another-minecraft-bingo:challenge/many_diamond"
     ],
     "B": [
         "yet-another-minecraft-bingo:challenge/all_golden_armor",
         "yet-another-minecraft-bingo:challenge/all_golden_tools",
         "yet-another-minecraft-bingo:challenge/all_iron_armor",
         "yet-another-minecraft-bingo:challenge/all_iron_tools",
+        "yet-another-minecraft-bingo:challenge/many_gold_ingot",
         "yet-another-minecraft-bingo:challenge/never_get_shield",
         "yet-another-minecraft-bingo:challenge/never_get_wheat_seeds"
     ],
     "C": [
         "yet-another-minecraft-bingo:challenge/many_carrot",
         "yet-another-minecraft-bingo:challenge/many_cod",
+        "yet-another-minecraft-bingo:challenge/many_iron_ingot",
         "yet-another-minecraft-bingo:challenge/many_potato",
         "yet-another-minecraft-bingo:challenge/many_salmon"
     ],
@@ -24,6 +28,7 @@
         "yet-another-minecraft-bingo:challenge/all_leather_armor",
         "yet-another-minecraft-bingo:challenge/all_stone_tools",
         "yet-another-minecraft-bingo:challenge/all_wooden_tools",
+        "yet-another-minecraft-bingo:challenge/many_coal",
         "yet-another-minecraft-bingo:challenge/many_leather"
     ],
     "groups": [

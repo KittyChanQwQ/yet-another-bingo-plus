@@ -32,6 +32,7 @@ sealed class ObjectiveData {
     @SerialName("inverse")
     data class Inverse(
         val objective: String,
+        val permanent: Boolean = true,
     ) : ObjectiveData()
 
 }

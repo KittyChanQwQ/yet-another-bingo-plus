@@ -63,7 +63,8 @@ class OneOfObjectiveManager(
                 objective.setAchieved(team, hasAchieved)
             }
 
-            objective.players = objectives.flatMap { it.players }.toHashSet()
+            objective.players.clear()
+            objective.players.addAll(objectives.flatMap { it.players })
         }
     }
 }

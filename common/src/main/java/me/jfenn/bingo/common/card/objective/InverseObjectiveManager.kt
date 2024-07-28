@@ -23,6 +23,7 @@ class InverseObjectiveManager(
         return BingoObjective.InverseEntry(
             id = id,
             inverseObjective = data.objective,
+            permanent = data.permanent,
             displayData = data.display,
         )
     }
@@ -49,13 +50,14 @@ class InverseObjectiveManager(
 
             for (team in state.getRegisteredTeams()) {
                 val hasSeen = inverse.hasSeen(team.key)
-                val hasAchieved = !inverse.hasAchieved(team.key) && !objective.teamsOnceAchieved.contains(team.key)
+                val hasAchieved = when {
+                    // if permanent, a team should not be able to recapture this objective after losing it
+                    objective.permanent -> !inverse.hasAchieved(team.key) && !objective.teamsOnceAchieved.contains(team.key)
+                    else -> !inverse.hasAchieved(team.key)
+                }
 
                 if (hasSeen) inverse.markSeen(team.key)
                 objective.setAchieved(team.key, hasAchieved)
-
-                // Once the inverse tile is lost, add the team to `teamsOnceAchieved` so they cannot obtain it again
-                if (!hasAchieved) objective.teamsOnceAchieved.add(team.key)
             }
         }
     }

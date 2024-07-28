@@ -1,0 +1,13 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": "\"All Seeds\"",
+    "item": "minecraft:wheat_seeds"
+  },
+  "objectives": [
+    "minecraft:wheat_seeds",
+    "minecraft:melon_seeds",
+    "minecraft:pumpkin_seeds",
+    "minecraft:beetroot_seeds"
+  ]
+}

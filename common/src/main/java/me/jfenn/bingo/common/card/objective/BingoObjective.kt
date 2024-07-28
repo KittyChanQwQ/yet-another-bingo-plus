@@ -20,9 +20,14 @@ sealed class BingoObjective {
 
     abstract val id: String
 
-    open var teamsSeen = HashSet<BingoTeamKey>()
-    open var teams = HashSet<BingoTeamKey>()
-    open var players = HashSet<BingoPlayerProfile>()
+    /** Includes teams that have observed or made partial progress on the objective */
+    val teamsSeen = HashSet<BingoTeamKey>()
+    /** Includes teams that have currently achieved the objective */
+    val teams = HashSet<BingoTeamKey>()
+    /** Includes teams that have previously achieved and then lost the objective */
+    val teamsOnceAchieved = HashSet<BingoTeamKey>()
+    /** Includes players that have currently achieved the objective */
+    val players = HashSet<BingoPlayerProfile>()
 
     @Transient
     open val display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
@@ -54,7 +59,11 @@ sealed class BingoObjective {
     open fun setAchieved(team: BingoTeamKey, value: Boolean): Boolean {
         return when {
             value -> teams.add(team)
-            else -> teams.remove(team)
+            else -> {
+                // when first lost, add the team to teamsOnceAchieved
+                teamsOnceAchieved.add(team)
+                teams.remove(team)
+            }
         }.also { changed ->
             if (changed) markDirty(team)
         }
@@ -190,10 +199,9 @@ sealed class BingoObjective {
     data class InverseEntry(
         override val id: String,
         val inverseObjective: String,
+        val permanent: Boolean,
         val displayData: ObjectiveDisplay.Data?,
     ): BingoObjective() {
-        val teamsOnceAchieved = HashSet<BingoTeamKey>()
-
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
 

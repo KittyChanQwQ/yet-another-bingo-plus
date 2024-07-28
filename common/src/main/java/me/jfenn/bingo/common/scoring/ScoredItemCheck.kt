@@ -42,7 +42,8 @@ class ScoredItemCheck(
             // iterate through all updated objectives on the card
             rootObjectives
                 .takeIf { sendUpdates }
-                ?.filter { it.updatedAt(team.key) > tickStart }
+                // if the objective has been updated in this tick, is achieved by the team, and it is their first time obtaining it...
+                ?.filter { it.updatedAt(team.key) > tickStart && it.hasAchieved(team.key) && !it.teamsOnceAchieved.contains(team.key) }
                 ?.forEach { objective ->
                     // find the player that captured the objective
                     val player = objective.players.find { team.players.contains(it) }
