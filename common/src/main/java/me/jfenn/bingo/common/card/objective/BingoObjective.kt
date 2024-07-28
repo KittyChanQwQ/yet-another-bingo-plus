@@ -32,7 +32,10 @@ sealed class BingoObjective {
     @Transient
     open val display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
 
-    open val dependsOnObjectives: List<String> get() = emptyList()
+    @Transient
+    val dependsOnObjectives = mutableSetOf<String>()
+    @Transient
+    val conflictsWithObjectives = mutableSetOf<String>()
 
     fun visualItem(tier: TierLabel?): IItemStack? {
         return this.display.item?.copy()?.also { stack ->
@@ -60,9 +63,12 @@ sealed class BingoObjective {
         return when {
             value -> teams.add(team)
             else -> {
-                // when first lost, add the team to teamsOnceAchieved
-                teamsOnceAchieved.add(team)
-                teams.remove(team)
+                val changed = teams.remove(team)
+                if (changed) {
+                    // when first lost, add the team to teamsOnceAchieved
+                    teamsOnceAchieved.add(team)
+                }
+                changed
             }
         }.also { changed ->
             if (changed) markDirty(team)
@@ -143,8 +149,14 @@ sealed class BingoObjective {
         override val id: String,
         val itemId: String,
         val itemCount: Int = 1,
+        val itemNbt: String? = null,
+        val itemComponents: Map<String, String?>? = null,
         val displayData: ObjectiveDisplay.Data? = null,
     ): BingoObjective() {
+        init {
+            conflictsWithObjectives.add(itemId)
+        }
+
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
 
@@ -158,12 +170,15 @@ sealed class BingoObjective {
         override val id: String,
         val advancementId: String,
     ): BingoObjective() {
+        init {
+            conflictsWithObjectives.add(advancementId)
+        }
+
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
 
         @Transient
         var advancement: IAdvancementHandle? = null
-
     }
 
     @Serializable
@@ -173,11 +188,13 @@ sealed class BingoObjective {
         val oneOfObjectives: Set<String>,
         val displayData: ObjectiveDisplay.Data?,
     ): BingoObjective() {
+        init {
+            dependsOnObjectives.addAll(oneOfObjectives)
+            conflictsWithObjectives.addAll(oneOfObjectives)
+        }
+
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
-
-        override val dependsOnObjectives: List<String>
-            get() = oneOfObjectives.toList()
     }
 
     @Serializable
@@ -187,11 +204,13 @@ sealed class BingoObjective {
         val allOfObjectives: Set<String>,
         val displayData: ObjectiveDisplay.Data?,
     ): BingoObjective() {
+        init {
+            dependsOnObjectives.addAll(allOfObjectives)
+            conflictsWithObjectives.addAll(allOfObjectives)
+        }
+
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
-
-        override val dependsOnObjectives: List<String>
-            get() = allOfObjectives.toList()
     }
 
     @Serializable
@@ -202,10 +221,12 @@ sealed class BingoObjective {
         val permanent: Boolean,
         val displayData: ObjectiveDisplay.Data?,
     ): BingoObjective() {
+        init {
+            dependsOnObjectives.add(inverseObjective)
+            conflictsWithObjectives.add(inverseObjective)
+        }
+
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
-
-        override val dependsOnObjectives: List<String>
-            get() = listOf(inverseObjective)
     }
 }

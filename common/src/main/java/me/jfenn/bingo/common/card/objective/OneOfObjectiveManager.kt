@@ -26,7 +26,9 @@ class OneOfObjectiveManager(
             id = id,
             oneOfObjectives = tagExpansionService.expandItemTags(data.objectives),
             displayData = data.display,
-        )
+        ).also {
+            it.conflictsWithObjectives.addAll(data.conflictsWith)
+        }
     }
 
     override fun init(card: BingoCard) {

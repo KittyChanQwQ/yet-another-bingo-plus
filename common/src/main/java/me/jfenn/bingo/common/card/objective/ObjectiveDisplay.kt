@@ -11,11 +11,7 @@ class ObjectiveDisplay {
         val item: IItemStack? = null,
     ) {
         companion object {
-            val EMPTY = Resolved(
-                name = null,
-                lore = emptyList(),
-                item = null,
-            )
+            val EMPTY = Resolved()
         }
     }
 
@@ -25,6 +21,6 @@ class ObjectiveDisplay {
         val lore: List<String> = emptyList(),
         val item: String? = null,
         val itemNbt: String? = null,
-        val itemComponents: Map<String, String> = emptyMap(),
+        val itemComponents: Map<String, String>? = null,
     )
 }

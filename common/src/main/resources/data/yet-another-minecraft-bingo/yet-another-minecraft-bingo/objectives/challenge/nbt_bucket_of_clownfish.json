@@ -1,0 +1,11 @@
+{
+  "type": "item",
+  "display": {
+    "name": "\"Bucket of Clownfish\""
+  },
+  "item": "minecraft:tropical_fish_bucket",
+  "nbt": "{BucketVariantTag:65536}",
+  "components": {
+    "minecraft:bucket_entity_data": "{\"BucketVariantTag\":65536}"
+  }
+}

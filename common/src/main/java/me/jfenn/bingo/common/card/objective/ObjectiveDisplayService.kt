@@ -15,7 +15,7 @@ class ObjectiveDisplayService(
             val lore = data.lore.map { textSerializer.fromJson(it) }
             val item = data.item?.let { itemStackFactory.createStack(data.item) }
             item?.setNbtString(data.itemNbt)
-            item?.setComponentsString(data.itemComponents)
+            data.itemComponents?.let { item?.setComponentsString(it) }
 
             ObjectiveDisplay.Resolved(
                 name = name,

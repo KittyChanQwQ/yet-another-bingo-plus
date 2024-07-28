@@ -8,12 +8,15 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay
 sealed class ObjectiveData {
 
     val display: ObjectiveDisplay.Data? = null
+    val conflictsWith: List<String> = emptyList()
 
     @Serializable
     @SerialName("item")
     data class Item(
         val item: String,
         val count: NumberProvider = NumberProvider.Constant(1),
+        val nbt: String? = null,
+        val components: Map<String, String?>? = null,
     ) : ObjectiveData()
 
     @Serializable

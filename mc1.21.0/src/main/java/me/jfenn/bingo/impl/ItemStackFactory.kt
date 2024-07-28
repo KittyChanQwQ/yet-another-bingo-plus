@@ -3,6 +3,7 @@ package me.jfenn.bingo.impl
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
+import com.google.gson.JsonNull
 import com.mojang.serialization.JsonOps
 import me.jfenn.bingo.api.item.*
 import net.minecraft.component.ComponentType
@@ -12,7 +13,6 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.Registries
 import net.minecraft.resource.featuretoggle.FeatureFlags
 import net.minecraft.server.MinecraftServer
@@ -127,28 +127,20 @@ class ItemStackFactory(
 
         private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
 
-        override fun setNbtString(nbt: String?) {
-            val compound = nbt?.let { StringNbtReader.parse(it) }
-            if (compound != null) {
-                stack[DataComponentTypes.CUSTOM_DATA] = NbtComponent.of(compound)
-            } else {
-                stack.remove(DataComponentTypes.CUSTOM_DATA)
-            }
-        }
+        override fun setNbtString(nbt: String?) = true
 
-        override fun getNbtString(): String? {
-            return stack[DataComponentTypes.CUSTOM_DATA]?.copyNbt()
-                ?.takeIf { it.keys.isNotEmpty() }
-                ?.toString()
-        }
+        override fun getNbtString(): String? = null
 
-        override fun setComponentsString(components: Map<String, String?>) {
+        override fun setComponentsString(components: Map<String, String?>): Boolean {
+            var isSuccessful = true
+
             for ((key, value) in components) {
                 val id = Identifier.tryParse(key)
                 val type = id?.let { Registries.DATA_COMPONENT_TYPE.get(it) }
 
                 if (id == null || type == null) {
                     logger.error("[ItemStackFactory] Error parsing item component $key for ${item.translationKey}: not a valid identifier")
+                    isSuccessful = false
                     continue
                 }
 
@@ -159,17 +151,20 @@ class ItemStackFactory(
 
                 val jsonElement = gson.fromJson(value, JsonElement::class.java)
                 val component = try {
-                    type.codec
-                        ?.decode(JsonOps.INSTANCE, jsonElement)
-                        ?.getOrThrow()
-                        ?.first
+                    type.codecOrThrow
+                        .decode(JsonOps.INSTANCE, jsonElement)
+                        .getOrThrow()
+                        .first
                 } catch (e: Throwable) {
                     logger.error("[ItemStackFactory] Error parsing item component $key for ${item.translationKey}", e)
+                    isSuccessful = false
                     null
                 }
 
                 stack.set(@Suppress("UNCHECKED_CAST") (type as ComponentType<Any>), component)
             }
+
+            return isSuccessful
         }
 
         override fun getComponentsString(): Map<String, String?>? {
@@ -189,6 +184,56 @@ class ItemStackFactory(
             }
 
             return components.takeIf { it.isNotEmpty() }
+        }
+
+        private fun gsonOverlapsRecursive(predicate: JsonElement, actual: JsonElement): Boolean {
+            if (predicate.isJsonNull && actual.isJsonNull) {
+                return true
+            }
+            if (predicate.isJsonPrimitive && actual.isJsonPrimitive) {
+                return predicate.asString == actual.asString
+            }
+            if (predicate.isJsonArray && actual.isJsonArray) {
+                val predicateArr = predicate.asJsonArray
+                val actualArr = actual.asJsonArray
+                return predicateArr.all { predicateItem ->
+                    actualArr.any { actualItem -> gsonOverlapsRecursive(predicateItem, actualItem) }
+                }
+            }
+            if (predicate.isJsonObject && actual.isJsonObject) {
+                val predicateObj = predicate.asJsonObject
+                val actualObj = actual.asJsonObject
+                return predicateObj.keySet().all {
+                    gsonOverlapsRecursive(predicateObj.get(it) ?: JsonNull.INSTANCE, actualObj.get(it) ?: JsonNull.INSTANCE)
+                }
+            }
+            return false
+        }
+
+        override fun isDataOverlapping(nbt: String?, components: Map<String, String?>?): Boolean {
+            if (components == null) return true
+
+            val itemComponents = getComponentsString()
+                ?.mapValues { (_, value) -> value?.let { gson.fromJson(it, JsonElement::class.java) } }
+                ?: return components.isEmpty()
+
+            val predicateComponents = try {
+                components.mapValues { (_, value) ->
+                    value?.let { gson.fromJson(it, JsonElement::class.java) }
+                }
+            } catch (e: Throwable) {
+                logger.error("[ItemStackFactory] Error parsing item components for ${item.translationKey} predicate", e)
+                return false
+            }
+
+            return predicateComponents.all { (key, predicateComponent) ->
+                val itemComponent = itemComponents[key]
+                when {
+                    predicateComponent == null -> itemComponent != null
+                    itemComponent == null -> false
+                    else -> gsonOverlapsRecursive(predicateComponent, itemComponent)
+                }
+            }
         }
 
         override fun copy(): IItemStack {

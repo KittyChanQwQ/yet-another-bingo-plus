@@ -15,7 +15,7 @@ class BingoObjectiveManager(
             return goal
         }
 
-        log.error("[BingoGoalProvider] Could not resolve goal id '$id' - does your tier list have a typo?")
+        log.error("[BingoGoalProvider] Could not resolve objective id '$id'")
         return null
     }
 

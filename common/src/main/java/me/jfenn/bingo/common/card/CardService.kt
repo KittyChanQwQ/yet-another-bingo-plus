@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.card
 
-import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.tierlist.TierLabel
@@ -10,7 +9,6 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamService
-import me.jfenn.bingo.common.utils.json
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
@@ -64,7 +62,7 @@ class CardService(
 
         // Exclude any items from the card that the player might spawn with
         // (e.g. elytra mode, player/team kits...)
-        val excludedItems = if (configService.config.excludeSpawnKitItemsFromCards) {
+        val excludedObjectives = if (configService.config.excludeSpawnKitItemsFromCards) {
             buildSet {
                 if (options.isPlayerKit)
                     addAll(options.playerKitItems.map { it.id })
@@ -114,11 +112,23 @@ class CardService(
 
                 // The actual number of items might differ from the expected amount, if the tier list
                 // does not have enough entries in it
-                val tierItems = list.pick(tier, excludedItems, random)
+                val tierItems = list.pick(tier, excludedObjectives, random)
                     .filterIsInstance<TierListEntry.SingleEntry>()
                     .mapNotNull { entry ->
                         val objectiveId = entry.item.substringAfterLast("!")
-                        createGoal(objectiveId, state)?.let { Pair(objectiveId, it) }
+                        val objectiveMap = createObjectives(objectiveId, state) ?: return@mapNotNull null
+
+                        val objectiveConflicts = objectiveMap.values
+                            .flatMap { it.conflictsWithObjectives }
+                            .filter { it != objectiveId } // any direct objectiveId conflicts are handled by list.pick()
+                        if (objectiveConflicts.any { excludedObjectives.contains(it) })
+                            return@mapNotNull null
+
+                        // add this objective and any dependencies to the excluded list to prevent conflicting goals
+                        // - this prevents "craft a shield" and "never obtain shield" from appearing on the same card
+                        excludedObjectives.addAll(objectiveConflicts)
+
+                        Pair(objectiveId, objectiveMap)
                     }
                     .take(itemCount)
                     .toList()
@@ -157,7 +167,7 @@ class CardService(
         return BingoCard(items, objectives)
     }
 
-    private fun createGoal(
+    private fun createObjectives(
         objectiveId: String,
         state: CardGeneratorState,
         objectives: MutableMap<String, BingoObjective> = mutableMapOf(),
@@ -171,10 +181,10 @@ class CardService(
         objectives[objectiveId] = objective
 
         val isResolved = objective.dependsOnObjectives.all {
-            objectives.containsKey(it) || createGoal(it, state, objectives) != null
+            objectives.containsKey(it) || createObjectives(it, state, objectives) != null
         }
 
-        // if any goal dependencies fail to resolve, return null
+        // if any dependencies fail to resolve, return null
         if (!isResolved) {
             log.warn("[CardService] Could not resolve all dependencies for objective '$objectiveId'")
             return null

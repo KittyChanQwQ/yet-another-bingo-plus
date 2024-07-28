@@ -38,8 +38,12 @@ class ItemObjectiveManager(
                     id = id,
                     itemId = data.item,
                     itemCount = data.count.resolve(state),
+                    itemNbt = data.nbt,
+                    itemComponents = data.components,
                     displayData = data.display,
-                )
+                ).also {
+                    it.conflictsWithObjectives.addAll(data.conflictsWith)
+                }
             }
             ?.takeIf { init(it) }
             ?.let { return it }
@@ -60,10 +64,16 @@ class ItemObjectiveManager(
             return false
         }
 
+        val isNbtSuccessful = stack.setNbtString(objective.itemNbt)
+        val isComponentsSuccessful = objective.itemComponents?.let { stack.setComponentsString(it) } ?: true
+
+        if (!isNbtSuccessful || !isComponentsSuccessful)
+            return false
+
         objective.itemStack = stack
         objective.display = objective.displayData
             ?.let { objectiveDisplayService.resolve(objective.id, it) }
-            ?.let { it.copy(name = it.name?.withCount(objective.itemCount)) }
+            ?.let { it.copy(name = it.name?.withCount(objective.itemCount), item = it.item ?: stack) }
             ?: ObjectiveDisplay.Resolved(
                 name = stack.displayName.withCount(objective.itemCount),
                 item = stack
@@ -92,7 +102,8 @@ class ItemObjectiveManager(
         val objectiveStack = objective.itemStack ?: return false
         return stack.item == objectiveStack.item &&
                 !stack.hasCustomTag(NBT_BINGO_IGNORE) &&
-                stack.count >= objective.itemCount
+                stack.count >= objective.itemCount &&
+                stack.isDataOverlapping(nbt = objective.itemNbt, components = objective.itemComponents)
     }
 
     override fun tick(card: BingoCard) {

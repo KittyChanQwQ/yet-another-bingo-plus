@@ -9,14 +9,17 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.nbt.StringNbtReader
+import net.minecraft.predicate.NbtPredicate
 import net.minecraft.registry.Registries
 import net.minecraft.resource.featuretoggle.FeatureFlags
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import org.slf4j.Logger
 
 class ItemStackFactory(
+    private val logger: Logger,
     private val textSerializer: ITextSerializer,
 ) : IItemStackFactory {
     override fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean {
@@ -123,16 +126,29 @@ class ItemStackFactory(
             }
         }
 
-        override fun setNbtString(nbt: String?) {
-            stack.nbt = nbt?.let { StringNbtReader.parse(it) }
+        override fun setNbtString(nbt: String?): Boolean {
+            return try {
+                stack.nbt = nbt?.let { StringNbtReader.parse(it) }
+                true
+            } catch (e: Throwable) {
+                logger.error("[ItemStackFactory] Unable to parse NBT for item ${item.translationKey}: '$nbt'", e)
+                false
+            }
         }
 
         override fun getNbtString(): String? {
             return stack.nbt?.toString()
         }
 
-        override fun setComponentsString(components: Map<String, String?>) = Unit
+        override fun setComponentsString(components: Map<String, String?>) = true
         override fun getComponentsString(): Map<String, String?>? = null
+
+        override fun isDataOverlapping(nbt: String?, components: Map<String, String?>?): Boolean {
+            val nbtCompound = nbt?.let { StringNbtReader.parse(it) }
+                ?: return true
+
+            return NbtPredicate(nbtCompound).test(stack)
+        }
 
         override fun copy(): IItemStack {
             return ItemStackImpl(stack.copy())
