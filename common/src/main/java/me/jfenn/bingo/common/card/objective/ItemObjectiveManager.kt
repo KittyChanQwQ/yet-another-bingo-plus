@@ -51,10 +51,10 @@ class ItemObjectiveManager(
         if (goal !is BingoObjective.ItemEntry) return false
 
         val stack = try {
-            if (!itemStackFactory.isEnabledInWorld(goal.id, server))
+            if (!itemStackFactory.isEnabledInWorld(goal.itemId, server))
                 throw IllegalArgumentException()
 
-            itemStackFactory.createStack(goal.id)
+            itemStackFactory.createStack(goal.itemId, count = goal.itemCount)
         } catch (e: Throwable) {
             return false
         }
