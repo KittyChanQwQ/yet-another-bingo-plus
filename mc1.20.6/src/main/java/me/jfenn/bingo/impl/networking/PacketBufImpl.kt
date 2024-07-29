@@ -21,6 +21,9 @@ class PacketBufImpl(
     override fun writeLong(long: Long) = buf.writeLong(long).let {}
     override fun readLong(): Long = buf.readLong()
 
+    override fun writeFloat(float: Float) = buf.writeFloat(float).let {}
+    override fun readFloat(): Float = buf.readFloat()
+
     override fun writeBoolean(bool: Boolean) = buf.writeBoolean(bool).let {}
     override fun readBoolean(): Boolean = buf.readBoolean()
 

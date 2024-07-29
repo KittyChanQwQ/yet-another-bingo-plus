@@ -16,6 +16,11 @@ class AdvancementManager : IAdvancementManager {
             ?.let { AdvancementHandle(it) }
     }
 
+    override fun getProgress(player: ServerPlayerEntity, advancement: IAdvancementHandle): Float {
+        require(advancement is AdvancementHandle)
+        return player.advancementTracker.getProgress(advancement.advancement).progressBarPercentage
+    }
+
     override fun isAnyObtained(player: ServerPlayerEntity, advancement: IAdvancementHandle): Boolean {
         require(advancement is AdvancementHandle)
         return player.advancementTracker.getProgress(advancement.advancement).isAnyObtained

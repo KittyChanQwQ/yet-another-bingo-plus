@@ -35,18 +35,15 @@ class AllOfObjectiveManager(
 
     override fun init(card: BingoCard) {
         for (objective in card.objectivesByInstance<BingoObjective.AllOfEntry>()) {
-            objective.display = objective.displayData
-                ?.let { objectiveDisplayService.resolve(objective.id, it) }
-                ?: run {
-                    val objectives = objective.allOfObjectives.mapNotNull { card.objectives[it] }
-                    val displayNames = objectives.mapNotNull { it.display.name }
-                    ObjectiveDisplay.Resolved(
-                        name = text.string(StringKey.ObjectiveAllOf, Text.empty().append(displayNames.firstOrNull() ?: Text.empty()).append(", ..."))
-                            .formatted(Formatting.GRAY, Formatting.ITALIC),
-                        lore = displayNames,
-                        item = objectives.firstNotNullOfOrNull { it.display.item },
-                    )
-                }
+            val objectives = objective.allOfObjectives.mapNotNull { card.objectives[it] }
+            val displayNames = objectives.mapNotNull { it.display.name }
+            val display = ObjectiveDisplay.Resolved(
+                name = text.string(StringKey.ObjectiveAllOf, Text.empty().append(displayNames.firstOrNull() ?: Text.empty()).append(", ...")),
+                lore = displayNames,
+                item = objectives.firstNotNullOfOrNull { it.display.item },
+            )
+
+            objective.display = objectiveDisplayService.resolve(objective.id, objective.displayData, display)
         }
     }
 
@@ -57,6 +54,12 @@ class AllOfObjectiveManager(
             for (team in state.getRegisteredTeams()) {
                 val hasSeen = objectives.any { it.hasSeen(team.key) }
                 val hasAchieved = objectives.all { it.hasAchieved(team.key) }
+
+                val progress = objectives
+                    .map { it.getProgress(team.key) }
+                    .sum() / objectives.size.coerceAtLeast(1).toFloat()
+
+                objective.setProgress(team.key, progress)
 
                 // If lockout mode, prevent new teams from achieving the objective
                 if (hasAchieved && options.isLockoutMode && objective.hasAnyAchieved())

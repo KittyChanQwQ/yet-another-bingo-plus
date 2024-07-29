@@ -28,6 +28,7 @@ interface IItemStack {
     val maxCount: Int
 
     val displayName: Text
+    val lore: List<Text>
 
     fun addCustomTag(tag: String)
     fun removeCustomTag(tag: String)

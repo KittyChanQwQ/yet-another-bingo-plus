@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
+import me.jfenn.bingo.client.api.ClientPacket
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.client.api.IHudCallback
 import me.jfenn.bingo.client.api.IOptionsAccessor
@@ -8,6 +9,7 @@ import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.game.GameOverPacket
+import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.text.TextProvider
@@ -166,6 +168,12 @@ class BingoHudController(
         state.messages.add(scoreMessage)
     }
 
+    private fun onCardUpdate(clientPacket: ClientPacket<CardUpdatePacket>) {
+        val packet = clientPacket.packet
+        state.views[packet.view.teamKey] = packet.view
+        updateGameOverViews()
+    }
+
     init {
         packetEvents.cardDisplayV1.onPacket {
             state.display = it.packet
@@ -179,20 +187,10 @@ class BingoHudController(
             }
         }
 
-        packetEvents.cardUpdateV1.onPacket { (packet) ->
-            state.views[packet.view.teamKey] = packet.view
-            updateGameOverViews()
-        }
-
-        packetEvents.cardUpdateV2.onPacket { (packet) ->
-            state.views[packet.view.teamKey] = packet.view
-            updateGameOverViews()
-        }
-
-        packetEvents.cardUpdateV3.onPacket { (packet) ->
-            state.views[packet.view.teamKey] = packet.view
-            updateGameOverViews()
-        }
+        packetEvents.cardUpdateV1.onPacket(::onCardUpdate)
+        packetEvents.cardUpdateV2.onPacket(::onCardUpdate)
+        packetEvents.cardUpdateV3.onPacket(::onCardUpdate)
+        packetEvents.cardUpdateV4.onPacket(::onCardUpdate)
 
         packetEvents.scoreMessageV1.onPacket { (packet) ->
             onScoreMessage(packet)

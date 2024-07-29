@@ -2,6 +2,9 @@ package me.jfenn.bingo.common.card.objective
 
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.api.item.IItemStackFactory
+import net.minecraft.text.Style
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import org.slf4j.Logger
 
 class ObjectiveDisplayService(
@@ -9,13 +12,22 @@ class ObjectiveDisplayService(
     private val itemStackFactory: IItemStackFactory,
     private val log: Logger,
 ) {
-    fun resolve(id: String, data: ObjectiveDisplay.Data): ObjectiveDisplay.Resolved? {
-        return try {
-            val name = data.name?.let { textSerializer.fromJson(it) }
-            val lore = data.lore.map { textSerializer.fromJson(it) }
-            val item = data.item?.let { itemStackFactory.createStack(data.item) }
-            item?.setNbtString(data.itemNbt)
-            data.itemComponents?.let { item?.setComponentsString(it) }
+    fun resolve(
+        id: String,
+        data: ObjectiveDisplay.Data?,
+        fallback: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+    ): ObjectiveDisplay.Resolved = run {
+        if (data == null) return@run fallback
+
+        try {
+            val name = data.name?.let { textSerializer.fromJson(it) } ?: fallback.name
+            val lore = data.lore?.map { textSerializer.fromJson(it) } ?: fallback.lore
+            val item = data.item?.let {
+                val stack = itemStackFactory.createStack(data.item)
+                stack.setNbtString(data.itemNbt)
+                data.itemComponents?.let { stack.setComponentsString(it) }
+                stack
+            } ?: fallback.item
 
             ObjectiveDisplay.Resolved(
                 name = name,
@@ -24,7 +36,17 @@ class ObjectiveDisplayService(
             )
         } catch (e: Throwable) {
             log.error("Unable to resolve objective display for '$id'", e)
-            null
+            fallback
         }
+    }.let { display ->
+        display.copy(
+            name = display.name?.let { name ->
+                when {
+                    name == display.item?.displayName -> name
+                    else -> Text.empty().append(name).formatted(Formatting.ITALIC)
+                }
+            },
+            lore = display.lore?.map { Text.empty().append(it).formatted(Formatting.DARK_PURPLE) }
+        )
     }
 }

@@ -7,7 +7,7 @@ import net.minecraft.text.Text
 class ObjectiveDisplay {
     data class Resolved(
         val name: Text? = null,
-        val lore: List<Text> = emptyList(),
+        val lore: List<Text>? = null,
         val item: IItemStack? = null,
     ) {
         companion object {
@@ -18,7 +18,7 @@ class ObjectiveDisplay {
     @Serializable
     class Data(
         val name: String? = null,
-        val lore: List<String> = emptyList(),
+        val lore: List<String>? = null,
         val item: String? = null,
         val itemNbt: String? = null,
         val itemComponents: Map<String, String>? = null,

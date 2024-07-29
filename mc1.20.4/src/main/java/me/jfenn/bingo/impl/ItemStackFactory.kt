@@ -5,10 +5,7 @@ import me.jfenn.bingo.api.item.*
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.NbtList
-import net.minecraft.nbt.NbtString
-import net.minecraft.nbt.StringNbtReader
+import net.minecraft.nbt.*
 import net.minecraft.predicate.NbtPredicate
 import net.minecraft.registry.Registries
 import net.minecraft.resource.featuretoggle.FeatureFlags
@@ -76,6 +73,14 @@ class ItemStackFactory(
 
         override val displayName: Text
             get() = stack.name
+
+        override val lore: List<Text>
+            get() = stack.nbt
+                ?.takeIf { it.getType("Lore") == NbtElement.LIST_TYPE }
+                ?.getList("Lore", NbtElement.STRING_TYPE.toInt())
+                ?.filterIsInstance<NbtString>()
+                ?.mapNotNull { Text.Serialization.fromJson(it.asString()) }
+                ?: emptyList()
 
         override var count: Int
             get() = stack.count

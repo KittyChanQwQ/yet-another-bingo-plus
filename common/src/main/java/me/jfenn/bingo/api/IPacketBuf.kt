@@ -13,6 +13,9 @@ interface IPacketBuf {
     fun writeLong(long: Long)
     fun readLong(): Long
 
+    fun writeFloat(float: Float)
+    fun readFloat(): Float
+
     fun writeBoolean(bool: Boolean)
     fun readBoolean(): Boolean
 

@@ -251,6 +251,7 @@ class MapRenderService(
         require(itemX in 0 until 5)
         require(itemY in 0 until 5)
 
+        var isRegularTile: Boolean = false
         val tileImage = getTileImage(tile) ?: BingoTileImage.EMPTY
         val tileImageArray = when {
             tile.isHidden -> when {
@@ -262,7 +263,10 @@ class MapRenderService(
             }
             tile.isFlashing -> tileImage.flashing
             tile.isAchieved -> tileImage.achieved
-            else -> tileImage.regular
+            else -> {
+                isRegularTile = true
+                tileImage.regular
+            }
         }
 
         val tileX = MAP_BORDER + TILE_SIZE*itemX
@@ -273,8 +277,14 @@ class MapRenderService(
             val y = tileY + innerY
             val mapStateStart = tileX + y * MAP_SIZE
             val tileImageStart = innerY * IMAGE_SIZE
+
+            val arr = when {
+                isRegularTile && innerY > innerMax * (1f - tile.progress) -> tileImage.flashing
+                else -> tileImageArray
+            }
+
             // Uses System.arraycopy, which is a lot faster than manually setting each byte
-            tileImageArray.copyInto(mapState.colors, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
+            arr.copyInto(mapState.colors, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
         }
 
         // Draw the advancement frame if the tile is an advancement

@@ -10,6 +10,8 @@ interface IAdvancementManager {
 
     fun getAdvancement(server: MinecraftServer, id: String): IAdvancementHandle?
 
+    fun getProgress(player: ServerPlayerEntity, advancement: IAdvancementHandle): Float
+
     fun isAnyObtained(player: ServerPlayerEntity, advancement: IAdvancementHandle): Boolean
 
     fun isDone(player: ServerPlayerEntity, advancement: IAdvancementHandle): Boolean

@@ -83,6 +83,9 @@ class ItemStackFactory(
         override val displayName: Text
             get() = stack.name
 
+        override val lore: List<Text>
+            get() = stack[DataComponentTypes.LORE]?.lines ?: emptyList()
+
         override var count: Int
             get() = stack.count
             set(value) {

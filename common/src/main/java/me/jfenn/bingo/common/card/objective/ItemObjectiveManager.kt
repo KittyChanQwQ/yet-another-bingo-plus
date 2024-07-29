@@ -72,13 +72,13 @@ class ItemObjectiveManager(
             return false
 
         objective.itemStack = stack
-        objective.display = objective.displayData
-            ?.let { objectiveDisplayService.resolve(objective.id, it) }
-            ?.let { it.copy(name = it.name?.withCount(objective.itemCount), item = it.item ?: stack) }
-            ?: ObjectiveDisplay.Resolved(
-                name = stack.displayName.withCount(objective.itemCount),
-                item = stack
-            )
+
+        val display = ObjectiveDisplay.Resolved(
+            name = stack.displayName,
+            item = stack
+        )
+        objective.display = objectiveDisplayService.resolve(objective.id, objective.displayData, display)
+            .let { it.copy(name = it.name?.withCount(objective.itemCount)) }
 
         return true
     }
@@ -99,16 +99,26 @@ class ItemObjectiveManager(
         }
     }
 
-    private fun canSatisfy(stack: IItemStack, objective: BingoObjective.ItemEntry) : Boolean {
+    private fun canSatisfyPartial(stack: IItemStack, objective: BingoObjective.ItemEntry) : Boolean {
         val objectiveStack = objective.itemStack ?: return false
         return stack.item == objectiveStack.item &&
                 !stack.hasCustomTag(NBT_BINGO_IGNORE) &&
-                stack.count >= objective.itemCount &&
                 stack.isDataOverlapping(nbt = objective.itemNbt, components = objective.itemComponents)
+    }
+
+    private fun canSatisfy(stack: IItemStack, objective: BingoObjective.ItemEntry) : Boolean {
+        return canSatisfyPartial(stack, objective) &&
+                stack.count >= objective.itemCount
     }
 
     override fun tick(card: BingoCard) {
         val now = Clock.System.now()
+
+        // If in inventory mode, reset all objective progress on each tick
+        if (options.isInventoryMode) {
+            for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>())
+                objective.clearAllProgress()
+        }
 
         for (player in playerManager.getPlayers()) {
             val team = teamService.getPlayerTeam(player.player) ?: continue
@@ -124,14 +134,20 @@ class ItemObjectiveManager(
 
                 for (objective in objectives) {
                     // if the item hasn't been achieved and can be satisfied, mark it as collected
-                    if (canSatisfy(stack, objective)) {
+                    if (canSatisfyPartial(stack, objective)) {
                         objective.markSeen(team.key)
                     } else {
                         continue
                     }
 
+                    val progress = stack.count / objective.itemCount.coerceAtLeast(1).toFloat()
+                    objective.increaseProgress(team.key, progress)
+
                     // if the gamemode is lockout, tiles cannot be collected by >1 team
                     if (options.isLockoutMode && objective.hasAnyAchieved())
+                        continue
+
+                    if (!canSatisfy(stack, objective))
                         continue
 
                     val isChanged = objective.setAchieved(team.key, true)

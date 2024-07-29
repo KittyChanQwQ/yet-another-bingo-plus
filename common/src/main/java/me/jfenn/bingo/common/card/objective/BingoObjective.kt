@@ -15,6 +15,7 @@ import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import java.util.UUID
+import kotlin.math.max
 import kotlin.time.Duration
 
 @Serializable
@@ -31,6 +32,8 @@ sealed class BingoObjective {
     /** Includes players that have currently achieved the objective */
     val players = HashMap<UuidAsString, Instant>()
 
+    val teamsProgress = HashMap<BingoTeamKey, Float>()
+
     @Transient
     open val display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
 
@@ -45,11 +48,11 @@ sealed class BingoObjective {
                 name = this.display.name
                     ?.takeIf { it != stack.displayName },
                 lore = this.display.lore
-                    .plus(
+                    ?.plus(
                         tier?.let { listOf(it.text()) }
                             ?: emptyList()
                     )
-                    .takeIf { it.isNotEmpty() },
+                    ?.takeIf { it.isNotEmpty() },
             )
             stack.setHideFlags(255)
         }
@@ -107,6 +110,22 @@ sealed class BingoObjective {
      */
     open fun markSeen(team: BingoTeamKey) {
         teamsSeen.add(team)
+    }
+
+    fun getProgress(team: BingoTeamKey) = teamsProgress[team] ?: 0f
+
+    fun setProgress(team: BingoTeamKey, progress: Float) {
+        teamsProgress[team] = progress.coerceIn(0f, 1f)
+    }
+
+    fun increaseProgress(team: BingoTeamKey, progress: Float) {
+        teamsProgress.compute(team) { _, value ->
+            max(value ?: 0f, progress).coerceIn(0f, 1f)
+        }
+    }
+
+    fun clearAllProgress() {
+        teamsProgress.clear()
     }
 
     @Transient

@@ -8,7 +8,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 
 class InverseObjectiveManager(
     private val state: BingoState,
@@ -30,17 +29,14 @@ class InverseObjectiveManager(
 
     override fun init(card: BingoCard) {
         for (objective in card.objectivesByInstance<BingoObjective.InverseEntry>()) {
-            objective.display = objective.displayData
-                ?.let { objectiveDisplayService.resolve(objective.id, it) }
-                ?: run {
-                    card.objectives[objective.inverseObjective]?.let { objective ->
-                        ObjectiveDisplay.Resolved(
-                            name = text.string(StringKey.ObjectiveInverse, objective.display.name ?: Text.empty())
-                                .formatted(Formatting.GRAY, Formatting.ITALIC),
-                            item = objective.display.item,
-                        )
-                    } ?: ObjectiveDisplay.Resolved.EMPTY
-                }
+            val display = card.objectives[objective.inverseObjective]?.let { inverse ->
+                ObjectiveDisplay.Resolved(
+                    name = text.string(StringKey.ObjectiveInverse, inverse.display.name ?: Text.empty()),
+                    item = inverse.display.item,
+                )
+            } ?: ObjectiveDisplay.Resolved.EMPTY
+
+            objective.display = objectiveDisplayService.resolve(objective.id, objective.displayData, display)
         }
     }
 

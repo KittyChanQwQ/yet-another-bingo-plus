@@ -23,6 +23,7 @@ class AdvancementObjectiveManager(
     private val state: BingoState,
     private val options: BingoOptions,
     private val offlinePlayerCache: OfflinePlayerCache,
+    private val objectiveDisplayService: ObjectiveDisplayService,
 ) : IObjectiveManager {
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective.AdvancementEntry? {
@@ -36,7 +37,8 @@ class AdvancementObjectiveManager(
             ?: return false
 
         goal.advancement = advancement
-        goal.display = ObjectiveDisplay.Resolved(
+
+        val display = ObjectiveDisplay.Resolved(
             name = advancement.name
                 ?.let {
                     Text.empty()
@@ -50,6 +52,7 @@ class AdvancementObjectiveManager(
                 ?: emptyList(),
             item = advancement.displayIcon?.let { itemStackFactory.forStack(it) },
         )
+        goal.display = objectiveDisplayService.resolve(goal.id, null, display)
 
         return true
     }
@@ -80,6 +83,9 @@ class AdvancementObjectiveManager(
                 if (isAnyObtained) {
                     objective.markSeen(team.key)
                 }
+
+                val progress = players.maxOf { advancementManager.getProgress(it.player, advancement) }
+                objective.setProgress(team.key, progress)
 
                 val player = players.find {
                     advancementManager.isDone(it.player, advancement)

@@ -21,6 +21,7 @@ class ServerPacketEvents(
     val cardUpdateV1 = serverNetworking.registerS2C(CardUpdatePacket.V1)
     val cardUpdateV2 = serverNetworking.registerS2C(CardUpdatePacket.V2)
     val cardUpdateV3 = serverNetworking.registerS2C(CardUpdatePacket.V3)
+    val cardUpdateV4 = serverNetworking.registerS2C(CardUpdatePacket.V4)
     val gameOverV1 = serverNetworking.registerS2C(GameOverPacket.V1)
     val gameOverV2 = serverNetworking.registerS2C(GameOverPacket.V2)
     val gameOverV3 = serverNetworking.registerS2C(GameOverPacket.V3)

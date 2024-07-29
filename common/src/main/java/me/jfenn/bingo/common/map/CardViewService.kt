@@ -76,6 +76,7 @@ class CardViewService(
             val view = map.view
             val updatePacket = CardUpdatePacket(view)
             when {
+                packets.cardUpdateV4.send(player, updatePacket) -> {}
                 packets.cardUpdateV3.send(player, updatePacket) -> {}
                 packets.cardUpdateV2.send(player, updatePacket) -> {}
                 packets.cardUpdateV1.send(player, updatePacket) -> {}
@@ -109,17 +110,26 @@ class CardViewService(
     ) : CardTile {
         val isFreeSpace = objective is BingoObjective.FreeSpace
         val isHidden = options.isHiddenItemsMode && (team == null || !objective.hasSeen(team.key)) && !isFreeSpace
+        val isLocked = options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key)
+        val isAchieved = team != null && objective.hasAchieved(team.key)
 
         return CardTile(
             item = if (isHidden) null else objective.visualItem(entry.tier),
-            itemTier = entry.tier.takeIf { options.showHiddenTiers },
+            itemTier = entry.tier.takeIf { !options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
+            name = objective.display.name.takeIf { !isHidden },
+            lore = objective.display.lore.takeIf { !isHidden } ?: emptyList(),
             isFreeSpace = isFreeSpace,
             isAdvancement = !isHidden && objective is BingoObjective.AdvancementEntry,
             isMultiItem = !isHidden && (objective is BingoObjective.OneOfEntry || objective is BingoObjective.AllOfEntry),
             isHidden = isHidden,
-            isLocked = options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key),
+            isLocked = isLocked,
             isFlashing = objective.isFlashing(team?.key, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
-            isAchieved = team != null && objective.hasAchieved(team.key),
+            isAchieved = isAchieved,
+            progress = when {
+                isAchieved -> 1f
+                !isLocked && team != null -> objective.getProgress(team.key)
+                else -> 0f
+            },
             teamKeys = if (options.showOtherTeamCompletions && state.state != GameState.POSTGAME)
                 objective.teams.filter { it != team?.key }
             else emptyList(),

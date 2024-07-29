@@ -136,6 +136,11 @@ class BingoHudRenderer(
             when {
                 tile.isFlashing -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileFlashingColor.asInt)
                 tile.isAchieved -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileAchievedColor.asInt)
+                tile.progress >= (1/18f) -> context.fill(
+                    itemX, itemY + (18 * (1f - tile.progress)).toInt().coerceIn(0, 18),
+                    itemX + 18, itemY + 18,
+                    colors.tileProgressColor.asInt
+                )
             }
 
             if (tile.isHidden) {
@@ -274,12 +279,17 @@ class BingoHudRenderer(
             val (tileX, tileY) = getItem(x, y, cardScale, mouseX, mouseY) ?: return
             val tile = view.tile(tileX, tileY) ?: return
 
-            tile.item?.stack?.let { stack ->
-                context.matrices.push()
-                context.matrices.translate(0f, 0f, 2000f)
-                context.drawItemTooltip(textRenderer, stack, mouseX, mouseY)
-                context.matrices.pop()
+            context.matrices.push()
+            context.matrices.translate(0f, 0f, 2000f)
+            val tooltip = buildList {
+                tile.name?.let { add(it) }
+                addAll(tile.lore)
+                tile.itemTier?.text()?.let { add(it) }
             }
+            if (tooltip.isNotEmpty()) {
+                context.drawTooltip(textRenderer, tooltip, mouseX, mouseY)
+            }
+            context.matrices.pop()
         }
     }
 
