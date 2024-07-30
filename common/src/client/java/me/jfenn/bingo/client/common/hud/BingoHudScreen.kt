@@ -26,7 +26,7 @@ class BingoHudScreen(
 
         onTileClick = { tile ->
             val stack = tile.item
-            if (!tile.isAdvancement && stack != null) {
+            if (tile.decoration == null && stack != null) {
                 jei.openJeiRecipe(stack.stack)
             }
             jei.isInstalled()

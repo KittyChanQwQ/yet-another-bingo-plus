@@ -5,6 +5,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -36,8 +37,10 @@ class BingoHudRenderer(
 
         val CARD_COLORS_ID = Identifier.of(MOD_ID_BINGO, "gui/card_colors.json")!!
         val ADVANCEMENT_FRAME_ID = Identifier.of("minecraft", "bingo/image_frame_advancement")!!
+        val FRAME_FREE_SPACE_ID = Identifier.of("minecraft", "bingo/image_frame_free_space")!!
         val FRAME_MULTI_ID = Identifier.of("minecraft", "bingo/image_frame_multi")!!
         val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")!!
+        val FRAME_FORBIDDEN_ID = Identifier.of("minecraft", "bingo/image_frame_forbidden")!!
         val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")!!
     }
 
@@ -176,7 +179,7 @@ class BingoHudRenderer(
                 )
             }
 
-            if (tile.isAdvancement) {
+            if (tile.decoration == CardTile.Decoration.ADVANCEMENT) {
                 service.drawTexture(
                     texture = ADVANCEMENT_FRAME_ID,
                     x = itemX - 1, y = itemY - 1, z = 300,
@@ -186,10 +189,30 @@ class BingoHudRenderer(
                 )
             }
 
-            if (tile.isMultiItem) {
+            if (tile.decoration == CardTile.Decoration.MULTI_ITEM) {
                 service.drawTexture(
                     texture = FRAME_MULTI_ID,
                     x = itemX - 1, y = itemY - 1, z = 300,
+                    u = 0f, v = 0f,
+                    width = 20, height = 20,
+                    textureWidth = 20, textureHeight = 20,
+                )
+            }
+
+            if (tile.decoration == CardTile.Decoration.FREE_SPACE) {
+                service.drawTexture(
+                    texture = FRAME_FREE_SPACE_ID,
+                    x = itemX - 1, y = itemY - 1, z = 301,
+                    u = 0f, v = 0f,
+                    width = 20, height = 20,
+                    textureWidth = 20, textureHeight = 20,
+                )
+            }
+
+            if (tile.decoration == CardTile.Decoration.FORBIDDEN) {
+                service.drawTexture(
+                    texture = FRAME_FORBIDDEN_ID,
+                    x = itemX - 1, y = itemY - 1, z = 301,
                     u = 0f, v = 0f,
                     width = 20, height = 20,
                     textureWidth = 20, textureHeight = 20,

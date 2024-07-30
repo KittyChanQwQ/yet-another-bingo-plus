@@ -258,7 +258,6 @@ class MapRenderService(
                 tile.itemTier != null -> {
                     BingoTileImage.HIDDEN_TIERS[tile.itemTier]?.regular ?: BingoTileImage.FALLBACK.regular
                 }
-                tile.isFreeSpace -> BingoTileImage.EMPTY.regular
                 else -> BingoTileImage.HIDDEN.regular
             }
             tile.isFlashing -> tileImage.flashing
@@ -288,7 +287,7 @@ class MapRenderService(
         }
 
         // Draw the advancement frame if the tile is an advancement
-        if (tile.isAdvancement && !tile.isHidden) {
+        if (tile.decoration == CardTile.Decoration.ADVANCEMENT && !tile.isHidden) {
             for (innerX in 0..innerMax) for (innerY in 0..innerMax) {
                 val frameIndex = innerX + innerY * IMAGE_SIZE
                 if (frameIndex !in IMAGE_FRAME_ADVANCEMENT.indices) continue
@@ -300,7 +299,7 @@ class MapRenderService(
         }
 
         // Draw a "+" if the tile can be captured multiple ways
-        if (tile.isMultiItem && !tile.isHidden) {
+        if (tile.decoration == CardTile.Decoration.MULTI_ITEM && !tile.isHidden) {
             val offset = 6
             for (innerT in offset-2..offset+2) {
                 mapState.setColor(tileX + offset, tileY + innerT, COLOR_WHITE.asByte)

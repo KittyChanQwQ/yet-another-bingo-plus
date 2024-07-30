@@ -14,9 +14,7 @@ data class CardTile(
     val itemTier: TierLabel?,
     val name: Text? = item?.displayName,
     val lore: List<Text> = item?.lore ?: emptyList(),
-    val isFreeSpace: Boolean,
-    val isAdvancement: Boolean,
-    val isMultiItem: Boolean,
+    val decoration: Decoration?,
     val isHidden: Boolean,
     val isLocked: Boolean,
     val isFlashing: Boolean,
@@ -24,33 +22,54 @@ data class CardTile(
     val progress: Float = 0f,
     val teamKeys: List<BingoTeamKey>,
 ) {
+    enum class Decoration {
+        FREE_SPACE,
+        ADVANCEMENT,
+        MULTI_ITEM,
+        FORBIDDEN
+    }
+
     object V1 : PacketConverter<CardTile> {
         override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_tile")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): CardTile {
+            val item = if (buf.readBoolean()) {
+                buf.readItemStack()
+            } else null
+            val  itemTier = if (buf.readBoolean()) {
+                TierLabel.valueOf(buf.readString())
+            } else null
+            val isFreeSpace = buf.readBoolean()
+            val isAdvancement = buf.readBoolean()
+            val isMultiItem = buf.readBoolean()
+            val isHidden = buf.readBoolean()
+            val isLocked = buf.readBoolean()
+            val isFlashing = buf.readBoolean()
+            val isAchieved = buf.readBoolean()
+            val teamKeys = List(buf.readInt()) {
+                val color = buf.readString().lowercase()
+                when (color) {
+                    "light_purple" -> "pink"
+                    "gold" -> "orange"
+                    "dark_gray" -> "gray"
+                    else -> color.removePrefix("bingo_")
+                }.let { BingoTeamKey("bingo_$it") }
+            }
+
             return CardTile(
-                item = if (buf.readBoolean()) {
-                    buf.readItemStack()
-                } else null,
-                itemTier = if (buf.readBoolean()) {
-                    TierLabel.valueOf(buf.readString())
-                } else null,
-                isFreeSpace = buf.readBoolean(),
-                isAdvancement = buf.readBoolean(),
-                isMultiItem = buf.readBoolean(),
-                isHidden = buf.readBoolean(),
-                isLocked = buf.readBoolean(),
-                isFlashing = buf.readBoolean(),
-                isAchieved = buf.readBoolean(),
-                teamKeys = List(buf.readInt()) {
-                    val color = buf.readString().lowercase()
-                    when (color) {
-                        "light_purple" -> "pink"
-                        "gold" -> "orange"
-                        "dark_gray" -> "gray"
-                        else -> color.removePrefix("bingo_")
-                    }.let { BingoTeamKey("bingo_$it") }
+                item = item,
+                itemTier = itemTier,
+                decoration = when {
+                    isFreeSpace -> Decoration.FREE_SPACE
+                    isAdvancement -> Decoration.ADVANCEMENT
+                    isMultiItem -> Decoration.MULTI_ITEM
+                    else -> null
                 },
+                isHidden = isHidden,
+                isLocked = isLocked,
+                isFlashing = isFlashing,
+                isAchieved = isAchieved,
+                teamKeys = teamKeys,
             )
         }
 
@@ -69,9 +88,9 @@ data class CardTile(
                 dest.writeBoolean(false)
             }
 
-            dest.writeBoolean(source.isFreeSpace)
-            dest.writeBoolean(source.isAdvancement)
-            dest.writeBoolean(source.isMultiItem)
+            dest.writeBoolean(source.decoration == Decoration.FREE_SPACE)
+            dest.writeBoolean(source.decoration == Decoration.ADVANCEMENT)
+            dest.writeBoolean(source.decoration == Decoration.MULTI_ITEM)
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked)
             dest.writeBoolean(source.isFlashing)
@@ -114,9 +133,9 @@ data class CardTile(
                 dest.writeBoolean(false)
             }
 
-            dest.writeBoolean(source.isFreeSpace)
-            dest.writeBoolean(source.isAdvancement)
-            dest.writeBoolean(source.isMultiItem)
+            dest.writeBoolean(source.decoration == Decoration.FREE_SPACE)
+            dest.writeBoolean(source.decoration == Decoration.ADVANCEMENT)
+            dest.writeBoolean(source.decoration == Decoration.MULTI_ITEM)
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked)
             dest.writeBoolean(source.isFlashing)
@@ -144,9 +163,11 @@ data class CardTile(
                     buf.readText()
                 } else null,
                 lore = List(buf.readInt()) { buf.readText() },
-                isFreeSpace = buf.readBoolean(),
-                isAdvancement = buf.readBoolean(),
-                isMultiItem = buf.readBoolean(),
+                decoration = try {
+                    Decoration.valueOf(buf.readString())
+                } catch (e: IllegalArgumentException) {
+                    null
+                },
                 isHidden = buf.readBoolean(),
                 isLocked = buf.readBoolean(),
                 isFlashing = buf.readBoolean(),
@@ -191,9 +212,8 @@ data class CardTile(
                 dest.writeText(text)
             }
 
-            dest.writeBoolean(source.isFreeSpace)
-            dest.writeBoolean(source.isAdvancement)
-            dest.writeBoolean(source.isMultiItem)
+            dest.writeString(source.decoration?.name ?: "")
+
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked)
             dest.writeBoolean(source.isFlashing)
@@ -212,9 +232,7 @@ data class CardTile(
         val EMPTY = CardTile(
             item = null,
             itemTier = null,
-            isFreeSpace = false,
-            isAdvancement = false,
-            isMultiItem = false,
+            decoration = null,
             isHidden = false,
             isLocked = false,
             isFlashing = false,
