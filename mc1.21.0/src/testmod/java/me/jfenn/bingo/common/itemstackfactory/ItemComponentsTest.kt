@@ -12,8 +12,14 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.impl.ItemStackFactory
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest
 import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.ItemEnchantmentsComponent
+import net.minecraft.enchantment.EnchantmentHelper
+import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.server.command.EnchantCommand
 import net.minecraft.test.GameTest
 import net.minecraft.test.TestContext
 import net.minecraft.text.Text
@@ -26,6 +32,7 @@ class ItemComponentsTest : BaseGameTest() {
 
     private val itemStackFactory = ItemStackFactory(
         LoggerFactory.getLogger(this::class.java),
+        null
     )
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
@@ -72,5 +79,29 @@ class ItemComponentsTest : BaseGameTest() {
         )
 
         assertThat(isOverlapping).isTrue()
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    fun encodesItemComponentUsingRegistry(context: TestContext) {
+        val itemStackFactory = ItemStackFactory(
+            LoggerFactory.getLogger(this::class.java),
+            context.world.server
+        )
+
+        val stack = ItemStack(Items.GOLDEN_SWORD, 1)
+        val enchantmentRegistry = context.world.server.registryManager.get(RegistryKeys.ENCHANTMENT)
+        val fireAspect = enchantmentRegistry.getEntry(Enchantments.FIRE_ASPECT).get()
+        stack[DataComponentTypes.ENCHANTMENTS] = ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT)
+            .also { it.set(fireAspect, 2) }
+            .build()
+
+        val item = itemStackFactory.forStack(stack)
+        val data = item.getComponentsString()
+
+        assertThat(data).isEqualTo(
+            mapOf(
+                "minecraft:enchantments" to "{\"levels\":{\"minecraft:fire_aspect\":2}}"
+            )
+        )
     }
 }

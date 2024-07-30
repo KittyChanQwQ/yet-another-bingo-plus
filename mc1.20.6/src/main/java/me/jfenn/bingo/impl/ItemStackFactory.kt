@@ -13,8 +13,6 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.StringNbtReader
-import net.minecraft.predicate.NbtPredicate
 import net.minecraft.registry.Registries
 import net.minecraft.resource.featuretoggle.FeatureFlags
 import net.minecraft.server.MinecraftServer
@@ -27,7 +25,11 @@ import org.slf4j.Logger
 
 class ItemStackFactory(
     private val logger: Logger,
+    server: MinecraftServer?
 ) : IItemStackFactory {
+
+    private val jsonOps = server?.registryManager?.getOps(JsonOps.INSTANCE) ?: JsonOps.INSTANCE
+
     override fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean {
         val itemInstance = try {
             createStack(item, 1).item
@@ -157,7 +159,7 @@ class ItemStackFactory(
                 val jsonElement = gson.fromJson(value, JsonElement::class.java)
                 val component = try {
                     type.codecOrThrow
-                        .decode(JsonOps.INSTANCE, jsonElement)
+                        .decode(jsonOps, jsonElement)
                         .getOrThrow()
                         .first
                 } catch (e: Throwable) {
@@ -179,13 +181,19 @@ class ItemStackFactory(
                 if (component.key.shouldSkipSerialization()) continue
                 val id = Registries.DATA_COMPONENT_TYPE.getId(component.key) ?: continue
 
-                val jsonElement = stack.components
-                    .find { it.type == component.key }
-                    ?.encode(JsonOps.INSTANCE)
-                    ?.getOrThrow()
-                    ?.let { gson.toJson(it) }
+                val jsonElement = try {
+                    stack.components
+                        .find { it.type == component.key }
+                        ?.encode(jsonOps)
+                        ?.getOrThrow()
+                        ?.let { gson.toJson(it) }
+                } catch (e: Throwable) {
+                    null
+                }
 
-                components[id.toString()] = jsonElement
+                if (jsonElement != null) {
+                    components[id.toString()] = jsonElement
+                }
             }
 
             return components.takeIf { it.isNotEmpty() }
