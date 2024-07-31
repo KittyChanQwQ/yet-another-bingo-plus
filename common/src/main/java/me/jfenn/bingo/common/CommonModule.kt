@@ -171,6 +171,7 @@ val commonModule = module {
         scopedOf(::ChestService)
         scopedOf(::ChestController)
         scopedOf(::ElytraService)
+        scopedOf(SpreadPlayers::Factory)
         scopedOf(::SpawnService)
         scopedOf(::PlayerController)
 

@@ -77,16 +77,24 @@ class GameService(
 
         if (state.isLobbyMode) {
             // spread player teams to spawnpoint
-            spawnService.createSpawnpoints()
-            chestService.createChestSpawnpoints()
+            spawnService.createSpawnpoints().thenRun {
+                server.execute {
+                    chestService.createChestSpawnpoints()
+                    startInternal()
+                }
+            }
+        } else {
+            startInternal()
         }
 
+        return true
+    }
+
+    private fun startInternal() {
         // change to the loading state (until all players have loaded terrain)
         state.changeState(events, GameState.LOADING)
 
         broadcastStart()
-
-        return true
     }
 
     fun end(reason: GameEndReason?) {

@@ -96,21 +96,28 @@ class CountdownController(
         }
 
         events.onStateChange { (_, toState) ->
-            if (state.isLobbyMode)
-                tickManager.setFrozen(toState == GameState.COUNTDOWN)
+            val isLockedState = toState == GameState.LOADING || toState == GameState.COUNTDOWN
 
-            // Remove all spawn marker entities when the game starts
-            for ((_, entity) in entityMap) {
-                entity.discard()
+            if (state.isLobbyMode)
+                tickManager.setFrozen(isLockedState)
+
+            if (!isLockedState) {
+                // Remove all spawn marker entities when the game starts
+                for ((_, entity) in entityMap) {
+                    entity.discard()
+                }
+                entityMap.clear()
             }
-            entityMap.clear()
         }
 
         events.onGameTick {
-            if (state.state != GameState.COUNTDOWN) return@onGameTick
+            if (state.isLobbyMode) {
+                if (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN) {
+                    forcePlayersOnBats()
+                }
+            }
 
-            if (state.isLobbyMode)
-                forcePlayersOnBats()
+            if (state.state != GameState.COUNTDOWN) return@onGameTick
 
             if (server.ticks % 20 != 0) return@onGameTick
 
