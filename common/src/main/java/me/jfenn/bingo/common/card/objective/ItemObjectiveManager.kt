@@ -114,11 +114,8 @@ class ItemObjectiveManager(
     override fun tick(card: BingoCard) {
         val now = Clock.System.now()
 
-        // If in inventory mode, reset all objective progress on each tick
-        if (options.isInventoryMode) {
-            for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>())
-                objective.clearAllProgress()
-        }
+        for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>())
+            objective.clearAllProgress()
 
         for (player in playerManager.getPlayers()) {
             val team = teamService.getPlayerTeam(player.player) ?: continue
