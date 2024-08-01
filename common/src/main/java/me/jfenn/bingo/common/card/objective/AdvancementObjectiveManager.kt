@@ -5,7 +5,6 @@ import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.OfflinePlayerCache
@@ -21,9 +20,9 @@ class AdvancementObjectiveManager(
     private val advancementManager: IAdvancementManager,
     private val itemStackFactory: IItemStackFactory,
     private val state: BingoState,
-    private val options: BingoOptions,
     private val offlinePlayerCache: OfflinePlayerCache,
     private val objectiveDisplayService: ObjectiveDisplayService,
+    private val objectiveService: ObjectiveService,
 ) : IObjectiveManager {
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective.AdvancementEntry? {
@@ -71,48 +70,53 @@ class AdvancementObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.AdvancementEntry>()) {
             val advancement = objective.advancement ?: continue
 
-            for (team in state.getRegisteredTeams()) {
-                // don't update teams that have already won
-                if (team.isWinner()) continue
+            objective.teamsOnceAchieved.addAll(objective.teams)
 
-                val players = team.players.map { offlinePlayerCache.getOfflinePlayer(it) }
-
-                val isAnyObtained = players.any {
-                    advancementManager.isAnyObtained(it.player, advancement)
-                }
-                if (isAnyObtained) {
-                    objective.markSeen(team.key)
+            val teamPlayers = state.getRegisteredTeams()
+                .associate { it.key to it.players }
+                .mapValues { (_, players) ->
+                    players.map { offlinePlayerCache.getOfflinePlayer(it) }
                 }
 
+            objective.teamsProgress = teamPlayers.map { (team, players) ->
                 val progress = players.maxOf { advancementManager.getProgress(it.player, advancement) }
-                objective.setProgress(team.key, progress)
+                team to progress
+            }.toMap().toMutableMap()
 
-                val player = players.find {
-                    advancementManager.isDone(it.player, advancement)
-                }
-
-                // if the advancement is finished, and the tile is not locked
-                if (player != null && !(options.isLockoutMode && objective.hasAnyAchieved())) {
-                    val isChanged = objective.setAchieved(team.key, true)
-
-                    // if the tile has changed, mark updatedTeams
-                    if (isChanged) {
-                        // record the player that captured the tile
-                        val profile = BingoPlayerProfile.fromPlayer(player)
-                        objective.addPlayer(profile, now)
-                    }
-                }
-
-                // if noone on the team has the advancement anymore, then mark it as lost...
-                if (player == null) {
-                    val isChanged = objective.setAchieved(team.key, false)
-                    // if the tile has changed, mark updatedTeams
-                    if (isChanged) {
-                        // since the tile was lost, remove the team's players from the tile
-                        objective.removePlayers(team.players)
-                    }
-                }
+            objective.teamsSeen = objectiveService.getTeamsSeen(objective) { team ->
+                teamPlayers[team]
+                    ?.any { advancementManager.isAnyObtained(it.player, advancement) }
+                    ?: false
             }
+
+            objective.playersHolding = run {
+                val currentPlayers = objective.playersHolding.toMutableMap()
+
+                // Add players that have just achieved the advancement
+                teamPlayers.flatMap { (team, players) -> players.map { team to it } } // List<(TeamKey, Player)>
+                    // filter players that already have the advancement
+                    .filter { (_, player) -> !objective.playersHolding.containsKey(player.uuid) }
+                    .filter { (_, player) -> advancementManager.isDone(player.player, advancement) }
+                    .onEach { (team, player) ->
+                        currentPlayers[player.uuid] = BingoObjectiveCapture(
+                            team = team,
+                            player = BingoPlayerProfile.fromPlayer(player),
+                            instant = now,
+                        )
+                    }
+
+                // Remove players that no longer have the advancement
+                objective.playersHolding.entries
+                    .map { offlinePlayerCache.getOfflinePlayer(it.value.player) }
+                    .filter { !advancementManager.isDone(it.player, advancement) }
+                    .onEach { currentPlayers.remove(it.uuid) }
+
+                currentPlayers
+            }
+
+            objective.players = objectiveService.getPlayers(objective)
+
+            objective.teams = objectiveService.getTeams(objective)
         }
     }
 }

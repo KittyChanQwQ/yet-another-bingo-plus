@@ -5,18 +5,16 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 
 class OneOfObjectiveManager(
     private val state: BingoState,
-    private val options: BingoOptions,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
+    private val objectiveService: ObjectiveService,
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
 ) : IObjectiveManager {
@@ -51,36 +49,26 @@ class OneOfObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.OneOfEntry>()) {
             val objectives = objective.oneOfObjectives.mapNotNull { card.objectives[it] }
 
-            for (team in state.getRegisteredTeams()) {
-                val hasSeen = objectives.any { it.hasSeen(team.key) }
-                val hasAchieved = objectives.any { it.hasAchieved(team.key) }
+            objective.teamsOnceAchieved.addAll(objective.teams)
 
-                val progress = objectives.maxOf { it.getProgress(team.key) }
-                objective.setProgress(team.key, progress)
+            objective.teamsProgress = objectives.flatMap { it.teamsProgress.entries }
+                .groupBy { it.key }
+                .mapValues { (_, entries) -> entries.maxOf { it.value } }
+                .toMutableMap()
 
-                // If lockout mode, prevent new teams from achieving the objective
-                if (hasAchieved && options.isLockoutMode && objective.hasAnyAchieved())
-                    continue
-
-                if (hasSeen) objective.markSeen(team.key)
-                val hasChanged = objective.setAchieved(team.key, hasAchieved)
-
-                if (hasAchieved) {
-                    if (hasChanged) {
-                        objectives
-                            .flatMap { it.players.entries }
-                            .groupBy { it.key }
-                            .mapNotNull { (key, value) ->
-                                value.maxOfOrNull { it.value }?.let { key to it }
-                            }
-                            .forEach { (key, value) ->
-                                objective.addPlayer(key, value)
-                            }
-                    }
-                } else {
-                    objective.removePlayers(team.players)
-                }
+            objective.teamsSeen = objectiveService.getTeamsSeen(objective) { team ->
+                objectives.any { it.hasSeen(team) }
             }
+
+            objective.playersHolding = objectives
+                .flatMap { it.playersHolding.entries }
+                .groupBy { it.key }
+                .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
+                .toMutableMap()
+
+            objective.players = objectiveService.getPlayers(objective)
+
+            objective.teams = objectiveService.getTeams(objective)
         }
     }
 }

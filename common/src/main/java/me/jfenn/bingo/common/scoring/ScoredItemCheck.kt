@@ -10,6 +10,12 @@ import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import net.minecraft.server.MinecraftServer
+import org.koin.core.time.measureDuration
+import org.slf4j.Logger
+import kotlin.system.measureTimeMillis
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.measureTime
 
 /**
  * Searches for items in each player's inventory that can
@@ -21,7 +27,9 @@ class ScoredItemCheck(
     private val state: BingoState,
     private val gameService: GameService,
     private val scoreUpdateService: ScoreUpdateService,
-    private val objectiveManager: BingoObjectiveManager
+    private val objectiveManager: BingoObjectiveManager,
+    private val log: Logger,
+    private val server: MinecraftServer,
 ) : BingoComponent() {
 
     private fun updateScores(
@@ -50,7 +58,7 @@ class ScoredItemCheck(
                         .mapNotNull { (uuid, instant) ->
                             team.players.find { it.uuid == uuid }?.let { it to instant }
                         }
-                        .maxByOrNull { (_, instant) -> instant }
+                        .maxByOrNull { (_, capture) -> capture.instant }
                         ?.first
                         ?: return@forEach
 
@@ -149,9 +157,7 @@ class ScoredItemCheck(
             // (if hidden items is true, players should see all items after the game)
             val teamKeys = state.teams.keys
             for (goal in state.card.objectives.values) {
-                for (team in teamKeys) {
-                    goal.markSeen(team)
-                }
+                goal.teamsSeen = teamKeys.toMutableSet()
             }
         }
     }

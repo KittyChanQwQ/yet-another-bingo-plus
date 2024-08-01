@@ -116,6 +116,7 @@ val commonModule = module {
         scoped { get<BingoScope>().state }
         scoped { get<BingoState>().options }
 
+        scopedOf(::ObjectiveService)
         scopedOf(::ObjectiveDisplayService)
         scopedOf(::AdvancementObjectiveManager)
         scopedOf(::ItemObjectiveManager)

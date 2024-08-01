@@ -1,11 +1,14 @@
 package me.jfenn.bingo.common.card.objective
 
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.toMap
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 
@@ -13,6 +16,7 @@ class InverseObjectiveManager(
     private val state: BingoState,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
+    private val objectiveService: ObjectiveService,
     private val text: TextProvider,
 ) : IObjectiveManager {
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
@@ -44,17 +48,35 @@ class InverseObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.InverseEntry>()) {
             val inverse = card.objectives[objective.inverseObjective] ?: continue
 
-            for (team in state.getRegisteredTeams()) {
-                val hasSeen = inverse.hasSeen(team.key)
-                val hasAchieved = when {
-                    // if permanent, a team should not be able to recapture this objective after losing it
-                    objective.permanent -> !inverse.hasAchieved(team.key) && !objective.teamsOnceAchieved.contains(team.key)
-                    else -> !inverse.hasAchieved(team.key)
-                }
+            objective.teamsOnceAchieved.addAll(objective.teams)
 
-                if (hasSeen) inverse.markSeen(team.key)
-                objective.setAchieved(team.key, hasAchieved)
+            if (objective.permanent) {
+                // once a player earns the inverse objective, they can never recapture this one
+                objective.playersOnceAchieved.addAll(inverse.playersHolding.keys)
             }
+
+            objective.playersHolding = objectiveService.getTeamPlayers()
+                .filter { (_, player) -> !inverse.playersHolding.containsKey(player.uuid) }
+                .filter { (_, player) ->
+                    !objective.playersOnceAchieved.contains(player.uuid)
+                }
+                .associateBy(
+                    { (_, player) -> player.uuid },
+                    { (team, player) ->
+                        BingoObjectiveCapture(
+                            team = team.key,
+                            player = BingoPlayerProfile.fromPlayer(player),
+                            instant = state.startedAt ?: Instant.DISTANT_PAST
+                        )
+                    }
+                )
+                .toMutableMap()
+
+            objective.teamsSeen = inverse.teamsSeen
+
+            objective.players = objective.playersHolding
+
+            objective.teams = objective.playersHolding.map { it.value.team }.toMutableSet()
         }
     }
 }

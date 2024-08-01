@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.slf4j.Logger
+import kotlin.math.max
 
 class ItemObjectiveManager(
     private val log: Logger,
@@ -29,6 +30,7 @@ class ItemObjectiveManager(
     private val offlinePlayerCache: OfflinePlayerCache,
     private val objectiveRegistry: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
+    private val objectiveService: ObjectiveService,
 ): IObjectiveManager {
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective.ItemEntry? {
@@ -114,15 +116,27 @@ class ItemObjectiveManager(
     override fun tick(card: BingoCard) {
         val now = Clock.System.now()
 
-        for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>())
-            objective.clearAllProgress()
+        for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
+            objective.teamsOnceAchieved.addAll(objective.teams)
+            objective.teamsProgress.clear()
+        }
 
-        for (player in playerManager.getPlayers()) {
-            val team = teamService.getPlayerTeam(player.player) ?: continue
+        // first, we need to check that each player still has all their items
+        // and remove them from playersHolding if not
+        for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
+            for (player in playerManager.getPlayers()) {
+                if (!objective.playersHolding.containsKey(player.uuid)) continue
 
-            // don't update teams that have already won
-            if (team.isWinner()) continue
+                val hasItem = player.allHeldStacks().any { canSatisfy(it, objective) }
 
+                // if the player does not have the item anymore, mark it lost
+                if (!hasItem) {
+                    objective.playersHolding.remove(player.uuid)
+                }
+            }
+        }
+
+        for ((team, player) in objectiveService.getTeamPlayers()) {
             // check inventory for new collected items
             for (stack in player.allHeldStacks()) {
                 // get any objectives for the itemId, if it is on the card
@@ -132,58 +146,31 @@ class ItemObjectiveManager(
                 for (objective in objectives) {
                     // if the item hasn't been achieved and can be satisfied, mark it as collected
                     if (canSatisfyPartial(stack, objective)) {
-                        objective.markSeen(team.key)
+                        objective.teamsSeen += team.key
                     } else {
                         continue
                     }
 
                     val progress = stack.count / objective.itemCount.coerceAtLeast(1).toFloat()
-                    objective.increaseProgress(team.key, progress)
-
-                    // if the gamemode is lockout, tiles cannot be collected by >1 team
-                    if (options.isLockoutMode && objective.hasAnyAchieved())
-                        continue
+                    objective.teamsProgress.compute(team.key) { _, prev -> max(prev ?: 0f, progress) }
 
                     if (!canSatisfy(stack, objective))
                         continue
 
-                    val isChanged = objective.setAchieved(team.key, true)
-
-                    // if the tile has changed, mark updatedTeams
-                    if (isChanged) {
-                        // record the player that captured the tile
-                        val profile = BingoPlayerProfile.fromPlayer(player)
-                        objective.addPlayer(profile, now)
+                    if (!objective.playersHolding.containsKey(player.uuid)) {
+                        objective.playersHolding[player.uuid] = BingoObjectiveCapture(
+                            team = team.key,
+                            player = BingoPlayerProfile.fromPlayer(player),
+                            instant = now,
+                        )
                     }
                 }
             }
         }
 
-        // if isInventoryMode, we need to check that each team still has all their items
-        // and mark them as lost if not
-        if (options.isInventoryMode) {
-            for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
-                for (teamKey in objective.teams.toSet()) {
-                    val team = state.teams[teamKey] ?: continue
-                    // don't update teams that have already won
-                    if (team.isWinner()) continue
-
-                    val teamPlayers = team.players.map { offlinePlayerCache.getOfflinePlayer(it) }
-                    val hasTeamItem = teamPlayers.any { player ->
-                        player.allHeldStacks().any { canSatisfy(it, objective) }
-                    }
-
-                    // if noone on the team has the item anymore, mark it lost
-                    if (!hasTeamItem) {
-                        val isChanged = objective.setAchieved(team.key, false)
-                        // if the tile has changed, mark updatedTeams
-                        if (isChanged) {
-                            // since the tile was lost, remove the team's players from the tile
-                            objective.removePlayers(team.players)
-                        }
-                    }
-                }
-            }
+        for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
+            objective.players = objectiveService.getPlayers(objective)
+            objective.teams = objectiveService.getTeams(objective)
         }
     }
 }

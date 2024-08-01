@@ -14,8 +14,6 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
-import java.util.UUID
-import kotlin.math.max
 import kotlin.time.Duration
 
 @Serializable
@@ -24,15 +22,17 @@ sealed class BingoObjective {
     abstract val id: String
 
     /** Includes teams that have observed or made partial progress on the objective */
-    val teamsSeen = HashSet<BingoTeamKey>()
-    /** Includes teams that have currently achieved the objective */
-    val teams = HashSet<BingoTeamKey>()
+    var teamsSeen = mutableSetOf<BingoTeamKey>()
+    /** Includes teams that have achieved the objective */
+    var teams = mutableSetOf<BingoTeamKey>()
     /** Includes teams that have previously achieved and then lost the objective */
-    val teamsOnceAchieved = HashSet<BingoTeamKey>()
-    /** Includes players that have currently achieved the objective */
-    val players = HashMap<UuidAsString, Instant>()
+    val teamsOnceAchieved = mutableSetOf<BingoTeamKey>()
+    /** Includes players that have achieved the objective */
+    var players = mutableMapOf<UuidAsString, BingoObjectiveCapture>()
+    /** Includes players that currently satisfy the criteria for the objective */
+    var playersHolding = mutableMapOf<UuidAsString, BingoObjectiveCapture>()
 
-    val teamsProgress = HashMap<BingoTeamKey, Float>()
+    var teamsProgress = mutableMapOf<BingoTeamKey, Float>()
 
     @Transient
     open val display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
@@ -61,41 +61,8 @@ sealed class BingoObjective {
     open fun hasAchieved(player: BingoPlayerProfile): Boolean = players.containsKey(player.uuid)
     open fun hasAchieved(team: BingoTeamKey): Boolean = teams.contains(team)
 
-    /**
-     * @return true if the tile state has changed
-     */
-    open fun setAchieved(team: BingoTeamKey, value: Boolean): Boolean {
-        return when {
-            value -> teams.add(team)
-            else -> {
-                val changed = teams.remove(team)
-                if (changed) {
-                    // when first lost, add the team to teamsOnceAchieved
-                    teamsOnceAchieved.add(team)
-                }
-                changed
-            }
-        }.also { changed ->
-            if (changed) markDirty(team)
-        }
-    }
-
     open fun hasAnyAchieved() = teams.isNotEmpty()
     fun hasNoneAchieved() = !hasAnyAchieved()
-
-    fun addPlayer(player: UUID, instant: Instant) {
-        players[player] = instant
-    }
-
-    fun addPlayer(player: BingoPlayerProfile, instant: Instant) {
-        addPlayer(player.uuid, instant)
-    }
-
-    fun removePlayers(iterable: Iterable<BingoPlayerProfile>) {
-        for (player in iterable) {
-            players.remove(player.uuid)
-        }
-    }
 
     /**
      * Checks if the [team] has seen the item on
@@ -105,48 +72,18 @@ sealed class BingoObjective {
         return teamsSeen.contains(team)
     }
 
-    /**
-     * Marks the tile as seen by the provided [team].
-     */
-    open fun markSeen(team: BingoTeamKey) {
-        teamsSeen.add(team)
-    }
-
     fun getProgress(team: BingoTeamKey) = teamsProgress[team] ?: 0f
-
-    fun setProgress(team: BingoTeamKey, progress: Float) {
-        teamsProgress[team] = progress.coerceIn(0f, 1f)
-    }
-
-    fun increaseProgress(team: BingoTeamKey, progress: Float) {
-        teamsProgress.compute(team) { _, value ->
-            max(value ?: 0f, progress).coerceIn(0f, 1f)
-        }
-    }
-
-    fun clearAllProgress() {
-        teamsProgress.clear()
-    }
-
-    @Transient
-    protected val updatedAtMap = mutableMapOf<BingoTeamKey?, Instant>()
 
     /**
      * Determines the last time that the tile was changed at.
      * If [team] is not null, this returns the last changed time
      * for the specified team.
      */
-    open fun updatedAt(team: BingoTeamKey?): Instant = updatedAtMap.getOrPut(team) { Clock.System.now() }
-
-    /**
-     * Marks the tile as changed, indicating that it needs to be redrawn on
-     * the bingo map
-     */
-    open fun markDirty(team: BingoTeamKey) {
-        Clock.System.now().let {
-            updatedAtMap[team] = it
-            updatedAtMap[null] = it
-        }
+    open fun updatedAt(team: BingoTeamKey?): Instant {
+        return when {
+            team == null -> players.values
+            else -> players.values.filter { it.team == team }
+        }.maxOfOrNull { it.instant } ?: Instant.DISTANT_PAST
     }
 
     /**
@@ -174,7 +111,6 @@ sealed class BingoObjective {
         override fun hasAnyAchieved(): Boolean = true
         override fun hasAchieved(player: BingoPlayerProfile): Boolean = true
         override fun hasAchieved(team: BingoTeamKey): Boolean = true
-        override fun setAchieved(team: BingoTeamKey, value: Boolean): Boolean = false
         override fun isFlashing(team: BingoTeamKey?, duration: Duration): Boolean = false
     }
 
@@ -260,6 +196,8 @@ sealed class BingoObjective {
             dependsOnObjectives.add(inverseObjective)
             conflictsWithObjectives.add(inverseObjective)
         }
+
+        val playersOnceAchieved = mutableSetOf<UuidAsString>()
 
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
