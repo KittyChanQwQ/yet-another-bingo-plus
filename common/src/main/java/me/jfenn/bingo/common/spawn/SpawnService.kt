@@ -102,7 +102,7 @@ class SpawnService(
             else -> CompletableFuture.supplyAsync({ world.spawnPos }, executors.main)
         }
 
-        return spawnFuture.whenComplete { spawn, e ->
+        return spawnFuture.whenComplete { spawn, _ ->
             if (spawn == null) {
                 log.error("[SpawnService] Attempted teleportPlayer, but got a null value")
                 return@whenComplete
@@ -131,47 +131,60 @@ class SpawnService(
         }
 
         val world = getSpawnDimension()
-        val storedSpawnpoint = team.spawnpoint
+        val spread = spreadPlayersFactory.forWorld(world)
 
-        if (storedSpawnpoint == null) {
-            log.warn("[SpawnService] Team ${team.id} does not have a stored spawn point! Finding a new spawn position...")
+        // Get the farthest existing spawnpoint
+        // (in case we need to create a new spawnpoint for the team - this is not thread safe)
+        val maxChunk = state.teams.values
+            .mapNotNull { it.spawnpoint }
+            .maxByOrNull { it.x.absoluteValue }
+            ?.toChunkPos()
+            ?: Pair(0, 0)
 
-            // Get the chunk of an existing spawnpoint
-            val (x, y) = state.getRegisteredTeams()
-                .mapNotNull { it.spawnpoint }
-                .maxByOrNull { it.x.absoluteValue }
-                ?.toChunkPos()
-                ?: Pair(0, 0)
+        return CompletableFuture.supplyAsync(
+            {
+                synchronized(team) {
+                    val storedSpawnpoint = team.spawnpoint
 
-            // Move "spreadPlayersDistance" away from the existing chunk on the x-axis
-            val xSign = x.sign.takeIf { it != 0 } ?: 1
-            val newSpawnChunk = Pair(x + (options.spawnDistance * xSign), y)
+                    if (storedSpawnpoint == null) {
+                        log.warn("[SpawnService] Team ${team.id} does not have a stored spawn point! Finding a new spawn position...")
 
-            // Store the team's new spawn position & return
-            val spread = spreadPlayersFactory.forWorld(world)
-            return spread.findSpawnPosAsync(team.id, newSpawnChunk)
-                .whenComplete { it, _ -> team.spawnpoint = BlockPosition.fromBlockPos(it) }
-        }
+                        val (x, y) = maxChunk
 
-        // If the spawnpoint is stored, check that there is space for a player to spawn there
-        val pos = storedSpawnpoint.toBlockPos().mutableCopy()
-        while (
-            !isEmptyBlock(world, pos, world.getBlockState(pos))
-            || !isEmptyBlock(world, pos.up(), world.getBlockState(pos.up()))
-        ) {
-            pos.y += 1
+                        // Move "spreadPlayersDistance" away from the existing chunk on the x-axis
+                        val xSign = x.sign.takeIf { it != 0 } ?: 1
+                        val newSpawnChunk = Pair(x + (options.spawnDistance * xSign), y)
+                        log.debug("Using new starting chunk {} -> {}", maxChunk, newSpawnChunk)
 
-            // If the y pos exceeds the world height... then pick a new spawn pos in this chunk
-            if (pos.y >= world.logicalHeight) {
-                log.warn("[SpawnService] Spawn position for team $team is obstructed up to build height! Finding a new spawn position...")
+                        // Store the team's new spawn position & return
+                        val spawnpos = spread.findSpawnPosAsync(team.id, newSpawnChunk).join()
+                        team.spawnpoint = BlockPosition.fromBlockPos(spawnpos)
+                        return@synchronized spawnpos
+                    }
 
-                val spread = spreadPlayersFactory.forWorld(world)
-                return spread.findSpawnPosAsync(team.id, storedSpawnpoint.toChunkPos())
-                    .whenComplete { it, _ -> team.spawnpoint = BlockPosition.fromBlockPos(it) }
-            }
-        }
+                    // If the spawnpoint is stored, check that there is space for a player to spawn there
+                    val pos = storedSpawnpoint.toBlockPos().mutableCopy()
+                    while (
+                        !isEmptyBlock(world, pos, world.getBlockState(pos))
+                        || !isEmptyBlock(world, pos.up(), world.getBlockState(pos.up()))
+                    ) {
+                        pos.y += 1
 
-        return CompletableFuture.supplyAsync({ pos }, executors.main)
+                        // If the y pos exceeds the world height... then pick a new spawn pos in this chunk
+                        if (pos.y >= world.logicalHeight) {
+                            log.warn("[SpawnService] Spawn position for team $team is obstructed up to build height! Finding a new spawn position...")
+
+                            val spawnpos = spread.findSpawnPosAsync(team.id, storedSpawnpoint.toChunkPos()).join()
+                            team.spawnpoint = BlockPosition.fromBlockPos(spawnpos)
+                            return@synchronized spawnpos
+                        }
+                    }
+
+                    pos
+                }
+            },
+            executors.main
+        )
     }
 
     /**

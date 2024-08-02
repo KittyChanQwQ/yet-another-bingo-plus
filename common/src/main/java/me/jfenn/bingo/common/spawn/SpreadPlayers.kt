@@ -19,6 +19,7 @@ import net.minecraft.world.chunk.Chunk
 import net.minecraft.world.chunk.ChunkStatus
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 import kotlin.math.cos
 import kotlin.math.sign
 import kotlin.math.sin
@@ -48,6 +49,7 @@ class SpreadPlayers(
     private val worldBorder = world.server.overworld.worldBorder
     private val coordinateScale = world.dimension.coordinateScale
     private val worldBorderCenterInWorld = BlockPos((worldBorder.centerX / coordinateScale).toInt(), 0, (worldBorder.centerZ / coordinateScale).toInt())
+    private val worldSpawnPos = world.spawnPos
 
     private val logicalHeight = world.logicalHeight
     private val bottomY = world.bottomY
@@ -299,6 +301,17 @@ class SpreadPlayers(
             findSpawnPosInternal(startChunk)
         }
     }, executors.main)
+        // if this takes an entire minute, something is wrong
+        .orTimeout(60L, TimeUnit.SECONDS)
+        .exceptionally { e ->
+            log.error("findSpawnPosAsync for $team failed:", e)
+            // fall back to the world's spawnPos - this isn't ideal, but it should work in most dimensions
+            // (except the nether)
+            worldSpawnPos
+        }
+        .whenComplete { pos, _ ->
+            log.info("Using spawn position $pos for $team")
+        }
 
     fun spreadAsync(
         teams: List<BingoTeam>,

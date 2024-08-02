@@ -136,7 +136,7 @@ class PlayerController(
             spawnService.teleportToLobby(player)
         } else {
             // teleport the player to their spawnpoint
-            spawnService.teleportPlayer(player).join()
+            spawnService.teleportPlayer(player)
 
             // give spawn equipment to the player if they are on a team
             if (teamService.isPlaying(player) && state.state == GameState.PLAYING) {
