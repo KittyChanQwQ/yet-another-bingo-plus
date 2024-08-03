@@ -19,7 +19,7 @@ data class BingoOptions(
     var cardGoal: BingoGoal = BingoGoal.Lines(3),
     var timeLimit: Duration? = null,
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
-    var tierLists: Map<String, Int> = mapOf("all_items" to 1),
+    var tierLists: Map<String, Int> = mapOf("all_items" to 1, "challenge" to 1),
     var tierListPage: Int = 0,
 
     // game mode settings

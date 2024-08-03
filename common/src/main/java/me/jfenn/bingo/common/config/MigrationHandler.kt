@@ -5,14 +5,13 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger
+import java.io.IOException
 import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.pathString
+import kotlin.io.path.*
 
 class MigrationHandler(
     private val log: Logger,
@@ -103,10 +102,6 @@ class MigrationHandler(
         }
 
         migrations[6] = {
-            loader.configDir.resolve("$MOD_ID_BINGO/advancements.tierlist.json")
-                .takeIfMd5("19ea980bff9cd124ece633189d2257a2")
-                ?.deleteIfExists()
-
             loader.configDir.resolve("$MOD_ID_BINGO/all_items.tierlist.json")
                 .takeIfMd5("4e1fbf43d0995bc3b4c85b985c9b6c1f")
                 ?.deleteIfExists()
@@ -115,15 +110,38 @@ class MigrationHandler(
                 .takeIfMd5("0135d16de992bdfea1d7c79d6c5b7054")
                 ?.deleteIfExists()
         }
+
+        migrations[7] = { // 2.1.0
+            loader.configDir.resolve("$MOD_ID_BINGO/advancements.tierlist.json")
+                .takeIfMd5("19ea980bff9cd124ece633189d2257a2")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("$MOD_ID_BINGO/all_items.tierlist.json")
+                .takeIfMd5("cfb3aeebd054d727e52b4398aa6c0f8b")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("$MOD_ID_BINGO/simplified.tierlist.json")
+                .takeIfMd5("0d4f8a30e26cfcbc44a9096d6eef556e")
+                ?.deleteIfExists()
+        }
+    }
+
+    private fun md5Of(path: Path): String? {
+        val md = MessageDigest.getInstance("MD5")
+        val digest = try {
+            md.digest(Files.readAllBytes(path))
+        } catch (e: IOException) {
+            log.error("[MigrationHandler] Error reading $path")
+            return null
+        }
+        val hexDigest = BigInteger(1, digest).toString(16)
+        return hexDigest
     }
 
     private fun Path.takeIfMd5(md5Str: String): Path? {
         if (!this.isRegularFile()) return null
 
-        val md = MessageDigest.getInstance("MD5")
-        val digest = md.digest(Files.readAllBytes(this))
-        val hexDigest = BigInteger(1, digest).toString(16)
-
+        val hexDigest = md5Of(this) ?: return null
         val matches = hexDigest == md5Str
         if (matches) {
             log.info("MATCH $hexDigest -- $pathString")
@@ -154,6 +172,15 @@ class MigrationHandler(
         Config.readStream("all_items.tierlist.json").close()
         Config.readStream("challenge.tierlist.json").close()
         Config.readStream("simplified.tierlist.json").close()
+
+        if (log.isDebugEnabled) {
+            Config.configDir.resolve(MOD_ID_BINGO)
+                .takeIf { it.isDirectory() }
+                ?.listDirectoryEntries(glob = "*.json")
+                ?.forEach {
+                    log.debug("| $MOD_ID_BINGO | ${it.fileName.toString().padEnd(40)} | ${md5Of(it)} |")
+                }
+        }
     }
 
 }
