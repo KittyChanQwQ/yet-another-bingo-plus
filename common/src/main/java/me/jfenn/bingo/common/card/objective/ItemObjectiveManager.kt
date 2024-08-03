@@ -181,13 +181,19 @@ class ItemObjectiveManager(
         }
 
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
-            objective.players = objectiveService.getPlayers(
+            val players = objectiveService.getPlayers(
                 playersHolding = objective.playersHolding,
                 players = objective.players,
             ).toMutableMap()
-            objective.teams = objectiveService.getTeams(
-                players = objective.players
+            val teams = objectiveService.getTeams(
+                players = players
             ).toMutableSet()
+
+            objectiveService.update(
+                objective = objective,
+                players = players,
+                teams = teams,
+            )
         }
     }
 }

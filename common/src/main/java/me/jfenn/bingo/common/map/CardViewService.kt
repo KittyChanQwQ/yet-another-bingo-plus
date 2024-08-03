@@ -137,7 +137,7 @@ class CardViewService(
                 else -> 0f
             },
             teamKeys = if (options.showOtherTeamCompletions && state.state != GameState.POSTGAME)
-                objective.teams.filter { it != team?.key }
+                objective.teams.keys.filter { it != team?.key }
             else emptyList(),
         )
     }

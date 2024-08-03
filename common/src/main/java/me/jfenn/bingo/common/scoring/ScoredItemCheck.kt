@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.scoring
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
-import me.jfenn.bingo.common.card.objective.ObjectiveTickState
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameEndReason
@@ -34,7 +33,7 @@ class ScoredItemCheck(
 
         // find teams where any card objective has been modified since the last tick
         val updatedTeams = state.getRegisteredTeams()
-            .filter { team -> rootObjectives.maxOf { it.updatedAt(team.key) } > tickStart }
+            .filter { team -> rootObjectives.maxOf { it.achievedAt(team.key) } > tickStart }
 
         // if there are no updated teams, we can skip the remaining checks...
         if (updatedTeams.isEmpty()) return
@@ -44,7 +43,7 @@ class ScoredItemCheck(
             rootObjectives
                 .takeIf { sendUpdates }
                 // if the objective has been updated in this tick, is achieved by the team, and it is their first time obtaining it...
-                ?.filter { it.updatedAt(team.key) > tickStart && it.hasAchieved(team.key) && !it.teamsOnceAchieved.contains(team.key) }
+                ?.filter { it.achievedAt(team.key) > tickStart && it.hasAchieved(team.key) && !it.teamsOnceAchieved.contains(team.key) }
                 ?.forEach { objective ->
                     // find the player that captured the objective
                     val player = objective.players
@@ -53,7 +52,6 @@ class ScoredItemCheck(
                         }
                         .maxByOrNull { (_, capture) -> capture.instant }
                         ?.first
-                        ?: return@forEach
 
                     scoreUpdateService.sendItemCaptured(
                         scoredPlayer = player,
@@ -137,6 +135,8 @@ class ScoredItemCheck(
         events.onEnter(GameState.PLAYING) {
             // Run one tick when the game starts
             // - this prevents notification spam for tiles that the player has already captured at the start of the game
+            objectiveManager.tick(state.card)
+            objectiveManager.tick(state.card)
             objectiveManager.tick(state.card)
 
             updateScores(

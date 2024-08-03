@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.card.objective
 
+import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
@@ -77,9 +78,20 @@ class ObjectiveService(
         }
 
         if (teams != null) {
-            val newTeams = teams.toMutableSet()
-            newTeams.removeAll(lockedTeamKeys)
-            newTeams.addAll(lockedTeamKeys.filter { objective.teams.contains(it) })
+            val now = Clock.System.now()
+            val newTeams = teams
+                .associateWith { objective.teams[it] ?: now }
+                .toMutableMap()
+
+            newTeams.keys
+                .filter { lockedTeamKeys.contains(it) }
+                .onEach { newTeams.remove(it) }
+
+            objective.teams.entries
+                .filter { lockedTeamKeys.contains(it.key) }
+                .toMap()
+                .let { newTeams.putAll(it) }
+
             objective.teams = newTeams
         }
     }
@@ -122,7 +134,7 @@ class ObjectiveService(
     }
 
     fun updateTeamsOnceAchieved(objective: BingoObjective) {
-        objective.teamsOnceAchieved.addAll(objective.teams)
+        objective.teamsOnceAchieved.addAll(objective.teams.keys)
     }
 
     fun updateTeamsSeen(

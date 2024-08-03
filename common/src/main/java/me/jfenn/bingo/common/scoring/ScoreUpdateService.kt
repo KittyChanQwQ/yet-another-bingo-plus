@@ -41,7 +41,7 @@ class ScoreUpdateService(
     }
 
     fun sendItemCaptured(
-        scoredPlayer: BingoPlayerProfile,
+        scoredPlayer: BingoPlayerProfile?,
         team: BingoTeam,
         item: IItemStack?,
     ) {
@@ -111,8 +111,12 @@ class ScoreUpdateService(
 
             val chatMessage = textProvider.string(
                 StringKey.GameMessageCapturedItem,
-                Text.literal("${team.symbol} ${packet.player.name}")
-                    .formatted(team.formatting),
+                when {
+                    packet.player != null ->
+                        Text.literal("${team.symbol} ${packet.player.name}")
+                            .formatted(team.formatting)
+                    else -> teamService.getTeamOrPlayerName(team)
+                },
                 itemText,
             ).let { formatWithTime(it) }
 

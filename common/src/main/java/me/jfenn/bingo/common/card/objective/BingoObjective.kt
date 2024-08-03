@@ -25,7 +25,7 @@ sealed class BingoObjective {
     /** Includes teams that have observed or made partial progress on the objective */
     var teamsSeen = mutableSetOf<BingoTeamKey>()
     /** Includes teams that have achieved the objective */
-    var teams = mutableSetOf<BingoTeamKey>()
+    var teams = mutableMapOf<BingoTeamKey, Instant>()
     /** Includes teams that have previously achieved and then lost the objective */
     val teamsOnceAchieved = mutableSetOf<BingoTeamKey>()
     /** Includes players that have achieved the objective */
@@ -60,7 +60,7 @@ sealed class BingoObjective {
     }
 
     open fun hasAchieved(player: BingoPlayerProfile): Boolean = players.containsKey(player.uuid)
-    open fun hasAchieved(team: BingoTeamKey): Boolean = teams.contains(team)
+    open fun hasAchieved(team: BingoTeamKey): Boolean = teams.containsKey(team)
 
     open fun hasAnyAchieved() = teams.isNotEmpty()
     fun hasNoneAchieved() = !hasAnyAchieved()
@@ -81,15 +81,15 @@ sealed class BingoObjective {
     fun getProgress(team: BingoTeamKey) = teamsProgress[team] ?: 0f
 
     /**
-     * Determines the last time that the tile was changed at.
+     * Determines the last time that the tile was achieved at.
      * If [team] is not null, this returns the last changed time
      * for the specified team.
      */
-    open fun updatedAt(team: BingoTeamKey?): Instant {
-        return when {
-            team == null -> players.values
-            else -> players.values.filter { it.team == team }
-        }.maxOfOrNull { it.instant } ?: Instant.DISTANT_PAST
+    open fun achievedAt(team: BingoTeamKey?): Instant {
+        if (team == null) {
+            return teams.values.maxOrNull() ?: Instant.DISTANT_PAST
+        }
+        return teams[team] ?: Instant.DISTANT_PAST
     }
 
     /**
@@ -99,7 +99,7 @@ sealed class BingoObjective {
     open fun isFlashing(team: BingoTeamKey?, duration: Duration): Boolean {
         return team != null &&
                 hasAchieved(team) &&
-                Clock.System.now() - updatedAt(team) < duration
+                Clock.System.now() - achievedAt(team) < duration
     }
 
     @Serializable
