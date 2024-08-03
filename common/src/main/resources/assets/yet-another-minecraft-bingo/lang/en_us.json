@@ -26,6 +26,7 @@
   "bingo.objective.one_of": "One of: %s",
   "bingo.objective.all_of": "All of: %s",
   "bingo.objective.inverse": "Never obtain %s",
+  "bingo.objective.opponent": "Opponent obtains %s",
   "bingo.card.winner": "WINNER!",
   "bingo.intro.welcome": "Welcome to %s!",
   "bingo.intro.welcome_link": "Yet Another MC BINGO",

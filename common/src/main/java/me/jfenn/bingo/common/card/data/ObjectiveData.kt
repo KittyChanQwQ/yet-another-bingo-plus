@@ -38,4 +38,11 @@ sealed class ObjectiveData {
         val permanent: Boolean = true,
     ) : ObjectiveData()
 
+    @Serializable
+    @SerialName("opponent")
+    data class Opponent(
+        val objective: String,
+        val permanent: Boolean = true,
+    ) : ObjectiveData()
+
 }

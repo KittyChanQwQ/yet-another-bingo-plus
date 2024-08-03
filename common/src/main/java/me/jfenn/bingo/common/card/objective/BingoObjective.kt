@@ -14,7 +14,7 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
-import java.util.UUID
+import java.util.*
 import kotlin.time.Duration
 
 @Serializable
@@ -208,6 +208,23 @@ sealed class BingoObjective {
         override fun removePlayer(uuid: UUID) {
             super.removePlayer(uuid)
             playersOnceAchieved.remove(uuid)
+        }
+
+        @Transient
+        override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+    }
+
+    @Serializable
+    @SerialName("opponent")
+    data class OpponentEntry(
+        override val id: String,
+        val opponentObjective: String,
+        val permanent: Boolean,
+        val displayData: ObjectiveDisplay.Data?,
+    ): BingoObjective() {
+        init {
+            dependsOnObjectives.add(opponentObjective)
+            conflictsWithObjectives.add(opponentObjective)
         }
 
         @Transient

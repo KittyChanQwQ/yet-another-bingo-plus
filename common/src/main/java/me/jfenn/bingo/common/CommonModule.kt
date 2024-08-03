@@ -123,6 +123,7 @@ val commonModule = module {
         scopedOf(::AllOfObjectiveManager)
         scopedOf(::OneOfObjectiveManager)
         scopedOf(::InverseObjectiveManager)
+        scopedOf(::OpponentObjectiveManager)
         scoped {
             BingoObjectiveManager(
                 listOf(
@@ -131,6 +132,7 @@ val commonModule = module {
                     get<AllOfObjectiveManager>(),
                     get<OneOfObjectiveManager>(),
                     get<InverseObjectiveManager>(),
+                    get<OpponentObjectiveManager>(),
                 ),
                 get(),
             )
