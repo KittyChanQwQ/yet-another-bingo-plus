@@ -8,6 +8,9 @@ class BingoObjectiveManager(
     private val providers: List<IObjectiveManager>,
     private val log: Logger,
 ) : IObjectiveManager {
+    override fun list(): Iterable<String> {
+        return providers.flatMap { it.list() }
+    }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
         for (provider in providers) {

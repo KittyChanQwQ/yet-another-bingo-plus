@@ -45,7 +45,7 @@ class CommandManagerImpl(
                 when (val arg = command.arg) {
                     is CommandArgument.String -> RequiredArgumentBuilder.argument<ServerCommandSource?, String?>(
                         arg.name,
-                        StringArgumentType.string()
+                        if (arg.greedy) StringArgumentType.greedyString() else StringArgumentType.string()
                     ).let {
                         when (val suggestions = arg.suggestions) {
                             null -> it
@@ -120,7 +120,7 @@ class CommandManagerImpl(
 }
 
 class SuggestionProviderImpl(
-    private val callback: IExecutionContext.() -> List<String>,
+    private val callback: IExecutionContext.() -> Iterable<String>,
 ) : SuggestionProvider<ServerCommandSource> {
     override fun getSuggestions(
         context: CommandContext<ServerCommandSource>,

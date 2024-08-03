@@ -16,6 +16,12 @@ class OpponentObjectiveManager(
     private val objectiveService: ObjectiveService,
     private val text: TextProvider,
 ) : IObjectiveManager {
+    override fun list(): Iterable<String> {
+        return objectiveRegistryState.objectives
+            .filterValues { it is ObjectiveData.Opponent }
+            .keys
+    }
+
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
         val data = objectiveRegistryState.objectives[id] as? ObjectiveData.Opponent
             ?: return null

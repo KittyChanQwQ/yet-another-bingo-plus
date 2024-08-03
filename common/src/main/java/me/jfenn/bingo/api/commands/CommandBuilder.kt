@@ -17,10 +17,11 @@ class CommandBuilder(
 
     fun string(
         name: String,
-        suggestions: (IExecutionContext.() -> List<String>)?,
+        suggestions: (IExecutionContext.() -> Iterable<String>)?,
+        greedy: Boolean = false,
         configure: CommandBuilder.(arg: CommandArgument<String>) -> Unit
     ) {
-        val arg = CommandArgument.String(name, suggestions)
+        val arg = CommandArgument.String(name, suggestions, greedy)
         val node = CommandNode.RequiredArgument(arg)
         CommandBuilder(node).configure(arg)
         parent.children += node
@@ -76,7 +77,8 @@ sealed class CommandArgument<T> {
 
     class String(
         override val name: kotlin.String,
-        val suggestions: (IExecutionContext.() -> List<kotlin.String>)?,
+        val suggestions: (IExecutionContext.() -> Iterable<kotlin.String>)?,
+        val greedy: Boolean,
     ) : CommandArgument<kotlin.String>()
 
     class Text(

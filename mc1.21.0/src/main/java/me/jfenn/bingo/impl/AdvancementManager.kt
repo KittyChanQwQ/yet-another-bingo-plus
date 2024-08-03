@@ -11,6 +11,10 @@ import net.minecraft.util.Identifier
 import kotlin.jvm.optionals.getOrNull
 
 class AdvancementManager : IAdvancementManager {
+    override fun listAdvancements(server: MinecraftServer): List<String> {
+        return server.advancementLoader.advancements.map { it.id.toString() }
+    }
+
     override fun getAdvancement(server: MinecraftServer, id: String): IAdvancementHandle? {
         return server.advancementLoader.get(Identifier.of(id))
             ?.let { AdvancementHandle(it) }

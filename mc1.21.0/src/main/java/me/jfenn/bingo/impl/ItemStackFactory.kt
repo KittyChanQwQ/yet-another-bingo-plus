@@ -30,6 +30,12 @@ class ItemStackFactory(
 
     private val jsonOps = server?.registryManager?.getOps(JsonOps.INSTANCE) ?: JsonOps.INSTANCE
 
+    override fun listItems(server: MinecraftServer): List<String> {
+        return Registries.ITEM.streamEntries()
+            .map { it.registryKey().value.toString() }
+            .toList()
+    }
+
     override fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean {
         val itemInstance = try {
             createStack(item, 1).item

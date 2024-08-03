@@ -24,6 +24,9 @@ class AdvancementObjectiveManager(
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
 ) : IObjectiveManager {
+    override fun list(): Iterable<String> {
+        return advancementManager.listAdvancements(server)
+    }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective.AdvancementEntry? {
         return BingoObjective.AdvancementEntry(id, advancementId = id).takeIf { init(it) }

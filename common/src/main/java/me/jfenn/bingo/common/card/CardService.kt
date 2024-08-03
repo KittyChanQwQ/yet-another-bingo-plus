@@ -39,6 +39,49 @@ class CardService(
         state.card = generate(options, state.seed)
     }
 
+    fun replaceEntry(x: Int, y: Int, objectiveId: String) {
+        val generatorState = CardGeneratorState(random = Random.Default)
+        // Make sure that the objective exists
+        val objective = objectiveManager.find(objectiveId, generatorState)
+            ?: throw IllegalArgumentException("Could not find objective '$objectiveId'")
+
+        replaceEntry(x, y, objective)
+    }
+
+    fun replaceEntry(x: Int, y: Int, objective: BingoObjective) {
+        val generatorState = CardGeneratorState(random = Random.Default)
+
+        // Overwrite the entry being replaced
+        val entries = state.card.entries.toMutableList()
+        entries[x + y * 5] = BingoCardEntry(
+            objectiveId = objective.id,
+            tier = null,
+        )
+
+        // Re-build the objectives map (but we don't need to check for conflicts)
+        val objectives = mutableMapOf<String, BingoObjective>()
+        for (entry in entries) {
+            val objectiveMap = createObjectives(entry.objectiveId, generatorState) ?: continue
+            objectives.putAll(objectiveMap)
+        }
+
+        // If any objectives already exist on the card, use them instead of the new instance
+        // (so that partial completion/state doesn't get lost if this is used mid-game)
+        for (key in objectives.keys.toSet()) {
+            state.card.objectives[key]?.let {
+                objectives[key] = it
+            }
+        }
+
+        objectives[objective.id] = objective
+
+        // Set the card
+        state.card = state.card.copy(
+            entries = entries,
+            objectives = objectives,
+        )
+    }
+
     fun showInventory(player: ServerPlayerEntity) {
         player.openHandledScreen(SimpleNamedScreenHandlerFactory(
             { syncId, inv, _ ->
@@ -164,7 +207,10 @@ class CardService(
         }
 
         items.shuffle(random)
-        return BingoCard(items, objectives)
+        return BingoCard(
+            entries = items,
+            objectives = objectives
+        )
     }
 
     private fun createObjectives(

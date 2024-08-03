@@ -7,6 +7,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 interface IItemStackFactory {
+    fun listItems(server: MinecraftServer): List<String>
     fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean
 
     fun createStack(item: String, count: Int = 1): IItemStack

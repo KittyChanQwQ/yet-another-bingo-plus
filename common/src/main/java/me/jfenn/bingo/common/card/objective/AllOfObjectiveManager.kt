@@ -5,21 +5,23 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 
 class AllOfObjectiveManager(
-    private val state: BingoState,
-    private val options: BingoOptions,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
 ) : IObjectiveManager {
+    override fun list(): Iterable<String> {
+        return objectiveRegistryState.objectives
+            .filterValues { it is ObjectiveData.AllOf }
+            .keys
+    }
+
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
         val data = objectiveRegistryState.objectives[id] as? ObjectiveData.AllOf
             ?: return null

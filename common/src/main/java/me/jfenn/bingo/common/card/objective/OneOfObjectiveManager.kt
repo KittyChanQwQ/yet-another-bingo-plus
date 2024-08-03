@@ -11,13 +11,18 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 
 class OneOfObjectiveManager(
-    private val state: BingoState,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
 ) : IObjectiveManager {
+    override fun list(): Iterable<String> {
+        return objectiveRegistryState.objectives
+            .filterValues { it is ObjectiveData.OneOf }
+            .keys
+    }
+
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
         val data = objectiveRegistryState.objectives[id] as? ObjectiveData.OneOf
             ?: return null

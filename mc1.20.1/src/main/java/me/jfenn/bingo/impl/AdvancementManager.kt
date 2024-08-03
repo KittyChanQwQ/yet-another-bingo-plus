@@ -11,6 +11,10 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 class AdvancementManager : IAdvancementManager {
+    override fun listAdvancements(server: MinecraftServer): List<String> {
+        return server.advancementLoader.advancements.map { it.id.toString() }
+    }
+
     override fun getAdvancement(server: MinecraftServer, id: String): IAdvancementHandle? {
         return server.advancementLoader.get(Identifier(id))
             ?.let { AdvancementHandle(it) }

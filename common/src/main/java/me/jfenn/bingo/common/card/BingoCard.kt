@@ -9,7 +9,8 @@ import me.jfenn.bingo.common.utils.UuidAsString
 import java.util.*
 
 @Serializable
-class BingoCard(
+data class BingoCard(
+    val id: UuidAsString = UUID.randomUUID(),
     val entries: List<BingoCardEntry>,
     val objectives: Map<String, BingoObjective>,
 ) {
@@ -17,8 +18,6 @@ class BingoCard(
     init {
         assert(entries.size == 25) { "BINGO card was created with less than 25 entries! (${entries.size})" }
     }
-
-    val id: UuidAsString = UUID.randomUUID()
 
     @Transient
     var isInitialized = false

@@ -81,6 +81,7 @@ val commonModule = module {
     factoryOf(ChunkyIntegration::create)
 
     singleOf(::BingoCommand)
+    singleOf(::BingoCardCommand)
     singleOf(::BingoCommands)
     singleOf(::BingoDebugCommand)
     singleOf(::BingoLobbyCommand)
@@ -210,6 +211,7 @@ fun Koin.commonInit() {
     get<RestartOnLeaveController>()
 
     get<BingoCommand>()
+    get<BingoCardCommand>()
     get<BingoCommands>()
     if (BINGO_VERSION.contains("alpha") || BINGO_VERSION.contains("beta"))
         get<BingoDebugCommand>()

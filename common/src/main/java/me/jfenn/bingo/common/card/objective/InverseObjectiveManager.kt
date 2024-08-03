@@ -18,6 +18,12 @@ class InverseObjectiveManager(
     private val objectiveService: ObjectiveService,
     private val text: TextProvider,
 ) : IObjectiveManager {
+    override fun list(): Iterable<String> {
+        return objectiveRegistryState.objectives
+            .filterValues { it is ObjectiveData.Inverse }
+            .keys
+    }
+
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
         val data = objectiveRegistryState.objectives[id] as? ObjectiveData.Inverse
             ?: return null

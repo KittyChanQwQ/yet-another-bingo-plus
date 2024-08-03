@@ -9,11 +9,7 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
-import me.jfenn.bingo.common.team.OfflinePlayerCache
-import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.slf4j.Logger
@@ -22,16 +18,18 @@ import kotlin.math.max
 class ItemObjectiveManager(
     private val log: Logger,
     private val server: MinecraftServer,
-    private val options: BingoOptions,
-    private val state: BingoState,
     private val itemStackFactory: IItemStackFactory,
     private val playerManager: IPlayerManager,
-    private val teamService: TeamService,
-    private val offlinePlayerCache: OfflinePlayerCache,
     private val objectiveRegistry: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
 ): IObjectiveManager {
+    override fun list(): Iterable<String> {
+        val dataKeys = objectiveRegistry.objectives
+            .filterValues { it is ObjectiveData.Item }
+            .keys
+        return itemStackFactory.listItems(server) + dataKeys
+    }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective.ItemEntry? {
         // If the objective is a data ID
