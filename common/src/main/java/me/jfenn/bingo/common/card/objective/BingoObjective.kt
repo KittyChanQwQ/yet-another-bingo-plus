@@ -25,7 +25,9 @@ sealed class BingoObjective {
     /** Includes teams that have observed or made partial progress on the objective */
     var teamsSeen = mutableSetOf<BingoTeamKey>()
     /** Includes teams that have achieved the objective */
-    var teams = mutableMapOf<BingoTeamKey, Instant>()
+    var teamsAchieved = mutableMapOf<BingoTeamKey, Instant>()
+    /** Includes teams that have lost the objective */
+    var teamsLost = mutableMapOf<BingoTeamKey, Instant>()
     /** Includes teams that have previously achieved and then lost the objective */
     val teamsOnceAchieved = mutableSetOf<BingoTeamKey>()
     /** Includes players that have achieved the objective */
@@ -60,9 +62,9 @@ sealed class BingoObjective {
     }
 
     open fun hasAchieved(player: BingoPlayerProfile): Boolean = players.containsKey(player.uuid)
-    open fun hasAchieved(team: BingoTeamKey): Boolean = teams.containsKey(team)
+    open fun hasAchieved(team: BingoTeamKey): Boolean = teamsAchieved.containsKey(team)
 
-    open fun hasAnyAchieved() = teams.isNotEmpty()
+    open fun hasAnyAchieved() = teamsAchieved.isNotEmpty()
     fun hasNoneAchieved() = !hasAnyAchieved()
 
     open fun removePlayer(uuid: UUID) {
@@ -80,16 +82,29 @@ sealed class BingoObjective {
 
     fun getProgress(team: BingoTeamKey) = teamsProgress[team] ?: 0f
 
+    fun achievedAt(team: BingoTeamKey?): Instant? {
+        return when {
+            team != null -> teamsAchieved[team]
+            else -> teamsAchieved.values.maxOrNull()
+        }
+    }
+
+    fun lostAt(team: BingoTeamKey?): Instant? {
+        return when {
+            team != null -> teamsLost[team]
+            else -> teamsLost.values.maxOrNull()
+        }
+    }
+
     /**
-     * Determines the last time that the tile was achieved at.
+     * Determines the last time that the tile was updated at.
      * If [team] is not null, this returns the last changed time
      * for the specified team.
      */
-    open fun achievedAt(team: BingoTeamKey?): Instant {
-        if (team == null) {
-            return teams.values.maxOrNull() ?: Instant.DISTANT_PAST
-        }
-        return teams[team] ?: Instant.DISTANT_PAST
+    fun updatedAt(team: BingoTeamKey?): Instant {
+        return listOfNotNull(achievedAt(team), lostAt(team))
+            .maxOrNull()
+            ?: Instant.DISTANT_PAST
     }
 
     /**
@@ -99,7 +114,7 @@ sealed class BingoObjective {
     open fun isFlashing(team: BingoTeamKey?, duration: Duration): Boolean {
         return team != null &&
                 hasAchieved(team) &&
-                Clock.System.now() - achievedAt(team) < duration
+                Clock.System.now() - updatedAt(team) < duration
     }
 
     @Serializable

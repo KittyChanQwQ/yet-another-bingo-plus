@@ -79,20 +79,35 @@ class ObjectiveService(
 
         if (teams != null) {
             val now = Clock.System.now()
-            val newTeams = teams
-                .associateWith { objective.teams[it] ?: now }
+            val newTeamsAchieved = teams
+                .associateWith { objective.teamsAchieved[it] ?: now }
                 .toMutableMap()
 
-            newTeams.keys
-                .filter { lockedTeamKeys.contains(it) }
-                .onEach { newTeams.remove(it) }
+            val newTeamsLost = (objective.teamsAchieved.keys + objective.teamsLost.keys)
+                .filter { !newTeamsAchieved.containsKey(it) }
+                .associateWith { objective.teamsLost[it] ?: now }
+                .toMutableMap()
 
-            objective.teams.entries
+            newTeamsAchieved.keys
+                .filter { lockedTeamKeys.contains(it) }
+                .onEach { newTeamsAchieved.remove(it) }
+
+            newTeamsLost.keys
+                .filter { lockedTeamKeys.contains(it) }
+                .onEach { newTeamsLost.remove(it) }
+
+            objective.teamsAchieved.entries
                 .filter { lockedTeamKeys.contains(it.key) }
                 .toMap()
-                .let { newTeams.putAll(it) }
+                .let { newTeamsAchieved.putAll(it) }
 
-            objective.teams = newTeams
+            objective.teamsLost.entries
+                .filter { lockedTeamKeys.contains(it.key) }
+                .toMap()
+                .let { newTeamsLost.putAll(it) }
+
+            objective.teamsAchieved = newTeamsAchieved
+            objective.teamsLost = newTeamsLost
         }
     }
 
@@ -134,7 +149,7 @@ class ObjectiveService(
     }
 
     fun updateTeamsOnceAchieved(objective: BingoObjective) {
-        objective.teamsOnceAchieved.addAll(objective.teams.keys)
+        objective.teamsOnceAchieved.addAll(objective.teamsAchieved.keys)
     }
 
     fun updateTeamsSeen(

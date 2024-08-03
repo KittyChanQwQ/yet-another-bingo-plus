@@ -121,7 +121,7 @@ class MigrationHandler(
                 ?.deleteIfExists()
 
             loader.configDir.resolve("$MOD_ID_BINGO/simplified.tierlist.json")
-                .takeIfMd5("0d4f8a30e26cfcbc44a9096d6eef556e")
+                .takeIfMd5("0d4f8a30e26cfcbc44a9096d6eef556e", "d4f8a30e26cfcbc44a9096d6eef556e")
                 ?.deleteIfExists()
         }
     }
@@ -138,11 +138,11 @@ class MigrationHandler(
         return hexDigest
     }
 
-    private fun Path.takeIfMd5(md5Str: String): Path? {
+    private fun Path.takeIfMd5(vararg md5Str: String): Path? {
         if (!this.isRegularFile()) return null
 
         val hexDigest = md5Of(this) ?: return null
-        val matches = hexDigest == md5Str
+        val matches = md5Str.contains(hexDigest)
         if (matches) {
             log.info("MATCH $hexDigest -- $pathString")
         } else {
