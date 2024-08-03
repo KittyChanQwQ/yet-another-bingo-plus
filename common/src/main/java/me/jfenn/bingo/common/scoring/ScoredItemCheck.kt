@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.scoring
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
+import me.jfenn.bingo.common.card.objective.ObjectiveTickState
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameEndReason
@@ -10,12 +11,6 @@ import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import net.minecraft.server.MinecraftServer
-import org.koin.core.time.measureDuration
-import org.slf4j.Logger
-import kotlin.system.measureTimeMillis
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.measureTime
 
 /**
  * Searches for items in each player's inventory that can
@@ -28,8 +23,6 @@ class ScoredItemCheck(
     private val gameService: GameService,
     private val scoreUpdateService: ScoreUpdateService,
     private val objectiveManager: BingoObjectiveManager,
-    private val log: Logger,
-    private val server: MinecraftServer,
 ) : BingoComponent() {
 
     private fun updateScores(

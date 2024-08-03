@@ -8,7 +8,6 @@ import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.toMap
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 
@@ -48,14 +47,14 @@ class InverseObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.InverseEntry>()) {
             val inverse = card.objectives[objective.inverseObjective] ?: continue
 
-            objective.teamsOnceAchieved.addAll(objective.teams)
+            objectiveService.updateTeamsOnceAchieved(objective)
 
             if (objective.permanent) {
                 // once a player earns the inverse objective, they can never recapture this one
                 objective.playersOnceAchieved.addAll(inverse.playersHolding.keys)
             }
 
-            objective.playersHolding = objectiveService.getTeamPlayers()
+            val playersHolding = objectiveService.getTeamPlayers()
                 .filter { (_, player) -> !inverse.playersHolding.containsKey(player.uuid) }
                 .filter { (_, player) ->
                     !objective.playersOnceAchieved.contains(player.uuid)
@@ -70,13 +69,19 @@ class InverseObjectiveManager(
                         )
                     }
                 )
-                .toMutableMap()
 
             objective.teamsSeen = inverse.teamsSeen
 
-            objective.players = objective.playersHolding
+            val players = objective.playersHolding
 
-            objective.teams = objective.playersHolding.map { it.value.team }.toMutableSet()
+            val teams = objective.playersHolding.map { it.value.team }.toMutableSet()
+
+            objectiveService.update(
+                objective = objective,
+                playersHolding = playersHolding,
+                players = players,
+                teams = teams
+            )
         }
     }
 }

@@ -49,26 +49,37 @@ class OneOfObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.OneOfEntry>()) {
             val objectives = objective.oneOfObjectives.mapNotNull { card.objectives[it] }
 
-            objective.teamsOnceAchieved.addAll(objective.teams)
+            objectiveService.updateTeamsOnceAchieved(objective)
 
-            objective.teamsProgress = objectives.flatMap { it.teamsProgress.entries }
-                .groupBy { it.key }
-                .mapValues { (_, entries) -> entries.maxOf { it.value } }
-                .toMutableMap()
-
-            objective.teamsSeen = objectiveService.getTeamsSeen(objective) { team ->
+            objectiveService.updateTeamsSeen(objective) { team ->
                 objectives.any { it.hasSeen(team) }
             }
 
-            objective.playersHolding = objectives
+            val teamsProgress = objectives.flatMap { it.teamsProgress.entries }
+                .groupBy { it.key }
+                .mapValues { (_, entries) -> entries.maxOf { it.value } }
+
+            val playersHolding = objectives
                 .flatMap { it.playersHolding.entries }
                 .groupBy { it.key }
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
-                .toMutableMap()
 
-            objective.players = objectiveService.getPlayers(objective)
+            val players = objectiveService.getPlayers(
+                playersHolding = playersHolding,
+                players = objective.players
+            )
 
-            objective.teams = objectiveService.getTeams(objective)
+            val teams = objectiveService.getTeams(
+                players = players
+            )
+
+            objectiveService.update(
+                objective = objective,
+                teamsProgress = teamsProgress,
+                playersHolding = playersHolding,
+                players = players,
+                teams = teams
+            )
         }
     }
 }

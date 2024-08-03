@@ -23,11 +23,71 @@ class ObjectiveService(
         }
     }
 
-    fun getPlayers(
-        objective: BingoObjective
-    ): MutableMap<UUID, BingoObjectiveCapture> {
-        val playersHolding = objective.playersHolding
+    fun getLockedTeams() = state.getRegisteredTeams().filter { it.isWinner() }
 
+    /**
+     * Updates components of the objective state, but ensures that
+     * values do not change for any teams that should not be updated
+     */
+    fun update(
+        objective: BingoObjective,
+        playersHolding: Map<UUID, BingoObjectiveCapture>? = null,
+        players: Map<UUID, BingoObjectiveCapture>? = null,
+        teamsProgress: Map<BingoTeamKey, Float>? = null,
+        teams: Set<BingoTeamKey>? = null,
+    ) {
+        val lockedTeams = getLockedTeams()
+        val lockedTeamKeys = lockedTeams.map { it.key }.toSet()
+
+        if (playersHolding != null) {
+            val newPlayersHolding = playersHolding.toMutableMap()
+
+            newPlayersHolding.values
+                .filter { lockedTeamKeys.contains(it.team) }
+                .onEach { newPlayersHolding.remove(it.player.uuid) }
+
+            objective.playersHolding.entries
+                .filter { lockedTeamKeys.contains(it.value.team) }
+                .toMap()
+                .let { newPlayersHolding.putAll(it) }
+
+            objective.playersHolding = newPlayersHolding
+        }
+
+        if (players != null) {
+            val newPlayers = players.toMutableMap()
+
+            newPlayers.values
+                .filter { lockedTeamKeys.contains(it.team) }
+                .onEach { newPlayers.remove(it.player.uuid) }
+
+            objective.players.entries
+                .filter { lockedTeamKeys.contains(it.value.team) }
+                .toMap()
+                .let { newPlayers.putAll(it) }
+
+            objective.players = newPlayers
+        }
+
+        if (teamsProgress != null) {
+            val newTeamsProgress = teamsProgress.toMutableMap()
+            lockedTeamKeys.forEach { newTeamsProgress.remove(it) }
+            newTeamsProgress.putAll(objective.teamsProgress.filterKeys { lockedTeamKeys.contains(it) })
+            objective.teamsProgress = newTeamsProgress
+        }
+
+        if (teams != null) {
+            val newTeams = teams.toMutableSet()
+            newTeams.removeAll(lockedTeamKeys)
+            newTeams.addAll(lockedTeamKeys.filter { objective.teams.contains(it) })
+            objective.teams = newTeams
+        }
+    }
+
+    fun getPlayers(
+        playersHolding: Map<UUID, BingoObjectiveCapture>,
+        players: Map<UUID, BingoObjectiveCapture>,
+    ): Map<UUID, BingoObjectiveCapture> {
         return when {
             options.isLockoutMode -> {
                 // oldest capture first
@@ -43,38 +103,38 @@ class ObjectiveService(
                 .let { entries ->
                     when {
                         options.isInventoryMode -> entries
-                        else -> entries + objective.players.entries
+                        else -> entries + players.entries
                     }
                 }
                 .sortedBy { it.value.instant } // oldest captures first
                 .distinctBy { it.value.team }
                 .toMap()
-                .toMutableMap()
         }
     }
 
     fun getTeams(
-        objective: BingoObjective
-    ): MutableSet<BingoTeamKey> {
-        val players = objective.players
-
+        players: Map<UUID, BingoObjectiveCapture>,
+    ): Set<BingoTeamKey> {
         return state.getRegisteredTeams()
             .filter { team -> team.players.any { players.containsKey(it.uuid) } }
             .map { it.key }
-            .toMutableSet()
+            .toSet()
     }
 
-    fun getTeamsSeen(
+    fun updateTeamsOnceAchieved(objective: BingoObjective) {
+        objective.teamsOnceAchieved.addAll(objective.teams)
+    }
+
+    fun updateTeamsSeen(
         objective: BingoObjective,
         condition: (BingoTeamKey) -> Boolean
-    ): MutableSet<BingoTeamKey> {
+    ) {
         // This can optimize condition checks a little, because
         // teamsSeen is only ever additive
         // (we don't need to check teams again once they're in the set)
 
         val teamsNotSeen = state.getRegisteredTeams().map { it.key }.toSet() - objective.teamsSeen
         objective.teamsSeen.addAll(teamsNotSeen.filter(condition))
-        return objective.teamsSeen
     }
 
 }

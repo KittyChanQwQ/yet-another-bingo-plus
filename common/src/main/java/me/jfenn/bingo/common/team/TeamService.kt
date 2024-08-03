@@ -81,9 +81,15 @@ class TeamService(
         val playerProfile = BingoPlayerProfile.fromPlayer(playerManager.forPlayer(player))
 
         // Remove player from their existing team
-        getPlayerTeam(player)
-            ?.players
-            ?.remove(playerProfile)
+        val oldTeam = getPlayerTeam(player)
+        if (oldTeam != null) {
+            oldTeam.players.remove(playerProfile)
+
+            // Remove any of the player's held/scored items from the card
+            for (objective in state.card.objectives.values) {
+                objective.removePlayer(playerProfile.uuid)
+            }
+        }
 
         teamManager.setPlayerTeam(player, createTeam(team))
         team.players.add(playerProfile)

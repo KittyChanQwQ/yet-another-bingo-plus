@@ -51,30 +51,41 @@ class AllOfObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.AllOfEntry>()) {
             val objectives = objective.allOfObjectives.mapNotNull { card.objectives[it] }
 
-            objective.teamsOnceAchieved.addAll(objective.teams)
+            objectiveService.updateTeamsOnceAchieved(objective)
 
-            objective.teamsProgress = objectives.flatMap { it.teamsProgress.entries }
+            objectiveService.updateTeamsSeen(objective) { team ->
+                objectives.any { it.hasSeen(team) }
+            }
+
+            val teamsProgress = objectives.flatMap { it.teamsProgress.entries }
                 .groupBy { it.key }
                 .mapValues { (_, entries) ->
                     entries.map { it.value }.sum() /
                             objectives.size.coerceAtLeast(1).toFloat()
                 }
-                .toMutableMap()
 
-            objective.teamsSeen = objectiveService.getTeamsSeen(objective) { team ->
-                objectives.any { it.hasSeen(team) }
-            }
-
-            objective.playersHolding = objectives
+            val playersHolding = objectives
                 .flatMap { it.playersHolding.entries }
                 .groupBy { it.key }
                 .filter { it.value.size == objectives.size } // in order to capture, must be holding every objective
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
-                .toMutableMap()
 
-            objective.players = objectiveService.getPlayers(objective)
+            val players = objectiveService.getPlayers(
+                playersHolding = playersHolding,
+                players = objective.players
+            )
 
-            objective.teams = objectiveService.getTeams(objective)
+            val teams = objectiveService.getTeams(
+                players = players
+            )
+
+            objectiveService.update(
+                objective = objective,
+                teamsProgress = teamsProgress,
+                playersHolding = playersHolding,
+                players = players,
+                teams = teams
+            )
         }
     }
 }

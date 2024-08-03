@@ -14,6 +14,7 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
+import java.util.UUID
 import kotlin.time.Duration
 
 @Serializable
@@ -63,6 +64,11 @@ sealed class BingoObjective {
 
     open fun hasAnyAchieved() = teams.isNotEmpty()
     fun hasNoneAchieved() = !hasAnyAchieved()
+
+    open fun removePlayer(uuid: UUID) {
+        playersHolding.remove(uuid)
+        players.remove(uuid)
+    }
 
     /**
      * Checks if the [team] has seen the item on
@@ -198,6 +204,11 @@ sealed class BingoObjective {
         }
 
         val playersOnceAchieved = mutableSetOf<UuidAsString>()
+
+        override fun removePlayer(uuid: UUID) {
+            super.removePlayer(uuid)
+            playersOnceAchieved.remove(uuid)
+        }
 
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY

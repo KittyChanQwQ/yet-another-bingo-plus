@@ -70,7 +70,7 @@ class AdvancementObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.AdvancementEntry>()) {
             val advancement = objective.advancement ?: continue
 
-            objective.teamsOnceAchieved.addAll(objective.teams)
+            objectiveService.updateTeamsOnceAchieved(objective)
 
             val teamPlayers = state.getRegisteredTeams()
                 .associate { it.key to it.players }
@@ -78,18 +78,18 @@ class AdvancementObjectiveManager(
                     players.map { offlinePlayerCache.getOfflinePlayer(it) }
                 }
 
-            objective.teamsProgress = teamPlayers.map { (team, players) ->
+            val teamsProgress = teamPlayers.map { (team, players) ->
                 val progress = players.maxOf { advancementManager.getProgress(it.player, advancement) }
                 team to progress
-            }.toMap().toMutableMap()
+            }.toMap()
 
-            objective.teamsSeen = objectiveService.getTeamsSeen(objective) { team ->
+            objectiveService.updateTeamsSeen(objective) { team ->
                 teamPlayers[team]
                     ?.any { advancementManager.isAnyObtained(it.player, advancement) }
                     ?: false
             }
 
-            objective.playersHolding = run {
+            val playersHolding = run {
                 val currentPlayers = objective.playersHolding.toMutableMap()
 
                 // Add players that have just achieved the advancement
@@ -114,9 +114,22 @@ class AdvancementObjectiveManager(
                 currentPlayers
             }
 
-            objective.players = objectiveService.getPlayers(objective)
+            val players = objectiveService.getPlayers(
+                playersHolding = playersHolding,
+                players = objective.players
+            )
 
-            objective.teams = objectiveService.getTeams(objective)
+            val teams = objectiveService.getTeams(
+                players = players
+            )
+
+            objectiveService.update(
+                objective = objective,
+                teamsProgress = teamsProgress,
+                playersHolding = playersHolding,
+                players = players,
+                teams = teams
+            )
         }
     }
 }

@@ -116,16 +116,27 @@ class ItemObjectiveManager(
     override fun tick(card: BingoCard) {
         val now = Clock.System.now()
 
+        val lockedTeams = objectiveService.getLockedTeams()
+        val lockedTeamKeys = lockedTeams.map { it.key }.toSet()
+        val lockedTeamPlayers = lockedTeams.flatMap { it.players }.map { it.uuid }.toSet()
+
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
-            objective.teamsOnceAchieved.addAll(objective.teams)
-            objective.teamsProgress.clear()
+            objectiveService.updateTeamsOnceAchieved(objective)
+
+            // team progress is recalculated on each tick... except for teams that are locked (once a card is complete)
+            objective.teamsProgress = objective.teamsProgress
+                .filterKeys { lockedTeamKeys.contains(it) }
+                .toMutableMap()
         }
 
         // first, we need to check that each player still has all their items
         // and remove them from playersHolding if not
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
             for (player in playerManager.getPlayers()) {
+                // if the player has no objectives to lose, skip
                 if (!objective.playersHolding.containsKey(player.uuid)) continue
+                // if the player is on a locked team, skip
+                if (lockedTeamPlayers.contains(player.uuid)) continue
 
                 val hasItem = player.allHeldStacks().any { canSatisfy(it, objective) }
 
@@ -137,6 +148,9 @@ class ItemObjectiveManager(
         }
 
         for ((team, player) in objectiveService.getTeamPlayers()) {
+            // if the team is locked, skip
+            if (lockedTeamKeys.contains(team.key)) continue
+
             // check inventory for new collected items
             for (stack in player.allHeldStacks()) {
                 // get any objectives for the itemId, if it is on the card
@@ -169,8 +183,13 @@ class ItemObjectiveManager(
         }
 
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
-            objective.players = objectiveService.getPlayers(objective)
-            objective.teams = objectiveService.getTeams(objective)
+            objective.players = objectiveService.getPlayers(
+                playersHolding = objective.playersHolding,
+                players = objective.players,
+            ).toMutableMap()
+            objective.teams = objectiveService.getTeams(
+                players = objective.players
+            ).toMutableSet()
         }
     }
 }
