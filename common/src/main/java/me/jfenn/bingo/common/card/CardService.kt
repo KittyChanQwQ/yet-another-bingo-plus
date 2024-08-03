@@ -76,7 +76,8 @@ class CardService(
         objectives[objective.id] = objective
 
         // Set the card
-        state.card = state.card.copy(
+        state.card = BingoCard(
+            id = state.card.id,
             entries = entries,
             objectives = objectives,
         )

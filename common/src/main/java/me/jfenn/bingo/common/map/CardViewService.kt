@@ -120,7 +120,8 @@ class CardViewService(
             lore = objective.display.lore.takeIf { !isHidden } ?: emptyList(),
             decoration = when {
                 isFreeSpace -> CardTile.Decoration.FREE_SPACE
-                objective is BingoObjective.AdvancementEntry -> CardTile.Decoration.ADVANCEMENT
+                objective is BingoObjective.AdvancementEntry ||
+                        objective is BingoObjective.OpponentEntry -> CardTile.Decoration.ADVANCEMENT
                 objective is BingoObjective.OneOfEntry ||
                         objective is BingoObjective.AllOfEntry -> CardTile.Decoration.MULTI_ITEM
                 objective is BingoObjective.InverseEntry -> CardTile.Decoration.FORBIDDEN

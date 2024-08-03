@@ -4,7 +4,6 @@
         "yet-another-minecraft-bingo:challenge/many_breeze_rods",
         "yet-another-minecraft-bingo:challenge/many_echo_shards",
         "yet-another-minecraft-bingo:challenge/many_shulker_shells",
-        "yet-another-minecraft-bingo:challenge/many_trial_keys",
         "yet-another-minecraft-bingo:challenge/nbt_mending_book"
     ],
     "A": [
@@ -13,6 +12,8 @@
         "yet-another-minecraft-bingo:challenge/all_seeds",
         "yet-another-minecraft-bingo:challenge/many_blaze_rods",
         "yet-another-minecraft-bingo:challenge/many_diamond",
+        "yet-another-minecraft-bingo:challenge/many_ominous_bottles",
+        "yet-another-minecraft-bingo:challenge/many_trial_keys",
         "yet-another-minecraft-bingo:challenge/nbt_bucket_of_clownfish",
         "yet-another-minecraft-bingo:challenge/nbt_bucket_of_pink_axolotl",
         "yet-another-minecraft-bingo:challenge/nbt_enchanted_golden_axe",
@@ -32,6 +33,7 @@
         "yet-another-minecraft-bingo:challenge/nbt_ominous_banner",
         "yet-another-minecraft-bingo:challenge/never_get_flint_and_steel",
         "yet-another-minecraft-bingo:challenge/never_get_kelp",
+        "yet-another-minecraft-bingo:challenge/never_get_poppy",
         "yet-another-minecraft-bingo:challenge/never_get_shield",
         "yet-another-minecraft-bingo:challenge/never_get_wheat_seeds"
     ],
@@ -58,9 +60,12 @@
         "yet-another-minecraft-bingo:challenge/all_leather_armor",
         "yet-another-minecraft-bingo:challenge/all_stone_tools",
         "yet-another-minecraft-bingo:challenge/all_wooden_tools",
+        "yet-another-minecraft-bingo:challenge/many_clay_balls",
         "yet-another-minecraft-bingo:challenge/many_coal",
         "yet-another-minecraft-bingo:challenge/many_ink_sacs",
+        "yet-another-minecraft-bingo:challenge/many_kelp",
         "yet-another-minecraft-bingo:challenge/many_leather",
+        "yet-another-minecraft-bingo:challenge/many_sand",
         "yet-another-minecraft-bingo:challenge/nbt_damaged_wooden_axe",
         "yet-another-minecraft-bingo:challenge/nbt_damaged_wooden_hoe",
         "yet-another-minecraft-bingo:challenge/nbt_damaged_wooden_pickaxe",

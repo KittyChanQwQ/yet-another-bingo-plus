@@ -16,10 +16,14 @@ class BingoCardCommand(
 ) : BingoComponent() {
 
     companion object {
+        private val CARD_KEYS = "bingo".toCharArray()
+            .flatMap { col -> (1..5).map { "$col$it" } }
+
         private val CARD_POSITIONS = buildMap {
             val text = "bingo".toCharArray()
             for (x in 0..4) for (y in 0..4) {
-                this["${text[x]}${y+1}"] = Pair(x, y)
+                val row = y+1
+                this["${text[x]}$row"] = Pair(x, y)
             }
         }
     }
@@ -35,7 +39,7 @@ class BingoCardCommand(
 
     private fun IExecutionContext.setObjective(tile: String, objectiveId: String) {
         val (x, y) = CARD_POSITIONS[tile]
-            ?: throw IllegalArgumentException("'$tile' is not a valid bingo tile position")
+            ?: throw IllegalArgumentException("'$tile' is not a valid bingo tile position: ${CARD_POSITIONS.keys}")
 
         val cardService = scope.get<CardService>()
         cardService.replaceEntry(x, y, objectiveId)
@@ -43,7 +47,7 @@ class BingoCardCommand(
 
     private fun IExecutionContext.setFreeSpace(tile: String) {
         val (x, y) = CARD_POSITIONS[tile]
-            ?: throw IllegalArgumentException("'$tile' is not a valid bingo tile position")
+            ?: throw IllegalArgumentException("'$tile' is not a valid bingo tile position: ${CARD_POSITIONS.keys}")
 
         val cardService = scope.get<CardService>()
         cardService.replaceEntry(x, y, BingoObjective.FreeSpace())
@@ -55,7 +59,7 @@ class BingoCardCommand(
                 requires {
                     hasState(GameState.PREGAME, GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
                 }
-                string("tile", { CARD_POSITIONS.keys }) { tileArg ->
+                string("tile", { CARD_KEYS }) { tileArg ->
                     literal("set") {
                         string("objective", { objectivesCache.get(this) }, greedy = true) { objectiveArg ->
                             executes {

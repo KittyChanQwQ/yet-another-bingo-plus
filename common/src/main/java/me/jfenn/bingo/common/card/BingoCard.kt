@@ -9,7 +9,7 @@ import me.jfenn.bingo.common.utils.UuidAsString
 import java.util.*
 
 @Serializable
-data class BingoCard(
+class BingoCard(
     val id: UuidAsString = UUID.randomUUID(),
     val entries: List<BingoCardEntry>,
     val objectives: Map<String, BingoObjective>,

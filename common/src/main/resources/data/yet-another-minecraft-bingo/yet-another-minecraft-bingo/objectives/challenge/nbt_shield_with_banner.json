@@ -2,6 +2,9 @@
   "type": "item",
   "display": {
     "name": "\"Decorated Shield\"",
+    "lore": [
+      "\"Shield + Any Banner\""
+    ],
     "item": "minecraft:shield",
     "itemNbt": "{BlockEntityTag: {Patterns: [{Pattern: \"cre\", Color: 15}], Base: 5, id: \"minecraft:banner\"}}",
     "itemComponents": {
