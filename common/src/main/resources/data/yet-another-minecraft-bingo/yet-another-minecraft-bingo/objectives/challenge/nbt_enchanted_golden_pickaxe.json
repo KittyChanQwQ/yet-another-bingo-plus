@@ -1,0 +1,16 @@
+{
+  "type": "item",
+  "display": {
+    "name": "\"Enchanted Golden Pickaxe\"",
+    "item": "minecraft:golden_pickaxe",
+    "itemNbt": "{Enchantments:[{lvl:1,id:mending}]}",
+    "itemComponents": {
+      "minecraft:enchantments": "{\"levels\":{\"mending\":1}}"
+    }
+  },
+  "item": "minecraft:golden_pickaxe",
+  "nbt": "{Enchantments:[{}]}",
+  "components": {
+    "minecraft:enchantments": "{\"levels\":{}}"
+  }
+}

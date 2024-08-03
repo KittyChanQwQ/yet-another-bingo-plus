@@ -1,0 +1,11 @@
+{
+  "type": "item",
+  "display": {
+    "name": "\"Damaged Golden Shovel\""
+  },
+  "item": "minecraft:golden_shovel",
+  "nbt": "{Damage:31}",
+  "components": {
+    "minecraft:damage": "31"
+  }
+}
