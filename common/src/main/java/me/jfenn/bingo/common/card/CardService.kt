@@ -142,15 +142,36 @@ class CardService(
 
         val items = mutableListOf<BingoCardEntry>()
         val objectives = mutableMapOf<String, BingoObjective>()
+        var missingItems = 0
 
         // Pick the given number of items from the tier list for each tier
         for ((tierIndex, tier) in TierLabel.entries.withIndex()) {
             var tierCountRemaining = dist[tierIndex]
             var tierWeightRemaining = tiersWeightTotal
 
+            // - shuffled to ensure that list priority is randomized on each tier
+            val tierLists = tiers.shuffled(random)
+
+            fun createObjectivePair(entry: TierListEntry.SingleEntry): Pair<String, Map<String, BingoObjective>>? {
+                val objectiveId = entry.item.substringAfterLast("!")
+                val objectiveMap = createObjectives(objectiveId, state)
+                    ?: return null
+
+                val objectiveConflicts = objectiveMap.values
+                    .flatMap { it.conflictsWithObjectives }
+                    .filter { it != objectiveId } // any direct objectiveId conflicts are handled by list.pick()
+                if (objectiveConflicts.any { excludedObjectives.contains(it) })
+                    return null
+
+                // add this objective and any dependencies to the excluded list to prevent conflicting goals
+                // - this prevents "craft a shield" and "never obtain shield" from appearing on the same card
+                excludedObjectives.addAll(objectiveConflicts)
+
+                return Pair(objectiveId, objectiveMap)
+            }
+
             // For each tier list, calculate the number of items it should pick for this tier
-            // - shuffled to ensure that list priority is randomized
-            for ((list, weight) in tiers.shuffled(random)) {
+            for ((list, weight) in tierLists) {
                 val ratio = weight.toDouble() / tierWeightRemaining
                 val itemCount = ceil(ratio * tierCountRemaining).toInt()
 
@@ -158,27 +179,12 @@ class CardService(
                 // does not have enough entries in it
                 val tierItems = list.pick(tier, excludedObjectives, random)
                     .filterIsInstance<TierListEntry.SingleEntry>()
-                    .mapNotNull { entry ->
-                        val objectiveId = entry.item.substringAfterLast("!")
-                        val objectiveMap = createObjectives(objectiveId, state) ?: return@mapNotNull null
-
-                        val objectiveConflicts = objectiveMap.values
-                            .flatMap { it.conflictsWithObjectives }
-                            .filter { it != objectiveId } // any direct objectiveId conflicts are handled by list.pick()
-                        if (objectiveConflicts.any { excludedObjectives.contains(it) })
-                            return@mapNotNull null
-
-                        // add this objective and any dependencies to the excluded list to prevent conflicting goals
-                        // - this prevents "craft a shield" and "never obtain shield" from appearing on the same card
-                        excludedObjectives.addAll(objectiveConflicts)
-
-                        Pair(objectiveId, objectiveMap)
-                    }
+                    .mapNotNull { createObjectivePair(it) }
                     .take(itemCount)
                     .toList()
 
-                for ((objectiveId, goalDependencies) in tierItems) {
-                    objectives.putAll(goalDependencies)
+                for ((objectiveId, objectiveMap) in tierItems) {
+                    objectives.putAll(objectiveMap)
                     items.add(
                         BingoCardEntry(
                             objectiveId = objectiveId,
@@ -190,10 +196,33 @@ class CardService(
                 tierCountRemaining -= tierItems.size
                 tierWeightRemaining -= weight
             }
+
+            // If the tier's items don't add up to the expected count, try to fill the remainder from other lists
+            for (i in 0 until tierCountRemaining) {
+
+                // Find the first item that can be obtained from any tier list
+                for ((list, _) in tierLists) {
+                    val (objectiveId, objectiveMap) = list.pick(tier, excludedObjectives, random)
+                        .filterIsInstance<TierListEntry.SingleEntry>()
+                        .mapNotNull { createObjectivePair(it) }
+                        .firstOrNull()
+                        ?: continue
+
+                    objectives.putAll(objectiveMap)
+                    items.add(
+                        BingoCardEntry(
+                            objectiveId = objectiveId,
+                            tier = tier,
+                        )
+                    )
+                    missingItems++
+                    break
+                }
+            }
         }
 
-        if (items.size < dist.sum()) {
-            log.error("Card has generated with ${items.size} entries, when the item distribution needed ${dist.sum()}!")
+        if (items.size < dist.sum() || missingItems > 0) {
+            log.error("Card has generated with ${items.size - missingItems} entries, when the item distribution needed ${dist.sum()}!")
             log.error("This might be caused by a small tier list or too many item groups in the configuration...")
         }
 
