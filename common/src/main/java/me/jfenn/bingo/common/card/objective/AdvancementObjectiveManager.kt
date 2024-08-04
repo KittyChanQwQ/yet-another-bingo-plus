@@ -62,7 +62,7 @@ class AdvancementObjectiveManager(
     override fun init(card: BingoCard) {
         for (goal in card.objectivesByInstance<BingoObjective.AdvancementEntry>()) {
             if (!init(goal)) {
-                log.error("[AdvancementGoalManager] Unable to find advancement '${goal.advancementId}'")
+                log.error("[AdvancementObjectiveManager] Unable to find advancement '${goal.advancementId}'")
             }
         }
     }

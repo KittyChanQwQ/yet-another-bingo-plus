@@ -46,4 +46,12 @@ sealed class ObjectiveData {
         val permanent: Boolean = true,
     ) : ObjectiveData()
 
+    @Serializable
+    @SerialName("stats")
+    data class Stats(
+        val statType: String,
+        val statName: String? = null,
+        val value: NumberProviderPolymorphic,
+    ) : ObjectiveData()
+
 }

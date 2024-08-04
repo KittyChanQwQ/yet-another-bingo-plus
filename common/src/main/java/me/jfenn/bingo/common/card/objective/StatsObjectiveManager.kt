@@ -1,0 +1,145 @@
+package me.jfenn.bingo.common.card.objective
+
+import kotlinx.datetime.Clock
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IStatHandle
+import me.jfenn.bingo.api.IStatManager
+import me.jfenn.bingo.common.card.BingoCard
+import me.jfenn.bingo.common.card.CardGeneratorState
+import me.jfenn.bingo.common.card.data.ObjectiveData
+import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.common.team.OfflinePlayerCache
+import net.minecraft.text.Text
+import org.slf4j.Logger
+
+class StatsObjectiveManager(
+    private val log: Logger,
+    private val statManager: IStatManager,
+    private val state: BingoState,
+    private val offlinePlayerCache: OfflinePlayerCache,
+    private val objectiveRegistryState: ObjectiveRegistryState,
+    private val objectiveDisplayService: ObjectiveDisplayService,
+    private val objectiveService: ObjectiveService,
+) : IObjectiveManager {
+    override fun list(): Iterable<String> {
+        return objectiveRegistryState.objectives
+            .filterValues { it is ObjectiveData.Stats }
+            .keys
+    }
+
+    override fun find(id: String, state: CardGeneratorState): BingoObjective? {
+        val data = objectiveRegistryState.objectives[id] as? ObjectiveData.Stats
+            ?: return null
+
+        return BingoObjective.StatsEntry(
+            id = id,
+            data = data,
+            value = data.value.resolve(state),
+        ).also {
+            it.conflictsWithObjectives.addAll(data.conflictsWith)
+        }
+    }
+
+    private fun init(objective: BingoObjective): Boolean {
+        if (objective !is BingoObjective.StatsEntry) return false
+
+        val stat = statManager.getById(objective.data.statType, objective.data.statName)
+            ?: return false
+
+        objective.stat = stat
+
+        val statNamespace = (objective.data.statName ?: objective.data.statType).substringBefore(':')
+        val statTypePath = objective.data.statType.substringAfter(':')
+        val statNamePath = objective.data.statName?.substringAfter(':')
+        val statNameFallback = statTypePath + (statNamePath?.let { " $it" } ?: "")
+
+        val statName = statNamePath
+            ?.let { Text.translatableWithFallback("stat.$statNamespace.$it", statNameFallback) }
+            ?: Text.literal(statNameFallback)
+
+        val display = ObjectiveDisplay.Resolved(
+            name = Text.empty().append(statName).append(": ${objective.value}"),
+        )
+        objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
+
+        return true
+    }
+
+    override fun init(card: BingoCard) {
+        for (goal in card.objectivesByInstance<BingoObjective.StatsEntry>()) {
+            if (!init(goal)) {
+                log.error("[StatsObjectiveManager] Unable to find statistic ${goal.data.statType}/${goal.data.statName} for ${goal.id}")
+            }
+        }
+    }
+
+    private fun getStatValue(objective: BingoObjective.StatsEntry, stat: IStatHandle, player: IPlayerHandle): Int {
+        val base = objective.baseStats.getOrPut(player.uuid) { stat.getForPlayer(player) }
+        return stat.getForPlayer(player) - base
+    }
+
+    override fun tick(card: BingoCard) {
+        val now = Clock.System.now()
+
+        for (objective in card.objectivesByInstance<BingoObjective.StatsEntry>()) {
+            val stat = objective.stat ?: continue
+
+            objectiveService.updateTeamsOnceAchieved(objective)
+
+            val teamPlayers = state.getRegisteredTeams()
+                .associate { it.key to it.players }
+                .mapValues { (_, players) ->
+                    players.map { offlinePlayerCache.getOfflinePlayer(it) }
+                }
+
+            val teamsProgress = teamPlayers.map { (team, players) ->
+                val progress = players.maxOf { getStatValue(objective, stat, it) } / objective.value.coerceAtLeast(1).toFloat()
+                team to progress
+            }.toMap()
+
+            objectiveService.updateTeamsSeen(objective) { team ->
+                teamPlayers[team]
+                    ?.any { getStatValue(objective, stat, it) > 0 }
+                    ?: false
+            }
+
+            val playersHolding = run {
+                val currentPlayers = objective.playersHolding.toMutableMap()
+
+                // Add players that have achieved the stat
+                teamPlayers.flatMap { (team, players) -> players.map { team to it } } // List<(TeamKey, Player)>
+                    // filter players that already have the stat
+                    .filter { (_, player) -> !objective.playersHolding.containsKey(player.uuid) }
+                    .filter { (_, player) -> getStatValue(objective, stat, player) >= objective.value }
+                    .onEach { (team, player) ->
+                        currentPlayers[player.uuid] = BingoObjectiveCapture(
+                            team = team,
+                            player = BingoPlayerProfile.fromPlayer(player),
+                            instant = now,
+                        )
+                    }
+
+                currentPlayers
+            }
+
+            val players = objectiveService.getPlayers(
+                playersHolding = playersHolding,
+                players = objective.players
+            )
+
+            val teams = objectiveService.getTeams(
+                players = players
+            )
+
+            objectiveService.update(
+                objective = objective,
+                teamsProgress = teamsProgress,
+                playersHolding = playersHolding,
+                players = players,
+                teams = teams
+            )
+        }
+    }
+}

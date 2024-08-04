@@ -5,10 +5,11 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.json.JsonElement
 import me.jfenn.bingo.api.IAdvancementHandle
+import me.jfenn.bingo.api.IStatHandle
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -245,5 +246,31 @@ sealed class BingoObjective {
 
         @Transient
         override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+    }
+
+    @Serializable
+    @SerialName("stats")
+    data class StatsEntry(
+        override val id: String,
+        val data: ObjectiveData.Stats,
+        val value: Int,
+    ): BingoObjective() {
+
+        /**
+         * Records the stats that each player has when first entering the game
+         * (workaround to avoid resetting stats each time a game starts)
+         */
+        val baseStats = mutableMapOf<UuidAsString, Int>()
+
+        @Transient
+        var stat: IStatHandle? = null
+
+        @Transient
+        override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+
+        override fun removePlayer(uuid: UUID) {
+            super.removePlayer(uuid)
+            baseStats.remove(uuid)
+        }
     }
 }
