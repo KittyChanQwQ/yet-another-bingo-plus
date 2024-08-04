@@ -17,12 +17,12 @@ These are the base properties that exist on every objective:
 
 - `"type": "..."`: The type of objective: `item`, `one_of`, `all_of`, `inverse`, or `opponent`.
 - `"display": {}`: Alters what name or item the objective shows when displayed on the card
-  - `"name": "{\"text\": \"Kelp!\"}"`: Uses [raw JSON text format](https://minecraft.wiki/w/Raw_JSON_text_format) to specify the objective name
+  - `"name": {"text": "Kelp!"}`: Uses [raw JSON text format](https://minecraft.wiki/w/Raw_JSON_text_format) to specify the objective name
   - `"item": "minecraft:kelp"`: Changes the visual item for the objective
   - `"itemNbt": "{}"`: Sets pre-1.20.6 NBT data on the item
   - `"itemComponents": {}`: Sets post-1.20.6 JSON-encoded [data components](https://minecraft.wiki/w/Data_component_format#List_of_components) on the item
-    - `"minecraft:enchantments": "{\"levels\":{\"mending\":1}}"`
-- `"conflictsWith: []"`: A list of conflicting objectives that should never appear on the same card as this objective.
+    - `"minecraft:enchantments": {"levels":{"mending":1}}`
+- `"conflictsWith: ["minecraft:dried_kelp"]`: A list of conflicting objectives that should never appear on the same card as this objective.
 
 ### `"type": "item"`
 
@@ -34,15 +34,15 @@ These are the base properties that exist on every objective:
     - `"max": 32`: The upper boundary for the item count (inclusive)
 - `"nbt": "{}"`: Sets pre-1.20.6 NBT data on the item
 - `"components": {}`: Sets post-1.20.6 JSON-encoded [data components](https://minecraft.wiki/w/Data_component_format#List_of_components) on the item
-  - `"minecraft:enchantments": "{\"levels\":{\"mending\":1}}"`
+  - `"minecraft:enchantments": {"levels":{"mending":1}}`
 
 ### `"type": "one_of"`
 
-- `"objectives": []`: A list of objective IDs. The player may obtain any of these to complete this objective.
+- `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player may obtain any of these to complete this objective.
 
 ### `"type": "all_of"`
 
-- `"objectives": []`: A list of objective IDs. The player must obtain all of these to complete this objective.
+- `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player must obtain all of these to complete this objective.
 
 ### `"type": "inverse"`
 
