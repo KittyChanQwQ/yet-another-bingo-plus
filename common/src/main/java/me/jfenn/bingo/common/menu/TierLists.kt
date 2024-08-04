@@ -70,6 +70,19 @@ fun MenuComponent.registerTierLists(
         registerButton(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + 4*MENU_ITEM_HEIGHT), 0.0),
             text = text.string(StringKey.OptionsTierListMore),
+            textProp = computedProperty {
+                Text.literal(
+                    pages.indices
+                        .joinToString(" ") {
+                            val hasSelected = pages[it].any { options.tierLists.containsKey(it) }
+                            when {
+                                page == it -> if (hasSelected) "◆" else "◇"
+                                else -> if (hasSelected) "●" else "◦"
+                            }
+                        }
+                            + " »"
+                )
+            },
             isActiveProp = computedProperty { false },
             permissionGetter = permissionGetter,
         ) {
