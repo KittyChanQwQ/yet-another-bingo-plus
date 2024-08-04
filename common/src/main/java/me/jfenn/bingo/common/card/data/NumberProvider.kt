@@ -36,12 +36,12 @@ sealed class NumberProvider {
 typealias NumberProviderPolymorphic = @Serializable(with = NumberProviderSerializer::class) NumberProvider
 
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-object NumberProviderSerializer : KSerializer<NumberProviderPolymorphic> {
+object NumberProviderSerializer : KSerializer<NumberProvider> {
     override val descriptor: SerialDescriptor = buildSerialDescriptor("NumberProvider", PolymorphicKind.SEALED)
 
     private val baseSerializer get() = NumberProvider.serializer()
 
-    override fun deserialize(decoder: Decoder): NumberProviderPolymorphic {
+    override fun deserialize(decoder: Decoder): NumberProvider {
         val element = (decoder as JsonDecoder).decodeJsonElement()
         return when {
             element is JsonPrimitive && element.intOrNull != null -> NumberProvider.Constant(element.int)
@@ -49,10 +49,11 @@ object NumberProviderSerializer : KSerializer<NumberProviderPolymorphic> {
         }
     }
 
-    override fun serialize(encoder: Encoder, value: NumberProviderPolymorphic) {
+    override fun serialize(encoder: Encoder, value: NumberProvider) {
+        require(encoder is JsonEncoder)
         when (value) {
             is NumberProvider.Constant -> encoder.encodeInt(value.value)
-            else -> baseSerializer.serialize(encoder, value)
+            else -> encoder.encodeJsonElement(encoder.json.encodeToJsonElement(baseSerializer, value))
         }
     }
 }

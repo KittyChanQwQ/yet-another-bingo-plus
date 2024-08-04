@@ -30,9 +30,7 @@ class InverseObjectiveManager(
 
         return BingoObjective.InverseEntry(
             id = id,
-            inverseObjective = data.objective,
-            permanent = data.permanent,
-            displayData = data.display,
+            data = data,
         )
     }
 
@@ -45,7 +43,7 @@ class InverseObjectiveManager(
                 )
             } ?: ObjectiveDisplay.Resolved.EMPTY
 
-            objective.display = objectiveDisplayService.resolve(objective.id, objective.displayData, display)
+            objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
         }
     }
 

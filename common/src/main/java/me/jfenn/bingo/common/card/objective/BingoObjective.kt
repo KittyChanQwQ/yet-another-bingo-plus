@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.api.IAdvancementHandle
 import me.jfenn.bingo.api.IStatHandle
 import me.jfenn.bingo.api.item.IItemStack
@@ -14,6 +15,7 @@ import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
+import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import java.util.*
@@ -39,13 +41,14 @@ sealed class BingoObjective {
 
     var teamsProgress = mutableMapOf<BingoTeamKey, Float>()
 
-    @Transient
-    open val display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+    abstract val data: ObjectiveData?
 
     @Transient
-    val dependsOnObjectives = mutableSetOf<String>()
-    @Transient
-    val conflictsWithObjectives = mutableSetOf<String>()
+    open var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+
+    open val dependsOnObjectives get() = emptySet<String>()
+
+    open val conflictsWithObjectives get() = (data?.conflictsWith ?: emptySet()) + id
 
     fun visualItem(tier: TierLabel?): IItemStack? {
         return this.display.item?.copy()?.also { stack ->
@@ -124,7 +127,11 @@ sealed class BingoObjective {
     class FreeSpace : BingoObjective() {
         override val id: String get() = "$MOD_ID_BINGO:free_space"
 
-        override val display: ObjectiveDisplay.Resolved
+        @Transient
+        override val data: ObjectiveData? = null
+
+        override var display: ObjectiveDisplay.Resolved
+            set(_) {}
             get() = ObjectiveDisplay.Resolved(
                 name = Text.translatableWithFallback(StringKey.CardFreeSpace.key, "Free Space"),
                 lore = emptyList(),
@@ -141,18 +148,18 @@ sealed class BingoObjective {
     @SerialName("item")
     data class ItemEntry(
         override val id: String,
-        val itemId: String,
+        override val data: ObjectiveData.Item,
         val itemCount: Int = 1,
-        val itemNbt: String? = null,
-        val itemComponents: Map<String, String?>? = null,
-        val displayData: ObjectiveDisplay.Data? = null,
     ): BingoObjective() {
-        init {
-            conflictsWithObjectives.add(itemId)
-        }
+
+        override val conflictsWithObjectives: Set<String>
+            get() = super.conflictsWithObjectives + itemId
+
+        val itemId get() = data.item
+        val itemNbt get() = data.nbt
 
         @Transient
-        override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+        val itemComponents = data.components?.mapValues { (_, data) -> data?.let { jsonUnpretty.encodeToString(it) } }
 
         @Transient
         var itemStack: IItemStack? = null
@@ -162,14 +169,12 @@ sealed class BingoObjective {
     @SerialName("advancement")
     data class AdvancementEntry(
         override val id: String,
+        override val data: ObjectiveData? = null,
         val advancementId: String,
     ): BingoObjective() {
-        init {
-            conflictsWithObjectives.add(advancementId)
-        }
 
-        @Transient
-        override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+        override val conflictsWithObjectives: Set<String>
+            get() = super.conflictsWithObjectives + advancementId
 
         @Transient
         var advancement: IAdvancementHandle? = null
@@ -179,46 +184,44 @@ sealed class BingoObjective {
     @SerialName("one_of")
     data class OneOfEntry(
         override val id: String,
+        override val data: ObjectiveData.OneOf,
         val oneOfObjectives: Set<String>,
-        val displayData: ObjectiveDisplay.Data?,
     ): BingoObjective() {
-        init {
-            dependsOnObjectives.addAll(oneOfObjectives)
-            conflictsWithObjectives.addAll(oneOfObjectives)
-        }
+        override val dependsOnObjectives: Set<String>
+            get() = super.dependsOnObjectives + oneOfObjectives
 
-        @Transient
-        override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+        override val conflictsWithObjectives: Set<String>
+            get() = super.conflictsWithObjectives + oneOfObjectives
     }
 
     @Serializable
     @SerialName("all_of")
     data class AllOfEntry(
         override val id: String,
+        override val data: ObjectiveData.AllOf,
         val allOfObjectives: Set<String>,
-        val displayData: ObjectiveDisplay.Data?,
     ): BingoObjective() {
-        init {
-            dependsOnObjectives.addAll(allOfObjectives)
-            conflictsWithObjectives.addAll(allOfObjectives)
-        }
+        override val dependsOnObjectives: Set<String>
+            get() = super.dependsOnObjectives + allOfObjectives
 
-        @Transient
-        override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+        override val conflictsWithObjectives: Set<String>
+            get() = super.conflictsWithObjectives + allOfObjectives
     }
 
     @Serializable
     @SerialName("inverse")
     data class InverseEntry(
         override val id: String,
-        val inverseObjective: String,
-        val permanent: Boolean,
-        val displayData: ObjectiveDisplay.Data?,
+        override val data: ObjectiveData.Inverse,
     ): BingoObjective() {
-        init {
-            dependsOnObjectives.add(inverseObjective)
-            conflictsWithObjectives.add(inverseObjective)
-        }
+        override val dependsOnObjectives: Set<String>
+            get() = super.dependsOnObjectives + inverseObjective
+
+        override val conflictsWithObjectives: Set<String>
+            get() = super.conflictsWithObjectives + inverseObjective
+
+        val inverseObjective get() = data.objective
+        val permanent get() = data.permanent
 
         val playersOnceAchieved = mutableSetOf<UuidAsString>()
 
@@ -226,35 +229,35 @@ sealed class BingoObjective {
             super.removePlayer(uuid)
             playersOnceAchieved.remove(uuid)
         }
-
-        @Transient
-        override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
     }
 
     @Serializable
     @SerialName("opponent")
     data class OpponentEntry(
         override val id: String,
-        val opponentObjective: String,
-        val permanent: Boolean,
-        val displayData: ObjectiveDisplay.Data?,
+        override val data: ObjectiveData.Opponent,
     ): BingoObjective() {
-        init {
-            dependsOnObjectives.add(opponentObjective)
-            conflictsWithObjectives.add(opponentObjective)
-        }
+        override val dependsOnObjectives: Set<String>
+            get() = super.dependsOnObjectives + opponentObjective
 
-        @Transient
-        override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+        override val conflictsWithObjectives: Set<String>
+            get() = super.conflictsWithObjectives + opponentObjective
+
+
+        val opponentObjective get() = data.objective
+        val permanent get() = data.permanent
     }
 
     @Serializable
     @SerialName("stats")
     data class StatsEntry(
         override val id: String,
-        val data: ObjectiveData.Stats,
-        val value: Int,
+        override val data: ObjectiveData.Stats,
+        val valueMin: Int,
+        val valueMax: Int
     ): BingoObjective() {
+
+        val valueRange get() = valueMin..valueMax
 
         /**
          * Records the stats that each player has when first entering the game
@@ -264,9 +267,6 @@ sealed class BingoObjective {
 
         @Transient
         var stat: IStatHandle? = null
-
-        @Transient
-        override var display: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
 
         override fun removePlayer(uuid: UUID) {
             super.removePlayer(uuid)

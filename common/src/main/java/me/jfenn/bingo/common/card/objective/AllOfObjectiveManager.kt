@@ -28,11 +28,9 @@ class AllOfObjectiveManager(
 
         return BingoObjective.AllOfEntry(
             id = id,
+            data = data,
             allOfObjectives = tagExpansionService.expandItemTags(data.objectives),
-            displayData = data.display,
-        ).also {
-            it.conflictsWithObjectives.addAll(data.conflictsWith)
-        }
+        )
     }
 
     override fun init(card: BingoCard) {
@@ -45,7 +43,7 @@ class AllOfObjectiveManager(
                 item = objectives.firstNotNullOfOrNull { it.display.item },
             )
 
-            objective.display = objectiveDisplayService.resolve(objective.id, objective.displayData, display)
+            objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
         }
     }
 

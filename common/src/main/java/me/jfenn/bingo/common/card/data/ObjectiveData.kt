@@ -9,7 +9,7 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay
 sealed class ObjectiveData {
 
     val display: ObjectiveDisplay.Data? = null
-    val conflictsWith: List<String> = emptyList()
+    val conflictsWith: Set<String> = emptySet()
 
     @Serializable
     @SerialName("item")
@@ -51,7 +51,8 @@ sealed class ObjectiveData {
     data class Stats(
         val statType: String,
         val statName: String? = null,
-        val value: NumberProviderPolymorphic,
+        val min: NumberProviderPolymorphic = NumberProvider.Constant(1),
+        val max: NumberProviderPolymorphic = NumberProvider.Constant(Int.MAX_VALUE),
     ) : ObjectiveData()
 
 }

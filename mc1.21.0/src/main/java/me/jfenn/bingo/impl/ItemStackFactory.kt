@@ -163,6 +163,11 @@ class ItemStackFactory(
                 }
 
                 val jsonElement = gson.fromJson(value, JsonElement::class.java)
+                if (jsonElement.isJsonNull) {
+                    stack.remove(type)
+                    continue
+                }
+
                 val component = try {
                     type.codecOrThrow
                         .decode(jsonOps, jsonElement)
@@ -247,7 +252,7 @@ class ItemStackFactory(
             }
 
             return predicateComponents.all { (key, predicateComponent) ->
-                val itemComponent = itemComponents[key]
+                val itemComponent = itemComponents[key]?.takeIf { !it.isJsonNull }
                 when {
                     predicateComponent == null -> itemComponent != null
                     itemComponent == null -> false

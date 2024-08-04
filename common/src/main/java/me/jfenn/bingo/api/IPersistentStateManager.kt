@@ -12,7 +12,7 @@ interface IPersistentStateManager {
             ignoreUnknownKeys = true
             isLenient = true
             encodeDefaults = true
-            prettyPrint = true
+            prettyPrint = false
         }
 
         fun nbtToJson(nbt: NbtElement?): JsonElement {

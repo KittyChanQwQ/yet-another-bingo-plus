@@ -39,23 +39,18 @@ class ItemObjectiveManager(
             ?.let { data ->
                 BingoObjective.ItemEntry(
                     id = id,
-                    itemId = data.item,
+                    data = data,
                     itemCount = data.count.resolve(state),
-                    itemNbt = data.nbt,
-                    itemComponents = data.components
-                        ?.mapValues { (_, data) ->
-                            data?.let { jsonUnpretty.encodeToString(it) }
-                        },
-                    displayData = data.display,
-                ).also {
-                    it.conflictsWithObjectives.addAll(data.conflictsWith)
-                }
+                )
             }
             ?.takeIf { init(it) }
             ?.let { return it }
 
         // If the objective is a direct item identifier
-        return BingoObjective.ItemEntry(id = id, itemId = id).takeIf { init(it) }
+        return BingoObjective.ItemEntry(
+            id = id,
+            data = ObjectiveData.Item(item = id),
+        ).takeIf { init(it) }
     }
 
     private fun init(objective: BingoObjective): Boolean {
@@ -82,7 +77,7 @@ class ItemObjectiveManager(
             name = stack.displayName,
             item = stack
         )
-        objective.display = objectiveDisplayService.resolve(objective.id, objective.displayData, display)
+        objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
             .let { it.copy(name = it.name?.withCount(objective.itemCount)) }
 
         return true

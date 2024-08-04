@@ -36,10 +36,9 @@ class StatsObjectiveManager(
         return BingoObjective.StatsEntry(
             id = id,
             data = data,
-            value = data.value.resolve(state),
-        ).also {
-            it.conflictsWithObjectives.addAll(data.conflictsWith)
-        }
+            valueMin = data.min.resolve(state),
+            valueMax = data.max.resolve(state),
+        )
     }
 
     private fun init(objective: BingoObjective): Boolean {
@@ -60,7 +59,7 @@ class StatsObjectiveManager(
             ?: Text.literal(statNameFallback)
 
         val display = ObjectiveDisplay.Resolved(
-            name = Text.empty().append(statName).append(": ${objective.value}"),
+            name = Text.empty().append(statName).append(": ${objective.valueMin}"),
         )
         objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
 
@@ -95,7 +94,7 @@ class StatsObjectiveManager(
                 }
 
             val teamsProgress = teamPlayers.map { (team, players) ->
-                val progress = players.maxOf { getStatValue(objective, stat, it) } / objective.value.coerceAtLeast(1).toFloat()
+                val progress = players.maxOf { getStatValue(objective, stat, it) } / objective.valueMin.coerceAtLeast(1).toFloat()
                 team to progress
             }.toMap()
 
@@ -112,7 +111,7 @@ class StatsObjectiveManager(
                 teamPlayers.flatMap { (team, players) -> players.map { team to it } } // List<(TeamKey, Player)>
                     // filter players that already have the stat
                     .filter { (_, player) -> !objective.playersHolding.containsKey(player.uuid) }
-                    .filter { (_, player) -> getStatValue(objective, stat, player) >= objective.value }
+                    .filter { (_, player) -> getStatValue(objective, stat, player) in objective.valueRange }
                     .onEach { (team, player) ->
                         currentPlayers[player.uuid] = BingoObjectiveCapture(
                             team = team,

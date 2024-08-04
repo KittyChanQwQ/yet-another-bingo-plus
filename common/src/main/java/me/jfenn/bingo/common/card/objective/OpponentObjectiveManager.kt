@@ -28,9 +28,7 @@ class OpponentObjectiveManager(
 
         return BingoObjective.OpponentEntry(
             id = id,
-            opponentObjective = data.objective,
-            permanent = data.permanent,
-            displayData = data.display,
+            data = data,
         )
     }
 
@@ -43,7 +41,7 @@ class OpponentObjectiveManager(
                 )
             } ?: ObjectiveDisplay.Resolved.EMPTY
 
-            objective.display = objectiveDisplayService.resolve(objective.id, objective.displayData, display)
+            objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
         }
     }
 
