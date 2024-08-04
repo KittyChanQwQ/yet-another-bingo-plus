@@ -34,6 +34,7 @@ class ObjectiveRegistryManager(
                 }
             } catch (e: Throwable) {
                 log.error("[ObjectiveRegistryManager] Error reading objective $id: ${e.message}")
+                log.debug("Error reading objective $id", e)
                 continue
             }
 

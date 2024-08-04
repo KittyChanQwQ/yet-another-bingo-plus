@@ -15,7 +15,7 @@ sealed class ObjectiveData {
     @SerialName("item")
     data class Item(
         val item: String,
-        val count: NumberProvider = NumberProvider.Constant(1),
+        val count: NumberProviderPolymorphic = NumberProvider.Constant(1),
         val nbt: String? = null,
         val components: Map<String, JsonElement?>? = null,
     ) : ObjectiveData()

@@ -28,6 +28,7 @@ These are the base properties that exist on every objective:
 
 - `"item": "minecraft:kelp"`: The item that the player needs to pick up for this objective
 - `"count": {}`: Provides the amount of this item that the player needs to obtain
+  - Constant: `"count": 64` 
   - Randomized:
     - `"type": "random"`
     - `"min": 8`: The lower boundary for the item count (inclusive)
