@@ -150,7 +150,7 @@ sealed class BingoObjective {
     data class ItemEntry(
         override val id: String,
         override val data: ObjectiveData.Item,
-        val itemCount: Int = 1,
+        var itemCount: Int = 1,
     ): BingoObjective() {
 
         override val conflictsWithObjectives: Set<String>

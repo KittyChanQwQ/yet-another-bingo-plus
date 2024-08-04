@@ -72,6 +72,7 @@ class ItemObjectiveManager(
             return false
 
         objective.itemStack = stack
+        objective.itemCount = objective.itemCount.coerceIn(1, stack.maxCount)
 
         val display = ObjectiveDisplay.Resolved(
             name = stack.displayName,
@@ -93,7 +94,7 @@ class ItemObjectiveManager(
 
     override fun init(card: BingoCard) {
         for (goal in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
-            if (!init(goal)) {
+            if (init(goal) == null) {
                 log.error("[ItemGoalManager] Unable to find item '${goal.itemId}'")
             }
         }

@@ -112,6 +112,14 @@ class MigrationHandler(
         }
 
         migrations[7] = { // 2.1.0
+            loader.configDir.resolve("$MOD_ID_BINGO/nether-only.tierlist.json")
+                .takeIfMd5("7eb68b14b0288982b86a3c6b856482e3")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("$MOD_ID_BINGO/overworld-only.tierlist.json")
+                .takeIfMd5("7f79d26e384946de62c7d9d4f54105e2")
+                ?.deleteIfExists()
+
             loader.configDir.resolve("$MOD_ID_BINGO/advancements.tierlist.json")
                 .takeIfMd5("19ea980bff9cd124ece633189d2257a2")
                 ?.deleteIfExists()
@@ -178,7 +186,7 @@ class MigrationHandler(
                 .takeIf { it.isDirectory() }
                 ?.listDirectoryEntries(glob = "*.json")
                 ?.forEach {
-                    log.debug("| $MOD_ID_BINGO | ${it.fileName.toString().padEnd(40)} | ${md5Of(it)} |")
+                    log.info("| $MOD_ID_BINGO | ${it.fileName.toString().padEnd(40)} | ${md5Of(it)} |")
                 }
         }
     }

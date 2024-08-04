@@ -118,6 +118,7 @@ data class TierListConfig(
         entry: TierListEntry,
     ): List<TierListEntry> {
         return when (entry) {
+            is TierListEntry.MultiEntry -> emptyList()
             is TierListEntry.SingleEntry -> expansionService.expandItemTag(entry.item).map { TierListEntry.SingleEntry(it) }
         }
     }
