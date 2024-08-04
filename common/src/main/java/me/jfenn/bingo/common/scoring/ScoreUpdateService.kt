@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.scoring
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.PlayerSoundCategory
 import me.jfenn.bingo.api.PlayerSoundEvent
-import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -43,8 +43,10 @@ class ScoreUpdateService(
     fun sendItemCaptured(
         scoredPlayer: BingoPlayerProfile?,
         team: BingoTeam,
-        item: IItemStack?,
+        objective: BingoObjective,
     ) {
+        val item = objective.visualItem(null)
+
         val packet = ScoredItemPacket(
             player = scoredPlayer,
             isViewerOnTeam = true,
@@ -100,13 +102,13 @@ class ScoreUpdateService(
                 continue
 
             val isOnTeam = team.includesPlayer(player.player)
-            val visibleItem = when {
-                // if playing in hidden items mode, don't reveal the item to the other teams!
-                state.options.isHiddenItemsMode && !isOnTeam -> null
-                else -> item
-            }
+            // if playing in hidden items mode, don't reveal the item to the other teams!
+            val isItemHidden = options.isHiddenItemsMode && !isOnTeam
             val itemText = Texts.bracketed(
-                visibleItem?.displayName ?: Text.literal("*****").formatted(Formatting.OBFUSCATED)
+                when {
+                    isItemHidden -> Text.literal("*****").formatted(Formatting.OBFUSCATED)
+                    else -> objective.display.name ?: Text.literal("[unknown]")
+                }
             )
 
             val chatMessage = textProvider.string(
@@ -123,7 +125,7 @@ class ScoreUpdateService(
             val scoreMessage = ScoreMessagePacket(
                 player = scoredPlayer,
                 isViewerOnTeam = isOnTeam,
-                item = visibleItem,
+                item = item.takeIf { !isItemHidden },
                 messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
                 message = chatMessage,
             )

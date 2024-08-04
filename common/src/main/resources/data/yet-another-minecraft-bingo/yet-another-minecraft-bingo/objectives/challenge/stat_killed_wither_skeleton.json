@@ -1,0 +1,8 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:wither_skeleton_skull"
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:wither_skeleton"
+}

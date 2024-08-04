@@ -56,7 +56,7 @@ class ScoredItemCheck(
                     scoreUpdateService.sendItemCaptured(
                         scoredPlayer = player,
                         team = team,
-                        item = objective.visualItem(null),
+                        objective = objective,
                     )
                 }
 

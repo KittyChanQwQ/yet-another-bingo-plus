@@ -55,4 +55,12 @@ sealed class ObjectiveData {
         val max: NumberProviderPolymorphic = NumberProvider.Constant(Int.MAX_VALUE),
     ) : ObjectiveData()
 
+    @Serializable
+    @SerialName("scoreboard")
+    data class Scoreboard(
+        val scoreboardName: String,
+        val min: NumberProviderPolymorphic = NumberProvider.Constant(1),
+        val max: NumberProviderPolymorphic = NumberProvider.Constant(Int.MAX_VALUE),
+    ) : ObjectiveData()
+
 }

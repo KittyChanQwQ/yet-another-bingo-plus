@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.OfflinePlayerCache
+import me.jfenn.bingo.common.utils.formatTitle
 import net.minecraft.text.Text
 import org.slf4j.Logger
 
@@ -52,7 +53,7 @@ class StatsObjectiveManager(
         val statNamespace = (objective.data.statName ?: objective.data.statType).substringBefore(':')
         val statTypePath = objective.data.statType.substringAfter(':')
         val statNamePath = objective.data.statName?.substringAfter(':')
-        val statNameFallback = statTypePath + (statNamePath?.let { " $it" } ?: "")
+        val statNameFallback = statTypePath.formatTitle() + (statNamePath?.let { " ${it.formatTitle()}" } ?: "")
 
         val statName = statNamePath
             ?.let { Text.translatableWithFallback("stat.$statNamespace.$it", statNameFallback) }

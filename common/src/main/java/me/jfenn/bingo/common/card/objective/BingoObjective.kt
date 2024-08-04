@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.api.IAdvancementHandle
+import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IStatHandle
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.common.MOD_ID_BINGO
@@ -271,6 +272,32 @@ sealed class BingoObjective {
         override fun removePlayer(uuid: UUID) {
             super.removePlayer(uuid)
             baseStats.remove(uuid)
+        }
+    }
+
+    @Serializable
+    @SerialName("scoreboard")
+    data class ScoreboardEntry(
+        override val id: String,
+        override val data: ObjectiveData.Scoreboard,
+        val valueMin: Int,
+        val valueMax: Int
+    ): BingoObjective() {
+
+        val valueRange get() = valueMin..valueMax
+
+        /**
+         * Records the scores that each player has when first entering the game
+         * (workaround to avoid resetting stats each time a game starts)
+         */
+        val baseScores = mutableMapOf<UuidAsString, Int>()
+
+        @Transient
+        var scoreboard: IObjectiveHandle? = null
+
+        override fun removePlayer(uuid: UUID) {
+            super.removePlayer(uuid)
+            baseScores.remove(uuid)
         }
     }
 }
