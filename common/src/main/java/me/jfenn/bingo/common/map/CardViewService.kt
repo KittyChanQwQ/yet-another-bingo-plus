@@ -118,15 +118,7 @@ class CardViewService(
             itemTier = entry.tier.takeIf { !options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
             name = objective.display.name.takeIf { !isHidden },
             lore = objective.display.lore.takeIf { !isHidden } ?: emptyList(),
-            decoration = when {
-                isFreeSpace -> CardTile.Decoration.FREE_SPACE
-                objective is BingoObjective.AdvancementEntry ||
-                        objective is BingoObjective.OpponentEntry -> CardTile.Decoration.ADVANCEMENT
-                objective is BingoObjective.OneOfEntry ||
-                        objective is BingoObjective.AllOfEntry -> CardTile.Decoration.MULTI_ITEM
-                objective is BingoObjective.InverseEntry -> CardTile.Decoration.FORBIDDEN
-                else -> null
-            }.takeIf { isFreeSpace || !isHidden },
+            decoration = objective.display.decoration.takeIf { isFreeSpace || !isHidden },
             isHidden = isHidden,
             isLocked = isLocked,
             isFlashing = objective.isFlashing(team?.key, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,

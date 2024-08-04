@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
@@ -41,6 +42,7 @@ class AllOfObjectiveManager(
                 name = text.string(StringKey.ObjectiveAllOf, Text.empty().append(displayNames.firstOrNull() ?: Text.empty()).append(", ...")),
                 lore = displayNames,
                 item = objectives.firstNotNullOfOrNull { it.display.item },
+                decoration = CardTile.Decoration.MULTI_ITEM,
             )
 
             objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)

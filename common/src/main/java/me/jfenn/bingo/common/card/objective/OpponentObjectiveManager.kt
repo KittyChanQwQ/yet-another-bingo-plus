@@ -4,6 +4,7 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -38,6 +39,7 @@ class OpponentObjectiveManager(
                 ObjectiveDisplay.Resolved(
                     name = text.string(StringKey.ObjectiveOpponent, opponent.display.name ?: Text.empty()),
                     item = opponent.display.item,
+                    decoration = CardTile.Decoration.ADVANCEMENT,
                 )
             } ?: ObjectiveDisplay.Resolved.EMPTY
 

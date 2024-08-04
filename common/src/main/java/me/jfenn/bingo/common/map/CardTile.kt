@@ -3,9 +3,9 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.event.packet.PacketConverter
+import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
@@ -26,7 +26,8 @@ data class CardTile(
         FREE_SPACE,
         ADVANCEMENT,
         MULTI_ITEM,
-        FORBIDDEN
+        FORBIDDEN,
+        NONE
     }
 
     object V1 : PacketConverter<CardTile> {

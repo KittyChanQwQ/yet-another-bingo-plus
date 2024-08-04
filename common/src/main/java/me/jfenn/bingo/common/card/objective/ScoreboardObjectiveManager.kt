@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.OfflinePlayerCache
@@ -54,6 +55,7 @@ class ScoreboardObjectiveManager(
 
         val display = ObjectiveDisplay.Resolved(
             name = Text.empty().append(objective.data.scoreboardName.formatTitle()).append(": ${objective.valueMin}"),
+            decoration = CardTile.Decoration.ADVANCEMENT,
         )
         objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
 

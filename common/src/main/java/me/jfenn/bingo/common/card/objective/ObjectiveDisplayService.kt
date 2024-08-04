@@ -38,10 +38,13 @@ class ObjectiveDisplayService(
                 stack
             } ?: fallback.item
 
+            val decoration = data.decoration ?: fallback.decoration
+
             ObjectiveDisplay.Resolved(
                 name = name,
                 lore = lore,
                 item = item,
+                decoration = decoration,
             )
         } catch (e: Throwable) {
             log.error("Unable to resolve objective display for '$id'", e)

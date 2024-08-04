@@ -5,6 +5,7 @@ import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
+import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.OfflinePlayerCache
@@ -53,6 +54,7 @@ class AdvancementObjectiveManager(
                 ?.map { Text.literal(it) }
                 ?: emptyList(),
             item = advancement.displayIcon?.let { itemStackFactory.forStack(it) },
+            decoration = CardTile.Decoration.ADVANCEMENT,
         )
         goal.display = objectiveDisplayService.resolve(goal.id, null, display)
 
