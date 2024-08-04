@@ -90,7 +90,7 @@ class BingoHudController(
             y = y.toInt() + (BingoHudRenderer.CARD_HEIGHT * cardScale * (1 - config.client.cardAlignment.y)).toInt(),
             z = config.client.cardOverlap.z,
             messageScale = config.client.messageScale,
-            isAboveCard = config.client.cardAlignment.y > 0,
+            cardAlignment = config.client.cardAlignment,
         )
 
         // Attempt to draw additional cards if showMultipleCards=true
