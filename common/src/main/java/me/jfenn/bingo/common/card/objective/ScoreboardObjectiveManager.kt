@@ -54,10 +54,17 @@ class ScoreboardObjectiveManager(
         objective.scoreboard = scoreboard
 
         val display = ObjectiveDisplay.Resolved(
-            name = Text.empty().append(objective.data.scoreboardName.formatTitle()).append(": ${objective.valueMin}"),
+            name = Text.literal(objective.data.scoreboardName.formatTitle()),
             decoration = CardTile.Decoration.ADVANCEMENT,
         )
         objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
+            .let {
+                val name = if (objective.valueMin > 1)
+                    Text.empty().append(it.name).append(": ${objective.valueMin}")
+                else it.name
+
+                it.copy(name = name)
+            }
 
         return true
     }

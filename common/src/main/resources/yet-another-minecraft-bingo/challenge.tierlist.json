@@ -39,6 +39,9 @@
         "yet-another-minecraft-bingo:challenge/never_get_poppy",
         "yet-another-minecraft-bingo:challenge/never_get_shield",
         "yet-another-minecraft-bingo:challenge/never_get_wheat_seeds",
+        "yet-another-minecraft-bingo:challenge/never_killed_by_creeper",
+        "yet-another-minecraft-bingo:challenge/never_killed_by_skeleton",
+        "yet-another-minecraft-bingo:challenge/never_killed_by_zombie",
         "yet-another-minecraft-bingo:challenge/stat_killed_piglin",
         "yet-another-minecraft-bingo:challenge/stat_killed_wither_skeleton"
     ],
@@ -121,6 +124,25 @@
         [
             "yet-another-minecraft-bingo:challenge/stat_custom_raid_trigger",
             "yet-another-minecraft-bingo:challenge/stat_custom_raid_win"
+        ],
+        [
+            "yet-another-minecraft-bingo:challenge/never_get_flint_and_steel",
+            "yet-another-minecraft-bingo:challenge/never_get_kelp",
+            "yet-another-minecraft-bingo:challenge/never_get_poppy",
+            "yet-another-minecraft-bingo:challenge/never_get_shield",
+            "yet-another-minecraft-bingo:challenge/never_get_wheat_seeds"
+        ],
+        [
+            "yet-another-minecraft-bingo:challenge/never_killed_by_creeper",
+            "yet-another-minecraft-bingo:challenge/never_killed_by_skeleton",
+            "yet-another-minecraft-bingo:challenge/never_killed_by_zombie"
+        ],
+        [
+            "yet-another-minecraft-bingo:challenge/stat_killed_creeper",
+            "yet-another-minecraft-bingo:challenge/stat_killed_piglin",
+            "yet-another-minecraft-bingo:challenge/stat_killed_skeleton",
+            "yet-another-minecraft-bingo:challenge/stat_killed_wither_skeleton",
+            "yet-another-minecraft-bingo:challenge/stat_killed_zombie"
         ]
     ]
 }

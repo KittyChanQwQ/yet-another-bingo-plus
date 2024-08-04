@@ -62,10 +62,17 @@ class StatsObjectiveManager(
             ?: Text.literal(statNameFallback)
 
         val display = ObjectiveDisplay.Resolved(
-            name = Text.empty().append(statName).append(": ${objective.valueMin}"),
+            name = statName,
             decoration = CardTile.Decoration.ADVANCEMENT,
         )
         objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
+            .let {
+                val name = if (objective.valueMin > 1)
+                    Text.empty().append(it.name).append(": ${objective.valueMin}")
+                else it.name
+
+                it.copy(name = name)
+            }
 
         return true
     }
