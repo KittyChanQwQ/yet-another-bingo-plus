@@ -5,7 +5,6 @@
     "item": "minecraft:lava_bucket"
   },
   "objectives": [
-    "minecraft:bucket",
     "minecraft:lava_bucket",
     "minecraft:milk_bucket",
     "minecraft:water_bucket",
