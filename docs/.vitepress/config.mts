@@ -71,6 +71,7 @@ export default defineConfig({
           ] },
           { text: 'Tier List Editor', link: '/tier-editor', items: [
             { text: 'Item Distribution', link: '/item-distribution' },
+            { text: 'Custom Objectives', link: '/custom-objectives' },
           ] },
           { text: 'Item Images', link: '/item-images' },
         ],
