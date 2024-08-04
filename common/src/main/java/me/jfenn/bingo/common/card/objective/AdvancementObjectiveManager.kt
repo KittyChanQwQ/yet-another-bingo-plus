@@ -5,6 +5,8 @@ import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
+import me.jfenn.bingo.common.card.data.ObjectiveData
+import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
@@ -22,14 +24,31 @@ class AdvancementObjectiveManager(
     private val itemStackFactory: IItemStackFactory,
     private val state: BingoState,
     private val offlinePlayerCache: OfflinePlayerCache,
+    private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
-        return advancementManager.listAdvancements(server)
+        val dataKeys = objectiveRegistryState.objectives
+            .filterValues { it is ObjectiveData.Advancement }
+            .keys
+        return advancementManager.listAdvancements(server) + dataKeys
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective.AdvancementEntry? {
+        // If the objective is a data ID
+        (objectiveRegistryState.objectives[id] as? ObjectiveData.Advancement)
+            ?.let { data ->
+                BingoObjective.AdvancementEntry(
+                    id = id,
+                    data = data,
+                    advancementId = data.advancement,
+                )
+            }
+            ?.takeIf { init(it) }
+            ?.let { return it }
+
+        // If the objective is a direct advancement identifier
         return BingoObjective.AdvancementEntry(id, advancementId = id).takeIf { init(it) }
     }
 

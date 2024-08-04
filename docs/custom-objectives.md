@@ -22,9 +22,10 @@ These are the base properties that exist on every objective:
   - `"itemNbt": "{}"`: Sets pre-1.20.6 NBT data on the item
   - `"itemComponents": {}`: Sets post-1.20.6 JSON-encoded [data components](https://minecraft.wiki/w/Data_component_format#List_of_components) on the item
     - `"minecraft:enchantments": {"levels":{"mending":1}}`
+  - `"decoration": "NONE"`: Applies a decoration to the objective's tile on the card. One of: `ADVANCEMENT`, `MULTI_ITEM`, `FORBIDDEN`, `NONE`.
 - `"conflictsWith: ["minecraft:dried_kelp"]`: A list of conflicting objectives that should never appear on the same card as this objective.
 
-### Items
+## Items
 
 - `"type": "item"`
 - `"item": "minecraft:kelp"`: The item that the player needs to pick up for this objective
@@ -38,7 +39,12 @@ These are the base properties that exist on every objective:
 - `"components": {}`: Sets post-1.20.6 JSON-encoded [data components](https://minecraft.wiki/w/Data_component_format#List_of_components) on the item
   - `"minecraft:enchantments": {"levels":{"mending":1}}`
 
-### Statistics
+## Advancements
+
+- `"type": "advancement"`
+- `"advancement": "minecraft:story/mine_stone"`: The [advancement identifier](https://minecraft.wiki/w/Advancement#List_of_advancements) that should capture the objective when obtained.
+
+## Statistics
 
 - `"type": "stats"`
 - `"statType": "minecraft:custom`: Specifies the [statistic type](https://minecraft.wiki/w/Statistics).
@@ -50,22 +56,39 @@ These are the base properties that exist on every objective:
     - `"min": 8`: The lower boundary for the value (inclusive)
     - `"max": 32`: The upper boundary for the value (inclusive)
 
-### One Of ...
+## Scoreboard Objectives
+
+- `"type": "scoreboard"`
+- `"scoreboardName": "your_datapack_objective"`: The name of the [scoreboard objective](https://minecraft.wiki/w/Scoreboard) that should be tracked.
+- `"min"`: The minimum value required for a player to earn this objective (default: 1)
+  - Constant: `"min": 64`
+  - Randomized:
+    - `"type": "random"`
+    - `"min": 8`: The lower boundary for the value (inclusive)
+    - `"max": 32`: The upper boundary for the value (inclusive)
+- `"max"`: The maximum value required for a player to earn this objective (default: unset)
+  - Constant: `"max": 64`
+  - Randomized:
+    - `"type": "random"`
+    - `"min": 8`: The lower boundary for the value (inclusive)
+    - `"max": 32`: The upper boundary for the value (inclusive)
+
+## One Of ...
 
 - `"type": "one_of"`
 - `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player may obtain any of these to complete this objective.
 
-### All Of ...
+## All Of ...
 
 - `"type": "all_of"`
 - `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player must obtain all of these to complete this objective.
 
-### Inverse / Never Obtain ...
+## Inverse / Never Obtain ...
 
 - `"type": "inverse"`
 - `"objective": "minecraft:wheat_seeds"`: The objective that should be inverted. For example, this goal will be achieved by every team until they capture wheat seeds.
 
-### Opponent Obtains ...
+## Opponent Obtains ...
 
 - `"type": "opponent"`
 - `"objective": "minecraft:wheat_seeds"`: The objective that should be tracked. For example, when a team obtains wheat seeds, every other team will capture this objective.

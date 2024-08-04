@@ -21,6 +21,12 @@ sealed class ObjectiveData {
     ) : ObjectiveData()
 
     @Serializable
+    @SerialName("advancement")
+    data class Advancement(
+        val advancement: String,
+    ) : ObjectiveData()
+
+    @Serializable
     @SerialName("one_of")
     data class OneOf(
         val objectives: Set<String>,
