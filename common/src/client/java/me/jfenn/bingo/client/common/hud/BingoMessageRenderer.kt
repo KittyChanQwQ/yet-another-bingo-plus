@@ -3,9 +3,11 @@ package me.jfenn.bingo.client.common.hud
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.Identifier
+import org.joml.Quaternionf
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
@@ -32,8 +34,11 @@ class BingoMessageRenderer(
         y: Int,
         z: Int,
         messageScale: Float,
-        isAboveCard: Boolean,
+        cardAlignment: CardAlignment,
     ) {
+        val isAboveCard = cardAlignment.y > 0
+        val isLeftOfCard = cardAlignment.x > 0
+
         val context = drawService.context
         val direction = if (isAboveCard) -1 else 1
         val now = Clock.System.now()
@@ -57,9 +62,13 @@ class BingoMessageRenderer(
             }
 
             context.matrices.push()
-            context.matrices.translate(0f, itemY.toFloat() + (1f - fadeOut).pow(2) * ITEM_HEIGHT * direction, 0f)
+            context.matrices.translate(
+                if (isLeftOfCard) BingoHudRenderer.CARD_WIDTH.toFloat() else 0f,
+                itemY.toFloat() + (1f - fadeOut).pow(2) * ITEM_HEIGHT * direction,
+                0f
+            )
 
-            drawMessage(drawService, message, visibility)
+            drawMessage(drawService, message, visibility, isLeftOfCard)
 
             context.matrices.pop()
 
@@ -73,15 +82,18 @@ class BingoMessageRenderer(
         drawService: IDrawService,
         message: BingoHudState.ScoreMessage,
         visibility: Float,
+        isLeftOfCard: Boolean,
     ) {
         val context = drawService.context
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.setShaderColor(1f, 1f, 1f, visibility.pow(2))
 
+        val itemX = if (isLeftOfCard) -8 - ITEM_HEIGHT else 8
+        val itemY = ITEM_HEIGHT/2 - 8
         val itemStack = message.packet.item?.stack
         if (itemStack != null) {
-            context.drawItem(itemStack, 8, ITEM_HEIGHT/2 - 8)
+            context.drawItem(itemStack, itemX, itemY)
         } else {
             val iconTexture = when (message.packet.messageType) {
                 ScoreMessagePacket.MessageType.LEADING_TEAM -> ICON_LEADING_ID
@@ -94,7 +106,7 @@ class BingoMessageRenderer(
             if (iconTexture != null) {
                 drawService.drawTexture(
                     texture = iconTexture,
-                    x = 8, y = ITEM_HEIGHT/2 - 8,
+                    x = itemX, y = itemY,
                     u = 0f, v = 0f,
                     width = 16, height = 16,
                     textureWidth = 16, textureHeight = 16,
@@ -102,10 +114,14 @@ class BingoMessageRenderer(
             }
         }
 
+        val textX = if (isLeftOfCard) {
+            -28 - textRenderer.getWidth(message.packet.message)
+        } else 28
+
         context.drawText(
             textRenderer,
             message.packet.message,
-            28, ITEM_HEIGHT/2 - textRenderer.fontHeight/2,
+            textX, ITEM_HEIGHT/2 - textRenderer.fontHeight/2,
             0xFF_FFFFFF.toInt(),
             true,
         )
