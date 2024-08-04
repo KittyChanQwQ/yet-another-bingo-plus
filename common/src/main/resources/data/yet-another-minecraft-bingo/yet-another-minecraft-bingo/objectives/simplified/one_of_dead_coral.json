@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Dead Coral\"",
+    "name": "Any Dead Coral",
     "item": "minecraft:dead_brain_coral"
   },
   "objectives": [

@@ -1,7 +1,7 @@
 {
   "type": "all_of",
   "display": {
-    "name": "\"All Wooden Tools\"",
+    "name": "All Wooden Tools",
     "item": "minecraft:wooden_pickaxe"
   },
   "objectives": [

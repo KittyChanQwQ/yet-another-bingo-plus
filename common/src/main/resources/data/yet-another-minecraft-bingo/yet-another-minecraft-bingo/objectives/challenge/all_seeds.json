@@ -1,7 +1,7 @@
 {
   "type": "all_of",
   "display": {
-    "name": "\"All Seeds\"",
+    "name": "All Seeds",
     "item": "minecraft:wheat_seeds"
   },
   "objectives": [

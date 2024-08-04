@@ -1,11 +1,11 @@
 {
   "type": "item",
   "display": {
-    "name": "\"Damaged Wooden Sword\""
+    "name": "Damaged Wooden Sword"
   },
   "item": "minecraft:wooden_sword",
   "nbt": "{Damage:58}",
   "components": {
-    "minecraft:damage": "58"
+    "minecraft:damage": 58
   }
 }

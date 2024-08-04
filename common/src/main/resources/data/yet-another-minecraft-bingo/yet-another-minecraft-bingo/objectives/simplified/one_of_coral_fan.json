@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Coral Fan\"",
+    "name": "Any Coral Fan",
     "item": "minecraft:brain_coral_fan"
   },
   "objectives": [

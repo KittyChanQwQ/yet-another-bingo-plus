@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Banner\"",
+    "name": "Any Banner",
     "item": "minecraft:red_banner"
   },
   "objectives": [

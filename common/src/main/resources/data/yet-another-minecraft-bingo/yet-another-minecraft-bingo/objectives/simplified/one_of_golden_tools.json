@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Golden Tool\"",
+    "name": "Any Golden Tool",
     "item": "minecraft:golden_pickaxe"
   },
   "objectives": [

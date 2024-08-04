@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Concrete\"",
+    "name": "Any Concrete",
     "item": "minecraft:red_concrete"
   },
   "objectives": [

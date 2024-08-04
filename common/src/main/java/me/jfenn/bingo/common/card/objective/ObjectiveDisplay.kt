@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import me.jfenn.bingo.api.item.IItemStack
 import net.minecraft.text.Text
 
@@ -17,10 +18,10 @@ class ObjectiveDisplay {
 
     @Serializable
     class Data(
-        val name: String? = null,
-        val lore: List<String>? = null,
+        val name: JsonElement? = null,
+        val lore: List<JsonElement>? = null,
         val item: String? = null,
         val itemNbt: String? = null,
-        val itemComponents: Map<String, String>? = null,
+        val itemComponents: Map<String, JsonElement>? = null,
     )
 }

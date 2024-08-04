@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Glazed Terracotta\"",
+    "name": "Any Glazed Terracotta",
     "item": "minecraft:red_glazed_terracotta"
   },
   "objectives": [

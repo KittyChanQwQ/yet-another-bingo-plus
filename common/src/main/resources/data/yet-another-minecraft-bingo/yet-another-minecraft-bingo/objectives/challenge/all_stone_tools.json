@@ -1,7 +1,7 @@
 {
   "type": "all_of",
   "display": {
-    "name": "\"All Stone Tools\"",
+    "name": "All Stone Tools",
     "item": "minecraft:stone_pickaxe"
   },
   "objectives": [

@@ -1,7 +1,7 @@
 {
   "type": "all_of",
   "display": {
-    "name": "\"All Iron Tools\"",
+    "name": "All Iron Tools",
     "item": "minecraft:iron_pickaxe"
   },
   "objectives": [

@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Clock
+import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
@@ -10,6 +11,7 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.common.utils.jsonUnpretty
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.slf4j.Logger
@@ -40,7 +42,10 @@ class ItemObjectiveManager(
                     itemId = data.item,
                     itemCount = data.count.resolve(state),
                     itemNbt = data.nbt,
-                    itemComponents = data.components,
+                    itemComponents = data.components
+                        ?.mapValues { (_, data) ->
+                            data?.let { jsonUnpretty.encodeToString(it) }
+                        },
                     displayData = data.display,
                 ).also {
                     it.conflictsWithObjectives.addAll(data.conflictsWith)

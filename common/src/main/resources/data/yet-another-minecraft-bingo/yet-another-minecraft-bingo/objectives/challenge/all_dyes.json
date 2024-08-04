@@ -1,7 +1,7 @@
 {
   "type": "all_of",
   "display": {
-    "name": "\"All Dyes\"",
+    "name": "All Dyes",
     "item": "minecraft:red_dye"
   },
   "objectives": [

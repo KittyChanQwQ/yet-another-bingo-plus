@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Froglight\"",
+    "name": "Any Froglight",
     "item": "minecraft:ochre_froglight"
   },
   "objectives": [

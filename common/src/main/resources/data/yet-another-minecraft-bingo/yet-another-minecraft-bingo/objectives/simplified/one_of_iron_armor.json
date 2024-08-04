@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Iron Armor\"",
+    "name": "Any Iron Armor",
     "item": "minecraft:iron_chestplate"
   },
   "objectives": [

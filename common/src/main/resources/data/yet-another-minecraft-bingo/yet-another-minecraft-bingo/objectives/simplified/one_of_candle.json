@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Candle\"",
+    "name": "Any Candle",
     "item": "minecraft:red_candle"
   },
   "objectives": [

@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Diamond Tool\"",
+    "name": "Any Diamond Tool",
     "item": "minecraft:diamond_pickaxe"
   },
   "objectives": [

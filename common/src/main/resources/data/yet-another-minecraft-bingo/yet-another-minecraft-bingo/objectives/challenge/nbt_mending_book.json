@@ -1,11 +1,11 @@
 {
   "type": "item",
   "display": {
-    "name": "\"Mending Book\""
+    "name": "Mending Book"
   },
   "item": "minecraft:enchanted_book",
   "nbt": "{Enchantments:[{id:mending}]}",
   "components": {
-    "minecraft:enchantments": "{\"levels\":{\"mending\":1}}"
+    "minecraft:enchantments": {"levels":{"mending":1}}
   }
 }

@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Banner Pattern\"",
+    "name": "Any Banner Pattern",
     "item": "minecraft:creeper_banner_pattern"
   },
   "objectives": [

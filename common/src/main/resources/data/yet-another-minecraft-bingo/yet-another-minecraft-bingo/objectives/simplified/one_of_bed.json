@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Bed\"",
+    "name": "Any Bed",
     "item": "minecraft:red_bed"
   },
   "objectives": [

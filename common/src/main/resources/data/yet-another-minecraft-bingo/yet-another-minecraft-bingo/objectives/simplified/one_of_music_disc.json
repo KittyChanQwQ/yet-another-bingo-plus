@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Music Disc\"",
+    "name": "Any Music Disc",
     "item": "minecraft:music_disc_cat"
   },
   "objectives": [

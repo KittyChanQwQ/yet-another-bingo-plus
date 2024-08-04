@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.card.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import me.jfenn.bingo.common.card.objective.ObjectiveDisplay
 
 @Serializable
@@ -16,7 +17,7 @@ sealed class ObjectiveData {
         val item: String,
         val count: NumberProvider = NumberProvider.Constant(1),
         val nbt: String? = null,
-        val components: Map<String, String?>? = null,
+        val components: Map<String, JsonElement?>? = null,
     ) : ObjectiveData()
 
     @Serializable

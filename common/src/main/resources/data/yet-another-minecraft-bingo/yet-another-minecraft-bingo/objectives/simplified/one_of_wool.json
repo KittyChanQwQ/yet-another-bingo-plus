@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Wool\"",
+    "name": "Any Wool",
     "item": "minecraft:red_wool"
   },
   "objectives": [

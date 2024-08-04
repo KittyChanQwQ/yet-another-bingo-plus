@@ -1,7 +1,7 @@
 {
   "type": "one_of",
   "display": {
-    "name": "\"Any Carpet\"",
+    "name": "Any Carpet",
     "item": "minecraft:red_carpet"
   },
   "objectives": [

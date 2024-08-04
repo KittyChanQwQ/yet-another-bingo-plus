@@ -1,11 +1,11 @@
 {
   "type": "item",
   "display": {
-    "name": "\"Damaged Golden Pickaxe\""
+    "name": "Damaged Golden Pickaxe"
   },
   "item": "minecraft:golden_pickaxe",
   "nbt": "{Damage:31}",
   "components": {
-    "minecraft:damage": "31"
+    "minecraft:damage": 31
   }
 }
