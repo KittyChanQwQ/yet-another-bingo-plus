@@ -76,8 +76,8 @@ fun MenuComponent.registerTierLists(
                         .joinToString(" ") {
                             val hasSelected = pages[it].any { options.tierLists.containsKey(it) }
                             when {
-                                page == it -> if (hasSelected) "◆" else "◇"
-                                else -> if (hasSelected) "●" else "◦"
+                                page == it -> if (hasSelected) "■" else "□"
+                                else -> if (hasSelected) "◆" else "◇"
                             }
                         }
                             + " »"

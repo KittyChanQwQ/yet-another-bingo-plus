@@ -94,7 +94,7 @@ class ItemObjectiveManager(
 
     override fun init(card: BingoCard) {
         for (goal in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
-            if (init(goal) == null) {
+            if (!init(goal)) {
                 log.error("[ItemGoalManager] Unable to find item '${goal.itemId}'")
             }
         }
