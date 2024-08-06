@@ -7,4 +7,7 @@ import me.jfenn.bingo.common.card.tierlist.TierLabel
 data class BingoCardEntry(
     val objectiveId: String,
     val tier: TierLabel?,
+    /** The tier list ID that this entry was created from */
+    val source: String?,
+    var tileName: String? = null,
 )

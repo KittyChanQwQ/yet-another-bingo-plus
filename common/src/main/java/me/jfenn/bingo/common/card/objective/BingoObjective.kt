@@ -11,14 +11,17 @@ import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IStatHandle
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.data.ObjectiveData
-import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
+import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import java.util.*
 import kotlin.time.Duration
 
@@ -51,17 +54,28 @@ sealed class BingoObjective {
 
     open val conflictsWithObjectives get() = (data?.conflictsWith ?: emptySet()) + id
 
-    fun visualItem(tier: TierLabel?): IItemStack? {
+    fun displayLore(entry: BingoCardEntry?): List<Text>? {
+        return buildList {
+            display.lore?.let { addAll(it) }
+
+            val desc = listOfNotNull(
+                entry?.tier?.text(),
+                entry?.source?.let { TierListState.title(it).formatted(Formatting.BLUE) },
+                entry?.tileName?.let { Text.literal(it).formatted(Formatting.GRAY) },
+            )
+
+            desc.takeIf { it.isNotEmpty() }
+                ?.joinText(Text.literal(" • ").formatted(Formatting.GRAY))
+                ?.let { add(it) }
+        }.takeIf { it.isNotEmpty() }
+    }
+
+    fun visualItem(entry: BingoCardEntry?): IItemStack? {
         return this.display.item?.copy()?.also { stack ->
             stack.setDisplay(
                 name = this.display.name
                     ?.takeIf { it != stack.displayName },
-                lore = this.display.lore
-                    ?.plus(
-                        tier?.let { listOf(it.text()) }
-                            ?: emptyList()
-                    )
-                    ?.takeIf { it.isNotEmpty() },
+                lore = displayLore(entry),
             )
             stack.setHideFlags(255)
         }

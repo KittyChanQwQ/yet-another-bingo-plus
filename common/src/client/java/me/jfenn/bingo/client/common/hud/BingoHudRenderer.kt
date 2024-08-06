@@ -307,7 +307,6 @@ class BingoHudRenderer(
             val tooltip = buildList {
                 tile.name?.let { add(it) }
                 addAll(tile.lore)
-                tile.itemTier?.text()?.let { add(it) }
             }
             if (tooltip.isNotEmpty()) {
                 context.drawTooltip(textRenderer, tooltip, mouseX, mouseY)

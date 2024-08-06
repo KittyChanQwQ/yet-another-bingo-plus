@@ -116,7 +116,7 @@ class BingoCard(
     companion object {
         private val FREE_SPACE get() = BingoObjective.FreeSpace()
         val EMPTY get() = BingoCard(
-            entries = List(25) { BingoCardEntry(FREE_SPACE.id, null) },
+            entries = List(25) { BingoCardEntry(FREE_SPACE.id, null, null) },
             objectives = mapOf(FREE_SPACE.id to FREE_SPACE),
         )
     }

@@ -56,6 +56,7 @@ class CardService(
         entries[x + y * 5] = BingoCardEntry(
             objectiveId = objective.id,
             tier = null,
+            source = null,
         )
 
         // Re-build the objectives map (but we don't need to check for conflicts)
@@ -75,6 +76,7 @@ class CardService(
 
         objectives[objective.id] = objective
 
+        assignTileNames(entries)
         // Set the card
         state.card = BingoCard(
             id = state.card.id,
@@ -134,10 +136,10 @@ class CardService(
                     return@mapNotNull null
                 }
 
-                list to weight.coerceAtLeast(1)
+                Triple(name, list, weight.coerceAtLeast(1))
             }
 
-        val tiersWeightTotal = tiers.sumOf { it.second }
+        val tiersWeightTotal = tiers.sumOf { it.third }
         assert(tiersWeightTotal > 0) { "There must be at least one tier list selected!" }
 
         val items = mutableListOf<BingoCardEntry>()
@@ -171,7 +173,7 @@ class CardService(
             }
 
             // For each tier list, calculate the number of items it should pick for this tier
-            for ((list, weight) in tierLists) {
+            for ((listId, list, weight) in tierLists) {
                 val ratio = weight.toDouble() / tierWeightRemaining
                 val itemCount = ceil(ratio * tierCountRemaining).toInt()
 
@@ -189,6 +191,7 @@ class CardService(
                         BingoCardEntry(
                             objectiveId = objectiveId,
                             tier = tier,
+                            source = listId,
                         )
                     )
                 }
@@ -201,7 +204,7 @@ class CardService(
             for (i in 0 until tierCountRemaining) {
 
                 // Find the first item that can be obtained from any tier list
-                for ((list, _) in tierLists) {
+                for ((listId, list, _) in tierLists) {
                     val (objectiveId, objectiveMap) = list.pick(tier, excludedObjectives, random)
                         .filterIsInstance<TierListEntry.SingleEntry>()
                         .mapNotNull { createObjectivePair(it) }
@@ -213,6 +216,7 @@ class CardService(
                         BingoCardEntry(
                             objectiveId = objectiveId,
                             tier = tier,
+                            source = listId,
                         )
                     )
                     missingItems++
@@ -233,14 +237,27 @@ class CardService(
             items.add(BingoCardEntry(
                 objectiveId = freeSpace.id,
                 tier = null,
+                source = null,
             ))
         }
 
         items.shuffle(random)
+        assignTileNames(items)
+
         return BingoCard(
             entries = items,
             objectives = objectives
         )
+    }
+
+    private fun assignTileNames(entries: List<BingoCardEntry>) {
+        val cols = "bingo".toCharArray()
+        val rows = "12345".toCharArray()
+        entries.forEachIndexed { i, entry ->
+            val x = i % 5
+            val y = i / 5
+            entry.tileName = "${cols[x]}${rows[y]}"
+        }
     }
 
     private fun createObjectives(

@@ -90,9 +90,9 @@ data class BingoOptions(
             .map { (name, weight) ->
                 when {
                     showPercentage -> Text.empty()
-                        .append(state.title(name))
+                        .append(TierListState.title(name))
                         .append(String.format(" (%.0f%%)", weight * 100f / total))
-                    else -> state.title(name)
+                    else -> TierListState.title(name)
                 }
             }
             .joinText()
