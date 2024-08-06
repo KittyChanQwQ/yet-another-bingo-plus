@@ -111,7 +111,7 @@ class MigrationHandler(
                 ?.deleteIfExists()
         }
 
-        migrations[7] = { // 2.1.0
+        migrations[7] = { // 2.1.0-alpha.0
             loader.configDir.resolve("$MOD_ID_BINGO/nether-only.tierlist.json")
                 .takeIfMd5("7eb68b14b0288982b86a3c6b856482e3")
                 ?.deleteIfExists()
@@ -130,6 +130,12 @@ class MigrationHandler(
 
             loader.configDir.resolve("$MOD_ID_BINGO/simplified.tierlist.json")
                 .takeIfMd5("0d4f8a30e26cfcbc44a9096d6eef556e", "d4f8a30e26cfcbc44a9096d6eef556e")
+                ?.deleteIfExists()
+        }
+
+        migrations[8] = { // 2.1.0-alpha.1
+            loader.configDir.resolve("$MOD_ID_BINGO/advancements.tierlist.json")
+                .takeIfMd5("99c0b10329da4ff1c5224d9f86a3cb2a")
                 ?.deleteIfExists()
         }
     }

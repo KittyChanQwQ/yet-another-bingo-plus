@@ -20,6 +20,7 @@
         "minecraft:adventure/totem_of_undying",
         "minecraft:adventure/trade_at_world_height",
         "minecraft:adventure/spyglass_at_dragon",
+        "minecraft:adventure/revaulting",
         "minecraft:husbandry/silk_touch_nest",
         "minecraft:husbandry/allay_deliver_cake_to_note_block",
         "minecraft:husbandry/leash_all_frog_variants",
@@ -40,12 +41,16 @@
         "minecraft:nether/obtain_blaze_rod",
         "minecraft:nether/charge_respawn_anchor",
         "minecraft:nether/explore_nether",
+        "minecraft:adventure/craft_decorated_pot_using_only_sherds",
         "minecraft:adventure/spyglass_at_parrot",
         "minecraft:adventure/trim_with_any_armor_pattern",
         "minecraft:adventure/honey_block_slide",
         "minecraft:adventure/avoid_vibration",
         "minecraft:adventure/kill_mob_near_sculk_catalyst",
         "minecraft:adventure/sniper_duel",
+        "minecraft:adventure/minecraft_trials_edition",
+        "minecraft:adventure/who_needs_rockets",
+        "minecraft:adventure/under_lock_and_key",
         "minecraft:husbandry/tadpole_in_a_bucket",
         "minecraft:husbandry/obtain_sniffer_egg",
         "minecraft:husbandry/obtain_netherite_hoe"
@@ -58,6 +63,8 @@
         "minecraft:nether/distract_piglin",
         "minecraft:nether/brew_potion",
         "minecraft:adventure/brush_armadillo",
+        "minecraft:adventure/crafters_crafting_crafters",
+        "minecraft:adventure/lighten_up",
         "minecraft:adventure/voluntary_exile",
         "minecraft:adventure/read_power_of_chiseled_bookshelf",
         "minecraft:adventure/lightning_rod_with_villager_no_fire",
@@ -106,6 +113,12 @@
             "minecraft:husbandry/wax_on",
             "minecraft:husbandry/wax_off",
             "minecraft:husbandry/silk_touch_nest"
+        ],
+        [
+            "minecraft:adventure/minecraft_trials_edition",
+            "minecraft:adventure/who_needs_rockets",
+            "minecraft:adventure/under_lock_and_key",
+            "minecraft:adventure/revaulting"
         ]
     ]
 }
