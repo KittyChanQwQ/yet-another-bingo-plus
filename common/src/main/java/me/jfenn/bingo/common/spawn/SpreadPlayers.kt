@@ -1,13 +1,8 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.IExecutors
-import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.utils.measureTime
+import me.jfenn.bingo.common.config.BlockPosition
 import net.minecraft.block.Blocks
-import net.minecraft.registry.RegistryKey
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
@@ -15,51 +10,26 @@ import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.Heightmap
 import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
 import net.minecraft.world.biome.BiomeKeys
 import net.minecraft.world.chunk.Chunk
 import net.minecraft.world.chunk.ChunkStatus
-import org.slf4j.Logger
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import org.slf4j.LoggerFactory
 import kotlin.math.cos
 import kotlin.math.sign
 import kotlin.math.sin
+import kotlin.system.measureTimeMillis
 
 class SpreadPlayers(
-    private val log: Logger,
-    private val executors: IExecutors,
-    private val server: MinecraftServer,
     private val world: ServerWorld,
 ) {
 
-    class Factory(
-        private val log: Logger,
-        private val executors: IExecutors,
-        private val server: MinecraftServer,
-    ) {
-        fun forWorld(world: ServerWorld) = SpreadPlayers(
-            log = log,
-            executors = executors,
-            server = server,
-            world = world,
-        )
-    }
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     // Clamp spawn positions to the overworld border
     // - yes, even if the spawn dimension isn't in the overworld...
     private val worldBorder = world.server.overworld.worldBorder
     private val coordinateScale = world.dimension.coordinateScale
     private val worldBorderCenterInWorld = BlockPos((worldBorder.centerX / coordinateScale).toInt(), 0, (worldBorder.centerZ / coordinateScale).toInt())
-    private val worldSpawnPos = world.spawnPos
-
-    private val logicalHeight = world.logicalHeight
-    private val bottomY = world.bottomY
-    private val seaLevel = world.seaLevel
-
-    init {
-        log.info("[SpreadPlayers] Initialized in dimension ${world.registryKey.value} with coordinateScale=$coordinateScale, logicalHeight=$logicalHeight, bottomY=$bottomY, seaLevel=$seaLevel")
-    }
 
     private val invalidSpawnBiomes = setOf(
         BiomeKeys.BEACH,
@@ -88,15 +58,7 @@ class SpreadPlayers(
         Blocks.CHORUS_FLOWER,
     )
 
-    private inline fun <R> doOnServerThread(crossinline callback: () -> R): R {
-        return if (server.isOnThread) {
-            callback()
-        } else {
-            CompletableFuture.supplyAsync({ callback() }, server).join()
-        }
-    }
-
-    private fun spreadGroups(count: Int, distance: Int): List<Pair<Int, Int>> {
+    fun spreadGroups(count: Int, distance: Int): List<Pair<Int, Int>> {
         val center = ChunkPos(worldBorderCenterInWorld)
         val radius = ((distance * count) / (2 * Math.PI))
             .coerceAtMost(ChunkSectionPos.getSectionCoord(worldBorder.maxRadius).toDouble() - 16.0)
@@ -127,8 +89,8 @@ class SpreadPlayers(
             return false
         }
 
-        if (world.registryKey == World.OVERWORLD && groundPos.y <= seaLevel) {
-            log.debug("Skipping block {} to avoid spawning underwater (y <= {})", groundPos, seaLevel)
+        if (world.registryKey == World.OVERWORLD && groundPos.y <= world.seaLevel) {
+            log.debug("Skipping block {} to avoid spawning underwater (y <= {})", groundPos, world.seaLevel)
             return false
         }
 
@@ -177,7 +139,7 @@ class SpreadPlayers(
             val spawnBlockPos = everyChunkIndex(2)
                 .shuffled()
                 .map {
-                    chunk.pos.getBlockPos(it % 16, logicalHeight - 2, it / 16).mutableCopy()
+                    chunk.pos.getBlockPos(it % 16, world.logicalHeight - 2, it / 16).mutableCopy()
                 }
                 .map { pos ->
                     // iterate until these match (false, false, true)
@@ -185,7 +147,7 @@ class SpreadPlayers(
                     var isEmptyAbove = false
                     var isEmpty = false
                     var isEmptyBelow = false
-                    while (pos.y > bottomY && pos.y > seaLevel && !(isEmptyAbove && isEmpty && !isEmptyBelow)) {
+                    while (pos.y > world.bottomY && pos.y > world.seaLevel && !(isEmptyAbove && isEmpty && !isEmptyBelow)) {
                         isEmptyAbove = isEmpty
                         isEmpty = isEmptyBelow
 
@@ -234,27 +196,19 @@ class SpreadPlayers(
         }
     }
 
-    private fun getChunk(x: Int, z: Int) = world.getChunk(x, z, ChunkStatus.FULL, true)!!
-
-    private fun getBiome(pos: BlockPos): RegistryKey<Biome> {
-        return doOnServerThread {
-            world.getBiome(pos).key.get()
-        }
-    }
-
     /**
      * Searches for a valid spawn position, starting at the provided chunk and iterating
      * outwards on the X axis.
      */
-    private fun findSpawnPosInternal(startChunk: Pair<Int, Int>): BlockPos {
+    fun findSpawnPos(startChunk: Pair<Int, Int>): BlockPos {
         var (x, z) = startChunk
         val xSign = x.sign.takeIf { it != 0 } ?: 1
 
         while (true) {
             // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
-            val chunkCenter = BlockPos(x*16 + 8, logicalHeight, z*16 + 8)
-            val biomeTest = getBiome(chunkCenter)
-            if (invalidSpawnBiomes.contains(biomeTest)) {
+            val chunkCenter = BlockPos(x*16 + 8, world.logicalHeight, z*16 + 8)
+            val biomeTest = world.getBiome(chunkCenter)
+            if (invalidSpawnBiomes.contains(biomeTest.key.get())) {
                 x += 4 * xSign
                 continue
             }
@@ -268,36 +222,25 @@ class SpreadPlayers(
             if (!worldBorder.contains(chunkCenterInOverworld)) {
                 log.warn("Selected chunk is outside of the world border - attempting to find any valid position...")
                 val centerChunkPos = ChunkPos(worldBorderCenterInWorld)
-                val centerChunk = getChunk(centerChunkPos.x, centerChunkPos.z)
-
-                val position = doOnServerThread {
-                    selectChunkPosition(centerChunk)
-                }
-
-                if (position != null) {
-                    return position
-                }
+                val centerChunk = world.getChunk(centerChunkPos.x, centerChunkPos.z)
+                selectChunkPosition(centerChunk)
+                    ?.let { return it }
 
                 log.error("Could not find any valid spawn location due to the world border. Using the default world spawn, which may be buggy...")
                 return world.spawnPos
             }
 
             // This "!!" looks unsafe. but maybe it isn't though? (it should actually be fine)
-            val chunk = getChunk(x, z)
+            val chunk = world.getChunk(x, z, ChunkStatus.FULL, true)!!
 
-            val spawnBlockPos = doOnServerThread {
-                selectChunkPosition(chunk)
-            }
-
+            val spawnBlockPos = selectChunkPosition(chunk)
             if (spawnBlockPos == null) {
                 log.info("Skipping chunk ($x, $z) which contains no valid spawn locations")
                 x += 1 * xSign
                 continue
             }
 
-            val spawnBlockBiome = getBiome(spawnBlockPos)
-
-            if (invalidSpawnBiomes.contains(spawnBlockBiome)) {
+            if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
                 log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
                 x += 4 * xSign
                 continue
@@ -307,50 +250,26 @@ class SpreadPlayers(
         }
     }
 
-    fun findSpawnPosSync(team: String = "all teams", startChunk: Pair<Int, Int>): BlockPos {
-        val message = "Spawning $team near chunk $startChunk"
-        return log.measureTime(message) {
-            findSpawnPosInternal(startChunk)
-        }
-    }
-
-    fun findSpawnPosAsync(team: String = "all teams", startChunk: Pair<Int, Int>): CompletableFuture<BlockPos> {
-        return CompletableFuture.supplyAsync({
-            findSpawnPosSync(team, startChunk)
-        }, executors.main)
-            // if this takes an entire minute, something is wrong
-            .orTimeout(60L, TimeUnit.SECONDS)
-            .exceptionally { e ->
-                log.error("findSpawnPosAsync for $team failed:", e)
-                // fall back to the world's spawnPos - this isn't ideal, but it should work in most dimensions
-                // (except the nether)
-                worldSpawnPos
-            }
-            .whenComplete { pos, _ ->
-                log.info("Using spawn position $pos for $team")
-            }
-    }
-
-    fun spreadAsync(
+    fun spread(
         teams: List<BingoTeam>,
         distance: Int
-    ) : CompletableFuture<Map<BingoTeamKey, BlockPosition>> = CompletableFuture.supplyAsync({
+    ) {
         val groups = spreadGroups(teams.size, distance)
 
-        val positions = teams.indices.map { i ->
+        for (i in teams.indices) {
             val team = teams[i]
             val startChunk = groups[i]
 
-            findSpawnPosAsync(team.id, startChunk)
-        }.toTypedArray()
+            log.info("Spawning team ${team.id} near chunk $startChunk")
 
-        CompletableFuture.allOf(*positions).join()
+            val chunkLocatorMs = measureTimeMillis {
+                team.spawnpoint = BlockPosition.fromBlockPos(
+                    findSpawnPos(startChunk)
+                )
+            }
 
-        teams.indices.associate { i ->
-            val team = teams[i]
-            val spawnPos = positions[i].join()
-            team.key to BlockPosition.fromBlockPos(spawnPos)
+            log.info("Found a spawn location for ${team.id} in ${chunkLocatorMs}ms")
         }
-    }, executors.main)
+    }
 
 }
