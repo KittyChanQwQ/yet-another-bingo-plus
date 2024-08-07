@@ -251,7 +251,7 @@ class MapRenderService(
         require(itemX in 0 until 5)
         require(itemY in 0 until 5)
 
-        var isRegularTile: Boolean = false
+        var isRegularTile = false
         val tileImage = getTileImage(tile) ?: BingoTileImage.EMPTY
         val tileImageArray = when {
             tile.isHidden -> when {
@@ -307,7 +307,7 @@ class MapRenderService(
             }
         }
 
-        if (tile.isLocked) {
+        if (tile.isLocked || (tile.decoration == CardTile.Decoration.FORBIDDEN && !tile.isHidden)) {
             for (innerT in 0..innerMax) {
                 val x = tileX + innerT
                 val y = tileY + innerT

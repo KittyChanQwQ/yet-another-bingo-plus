@@ -59,16 +59,20 @@ class AllOfObjectiveManager(
                 objectives.any { it.hasSeen(team) }
             }
 
-            val teamsProgress = objectives.flatMap { it.teamsProgress.entries }
-                .groupBy { it.key }
-                .mapValues { (_, entries) ->
-                    entries.map { it.value }.sum() /
-                            objectives.size.coerceAtLeast(1).toFloat()
-                }
-
-            val playersHolding = objectives
+            val capturesByPlayer = objectives
                 .flatMap { it.playersHolding.entries }
                 .groupBy { it.key }
+
+            val progressTotal = objectives.size.coerceAtLeast(1).toFloat()
+
+            val teamsProgress = objectiveService.getPlayersByTeam()
+                .mapKeys { it.key.key }
+                .mapValues { (_, players) ->
+                    val progress = players.maxOfOrNull { capturesByPlayer[it.uuid]?.size ?: 0 } ?: 0
+                    progress / progressTotal
+                }
+
+            val playersHolding = capturesByPlayer
                 .filter { it.value.size == objectives.size } // in order to capture, must be holding every objective
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
 

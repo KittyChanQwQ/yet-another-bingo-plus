@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.measureTime
 import net.minecraft.block.Blocks
+import net.minecraft.registry.RegistryKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
@@ -14,6 +15,7 @@ import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.Heightmap
 import net.minecraft.world.World
+import net.minecraft.world.biome.Biome
 import net.minecraft.world.biome.BiomeKeys
 import net.minecraft.world.chunk.Chunk
 import net.minecraft.world.chunk.ChunkStatus
@@ -85,6 +87,14 @@ class SpreadPlayers(
         Blocks.CHORUS_PLANT,
         Blocks.CHORUS_FLOWER,
     )
+
+    private inline fun <R> doOnServerThread(crossinline callback: () -> R): R {
+        return if (server.isOnThread) {
+            callback()
+        } else {
+            CompletableFuture.supplyAsync({ callback() }, server).join()
+        }
+    }
 
     private fun spreadGroups(count: Int, distance: Int): List<Pair<Int, Int>> {
         val center = ChunkPos(worldBorderCenterInWorld)
@@ -226,9 +236,11 @@ class SpreadPlayers(
 
     private fun getChunk(x: Int, z: Int) = world.getChunk(x, z, ChunkStatus.FULL, true)!!
 
-    private fun getBiome(pos: BlockPos) = CompletableFuture.supplyAsync({
-        world.getBiome(pos).key.get()
-    }, server).join()
+    private fun getBiome(pos: BlockPos): RegistryKey<Biome> {
+        return doOnServerThread {
+            world.getBiome(pos).key.get()
+        }
+    }
 
     /**
      * Searches for a valid spawn position, starting at the provided chunk and iterating
@@ -258,9 +270,9 @@ class SpreadPlayers(
                 val centerChunkPos = ChunkPos(worldBorderCenterInWorld)
                 val centerChunk = getChunk(centerChunkPos.x, centerChunkPos.z)
 
-                val position = CompletableFuture.supplyAsync({
+                val position = doOnServerThread {
                     selectChunkPosition(centerChunk)
-                }, server).join()
+                }
 
                 if (position != null) {
                     return position
@@ -273,9 +285,9 @@ class SpreadPlayers(
             // This "!!" looks unsafe. but maybe it isn't though? (it should actually be fine)
             val chunk = getChunk(x, z)
 
-            val spawnBlockPos = CompletableFuture.supplyAsync({
+            val spawnBlockPos = doOnServerThread {
                 selectChunkPosition(chunk)
-            }, server).join()
+            }
 
             if (spawnBlockPos == null) {
                 log.info("Skipping chunk ($x, $z) which contains no valid spawn locations")
@@ -295,23 +307,29 @@ class SpreadPlayers(
         }
     }
 
-    fun findSpawnPosAsync(team: String = "all teams", startChunk: Pair<Int, Int>): CompletableFuture<BlockPos> = CompletableFuture.supplyAsync({
+    fun findSpawnPosSync(team: String = "all teams", startChunk: Pair<Int, Int>): BlockPos {
         val message = "Spawning $team near chunk $startChunk"
-        log.measureTime(message) {
+        return log.measureTime(message) {
             findSpawnPosInternal(startChunk)
         }
-    }, executors.main)
-        // if this takes an entire minute, something is wrong
-        .orTimeout(60L, TimeUnit.SECONDS)
-        .exceptionally { e ->
-            log.error("findSpawnPosAsync for $team failed:", e)
-            // fall back to the world's spawnPos - this isn't ideal, but it should work in most dimensions
-            // (except the nether)
-            worldSpawnPos
-        }
-        .whenComplete { pos, _ ->
-            log.info("Using spawn position $pos for $team")
-        }
+    }
+
+    fun findSpawnPosAsync(team: String = "all teams", startChunk: Pair<Int, Int>): CompletableFuture<BlockPos> {
+        return CompletableFuture.supplyAsync({
+            findSpawnPosSync(team, startChunk)
+        }, executors.main)
+            // if this takes an entire minute, something is wrong
+            .orTimeout(60L, TimeUnit.SECONDS)
+            .exceptionally { e ->
+                log.error("findSpawnPosAsync for $team failed:", e)
+                // fall back to the world's spawnPos - this isn't ideal, but it should work in most dimensions
+                // (except the nether)
+                worldSpawnPos
+            }
+            .whenComplete { pos, _ ->
+                log.info("Using spawn position $pos for $team")
+            }
+    }
 
     fun spreadAsync(
         teams: List<BingoTeam>,

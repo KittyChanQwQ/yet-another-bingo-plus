@@ -59,11 +59,7 @@ class ScoreboardObjectiveManager(
         )
         objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
             .let {
-                val name = if (objective.valueMin > 1)
-                    Text.empty().append(it.name).append(": ${objective.valueMin}")
-                else it.name
-
-                it.copy(name = name)
+                it.copy(name = Text.empty().append(it.name).append(": ${objective.valueMin}"))
             }
 
         return true

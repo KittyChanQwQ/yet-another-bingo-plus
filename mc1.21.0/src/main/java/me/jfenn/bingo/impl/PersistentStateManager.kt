@@ -10,6 +10,7 @@ import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.PersistentState
+import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 
 class PersistentStateManager : IPersistentStateManager {
@@ -42,10 +43,20 @@ class PersistentStateImpl<T: Any>(
     private val serializer: KSerializer<T>,
 ) : PersistentState() {
 
+    private val logger = LoggerFactory.getLogger("bingo")
+
     override fun writeNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup?): NbtCompound {
-        val string = IPersistentStateManager.json.encodeToString(serializer, value)
-        val compound = StringNbtReader(StringReader(string)).parseCompound()
-        return nbt.copyFrom(compound)
+        try {
+            logger.debug("[PersistentStateImpl] Writing {} state", value::class.simpleName)
+            val string = IPersistentStateManager.json.encodeToString(serializer, value)
+            val compound = StringNbtReader(StringReader(string)).parseCompound()
+            return nbt.copyFrom(compound).also {
+                logger.debug("[PersistentStateImpl] Writing {} state: Success!", value::class.simpleName)
+            }
+        } catch (e: Throwable) {
+            logger.debug("[PersistentStateImpl] Error serializing {} state:", value::class.simpleName, e)
+            return nbt
+        }
     }
 
     override fun isDirty(): Boolean {

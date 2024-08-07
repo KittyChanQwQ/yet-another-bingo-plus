@@ -24,6 +24,13 @@ class ObjectiveService(
         }
     }
 
+    fun getPlayersByTeam(): Map<BingoTeam, List<IPlayerHandle>> {
+        return state.getRegisteredTeams()
+            .associateWith { team ->
+                team.players.map { offlinePlayerCache.getOfflinePlayer(it) }
+            }
+    }
+
     fun getLockedTeams() = state.getRegisteredTeams().filter { it.isWinner() }
 
     /**

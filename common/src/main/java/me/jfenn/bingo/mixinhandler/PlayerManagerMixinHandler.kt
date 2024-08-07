@@ -81,7 +81,12 @@ object PlayerManagerMixinHandler {
 
         // find the player's bingo team spawnpoint, if possible
         val team: BingoTeam = teamService.getPlayerTeam(player) ?: return
-        val spawn: BlockPos = spawnService.getTeamSpawnpoint(team).join() ?: return
+        val spawn: BlockPos = try {
+            spawnService.getTeamSpawnpoint(team, sync = true).getNow(null)
+                ?: return
+        } catch (e: Throwable) {
+            return
+        }
 
         // change the player's spawnpoint back to the team spawn location
         val dimension = spawnService.getSpawnDimension()

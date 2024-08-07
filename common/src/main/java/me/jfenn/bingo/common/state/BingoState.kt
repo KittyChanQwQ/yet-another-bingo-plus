@@ -31,7 +31,7 @@ data class BingoState(
     var isLobbyMode: Boolean = false,
     var gameId: UuidAsString = UUID.randomUUID(),
     var seed: Long = Random.nextLong(),
-    var state: GameState = GameState.PREGAME,
+    var state: GameState = GameState.UNINITIALIZED,
     var startedAt: Instant? = null,
     var updatedAt: Instant? = null,
     var endedAt: Instant? = null,

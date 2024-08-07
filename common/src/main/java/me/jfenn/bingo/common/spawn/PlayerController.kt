@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.*
-import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.NBT_BINGO_IGNORE
-import me.jfenn.bingo.common.NBT_BINGO_VANISH
+import me.jfenn.bingo.api.EffectType
+import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.api.IStatusEffectsFactory
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -13,7 +13,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.VanishIntegration
-import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.world.GameMode
@@ -62,6 +61,7 @@ class PlayerController(
         log.debug("updateGameMode(${player.uuidAsString}, forceReset=$forceReset)")
 
         val gameMode = when (state.state) {
+            GameState.UNINITIALIZED,
             GameState.PREGAME,
             GameState.LOADING,
             GameState.COUNTDOWN -> GameMode.ADVENTURE

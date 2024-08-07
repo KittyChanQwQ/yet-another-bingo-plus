@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.EventListener
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
@@ -57,7 +58,11 @@ class ScopeManager(
             scope.registerCallback(events)
 
             // re-run state entry listeners
-            events.onStateChange(state.state to state.state)
+            if (state.state == GameState.UNINITIALIZED) {
+                state.changeState(events, GameState.PREGAME)
+            } else {
+                events.onStateChange(state.state to state.state)
+            }
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->

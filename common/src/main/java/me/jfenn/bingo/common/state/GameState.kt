@@ -4,6 +4,7 @@ enum class GameState(
     val color: String,
     val motd: String,
 ) {
+    UNINITIALIZED("§a", "PRE-GAME"),
     PREGAME("§a", "PRE-GAME"),
     LOADING("§c", "IN-GAME"),
     COUNTDOWN("§c", "IN-GAME"),

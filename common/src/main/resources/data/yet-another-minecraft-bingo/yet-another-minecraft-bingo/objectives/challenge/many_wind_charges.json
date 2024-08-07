@@ -1,9 +1,9 @@
 {
   "type": "item",
-  "item": "minecraft:glow_ink_sac",
+  "item": "minecraft:wind_charge",
   "count": {
     "type": "random",
     "min": 4,
-    "max": 32
+    "max": 16
   }
 }

@@ -96,11 +96,8 @@ class AdvancementObjectiveManager(
 
             objectiveService.updateTeamsOnceAchieved(objective)
 
-            val teamPlayers = state.getRegisteredTeams()
-                .associate { it.key to it.players }
-                .mapValues { (_, players) ->
-                    players.map { offlinePlayerCache.getOfflinePlayer(it) }
-                }
+            val teamPlayers = objectiveService.getPlayersByTeam()
+                .mapKeys { it.key.key }
 
             val teamsProgress = teamPlayers.map { (team, players) ->
                 val progress = players.maxOf { advancementManager.getProgress(it.player, advancement) }
