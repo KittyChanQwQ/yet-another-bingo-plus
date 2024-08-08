@@ -29,6 +29,7 @@ class ItemStackFactory(
 ) : IItemStackFactory {
 
     private val jsonOps = server?.registryManager?.getOps(JsonOps.INSTANCE) ?: JsonOps.INSTANCE
+    private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
 
     override fun listItems(server: MinecraftServer): List<String> {
         return Registries.ITEM.streamEntries()
@@ -137,8 +138,6 @@ class ItemStackFactory(
                 stack[DataComponentTypes.ATTRIBUTE_MODIFIERS] = it.withShowInTooltip(false)
             }
         }
-
-        private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
 
         override fun setNbtString(nbt: String?) = true
 
