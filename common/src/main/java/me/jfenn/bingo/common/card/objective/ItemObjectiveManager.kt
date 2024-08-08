@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import net.minecraft.server.MinecraftServer
@@ -76,7 +77,11 @@ class ItemObjectiveManager(
 
         val display = ObjectiveDisplay.Resolved(
             name = stack.displayName,
-            item = stack
+            item = stack,
+            decoration = when {
+                objective.itemNbt != null || !objective.itemComponents.isNullOrEmpty() -> CardTile.Decoration.ADVANCEMENT
+                else -> CardTile.Decoration.NONE
+            }
         )
         objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
             .let { it.copy(name = it.name?.withCount(objective.itemCount)) }
