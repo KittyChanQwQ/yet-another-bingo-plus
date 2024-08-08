@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.integrations.jei.JeiIntegration
+import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.gui.DrawContext
@@ -26,7 +27,7 @@ class BingoHudScreen(
 
         onTileClick = { tile ->
             val stack = tile.item
-            if (tile.decoration == null && stack != null) {
+            if ((tile.decoration == null || tile.decoration == CardTile.Decoration.NONE) && stack != null) {
                 jei.openJeiRecipe(stack.stack)
             }
             jei.isInstalled()
