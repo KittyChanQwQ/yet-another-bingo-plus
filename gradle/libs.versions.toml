@@ -1,5 +1,5 @@
 [versions]
-insert-koin = "3.5.0"
+insert-koin = "3.5.6"
 flyway = "10.8.1"
 sqldelight = "2.0.2"
 jackson = "2.16.0"
@@ -9,7 +9,7 @@ assertk = "0.28.1"
 [libraries]
 insert-koin-core = { module = "io.insert-koin:koin-core-jvm", version.ref = "insert-koin" }
 insert-koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "insert-koin" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.1" }
 vanish = { module = "maven.modrinth:vanish", version = "1.5.1+1.20.4" }
 modmenu = { module = "com.terraformersmc:modmenu", version = "7.1.0" }
 yacl = { module = "dev.isxander.yacl:yet-another-config-lib-fabric", version = "3.2.1+1.20.2" }
@@ -33,5 +33,5 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
 
 [plugins]
-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "1.9.0" }
+kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.0.10" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
