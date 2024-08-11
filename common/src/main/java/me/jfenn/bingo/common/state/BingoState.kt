@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.state
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.config.BingoGoal
@@ -18,10 +19,12 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.security.MessageDigest
 import java.util.*
 import kotlin.random.Random
 import kotlin.time.Duration

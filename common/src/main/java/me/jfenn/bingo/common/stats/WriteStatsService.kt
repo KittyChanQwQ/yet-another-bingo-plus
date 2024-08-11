@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.stats
 
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -13,24 +14,17 @@ import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.utils.json
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
-import java.security.MessageDigest
-import java.util.*
 import kotlin.time.Duration
 import kotlin.time.measureTime
 
 class WriteStatsService(
     private val log: Logger,
+    private val config: BingoConfig,
     private val state: BingoState,
     private val stats: StatsService,
     private val packets: ServerPacketEvents,
     private val server: MinecraftServer,
 ) : BingoComponent() {
-    private fun hashSha(string: String): String {
-        val md = MessageDigest.getInstance("SHA-512")
-        val digest = md.digest(string.toByteArray())
-        return HexFormat.of().formatHex(digest)
-    }
-
     private fun broadcastResult(
         gameInfo: GameInfo,
         teamInfo: GameTeamInfo,
@@ -66,7 +60,7 @@ class WriteStatsService(
         val insertGame = GameInfo(
             id = state.gameId,
             bingoOptions = options,
-            bingoOptionsHash = hashSha(options),
+            bingoOptionsHash = state.options.getShaHash(),
             startedAt = startedAt,
             endedAt = endedAt,
             duration = state.ingameDuration() ?: Duration.ZERO,
@@ -74,6 +68,7 @@ class WriteStatsService(
             // the game is a draw if nobody won and there is more than one team
             isDraw = teams.none { it.isWinner() } && teams.size > 1,
             isForfeit = state.isForfeit,
+            hostId = config.statsHostId,
         )
 
         for (team in teams) {

@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.stats
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IExecutors
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.stats.data.*
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.stats.sql.StatsDatabase
@@ -128,8 +129,29 @@ class StatsService(
     }
 
     fun getPlayerSummaryAsync(playerId: UUID): CompletableFuture<PlayerStatsSummary> {
-        return CompletableFuture<PlayerStatsSummary>()
-            .completeAsync({ getPlayerSummary(playerId) }, executor)
+        return CompletableFuture.supplyAsync({ getPlayerSummary(playerId) }, executor)
+            .orTimeout(10L, TimeUnit.SECONDS)
+    }
+
+    fun getBestTime(options: BingoOptions, hostId: UUID, isSingleplayer: Boolean): Duration? {
+        val hash = options.getShaHash()
+        val time = if (isSingleplayer) {
+            db.gameQueries.bestSingleplayerTimeByHash(
+                bingo_options_hash = hash,
+                host_id = hostId.toString(),
+            ).executeAsOneOrNull()?.duration
+        } else {
+            db.gameQueries.bestTimeByHash(
+                bingo_options_hash = hash,
+                host_id = hostId.toString(),
+            ).executeAsOneOrNull()?.duration
+        }
+
+        return time?.milliseconds
+    }
+
+    fun getBestTimeAsync(options: BingoOptions, hostId: UUID, isSingleplayer: Boolean): CompletableFuture<Duration?> {
+        return CompletableFuture.supplyAsync({ getBestTime(options, hostId, isSingleplayer) }, executor)
             .orTimeout(10L, TimeUnit.SECONDS)
     }
 

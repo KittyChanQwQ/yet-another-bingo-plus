@@ -52,6 +52,13 @@ JOIN GamePlayer p ON p.game_id = g.id AND p.minecraft_id = :minecraft_id
 JOIN GameTeam t ON t.id = p.team_id AND t.game_id = g.id
 WHERE t.is_winner = 1 AND (g.started_at > recent_loss OR recent_loss IS NULL);
 
+bestTimeByHash:
+SELECT min(g.duration) AS duration FROM Game g
+WHERE g.bingo_options_hash = ? AND g.host_id = ? AND g.is_forfeit = 0 AND g.is_draw = 0;
+
+bestSingleplayerTimeByHash:
+SELECT min(g.duration) AS duration FROM Game g
+WHERE g.bingo_options_hash = ? AND g.host_id = ? AND g.player_count = 1 AND g.is_forfeit = 0 AND g.is_draw = 0;
 
 -- Look at what we could have if SQLDelight supported ROW_NUMBER()...
 --

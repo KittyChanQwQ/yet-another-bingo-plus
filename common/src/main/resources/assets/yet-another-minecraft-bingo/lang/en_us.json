@@ -134,6 +134,7 @@
   "bingo.options.spawn_dimension": "Spawn Dimension",
   "bingo.options.goal": "Goal",
   "bingo.options.player_count": "Player count: %s",
+  "bingo.options.best_time": "Best time: %s",
   "bingo.options.score_info": "Score Info",
   "bingo.options.remaining_time": "Remaining Time",
   "bingo.options.completed_items": "Completed Items",

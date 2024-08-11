@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.config
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -8,8 +9,10 @@ import net.minecraft.text.MutableText
 @Serializable
 sealed class BingoGoal {
     @Serializable
+    @SerialName("items")
     class Items(val items: Int): BingoGoal()
     @Serializable
+    @SerialName("lines")
     class Lines(val lines: Int): BingoGoal()
 
     companion object {

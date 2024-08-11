@@ -17,8 +17,12 @@ data class GameInfo(
     val endedAt: Instant,
     val duration: Duration,
     val playerCount: Int,
+    /** True if the game ended due to a timeout & was not won by any team */
     val isDraw: Boolean,
+    /** True if the game was ended early by "/bingo end" */
     val isForfeit: Boolean,
+    /** True if the game was synced from a player, False if the game was played on this server */
+    val hostId: UuidAsString
 ) {
     constructor(game: Game) : this(
         id = UUID.fromString(game.id),
@@ -30,6 +34,7 @@ data class GameInfo(
         playerCount = game.player_count.toInt(),
         isDraw = game.is_draw == 1L,
         isForfeit = game.is_forfeit == 1L,
+        hostId = UUID.fromString(game.host_id),
     )
 
     fun toGame() = Game(
@@ -42,5 +47,6 @@ data class GameInfo(
         player_count = this.playerCount.toLong(),
         is_draw = if (this.isDraw) 1L else 0L,
         is_forfeit = if (this.isForfeit) 1L else 0L,
+        host_id = this.hostId.toString(),
     )
 }

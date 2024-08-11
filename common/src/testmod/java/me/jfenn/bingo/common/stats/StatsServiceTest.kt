@@ -9,8 +9,6 @@ import io.mockk.mockk
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.ICloseEvent
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.stats.ConnectionFactory
-import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.stats.data.GameInfo
 import me.jfenn.bingo.common.stats.data.GamePlayerInfo
 import me.jfenn.bingo.common.stats.data.GameTeamInfo
@@ -53,6 +51,7 @@ class StatsServiceTest : BaseGameTest() {
 
         val playerId = UUID.fromString("c55e11bd-11a5-47ca-b0f6-aa38b42ed434")
         val gameId = UUID.fromString("8d94af8b-bfb9-452c-bc8b-945f183c5797")
+        val hostId = UUID.fromString("30d5d5ea-c63e-4c48-983c-04a25457bdf2")
 
         // Insert gameId with a record for playerId
         service.insertGame(
@@ -66,6 +65,7 @@ class StatsServiceTest : BaseGameTest() {
                 playerCount = 1,
                 isDraw = false,
                 isForfeit = false,
+                hostId = hostId,
             ),
             listOf(
                 GameTeamInfo(
@@ -112,6 +112,7 @@ class StatsServiceTest : BaseGameTest() {
 
         val playerId = UUID.fromString("c55e11bd-11a5-47ca-b0f6-aa38b42ed434")
         val gameId = UUID.fromString("8d94af8b-bfb9-452c-bc8b-945f183c5797")
+        val hostId = UUID.fromString("30d5d5ea-c63e-4c48-983c-04a25457bdf2")
 
         // Insert gameId that does not have a record for the playerId
         service.insertGame(
@@ -125,6 +126,7 @@ class StatsServiceTest : BaseGameTest() {
                 playerCount = 1,
                 isDraw = false,
                 isForfeit = false,
+                hostId = hostId,
             ),
             listOf(
                 GameTeamInfo(
@@ -170,6 +172,7 @@ class StatsServiceTest : BaseGameTest() {
         val db = connectionFactory.create()
         val service = StatsService(db, mockk(relaxed = true))
         val playerId = UUID.fromString("80f963e1-213e-412c-9d89-bb2986bafd0c")
+        val hostId = UUID.fromString("30d5d5ea-c63e-4c48-983c-04a25457bdf2")
 
         // Insert a won game in 2002-02-02
         val wonGameId = UUID.fromString("78dae7ea-22ad-41b5-8ba7-54eb9e033250")
@@ -185,6 +188,7 @@ class StatsServiceTest : BaseGameTest() {
                 playerCount = 1,
                 isDraw = false,
                 isForfeit = false,
+                hostId = hostId,
             ),
             listOf(
                 GameTeamInfo(
@@ -219,6 +223,7 @@ class StatsServiceTest : BaseGameTest() {
                 playerCount = 1,
                 isDraw = false,
                 isForfeit = false,
+                hostId = hostId,
             ),
             listOf(
                 GameTeamInfo(
