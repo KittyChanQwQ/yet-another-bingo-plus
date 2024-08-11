@@ -93,7 +93,7 @@ data class CardTile(
             dest.writeBoolean(source.decoration == Decoration.ADVANCEMENT)
             dest.writeBoolean(source.decoration == Decoration.MULTI_ITEM)
             dest.writeBoolean(source.isHidden)
-            dest.writeBoolean(source.isLocked)
+            dest.writeBoolean(source.isLocked || source.decoration == Decoration.FORBIDDEN)
             dest.writeBoolean(source.isFlashing)
             dest.writeBoolean(source.isAchieved)
 
@@ -138,7 +138,7 @@ data class CardTile(
             dest.writeBoolean(source.decoration == Decoration.ADVANCEMENT)
             dest.writeBoolean(source.decoration == Decoration.MULTI_ITEM)
             dest.writeBoolean(source.isHidden)
-            dest.writeBoolean(source.isLocked)
+            dest.writeBoolean(source.isLocked || source.decoration == Decoration.FORBIDDEN)
             dest.writeBoolean(source.isFlashing)
             dest.writeBoolean(source.isAchieved)
 
