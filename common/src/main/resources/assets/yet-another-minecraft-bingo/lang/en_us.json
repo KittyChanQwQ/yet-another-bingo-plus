@@ -223,6 +223,8 @@
   "bingo.stats.items": "Items",
   "bingo.stats.win_streak": "Win Streak",
   "bingo.stats.win_streak_value": "%s of %s",
+  "bingo.stats.win_streak.max": "Max streak: %s",
+  "bingo.stats.win_streak.new_max": "New max streak!",
   "bingo.stats.favorite_team": "Favorite Team",
   "bingo.stats.game_duration": "Game Duration",
   "bingo.stats.best_time": "Best time: %s",

@@ -9,12 +9,14 @@ import io.mockk.mockk
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.ICloseEvent
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.stats.data.GameInfo
 import me.jfenn.bingo.common.stats.data.GamePlayerInfo
 import me.jfenn.bingo.common.stats.data.GameTeamInfo
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.test.BaseGameTest
 import me.jfenn.bingo.common.utils.EventListener
+import me.jfenn.bingo.stats.sql.StatsDatabase
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest
 import net.minecraft.test.GameTest
 import net.minecraft.test.TestContext
@@ -39,6 +41,11 @@ class StatsServiceTest : BaseGameTest() {
         closeEvent = closeEvent,
     )
 
+    private fun createStatsService(
+        db: StatsDatabase,
+        hostId: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000"),
+    ) = StatsService(logger, db, mockk(relaxed = true), BingoConfig(statsHostId = hostId))
+
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun startsAndRunsMigrations(context: TestContext) {
         connectionFactory.create()
@@ -47,7 +54,7 @@ class StatsServiceTest : BaseGameTest() {
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun checkIfIdsExist_AlreadyExists(context: TestContext) {
         val db = connectionFactory.create()
-        val service = StatsService(db, mockk(relaxed = true))
+        val service = createStatsService(db)
 
         val playerId = UUID.fromString("c55e11bd-11a5-47ca-b0f6-aa38b42ed434")
         val gameId = UUID.fromString("8d94af8b-bfb9-452c-bc8b-945f183c5797")
@@ -93,7 +100,7 @@ class StatsServiceTest : BaseGameTest() {
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun checkIfIdsExist_MissingGameId(context: TestContext) {
         val db = connectionFactory.create()
-        val service = StatsService(db, mockk(relaxed = true))
+        val service = createStatsService(db)
 
         val playerId = UUID.fromString("c55e11bd-11a5-47ca-b0f6-aa38b42ed434")
 
@@ -108,7 +115,7 @@ class StatsServiceTest : BaseGameTest() {
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun checkIfIdsExist_MissingPlayerId(context: TestContext) {
         val db = connectionFactory.create()
-        val service = StatsService(db, mockk(relaxed = true))
+        val service = createStatsService(db)
 
         val playerId = UUID.fromString("c55e11bd-11a5-47ca-b0f6-aa38b42ed434")
         val gameId = UUID.fromString("8d94af8b-bfb9-452c-bc8b-945f183c5797")
@@ -156,7 +163,7 @@ class StatsServiceTest : BaseGameTest() {
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun getPlayerSummary_Nonexistent(context: TestContext) {
         val db = connectionFactory.create()
-        val service = StatsService(db, mockk(relaxed = true))
+        val service = createStatsService(db)
 
         val summary = service.getPlayerSummary(UUID.fromString("41834902-040e-467b-82a7-bdaad063b718"))
         assertThat(summary.totalPlaytime).isEqualTo(Duration.ZERO)
@@ -170,7 +177,7 @@ class StatsServiceTest : BaseGameTest() {
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun getPlayerSummary_Monthly(context: TestContext) {
         val db = connectionFactory.create()
-        val service = StatsService(db, mockk(relaxed = true))
+        val service = createStatsService(db)
         val playerId = UUID.fromString("80f963e1-213e-412c-9d89-bb2986bafd0c")
         val hostId = UUID.fromString("30d5d5ea-c63e-4c48-983c-04a25457bdf2")
 
@@ -264,6 +271,178 @@ class StatsServiceTest : BaseGameTest() {
 
         assertThat(summary.favoriteTeam).isEqualTo(BingoTeamKey("bingo_blue"))
         assertThat(summary.favoriteTeamPercentage).isEqualTo(1f)
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    fun updateBestStats_DecreasesBestTime(context: TestContext) {
+        val db = connectionFactory.create()
+        val hostId = UUID.fromString("608714c6-8520-4ab1-aba7-20ad5a3f6da7")
+        val service = createStatsService(db, hostId = hostId)
+
+        val options = BingoOptions()
+
+        // Insert a game with duration=3 mins
+        val gameOneId = UUID.fromString("02f05fe4-a12f-4add-bb34-d4ad943059e6")
+        service.updateBestStats(
+            GameInfo(
+                id = gameOneId,
+                bingoOptions = "options1",
+                bingoOptionsHash = options.getShaHash(),
+                startedAt = Instant.DISTANT_PAST,
+                endedAt = Instant.DISTANT_PAST,
+                duration = 3.minutes,
+                playerCount = 1,
+                isDraw = false,
+                isForfeit = false,
+                hostId = hostId,
+            ),
+            emptyList(),
+            isSingleplayer = false,
+        )
+
+        // The "best time" should be 3 minutes
+        assertThat(
+            service.getBestTime(options, false)
+        ).isEqualTo(3.minutes)
+
+        // Insert a game with duration=2 mins
+        val gameTwoId = UUID.fromString("a3301200-95be-4207-a784-34beb02f6644")
+        service.updateBestStats(
+            GameInfo(
+                id = gameTwoId,
+                bingoOptions = "options1",
+                bingoOptionsHash = options.getShaHash(),
+                startedAt = Instant.DISTANT_PAST,
+                endedAt = Instant.DISTANT_PAST,
+                duration = 2.minutes,
+                playerCount = 1,
+                isDraw = false,
+                isForfeit = false,
+                hostId = hostId,
+            ),
+            emptyList(),
+            isSingleplayer = false,
+        )
+
+        // The "best time" should now be 2 minutes
+        assertThat(
+            service.getBestTime(options, false)
+        ).isEqualTo(2.minutes)
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    fun updateBestStats_DoesNotMixHosts(context: TestContext) {
+        val db = connectionFactory.create()
+        val hostId = UUID.fromString("608714c6-8520-4ab1-aba7-20ad5a3f6da7")
+        val service = createStatsService(db, hostId = hostId)
+
+        val options = BingoOptions()
+
+        // Insert a game with duration=3 mins
+        val gameOneId = UUID.fromString("02f05fe4-a12f-4add-bb34-d4ad943059e6")
+        service.updateBestStats(
+            GameInfo(
+                id = gameOneId,
+                bingoOptions = "options1",
+                bingoOptionsHash = options.getShaHash(),
+                startedAt = Instant.DISTANT_PAST,
+                endedAt = Instant.DISTANT_PAST,
+                duration = 3.minutes,
+                playerCount = 1,
+                isDraw = false,
+                isForfeit = false,
+                hostId = hostId,
+            ),
+            emptyList(),
+            isSingleplayer = false,
+        )
+
+        // The "best time" should be 3 minutes
+        assertThat(
+            service.getBestTime(options, false)
+        ).isEqualTo(3.minutes)
+
+        // Insert a game with duration=2 mins, but from a different hostId
+        val hostId2 = UUID.fromString("1f18ec8e-3c5d-4754-9802-3538706b11c0")
+        val gameTwoId = UUID.fromString("a3301200-95be-4207-a784-34beb02f6644")
+        service.updateBestStats(
+            GameInfo(
+                id = gameTwoId,
+                bingoOptions = "options1",
+                bingoOptionsHash = options.getShaHash(),
+                startedAt = Instant.DISTANT_PAST,
+                endedAt = Instant.DISTANT_PAST,
+                duration = 2.minutes,
+                playerCount = 1,
+                isDraw = false,
+                isForfeit = false,
+                hostId = hostId2,
+            ),
+            emptyList(),
+            isSingleplayer = false,
+        )
+
+        // The "best time" should still be 3 minutes
+        assertThat(
+            service.getBestTime(options, false)
+        ).isEqualTo(3.minutes)
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    fun updateBestStats_DoesNotIncreaseBestTime(context: TestContext) {
+        val db = connectionFactory.create()
+        val hostId = UUID.fromString("01c44a53-1fd8-49c0-9709-fdc1a657c4e9")
+        val service = createStatsService(db, hostId = hostId)
+
+        val options = BingoOptions()
+
+        // Insert a game with duration=3 mins
+        val gameOneId = UUID.fromString("02f05fe4-a12f-4add-bb34-d4ad943059e6")
+        service.updateBestStats(
+            GameInfo(
+                id = gameOneId,
+                bingoOptions = "options1",
+                bingoOptionsHash = options.getShaHash(),
+                startedAt = Instant.DISTANT_PAST,
+                endedAt = Instant.DISTANT_PAST,
+                duration = 3.minutes,
+                playerCount = 1,
+                isDraw = false,
+                isForfeit = false,
+                hostId = hostId,
+            ),
+            emptyList(),
+            isSingleplayer = false,
+        )
+
+        // The "best time" should be 3 minutes
+        assertThat(
+            service.getBestTime(options, false)
+        ).isEqualTo(3.minutes)
+
+        // Insert a game with duration=4 mins
+        val gameTwoId = UUID.fromString("a3301200-95be-4207-a784-34beb02f6644")
+        service.updateBestStats(
+            GameInfo(
+                id = gameTwoId,
+                bingoOptions = "options1",
+                bingoOptionsHash = options.getShaHash(),
+                startedAt = Instant.DISTANT_PAST,
+                endedAt = Instant.DISTANT_PAST,
+                duration = 4.minutes,
+                playerCount = 1,
+                isDraw = false,
+                isForfeit = false,
+                hostId = hostId,
+            ),
+            emptyList(),
+            isSingleplayer = false,
+        )
+
+        // The "best time" should still be 3 minutes
+        assertThat(
+            service.getBestTime(options, false)
+        ).isEqualTo(3.minutes)
     }
 
     override fun afterEach() {

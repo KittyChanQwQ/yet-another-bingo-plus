@@ -25,4 +25,13 @@ interface IPacketBuf {
     fun writeText(text: Text)
     fun readText(): Text
 
+    fun <T> writeNullable(value: T?, callback: (T) -> Unit) {
+        writeBoolean(value != null)
+        value?.let(callback)
+    }
+
+    fun <T> readNullable(callback: () -> T): T? {
+        return if (readBoolean()) callback() else null
+    }
+
 }

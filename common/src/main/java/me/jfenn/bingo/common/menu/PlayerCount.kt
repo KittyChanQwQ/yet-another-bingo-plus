@@ -1,9 +1,7 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.stats.StatsService
-import me.jfenn.bingo.common.stats.isSingleplayerForStatistics
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.toNbt
@@ -25,7 +23,6 @@ fun MenuComponent.registerPlayerCount(
     server: MinecraftServer = koinScope.get(),
     text: TextProvider = koinScope.get(),
     options: BingoOptions = koinScope.get(),
-    config: BingoConfig = koinScope.get(),
     stats: StatsService = koinScope.get(),
 ) {
     onTick {
@@ -38,8 +35,7 @@ fun MenuComponent.registerPlayerCount(
             statsHash = hash
             statsFuture = stats.getBestTimeAsync(
                 options = options,
-                hostId = config.statsHostId,
-                isSingleplayer = server.isSingleplayerForStatistics
+                isSingleplayer = server.isSingleplayer && server.currentPlayerCount <= 1
             ).whenComplete { _, _ ->
                 markDirty()
             }

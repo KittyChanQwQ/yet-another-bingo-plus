@@ -144,7 +144,7 @@ class BingoEndScreen(
                 context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, BingoHudRenderer.getWinColor(now), true)
             } else {
                 val bestText = text.string(StringKey.StatsBestTime, prevBestTime.formatString())
-                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, 0xFF_AAAAAA.toInt(), true)
+                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
             }
 
             context.matrices.pop()
@@ -155,6 +155,7 @@ class BingoEndScreen(
 
     private fun renderWinStreak(context: DrawContext, titleY: Int) {
         val winStreak = gameOver.packet.winStreak ?: return
+        val now = Clock.System.now()
 
         context.matrices.push()
         context.matrices.translate(width * 0.8f + 20f, titleY.toFloat(), 0f)
@@ -174,13 +175,34 @@ class BingoEndScreen(
 
         val title = text.string(StringKey.StatsWinStreak)
         context.drawText(textRenderer, title, -textRenderer.getWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
+
+        gameOver.packet.bestWinStreak?.let { bestWinStreak ->
+            context.matrices.push()
+
+            if (gameOver.packet.isBestWinStreak) {
+                // Animate in a "New max streak!" message
+                val animTimeSince = now - gameOver.packet.endedAt
+                val animProgress = (animTimeSince / NEW_BEST_DURATION).toFloat().coerceIn(0f, 1f).pow(2)
+                val bestScale = 2f - animProgress
+                val bestText = text.string(StringKey.StatsWinStreakNewMax)
+
+                context.matrices.scale(bestScale, bestScale, 1f)
+                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, BingoHudRenderer.getWinColor(now), true)
+            } else {
+                val bestText = text.string(StringKey.StatsWinStreakMax, bestWinStreak)
+                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
+            }
+
+            context.matrices.pop()
+        }
+
         context.matrices.pop()
 
         if (winStreak > 1 && gameOver.packet.isWinner) {
             context.matrices.push()
             context.matrices.translate(width * 0.8f + 20f, titleY.toFloat() + 12, 0f)
             context.matrices.multiply(Quaternionf(AxisAngle4f(
-                Clock.System.now().toEpochMilliseconds()
+                now.toEpochMilliseconds()
                     .mod(2000)
                     .div(2000f)
                     .times(2*PI.toFloat()),

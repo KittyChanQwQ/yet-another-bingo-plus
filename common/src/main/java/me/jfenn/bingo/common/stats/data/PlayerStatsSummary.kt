@@ -17,4 +17,5 @@ class PlayerStatsSummary(
     val favoriteTeam: BingoTeamKey?,
     val favoriteTeamPercentage: Float,
     val winStreak: Long,
+    val winStreakBest: Long?,
 )

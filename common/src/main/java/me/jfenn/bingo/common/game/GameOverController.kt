@@ -113,7 +113,7 @@ class GameOverController(
         }
 
         for (player in playerManager.getPlayers()) {
-            val winStreak = info.winStreaksByPlayer[player.uuid]
+            val playerInfo = info.playerInfo[player.uuid]
             val isWinner = info.winningTeam?.includesPlayer(player.player) ?: false
 
             val packet = GameOverPacket(
@@ -127,10 +127,20 @@ class GameOverController(
                 ),
                 isWinner = isWinner,
                 isUpdate = isUpdate,
-                winStreak = winStreak,
+
+                winStreak = playerInfo?.winStreak,
+                bestWinStreak = playerInfo?.bestWinStreak,
+                isBestWinStreak = playerInfo?.isBestWinStreak == true,
+
+                capturedItems = playerInfo?.capturedItems,
+                bestCapturedItems = playerInfo?.bestCapturedItems,
+                isBestCapturedItems = playerInfo?.isBestCapturedItems == true,
+
                 endedAt = info.endedAt,
+
                 isBestTime = info.isBestTime,
                 prevBestTime = info.prevBestTime,
+
                 seed = server.overworld.seed,
             )
 

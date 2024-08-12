@@ -23,7 +23,15 @@ data class GameOverPacket(
      * - true indicates that the client should update its data without opening the screen
      */
     val isUpdate: Boolean,
-    val winStreak: Int?,
+
+    val winStreak: Long?,
+    val bestWinStreak: Long? = null,
+    val isBestWinStreak: Boolean = false,
+
+    val capturedItems: Int? = null,
+    val bestCapturedItems: Int? = null,
+    val isBestCapturedItems: Boolean = false,
+
     val endedAt: Instant = Instant.DISTANT_PAST,
     val isBestTime: Boolean = false,
     val prevBestTime: Duration? = null,
@@ -143,7 +151,7 @@ data class GameOverPacket(
                 canSendRestart = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
-                winStreak = if (buf.readBoolean()) buf.readInt() else null,
+                winStreak = if (buf.readBoolean()) buf.readInt().toLong() else null,
                 seed = if (buf.readBoolean()) buf.readLong() else null,
             )
         }
@@ -166,7 +174,7 @@ data class GameOverPacket(
 
             if (source.winStreak != null) {
                 dest.writeBoolean(true)
-                dest.writeInt(source.winStreak)
+                dest.writeInt(source.winStreak.toInt())
             } else {
                 dest.writeBoolean(false)
             }
@@ -187,16 +195,24 @@ data class GameOverPacket(
             return GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
-                winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
+                winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
                 duration = buf.readLong().milliseconds,
                 canSendRestart = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
-                winStreak = if (buf.readBoolean()) buf.readInt() else null,
+
+                winStreak = buf.readNullable(buf::readLong),
+                bestWinStreak = buf.readNullable(buf::readLong),
+                isBestWinStreak = buf.readBoolean(),
+
+                capturedItems = buf.readNullable(buf::readInt),
+                bestCapturedItems = buf.readNullable(buf::readInt),
+                isBestCapturedItems = buf.readBoolean(),
+
                 endedAt = Instant.fromEpochMilliseconds(buf.readLong()),
                 isBestTime = buf.readBoolean(),
-                prevBestTime = if(buf.readBoolean()) buf.readLong().milliseconds else null,
-                seed = if (buf.readBoolean()) buf.readLong() else null,
+                prevBestTime = buf.readNullable(buf::readLong)?.milliseconds,
+                seed = buf.readNullable(buf::readLong),
             )
         }
 
@@ -204,40 +220,26 @@ data class GameOverPacket(
             dest.writeText(source.title)
             dest.writeText(source.subtitle)
 
-            if (source.winner != null) {
-                dest.writeBoolean(true)
-                dest.writeString(source.winner.id)
-            } else {
-                dest.writeBoolean(false)
-            }
+            dest.writeNullable(source.winner?.id, dest::writeString)
 
             dest.writeLong(source.duration.inWholeMilliseconds)
             dest.writeBoolean(source.canSendRestart)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
 
-            if (source.winStreak != null) {
-                dest.writeBoolean(true)
-                dest.writeInt(source.winStreak)
-            } else {
-                dest.writeBoolean(false)
-            }
+            dest.writeNullable(source.winStreak, dest::writeLong)
+            dest.writeNullable(source.bestWinStreak, dest::writeLong)
+            dest.writeBoolean(source.isBestWinStreak)
+
+            dest.writeNullable(source.capturedItems, dest::writeInt)
+            dest.writeNullable(source.bestCapturedItems, dest::writeInt)
+            dest.writeBoolean(source.isBestCapturedItems)
 
             dest.writeLong(source.endedAt.toEpochMilliseconds())
             dest.writeBoolean(source.isBestTime)
-            if (source.prevBestTime != null) {
-                dest.writeBoolean(true)
-                dest.writeLong(source.prevBestTime.inWholeMilliseconds)
-            } else {
-                dest.writeBoolean(false)
-            }
+            dest.writeNullable(source.prevBestTime?.inWholeMilliseconds, dest::writeLong)
 
-            if (source.seed != null) {
-                dest.writeBoolean(true)
-                dest.writeLong(source.seed)
-            } else {
-                dest.writeBoolean(false)
-            }
+            dest.writeNullable(source.seed, dest::writeLong)
         }
     }
 }

@@ -99,6 +99,11 @@ class WriteStatsService(
             teams = insertTeams,
             players = insertPlayers,
         )
+        stats.updateBestStats(
+            game = insertGame,
+            players = insertPlayers,
+            isSingleplayer = server.isSingleplayer && state.isSingleplayer()
+        )
 
         return insertGame
     }
