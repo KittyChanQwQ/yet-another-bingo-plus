@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
+import me.jfenn.bingo.common.stats.isSingleplayerForStatistics
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
@@ -74,7 +75,7 @@ class GameOverService(
                 player.uuid to stats.getPlayerWinStreak(player.uuid)
             }
 
-        val prevBestTime = stats.getBestTime(options, config.statsHostId, server.isSingleplayer && server.currentPlayerCount == 1)
+        val prevBestTime = stats.getBestTime(options, config.statsHostId, server.isSingleplayerForStatistics)
         // if prevBestTime didn't exist, or if the new duration is less than the prev time
         // ... and the game was actually completed & won by a team
         val isBestTime = (prevBestTime == null || state.ingameDuration()?.let { it < prevBestTime } == true)

@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.stats.StatsService
+import me.jfenn.bingo.common.stats.isSingleplayerForStatistics
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.toNbt
@@ -16,8 +17,8 @@ import org.joml.Matrix4f
 import java.util.concurrent.CompletableFuture
 import kotlin.time.Duration
 
-var statsHash: String = ""
-var statsFuture: CompletableFuture<Duration?> = CompletableFuture.completedFuture(null)
+private var statsHash: String = ""
+private var statsFuture: CompletableFuture<Duration?> = CompletableFuture.completedFuture(null)
 
 fun MenuComponent.registerPlayerCount(
     position: Vec3d,
@@ -38,7 +39,7 @@ fun MenuComponent.registerPlayerCount(
             statsFuture = stats.getBestTimeAsync(
                 options = options,
                 hostId = config.statsHostId,
-                isSingleplayer = server.isSingleplayer && playerCount == 1
+                isSingleplayer = server.isSingleplayerForStatistics
             ).whenComplete { _, _ ->
                 markDirty()
             }
