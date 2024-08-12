@@ -26,6 +26,7 @@ class ServerPacketEvents(
     val gameOverV2 = serverNetworking.registerS2C(GameOverPacket.V2)
     val gameOverV3 = serverNetworking.registerS2C(GameOverPacket.V3)
     val gameOverV4 = serverNetworking.registerS2C(GameOverPacket.V4)
+    val gameOverV5 = serverNetworking.registerS2C(GameOverPacket.V5)
     val scoredItemV1 = serverNetworking.registerS2C(ScoredItemPacket.V1)
     val scoreMessageV1 = serverNetworking.registerS2C(ScoreMessagePacket.V1)
     val timerV1 = serverNetworking.registerS2C(TimerPacket.V1)

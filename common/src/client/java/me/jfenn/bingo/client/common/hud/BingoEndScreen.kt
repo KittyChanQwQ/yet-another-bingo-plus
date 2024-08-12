@@ -4,6 +4,7 @@ import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.api.IWorldService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -14,7 +15,9 @@ import org.joml.Quaternionf
 import org.koin.core.Koin
 import kotlin.math.PI
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 class BingoEndScreen(
     koin: Koin,
@@ -27,6 +30,7 @@ class BingoEndScreen(
 
     companion object {
         private const val BUTTON_WIDTH = 120
+        private val NEW_BEST_DURATION = 2.seconds
     }
 
     private val cardsWidget = BingoCardsWidget(
@@ -123,6 +127,29 @@ class BingoEndScreen(
 
         val title = text.string(StringKey.StatsGameDuration)
         context.drawText(textRenderer, title, -textRenderer.getWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
+
+        gameOver.packet.prevBestTime?.let { prevBestTime ->
+            context.matrices.push()
+
+            if (gameOver.packet.isBestTime) {
+                // Animate in a "New best time!" message
+                val now = Clock.System.now()
+                val animTimeSince = now - gameOver.packet.endedAt
+                val animProgress = (animTimeSince / NEW_BEST_DURATION).toFloat().coerceIn(0f, 1f).pow(2)
+                val bestScale = 2f - animProgress
+                val bestDiff = gameOver.packet.duration - prevBestTime
+                val bestText = text.string(StringKey.StatsBestTimeNew, bestDiff.formatStringSmall())
+
+                context.matrices.scale(bestScale, bestScale, 1f)
+                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, BingoHudRenderer.getWinColor(now), true)
+            } else {
+                val bestText = text.string(StringKey.StatsBestTime, prevBestTime.formatString())
+                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, 0xFF_AAAAAA.toInt(), true)
+            }
+
+            context.matrices.pop()
+        }
+
         context.matrices.pop()
     }
 
@@ -167,7 +194,7 @@ class BingoEndScreen(
                 textRenderer,
                 "◆",
                 0, 0,
-                0x30_F5A3D6.toInt(),
+                0x30_F5A3D6,
                 false,
             )
 
@@ -210,8 +237,8 @@ class BingoEndScreen(
             true,
         )
 
-        renderGameDuration(context, titleY - 9)
-        renderWinStreak(context, titleY - 9)
+        renderGameDuration(context, titleY - 20)
+        renderWinStreak(context, titleY - 20)
 
         cardsWidget.views = gameOver.views
         cardsWidget.winner = gameOver.packet.winner

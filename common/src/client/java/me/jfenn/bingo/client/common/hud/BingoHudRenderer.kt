@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.api.IDrawService
@@ -42,6 +43,20 @@ class BingoHudRenderer(
         val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")!!
         val FRAME_FORBIDDEN_ID = Identifier.of("minecraft", "bingo/image_frame_forbidden")!!
         val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")!!
+
+        private val winColors = listOf(
+            0xFF_F5C0A3.toInt(),
+            0xFF_A3F5A3.toInt(),
+            0xFF_A3F5C7.toInt(),
+            0xFF_A3ABF5.toInt(),
+            0xFF_CCA3F5.toInt(),
+            0xFF_F5A3D6.toInt(),
+        )
+
+        fun getWinColor(now: Instant = Clock.System.now()): Int {
+            val winIndex = now.epochSeconds % winColors.size
+            return winColors[winIndex.toInt()]
+        }
     }
 
     private var cardColors = BingoCardColors()
@@ -72,15 +87,6 @@ class BingoHudRenderer(
 
         return Pair(tileX, tileY)
     }
-
-    private val winColors = listOf(
-        0xFF_F5C0A3.toInt(),
-        0xFF_A3F5A3.toInt(),
-        0xFF_A3F5C7.toInt(),
-        0xFF_A3ABF5.toInt(),
-        0xFF_CCA3F5.toInt(),
-        0xFF_F5A3D6.toInt(),
-    )
 
     fun drawCard(
         context: DrawContext,
@@ -125,8 +131,7 @@ class BingoHudRenderer(
             context.matrices.translate(90.0, -4.0, 1000.0)
             context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
 
-            val winIndex = Clock.System.now().epochSeconds % winColors.size
-            context.drawText(textRenderer, text.string(StringKey.CardWinner), 0, 0, winColors[winIndex.toInt()], true)
+            context.drawText(textRenderer, text.string(StringKey.CardWinner), 0, 0, getWinColor(), true)
 
             context.matrices.pop()
         }

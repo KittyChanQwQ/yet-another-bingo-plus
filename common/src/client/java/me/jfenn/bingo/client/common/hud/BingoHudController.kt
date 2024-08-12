@@ -137,7 +137,8 @@ class BingoHudController(
             .distinctBy { it.teamKey?.id }
     }
 
-    private fun onGameOver(packet: GameOverPacket) {
+    private fun onGameOver(clientPacket: ClientPacket<GameOverPacket>) {
+        val (packet) = clientPacket
         val views = (
                 (state.display?.display ?: emptyList())
                     .mapNotNull { state.views[it] }
@@ -196,21 +197,11 @@ class BingoHudController(
             onScoreMessage(packet)
         }
 
-        packetEvents.gameOverV1.onPacket { (packet) ->
-            onGameOver(packet)
-        }
-
-        packetEvents.gameOverV2.onPacket { (packet) ->
-            onGameOver(packet)
-        }
-
-        packetEvents.gameOverV3.onPacket { (packet) ->
-            onGameOver(packet)
-        }
-
-        packetEvents.gameOverV4.onPacket { (packet) ->
-            onGameOver(packet)
-        }
+        packetEvents.gameOverV1.onPacket(::onGameOver)
+        packetEvents.gameOverV2.onPacket(::onGameOver)
+        packetEvents.gameOverV3.onPacket(::onGameOver)
+        packetEvents.gameOverV4.onPacket(::onGameOver)
+        packetEvents.gameOverV5.onPacket(::onGameOver)
 
         hud.onRender {
             // Do not draw the HUD if the F3 or chat overlay is shown

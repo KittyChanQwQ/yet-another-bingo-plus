@@ -12,10 +12,10 @@ import me.jfenn.bingo.common.stats.data.GameTeamInfo
 import me.jfenn.bingo.common.stats.data.PlayerGameSummary
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.common.utils.measureTime
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.time.Duration
-import kotlin.time.measureTime
 
 class WriteStatsService(
     private val log: Logger,
@@ -42,7 +42,7 @@ class WriteStatsService(
         ))
     }
 
-    private fun writeGameResult() {
+    private fun writeGameResult(): GameInfo {
         val insertTeams = mutableListOf<GameTeamInfo>()
         val insertPlayers = mutableListOf<GamePlayerInfo>()
 
@@ -99,14 +99,13 @@ class WriteStatsService(
             teams = insertTeams,
             players = insertPlayers,
         )
+
+        return insertGame
     }
 
-    fun writeGame() {
-        log.info("Writing game result to stats.db...")
-        measureTime {
+    fun writeGame(): GameInfo {
+        return log.measureTime("Writing game result to stats.db...") {
             writeGameResult()
-        }.also {
-            log.info("Done! ($it)")
         }
     }
 }

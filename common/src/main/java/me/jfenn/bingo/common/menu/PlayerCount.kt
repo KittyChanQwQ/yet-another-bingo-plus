@@ -53,11 +53,11 @@ fun MenuComponent.registerPlayerCount(
         )
 
         val bestTime = text.string(
-            StringKey.OptionsBestTime,
+            StringKey.StatsBestTime,
             statsFuture.getNow(null)
                 ?.formatString()
                 ?.let { Text.literal(it).formatted(Formatting.GREEN) }
-                ?: Text.literal("[Not Set]").formatted(Formatting.GRAY)
+                ?: text.string(StringKey.StatsBestTimeNotSet).formatted(Formatting.GRAY)
         )
 
         putString("text", text.serialized(

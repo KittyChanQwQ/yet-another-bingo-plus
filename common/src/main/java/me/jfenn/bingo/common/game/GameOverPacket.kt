@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.game
 
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.event.packet.PacketConverter
@@ -23,6 +24,9 @@ data class GameOverPacket(
      */
     val isUpdate: Boolean,
     val winStreak: Int?,
+    val endedAt: Instant = Instant.DISTANT_PAST,
+    val isBestTime: Boolean = false,
+    val prevBestTime: Duration? = null,
     val seed: Long?,
 ) {
     object V1 : PacketConverter<GameOverPacket> {
@@ -163,6 +167,67 @@ data class GameOverPacket(
             if (source.winStreak != null) {
                 dest.writeBoolean(true)
                 dest.writeInt(source.winStreak)
+            } else {
+                dest.writeBoolean(false)
+            }
+
+            if (source.seed != null) {
+                dest.writeBoolean(true)
+                dest.writeLong(source.seed)
+            } else {
+                dest.writeBoolean(false)
+            }
+        }
+    }
+
+    object V5 : PacketConverter<GameOverPacket> {
+        override val id = Identifier.of(MOD_ID_BINGO, "game_over_v5")!!
+
+        override fun fromPacketBuf(buf: IPacketBuf): GameOverPacket {
+            return GameOverPacket(
+                title = buf.readText(),
+                subtitle = buf.readText(),
+                winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
+                duration = buf.readLong().milliseconds,
+                canSendRestart = buf.readBoolean(),
+                isWinner = buf.readBoolean(),
+                isUpdate = buf.readBoolean(),
+                winStreak = if (buf.readBoolean()) buf.readInt() else null,
+                endedAt = Instant.fromEpochMilliseconds(buf.readLong()),
+                isBestTime = buf.readBoolean(),
+                prevBestTime = if(buf.readBoolean()) buf.readLong().milliseconds else null,
+                seed = if (buf.readBoolean()) buf.readLong() else null,
+            )
+        }
+
+        override fun toPacketBuf(source: GameOverPacket, dest: IPacketBuf) {
+            dest.writeText(source.title)
+            dest.writeText(source.subtitle)
+
+            if (source.winner != null) {
+                dest.writeBoolean(true)
+                dest.writeString(source.winner.id)
+            } else {
+                dest.writeBoolean(false)
+            }
+
+            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isWinner)
+            dest.writeBoolean(source.isUpdate)
+
+            if (source.winStreak != null) {
+                dest.writeBoolean(true)
+                dest.writeInt(source.winStreak)
+            } else {
+                dest.writeBoolean(false)
+            }
+
+            dest.writeLong(source.endedAt.toEpochMilliseconds())
+            dest.writeBoolean(source.isBestTime)
+            if (source.prevBestTime != null) {
+                dest.writeBoolean(true)
+                dest.writeLong(source.prevBestTime.inWholeMilliseconds)
             } else {
                 dest.writeBoolean(false)
             }
