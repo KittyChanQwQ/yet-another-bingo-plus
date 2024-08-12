@@ -139,18 +139,10 @@ class BingoHudController(
 
     private fun onGameOver(clientPacket: ClientPacket<GameOverPacket>) {
         val (packet) = clientPacket
-        val views = (
-                (state.display?.display ?: emptyList())
-                    .mapNotNull { state.views[it] }
-                        + (state.gameOver?.views ?: emptyList())
-                )
-            // do not show the preview card on the Game Over screen
-            .filter { it.teamKey != null }
-            // prevent any duplicate cards (uses newly-sent cards first)
-            .distinctBy { it.teamKey?.id }
-
-        val gameOver = BingoHudState.GameOver(packet, views)
+        val gameOver = state.gameOver ?: BingoHudState.GameOver(packet, emptyList())
         state.gameOver = gameOver
+        updateGameOverViews()
+
         if (!packet.isUpdate) {
             // when the game first ends, open the end screen
             MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, gameOver, canEscape = false))
