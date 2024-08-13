@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.utils
 
 import java.util.*
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Returns a human-readable length of the duration, in the format:
@@ -10,8 +11,11 @@ import kotlin.time.Duration
  * Omits the days/hours portion of the string if <= 0.
  */
 fun Duration.formatString(): String {
-    val sign = if (isNegative()) "-" else ""
+    // if the duration is smaller than a second, use its default formatting
+    if (absoluteValue < 1.seconds)
+        return toString()
 
+    val sign = if (isNegative()) "-" else ""
     return absoluteValue.toComponents { days, hours, minutes, seconds, _ ->
         (
             sign
@@ -28,13 +32,13 @@ fun Duration.formatString(): String {
  */
 fun Duration.formatStringSmall(): String {
     val sign = if (isNegative()) "-" else ""
-
-    return absoluteValue.toComponents { days, hours, minutes, seconds, _ ->
+    return absoluteValue.toComponents { days, hours, minutes, seconds, nanoseconds ->
         sign + when {
             days > 0 -> "${days}d"
             hours > 0 -> "${hours}h"
             minutes > 0 -> "${minutes}m"
-            else -> "${seconds}s"
+            seconds > 0 -> "${seconds}s"
+            else -> String.format(Locale.US, "%.3fs", nanoseconds.toDouble() / 1.seconds.inWholeNanoseconds)
         }
     }
 }

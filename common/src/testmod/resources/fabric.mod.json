@@ -18,6 +18,10 @@
       {
         "adapter": "kotlin",
         "value": "me.jfenn.bingo.common.text.TextProviderTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.common.utils.DurationTest"
       }
     ]
   },
