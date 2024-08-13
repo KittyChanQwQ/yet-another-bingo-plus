@@ -21,8 +21,8 @@ data class GameInfo(
     val isDraw: Boolean,
     /** True if the game was ended early by "/bingo end" */
     val isForfeit: Boolean,
-    /** True if the game was synced from a player, False if the game was played on this server */
-    val hostId: UuidAsString
+    /** Identifier unique to the server this was played on */
+    val hostId: UuidAsString = UUID.fromString("00000000-0000-0000-0000-000000000000"),
 ) {
     constructor(game: Game) : this(
         id = UUID.fromString(game.id),
