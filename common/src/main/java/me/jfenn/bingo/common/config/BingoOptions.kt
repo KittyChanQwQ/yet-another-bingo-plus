@@ -155,7 +155,8 @@ data class BingoOptions(
             yield(isHiddenItemsMode.toString())
             // features
             yield(isKeepInventory.toString())
-            yield((isElytra || isPlayerKit || isTeamKit).toString()) // has starting items enabled
+            yield(isElytra.toString())
+            yield((isPlayerKit || isTeamKit).toString()) // has starting items enabled
             // spawning
             yield(spawnDimension)
         }.forEach {

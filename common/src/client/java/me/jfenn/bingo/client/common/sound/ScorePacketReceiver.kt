@@ -3,6 +3,8 @@ package me.jfenn.bingo.client.common.sound
 import me.jfenn.bingo.client.api.ClientPacket
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.game.GameOverPacket
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.DownloadingTerrainScreen
 
 class ScorePacketReceiver(
     clientPacketEvents: ClientPacketEvents,
@@ -52,6 +54,15 @@ class ScorePacketReceiver(
             when (packet.secondsRemaining) {
                 in 1..3 -> soundService.play(ClientSounds.Key.START_COUNTDOWN)
                 0 -> soundService.play(ClientSounds.Key.START_RELEASE)
+            }
+
+            // If the countdown starts while the player is loading terrain, just close the screen!
+            // (hack for WaitUntilLoadedController not doing its job)
+            val client = MinecraftClient.getInstance()
+            // Surely this is safe...
+            if (client.currentScreen is DownloadingTerrainScreen) {
+                // Nothing could go wrong here, I think.
+                client.setScreen(null)
             }
         }
     }

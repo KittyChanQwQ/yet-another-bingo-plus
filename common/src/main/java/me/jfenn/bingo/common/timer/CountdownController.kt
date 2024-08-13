@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
@@ -24,6 +25,7 @@ class CountdownController(
     private val state: BingoState,
     private val events: ScopedEvents,
     private val countdownService: CountdownService,
+    private val teamService: TeamService,
     private val tickManager: ITickManager,
     private val statusEffectsFactory: IStatusEffectsFactory,
     private val spawnService: SpawnService,
@@ -34,8 +36,11 @@ class CountdownController(
 
     private val entityMap = mutableMapOf<BingoTeamKey, Entity>()
 
+    private val playingPlayerList get() = server.playerManager.playerList
+        .filter { teamService.isPlaying(it) }
+
     private fun forcePlayersInvisible() {
-        for (player in server.playerManager.playerList) {
+        for (player in playingPlayerList) {
             // Make the player invisible during the countdown
             // (otherwise, the player blocks other players' visibility)
             val statusEffects = statusEffectsFactory.getStatusEffects(player)

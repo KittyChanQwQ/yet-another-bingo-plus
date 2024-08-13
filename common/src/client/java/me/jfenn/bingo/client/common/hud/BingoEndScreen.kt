@@ -2,6 +2,7 @@ package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.api.IWorldService
+import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.formatStringSmall
@@ -139,9 +140,12 @@ class BingoEndScreen(
                 val bestScale = 2f - animProgress
                 val bestDiff = gameOver.packet.duration - prevBestTime
                 val bestText = text.string(StringKey.StatsBestTimeNew, bestDiff.formatStringSmall())
+                val bestColor = Color.fromInt(BingoHudRenderer.getWinColor(now))
+                    .copy(a = (animProgress * 255).toInt())
+                    .asIntWithAlpha
 
                 context.matrices.scale(bestScale, bestScale, 1f)
-                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, BingoHudRenderer.getWinColor(now), true)
+                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, bestColor, true)
             } else {
                 val bestText = text.string(StringKey.StatsBestTime, prevBestTime.formatString())
                 context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
@@ -185,9 +189,12 @@ class BingoEndScreen(
                 val animProgress = (animTimeSince / NEW_BEST_DURATION).toFloat().coerceIn(0f, 1f).pow(2)
                 val bestScale = 2f - animProgress
                 val bestText = text.string(StringKey.StatsWinStreakNewMax)
+                val bestColor = Color.fromInt(BingoHudRenderer.getWinColor(now))
+                    .copy(a = (animProgress * 255).toInt())
+                    .asIntWithAlpha
 
                 context.matrices.scale(bestScale, bestScale, 1f)
-                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, BingoHudRenderer.getWinColor(now), true)
+                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, bestColor, true)
             } else {
                 val bestText = text.string(StringKey.StatsWinStreakMax, bestWinStreak)
                 context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
