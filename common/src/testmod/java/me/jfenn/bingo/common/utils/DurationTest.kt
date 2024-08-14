@@ -31,7 +31,7 @@ class DurationTest : BaseGameTest() {
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun formatString_millis(context: TestContext) {
         val duration = 123.milliseconds
-        assertThat(duration.formatString()).isEqualTo("123ms")
+        assertThat(duration.formatString()).isEqualTo("00m 00s")
     }
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)

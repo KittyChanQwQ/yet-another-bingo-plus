@@ -34,6 +34,13 @@ class CommandBuilder(
         parent.children += node
     }
 
+    fun boolean(name: String, configure: CommandBuilder.(arg: CommandArgument<Boolean>) -> Unit) {
+        val arg = CommandArgument.Bool(name)
+        val node = CommandNode.RequiredArgument(arg)
+        CommandBuilder(node).configure(arg)
+        parent.children += node
+    }
+
     fun integer(
         name: String,
         min: Int = Int.MIN_VALUE,
@@ -84,6 +91,10 @@ sealed class CommandArgument<T> {
     class Text(
         override val name: kotlin.String,
     ) : CommandArgument<net.minecraft.text.Text>()
+
+    class Bool(
+        override val name: kotlin.String,
+    ) : CommandArgument<Boolean>()
 
     class Integer(
         override val name: kotlin.String,

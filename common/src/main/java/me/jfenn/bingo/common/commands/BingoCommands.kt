@@ -1,19 +1,15 @@
 package me.jfenn.bingo.common.commands
 
-import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
-import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameService
-import me.jfenn.bingo.common.spawn.ElytraService
-import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -72,74 +68,6 @@ class BingoCommands : BaseCommand() {
 
                         last
                     })
-            )
-            .then(
-                // Change the elytra mode feature setting (while the game is running)
-                LiteralArgumentBuilder.literal<ServerCommandSource>("elytra")
-                    .require(
-                        requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .then(
-                        RequiredArgumentBuilder.argument<ServerCommandSource, Boolean>(
-                            "true/false",
-                            BoolArgumentType.bool()
-                        )
-                            .executesInScope { ctx ->
-                                val options = get<BingoOptions>()
-                                val events = get<ScopedEvents>()
-                                val playerManager = get<IPlayerManager>()
-                                val elytraService = get<ElytraService>()
-
-                                val isElytra = BoolArgumentType.getBool(ctx, "true/false")
-                                options.isElytra = isElytra
-                                events.onChangeOptions(Unit)
-
-                                // if Elytra mode is turned off during a game, remove all players' elytra
-                                if (!isElytra) {
-                                    for (player in playerManager.getPlayers()) {
-                                        elytraService.takeElytra(player)
-                                    }
-                                }
-
-                                ctx.source.player?.sendInfoMessage("Elytra mode: $isElytra")
-                                1
-                            }
-                    )
-            )
-            .then(
-                // Change the night vision feature setting (while the game is running)
-                LiteralArgumentBuilder.literal<ServerCommandSource>("night_vision")
-                    .require(
-                        requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .then(
-                        RequiredArgumentBuilder.argument<ServerCommandSource, Boolean>(
-                            "true/false",
-                            BoolArgumentType.bool()
-                        )
-                            .executesInScope { ctx ->
-                                val state = get<BingoState>()
-                                val options = get<BingoOptions>()
-                                val events = get<ScopedEvents>()
-                                val playerController = get<PlayerController>()
-
-                                val isNightVision = BoolArgumentType.getBool(ctx, "true/false")
-                                options.isNightVision = isNightVision
-                                events.onChangeOptions(Unit)
-
-                                // if night vision is changed, update all players
-                                if (state.state == GameState.PLAYING) {
-                                    ctx.source.server.playerManager.playerList.forEach { player ->
-                                        playerController.updateGameMode(player, forceReset = false)
-                                    }
-                                }
-
-                                ctx.source.player?.sendInfoMessage("Night vision: $isNightVision")
-                                1
-                            }
-                    )
             )
             .then(
                 // Change the time limit setting (while the game is running)
