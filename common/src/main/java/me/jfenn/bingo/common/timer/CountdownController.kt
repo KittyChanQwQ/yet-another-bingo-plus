@@ -104,7 +104,9 @@ class CountdownController(
             val isLockedState = toState == GameState.LOADING || toState == GameState.COUNTDOWN
 
             if (state.isLobbyMode)
-                tickManager.setFrozen(isLockedState)
+                // This should be setFrozen(isLockedState), but we're waiting until the countdown starts
+                // to avoid https://github.com/RelativityMC/C2ME-fabric/issues/350
+                tickManager.setFrozen(toState == GameState.COUNTDOWN)
 
             if (!isLockedState) {
                 // Remove all spawn marker entities when the game starts

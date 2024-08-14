@@ -11,10 +11,6 @@ import kotlin.time.Duration.Companion.seconds
  * Omits the days/hours portion of the string if <= 0.
  */
 fun Duration.formatString(): String {
-    // if the duration is smaller than a second, use its default formatting
-    if (absoluteValue < 1.seconds)
-        return toString()
-
     val sign = if (isNegative()) "-" else ""
     return absoluteValue.toComponents { days, hours, minutes, seconds, _ ->
         (

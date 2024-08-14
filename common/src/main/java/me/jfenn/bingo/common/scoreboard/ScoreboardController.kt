@@ -9,12 +9,14 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import kotlin.time.Duration
 
 /**
  * Displays scoreboard score/timer information for all players.
@@ -88,6 +90,10 @@ class ScoreboardController(
                         .also { add(it) }
                     if (options.showRemainingTime && options.timeLimit != null) {
                         textProvider.string(StringKey.ScoreboardTimeLeft, state.formatTimeRemaining(textProvider, normalColor = Formatting.YELLOW))
+                            .also { add(it) }
+                    } else if (options.timeLimit == null) {
+                        val duration = (state.ingameDuration() ?: Duration.ZERO).formatString()
+                        textProvider.string(StringKey.ScoreboardTime, Text.literal(duration).formatted(Formatting.YELLOW))
                             .also { add(it) }
                     }
                     add(null)

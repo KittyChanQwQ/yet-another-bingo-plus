@@ -175,6 +175,7 @@
   "bingo.scoreboard.features": "Features: %s",
   "bingo.scoreboard.goal": "Goal: %s",
   "bingo.scoreboard.time_left": "Time left: %s",
+  "bingo.scoreboard.time": "Time: %s",
   "bingo.scoreboard.team": "Team: %s",
   "bingo.scoreboard.leading_team": "Leading team: %s",
   "bingo.scoreboard.leading_team_tie": "Tie",
