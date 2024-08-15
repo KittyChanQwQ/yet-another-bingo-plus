@@ -120,7 +120,6 @@ class ObjectiveService(
 
     fun getPlayers(
         playersHolding: Map<UUID, BingoObjectiveCapture>,
-        players: Map<UUID, BingoObjectiveCapture>,
     ): Map<UUID, BingoObjectiveCapture> {
         return when {
             options.isLockoutMode -> {
@@ -134,12 +133,6 @@ class ObjectiveService(
                 else mutableMapOf()
             }
             else -> playersHolding.entries
-                .let { entries ->
-                    when {
-                        options.isInventoryMode -> entries
-                        else -> entries + players.entries
-                    }
-                }
                 .sortedBy { it.value.instant } // oldest captures first
                 .distinctBy { it.value.team }
                 .toMap()

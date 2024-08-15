@@ -110,34 +110,20 @@ class AdvancementObjectiveManager(
                     ?: false
             }
 
-            val playersHolding = run {
-                val currentPlayers = objective.playersHolding.toMutableMap()
-
-                // Add players that have just achieved the advancement
-                teamPlayers.flatMap { (team, players) -> players.map { team to it } } // List<(TeamKey, Player)>
-                    // filter players that already have the advancement
-                    .filter { (_, player) -> !objective.playersHolding.containsKey(player.uuid) }
-                    .filter { (_, player) -> advancementManager.isDone(player.player, advancement) }
-                    .onEach { (team, player) ->
-                        currentPlayers[player.uuid] = BingoObjectiveCapture(
-                            team = team,
-                            player = BingoPlayerProfile.fromPlayer(player),
-                            instant = now,
-                        )
-                    }
-
-                // Remove players that no longer have the advancement
-                objective.playersHolding.entries
-                    .map { offlinePlayerCache.getOfflinePlayer(it.value.player) }
-                    .filter { !advancementManager.isDone(it.player, advancement) }
-                    .onEach { currentPlayers.remove(it.uuid) }
-
-                currentPlayers
-            }
+            val playersHolding = teamPlayers.asSequence()
+                .flatMap { (team, players) -> players.map { team to it } } // List<(TeamKey, Player)>
+                .filter { (_, player) -> advancementManager.isDone(player.player, advancement) }
+                .associate { (team, player) ->
+                    val capture = objective.playersHolding[player.uuid] ?: BingoObjectiveCapture(
+                        team = team,
+                        player = BingoPlayerProfile.fromPlayer(player),
+                        instant = now,
+                    )
+                    player.uuid to capture
+                }
 
             val players = objectiveService.getPlayers(
-                playersHolding = playersHolding,
-                players = objective.players
+                playersHolding = playersHolding
             )
 
             val teams = objectiveService.getTeams(

@@ -24,6 +24,16 @@ sealed class NumberProvider {
     }
 
     @Serializable
+    @SerialName("options")
+    class Options(
+        val options: List<Int>,
+    ) : NumberProvider() {
+        override fun resolve(state: CardGeneratorState): Int {
+            return options.random(state.random)
+        }
+    }
+
+    @Serializable
     @SerialName("constant")
     class Constant(val value: Int) : NumberProvider() {
         override fun resolve(state: CardGeneratorState) = value
@@ -45,6 +55,7 @@ object NumberProviderSerializer : KSerializer<NumberProvider> {
         val element = (decoder as JsonDecoder).decodeJsonElement()
         return when {
             element is JsonPrimitive && element.intOrNull != null -> NumberProvider.Constant(element.int)
+            element is JsonArray -> NumberProvider.Options(element.map { it.jsonPrimitive.int })
             else -> decoder.json.decodeFromJsonElement(baseSerializer, element)
         }
     }

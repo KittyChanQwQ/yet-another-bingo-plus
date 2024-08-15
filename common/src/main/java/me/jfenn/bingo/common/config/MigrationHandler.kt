@@ -139,9 +139,9 @@ class MigrationHandler(
                 ?.deleteIfExists()
         }
 
-        migrations[9] = { // 2.1.0-alpha.2
+        migrations[10] = { // 2.1.0-alpha.3
             loader.configDir.resolve("$MOD_ID_BINGO/challenge.tierlist.json")
-                .takeIfMd5("dd036cdc11bb671f16ce48fdef978d7b")
+                .takeIfMd5("dd036cdc11bb671f16ce48fdef978d7b", "7a5449d0c4d6812200c0762090666794")
                 ?.deleteIfExists()
         }
     }

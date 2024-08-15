@@ -70,8 +70,7 @@ class OneOfObjectiveManager(
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
 
             val players = objectiveService.getPlayers(
-                playersHolding = playersHolding,
-                players = objective.players
+                playersHolding = playersHolding
             )
 
             val teams = objectiveService.getTeams(

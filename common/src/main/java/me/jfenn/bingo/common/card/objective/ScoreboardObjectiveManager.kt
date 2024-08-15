@@ -94,7 +94,10 @@ class ScoreboardObjectiveManager(
                 }
 
             val teamsProgress = teamPlayers.map { (team, players) ->
-                val progress = players.maxOf { getScoreboardValue(objective, scoreboard, it) } / objective.valueMin.coerceAtLeast(1).toFloat()
+                val scoreboardProgress = players.maxOf { getScoreboardValue(objective, scoreboard, it) }
+                    .takeIf { it <= objective.valueMax }
+                    ?: 0
+                val progress = scoreboardProgress / objective.valueMin.coerceAtLeast(1).toFloat()
                 team to progress
             }.toMap()
 
@@ -104,28 +107,20 @@ class ScoreboardObjectiveManager(
                     ?: false
             }
 
-            val playersHolding = run {
-                val currentPlayers = objective.playersHolding.toMutableMap()
-
-                // Add players that have achieved the stat
-                teamPlayers.flatMap { (team, players) -> players.map { team to it } } // List<(TeamKey, Player)>
-                    // filter players that already have the stat
-                    .filter { (_, player) -> !objective.playersHolding.containsKey(player.uuid) }
-                    .filter { (_, player) -> getScoreboardValue(objective, scoreboard, player) in objective.valueRange }
-                    .onEach { (team, player) ->
-                        currentPlayers[player.uuid] = BingoObjectiveCapture(
-                            team = team,
-                            player = BingoPlayerProfile.fromPlayer(player),
-                            instant = now,
-                        )
-                    }
-
-                currentPlayers
-            }
+            val playersHolding = teamPlayers.asSequence()
+                .flatMap { (team, players) -> players.map { team to it } } // List<(TeamKey, Player)>
+                .filter { (_, player) -> getScoreboardValue(objective, scoreboard, player) in objective.valueRange }
+                .associate { (team, player) ->
+                    val capture = objective.playersHolding[player.uuid] ?: BingoObjectiveCapture(
+                        team = team,
+                        player = BingoPlayerProfile.fromPlayer(player),
+                        instant = now,
+                    )
+                    player.uuid to capture
+                }
 
             val players = objectiveService.getPlayers(
-                playersHolding = playersHolding,
-                players = objective.players
+                playersHolding = playersHolding
             )
 
             val teams = objectiveService.getTeams(

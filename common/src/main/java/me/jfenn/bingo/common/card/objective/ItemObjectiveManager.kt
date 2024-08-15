@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Clock
-import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
@@ -10,9 +9,9 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.team.BingoPlayerProfile
-import me.jfenn.bingo.common.utils.jsonUnpretty
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.slf4j.Logger
@@ -21,6 +20,7 @@ import kotlin.math.max
 class ItemObjectiveManager(
     private val log: Logger,
     private val server: MinecraftServer,
+    private val options: BingoOptions,
     private val itemStackFactory: IItemStackFactory,
     private val playerManager: IPlayerManager,
     private val objectiveRegistry: ObjectiveRegistryState,
@@ -187,9 +187,14 @@ class ItemObjectiveManager(
         }
 
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
+            // Unlike other objectives, item captures can only be lost if isInventoryMode=true
+            // therefore, combine both players & playersHolding before updating the objective
+            val combinedPlayersHolding = when {
+                options.isInventoryMode -> objective.players
+                else -> objective.playersHolding + objective.players
+            }
             val players = objectiveService.getPlayers(
-                playersHolding = objective.playersHolding,
-                players = objective.players,
+                playersHolding = combinedPlayersHolding,
             ).toMutableMap()
             val teams = objectiveService.getTeams(
                 players = players
