@@ -1,9 +1,5 @@
 {
   "type": "item",
   "item": "minecraft:wind_charge",
-  "count": {
-    "type": "random",
-    "min": 4,
-    "max": 16
-  }
+  "count": [4, 8, 12, 16]
 }

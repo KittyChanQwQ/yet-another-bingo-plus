@@ -1,8 +1,0 @@
-{
-  "type": "stats",
-  "display": {
-    "item": "minecraft:red_bed"
-  },
-  "statType": "minecraft:custom",
-  "statName": "minecraft:sleep_in_bed"
-}

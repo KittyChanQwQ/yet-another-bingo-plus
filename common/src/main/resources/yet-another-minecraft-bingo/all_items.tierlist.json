@@ -201,6 +201,7 @@
         "minecraft:echo_shard",
         "minecraft:emerald",
         "minecraft:emerald_block",
+        "minecraft:end_crystal",
         "minecraft:enchanted_book",
         "minecraft:enchanted_golden_apple",
         "minecraft:enchanting_table",
@@ -397,6 +398,8 @@
         "minecraft:glow_berries",
         "minecraft:glow_lichen",
         "minecraft:gold_ingot",
+        "minecraft:gold_block",
+        "minecraft:raw_gold_block",
         "minecraft:gold_nugget",
         "minecraft:golden_apple",
         "minecraft:golden_axe",
@@ -422,6 +425,7 @@
         "minecraft:iron_trapdoor",
         "minecraft:jukebox",
         "minecraft:lantern",
+        "minecraft:lapis_block",
         "minecraft:lapis_lazuli",
         "minecraft:lava_bucket",
         "minecraft:lead",
@@ -833,6 +837,8 @@
         "minecraft:cooked_mutton",
         "minecraft:cooked_porkchop",
         "minecraft:copper_ingot",
+        "minecraft:copper_block",
+        "minecraft:raw_copper_block",
         "minecraft:cornflower",
         "minecraft:cracked_deepslate_bricks",
         "minecraft:cracked_deepslate_tiles",
@@ -870,6 +876,7 @@
         "minecraft:gray_wool",
         "minecraft:ink_sac",
         "minecraft:iron_ingot",
+        "minecraft:iron_block",
         "minecraft:iron_nugget",
         "minecraft:kelp",
         "minecraft:ladder",
@@ -1708,31 +1715,22 @@
         ],
         [
             "minecraft:coal_ore",
-            "minecraft:deepslate_coal_ore"
-        ],
-        [
+            "minecraft:deepslate_coal_ore",
             "minecraft:copper_ore",
-            "minecraft:deepslate_copper_ore"
-        ],
-        [
+            "minecraft:deepslate_copper_ore",
             "minecraft:diamond_ore",
-            "minecraft:deepslate_diamond_ore"
-        ],
-        [
+            "minecraft:deepslate_diamond_ore",
             "minecraft:emerald_ore",
-            "minecraft:deepslate_emerald_ore"
-        ],
-        [
+            "minecraft:deepslate_emerald_ore",
             "minecraft:gold_ore",
-            "minecraft:deepslate_gold_ore"
-        ],
-        [
+            "minecraft:deepslate_gold_ore",
             "minecraft:iron_ore",
-            "minecraft:deepslate_iron_ore"
-        ],
-        [
+            "minecraft:deepslate_iron_ore",
             "minecraft:lapis_ore",
-            "minecraft:deepslate_lapis_ore"
+            "minecraft:deepslate_lapis_ore",
+            "minecraft:redstone_ore",
+            "minecraft:deepslate_redstone_ore",
+            "minecraft:nether_gold_ore"
         ],
         [
             "minecraft:music_disc_11",
@@ -1763,10 +1761,6 @@
         [
             "minecraft:purpur_block",
             "minecraft:purpur_pillar"
-        ],
-        [
-            "minecraft:redstone_ore",
-            "minecraft:deepslate_redstone_ore"
         ],
         [
             "minecraft:sculk",
