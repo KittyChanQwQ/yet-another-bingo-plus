@@ -59,6 +59,7 @@ sealed class ObjectiveData {
         val statName: String? = null,
         val min: NumberProviderPolymorphic = NumberProvider.Constant(1),
         val max: NumberProviderPolymorphic = NumberProvider.Constant(Int.MAX_VALUE),
+        val relative: Boolean = true,
     ) : ObjectiveData()
 
     @Serializable
@@ -67,6 +68,7 @@ sealed class ObjectiveData {
         val scoreboardName: String,
         val min: NumberProviderPolymorphic = NumberProvider.Constant(1),
         val max: NumberProviderPolymorphic = NumberProvider.Constant(Int.MAX_VALUE),
+        val relative: Boolean = false,
     ) : ObjectiveData()
 
 }

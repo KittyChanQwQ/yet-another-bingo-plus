@@ -74,7 +74,13 @@ class ScoreboardObjectiveManager(
     }
 
     private fun getScoreboardValue(objective: BingoObjective.ScoreboardEntry, scoreboard: IObjectiveHandle, player: IPlayerHandle): Int {
-        val base = objective.baseScores.getOrPut(player.uuid) { scoreboard.getForPlayer(player) ?: 0 }
+        val base = when {
+            objective.data.relative -> {
+                objective.baseScores.getOrPut(player.uuid) { scoreboard.getForPlayer(player) ?: 0 }
+            }
+            else -> 0
+        }
+
         val score = scoreboard.getForPlayer(player) ?: 0
         return score - base
     }

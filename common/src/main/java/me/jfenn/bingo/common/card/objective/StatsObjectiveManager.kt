@@ -82,7 +82,12 @@ class StatsObjectiveManager(
     }
 
     private fun getStatValue(objective: BingoObjective.StatsEntry, stat: IStatHandle, player: IPlayerHandle): Int {
-        val base = objective.baseStats.getOrPut(player.uuid) { stat.getForPlayer(player) }
+        val base = when {
+            objective.data.relative -> {
+                objective.baseStats.getOrPut(player.uuid) { stat.getForPlayer(player) }
+            }
+            else -> 0
+        }
         return stat.getForPlayer(player) - base
     }
 

@@ -11,6 +11,16 @@ This can be achieved by placing custom `.json` objectives in a
 To see an example, the built in ["challenge"](https://gitlab.com/horrific-tweaks/bingo/-/tree/main/common/src/main/resources/data/yet-another-minecraft-bingo/yet-another-minecraft-bingo/objectives/challenge)
 objectives can be used as a reference - which are included in [challenge.tierlist.json](https://gitlab.com/horrific-tweaks/bingo/-/blob/main/common/src/main/resources/yet-another-minecraft-bingo/challenge.tierlist.json).
 
+### Number Source
+
+Some of these JSON properties describe a "Number Source", which can be one of three values:
+- Constant: `"count": 8` - providing a direct number to use for the value
+- Options: `"count": [8, 16, 32]` - providing an array of options from which a number will be randomly chosen
+- Randomized: `"count": { ... }` - providing a min/max from which a random number will be generated
+  - `"type": "random"`
+  - `"min": 8`: The lower boundary for the item count (inclusive)
+  - `"max": 32`: The upper boundary for the item count (inclusive)
+
 ## Objective JSON
 
 These are the base properties that exist on every objective:
@@ -24,17 +34,12 @@ These are the base properties that exist on every objective:
     - `"minecraft:enchantments": {"levels":{"mending":1}}`
   - `"decoration": "NONE"`: Applies a decoration to the objective's tile on the card. One of: `ADVANCEMENT`, `MULTI_ITEM`, `FORBIDDEN`, `NONE`.
 - `"conflictsWith: ["minecraft:dried_kelp"]`: A list of conflicting objectives that should never appear on the same card as this objective.
-
+ 
 ## Items
 
 - `"type": "item"`
 - `"item": "minecraft:kelp"`: The item that the player needs to pick up for this objective
-- `"count": {}`: Provides the amount of this item that the player needs to obtain
-  - Constant: `"count": 64` 
-  - Randomized:
-    - `"type": "random"`
-    - `"min": 8`: The lower boundary for the item count (inclusive)
-    - `"max": 32`: The upper boundary for the item count (inclusive)
+- [`"count": <number-source>`](#number-source): The amount of this item that the player needs to obtain
 - `"nbt": "{}"`: Sets pre-1.20.6 NBT data on the item
 - `"components": {}`: Sets post-1.20.6 JSON-encoded [data components](https://minecraft.wiki/w/Data_component_format#List_of_components) on the item
   - `"minecraft:enchantments": {"levels":{"mending":1}}`
@@ -49,29 +54,20 @@ These are the base properties that exist on every objective:
 - `"type": "stats"`
 - `"statType": "minecraft:custom`: Specifies the [statistic type](https://minecraft.wiki/w/Statistics).
 - `"statName": "minecraft:open_barrel"`: The [statistic name](https://minecraft.wiki/w/Statistics). Optional - if omitted, uses the sum of all statistics under the type.
-- `"value": {}`: Provides the minimum statistic value required to earn this objective.
-  - Constant: `"value": 64`
-  - Randomized:
-    - `"type": "random"`
-    - `"min": 8`: The lower boundary for the value (inclusive)
-    - `"max": 32`: The upper boundary for the value (inclusive)
+- [`"min": <number-source>`](#number-source): The minimum statistic value required to earn this objective (default: 1)
+- [`"max": <number-source>`](#number-source): The maximum statistic value required to keep this objective (default: unset)
+- `"relative": true`: Measures the increase in this statistic since the start of the game, rather than its actual value. (default: true)
+  - _If false, you should ensure that this cannot be scored in the lobby or before the game has started._
 
 ## Scoreboard Objectives
 
 - `"type": "scoreboard"`
 - `"scoreboardName": "your_datapack_objective"`: The name of the [scoreboard objective](https://minecraft.wiki/w/Scoreboard) that should be tracked.
-- `"min"`: The minimum value required for a player to earn this objective (default: 1)
-  - Constant: `"min": 64`
-  - Randomized:
-    - `"type": "random"`
-    - `"min": 8`: The lower boundary for the value (inclusive)
-    - `"max": 32`: The upper boundary for the value (inclusive)
-- `"max"`: The maximum value required for a player to earn this objective (default: unset)
-  - Constant: `"max": 64`
-  - Randomized:
-    - `"type": "random"`
-    - `"min": 8`: The lower boundary for the value (inclusive)
-    - `"max": 32`: The upper boundary for the value (inclusive)
+- [`"min": <number-source>`](#number-source): The minimum scoreboard value required to earn this objective (default: 1)
+- [`"max": <number-source>`](#number-source): The maximum scoreboard value required to keep this objective (default: unset)
+- `"relative": false`: Measures the increase in this scoreboard since the start of the game, rather than its actual value. (default: false)
+  - If your scoreboard represents a statistic/counter, this can avoid needing to reset its value when the game starts.
+    Otherwise, you should use the bingo [function tags](./functions) to reset all scoreboard values when `on_playing` is run.
 
 ## One Of ...
 
