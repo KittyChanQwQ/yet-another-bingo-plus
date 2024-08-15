@@ -225,4 +225,16 @@ class StatsService(
         return winStreak
     }
 
+    fun resetPlayerStats(playerId: UUID) {
+        db.bestStatsQueries.resetByPlayer(playerId.toString())
+    }
+
+    fun resetGameStats(options: BingoOptions) {
+        db.bestStatsQueries.resetByHash(options.getShaHash())
+    }
+
+    fun resetAllStats() {
+        db.bestStatsQueries.resetAll()
+    }
+
 }
