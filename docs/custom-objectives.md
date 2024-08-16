@@ -6,20 +6,43 @@ However, you might want a particular item or objective to have different behavio
 includes requiring specific NBT data, a certain quantity of an item, multiple items at once, and so on.
 
 To achieve this, you can place custom `.json` objectives in a datapack, under
-`data / <namespace> / yet-another-minecraft-bingo / objectives / <goal>.json`.
+`data / <namespace> / yet-another-minecraft-bingo / objectives / <path>.json`.
 
-To see an example, the built in ["challenge"](https://gitlab.com/horrific-tweaks/bingo/-/tree/main/common/src/main/resources/data/yet-another-minecraft-bingo/yet-another-minecraft-bingo/objectives/challenge)
+## Example
+
+::: code-group
+
+```json [objectives / get_three_sticks.json]
+{
+  "type": "item",
+  "display": {
+    "name": "Get Sticks"
+  },
+  "item": "minecraft:stick",
+  "count": 3
+}
+```
+
+:::
+
+::: code-group
+
+```json [tierlists / my_cool_new_list.tierlist.json]
+{
+  "S": [...],
+  "A": [...],
+  "B": [...],
+  "C": [...],
+  "D": [
+    "mynamespace:get_three_sticks"
+  ]
+}
+```
+
+:::
+
+To see more examples, the built in ["challenge"](https://gitlab.com/horrific-tweaks/bingo/-/tree/main/common/src/main/resources/data/yet-another-minecraft-bingo/yet-another-minecraft-bingo/objectives/challenge)
 objectives can be used as a reference - which are included in [challenge.tierlist.json](https://gitlab.com/horrific-tweaks/bingo/-/blob/main/common/src/main/resources/yet-another-minecraft-bingo/challenge.tierlist.json).
-
-### Number Source
-
-Some of these JSON properties describe a "Number Source", which can be one of three values:
-- Constant: `"count": 8` - providing a direct number to use for the value
-- Options: `"count": [8, 16, 32]` - providing an array of options from which a number will be randomly chosen
-- Randomized: `"count": { ... }` - providing a min/max from which a random number will be generated
-  - `"type": "random"`
-  - `"min": 8`: The lower boundary for the item count (inclusive)
-  - `"max": 32`: The upper boundary for the item count (inclusive)
 
 ## Objective JSON
 
@@ -35,7 +58,7 @@ These are common properties that can be specified on any objective:
   - `"decoration": "NONE"`: Applies a decoration to the objective's tile on the card. One of: `ADVANCEMENT`, `MULTI_ITEM`, `FORBIDDEN`, `NONE`.
 - `"conflictsWith: ["minecraft:dried_kelp"]`: A list of conflicting objectives that should never appear on the same card as this one.
  
-## Items
+### Items
 
 Tracks when an item enters the player's inventory.
 
@@ -46,14 +69,14 @@ Tracks when an item enters the player's inventory.
 - `"components": {}`: Sets post-1.20.6 JSON-encoded [data components](https://minecraft.wiki/w/Data_component_format#List_of_components) on the item
   - `"minecraft:enchantments": {"levels":{"mending":1}}`
 
-## Advancements
+### Advancements
 
 Tracks when a player scores an advancement. This is mainly useful for modifying the objective's `"display"` properties.
 
 - `"type": "advancement"`
 - `"advancement": "minecraft:story/mine_stone"`: The [advancement identifier](https://minecraft.wiki/w/Advancement#List_of_advancements) that should capture the objective when obtained.
 
-## Statistics
+### Statistics
 
 Tracks a player's statistics.
 
@@ -63,7 +86,7 @@ Tracks a player's statistics.
 - [`"min": <number-source>`](#number-source): The minimum statistic value required to earn this objective (default: 1)
 - [`"max": <number-source>`](#number-source): The maximum statistic value required to keep this objective (default: unset)
 
-## Scoreboard Objectives
+### Scoreboard Objectives
 
 Tracks a particular scoreboard entry for each player. This may be useful for more complicated goals that need their own
 logic written in a datapack.
@@ -80,30 +103,40 @@ If your scoreboard represents a statistic/counter, using `"relative": true` mean
 Otherwise, you should use the `on_playing` [function tag](./functions) to reset all scoreboard values at the start of the game.
 :::
 
-## One Of ...
+### One Of ...
 
 Tracks if a player obtains any of the listed objectives. 
 
 - `"type": "one_of"`
 - `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player may obtain any of these to complete this objective.
 
-## All Of ...
+### All Of ...
 
 Tracks if a player has obtained _all_ the listed objectives.
 
 - `"type": "all_of"`
 - `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player must obtain all of these to complete this objective.
 
-## Inverse / Never Obtain ...
+### Inverse / Never Obtain ...
 
 Tracks if a player has _never_ obtained an objective. For example, this goal will be taken away if a player picks up wheat seeds at any point.
 
 - `"type": "inverse"`
 - `"objective": "minecraft:wheat_seeds"`: The objective that should be inverted.
 
-## Opponent Obtains ...
+### Opponent Obtains ...
 
 Tracks if any opposing team obtains an objective. For example, when a team obtains wheat seeds, every other team will capture this objective.
 
 - `"type": "opponent"`
 - `"objective": "minecraft:wheat_seeds"`: The objective that should be tracked.
+
+## Number Source
+
+Some of these JSON properties describe a "Number Source", which can be one of three values:
+- Constant: `"count": 8` - providing a direct number to use for the value
+- Options: `"count": [8, 16, 32]` - providing an array of options from which a number will be randomly chosen
+- Randomized: `"count": { ... }` - providing a min/max from which a random number will be generated
+  - `"type": "random"`
+  - `"min": 8`: The lower boundary for the item count (inclusive)
+  - `"max": 32`: The upper boundary for the item count (inclusive)

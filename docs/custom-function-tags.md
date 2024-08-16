@@ -1,29 +1,38 @@
 ---
-description: Configure custom BINGO functions to run on a Minecraft server.
+description: Configure custom BINGO functions to run in your Minecraft datapack.
 ---
 
-# Functions
+# Function Tags
 
-Several `.mcfunction` files are available in the mod's config folder. These can be used to run commands on certain game events, such as when a round starts or ends.
+The mod provides a few events for datapacks to use as [function tags](https://minecraft.wiki/w/Tag#Function_tags).
 
-```txt{5-9}
-🗀 config/
- └ 🗀 yet-another-minecraft-bingo/
-   ├ config.json
-   └ commands/
-     ├ on_pregame.mcfunction
-     ├ on_loading.mcfunction
-     ├ on_countdown.mcfunction
-     ├ on_playing.mcfunction
-     └ on_postgame.mcfunction
-🗀 mods/
-🗀 world/
-server.properties
+To create a function that runs on an event, you'll need both a function file and a `tags/.../[event].json` file that references its ID. For example:
+
+::: code-group
+
+```mcfunction [mynamespace/functions/reset_all_my_scoreboards.mcfunction]
+scoreboard players reset * [...]
 ```
 
-For example, `on_playing` can be used to set certain gamerules that you might want during a round - e.g. `gamerule announceAdvancements false`.
+:::
 
-These events are also available to datapacks in the form of [function tags](https://minecraft.wiki/w/Tag#Function_tags).
+::: code-group
+
+```json [yet-another-minecraft-bingo/tags/functions/on_playing.json]
+{
+  "values": [
+    "mynamespace:reset_all_my_scoreboards"
+  ]
+}
+```
+
+:::
+
+
+::: info
+While the function can be wherever you want (replacing `mynamespace` with something specific to your datapack), it's important that the
+JSON tags file is under the `yet-another-minecraft-bingo` namespace. Otherwise, the mod won't be able to find it!
+:::
 
 ## `#yet-another-minecraft-bingo:on_pregame`
 
@@ -40,6 +49,10 @@ This runs once the game has teleported players to their spawnpoints, just before
 ## `#yet-another-minecraft-bingo:on_playing`
 
 This runs at the end of the countdown, when the game is started.
+
+::: tip
+It is recommended to use `on_playing` to reset any scoreboards or advancements that your datapack includes.
+:::
 
 ## `#yet-another-minecraft-bingo:on_postgame`
 
