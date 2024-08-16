@@ -80,8 +80,6 @@
     "A": [
         "minecraft:ancient_debris",
         "minecraft:bamboo",
-        "minecraft:bamboo_block",
-        "minecraft:bamboo_planks",
         "minecraft:beehive",
         "minecraft:blaze_powder",
         "minecraft:blaze_rod",
@@ -90,7 +88,6 @@
         "minecraft:cherry_log",
         "minecraft:cherry_planks",
         "minecraft:cherry_sapling",
-        "minecraft:cobweb",
         "minecraft:cocoa_beans",
         "minecraft:comparator",
         "minecraft:cookie",
@@ -102,8 +99,6 @@
         "minecraft:diamond_horse_armor",
         "minecraft:disc_fragment_5",
         "minecraft:echo_shard",
-        "minecraft:emerald",
-        "minecraft:emerald_block",
         "minecraft:enchanted_book",
         "minecraft:enchanted_golden_apple",
         "minecraft:enchanting_table",
@@ -114,10 +109,8 @@
         "minecraft:goat_horn",
         "minecraft:golden_horse_armor",
         "minecraft:heart_of_the_sea",
-        "minecraft:honey_block",
         "minecraft:honey_bottle",
         "minecraft:honeycomb",
-        "minecraft:honeycomb_block",
         "minecraft:iron_horse_armor",
         "minecraft:mangrove_log",
         "minecraft:mangrove_planks",
@@ -181,7 +174,7 @@
         "minecraft:chest_minecart",
         "minecraft:clock",
         "minecraft:coast_armor_trim_smithing_template",
-        "minecraft:cod_bucket",
+        "minecraft:cobweb",
         "minecraft:compass",
         "minecraft:cooked_rabbit",
         "minecraft:crafter",
@@ -216,7 +209,6 @@
         "minecraft:jukebox",
         "minecraft:lantern",
         "minecraft:lapis_lazuli",
-        "minecraft:lava_bucket",
         "minecraft:lead",
         "minecraft:lightning_rod",
         "minecraft:lily_pad",
@@ -247,14 +239,11 @@
         "minecraft:red_sand",
         "minecraft:red_sandstone",
         "minecraft:redstone",
-        "minecraft:redstone_block",
         "minecraft:redstone_lamp",
         "minecraft:redstone_torch",
         "minecraft:repeater",
         "minecraft:rooted_dirt",
-        "minecraft:salmon_bucket",
         "minecraft:sea_pickle",
-        "minecraft:shears",
         "minecraft:shroomlight",
         "minecraft:slime_ball",
         "minecraft:slime_block",
@@ -305,6 +294,9 @@
         "minecraft:brown_mushroom",
         "minecraft:brush",
         "minecraft:bucket",
+        "minecraft:cod_bucket",
+        "minecraft:salmon_bucket",
+        "minecraft:lava_bucket",
         "minecraft:calcite",
         "minecraft:campfire",
         "minecraft:carrot",
@@ -319,6 +311,7 @@
         "minecraft:dark_oak_sapling",
         "minecraft:decorated_pot",
         "minecraft:dripstone_block",
+        "minecraft:emerald",
         "minecraft:feather",
         "minecraft:fern",
         "minecraft:fire_charge",
@@ -356,6 +349,7 @@
         "minecraft:red_mushroom",
         "minecraft:salmon",
         "minecraft:seagrass",
+        "minecraft:shears",
         "minecraft:shield",
         "minecraft:short_grass",
         "minecraft:snow",
@@ -583,8 +577,7 @@
             "minecraft:beetroot_soup"
         ],
         [
-            "minecraft:copper_block",
-            "minecraft:cut_copper",
+            "minecraft:raw_copper",
             "minecraft:copper_ingot"
         ],
         [
@@ -598,18 +591,6 @@
             "minecraft:rabbit_hide",
             "minecraft:rabbit_foot",
             "minecraft:rabbit_stew"
-        ],
-        [
-            "minecraft:raw_iron_block",
-            "minecraft:raw_iron"
-        ],
-        [
-            "minecraft:raw_copper_block",
-            "minecraft:raw_copper"
-        ],
-        [
-            "minecraft:raw_gold_block",
-            "minecraft:raw_gold"
         ],
         [
             "minecraft:slime_ball",
