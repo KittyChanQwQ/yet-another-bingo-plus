@@ -6,7 +6,6 @@ import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.map.CardTile
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
@@ -70,7 +69,8 @@ class OneOfObjectiveManager(
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
 
             val players = objectiveService.getPlayers(
-                playersHolding = playersHolding
+                playersHolding = playersHolding,
+                players = objective.players,
             )
 
             val teams = objectiveService.getTeams(

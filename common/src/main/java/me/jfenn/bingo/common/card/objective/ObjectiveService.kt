@@ -120,19 +120,28 @@ class ObjectiveService(
 
     fun getPlayers(
         playersHolding: Map<UUID, BingoObjectiveCapture>,
+        players: Map<UUID, BingoObjectiveCapture>,
+        shouldRetainCaptures: Boolean = !options.isInventoryMode,
     ): Map<UUID, BingoObjectiveCapture> {
+        // Once captured, most objectives can only be lost if isInventoryMode=true
+        // therefore, combine both players & playersHolding before updating the objective
+        val combinedPlayersHolding = when {
+            shouldRetainCaptures -> playersHolding + players
+            else -> playersHolding
+        }
+
         return when {
             options.isLockoutMode -> {
                 // oldest capture first
-                val teamHolding = playersHolding.minByOrNull { it.value.instant }
+                val teamHolding = combinedPlayersHolding.minByOrNull { it.value.instant }
                     ?.value?.team
                     ?.let { state.teams[it] }
 
                 if (teamHolding != null)
-                    playersHolding.filter { teamHolding.players.contains(it.value.player) }.toMutableMap()
+                    combinedPlayersHolding.filter { teamHolding.players.contains(it.value.player) }.toMutableMap()
                 else mutableMapOf()
             }
-            else -> playersHolding.entries
+            else -> combinedPlayersHolding.entries
                 .sortedBy { it.value.instant } // oldest captures first
                 .distinctBy { it.value.team }
                 .toMap()

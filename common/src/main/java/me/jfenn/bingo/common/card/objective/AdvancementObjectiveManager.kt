@@ -8,9 +8,7 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.map.CardTile
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
-import me.jfenn.bingo.common.team.OfflinePlayerCache
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -22,8 +20,6 @@ class AdvancementObjectiveManager(
     private val server: MinecraftServer,
     private val advancementManager: IAdvancementManager,
     private val itemStackFactory: IItemStackFactory,
-    private val state: BingoState,
-    private val offlinePlayerCache: OfflinePlayerCache,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
@@ -123,7 +119,9 @@ class AdvancementObjectiveManager(
                 }
 
             val players = objectiveService.getPlayers(
-                playersHolding = playersHolding
+                playersHolding = playersHolding,
+                players = objective.players,
+                shouldRetainCaptures = false
             )
 
             val teams = objectiveService.getTeams(

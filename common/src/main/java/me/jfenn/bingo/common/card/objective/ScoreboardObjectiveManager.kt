@@ -126,7 +126,9 @@ class ScoreboardObjectiveManager(
                 }
 
             val players = objectiveService.getPlayers(
-                playersHolding = playersHolding
+                playersHolding = playersHolding,
+                players = objective.players,
+                shouldRetainCaptures = false,
             )
 
             val teams = objectiveService.getTeams(

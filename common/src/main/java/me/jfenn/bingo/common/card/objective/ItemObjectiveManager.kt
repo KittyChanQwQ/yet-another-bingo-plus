@@ -9,7 +9,6 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.server.MinecraftServer
@@ -20,7 +19,6 @@ import kotlin.math.max
 class ItemObjectiveManager(
     private val log: Logger,
     private val server: MinecraftServer,
-    private val options: BingoOptions,
     private val itemStackFactory: IItemStackFactory,
     private val playerManager: IPlayerManager,
     private val objectiveRegistry: ObjectiveRegistryState,
@@ -187,14 +185,9 @@ class ItemObjectiveManager(
         }
 
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
-            // Unlike other objectives, item captures can only be lost if isInventoryMode=true
-            // therefore, combine both players & playersHolding before updating the objective
-            val combinedPlayersHolding = when {
-                options.isInventoryMode -> objective.players
-                else -> objective.playersHolding + objective.players
-            }
             val players = objectiveService.getPlayers(
-                playersHolding = combinedPlayersHolding,
+                playersHolding = objective.playersHolding,
+                players = objective.players,
             ).toMutableMap()
             val teams = objectiveService.getTeams(
                 players = players
