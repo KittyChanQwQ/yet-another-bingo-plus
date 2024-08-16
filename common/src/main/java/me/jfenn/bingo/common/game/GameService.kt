@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.game
 
 import kotlinx.datetime.Clock
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -28,20 +29,26 @@ class GameService(
     private val chestService: ChestService,
     private val teamService: TeamService,
     private val configService: ConfigService,
-    private val textProvider: TextProvider,
+    private val cardService: CardService,
+    private val text: TextProvider,
 ) {
 
     fun start(
-        sendFeedback: (StringKey) -> Unit = {},
+        sendFeedback: (Text) -> Unit = {},
         allowSpectators: Boolean = false,
     ): Boolean {
+        // Ensure that all selected tier lists are supported
+        if (!cardService.isSupported(sendFeedback)) {
+            return false
+        }
+
         val playersWithoutATeam = server.playerManager.playerList
             .filter { teamService.getPlayerTeam(it) == null }
 
         if (playersWithoutATeam.isNotEmpty() && !allowSpectators) {
             // If there's more than one player, teams need to be set up manually!
             if (server.playerManager.playerList.size > 1) {
-                sendFeedback(StringKey.CommandStartMissingTeams)
+                sendFeedback(text.string(StringKey.CommandStartMissingTeams))
                 return false
             }
 
@@ -53,12 +60,12 @@ class GameService(
 
         // if the game has already been started, ignore
         if (state.state != GameState.PREGAME) {
-            sendFeedback(StringKey.CommandStartAlreadyStarted)
+            sendFeedback(text.string(StringKey.CommandStartAlreadyStarted))
             return false
         }
 
         if (!options.isValid()) {
-            sendFeedback(StringKey.CommandStartInvalidDistribution)
+            sendFeedback(text.string(StringKey.CommandStartInvalidDistribution))
             return false
         }
 
@@ -69,10 +76,10 @@ class GameService(
             val team = teamService.getPlayerTeam(player)
             player.networkHandler.sendPacket(
                 TitleS2CPacket(
-                    textProvider.string(StringKey.GameAnnounceBingo).formatted(team?.formatting ?: Formatting.WHITE)
+                    text.string(StringKey.GameAnnounceBingo).formatted(team?.formatting ?: Formatting.WHITE)
                 )
             )
-            player.networkHandler.sendPacket(SubtitleS2CPacket(textProvider.string(StringKey.GameAnnounceStarting)))
+            player.networkHandler.sendPacket(SubtitleS2CPacket(text.string(StringKey.GameAnnounceStarting)))
         }
 
         if (state.isLobbyMode) {
@@ -106,23 +113,23 @@ class GameService(
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
 
             Text.literal("  ")
-                .append(textProvider.string(StringKey.GameStart))
+                .append(text.string(StringKey.GameStart))
                 .formatted(Formatting.GREEN)
                 .also { yield(it) }
 
             Text.literal("  ")
-                .append(textProvider.string(StringKey.ScoreboardMode, options.formatGameMode().map { textProvider.string(it) }.joinText()))
+                .append(text.string(StringKey.ScoreboardMode, options.formatGameMode().map { text.string(it) }.joinText()))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
             Text.literal("  ")
-                .append(textProvider.string(StringKey.ScoreboardFeatures, options.formatFeatures().map { textProvider.string(it) }.joinText()))
+                .append(text.string(StringKey.ScoreboardFeatures, options.formatFeatures().map { text.string(it) }.joinText()))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
             Text.empty()
                 .append("  ")
-                .append(textProvider.string(StringKey.ScoreboardGoal, options.cardGoal.format(textProvider)))
+                .append(text.string(StringKey.ScoreboardGoal, options.cardGoal.format(text)))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 

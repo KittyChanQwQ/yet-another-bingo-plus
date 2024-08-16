@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.card
 
+import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.tierlist.TierLabel
@@ -9,12 +10,18 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import kotlin.math.ceil
 import kotlin.random.Random
+import kotlin.reflect.full.declaredMemberProperties
 
 class CardService(
     private val log: Logger,
@@ -25,7 +32,47 @@ class CardService(
     private val tierListService: TierListState,
     private val objectiveManager: BingoObjectiveManager,
     private val tagExpansionService: TagExpansionService,
+    private val text: TextProvider,
 ) {
+    fun isSupported(err: (Text) -> Unit): Boolean =
+        options.tierLists.keys.all { isListSupported(it, err) }
+
+    private fun isListSupported(name: String, err: (Text) -> Unit): Boolean {
+        val list = tierListService.tierLists[name] ?: return true
+        val listName by lazy { TierListState.title(name).formatted(Formatting.BLUE) }
+        val reqs by list::requirements
+
+        var isSupported = true
+
+        val teams = state.getRegisteredTeams()
+        if (teams.size !in reqs.numTeams) {
+            err(text.string(StringKey.CommandStartTierListRecommendsNumTeams, listName, reqs.numTeams.formatString()))
+            isSupported = false
+        }
+
+        if (teams.any { it.players.size !in reqs.numPlayersPerTeam }) {
+            err(text.string(StringKey.CommandStartTierListRecommendsPlayersPerTeam, listName, reqs.numPlayersPerTeam.formatString()))
+            isSupported = false
+        }
+
+        // TODO: Validate reqs.onlyDefaultTeams if more teams are added
+
+        for (prop in BingoOptions::class.declaredMemberProperties) {
+            val reqProp = reqs.options[prop.name] ?: continue
+            val propSerializer = serializer(prop.returnType)
+
+            val propValue = prop.get(options)
+            val reqPropValue = json.decodeFromJsonElement(propSerializer, reqProp)
+
+            if (propValue != reqPropValue) {
+                err(text.string(StringKey.CommandStartTierListRecommends, listName, "${prop.name}=$reqPropValue"))
+                isSupported = false
+            }
+        }
+
+        return isSupported
+    }
+
     fun shuffleCard() {
         // Change the BINGO seed to a new value
         state.seed = Random.nextLong()

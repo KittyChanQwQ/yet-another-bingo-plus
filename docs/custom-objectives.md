@@ -5,8 +5,8 @@ By default, any advancement or item in the game can be used directly in a tier l
 However, you might want a particular item or objective to have different behavior when it appears on a card. This
 includes requiring specific NBT data, a certain quantity of an item, multiple items at once, and so on.
 
-This can be achieved by placing custom `.json` objectives in a
-`data / <namespace> / yet-another-minecraft-bingo / objectives / <goal>.json` file within a datapack.
+To achieve this, you can place custom `.json` objectives in a datapack, under
+`data / <namespace> / yet-another-minecraft-bingo / objectives / <goal>.json`.
 
 To see an example, the built in ["challenge"](https://gitlab.com/horrific-tweaks/bingo/-/tree/main/common/src/main/resources/data/yet-another-minecraft-bingo/yet-another-minecraft-bingo/objectives/challenge)
 objectives can be used as a reference - which are included in [challenge.tierlist.json](https://gitlab.com/horrific-tweaks/bingo/-/blob/main/common/src/main/resources/yet-another-minecraft-bingo/challenge.tierlist.json).
@@ -23,7 +23,7 @@ Some of these JSON properties describe a "Number Source", which can be one of th
 
 ## Objective JSON
 
-These are the base properties that exist on every objective:
+These are common properties that can be specified on any objective:
 
 - `"type": "..."`: The type of objective: `item`, `one_of`, `all_of`, `inverse`, or `opponent`.
 - `"display": {}`: Alters what name or item the objective shows when displayed on the card
@@ -33,9 +33,11 @@ These are the base properties that exist on every objective:
   - `"itemComponents": {}`: Sets post-1.20.6 JSON-encoded [data components](https://minecraft.wiki/w/Data_component_format#List_of_components) on the item
     - `"minecraft:enchantments": {"levels":{"mending":1}}`
   - `"decoration": "NONE"`: Applies a decoration to the objective's tile on the card. One of: `ADVANCEMENT`, `MULTI_ITEM`, `FORBIDDEN`, `NONE`.
-- `"conflictsWith: ["minecraft:dried_kelp"]`: A list of conflicting objectives that should never appear on the same card as this objective.
+- `"conflictsWith: ["minecraft:dried_kelp"]`: A list of conflicting objectives that should never appear on the same card as this one.
  
 ## Items
+
+Tracks when an item enters the player's inventory.
 
 - `"type": "item"`
 - `"item": "minecraft:kelp"`: The item that the player needs to pick up for this objective
@@ -46,45 +48,62 @@ These are the base properties that exist on every objective:
 
 ## Advancements
 
+Tracks when a player scores an advancement. This is mainly useful for modifying the objective's `"display"` properties.
+
 - `"type": "advancement"`
 - `"advancement": "minecraft:story/mine_stone"`: The [advancement identifier](https://minecraft.wiki/w/Advancement#List_of_advancements) that should capture the objective when obtained.
 
 ## Statistics
+
+Tracks a player's statistics.
 
 - `"type": "stats"`
 - `"statType": "minecraft:custom`: Specifies the [statistic type](https://minecraft.wiki/w/Statistics).
 - `"statName": "minecraft:open_barrel"`: The [statistic name](https://minecraft.wiki/w/Statistics). Optional - if omitted, uses the sum of all statistics under the type.
 - [`"min": <number-source>`](#number-source): The minimum statistic value required to earn this objective (default: 1)
 - [`"max": <number-source>`](#number-source): The maximum statistic value required to keep this objective (default: unset)
-- `"relative": true`: Measures the increase in this statistic since the start of the game, rather than its actual value. (default: true)
-  - _If false, you should ensure that this cannot be scored in the lobby or before the game has started._
 
 ## Scoreboard Objectives
+
+Tracks a particular scoreboard entry for each player. This may be useful for more complicated goals that need their own
+logic written in a datapack.
 
 - `"type": "scoreboard"`
 - `"scoreboardName": "your_datapack_objective"`: The name of the [scoreboard objective](https://minecraft.wiki/w/Scoreboard) that should be tracked.
 - [`"min": <number-source>`](#number-source): The minimum scoreboard value required to earn this objective (default: 1)
 - [`"max": <number-source>`](#number-source): The maximum scoreboard value required to keep this objective (default: unset)
 - `"relative": false`: Measures the increase in this scoreboard since the start of the game, rather than its actual value. (default: false)
-  - If your scoreboard represents a statistic/counter, this can avoid needing to reset its value when the game starts.
-    Otherwise, you should use the bingo [function tags](./functions) to reset all scoreboard values when `on_playing` is run.
+
+::: info
+If your scoreboard represents a statistic/counter, using `"relative": true` means that you can avoid resetting its value when the game starts. The game will track its change in value automatically.
+
+Otherwise, you should use the `on_playing` [function tag](./functions) to reset all scoreboard values at the start of the game.
+:::
 
 ## One Of ...
+
+Tracks if a player obtains any of the listed objectives. 
 
 - `"type": "one_of"`
 - `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player may obtain any of these to complete this objective.
 
 ## All Of ...
 
+Tracks if a player has obtained _all_ the listed objectives.
+
 - `"type": "all_of"`
 - `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player must obtain all of these to complete this objective.
 
 ## Inverse / Never Obtain ...
 
+Tracks if a player has _never_ obtained an objective. For example, this goal will be taken away if a player picks up wheat seeds at any point.
+
 - `"type": "inverse"`
-- `"objective": "minecraft:wheat_seeds"`: The objective that should be inverted. For example, this goal will be achieved by every team until they capture wheat seeds.
+- `"objective": "minecraft:wheat_seeds"`: The objective that should be inverted.
 
 ## Opponent Obtains ...
 
+Tracks if any opposing team obtains an objective. For example, when a team obtains wheat seeds, every other team will capture this objective.
+
 - `"type": "opponent"`
-- `"objective": "minecraft:wheat_seeds"`: The objective that should be tracked. For example, when a team obtains wheat seeds, every other team will capture this objective.
+- `"objective": "minecraft:wheat_seeds"`: The objective that should be tracked.

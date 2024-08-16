@@ -72,14 +72,14 @@ class TierListManager(
 
             if (configs.isEmpty()) continue
             var config = TierListConfig.EMPTY
-            configs.forEach { config = config.combine(it) }
+            configs.forEach { config = it.combine(config) }
 
             newTierLists[name] = config
         }
 
         for ((name, config) in readTierListFiles()) {
             val otherConfig = newTierLists[name] ?: TierListConfig.EMPTY
-            newTierLists[name] = otherConfig.combine(config)
+            newTierLists[name] = config.combine(otherConfig)
         }
 
         tierLists.tierLists = newTierLists

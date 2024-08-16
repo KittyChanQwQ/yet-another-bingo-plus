@@ -27,7 +27,7 @@ class BingoStartCommand(
                         sendFeedback = { feedback ->
                             sendMessage(
                                 Text.literal("⚠  ")
-                                    .append(textProvider.string(feedback).formatted(Formatting.ITALIC))
+                                    .append(feedback.copy().formatted(Formatting.ITALIC))
                                     .formatted(Formatting.YELLOW),
                             )
                         }

@@ -142,9 +142,9 @@ fun MenuComponent.registerMenuPage(
     ) { player ->
         // Start the game!
         gameService.start(
-            sendFeedback = { key ->
+            sendFeedback = { feedback ->
                 Text.literal("⚠  ")
-                    .append(text.string(key).formatted(Formatting.ITALIC))
+                    .append(feedback.copy().formatted(Formatting.ITALIC))
                     .formatted(Formatting.YELLOW)
                     .also { player.sendMessage(it) }
             },
