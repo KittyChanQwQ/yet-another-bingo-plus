@@ -45,10 +45,11 @@ export default defineConfig({
     sidebar: [
       {
         text: 'Introduction',
+        link: '/what-is-bingo',
         collapsed: false,
         items: [
-          { text: 'What is Minecraft BINGO?', link: '/what-is-bingo' },
           { text: 'Getting Started', link: '/getting-started' },
+          { text: 'Item Distribution', link: '/item-distribution' },
           { text: 'Command Cheatsheet', link: '/command-cheatsheet' },
         ],
       },
@@ -63,15 +64,12 @@ export default defineConfig({
       },
       {
         text: 'Configuration',
+        link: '/config',
         collapsed: false,
         items: [
-          { text: 'Config Files', link: '/config', items: [
-            { text: 'config.json', link: '/config-extra' },
-            { text: 'Functions', link: '/functions' }
-          ] },
-          { text: 'Tier List Editor', link: '/tier-editor', items: [
-            { text: 'Item Distribution', link: '/item-distribution' },
-          ] },
+          { text: 'config.json', link: '/config-extra' },
+          { text: 'Functions', link: '/functions' },
+          { text: 'Tier List Editor', link: '/tier-editor' },
           { text: 'Item Images', link: '/item-images' },
         ],
       },
