@@ -2,9 +2,11 @@
   "type": "one_of",
   "display": {
     "name": "Any Music Disc",
-    "item": "minecraft:music_disc_cat"
+    "item": "minecraft:music_disc_cat",
+    "lore": []
   },
   "objectives": [
-    "#minecraft:music_discs"
+    "#minecraft:music_discs",
+    "#c:music_discs"
   ]
 }

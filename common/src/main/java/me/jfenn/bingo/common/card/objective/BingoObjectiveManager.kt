@@ -13,12 +13,26 @@ class BingoObjectiveManager(
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
+        // remove an "advancement!" or "item!" prefix from the id
+        val type = id.substringBefore('!')
+        val identifier = id.substringAfter('!')
+
+        if (type == "advancement") {
+            return providers.find { it is AdvancementObjectiveManager }
+                ?.find(identifier, state)
+        }
+
+        if (type == "item") {
+            return providers.find { it is ItemObjectiveManager }
+                ?.find(identifier, state)
+        }
+
         for (provider in providers) {
-            val goal = provider.find(id, state) ?: continue
+            val goal = provider.find(identifier, state) ?: continue
             return goal
         }
 
-        log.error("[BingoGoalProvider] Could not resolve objective id '$id'")
+        log.error("[BingoGoalProvider] '$identifier' could not be resolved by any objective provider.")
         return null
     }
 

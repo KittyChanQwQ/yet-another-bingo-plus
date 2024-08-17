@@ -67,8 +67,10 @@ class ItemObjectiveManager(
         val isNbtSuccessful = stack.setNbtString(objective.itemNbt)
         val isComponentsSuccessful = objective.itemComponents?.let { stack.setComponentsString(it) } ?: true
 
-        if (!isNbtSuccessful || !isComponentsSuccessful)
+        if (!isNbtSuccessful || !isComponentsSuccessful) {
+            log.error("[ItemObjectiveManager] Item ${objective.itemId} NBT is not in a valid format")
             return false
+        }
 
         objective.itemStack = stack
         objective.itemCount = objective.itemCount.coerceIn(1, stack.maxCount)

@@ -9,8 +9,10 @@ import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
+import org.slf4j.Logger
 
 class AllOfObjectiveManager(
+    private val log: Logger,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
@@ -26,6 +28,11 @@ class AllOfObjectiveManager(
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
         val data = objectiveRegistryState.objectives[id] as? ObjectiveData.AllOf
             ?: return null
+
+        if (data.objectives.isEmpty()) {
+            log.error("[AllOfObjectiveManager] $id 'objectives' cannot be empty!")
+            return null
+        }
 
         return BingoObjective.AllOfEntry(
             id = id,

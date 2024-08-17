@@ -4,6 +4,7 @@ import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.card.tierlist.TierListConfig
 import me.jfenn.bingo.common.card.tierlist.TierListEntry
 import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.config.BingoOptions
@@ -34,6 +35,32 @@ class CardService(
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
 ) {
+    init {
+        validateLists()
+    }
+
+    private fun validateLists() {
+        tierListService.tierLists.entries
+            .forEach { (name, list) -> validateList(name, list) }
+    }
+
+    private fun validateList(name: String, list: TierListConfig) {
+        log.info("[CardService] Validating list $name.tierlist.json...")
+        val state = CardGeneratorState(Random.Default)
+        for (entry in list.expandTags(tagExpansionService).let { it.s + it.a + it.b + it.c + it.d }) {
+            if (entry is TierListEntry.SingleEntry) {
+                val map = createObjectives(entry.item, state)
+                if (map == null) {
+                    log.error("[CardService] Could not find '${entry.item}' in tier list $name.tierlist.json")
+                }
+            } else {
+                log.error("[CardService] Tier list $name.tierlist.json contains unsupported group entries!")
+                log.error("  If this is a built-in list, deleting it from your config folder will allow the mod to recreate it.")
+                log.error("  If this is a custom list you've created, you'll need to convert it to a datapack to use 'one_of' objectives: https://minecraft.horrific.dev/bingo/custom-objectives")
+            }
+        }
+    }
+
     fun isSupported(err: (Text) -> Unit): Boolean =
         options.tierLists.keys.all { isListSupported(it, err) }
 
@@ -210,7 +237,7 @@ class CardService(
             val tierLists = tiers.shuffled(random)
 
             fun createObjectivePair(entry: TierListEntry.SingleEntry): Pair<String, Map<String, BingoObjective>>? {
-                val objectiveId = entry.item.substringAfterLast("!")
+                val objectiveId = entry.item
                 val objectiveMap = createObjectives(objectiveId, state)
                     ?: return null
 
@@ -320,11 +347,7 @@ class CardService(
         state: CardGeneratorState,
         objectives: MutableMap<String, BingoObjective> = mutableMapOf(),
     ): Map<String, BingoObjective>? {
-        val objective = objectiveManager.find(objectiveId, state)
-        if (objective == null) {
-            log.warn("[CardService] Could not locate objective '$objectiveId'")
-            return null
-        }
+        val objective = objectiveManager.find(objectiveId, state) ?: return null
 
         objectives[objectiveId] = objective
 
