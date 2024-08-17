@@ -35,13 +35,9 @@ class GameService(
 
     fun start(
         sendFeedback: (Text) -> Unit = {},
+        ignoreWarnings: Boolean = false,
         allowSpectators: Boolean = false,
     ): Boolean {
-        // Ensure that all selected tier lists are supported
-        if (!cardService.isSupported(sendFeedback)) {
-            return false
-        }
-
         val playersWithoutATeam = server.playerManager.playerList
             .filter { teamService.getPlayerTeam(it) == null }
 
@@ -57,6 +53,10 @@ class GameService(
                 teamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
             }
         }
+
+        // Ensure that all selected tier lists are supported
+        if (!ignoreWarnings && !cardService.isSupported(sendFeedback))
+            return false
 
         // if the game has already been started, ignore
         if (state.state != GameState.PREGAME) {
