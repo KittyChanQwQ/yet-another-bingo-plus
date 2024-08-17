@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
@@ -41,6 +42,7 @@ class CardService(
 
     private fun validateLists() {
         tierListService.tierLists.entries
+            .filter { (_, list) -> Build.isDebug || list.shouldValidate }
             .forEach { (name, list) -> validateList(name, list) }
     }
 

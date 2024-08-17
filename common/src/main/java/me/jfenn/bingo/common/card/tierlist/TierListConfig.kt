@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.card.tierlist
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonObject
 import me.jfenn.bingo.common.card.TagExpansionService
 import java.util.*
@@ -22,6 +23,9 @@ data class TierListConfig(
     val groups: List<Set<String>> = emptyList(),
     val requirements: Requirements = Requirements(),
 ) {
+
+    @Transient
+    var shouldValidate = true
 
     @Serializable
     class Requirements(

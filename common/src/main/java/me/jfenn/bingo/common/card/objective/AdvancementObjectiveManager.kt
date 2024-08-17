@@ -41,18 +41,24 @@ class AdvancementObjectiveManager(
                     advancementId = data.advancement,
                 )
             }
-            ?.takeIf { init(it) }
+            ?.takeIf { init(it, isDataObjective = true) }
             ?.let { return it }
 
         // If the objective is a direct advancement identifier
         return BingoObjective.AdvancementEntry(id, advancementId = id).takeIf { init(it) }
     }
 
-    private fun init(goal: BingoObjective): Boolean {
+    private fun init(goal: BingoObjective, isDataObjective: Boolean = false): Boolean {
         if (goal !is BingoObjective.AdvancementEntry) return false
 
         val advancement = advancementManager.getAdvancement(server, goal.advancementId)
-            ?: return false
+
+        if (advancement == null) {
+            if (isDataObjective) {
+                log.error("[AdvancementObjectiveManager] ${goal.id}: Advancement ${goal.advancementId} could not be found.")
+            }
+            return false
+        }
 
         goal.advancement = advancement
 

@@ -46,7 +46,7 @@ import me.jfenn.bingo.common.team.TeamController
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.*
-import me.jfenn.bingo.generated.BINGO_VERSION
+import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.impl.ServerCloseEvent
 import me.jfenn.bingo.integrations.ChunkyIntegration
 import me.jfenn.bingo.integrations.PermissionsIntegration
@@ -216,7 +216,7 @@ fun Koin.commonInit() {
     get<BingoCommand>()
     get<BingoCardCommand>()
     get<BingoCommands>()
-    if (BINGO_VERSION.contains("alpha") || BINGO_VERSION.contains("beta"))
+    if (Build.isDebug)
         get<BingoDebugCommand>()
     get<BingoLobbyCommand>()
     get<BingoModeCommand>()

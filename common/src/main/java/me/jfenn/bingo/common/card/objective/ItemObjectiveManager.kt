@@ -42,7 +42,7 @@ class ItemObjectiveManager(
                     itemCount = data.count.resolve(state),
                 )
             }
-            ?.takeIf { init(it) }
+            ?.takeIf { init(it, isDataObjective = true) }
             ?.let { return it }
 
         // If the objective is a direct item identifier
@@ -52,7 +52,7 @@ class ItemObjectiveManager(
         ).takeIf { init(it) }
     }
 
-    private fun init(objective: BingoObjective): Boolean {
+    private fun init(objective: BingoObjective, isDataObjective: Boolean = false): Boolean {
         if (objective !is BingoObjective.ItemEntry) return false
 
         val stack = try {
@@ -61,6 +61,9 @@ class ItemObjectiveManager(
 
             itemStackFactory.createStack(objective.itemId, count = objective.itemCount)
         } catch (e: Throwable) {
+            if (isDataObjective) {
+                log.error("[ItemObjectiveManager] ${objective.id}: Item ${objective.itemId} could not be found.")
+            }
             return false
         }
 

@@ -32,7 +32,7 @@ class BingoObjectiveManager(
             return goal
         }
 
-        log.error("[BingoGoalProvider] '$identifier' could not be resolved by any objective provider.")
+        log.debug("[BingoGoalProvider] '$identifier' could not be resolved by any objective provider.")
         return null
     }
 

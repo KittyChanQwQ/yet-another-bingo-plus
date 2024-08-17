@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.config
 
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.card.tierlist.TierListManager
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger
@@ -194,10 +195,9 @@ class MigrationHandler(
         configService.playerConfig = configService.playerConfig.copy()
 
         // - tierlist files should be re-generated on each launch if removed:
-        Config.readStream("advancements.tierlist.json").close()
-        Config.readStream("all_items.tierlist.json").close()
-        Config.readStream("challenge.tierlist.json").close()
-        Config.readStream("simplified.tierlist.json").close()
+        for (list in TierListManager.BUILTIN_TIER_LISTS) {
+            Config.readStream(list + TierListManager.FILE_SUFFIX).close()
+        }
 
         if (log.isDebugEnabled) {
             Config.configDir.resolve(MOD_ID_BINGO)
