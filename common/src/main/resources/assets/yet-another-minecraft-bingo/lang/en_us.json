@@ -203,6 +203,7 @@
   "bingo.command.start.tier_list_recommends": "Tier list %s recommends %s. (use '/bingo start ignore_warnings' to ignore)",
   "bingo.command.start.tier_list_recommends.num_teams": "Tier list %s recommends %s teams. (use '/bingo start ignore_warnings' to ignore)",
   "bingo.command.start.tier_list_recommends.players_per_team": "Tier list %s recommends %s players per team. (use '/bingo start ignore_warnings' to ignore)",
+  "bingo.command.start.tier_list_missing_objective": "Tier list %s is unable to find '%s'. This could be due to a missing mod or datapack.",
   "bingo.command.start.invalid_distribution": "Item distribution must add up to 25!",
   "bingo.command.start.missing_teams": "Some players have not picked a team! Run '/bingo shuffleteams' to assign teams. Use '/bingo start ignore_warnings' or sneak+click to ignore.",
   "bingo.command.start.already_started": "The game has already been started!",

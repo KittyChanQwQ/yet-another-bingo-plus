@@ -55,6 +55,14 @@ class CardService(
             isSupported = false
         }
 
+        val missingObjective = reqs.objectives.firstOrNull {
+            objectiveManager.find(it, CardGeneratorState(Random.Default)) == null
+        }
+        if (missingObjective != null) {
+            err(text.string(StringKey.CommandStartTierListMissingObjective, listName, missingObjective))
+            isSupported = false
+        }
+
         // TODO: Validate reqs.onlyDefaultTeams if more teams are added
 
         for (prop in BingoOptions::class.declaredMemberProperties) {

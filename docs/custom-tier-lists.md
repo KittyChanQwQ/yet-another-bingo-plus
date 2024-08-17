@@ -65,6 +65,9 @@ To solve this, you can use `"requirements"` to specify which settings your list 
     // Min/max number of players that must be on each team
     "minPlayersPerTeam": 1,
     "maxPlayersPerTeam": 8,
+    // Require that certain objectives are successfully resolved
+    // - by default, the mod ignores any missing objectives (such as modded items or custom advancements)
+    "objectives": ["minecraft:copper_bulb"],
     // Require that only the default bingo teams are used
     // (bingo_red, bingo_pink, bingo_blue, ...)
     // This will prevent players from setting up their own teams when the feature is introduced -> https://gitlab.com/horrific-tweaks/bingo/-/issues/33

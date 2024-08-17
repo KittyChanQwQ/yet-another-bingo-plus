@@ -29,6 +29,7 @@ data class TierListConfig(
         val maxTeams: Int = Int.MAX_VALUE,
         val minPlayersPerTeam: Int = 0,
         val maxPlayersPerTeam: Int = Int.MAX_VALUE,
+        val objectives: Set<String> = emptySet(),
         val onlyDefaultTeams: Boolean = false,
         val options: JsonObject = JsonObject(emptyMap()),
     ) {
