@@ -112,7 +112,10 @@ class PlayerController(
             .filterNot { options.isNightVision && it.type == EffectType.NIGHT_VISION }
             // Avoid cancelling out effects from [CountdownController]
             .filterNot { state.state == GameState.COUNTDOWN && it.type == EffectType.INVISIBILITY }
-            .forEach { statusEffects.removeEffect(it) }
+            .forEach {
+                log.debug("[PlayerController] Removing effect {} from {}", it.type, player)
+                statusEffects.removeEffect(it)
+            }
 
         player.fireTicks = 0
         player.isOnFire = false

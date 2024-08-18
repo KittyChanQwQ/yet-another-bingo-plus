@@ -10,5 +10,10 @@ enum class GameState(
     LOADING("§c", "IN-GAME"),
     COUNTDOWN("§c", "IN-GAME"),
     PLAYING("§c", "IN-GAME"),
-    POSTGAME("§6", "POST-GAME"),
+    POSTGAME("§6", "POST-GAME");
+
+    val isPlayingOrCountdown get() = when (this) {
+        GameState.LOADING, GameState.COUNTDOWN, GameState.PLAYING -> true
+        else -> false
+    }
 }

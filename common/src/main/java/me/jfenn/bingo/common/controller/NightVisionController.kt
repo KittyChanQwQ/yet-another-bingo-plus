@@ -12,8 +12,10 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import org.slf4j.Logger
 
 class NightVisionController(
+    private val log: Logger,
     private val server: MinecraftServer,
     private val config: BingoConfig,
     private val state: BingoState,
@@ -33,25 +35,30 @@ class NightVisionController(
             config.nightVisionInPostgame || config.nightVisionInSpectator || options.isNightVision
         ) {
             val shouldHaveNightVision = (
-                    (state.state == GameState.PLAYING && !isOnTeam && config.nightVisionInSpectator && state.isLobbyMode) ||
+                    (state.state.isPlayingOrCountdown && !isOnTeam && config.nightVisionInSpectator && state.isLobbyMode) ||
                             (state.state == GameState.POSTGAME && config.nightVisionInPostgame && state.isLobbyMode) ||
-                            (state.state == GameState.PLAYING && isOnTeam && options.isNightVision)
+                            (state.state.isPlayingOrCountdown && isOnTeam && options.isNightVision)
                     ) && playerSettingsService.getPlayer(player).nightVision
 
             val statusEffects = statusEffectsFactory.getStatusEffects(player)
 
             if (shouldHaveNightVision) {
-                statusEffects.addEffect(
-                    type = EffectType.NIGHT_VISION,
-                    duration = -1,
-                    amplifier = 0,
-                    ambient = false,
-                    visible = false
-                )
+                val hasEffect = statusEffects.getEffects().any { it.type == EffectType.NIGHT_VISION }
+                if (!hasEffect) {
+                    log.debug("[NightVisionController] Adding night vision to {}", player)
+                    statusEffects.addEffect(
+                        type = EffectType.NIGHT_VISION,
+                        duration = -1,
+                        amplifier = 0,
+                        ambient = false,
+                        visible = false
+                    )
+                }
             } else {
                 // if the player has infinite night vision (and should not), remove it
                 val effect = statusEffects.getEffects().find { it.type == EffectType.NIGHT_VISION }
                 if (effect?.duration == -1) {
+                    log.debug("[NightVisionController] Removing night vision from {}", player)
                     statusEffects.removeEffect(effect)
                 }
             }
