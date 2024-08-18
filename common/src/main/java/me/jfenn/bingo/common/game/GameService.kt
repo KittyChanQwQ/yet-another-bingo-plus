@@ -1,6 +1,10 @@
 package me.jfenn.bingo.common.game
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
@@ -14,11 +18,13 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import kotlin.time.Duration.Companion.seconds
 
 class GameService(
     private val state: BingoState,
@@ -30,27 +36,55 @@ class GameService(
     private val teamService: TeamService,
     private val configService: ConfigService,
     private val cardService: CardService,
+    private val playerManager: IPlayerManager,
+    private val permissions: PermissionsIntegration,
     private val text: TextProvider,
 ) {
+
+    private val notifySpamCooldown = 2.seconds
+    private var notifySpamTime = Instant.DISTANT_PAST
+
+    private fun notifyPlayersMissingTeams(playersWithoutATeam: List<IPlayerHandle>) {
+        if (!state.isLobbyMode) return
+
+        // Prevent spamming titles (making them unreadable) if someone spams the start button
+        val now = Clock.System.now()
+        if (now - notifySpamTime < notifySpamCooldown)
+            return
+
+        notifySpamTime = now
+
+        val title = text.string(StringKey.CommandStartJoinATeam)
+        val message = text.string(StringKey.CommandStartJoinATeamMessage)
+
+        for (player in playersWithoutATeam) {
+            if (permissions.hasPermission(player.player, Permission.COMMAND_JOIN)) {
+                player.player.networkHandler.sendPacket(TitleS2CPacket(title))
+                player.player.networkHandler.sendPacket(SubtitleS2CPacket(message))
+            }
+        }
+    }
 
     fun start(
         sendFeedback: (Text) -> Unit = {},
         ignoreWarnings: Boolean = false,
         allowSpectators: Boolean = false,
     ): Boolean {
-        val playersWithoutATeam = server.playerManager.playerList
-            .filter { teamService.getPlayerTeam(it) == null }
+        val playersWithoutATeam = playerManager.getPlayers()
+            .filter { teamService.getPlayerTeam(it.player) == null }
 
         if (playersWithoutATeam.isNotEmpty() && !allowSpectators) {
             // If there's more than one player, teams need to be set up manually!
-            if (server.playerManager.playerList.size > 1) {
-                sendFeedback(text.string(StringKey.CommandStartMissingTeams))
+            if (playerManager.getPlayers().size > 1) {
+                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeams, playersWithoutATeam.joinToString { it.name }))
+                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeamsHint))
+                notifyPlayersMissingTeams(playersWithoutATeam)
                 return false
             }
 
             // Otherwise, we can just auto-assign a team
             for (player in playersWithoutATeam) {
-                teamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
+                teamService.joinTeam(player.player, BingoTeam.TEAM_BLOCKS.values.random())
             }
         }
 

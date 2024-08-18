@@ -4,14 +4,12 @@ import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.stats.WriteStatsService
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
@@ -30,7 +28,6 @@ class GameOverController(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
-    private val config: BingoConfig,
     private val teamService: TeamService,
     private val textProvider: TextProvider,
     private val gameOverService: GameOverService,
@@ -38,7 +35,6 @@ class GameOverController(
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
     private val packetManager: ServerPacketEvents,
-    private val stats: StatsService,
     private val writeStatsService: WriteStatsService,
     events: ScopedEvents,
 ) {
