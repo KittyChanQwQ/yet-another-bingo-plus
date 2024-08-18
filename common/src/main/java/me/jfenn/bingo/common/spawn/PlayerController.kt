@@ -62,11 +62,14 @@ class PlayerController(
 
         val gameMode = when (state.state) {
             GameState.UNINITIALIZED,
-            GameState.PREGAME,
+            GameState.PREGAME -> GameMode.ADVENTURE
             GameState.LOADING,
-            GameState.COUNTDOWN -> GameMode.ADVENTURE
+            GameState.COUNTDOWN,
             GameState.PLAYING -> when {
-                isOnTeam -> GameMode.SURVIVAL
+                isOnTeam -> when (state.state) {
+                    GameState.PLAYING -> GameMode.SURVIVAL
+                    else -> GameMode.ADVENTURE
+                }
                 !cardViewService.supportsCardHud(player) && vanishIntegration.isInstalled() -> GameMode.ADVENTURE
                 else -> GameMode.SPECTATOR
             }
@@ -83,7 +86,8 @@ class PlayerController(
         ) {
             // This indicates that a player is starting the game, or has logged back on after a game has started
             // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
-            if (state.state != GameState.POSTGAME) {
+            val shouldRespawnPlayer = state.state == GameState.PREGAME || state.state == GameState.LOADING || isOnTeam
+            if (shouldRespawnPlayer && state.state != GameState.POSTGAME) {
                 respawnPlayer(player)
             }
 
@@ -91,7 +95,7 @@ class PlayerController(
         }
 
         // if the player is not on a team, they should be vanished
-        val isVanished = !isOnTeam && state.state == GameState.PLAYING
+        val isVanished = !isOnTeam && (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN || state.state == GameState.PLAYING)
         vanishIntegration.setVanish(player, isVanished)
 
         // allow players in adventure mode to fly

@@ -4,6 +4,7 @@ enum class GameState(
     val color: String,
     val motd: String,
 ) {
+    /** This state shouldn't show up in actual use; it's immediately changed from the default in ScopeManager */
     UNINITIALIZED("§a", "PRE-GAME"),
     PREGAME("§a", "PRE-GAME"),
     LOADING("§c", "IN-GAME"),
