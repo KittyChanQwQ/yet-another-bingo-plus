@@ -22,6 +22,16 @@ data class CardTile(
     val progress: Float = 0f,
     val teamKeys: List<BingoTeamKey>,
 ) {
+
+    @Transient
+    val mapRenderKey = item?.let {
+        MapRenderService.TileImageKey(
+            name = item.identifier.path,
+            count = item.count,
+            decoration = decoration,
+        )
+    }
+
     enum class Decoration {
         FREE_SPACE,
         ADVANCEMENT,
