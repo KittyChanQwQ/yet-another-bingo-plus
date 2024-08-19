@@ -88,6 +88,23 @@ class YetAnotherConfigLibIntegrationImpl(
                         OptionGroup.createBuilder()
                             .name(text.string(StringKey.ConfigGuiHudSettings))
                             .options(listOf(
+                                Option.createBuilder<Boolean>()
+                                    .name(text.string(StringKey.ConfigEnableClientHud))
+                                    .description(
+                                        OptionDescription.of(
+                                            text.string(StringKey.ConfigEnableClientHudDescription)
+                                        )
+                                    )
+                                    .binding(
+                                        defaultConfig.client.enableHud,
+                                        { config.client.enableHud },
+                                        {
+                                            config.client.enableHud = it
+                                            configService.writeConfig(config)
+                                        }
+                                    )
+                                    .controller { BooleanControllerBuilder.create(it).coloured(true) }
+                                    .build(),
                                 Option.createBuilder<Float>()
                                     .name(text.string(StringKey.ConfigCardScale))
                                     .description(

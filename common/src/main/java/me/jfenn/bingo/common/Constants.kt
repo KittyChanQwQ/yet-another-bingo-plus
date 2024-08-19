@@ -32,3 +32,4 @@ const val URL_WIKI_WHAT_IS_BINGO = "https://minecraft.horrific.dev/bingo/what-is
 val BINGO_WORLD_PREFIX = "${Formatting.GREEN}[BINGO]${Formatting.WHITE}"
 
 val KEYBIND_OPEN_CARD = StringKey.KeybindOpenCard.key
+val KEYBIND_TOGGLE_HUD = StringKey.KeybindToggleHud.key

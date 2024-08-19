@@ -7,7 +7,9 @@ import me.jfenn.bingo.client.api.IHudCallback
 import me.jfenn.bingo.client.api.IOptionsAccessor
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
+import me.jfenn.bingo.common.KEYBIND_TOGGLE_HUD
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -29,6 +31,7 @@ import org.lwjgl.glfw.GLFW
 class BingoHudController(
     private val koin: Koin,
     private val optionsAccessor: IOptionsAccessor,
+    private val configService: ConfigService,
     private val config: BingoConfig,
     private val renderer: BingoHudRenderer,
     private val itemScoredRenderer: BingoMessageRenderer,
@@ -43,6 +46,15 @@ class BingoHudController(
             KEYBIND_OPEN_CARD,
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_Y,
+            StringKey.FullName.key,
+        )
+    )
+
+    private val toggleHudKey = KeyBindingHelper.registerKeyBinding(
+        KeyBinding(
+            KEYBIND_TOGGLE_HUD,
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_UNKNOWN,
             StringKey.FullName.key,
         )
     )
@@ -203,6 +215,8 @@ class BingoHudController(
                 return@onRender
             if (config.client.hideOnChat && MinecraftClient.getInstance().currentScreen is ChatScreen)
                 return@onRender
+            if (!config.client.enableHud)
+                return@onRender
 
             drawHud(it.drawService)
         }
@@ -242,6 +256,11 @@ class BingoHudController(
                     ?: BingoHudScreen(koin)
 
                 client.setScreen(hudScreen)
+            }
+
+            if (toggleHudKey.wasPressed()) {
+                config.client.enableHud = !config.client.enableHud
+                configService.writeConfig(config)
             }
         }
     }

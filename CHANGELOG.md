@@ -10,6 +10,8 @@
 
 - Various small improvements to card info & rendering.
 
+- Added a keybind to toggle the overall Bingo HUD rendering
+
 ### Bugs Squashed:
 
 - Fixed servers ignoring the `motd=` value in `server.properties`
@@ -17,3 +19,5 @@
 - Fixed a minor optimization issue related to item components in 1.20.6+
 
 - Fixed the "game over" screen not rendering flashing items and (very rarely) missing some cards altogether.
+
+- Increased the height/area that the game searches for team locations in a custom lobby
