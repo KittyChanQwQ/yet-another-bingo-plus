@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.nbt.NbtCompound
@@ -24,6 +25,7 @@ class CountdownController(
     private val state: BingoState,
     private val events: ScopedEvents,
     private val countdownService: CountdownService,
+    private val teamService: TeamService,
     private val tickManager: ITickManager,
     private val statusEffectsFactory: IStatusEffectsFactory,
     private val spawnService: SpawnService,
@@ -34,8 +36,11 @@ class CountdownController(
 
     private val entityMap = mutableMapOf<BingoTeamKey, Entity>()
 
+    private val playingPlayerList get() = server.playerManager.playerList
+        .filter { teamService.isPlaying(it) }
+
     private fun forcePlayersInvisible() {
-        for (player in server.playerManager.playerList) {
+        for (player in playingPlayerList) {
             // Make the player invisible during the countdown
             // (otherwise, the player blocks other players' visibility)
             val statusEffects = statusEffectsFactory.getStatusEffects(player)
@@ -96,21 +101,30 @@ class CountdownController(
         }
 
         events.onStateChange { (_, toState) ->
+            val isLockedState = toState == GameState.LOADING || toState == GameState.COUNTDOWN
+
             if (state.isLobbyMode)
+                // This should be setFrozen(isLockedState), but we're waiting until the countdown starts
+                // to avoid https://github.com/RelativityMC/C2ME-fabric/issues/350
                 tickManager.setFrozen(toState == GameState.COUNTDOWN)
 
-            // Remove all spawn marker entities when the game starts
-            for ((_, entity) in entityMap) {
-                entity.discard()
+            if (!isLockedState) {
+                // Remove all spawn marker entities when the game starts
+                for ((_, entity) in entityMap) {
+                    entity.discard()
+                }
+                entityMap.clear()
             }
-            entityMap.clear()
         }
 
         events.onGameTick {
-            if (state.state != GameState.COUNTDOWN) return@onGameTick
+            if (state.isLobbyMode) {
+                if (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN) {
+                    forcePlayersOnBats()
+                }
+            }
 
-            if (state.isLobbyMode)
-                forcePlayersOnBats()
+            if (state.state != GameState.COUNTDOWN) return@onGameTick
 
             if (server.ticks % 20 != 0) return@onGameTick
 

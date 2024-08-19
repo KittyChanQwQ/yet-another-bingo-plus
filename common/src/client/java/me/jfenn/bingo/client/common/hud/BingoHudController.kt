@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
+import me.jfenn.bingo.client.api.ClientPacket
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.client.api.IHudCallback
 import me.jfenn.bingo.client.api.IOptionsAccessor
@@ -8,6 +9,7 @@ import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.game.GameOverPacket
+import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.text.TextProvider
@@ -135,19 +137,12 @@ class BingoHudController(
             .distinctBy { it.teamKey?.id }
     }
 
-    private fun onGameOver(packet: GameOverPacket) {
-        val views = (
-                (state.display?.display ?: emptyList())
-                    .mapNotNull { state.views[it] }
-                        + (state.gameOver?.views ?: emptyList())
-                )
-            // do not show the preview card on the Game Over screen
-            .filter { it.teamKey != null }
-            // prevent any duplicate cards (uses newly-sent cards first)
-            .distinctBy { it.teamKey?.id }
-
-        val gameOver = BingoHudState.GameOver(packet, views)
+    private fun onGameOver(clientPacket: ClientPacket<GameOverPacket>) {
+        val (packet) = clientPacket
+        val gameOver = state.gameOver ?: BingoHudState.GameOver(packet, emptyList())
         state.gameOver = gameOver
+        updateGameOverViews()
+
         if (!packet.isUpdate) {
             // when the game first ends, open the end screen
             MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, gameOver, canEscape = false))
@@ -166,6 +161,12 @@ class BingoHudController(
         state.messages.add(scoreMessage)
     }
 
+    private fun onCardUpdate(clientPacket: ClientPacket<CardUpdatePacket>) {
+        val packet = clientPacket.packet
+        state.views[packet.view.teamKey] = packet.view
+        updateGameOverViews()
+    }
+
     init {
         packetEvents.cardDisplayV1.onPacket {
             state.display = it.packet
@@ -179,40 +180,20 @@ class BingoHudController(
             }
         }
 
-        packetEvents.cardUpdateV1.onPacket { (packet) ->
-            state.views[packet.view.teamKey] = packet.view
-            updateGameOverViews()
-        }
-
-        packetEvents.cardUpdateV2.onPacket { (packet) ->
-            state.views[packet.view.teamKey] = packet.view
-            updateGameOverViews()
-        }
-
-        packetEvents.cardUpdateV3.onPacket { (packet) ->
-            state.views[packet.view.teamKey] = packet.view
-            updateGameOverViews()
-        }
+        packetEvents.cardUpdateV1.onPacket(::onCardUpdate)
+        packetEvents.cardUpdateV2.onPacket(::onCardUpdate)
+        packetEvents.cardUpdateV3.onPacket(::onCardUpdate)
+        packetEvents.cardUpdateV4.onPacket(::onCardUpdate)
 
         packetEvents.scoreMessageV1.onPacket { (packet) ->
             onScoreMessage(packet)
         }
 
-        packetEvents.gameOverV1.onPacket { (packet) ->
-            onGameOver(packet)
-        }
-
-        packetEvents.gameOverV2.onPacket { (packet) ->
-            onGameOver(packet)
-        }
-
-        packetEvents.gameOverV3.onPacket { (packet) ->
-            onGameOver(packet)
-        }
-
-        packetEvents.gameOverV4.onPacket { (packet) ->
-            onGameOver(packet)
-        }
+        packetEvents.gameOverV1.onPacket(::onGameOver)
+        packetEvents.gameOverV2.onPacket(::onGameOver)
+        packetEvents.gameOverV3.onPacket(::onGameOver)
+        packetEvents.gameOverV4.onPacket(::onGameOver)
+        packetEvents.gameOverV5.onPacket(::onGameOver)
 
         hud.onRender {
             // Do not draw the HUD if the F3 or chat overlay is shown

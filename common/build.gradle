@@ -24,11 +24,14 @@ sqldelight {
 }
 
 tasks.register('bingoMigrations', Zip) {
+    def resDir = "resources/main/yet-another-minecraft-bingo"
     dependsOn("generateMainStatsDatabaseMigrations")
+    outputs.file(layout.buildDirectory.file("$resDir/migrations.zip"))
+
     from sqlMigrationsDir
     include '**/*'
     archiveFileName.set('migrations.zip')
-    destinationDirectory.set(layout.buildDirectory.dir("resources/main/yet-another-minecraft-bingo"))
+    destinationDirectory.set(layout.buildDirectory.dir(resDir))
 }
 
 dependencies {

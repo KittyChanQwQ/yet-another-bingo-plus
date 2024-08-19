@@ -1,0 +1,10 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": "Any Leaves",
+    "item": "minecraft:oak_leaves"
+  },
+  "objectives": [
+    "#minecraft:leaves"
+  ]
+}

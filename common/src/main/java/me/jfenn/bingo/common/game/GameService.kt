@@ -1,6 +1,11 @@
 package me.jfenn.bingo.common.game
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -13,11 +18,13 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import kotlin.time.Duration.Companion.seconds
 
 class GameService(
     private val state: BingoState,
@@ -28,37 +35,71 @@ class GameService(
     private val chestService: ChestService,
     private val teamService: TeamService,
     private val configService: ConfigService,
-    private val textProvider: TextProvider,
+    private val cardService: CardService,
+    private val playerManager: IPlayerManager,
+    private val permissions: PermissionsIntegration,
+    private val text: TextProvider,
 ) {
 
+    private val notifySpamCooldown = 2.seconds
+    private var notifySpamTime = Instant.DISTANT_PAST
+
+    private fun notifyPlayersMissingTeams(playersWithoutATeam: List<IPlayerHandle>) {
+        if (!state.isLobbyMode) return
+
+        // Prevent spamming titles (making them unreadable) if someone spams the start button
+        val now = Clock.System.now()
+        if (now - notifySpamTime < notifySpamCooldown)
+            return
+
+        notifySpamTime = now
+
+        val title = text.string(StringKey.CommandStartJoinATeam)
+        val message = text.string(StringKey.CommandStartJoinATeamMessage)
+
+        for (player in playersWithoutATeam) {
+            if (permissions.hasPermission(player.player, Permission.COMMAND_JOIN)) {
+                player.player.networkHandler.sendPacket(TitleS2CPacket(title))
+                player.player.networkHandler.sendPacket(SubtitleS2CPacket(message))
+            }
+        }
+    }
+
     fun start(
-        sendFeedback: (StringKey) -> Unit = {},
+        sendFeedback: (Text) -> Unit = {},
+        ignoreWarnings: Boolean = false,
         allowSpectators: Boolean = false,
     ): Boolean {
-        val playersWithoutATeam = server.playerManager.playerList
-            .filter { teamService.getPlayerTeam(it) == null }
+        val playersWithoutATeam = playerManager.getPlayers()
+            .filter { teamService.getPlayerTeam(it.player) == null }
 
         if (playersWithoutATeam.isNotEmpty() && !allowSpectators) {
             // If there's more than one player, teams need to be set up manually!
-            if (server.playerManager.playerList.size > 1) {
-                sendFeedback(StringKey.CommandStartMissingTeams)
+            if (playerManager.getPlayers().size > 1) {
+                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeams, playersWithoutATeam.joinToString { it.name }))
+                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeamsHint))
+                notifyPlayersMissingTeams(playersWithoutATeam)
                 return false
             }
 
             // Otherwise, we can just auto-assign a team
             for (player in playersWithoutATeam) {
-                teamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
+                teamService.joinTeam(player.player, BingoTeam.TEAM_BLOCKS.values.random())
             }
         }
 
+        // Ensure that all selected tier lists are supported
+        if (!ignoreWarnings && !cardService.isSupported(sendFeedback))
+            return false
+
         // if the game has already been started, ignore
         if (state.state != GameState.PREGAME) {
-            sendFeedback(StringKey.CommandStartAlreadyStarted)
+            sendFeedback(text.string(StringKey.CommandStartAlreadyStarted))
             return false
         }
 
         if (!options.isValid()) {
-            sendFeedback(StringKey.CommandStartInvalidDistribution)
+            sendFeedback(text.string(StringKey.CommandStartInvalidDistribution))
             return false
         }
 
@@ -69,10 +110,10 @@ class GameService(
             val team = teamService.getPlayerTeam(player)
             player.networkHandler.sendPacket(
                 TitleS2CPacket(
-                    textProvider.string(StringKey.GameAnnounceBingo).formatted(team?.formatting ?: Formatting.WHITE)
+                    text.string(StringKey.GameAnnounceBingo).formatted(team?.formatting ?: Formatting.WHITE)
                 )
             )
-            player.networkHandler.sendPacket(SubtitleS2CPacket(textProvider.string(StringKey.GameAnnounceStarting)))
+            player.networkHandler.sendPacket(SubtitleS2CPacket(text.string(StringKey.GameAnnounceStarting)))
         }
 
         if (state.isLobbyMode) {
@@ -106,23 +147,23 @@ class GameService(
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
 
             Text.literal("  ")
-                .append(textProvider.string(StringKey.GameStart))
+                .append(text.string(StringKey.GameStart))
                 .formatted(Formatting.GREEN)
                 .also { yield(it) }
 
             Text.literal("  ")
-                .append(textProvider.string(StringKey.ScoreboardMode, options.formatGameMode().map { textProvider.string(it) }.joinText()))
+                .append(text.string(StringKey.ScoreboardMode, options.formatGameMode().map { text.string(it) }.joinText()))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
             Text.literal("  ")
-                .append(textProvider.string(StringKey.ScoreboardFeatures, options.formatFeatures().map { textProvider.string(it) }.joinText()))
+                .append(text.string(StringKey.ScoreboardFeatures, options.formatFeatures().map { text.string(it) }.joinText()))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
             Text.empty()
                 .append("  ")
-                .append(textProvider.string(StringKey.ScoreboardGoal, options.cardGoal.format(textProvider)))
+                .append(text.string(StringKey.ScoreboardGoal, options.cardGoal.format(text)))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 

@@ -1,0 +1,13 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": "All Golden Armor",
+    "item": "minecraft:golden_chestplate"
+  },
+  "objectives": [
+    "minecraft:golden_boots",
+    "minecraft:golden_chestplate",
+    "minecraft:golden_helmet",
+    "minecraft:golden_leggings"
+  ]
+}

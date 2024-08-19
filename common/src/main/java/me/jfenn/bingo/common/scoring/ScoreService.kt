@@ -16,7 +16,11 @@ object ScoreService {
         // if there's only one team, then the game shouldn't end by lockout...
         if (state.getRegisteredTeams().size <= 1) return false
 
-        if (state.card.entries.all { it.hasAnyAchieved() }) {
+        if (
+            state.card.entries
+                .mapNotNull { state.card.objectives[it.objectiveId] }
+                .all { it.hasAnyAchieved() }
+        ) {
             // if the entire card is full, then it is a lockout (regardless of the goal)
             return true
         }
@@ -39,7 +43,7 @@ object ScoreService {
                 state.getRegisteredTeams()
                     .filter { it.key != leadingTeam?.key }
                     .none { team ->
-                        val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
+                        val possibleLines = state.card.countLines { objective -> objective.hasAchieved(team.key) || objective.hasNoneAchieved() }
                         // if a team can capture more lines, and it would either tie or beat the current team
                         possibleLines > team.score.lines && possibleLines >= leadingTeamLines
                     }
@@ -49,14 +53,14 @@ object ScoreService {
         val isGoalImpossible = when (val goal = state.options.cardGoal) {
             is BingoGoal.Items -> {
                 state.getRegisteredTeams().none { team ->
-                    val possibleItems = state.card.entries.count { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
+                    val possibleItems = state.card.countItems { entry -> entry.hasAchieved(team.key) || entry.hasNoneAchieved() }
                     // if no team can capture the amount of items needed for the win condition
                     possibleItems >= goal.items
                 }
             }
             is BingoGoal.Lines -> {
                 state.getRegisteredTeams().none { team ->
-                    val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team) || entry.hasNoneAchieved() }
+                    val possibleLines = state.card.countLines { entry -> entry.hasAchieved(team.key) || entry.hasNoneAchieved() }
                     // if no team can capture the amount of lines needed for the win condition
                     possibleLines >= goal.lines
                 }

@@ -1,0 +1,8 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:zombie_head"
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:zombie"
+}

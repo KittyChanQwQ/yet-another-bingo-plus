@@ -21,7 +21,15 @@ Several `.mcfunction` files are available in the mod's config folder. These can 
 server.properties
 ```
 
-For example, `on_playing` can be used to set certain gamerules that you might want during a round - e.g. `gamerule announceAdvancements false`.
+For example, `on_playing` can be used to set certain gamerules that you might want during a round - e.g:
+
+::: code-group
+
+```mcfunction [on_playing.mcfunction]
+gamerule announceAdvancements false
+```
+
+:::
 
 These events are also available to datapacks in the form of [function tags](https://minecraft.wiki/w/Tag#Function_tags).
 

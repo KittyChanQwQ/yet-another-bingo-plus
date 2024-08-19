@@ -45,10 +45,11 @@ export default defineConfig({
     sidebar: [
       {
         text: 'Introduction',
+        link: '/what-is-bingo',
         collapsed: false,
         items: [
-          { text: 'What is Minecraft BINGO?', link: '/what-is-bingo' },
           { text: 'Getting Started', link: '/getting-started' },
+          { text: 'Item Distribution', link: '/item-distribution' },
           { text: 'Command Cheatsheet', link: '/command-cheatsheet' },
         ],
       },
@@ -58,32 +59,38 @@ export default defineConfig({
         items: [
           { text: 'Server Setup', link: '/server-setup' },
           { text: 'Server Optimization', link: '/optimization' },
-          { text: 'Functions', link: '/functions' },
-          { text: 'Lobby Structure', link: '/lobby-structure' },
+          { text: 'Customizing the lobby', link: '/lobby-structure' },
         ],
       },
       {
         text: 'Configuration',
+        link: '/config',
         collapsed: false,
         items: [
-          { text: 'Config Files', link: '/config', items: [
-            { text: 'Additional Options', link: '/config-extra' },
-          ] },
-          { text: 'Tier List Editor', link: '/tier-editor', items: [
-            { text: 'Item Distribution', link: '/item-distribution' },
-          ] },
+          { text: 'config.json', link: '/config-extra' },
+          { text: 'Functions', link: '/functions' },
+          { text: 'Tier List Editor', link: '/tier-editor' },
           { text: 'Item Images', link: '/item-images' },
         ],
       },
       {
         text: 'Compatible Mods',
-        collapsed: false,
+        collapsed: true,
         items: [
           { text: 'Chunky', link: '/mods/chunky' },
           { text: 'LuckPerms', link: '/mods/luckperms' },
           { text: 'Vanish', link: '/mods/vanish' },
         ]
-      }
+      },
+      {
+        text: 'Datapack Guide',
+        collapsed: true,
+        items: [
+          { text: 'Tier Lists', link: '/custom-tier-lists' },
+          { text: 'Objectives', link: '/custom-objectives' },
+          { text: 'Function Tags', link: '/custom-function-tags' },
+        ],
+      },
     ],
 
     socialLinks: [

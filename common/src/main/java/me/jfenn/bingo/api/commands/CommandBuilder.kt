@@ -17,10 +17,11 @@ class CommandBuilder(
 
     fun string(
         name: String,
-        suggestions: (IExecutionContext.() -> List<String>)?,
+        suggestions: (IExecutionContext.() -> Iterable<String>)?,
+        greedy: Boolean = false,
         configure: CommandBuilder.(arg: CommandArgument<String>) -> Unit
     ) {
-        val arg = CommandArgument.String(name, suggestions)
+        val arg = CommandArgument.String(name, suggestions, greedy)
         val node = CommandNode.RequiredArgument(arg)
         CommandBuilder(node).configure(arg)
         parent.children += node
@@ -28,6 +29,13 @@ class CommandBuilder(
 
     fun text(name: String, configure: CommandBuilder.(arg: CommandArgument<Text>) -> Unit) {
         val arg = CommandArgument.Text(name)
+        val node = CommandNode.RequiredArgument(arg)
+        CommandBuilder(node).configure(arg)
+        parent.children += node
+    }
+
+    fun boolean(name: String, configure: CommandBuilder.(arg: CommandArgument<Boolean>) -> Unit) {
+        val arg = CommandArgument.Bool(name)
         val node = CommandNode.RequiredArgument(arg)
         CommandBuilder(node).configure(arg)
         parent.children += node
@@ -76,12 +84,17 @@ sealed class CommandArgument<T> {
 
     class String(
         override val name: kotlin.String,
-        val suggestions: (IExecutionContext.() -> List<kotlin.String>)?,
+        val suggestions: (IExecutionContext.() -> Iterable<kotlin.String>)?,
+        val greedy: Boolean,
     ) : CommandArgument<kotlin.String>()
 
     class Text(
         override val name: kotlin.String,
     ) : CommandArgument<net.minecraft.text.Text>()
+
+    class Bool(
+        override val name: kotlin.String,
+    ) : CommandArgument<Boolean>()
 
     class Integer(
         override val name: kotlin.String,

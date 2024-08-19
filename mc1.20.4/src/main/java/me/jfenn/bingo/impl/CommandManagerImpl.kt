@@ -1,5 +1,6 @@
 package me.jfenn.bingo.impl
 
+import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.ArgumentBuilder
@@ -45,7 +46,7 @@ class CommandManagerImpl(
                 when (val arg = command.arg) {
                     is CommandArgument.String -> RequiredArgumentBuilder.argument<ServerCommandSource?, String?>(
                         arg.name,
-                        StringArgumentType.string()
+                        if (arg.greedy) StringArgumentType.greedyString() else StringArgumentType.string()
                     ).let {
                         when (val suggestions = arg.suggestions) {
                             null -> it
@@ -56,6 +57,11 @@ class CommandManagerImpl(
                     is CommandArgument.Text -> RequiredArgumentBuilder.argument(
                         arg.name,
                         TextArgumentType.text()
+                    )
+
+                    is CommandArgument.Bool -> RequiredArgumentBuilder.argument(
+                        arg.name,
+                        BoolArgumentType.bool()
                     )
 
                     is CommandArgument.Integer -> RequiredArgumentBuilder.argument(
@@ -120,7 +126,7 @@ class CommandManagerImpl(
 }
 
 class SuggestionProviderImpl(
-    private val callback: IExecutionContext.() -> List<String>,
+    private val callback: IExecutionContext.() -> Iterable<String>,
 ) : SuggestionProvider<ServerCommandSource> {
     override fun getSuggestions(
         context: CommandContext<ServerCommandSource>,
@@ -162,6 +168,7 @@ class ExecutionContextImpl(
         return when (arg) {
             is CommandArgument.String -> StringArgumentType.getString(ctx, arg.name) as T
             is CommandArgument.Text -> TextArgumentType.getTextArgument(ctx, arg.name) as T
+            is CommandArgument.Bool -> BoolArgumentType.getBool(ctx, arg.name) as T
             is CommandArgument.Integer -> IntegerArgumentType.getInteger(ctx, arg.name) as T
             is CommandArgument.Player -> EntityArgumentType.getPlayer(ctx, arg.name) as T
         }

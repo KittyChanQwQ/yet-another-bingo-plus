@@ -6,58 +6,90 @@ import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 class StatsCommand(
     commandManager: ICommandManager,
-    private val textProvider: TextProvider,
+    private val text: TextProvider,
 ) {
+
+    private val IExecutionContext.statsService get() = scope.get<StatsService>()
 
     private fun IExecutionContext.getStatsSummary(
         player: IPlayerHandle
     ) {
-        val statsService = scope.get<StatsService>()
         val summary = statsService.getPlayerSummary(player.uuid)
 
-        sendMessage(textProvider.string(StringKey.CommandStatsPlayer, player.name))
+        sendMessage(text.string(StringKey.CommandStatsPlayer, player.name))
 
         // All Time
-        sendMessage(Text.literal("★ ").append(textProvider.string(StringKey.StatsAllTime)).formatted(Formatting.BOLD, Formatting.YELLOW))
+        sendMessage(Text.literal("★ ").append(text.string(StringKey.StatsAllTime)).formatted(Formatting.BOLD, Formatting.YELLOW))
         sendMessage(
             Text.literal("  ")
-                .append(textProvider.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
+                .append(text.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.totalGames.formatLargeNumber()}, ")
-                .append(textProvider.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
+                .append(text.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.totalWins.formatLargeNumber()}/${summary.totalLosses.formatLargeNumber()}, ")
-                .append(textProvider.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
+                .append(text.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.totalItems.formatLargeNumber()}")
         )
         sendMessage(
             Text.literal("  ")
-                .append(textProvider.string(StringKey.StatsPlaytime).formatted(Formatting.BOLD, Formatting.GRAY))
+                .append(text.string(StringKey.StatsPlaytime).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.totalPlaytime.formatString()}")
         )
 
         // Monthly
-        sendMessage(Text.literal("\uD83D\uDCC6 ").append(textProvider.string(StringKey.StatsMonthly)).formatted(Formatting.BOLD, Formatting.AQUA))
+        sendMessage(Text.literal("\uD83D\uDCC6 ").append(text.string(StringKey.StatsMonthly)).formatted(Formatting.BOLD, Formatting.AQUA))
         sendMessage(
             Text.literal("  ")
-                .append(textProvider.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
+                .append(text.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.monthlyGames.formatLargeNumber()}, ")
-                .append(textProvider.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
+                .append(text.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.monthlyWins.formatLargeNumber()}/${summary.monthlyLosses.formatLargeNumber()}, ")
-                .append(textProvider.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
+                .append(text.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.monthlyItems.formatLargeNumber()}")
         )
         sendMessage(
             Text.literal("  ")
-                .append(textProvider.string(StringKey.StatsPlaytime).formatted(Formatting.BOLD, Formatting.GRAY))
+                .append(text.string(StringKey.StatsPlaytime).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.monthlyPlaytime.formatString()}")
         )
+    }
+
+    private fun IExecutionContext.clearPlayerStats(playerToReset: ServerPlayerEntity) {
+        val playerManager = scope.get<IPlayerManager>()
+        val playerToResetImpl = playerManager.forPlayer(playerToReset)
+
+        statsService.resetPlayerStats(playerToResetImpl.uuid)
+
+        text.string(StringKey.CommandStatsResetPlayer, playerToResetImpl.name)
+            .formatted(Formatting.YELLOW)
+            .also { sendMessage(it) }
+    }
+
+    private fun IExecutionContext.clearGameStats() {
+        val options = scope.get<BingoOptions>()
+
+        statsService.resetGameStats(options)
+
+        text.string(StringKey.CommandStatsResetGame)
+            .formatted(Formatting.YELLOW)
+            .also { sendMessage(it) }
+    }
+
+    private fun IExecutionContext.clearAllStats() {
+        statsService.resetAllStats()
+
+        text.string(StringKey.CommandStatsResetAll)
+            .formatted(Formatting.YELLOW)
+            .also { sendMessage(it) }
     }
 
     init {
@@ -71,6 +103,28 @@ class StatsCommand(
                         val player = getArgument(playerArg)
                         scope.get<IPlayerManager>().forPlayer(player)
                             .let { getStatsSummary(it) }
+                    }
+                }
+
+                literal("reset") {
+                    literal("player") {
+                        requires { hasPermission(Permission.STATS_RESET_SELF) || hasPermission(Permission.STATS_RESET_GLOBAL) }
+                        executes { clearPlayerStats(player!!) }
+
+                        player("player") { playerArg ->
+                            requires { hasPermission(Permission.STATS_RESET_GLOBAL) }
+                            executes { clearPlayerStats(getArgument(playerArg)) }
+                        }
+                    }
+
+                    literal("game") {
+                        requires { hasPermission(Permission.STATS_RESET_GLOBAL) }
+                        executes { clearGameStats() }
+                    }
+
+                    literal("all") {
+                        requires { hasPermission(Permission.STATS_RESET_GLOBAL) }
+                        executes { clearAllStats() }
                     }
                 }
 

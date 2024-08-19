@@ -19,8 +19,11 @@ interface IScoreboardManager {
 
     fun getPlayerName(player: ServerPlayerEntity): String
 
+    fun getByName(server: MinecraftServer, name: String): IObjectiveHandle?
+
 }
 
 interface IObjectiveHandle {
     val name: String
+    fun getForPlayer(player: IPlayerHandle): Int?
 }

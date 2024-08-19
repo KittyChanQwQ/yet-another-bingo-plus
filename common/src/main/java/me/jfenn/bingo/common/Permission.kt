@@ -60,6 +60,12 @@ object Permission {
     /** View another player's statistics */
     val STATS_VIEW_PLAYER = PermissionKey("$MOD_ID.stats.view_player", PermissionDefault.OPERATORS)
 
+    /** Clear a player's own statistics */
+    val STATS_RESET_SELF = PermissionKey("$MOD_ID.stats.reset_self", PermissionDefault.ALLOW)
+
+    /** Clear server-wide statistics */
+    val STATS_RESET_GLOBAL = PermissionKey("$MOD_ID.stats.reset_global", PermissionDefault.OPERATORS)
+
     fun getPermissions() = this::class.declaredMemberProperties
         .filter { it.returnType == PermissionKey::class }
         .map { @Suppress("UNCHECKED_CAST") (it as KProperty1<Permission, PermissionKey>).get(this) }

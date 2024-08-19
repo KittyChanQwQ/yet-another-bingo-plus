@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.TierListState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey
@@ -54,7 +54,7 @@ fun MenuComponent.registerTierLists(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
             text = Text.literal(""),
             textProp = computedProperty {
-                pages[page].getOrNull(i)?.let { tierLists.title(it) }
+                pages[page].getOrNull(i)?.let { TierListState.title(it) }
             },
             toggleProp = toggleProp,
             permissionGetter = permissionGetter,
@@ -70,6 +70,19 @@ fun MenuComponent.registerTierLists(
         registerButton(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + 4*MENU_ITEM_HEIGHT), 0.0),
             text = text.string(StringKey.OptionsTierListMore),
+            textProp = computedProperty {
+                Text.literal(
+                    pages.indices
+                        .joinToString(" ") {
+                            val hasSelected = pages[it].any { options.tierLists.containsKey(it) }
+                            when {
+                                page == it -> if (hasSelected) "■" else "□"
+                                else -> if (hasSelected) "◆" else "◇"
+                            }
+                        }
+                            + " »"
+                )
+            },
             isActiveProp = computedProperty { false },
             permissionGetter = permissionGetter,
         ) {

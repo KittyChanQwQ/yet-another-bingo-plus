@@ -239,7 +239,15 @@ class StatsLobbyController(
 
             Text.empty()
                 .append(textProvider.string(StringKey.StatsWinStreak).formatted(Formatting.BOLD, Formatting.GRAY))
-                .append(": ${summary.winStreak}")
+                .append(": ")
+                .append(
+                    when {
+                        summary.winStreakBest != null -> {
+                            textProvider.string(StringKey.StatsWinStreakValue, summary.winStreak, summary.winStreakBest)
+                        }
+                        else -> Text.literal(summary.winStreak.toString())
+                    }
+                )
                 .also { add(it) }
         }.toMutableList()
 

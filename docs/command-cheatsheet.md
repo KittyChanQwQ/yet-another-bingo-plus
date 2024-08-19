@@ -17,18 +17,20 @@ description: A reference page for all of the game commands provided in Yet Anoth
 
 ## Operator-only commands
 
-| Command                            | Description                                                                            |
-|------------------------------------|----------------------------------------------------------------------------------------|
-| `/bingo shuffleteams #`            | Randomly shuffles all players onto the given number of teams.                          |
-| `/bingo elytra <true/false>`       | Changes whether players have elytra/rockets during the game.                           |
-| `/bingo night_vision <true/false>` | Changes whether players are given the night vision effect during the game.             |
-| `/bingo timelimit #`               | Sets the time limit of the game, in minutes (or "off" for no timer)                    |
-| `/bingo mode <option>`             | Toggles on/off the different Bingo modes, such as Lockout, Inventory, or Hidden Items. |
-| `/bingo goal <option>`             | Changes the number of Bingo lines needed for a team to win the game.                   |
-| `/bingo itemdist # # # # #`        | Changes the [item distribution](./item-distribution) used to generate the card.        |
-| `/bingo tierlist <name>`           | Changes the tier list used to generate the card.                                       |
-| `/bingo reroll`                    | Re-rolls the card for completely new random items.                                     |
-| `/bingo end`                       | Immediately ends the current game and displays the winner.                             |
-| `/bingo seed`                      | Shows the random seed used to generate the current Bingo Card.                         |
-| `/bingo seed #`                    | Sets the Bingo Card seed to a specific value.                                          |
-| `/join <team> <player>`            | Assigns a player to a different team - will respawn them if in-game.                   |
+| Command                              | Description                                                                            |
+|--------------------------------------|----------------------------------------------------------------------------------------|
+| `/bingo start`                       | Starts a game (if there isn't already one running).                                    |
+| `/bingo end`                         | Immediately ends the current game and displays the winner.                             |
+| `/bingo shuffleteams #`              | Randomly shuffles all players onto the given number of teams.                          |
+| `/bingo elytra`                      | Changes whether players have elytra/rockets during the game.                           |
+| `/bingo night_vision`                | Changes whether players are given the night vision effect during the game.             |
+| `/bingo timelimit #`                 | Sets the time limit of the game, in minutes (or "off" for no timer)                    |
+| `/bingo mode <option>`               | Toggles on/off the different Bingo modes, such as Lockout, Inventory, or Hidden Items. |
+| `/bingo goal <option>`               | Changes the number of Bingo lines needed for a team to win the game.                   |
+| `/bingo itemdist # # # # #`          | Changes the [item distribution](./item-distribution) used to generate the card.        |
+| `/bingo tierlist <name>`             | Changes the tier list used to generate the card.                                       |
+| `/bingo reroll`                      | Re-rolls the card for completely new random items.                                     |
+| `/bingo card <tile> set <objective>` | Manually changes the specified tile on the Bingo Card.                                 |
+| `/bingo seed`                        | Shows the random seed used to generate the current Bingo Card.                         |
+| `/bingo seed #`                      | Sets the Bingo Card seed to a specific value.                                          |
+| `/join <team> <player>`              | Assigns a player to a different team - will respawn them if in-game.                   |

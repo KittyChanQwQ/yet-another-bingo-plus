@@ -1,0 +1,11 @@
+{
+  "type": "item",
+  "display": {
+    "name": "Damaged Golden Hoe"
+  },
+  "item": "minecraft:golden_hoe",
+  "nbt": "{Damage:31}",
+  "components": {
+    "minecraft:damage": 31
+  }
+}

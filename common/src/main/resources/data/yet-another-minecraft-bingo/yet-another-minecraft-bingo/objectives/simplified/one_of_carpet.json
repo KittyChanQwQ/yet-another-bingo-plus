@@ -1,0 +1,10 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": "Any Carpet",
+    "item": "minecraft:red_carpet"
+  },
+  "objectives": [
+    "#minecraft:wool_carpets"
+  ]
+}

@@ -50,8 +50,7 @@ FULL OUTER JOIN (
 )
 JOIN GamePlayer p ON p.game_id = g.id AND p.minecraft_id = :minecraft_id
 JOIN GameTeam t ON t.id = p.team_id AND t.game_id = g.id
-WHERE t.is_winner = 1 AND (g.started_at > recent_loss OR recent_loss IS NULL);
-
+WHERE t.is_winner = 1 AND (g.started_at > recent_loss OR recent_loss IS NULL) AND g.host_id = ?;
 
 -- Look at what we could have if SQLDelight supported ROW_NUMBER()...
 --

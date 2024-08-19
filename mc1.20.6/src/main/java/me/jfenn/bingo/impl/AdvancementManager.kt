@@ -11,9 +11,18 @@ import net.minecraft.util.Identifier
 import kotlin.jvm.optionals.getOrNull
 
 class AdvancementManager : IAdvancementManager {
+    override fun listAdvancements(server: MinecraftServer): List<String> {
+        return server.advancementLoader.advancements.map { it.id.toString() }
+    }
+
     override fun getAdvancement(server: MinecraftServer, id: String): IAdvancementHandle? {
         return server.advancementLoader.get(Identifier(id))
             ?.let { AdvancementHandle(it) }
+    }
+
+    override fun getProgress(player: ServerPlayerEntity, advancement: IAdvancementHandle): Float {
+        require(advancement is AdvancementHandle)
+        return player.advancementTracker.getProgress(advancement.advancement).progressBarPercentage
     }
 
     override fun isAnyObtained(player: ServerPlayerEntity, advancement: IAdvancementHandle): Boolean {

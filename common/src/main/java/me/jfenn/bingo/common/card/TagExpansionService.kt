@@ -1,0 +1,30 @@
+package me.jfenn.bingo.common.card
+
+import me.jfenn.bingo.api.ITagAccessor
+import org.slf4j.Logger
+
+class TagExpansionService(
+    private val log: Logger,
+    private val tagAccessor: ITagAccessor,
+) {
+
+    fun expandItemTag(item: String) : Set<String> {
+        return if (item.startsWith("#")) {
+            tagAccessor.getItemTag(item.substring(1))
+                ?.toSet()
+                ?: run {
+                    log.error("[TagExpansionService] Could not find item tag '$item'")
+                    emptySet()
+                }
+        } else {
+            setOf(item)
+        }
+    }
+
+    fun expandItemTags(items: Set<String>) : Set<String> {
+        return items
+            .flatMap { expandItemTag(it) }
+            .toSet()
+    }
+
+}

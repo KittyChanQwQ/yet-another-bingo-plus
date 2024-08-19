@@ -1,0 +1,11 @@
+{
+  "type": "item",
+  "display": {
+    "name": "Damaged Wooden Shovel"
+  },
+  "item": "minecraft:wooden_shovel",
+  "nbt": "{Damage:58}",
+  "components": {
+    "minecraft:damage": 58
+  }
+}

@@ -6,9 +6,11 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.nbt.StringNbtReader
+import net.minecraft.predicate.NbtPredicate
 import net.minecraft.registry.Registries
 import net.minecraft.resource.featuretoggle.FeatureFlags
 import net.minecraft.server.MinecraftServer
@@ -18,14 +20,20 @@ import net.minecraft.util.Identifier
 import org.slf4j.Logger
 
 class ItemStackFactory(
-    private val textSerializer: ITextSerializer,
     private val logger: Logger,
+    private val textSerializer: ITextSerializer,
 ) : IItemStackFactory {
+
+    override fun listItems(server: MinecraftServer): List<String> {
+        return Registries.ITEM.streamEntries()
+            .map { it.registryKey().value.toString() }
+            .toList()
+    }
+
     override fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean {
         val itemInstance = try {
             createStack(item, 1).item
         } catch (e: Throwable) {
-            logger.error("[ItemStackFactory] Item '$item' not found", e)
             return false
         }
 
@@ -77,6 +85,14 @@ class ItemStackFactory(
         override val displayName: Text
             get() = stack.name
 
+        override val lore: List<Text>
+            get() = stack.nbt
+                ?.takeIf { it.getType("Lore") == NbtElement.LIST_TYPE }
+                ?.getList("Lore", NbtElement.STRING_TYPE.toInt())
+                ?.filterIsInstance<NbtString>()
+                ?.mapNotNull { Text.Serializer.fromJson(it.asString()) }
+                ?: emptyList()
+
         override var count: Int
             get() = stack.count
             set(value) {
@@ -126,16 +142,29 @@ class ItemStackFactory(
             }
         }
 
-        override fun setNbtString(nbt: String?) {
-            stack.nbt = nbt?.let { StringNbtReader.parse(it) }
+        override fun setNbtString(nbt: String?): Boolean {
+            return try {
+                stack.nbt = nbt?.let { StringNbtReader.parse(it) }
+                true
+            } catch (e: Throwable) {
+                logger.error("[ItemStackFactory] Unable to parse NBT for item ${item.translationKey}: '$nbt'", e)
+                false
+            }
         }
 
         override fun getNbtString(): String? {
             return stack.nbt?.toString()
         }
 
-        override fun setComponentsString(components: Map<String, String?>) = Unit
+        override fun setComponentsString(components: Map<String, String?>) = true
         override fun getComponentsString(): Map<String, String?>? = null
+
+        override fun isDataOverlapping(nbt: String?, components: Map<String, String?>?): Boolean {
+            val nbtCompound = nbt?.let { StringNbtReader.parse(it) }
+                ?: return true
+
+            return NbtPredicate(nbtCompound).test(stack)
+        }
 
         override fun copy(): IItemStack {
             return ItemStackImpl(stack.copy())

@@ -1,0 +1,14 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": "Any Coral Fan",
+    "item": "minecraft:brain_coral_fan"
+  },
+  "objectives": [
+    "minecraft:brain_coral_fan",
+    "minecraft:bubble_coral_fan",
+    "minecraft:fire_coral_fan",
+    "minecraft:horn_coral_fan",
+    "minecraft:tube_coral_fan"
+  ]
+}

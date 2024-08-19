@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.card
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.UuidAsString
@@ -9,58 +10,22 @@ import java.util.*
 
 @Serializable
 class BingoCard(
+    val id: UuidAsString = UUID.randomUUID(),
     val entries: List<BingoCardEntry>,
+    val objectives: Map<String, BingoObjective>,
 ) {
 
     init {
         assert(entries.size == 25) { "BINGO card was created with less than 25 entries! (${entries.size})" }
     }
 
-    val id: UuidAsString = UUID.randomUUID()
+    @Transient
+    var isInitialized = false
+
+    inline fun <reified T : BingoObjective> objectivesByInstance() = objectives.values.filterIsInstance<T>()
 
     @Transient
-    var isDirty = true
-
-    /**
-     * Index the card's item entries on their item for faster querying.
-     */
-    @Transient
-    val itemIndex = buildMap<String, BingoCardEntry> {
-        this@BingoCard.entries
-            .filterIsInstance<BingoCardEntry.ItemEntry>()
-            .forEach { entry ->
-                put(entry.identifier, entry)
-            }
-
-        this@BingoCard.entries
-            .filterIsInstance<BingoCardEntry.MultiEntry>()
-            .forEach { entry ->
-                entry.innerEntries
-                    .filterIsInstance<BingoCardEntry.ItemEntry>()
-                    .forEach { item ->
-                        put(item.identifier, entry)
-                    }
-            }
-    }
-
-    @Transient
-    val advancementIndex = buildMap<String, BingoCardEntry> {
-        this@BingoCard.entries
-            .filterIsInstance<BingoCardEntry.AdvancementEntry>()
-            .forEach { entry ->
-                put(entry.identifier, entry)
-            }
-
-        this@BingoCard.entries
-            .filterIsInstance<BingoCardEntry.MultiEntry>()
-            .forEach { entry ->
-                entry.innerEntries
-                    .filterIsInstance<BingoCardEntry.AdvancementEntry>()
-                    .forEach { item ->
-                        put(item.identifier, entry)
-                    }
-            }
-    }
+    val itemObjectives = objectivesByInstance<BingoObjective.ItemEntry>().groupBy { it.itemId }
 
     /**
      * Gets the card entry at the provided x/y index.
@@ -75,16 +40,27 @@ class BingoCard(
     }
 
     /**
+     * Gets the card entry at the provided x/y index.
+     *
+     * Throws if [x] or [y] arguments are not within 0..4
+     */
+    fun objective(x: Int, y: Int): Pair<BingoCardEntry, BingoObjective>? {
+        val entry = entry(x, y)
+        return objectives[entry.objectiveId]?.let { Pair(entry, it) }
+    }
+
+    /**
      * Counts every horizontal, vertical, and diagonal line on the card
      * satisfied by the [predicate], and returns the sum.
      */
-    fun countLines(predicate: (BingoCardEntry) -> Boolean): Int {
+    fun countLines(predicate: (BingoObjective) -> Boolean): Int {
         var lines = 0
 
         for (row in 0..4) {
             val isLine = (0..4)
                 .map { entry(row, it) }
-                .all(predicate)
+                .map { objectives[it.objectiveId] }
+                .all { it != null && predicate(it) }
 
             if (isLine) lines++
         }
@@ -92,20 +68,23 @@ class BingoCard(
         for (col in 0..4) {
             val isLine = (0..4)
                 .map { entry(it, col) }
-                .all(predicate)
+                .map { objectives[it.objectiveId] }
+                .all { it != null && predicate(it) }
 
             if (isLine) lines++
         }
 
         val isD1 = (0..4)
             .map { entry(it, it) }
-            .all(predicate)
+            .map { objectives[it.objectiveId] }
+            .all { it != null && predicate(it) }
 
         if (isD1) lines++
 
         val isD2 = (0..4)
             .map { entry(it, 4 - it) }
-            .all(predicate)
+            .map { objectives[it.objectiveId] }
+            .all { it != null && predicate(it) }
 
         if (isD2) lines++
 
@@ -116,12 +95,16 @@ class BingoCard(
      * Counts every horizontal, vertical, and diagonal line on the card
      * achieved by the given [team].
      */
-    fun countLines(team: BingoTeam): Int = countLines { it.hasAchieved(team) }
+    fun countLines(team: BingoTeam): Int = countLines { it.hasAchieved(team.key) }
+
+    fun countItems(predicate: (BingoObjective) -> Boolean): Int = entries
+        .mapNotNull { objectives[it.objectiveId] }
+        .count(predicate)
 
     /**
      * Counts the total number of items achieved by the given [team].
      */
-    fun countItems(team: BingoTeam): Int = entries.count { it.hasAchieved(team) }
+    fun countItems(team: BingoTeam): Int = countItems { it.hasAchieved(team.key) }
 
     fun getTeamScore(team: BingoTeam): TeamScore {
         return TeamScore(
@@ -130,11 +113,12 @@ class BingoCard(
         )
     }
 
-    inline fun <reified T: BingoCardEntry> getAllEntriesOf(): List<T> {
-        return entries.filterIsInstance<BingoCardEntry.MultiEntry>()
-            .map { multiEntry -> multiEntry.innerEntries.filterIsInstance<T>() }
-            .flatten()
-            .plus(entries.filterIsInstance<T>())
+    companion object {
+        private val FREE_SPACE get() = BingoObjective.FreeSpace()
+        val EMPTY get() = BingoCard(
+            entries = List(25) { BingoCardEntry(FREE_SPACE.id, null, null) },
+            objectives = mapOf(FREE_SPACE.id to FREE_SPACE),
+        )
     }
 
 }

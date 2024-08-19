@@ -6,8 +6,17 @@ import me.jfenn.bingo.common.autorestart.RestartOnLeaveController
 import me.jfenn.bingo.common.autorestart.RestartTimerController
 import me.jfenn.bingo.common.autorestart.RestartTimerState
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.TagExpansionService
+import me.jfenn.bingo.common.card.data.ObjectiveRegistryManager
+import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.card.objective.*
+import me.jfenn.bingo.common.card.tierlist.TierListCommand
+import me.jfenn.bingo.common.card.tierlist.TierListManager
+import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.commands.*
-import me.jfenn.bingo.common.config.*
+import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.config.MigrationHandler
+import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.event.EventManager
@@ -32,11 +41,12 @@ import me.jfenn.bingo.common.scoring.ScoredItemCheck
 import me.jfenn.bingo.common.spawn.*
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.*
+import me.jfenn.bingo.common.team.OfflinePlayerCache
 import me.jfenn.bingo.common.team.TeamController
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.*
-import me.jfenn.bingo.generated.BINGO_VERSION
+import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.impl.ServerCloseEvent
 import me.jfenn.bingo.integrations.ChunkyIntegration
 import me.jfenn.bingo.integrations.PermissionsIntegration
@@ -71,6 +81,7 @@ val commonModule = module {
     factoryOf(ChunkyIntegration::create)
 
     singleOf(::BingoCommand)
+    singleOf(::BingoCardCommand)
     singleOf(::BingoCommands)
     singleOf(::BingoDebugCommand)
     singleOf(::BingoLobbyCommand)
@@ -88,8 +99,11 @@ val commonModule = module {
     singleOf(::TierListCommand)
     singleOf(::InfoBookCommand)
 
+    singleOf(::ObjectiveRegistryState)
+    singleOf(::ObjectiveRegistryManager)
     singleOf(::TierListState)
     singleOf(::TierListManager)
+    singleOf(::TagExpansionService)
 
     singleOf(::ConnectionFactory)
     single { get<ConnectionFactory>().create() }
@@ -102,6 +116,32 @@ val commonModule = module {
         scoped { get<BingoScope>().server }
         scoped { get<BingoScope>().state }
         scoped { get<BingoState>().options }
+
+        scopedOf(::ObjectiveService)
+        scopedOf(::ObjectiveDisplayService)
+        scopedOf(::AdvancementObjectiveManager)
+        scopedOf(::ItemObjectiveManager)
+        scopedOf(::AllOfObjectiveManager)
+        scopedOf(::OneOfObjectiveManager)
+        scopedOf(::InverseObjectiveManager)
+        scopedOf(::OpponentObjectiveManager)
+        scopedOf(::StatsObjectiveManager)
+        scopedOf(::ScoreboardObjectiveManager)
+        scoped {
+            BingoObjectiveManager(
+                listOf(
+                    get<AdvancementObjectiveManager>(),
+                    get<ItemObjectiveManager>(),
+                    get<AllOfObjectiveManager>(),
+                    get<OneOfObjectiveManager>(),
+                    get<InverseObjectiveManager>(),
+                    get<OpponentObjectiveManager>(),
+                    get<StatsObjectiveManager>(),
+                    get<ScoreboardObjectiveManager>(),
+                ),
+                get(),
+            )
+        }
 
         scopedOf(::StatsLobbyController)
         scopedOf(::StatsSyncController)
@@ -124,7 +164,7 @@ val commonModule = module {
         scopedOf(::MenuController)
         scopedOf(::BingoMapController)
         scopedOf(::BossBarController)
-        scopedOf(::DatapackFunctionController)
+        scopedOf(::DatapackFunctionService)
         scopedOf(::GameRuleController)
         scopedOf(::IntegrationController)
         scopedOf(::LobbyChaosController)
@@ -142,6 +182,7 @@ val commonModule = module {
         scopedOf(::SpawnService)
         scopedOf(::PlayerController)
 
+        scopedOf(::OfflinePlayerCache)
         scopedOf(::TeamService)
         scopedOf(::TeamController)
 
@@ -173,8 +214,9 @@ fun Koin.commonInit() {
     get<RestartOnLeaveController>()
 
     get<BingoCommand>()
+    get<BingoCardCommand>()
     get<BingoCommands>()
-    if (BINGO_VERSION.contains("alpha") || BINGO_VERSION.contains("beta"))
+    if (Build.isDebug)
         get<BingoDebugCommand>()
     get<BingoLobbyCommand>()
     get<BingoModeCommand>()
@@ -191,6 +233,7 @@ fun Koin.commonInit() {
     get<TierListCommand>()
     get<InfoBookCommand>()
 
+    get<ObjectiveRegistryManager>()
     get<TierListManager>()
 
     get<ConnectionFactory>()
@@ -201,7 +244,6 @@ fun Scope.commonInit() {
     get<MenuController>()
     get<BingoMapController>()
     get<BossBarController>()
-    get<DatapackFunctionController>()
     get<GameRuleController>()
     get<IntegrationController>()
     get<LobbyChaosController>()

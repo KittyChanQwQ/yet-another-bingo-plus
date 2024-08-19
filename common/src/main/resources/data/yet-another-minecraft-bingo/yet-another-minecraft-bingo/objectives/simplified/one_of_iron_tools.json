@@ -1,0 +1,14 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": "Any Iron Tool",
+    "item": "minecraft:iron_pickaxe"
+  },
+  "objectives": [
+    "minecraft:iron_axe",
+    "minecraft:iron_hoe",
+    "minecraft:iron_pickaxe",
+    "minecraft:iron_shovel",
+    "minecraft:iron_sword"
+  ]
+}

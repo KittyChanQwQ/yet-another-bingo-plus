@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:red_bed",
+    "name": "Never Sleep in Bed",
+    "decoration": "FORBIDDEN"
+  },
+  "statType": "minecraft:custom",
+  "statName": "minecraft:sleep_in_bed",
+  "min": 0,
+  "max": 0
+}

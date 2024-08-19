@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCardEntry
+import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -75,6 +76,7 @@ class CardViewService(
             val view = map.view
             val updatePacket = CardUpdatePacket(view)
             when {
+                packets.cardUpdateV4.send(player, updatePacket) -> {}
                 packets.cardUpdateV3.send(player, updatePacket) -> {}
                 packets.cardUpdateV2.send(player, updatePacket) -> {}
                 packets.cardUpdateV1.send(player, updatePacket) -> {}
@@ -104,25 +106,30 @@ class CardViewService(
     private fun getTileState(
         team: BingoTeam?,
         entry: BingoCardEntry,
+        objective: BingoObjective,
     ) : CardTile {
-        val isFreeSpace = entry is BingoCardEntry.FreeSpace
-        val isHidden = options.isHiddenItemsMode && (team == null || !entry.hasSeen(team)) && !isFreeSpace
+        val isFreeSpace = objective is BingoObjective.FreeSpace
+        val isHidden = options.isHiddenItemsMode && (team == null || !objective.hasSeen(team.key)) && !isFreeSpace
+        val isLocked = options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key)
+        val isAchieved = team != null && objective.hasAchieved(team.key)
 
         return CardTile(
-            item = if (isHidden) null else entry.visualItem(),
-            itemTier = entry.tier.takeIf { options.showHiddenTiers },
-            isFreeSpace = isFreeSpace,
-            isAdvancement = !isHidden && (
-                    entry is BingoCardEntry.AdvancementEntry ||
-                            (entry as? BingoCardEntry.MultiEntry)?.innerEntries?.firstOrNull() is BingoCardEntry.AdvancementEntry
-            ),
-            isMultiItem = !isHidden && entry is BingoCardEntry.MultiEntry,
+            item = if (isHidden) null else objective.visualItem(entry),
+            itemTier = entry.tier.takeIf { !options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
+            name = objective.display.name.takeIf { !isHidden },
+            lore = objective.displayLore(entry).takeIf { !isHidden } ?: emptyList(),
+            decoration = objective.display.decoration.takeIf { isFreeSpace || !isHidden },
             isHidden = isHidden,
-            isLocked = options.isLockoutMode && entry.teams.isNotEmpty() && team != null && !entry.hasAchieved(team),
-            isFlashing = entry.isFlashing(team, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
-            isAchieved = team != null && entry.hasAchieved(team),
+            isLocked = isLocked,
+            isFlashing = objective.isFlashing(team?.key, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
+            isAchieved = isAchieved,
+            progress = when {
+                isAchieved -> 1f
+                !isLocked && team != null -> objective.getProgress(team.key)
+                else -> 0f
+            },
             teamKeys = if (options.showOtherTeamCompletions && state.state != GameState.POSTGAME)
-                entry.teams.filter { it != team?.key }
+                objective.teamsAchieved.keys.filter { it != team?.key }
             else emptyList(),
         )
     }
@@ -135,7 +142,11 @@ class CardViewService(
                 ?.let { textProvider.string(StringKey.CardTeamCardTitle, textProvider.string(it.name)) }
                 ?: textProvider.string(StringKey.CardPreviewCard),
             tiles = state.card.entries
-                .map { entry -> getTileState(team, entry) }
+                .map { entry ->
+                    val goal = state.card.objectives[entry.objectiveId]
+                    goal?.let { getTileState(team, entry, it) }
+                        ?: CardTile.EMPTY
+                }
                 .toMutableList(),
             players = team?.players?.toList() ?: emptyList(),
         )

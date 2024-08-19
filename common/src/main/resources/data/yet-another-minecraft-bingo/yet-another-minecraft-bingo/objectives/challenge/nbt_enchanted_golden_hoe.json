@@ -1,0 +1,16 @@
+{
+  "type": "item",
+  "display": {
+    "name": "Enchanted Golden Hoe",
+    "item": "minecraft:golden_hoe",
+    "itemNbt": "{Enchantments:[{lvl:1,id:mending}]}",
+    "itemComponents": {
+      "minecraft:enchantments": {"levels":{"mending":1}}
+    }
+  },
+  "item": "minecraft:golden_hoe",
+  "nbt": "{Enchantments:[{}]}",
+  "components": {
+    "minecraft:enchantments": {"levels":{}}
+  }
+}

@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier
 import java.util.*
 
 data class ScoredItemPacket(
-    val player: BingoPlayerProfile,
+    val player: BingoPlayerProfile?,
     val isViewerOnTeam: Boolean,
     val team: BingoTeamKey,
     val teamColor: Formatting,
@@ -39,8 +39,12 @@ data class ScoredItemPacket(
         }
 
         override fun toPacketBuf(source: ScoredItemPacket, dest: IPacketBuf) {
-            dest.writeString(source.player.uuid.toString())
-            dest.writeString(source.player.name)
+            // I could make a v2 packet to make this nullable...
+            // but it isn't used anywhere outside of ScoreUpdateService yet
+            val playerUuid = source.player?.uuid ?: UUID.fromString("00000000-0000-0000-0000-000000000000")
+            val playerName = source.player?.name ?: ""
+            dest.writeString(playerUuid.toString())
+            dest.writeString(playerName)
             dest.writeBoolean(source.isViewerOnTeam)
             dest.writeString(source.team.id)
             dest.writeString(source.teamColor.name)

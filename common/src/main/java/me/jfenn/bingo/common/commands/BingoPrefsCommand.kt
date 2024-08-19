@@ -1,28 +1,38 @@
 package me.jfenn.bingo.common.commands
 
-import com.mojang.brigadier.arguments.BoolArgumentType
-import com.mojang.brigadier.builder.LiteralArgumentBuilder
-import com.mojang.brigadier.builder.RequiredArgumentBuilder
+import me.jfenn.bingo.api.commands.ICommandManager
+import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.common.utils.sendInfoMessage
-import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
-import org.koin.core.scope.Scope
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KMutableProperty1
 
-class BingoPrefsCommand : BaseCommand() {
+class BingoPrefsCommand(
+    commandManager: ICommandManager,
+) : BingoComponent() {
 
-    private fun changeBooleanSetting(
+    private fun IExecutionContext.toggleBooleanSetting(
+        player: ServerPlayerEntity,
+        field: KMutableProperty1<PlayerSettings, Boolean>,
+    ) {
+        val handler = scope.get<PlayerSettingsService>()
+
+        val settings = handler.getPlayer(player)
+        val newValue = !field.get(settings)
+        changeBooleanSetting(player, field, newValue)
+    }
+
+    private fun IExecutionContext.changeBooleanSetting(
         player: ServerPlayerEntity,
         field: KMutableProperty1<PlayerSettings, Boolean>,
         value: Boolean,
-        koinScope: Scope,
     ) {
-        val handler = koinScope.get<PlayerSettingsService>()
+        val handler = scope.get<PlayerSettingsService>()
 
         val settings = handler.getPlayer(player)
         field.set(settings, value)
@@ -32,42 +42,35 @@ class BingoPrefsCommand : BaseCommand() {
     }
 
     init {
-        var prefsCommand = LiteralArgumentBuilder.literal<ServerCommandSource>("bingoprefs")
-            .require(
-                requireBingoInstance(),
-                requirePermission(Permission.CONFIGURE_PLAYER),
+        commandManager.register("bingoprefs") {
+            requires {
+                hasPermission(Permission.CONFIGURE_PLAYER)
+            }
+
+            val fields = listOf(
+                PlayerSettings::bossbar,
+                PlayerSettings::scoreboard,
+                PlayerSettings::scoreboardAutoHide,
+                PlayerSettings::leadingMessages,
+                PlayerSettings::scoreMessages,
+                PlayerSettings::itemMessages,
+                PlayerSettings::nightVision,
             )
 
-        val fields = listOf(
-            PlayerSettings::bossbar,
-            PlayerSettings::scoreboard,
-            PlayerSettings::scoreboardAutoHide,
-            PlayerSettings::leadingMessages,
-            PlayerSettings::scoreMessages,
-            PlayerSettings::itemMessages,
-            PlayerSettings::nightVision,
-        )
+            for (field in fields) {
+                literal(getFieldName(field)) {
+                    boolean("value") { newValue ->
+                        executes {
+                            changeBooleanSetting(player!!, field, getArgument(newValue))
+                        }
+                    }
 
-        for (field in fields) {
-            prefsCommand = prefsCommand.then(
-                LiteralArgumentBuilder.literal<ServerCommandSource>(getFieldName(field))
-                    .then(
-                        RequiredArgumentBuilder.argument<ServerCommandSource, Boolean>(
-                            "value",
-                            BoolArgumentType.bool()
-                        )
-                            .executesInScope { ctx ->
-                                val player = ctx.source.player ?: return@executesInScope 0
-                                val value = BoolArgumentType.getBool(ctx, "value")
-
-                                changeBooleanSetting(player, field, value, this)
-                                1
-                            }
-                    )
-            )
+                    executes {
+                        toggleBooleanSetting(player!!, field)
+                    }
+                }
+            }
         }
-
-        prefsCommand.register()
     }
 
     companion object {

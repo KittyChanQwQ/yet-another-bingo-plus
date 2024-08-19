@@ -1,0 +1,10 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": "Any Banner",
+    "item": "minecraft:red_banner"
+  },
+  "objectives": [
+    "#minecraft:banners"
+  ]
+}

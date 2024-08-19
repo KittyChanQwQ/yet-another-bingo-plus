@@ -180,11 +180,29 @@ class MenuController(
         }
     }
 
+    private fun everyChunkIndex(margin: Int = 0) = sequence {
+        for (x in margin until 16 - margin) {
+            for (z in margin until 16 - margin) {
+                yield(x + z * 16)
+            }
+        }
+    }
+
     private fun searchLobbyBlocks() = sequence {
-        for (x in -24..24) {
-            for (y in -64..48) {
-                for (z in -24..24) {
-                    yield(BlockPosition(x, y, z))
+        for (chunkX in -2..2) for (chunkZ in -2..2) {
+            val chunk = server.lobbyWorld?.getChunk(chunkX, chunkZ, ChunkStatus.FULL)
+                ?: continue
+            val heightmap = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE)
+            val bottomY = server.lobbyWorld?.bottomY ?: 0
+
+            for (i in everyChunkIndex()) {
+                val x = i % 16
+                val z = i / 16
+                val height = heightmap.get(x, z) + 3
+
+                for (y in bottomY..height) {
+                    val blockPos = chunk.pos.getBlockPos(x, y, z)
+                    yield(BlockPosition.fromBlockPos(blockPos))
                 }
             }
         }

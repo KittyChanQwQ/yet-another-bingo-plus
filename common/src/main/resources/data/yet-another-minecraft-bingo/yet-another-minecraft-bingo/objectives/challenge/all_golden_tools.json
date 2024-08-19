@@ -1,0 +1,14 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": "All Golden Tools",
+    "item": "minecraft:golden_pickaxe"
+  },
+  "objectives": [
+    "minecraft:golden_axe",
+    "minecraft:golden_hoe",
+    "minecraft:golden_pickaxe",
+    "minecraft:golden_shovel",
+    "minecraft:golden_sword"
+  ]
+}

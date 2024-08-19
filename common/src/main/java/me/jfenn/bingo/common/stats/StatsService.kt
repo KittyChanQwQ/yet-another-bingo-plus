@@ -3,9 +3,12 @@ package me.jfenn.bingo.common.stats
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IExecutors
+import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.stats.data.*
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.stats.sql.StatsDatabase
+import org.slf4j.Logger
 import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -14,11 +17,14 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 class StatsService(
+    private val log: Logger,
     private val db: StatsDatabase,
     executors: IExecutors,
+    config: BingoConfig,
 ) {
 
     private val executor = executors.io
+    private val hostId = config.statsHostId
 
     fun checkIfIdsExist(playerUuid: UUID, gameIds: Set<UUID>): Set<UUID> {
         val existingIds = db.gameQueries.checkIfIdsExist(
@@ -65,6 +71,55 @@ class StatsService(
         }
     }
 
+    fun updateBestStats(
+        game: GameInfo,
+        players: List<GamePlayerInfo>,
+        isSingleplayer: Boolean
+    ) {
+        val hostPrefix = if (isSingleplayer) "singleplayer:" else ""
+        val host = hostPrefix + game.hostId.toString()
+
+        if (!game.isDraw && !game.isForfeit) {
+            kotlin.runCatching {
+                db.bestStatsQueries.updateTime(
+                    hash = game.bingoOptionsHash,
+                    host_id = host,
+                    game_id = game.id.toString(),
+                    duration = game.duration.inWholeMilliseconds
+                )
+            }.onFailure {
+                log.error("Failure running updateTime", it)
+            }
+        }
+
+        for (player in players) {
+            kotlin.runCatching {
+                db.bestStatsQueries.updateCapturedItems(
+                    player_id = player.minecraftId.toString(),
+                    hash = game.bingoOptionsHash,
+                    host_id = host,
+                    game_id = game.id.toString(),
+                    items = player.capturedItems.toLong(),
+                )
+            }.onFailure {
+                log.error("Failure running updateCapturedItems for {}", player.minecraftId, it)
+            }
+
+            kotlin.runCatching {
+                val winStreak = getPlayerWinStreak(player.minecraftId)
+                if (winStreak > 0L) {
+                    db.bestStatsQueries.updateWinStreak(
+                        player_id = player.minecraftId.toString(),
+                        host_id = host,
+                        streak = winStreak,
+                    )
+                }
+            }.onFailure {
+                log.error("Failure running updateWinStreak for {}", player.minecraftId, it)
+            }
+        }
+    }
+
     fun fetchGamesByPlayer(
         playerUuid: UUID,
         itemsPerPage: Long = 100L
@@ -97,18 +152,21 @@ class StatsService(
         return HexFormat.of().formatHex(digest)
     }
 
-    fun getPlayerWinStreak(playerUuid: UUID): Int {
-        return db.gameQueries.latestWinStreakByPlayer(playerUuid.toString())
+    fun getPlayerWinStreak(playerUuid: UUID): Long {
+        return db.gameQueries.latestWinStreakByPlayer(
+            minecraft_id = playerUuid.toString(),
+            host_id = hostId.toString(),
+        )
             .executeAsOneOrNull()
-            ?.toInt()
-            ?: 0
+            ?: 0L
     }
 
     fun getPlayerSummary(playerUuid: UUID, now: Instant = Clock.System.now()): PlayerStatsSummary {
         val total = db.gameQueries.totalStatsByPlayer(playerUuid.toString()).executeAsOne()
         val monthly = db.gameQueries.monthlyStatsByPlayer(playerUuid.toString(), now.toString()).executeAsOne()
         val favoriteTeam = db.gamePlayerQueries.findFavoriteTeam(playerUuid.toString()).executeAsOneOrNull()
-        val currentStreak = db.gameQueries.latestWinStreakByPlayer(playerUuid.toString()).executeAsOneOrNull()
+        val currentStreak = getPlayerWinStreak(playerUuid)
+        val bestStreak = getBestWinStreak(playerUuid)
 
         return PlayerStatsSummary(
             totalPlaytime = total.duration?.milliseconds ?: Duration.ZERO,
@@ -124,13 +182,59 @@ class StatsService(
             favoriteTeam = favoriteTeam?.id?.let { BingoTeamKey(it) },
             favoriteTeamPercentage = favoriteTeam?.let { it.count / it.total.toFloat() } ?: 0f,
             winStreak = currentStreak ?: 0L,
+            winStreakBest = bestStreak,
         )
     }
 
     fun getPlayerSummaryAsync(playerId: UUID): CompletableFuture<PlayerStatsSummary> {
-        return CompletableFuture<PlayerStatsSummary>()
-            .completeAsync({ getPlayerSummary(playerId) }, executor)
+        return CompletableFuture.supplyAsync({ getPlayerSummary(playerId) }, executor)
             .orTimeout(10L, TimeUnit.SECONDS)
+    }
+
+    fun getBestTime(options: BingoOptions, isSingleplayer: Boolean): Duration? {
+        val hostPrefix = if (isSingleplayer) "singleplayer:" else ""
+        val host = hostPrefix + hostId.toString()
+
+        val time = db.bestStatsQueries.bestTime(
+            bingo_options_hash = options.getShaHash(),
+            host_id = host,
+        ).executeAsOneOrNull()?.duration
+
+        return time?.milliseconds
+    }
+
+    fun getBestTimeAsync(options: BingoOptions, isSingleplayer: Boolean): CompletableFuture<Duration?> {
+        return CompletableFuture.supplyAsync({ getBestTime(options, isSingleplayer) }, executor)
+            .orTimeout(10L, TimeUnit.SECONDS)
+    }
+
+    fun getBestCapturedItems(playerId: UUID, options: BingoOptions): Int? {
+        val capturedItems = db.bestStatsQueries.bestCapturedItems(
+            player_id = playerId.toString(),
+            bingo_options_hash = options.getShaHash(),
+        ).executeAsOneOrNull()?.captured_items
+
+        return capturedItems?.toInt()
+    }
+
+    fun getBestWinStreak(playerId: UUID): Long? {
+        val winStreak = db.bestStatsQueries.bestWinStreak(
+            player_id = playerId.toString(),
+        ).executeAsOneOrNull()?.win_streak
+
+        return winStreak
+    }
+
+    fun resetPlayerStats(playerId: UUID) {
+        db.bestStatsQueries.resetByPlayer(playerId.toString())
+    }
+
+    fun resetGameStats(options: BingoOptions) {
+        db.bestStatsQueries.resetByHash(options.getShaHash())
+    }
+
+    fun resetAllStats() {
+        db.bestStatsQueries.resetAll()
     }
 
 }

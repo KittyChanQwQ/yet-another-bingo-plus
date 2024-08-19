@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.stats.packets.StatsCheckPacket
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
 import org.slf4j.Logger
+import java.net.NetworkInterface
 import java.util.*
 import kotlin.random.Random
 

@@ -1,0 +1,11 @@
+{
+  "type": "item",
+  "display": {
+    "name": "Damaged Golden Axe"
+  },
+  "item": "minecraft:golden_axe",
+  "nbt": "{Damage:31}",
+  "components": {
+    "minecraft:damage": 31
+  }
+}

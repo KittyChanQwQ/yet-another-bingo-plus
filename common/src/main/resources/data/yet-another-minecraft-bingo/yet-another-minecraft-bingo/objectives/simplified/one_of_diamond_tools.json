@@ -1,0 +1,14 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": "Any Diamond Tool",
+    "item": "minecraft:diamond_pickaxe"
+  },
+  "objectives": [
+    "minecraft:diamond_axe",
+    "minecraft:diamond_hoe",
+    "minecraft:diamond_pickaxe",
+    "minecraft:diamond_shovel",
+    "minecraft:diamond_sword"
+  ]
+}

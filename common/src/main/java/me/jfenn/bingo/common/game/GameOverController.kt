@@ -10,7 +10,6 @@ import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.stats.WriteStatsService
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
@@ -36,14 +35,11 @@ class GameOverController(
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
     private val packetManager: ServerPacketEvents,
-    private val stats: StatsService,
     private val writeStatsService: WriteStatsService,
     events: ScopedEvents,
 ) {
 
-    private fun broadcastGameOver() {
-        val info = gameOverService.getGameInfo()
-
+    private fun broadcastGameOver(info: GameOverService.GameOverInfo) {
         sequence {
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
             yield(Text.empty().append("  ").append(info.message))
@@ -102,17 +98,18 @@ class GameOverController(
     }
 
     private fun sendGameOverPacket(
+        info: GameOverService.GameOverInfo,
         isUpdate: Boolean,
     ) {
-        // Ensure that all players are sent updated card data
-        for (team in state.getRegisteredTeams()) {
-            cardViewService.updateCard(team, forceNotFlashing = true)
+        if (!isUpdate) {
+            // On the first call, ensure that all players are sent updated card data
+            for (team in state.getRegisteredTeams()) {
+                cardViewService.updateCard(team, forceNotFlashing = true)
+            }
         }
 
-        val info = gameOverService.getGameInfo()
-
         for (player in playerManager.getPlayers()) {
-            val winStreak = stats.getPlayerWinStreak(player.uuid)
+            val playerInfo = info.playerInfo[player.uuid]
             val isWinner = info.winningTeam?.includesPlayer(player.player) ?: false
 
             val packet = GameOverPacket(
@@ -126,11 +123,25 @@ class GameOverController(
                 ),
                 isWinner = isWinner,
                 isUpdate = isUpdate,
-                winStreak = winStreak,
+
+                winStreak = playerInfo?.winStreak,
+                bestWinStreak = playerInfo?.bestWinStreak,
+                isBestWinStreak = playerInfo?.isBestWinStreak == true,
+
+                capturedItems = playerInfo?.capturedItems,
+                bestCapturedItems = playerInfo?.bestCapturedItems,
+                isBestCapturedItems = playerInfo?.isBestCapturedItems == true,
+
+                endedAt = info.endedAt,
+
+                isBestTime = info.isBestTime,
+                prevBestTime = info.prevBestTime,
+
                 seed = server.overworld.seed,
             )
 
             when {
+                packetManager.gameOverV5.send(player.player, packet) -> {}
                 packetManager.gameOverV4.send(player.player, packet) -> {}
                 packetManager.gameOverV3.send(player.player, packet) -> {}
                 isUpdate -> {
@@ -142,7 +153,7 @@ class GameOverController(
                     Sounds.playGameOver(player)
                 }
                 else -> {
-                    // send the winning team title message
+                    // if the player does not have the mod, send the vanilla title message
                     player.player.networkHandler.sendPacket(TitleS2CPacket(info.title))
                     player.player.networkHandler.sendPacket(SubtitleS2CPacket(info.message))
                     Sounds.playGameOver(player)
@@ -151,16 +162,32 @@ class GameOverController(
         }
     }
 
+    private var gameOverInfo: GameOverService.GameOverInfo? = null
+
     init {
         events.onEnter(GameState.POSTGAME) {
+            // Get the game over info first
+            // (which needs to query the previous best time from stats.db)
+            val info = gameOverService.getGameInfo()
+            gameOverInfo = info
+
+            // Then, write the game to stats.db
             writeStatsService.writeGame()
-            broadcastGameOver()
-            sendGameOverPacket(isUpdate = false)
+
+            // Finally, send game info
+            broadcastGameOver(info)
+            sendGameOverPacket(info, isUpdate = false)
         }
 
         events.onUpdateTick {
             if (state.state == GameState.POSTGAME) {
-                sendGameOverPacket(isUpdate = true)
+                // If the game is currently over, keep sending the result to players
+                // (this prevents state loss if relogging / switching dimensions)
+                gameOverInfo?.let {
+                    sendGameOverPacket(it, isUpdate = true)
+                }
+            } else {
+                gameOverInfo = null
             }
         }
     }

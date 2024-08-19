@@ -3,6 +3,8 @@ package me.jfenn.bingo.common.config
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
+import me.jfenn.bingo.common.utils.UuidAsString
+import java.util.*
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
@@ -44,6 +46,8 @@ data class BingoConfig(
 
     // whether to sync game stats with any connected servers/clients
     var syncStats: Boolean = true,
+    // the "host_id" stored in stats.db to distinguish games synced vs. played on a server
+    val statsHostId: UuidAsString = UUID.randomUUID(),
 
     // only applies to client
     val client: ClientConfig = ClientConfig(),

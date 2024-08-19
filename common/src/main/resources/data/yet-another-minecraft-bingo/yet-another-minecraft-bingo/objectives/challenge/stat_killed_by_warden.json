@@ -1,0 +1,8 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:sculk_shrieker"
+  },
+  "statType": "minecraft:killed_by",
+  "statName": "minecraft:warden"
+}

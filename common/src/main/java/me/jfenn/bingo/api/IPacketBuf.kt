@@ -13,6 +13,9 @@ interface IPacketBuf {
     fun writeLong(long: Long)
     fun readLong(): Long
 
+    fun writeFloat(float: Float)
+    fun readFloat(): Float
+
     fun writeBoolean(bool: Boolean)
     fun readBoolean(): Boolean
 
@@ -21,5 +24,14 @@ interface IPacketBuf {
 
     fun writeText(text: Text)
     fun readText(): Text
+
+    fun <T> writeNullable(value: T?, callback: (T) -> Unit) {
+        writeBoolean(value != null)
+        value?.let(callback)
+    }
+
+    fun <T> readNullable(callback: () -> T): T? {
+        return if (readBoolean()) callback() else null
+    }
 
 }

@@ -20,7 +20,9 @@ val sharedModule = module {
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     singleOf(::ScoreboardManager) bind IScoreboardManager::class
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
+    singleOf(::StatManagerImpl) bind IStatManager::class
     single { StatusEffectsImpl } bind IStatusEffectsFactory::class
+    singleOf(::TagAccessorImpl) bind ITagAccessor::class
     singleOf(::TeamManager) bind ITeamManager::class
     singleOf(::TextSerializer) bind ITextSerializer::class
 

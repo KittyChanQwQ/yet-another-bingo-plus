@@ -3,27 +3,6 @@
         "minecraft:amethyst_cluster",
         "minecraft:bee_nest",
         "minecraft:blue_ice",
-        [
-            "minecraft:brain_coral",
-            "minecraft:bubble_coral",
-            "minecraft:fire_coral",
-            "minecraft:horn_coral",
-            "minecraft:tube_coral"
-        ],
-        [
-            "minecraft:brain_coral_block",
-            "minecraft:bubble_coral_block",
-            "minecraft:fire_coral_block",
-            "minecraft:horn_coral_block",
-            "minecraft:tube_coral_block"
-        ],
-        [
-            "minecraft:brain_coral_fan",
-            "minecraft:bubble_coral_fan",
-            "minecraft:fire_coral_fan",
-            "minecraft:horn_coral_fan",
-            "minecraft:tube_coral_fan"
-        ],
         "minecraft:breeze_rod",
         "minecraft:brown_mushroom_block",
         "minecraft:burn_pottery_sherd",
@@ -32,30 +11,8 @@
         "minecraft:coal_ore",
         "minecraft:conduit",
         "minecraft:copper_ore",
-        [
-            "minecraft:creeper_banner_pattern",
-            "minecraft:flower_banner_pattern",
-            "minecraft:globe_banner_pattern",
-            "minecraft:mojang_banner_pattern",
-            "minecraft:piglin_banner_pattern",
-            "minecraft:skull_banner_pattern"
-        ],
         "minecraft:crimson_nylium",
         "minecraft:danger_pottery_sherd",
-        [
-            "minecraft:dead_brain_coral",
-            "minecraft:dead_bubble_coral",
-            "minecraft:dead_fire_coral",
-            "minecraft:dead_horn_coral",
-            "minecraft:dead_tube_coral"
-        ],
-        [
-            "minecraft:dead_brain_coral_fan",
-            "minecraft:dead_bubble_coral_fan",
-            "minecraft:dead_fire_coral_fan",
-            "minecraft:dead_horn_coral_fan",
-            "minecraft:dead_tube_coral_fan"
-        ],
         "minecraft:deepslate_coal_ore",
         "minecraft:deepslate_copper_ore",
         "minecraft:deepslate_diamond_ore",
@@ -138,7 +95,12 @@
         "minecraft:verdant_froglight",
         "minecraft:wild_armor_trim_smithing_template",
         "minecraft:wind_charge",
-        "minecraft:wither_skeleton_skull"
+        "minecraft:wither_skeleton_skull",
+        "yet-another-minecraft-bingo:simplified/one_of_coral",
+        "yet-another-minecraft-bingo:simplified/one_of_coral_block",
+        "yet-another-minecraft-bingo:simplified/one_of_coral_fan",
+        "yet-another-minecraft-bingo:simplified/one_of_dead_coral",
+        "yet-another-minecraft-bingo:simplified/one_of_dead_coral_fan"
     ],
     "A": [
         "minecraft:ancient_debris",
@@ -191,7 +153,6 @@
         "minecraft:cherry_stairs",
         "minecraft:cherry_trapdoor",
         "minecraft:cherry_wood",
-        "minecraft:cobweb",
         "minecraft:cocoa_beans",
         "minecraft:comparator",
         "minecraft:cookie",
@@ -223,13 +184,6 @@
         "minecraft:cyan_wool",
         "minecraft:dark_prismarine",
         "minecraft:daylight_detector",
-        [
-            "minecraft:dead_brain_coral_block",
-            "minecraft:dead_bubble_coral_block",
-            "minecraft:dead_fire_coral_block",
-            "minecraft:dead_horn_coral_block",
-            "minecraft:dead_tube_coral_block"
-        ],
         "minecraft:diamond",
         "minecraft:diamond_axe",
         "minecraft:diamond_block",
@@ -244,8 +198,7 @@
         "minecraft:diamond_sword",
         "minecraft:disc_fragment_5",
         "minecraft:echo_shard",
-        "minecraft:emerald",
-        "minecraft:emerald_block",
+        "minecraft:end_crystal",
         "minecraft:enchanted_book",
         "minecraft:enchanted_golden_apple",
         "minecraft:enchanting_table",
@@ -376,7 +329,8 @@
         "minecraft:weeping_vines",
         "minecraft:wet_sponge",
         "minecraft:white_candle",
-        "minecraft:yellow_candle"
+        "minecraft:yellow_candle",
+        "yet-another-minecraft-bingo:simplified/one_of_dead_coral_block"
     ],
     "B": [
         "minecraft:activator_rail",
@@ -415,7 +369,7 @@
         "minecraft:chest_minecart",
         "minecraft:clock",
         "minecraft:coast_armor_trim_smithing_template",
-        "minecraft:cod_bucket",
+        "minecraft:cobweb",
         "minecraft:compass",
         "minecraft:cooked_rabbit",
         "minecraft:crafter",
@@ -441,6 +395,8 @@
         "minecraft:glow_berries",
         "minecraft:glow_lichen",
         "minecraft:gold_ingot",
+        "minecraft:gold_block",
+        "minecraft:raw_gold_block",
         "minecraft:gold_nugget",
         "minecraft:golden_apple",
         "minecraft:golden_axe",
@@ -458,6 +414,7 @@
         "minecraft:hopper_minecart",
         "minecraft:iron_bars",
         "minecraft:iron_block",
+        "minecraft:raw_iron_block",
         "minecraft:iron_boots",
         "minecraft:iron_chestplate",
         "minecraft:iron_door",
@@ -466,8 +423,8 @@
         "minecraft:iron_trapdoor",
         "minecraft:jukebox",
         "minecraft:lantern",
+        "minecraft:lapis_block",
         "minecraft:lapis_lazuli",
-        "minecraft:lava_bucket",
         "minecraft:lead",
         "minecraft:lightning_rod",
         "minecraft:lily_pad",
@@ -512,9 +469,7 @@
         "minecraft:redstone_torch",
         "minecraft:repeater",
         "minecraft:rooted_dirt",
-        "minecraft:salmon_bucket",
         "minecraft:sea_pickle",
-        "minecraft:shears",
         "minecraft:shroomlight",
         "minecraft:slime_ball",
         "minecraft:slime_block",
@@ -595,6 +550,9 @@
         "minecraft:brown_mushroom",
         "minecraft:brush",
         "minecraft:bucket",
+        "minecraft:cod_bucket",
+        "minecraft:salmon_bucket",
+        "minecraft:lava_bucket",
         "minecraft:calcite",
         "minecraft:campfire",
         "minecraft:carrot",
@@ -630,6 +588,8 @@
         "minecraft:dark_oak_wood",
         "minecraft:decorated_pot",
         "minecraft:dripstone_block",
+        "minecraft:emerald",
+        "minecraft:emerald_block",
         "minecraft:feather",
         "minecraft:fern",
         "minecraft:fire_charge",
@@ -760,7 +720,6 @@
         "minecraft:quartz_pillar",
         "minecraft:quartz_slab",
         "minecraft:quartz_stairs",
-        "minecraft:raw_iron_block",
         "minecraft:red_banner",
         "minecraft:red_concrete",
         "minecraft:red_concrete_powder",
@@ -773,6 +732,7 @@
         "minecraft:rotten_flesh",
         "minecraft:salmon",
         "minecraft:seagrass",
+        "minecraft:shears",
         "minecraft:shield",
         "minecraft:smooth_quartz",
         "minecraft:smooth_quartz_slab",
@@ -877,6 +837,8 @@
         "minecraft:cooked_mutton",
         "minecraft:cooked_porkchop",
         "minecraft:copper_ingot",
+        "minecraft:copper_block",
+        "minecraft:raw_copper_block",
         "minecraft:cornflower",
         "minecraft:cracked_deepslate_bricks",
         "minecraft:cracked_deepslate_tiles",
@@ -1407,39 +1369,12 @@
             "minecraft:yellow_bed"
         ],
         [
-            "minecraft:brain_coral",
-            "minecraft:brain_coral_block",
-            "minecraft:brain_coral_fan",
-            "minecraft:bubble_coral",
-            "minecraft:bubble_coral_block",
-            "minecraft:bubble_coral_fan",
-            "minecraft:fire_coral",
-            "minecraft:fire_coral_block",
-            "minecraft:fire_coral_fan",
-            "minecraft:horn_coral",
-            "minecraft:horn_coral_block",
-            "minecraft:horn_coral_fan",
-            "minecraft:tube_coral",
-            "minecraft:tube_coral_block",
-            "minecraft:tube_coral_fan"
-        ],
-        [
-            "minecraft:dead_brain_coral",
-            "minecraft:dead_brain_coral_block",
-            "minecraft:dead_brain_coral_fan",
-            "minecraft:dead_bubble_coral",
-            "minecraft:dead_bubble_coral_block",
-            "minecraft:dead_bubble_coral_fan",
-            "minecraft:dead_bush",
-            "minecraft:dead_fire_coral",
-            "minecraft:dead_fire_coral_block",
-            "minecraft:dead_fire_coral_fan",
-            "minecraft:dead_horn_coral",
-            "minecraft:dead_horn_coral_block",
-            "minecraft:dead_horn_coral_fan",
-            "minecraft:dead_tube_coral",
-            "minecraft:dead_tube_coral_block",
-            "minecraft:dead_tube_coral_fan"
+            "yet-another-minecraft-bingo:simplified/one_of_coral",
+            "yet-another-minecraft-bingo:simplified/one_of_coral_block",
+            "yet-another-minecraft-bingo:simplified/one_of_coral_fan",
+            "yet-another-minecraft-bingo:simplified/one_of_dead_coral",
+            "yet-another-minecraft-bingo:simplified/one_of_dead_coral_block",
+            "yet-another-minecraft-bingo:simplified/one_of_dead_coral_fan"
         ],
         [
             "minecraft:cobblestone",
@@ -1779,52 +1714,26 @@
         ],
         [
             "minecraft:coal_ore",
-            "minecraft:deepslate_coal_ore"
-        ],
-        [
+            "minecraft:deepslate_coal_ore",
             "minecraft:copper_ore",
-            "minecraft:deepslate_copper_ore"
-        ],
-        [
+            "minecraft:deepslate_copper_ore",
             "minecraft:diamond_ore",
-            "minecraft:deepslate_diamond_ore"
-        ],
-        [
+            "minecraft:deepslate_diamond_ore",
             "minecraft:emerald_ore",
-            "minecraft:deepslate_emerald_ore"
-        ],
-        [
+            "minecraft:deepslate_emerald_ore",
             "minecraft:gold_ore",
-            "minecraft:deepslate_gold_ore"
-        ],
-        [
+            "minecraft:deepslate_gold_ore",
             "minecraft:iron_ore",
-            "minecraft:deepslate_iron_ore"
-        ],
-        [
+            "minecraft:deepslate_iron_ore",
             "minecraft:lapis_ore",
-            "minecraft:deepslate_lapis_ore"
+            "minecraft:deepslate_lapis_ore",
+            "minecraft:redstone_ore",
+            "minecraft:deepslate_redstone_ore",
+            "minecraft:nether_gold_ore"
         ],
         [
-            "minecraft:music_disc_11",
-            "minecraft:music_disc_13",
-            "minecraft:music_disc_5",
-            "minecraft:music_disc_blocks",
-            "minecraft:music_disc_cat",
-            "minecraft:music_disc_chirp",
-            "minecraft:music_disc_creator",
-            "minecraft:music_disc_creator_music_box",
-            "minecraft:music_disc_far",
-            "minecraft:music_disc_mall",
-            "minecraft:music_disc_mellohi",
-            "minecraft:music_disc_otherside",
-            "minecraft:music_disc_pigstep",
-            "minecraft:music_disc_precipice",
-            "minecraft:music_disc_relic",
-            "minecraft:music_disc_stal",
-            "minecraft:music_disc_strad",
-            "minecraft:music_disc_wait",
-            "minecraft:music_disc_ward"
+            "#minecraft:music_discs",
+            "#c:music_discs"
         ],
         [
             "minecraft:ochre_froglight",
@@ -1834,10 +1743,6 @@
         [
             "minecraft:purpur_block",
             "minecraft:purpur_pillar"
-        ],
-        [
-            "minecraft:redstone_ore",
-            "minecraft:deepslate_redstone_ore"
         ],
         [
             "minecraft:sculk",
@@ -1908,8 +1813,9 @@
         ],
         [
             "minecraft:copper_block",
-            "minecraft:cut_copper",
-            "minecraft:copper_ingot"
+            "minecraft:copper_ingot",
+            "minecraft:raw_copper_block",
+            "minecraft:raw_copper"
         ],
         [
             "minecraft:mud",
@@ -1926,10 +1832,6 @@
         [
             "minecraft:raw_iron_block",
             "minecraft:raw_iron"
-        ],
-        [
-            "minecraft:raw_copper_block",
-            "minecraft:raw_copper"
         ],
         [
             "minecraft:raw_gold_block",

@@ -1,10 +1,12 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -36,9 +38,25 @@ class BingoHudRenderer(
 
         val CARD_COLORS_ID = Identifier.of(MOD_ID_BINGO, "gui/card_colors.json")!!
         val ADVANCEMENT_FRAME_ID = Identifier.of("minecraft", "bingo/image_frame_advancement")!!
+        val FRAME_FREE_SPACE_ID = Identifier.of("minecraft", "bingo/image_frame_free_space")!!
         val FRAME_MULTI_ID = Identifier.of("minecraft", "bingo/image_frame_multi")!!
         val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")!!
+        val FRAME_FORBIDDEN_ID = Identifier.of("minecraft", "bingo/image_frame_forbidden")!!
         val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")!!
+
+        private val winColors = listOf(
+            0xFF_F5C0A3.toInt(),
+            0xFF_A3F5A3.toInt(),
+            0xFF_A3F5C7.toInt(),
+            0xFF_A3ABF5.toInt(),
+            0xFF_CCA3F5.toInt(),
+            0xFF_F5A3D6.toInt(),
+        )
+
+        fun getWinColor(now: Instant = Clock.System.now()): Int {
+            val winIndex = now.epochSeconds % winColors.size
+            return winColors[winIndex.toInt()]
+        }
     }
 
     private var cardColors = BingoCardColors()
@@ -69,15 +87,6 @@ class BingoHudRenderer(
 
         return Pair(tileX, tileY)
     }
-
-    private val winColors = listOf(
-        0xFF_F5C0A3.toInt(),
-        0xFF_A3F5A3.toInt(),
-        0xFF_A3F5C7.toInt(),
-        0xFF_A3ABF5.toInt(),
-        0xFF_CCA3F5.toInt(),
-        0xFF_F5A3D6.toInt(),
-    )
 
     fun drawCard(
         context: DrawContext,
@@ -122,8 +131,7 @@ class BingoHudRenderer(
             context.matrices.translate(90.0, -4.0, 1000.0)
             context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
 
-            val winIndex = Clock.System.now().epochSeconds % winColors.size
-            context.drawText(textRenderer, text.string(StringKey.CardWinner), 0, 0, winColors[winIndex.toInt()], true)
+            context.drawText(textRenderer, text.string(StringKey.CardWinner), 0, 0, getWinColor(), true)
 
             context.matrices.pop()
         }
@@ -136,6 +144,11 @@ class BingoHudRenderer(
             when {
                 tile.isFlashing -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileFlashingColor.asInt)
                 tile.isAchieved -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileAchievedColor.asInt)
+                tile.progress >= (1/18f) -> context.fill(
+                    itemX, itemY + (18 * (1f - tile.progress)).toInt().coerceIn(0, 18),
+                    itemX + 18, itemY + 18,
+                    colors.tileProgressColor.asInt
+                )
             }
 
             if (tile.isHidden) {
@@ -171,7 +184,7 @@ class BingoHudRenderer(
                 )
             }
 
-            if (tile.isAdvancement) {
+            if (tile.decoration == CardTile.Decoration.ADVANCEMENT) {
                 service.drawTexture(
                     texture = ADVANCEMENT_FRAME_ID,
                     x = itemX - 1, y = itemY - 1, z = 300,
@@ -181,10 +194,30 @@ class BingoHudRenderer(
                 )
             }
 
-            if (tile.isMultiItem) {
+            if (tile.decoration == CardTile.Decoration.MULTI_ITEM) {
                 service.drawTexture(
                     texture = FRAME_MULTI_ID,
                     x = itemX - 1, y = itemY - 1, z = 300,
+                    u = 0f, v = 0f,
+                    width = 20, height = 20,
+                    textureWidth = 20, textureHeight = 20,
+                )
+            }
+
+            if (tile.decoration == CardTile.Decoration.FREE_SPACE) {
+                service.drawTexture(
+                    texture = FRAME_FREE_SPACE_ID,
+                    x = itemX - 1, y = itemY - 1, z = 301,
+                    u = 0f, v = 0f,
+                    width = 20, height = 20,
+                    textureWidth = 20, textureHeight = 20,
+                )
+            }
+
+            if (tile.decoration == CardTile.Decoration.FORBIDDEN) {
+                service.drawTexture(
+                    texture = FRAME_FORBIDDEN_ID,
+                    x = itemX - 1, y = itemY - 1, z = 301,
                     u = 0f, v = 0f,
                     width = 20, height = 20,
                     textureWidth = 20, textureHeight = 20,
@@ -274,12 +307,16 @@ class BingoHudRenderer(
             val (tileX, tileY) = getItem(x, y, cardScale, mouseX, mouseY) ?: return
             val tile = view.tile(tileX, tileY) ?: return
 
-            tile.item?.stack?.let { stack ->
-                context.matrices.push()
-                context.matrices.translate(0f, 0f, 2000f)
-                context.drawItemTooltip(textRenderer, stack, mouseX, mouseY)
-                context.matrices.pop()
+            context.matrices.push()
+            context.matrices.translate(0f, 0f, 2000f)
+            val tooltip = buildList {
+                tile.name?.let { add(it) }
+                addAll(tile.lore)
             }
+            if (tooltip.isNotEmpty()) {
+                context.drawTooltip(textRenderer, tooltip, mouseX, mouseY)
+            }
+            context.matrices.pop()
         }
     }
 

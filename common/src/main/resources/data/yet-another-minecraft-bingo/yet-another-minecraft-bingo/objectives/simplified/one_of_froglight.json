@@ -1,0 +1,12 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": "Any Froglight",
+    "item": "minecraft:ochre_froglight"
+  },
+  "objectives": [
+    "minecraft:ochre_froglight",
+    "minecraft:pearlescent_froglight",
+    "minecraft:verdant_froglight"
+  ]
+}

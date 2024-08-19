@@ -3,10 +3,10 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.Config
-import me.jfenn.bingo.common.config.TierLabel
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.LruHashMap
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
@@ -65,20 +65,34 @@ class MapRenderService(
             }
         }
 
-        val IMAGE_FRAME_ADVANCEMENT: ByteArray = run {
-            val image = MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/image_frame_advancement.png")
-                .use { ImageIO.read(it) }
-
-            val arr = ByteArray(IMAGE_SIZE*IMAGE_SIZE)
-            for (x in 0 until IMAGE_SIZE) for (y in 0 until IMAGE_SIZE) {
-                val color = Color.fromInt(image.getRGB(x, y))
+        private fun BufferedImage.toMinecraftByteArray(): ByteArray {
+            val arr = ByteArray(width*height) { 0.toByte() }
+            for (x in 0 until width) for (y in 0 until height) {
+                val color = Color.fromInt(getRGB(x, y))
                 if (color.a != 0) {
-                    arr[x + y * IMAGE_SIZE] = color.asByte
+                    arr[x + y * width] = color.asByte
                 }
             }
 
-            arr
+            return arr
         }
+
+        private val IMAGE_FRAME_ADVANCEMENT = MapRenderService::class.java
+            .getResourceAsStream("/$MOD_ID_BINGO/image_frame_advancement.png")
+            .use { ImageIO.read(it) }
+            .toMinecraftByteArray()
+
+        private val IMAGE_FRAME_FORBIDDEN = MapRenderService::class.java
+            .getResourceAsStream("/$MOD_ID_BINGO/image_frame_forbidden.png")
+            .use { ImageIO.read(it) }
+            .toMinecraftByteArray()
+
+        private const val NUMBER_WIDTH = 5
+        private const val NUMBER_HEIGHT = 7
+        private val NUMBERS = MapRenderService::class.java
+            .getResourceAsStream("/$MOD_ID_BINGO/numbers.png")
+            .use { ImageIO.read(it) }
+            .toMinecraftByteArray()
     }
 
     init {
@@ -86,9 +100,9 @@ class MapRenderService(
     }
 
     class BingoTileImage(
-        val regular: ByteArray = ByteArray(IMAGE_SIZE*IMAGE_SIZE).apply { fill(COLOR_BACKGROUND.asByte) },
-        val flashing: ByteArray = ByteArray(IMAGE_SIZE*IMAGE_SIZE).apply { fill(COLOR_FLASHING.asByte) },
-        val achieved: ByteArray = ByteArray(IMAGE_SIZE*IMAGE_SIZE).apply { fill(COLOR_ACHIEVED.asByte) },
+        val regular: ByteArray = ByteArray(IMAGE_SIZE*IMAGE_SIZE) { COLOR_BACKGROUND.asByte },
+        val flashing: ByteArray = ByteArray(IMAGE_SIZE*IMAGE_SIZE) { COLOR_FLASHING.asByte },
+        val achieved: ByteArray = ByteArray(IMAGE_SIZE*IMAGE_SIZE) { COLOR_ACHIEVED.asByte },
     ) {
         companion object {
             val EMPTY = BingoTileImage()
@@ -149,33 +163,106 @@ class MapRenderService(
         }
     }
 
+    data class TileImageKey(
+        val name: String,
+        val count: Int,
+        val decoration: CardTile.Decoration?,
+    )
+
     // keep a full card of 25 items in-memory, using LRU eviction
     // (could need extra space to handle rotating items)
-    private val imageMap = LruHashMap<String, BingoTileImage?>(25)
+    private val imageMap = LruHashMap<TileImageKey, BingoTileImage?>(25)
+
+    private inline fun drawTileDecorations(
+        tile: TileImageKey,
+        crossinline callback: (x: Int, y: Int, color: Byte) -> Unit,
+    ) {
+        // Draw the advancement frame if the tile is an advancement
+        if (tile.decoration == CardTile.Decoration.ADVANCEMENT) {
+            for (x in 0 until IMAGE_SIZE) for (y in 0 until IMAGE_SIZE) {
+                val frameIndex = x + y * IMAGE_SIZE
+                if (frameIndex !in IMAGE_FRAME_ADVANCEMENT.indices) continue
+                val color = IMAGE_FRAME_ADVANCEMENT[frameIndex]
+                if (color != 0.toByte()) {
+                    callback(x, y, color)
+                }
+            }
+        }
+
+        // Draw a "+" if the tile can be captured multiple ways
+        if (tile.decoration == CardTile.Decoration.MULTI_ITEM) {
+            val offset = 6
+            for (innerT in offset-2..offset+2) {
+                callback(offset, innerT, COLOR_WHITE.asByte)
+                callback(innerT, offset, COLOR_WHITE.asByte)
+            }
+        }
+
+        // Draw the locked "X" if the tile is forbidden
+        if (tile.decoration == CardTile.Decoration.FORBIDDEN) {
+            for (x in 0 until IMAGE_SIZE) for (y in 0 until IMAGE_SIZE) {
+                val frameIndex = x + y * IMAGE_SIZE
+                if (frameIndex !in IMAGE_FRAME_FORBIDDEN.indices) continue
+                val color = IMAGE_FRAME_FORBIDDEN[frameIndex]
+                if (color != 0.toByte()) {
+                    callback(x, y, color)
+                }
+            }
+        }
+
+        // Draw the item count if more than 1
+        if (tile.count > 1) {
+            val digits = tile.count.toString()
+                .map { it.digitToInt() }
+
+            digits.forEachIndexed { index, digit ->
+                val startX = 20 - (digits.size - index)*(NUMBER_WIDTH+1) + 1
+                val startY = 20 - NUMBER_HEIGHT
+                for (x in 0 until NUMBER_WIDTH) for (y in 0 until NUMBER_HEIGHT) {
+                    val imageIndex = (digit * NUMBER_WIDTH) + x + (y * NUMBER_WIDTH * 10)
+                    if (imageIndex !in NUMBERS.indices) continue
+
+                    val drawX = startX + x
+                    val drawY = startY + y
+                    if (drawX !in 0..20) continue // y !in 0..20 is impossible (at least at the time of writing...)
+
+                    val color = NUMBERS[imageIndex]
+                    if (color != 0.toByte()) {
+                        callback(drawX, drawY, color)
+                        callback(drawX+1, drawY+1, COLOR_ITEM_SHADOW.asByte)
+                    }
+                }
+            }
+        }
+    }
 
     private fun getTileImage(tile: CardTile): BingoTileImage? {
-        val item = tile.item
-            ?.item
-            ?.let { Registries.ITEM.getId(it).path }
-            ?: return null
+        val key = tile.mapRenderKey ?: return null
 
-        if (imageMap.containsKey(item))
-            return imageMap[item] ?: BingoTileImage.FALLBACK
+        if (imageMap.containsKey(key))
+            return imageMap[key] ?: BingoTileImage.FALLBACK
 
         try {
-            val image = readTileImage(item).use { ImageIO.read(it) }
+            val image = readTileImage(key.name).use { ImageIO.read(it) }
             val tileImage = BingoTileImage.fromBufferedImage(image)
 
-            imageMap[item] = tileImage
+            drawTileDecorations(key) { x, y, color ->
+                val index = x + y * IMAGE_SIZE
+                tileImage.regular[index] = color
+                tileImage.flashing[index] = color
+                tileImage.achieved[index] = color
+            }
+
+            imageMap[key] = tileImage
             return tileImage
         } catch (e: Throwable) {
-            log.error("Error reading item image: $item.png", e)
-            imageMap[item] = null
+            log.error("Error reading item image: ${tile.item?.identifier}", e)
+            imageMap[key] = null
             return BingoTileImage.FALLBACK
         }
     }
 
-    fun getMapColor(color: Formatting?): Byte {
+    private fun getMapColor(color: Formatting?): Byte {
         return when (color) {
             Formatting.BLUE -> 12
             Formatting.RED -> 4
@@ -251,18 +338,21 @@ class MapRenderService(
         require(itemX in 0 until 5)
         require(itemY in 0 until 5)
 
+        var isRegularTile = false
         val tileImage = getTileImage(tile) ?: BingoTileImage.EMPTY
         val tileImageArray = when {
             tile.isHidden -> when {
                 tile.itemTier != null -> {
                     BingoTileImage.HIDDEN_TIERS[tile.itemTier]?.regular ?: BingoTileImage.FALLBACK.regular
                 }
-                tile.isFreeSpace -> BingoTileImage.EMPTY.regular
                 else -> BingoTileImage.HIDDEN.regular
             }
             tile.isFlashing -> tileImage.flashing
             tile.isAchieved -> tileImage.achieved
-            else -> tileImage.regular
+            else -> {
+                isRegularTile = true
+                tileImage.regular
+            }
         }
 
         val tileX = MAP_BORDER + TILE_SIZE*itemX
@@ -273,29 +363,14 @@ class MapRenderService(
             val y = tileY + innerY
             val mapStateStart = tileX + y * MAP_SIZE
             val tileImageStart = innerY * IMAGE_SIZE
+
+            val arr = when {
+                isRegularTile && innerY > innerMax * (1f - tile.progress) -> tileImage.flashing
+                else -> tileImageArray
+            }
+
             // Uses System.arraycopy, which is a lot faster than manually setting each byte
-            tileImageArray.copyInto(mapState.colors, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
-        }
-
-        // Draw the advancement frame if the tile is an advancement
-        if (tile.isAdvancement && !tile.isHidden) {
-            for (innerX in 0..innerMax) for (innerY in 0..innerMax) {
-                val frameIndex = innerX + innerY * IMAGE_SIZE
-                if (frameIndex !in IMAGE_FRAME_ADVANCEMENT.indices) continue
-                val color = IMAGE_FRAME_ADVANCEMENT[frameIndex]
-                if (color != 0.toByte()) {
-                    mapState.setColor(innerX + tileX, innerY + tileY, color)
-                }
-            }
-        }
-
-        // Draw a "+" if the tile can be captured multiple ways
-        if (tile.isMultiItem && !tile.isHidden) {
-            val offset = 6
-            for (innerT in offset-2..offset+2) {
-                mapState.setColor(tileX + offset, tileY + innerT, COLOR_WHITE.asByte)
-                mapState.setColor(tileX + innerT, tileY + offset, COLOR_WHITE.asByte)
-            }
+            arr.copyInto(mapState.colors, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
         }
 
         if (tile.isLocked) {

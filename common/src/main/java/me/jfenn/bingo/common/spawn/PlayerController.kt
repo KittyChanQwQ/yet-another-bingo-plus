@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.*
-import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.NBT_BINGO_IGNORE
-import me.jfenn.bingo.common.NBT_BINGO_VANISH
+import me.jfenn.bingo.api.EffectType
+import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.api.IStatusEffectsFactory
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -13,7 +13,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.VanishIntegration
-import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.world.GameMode
@@ -62,11 +61,15 @@ class PlayerController(
         log.debug("updateGameMode(${player.uuidAsString}, forceReset=$forceReset)")
 
         val gameMode = when (state.state) {
-            GameState.PREGAME,
+            GameState.UNINITIALIZED,
+            GameState.PREGAME -> GameMode.ADVENTURE
             GameState.LOADING,
-            GameState.COUNTDOWN -> GameMode.ADVENTURE
+            GameState.COUNTDOWN,
             GameState.PLAYING -> when {
-                isOnTeam -> GameMode.SURVIVAL
+                isOnTeam -> when (state.state) {
+                    GameState.PLAYING -> GameMode.SURVIVAL
+                    else -> GameMode.ADVENTURE
+                }
                 !cardViewService.supportsCardHud(player) && vanishIntegration.isInstalled() -> GameMode.ADVENTURE
                 else -> GameMode.SPECTATOR
             }
@@ -83,7 +86,8 @@ class PlayerController(
         ) {
             // This indicates that a player is starting the game, or has logged back on after a game has started
             // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
-            if (state.state != GameState.POSTGAME) {
+            val shouldRespawnPlayer = state.state == GameState.PREGAME || state.state == GameState.LOADING || isOnTeam
+            if (shouldRespawnPlayer && state.state != GameState.POSTGAME) {
                 respawnPlayer(player)
             }
 
@@ -91,7 +95,7 @@ class PlayerController(
         }
 
         // if the player is not on a team, they should be vanished
-        val isVanished = !isOnTeam && state.state == GameState.PLAYING
+        val isVanished = !isOnTeam && (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN || state.state == GameState.PLAYING)
         vanishIntegration.setVanish(player, isVanished)
 
         // allow players in adventure mode to fly
@@ -108,7 +112,10 @@ class PlayerController(
             .filterNot { options.isNightVision && it.type == EffectType.NIGHT_VISION }
             // Avoid cancelling out effects from [CountdownController]
             .filterNot { state.state == GameState.COUNTDOWN && it.type == EffectType.INVISIBILITY }
-            .forEach { statusEffects.removeEffect(it) }
+            .forEach {
+                log.debug("[PlayerController] Removing effect {} from {}", it.type, player)
+                statusEffects.removeEffect(it)
+            }
 
         player.fireTicks = 0
         player.isOnFire = false

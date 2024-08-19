@@ -2,12 +2,17 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonNames
+import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.spawn.SpawnItem
 import me.jfenn.bingo.common.utils.joinText
+import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import java.security.MessageDigest
+import java.util.*
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.memberProperties
 import kotlin.time.Duration
@@ -18,7 +23,7 @@ data class BingoOptions(
     var cardGoal: BingoGoal = BingoGoal.Lines(3),
     var timeLimit: Duration? = null,
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
-    var tierLists: Map<String, Int> = mapOf("all_items" to 1),
+    var tierLists: Map<String, Int> = mapOf("all_items" to 1, "challenge" to 1),
     var tierListPage: Int = 0,
 
     // game mode settings
@@ -89,9 +94,9 @@ data class BingoOptions(
             .map { (name, weight) ->
                 when {
                     showPercentage -> Text.empty()
-                        .append(state.title(name))
+                        .append(TierListState.title(name))
                         .append(String.format(" (%.0f%%)", weight * 100f / total))
-                    else -> state.title(name)
+                    else -> TierListState.title(name)
                 }
             }
             .joinText()
@@ -128,6 +133,38 @@ data class BingoOptions(
             val value = property.getValue(options, property)
             property.setValue(this, property, value)
         }
+    }
+
+    /**
+     * Generates a unique hash reflecting any game settings that might
+     * have an effect on its difficulty
+     * (excluding purely visual settings, such as showCompletedLines)
+     */
+    fun getShaHash(): String {
+        val md = MessageDigest.getInstance("SHA-512")
+
+        sequence {
+            // card difficulty
+            yield(json.encodeToString(cardGoal))
+            yield(json.encodeToString(itemDistribution))
+            yield(json.encodeToString(tierLists.toSortedMap().toMap())) // note: map sort order affects the resulting hash!
+            // gamemodes
+            yield(isLockoutMode.toString())
+            yield(isInventoryMode.toString())
+            yield(isRankedMode.toString())
+            yield(isHiddenItemsMode.toString())
+            // features
+            yield(isKeepInventory.toString())
+            yield(isElytra.toString())
+            yield((isPlayerKit || isTeamKit).toString()) // has starting items enabled
+            // spawning
+            yield(spawnDimension)
+        }.forEach {
+            md.update(it.toByteArray())
+        }
+
+        val digest = md.digest()
+        return HexFormat.of().formatHex(digest)
     }
 
 }

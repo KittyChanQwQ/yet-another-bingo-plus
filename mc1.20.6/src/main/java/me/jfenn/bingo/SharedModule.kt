@@ -19,15 +19,18 @@ val sharedModule = module {
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
     single { Executors } bind IExecutors::class
-    singleOf(::ItemStackFactory) bind IItemStackFactory::class
+    single { ItemStackFactory(get(), null) } bind IItemStackFactory::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     singleOf(::ScoreboardManager) bind IScoreboardManager::class
+    singleOf(::StatManagerImpl) bind IStatManager::class
     single { StatusEffectsImpl } bind IStatusEffectsFactory::class
+    singleOf(::TagAccessorImpl) bind ITagAccessor::class
     singleOf(::TeamManager) bind ITeamManager::class
     singleOf(::TextSerializer) bind ITextSerializer::class
 
     scope<BingoScope> {
         scopedOf(::PlayerManager) bind IPlayerManager::class
         scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, ILevelStorage::class)
+        scopedOf(::ItemStackFactory) bind IItemStackFactory::class
     }
 }

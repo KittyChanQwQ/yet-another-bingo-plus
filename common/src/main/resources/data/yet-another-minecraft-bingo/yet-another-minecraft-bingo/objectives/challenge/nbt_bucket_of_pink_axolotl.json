@@ -1,0 +1,11 @@
+{
+  "type": "item",
+  "display": {
+    "name": "Bucket of Pink Axolotl"
+  },
+  "item": "minecraft:axolotl_bucket",
+  "nbt": "{EntityTag:{Variant:0}}",
+  "components": {
+    "minecraft:bucket_entity_data": {"Variant": 0}
+  }
+}

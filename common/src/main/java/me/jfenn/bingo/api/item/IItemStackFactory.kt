@@ -7,6 +7,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 interface IItemStackFactory {
+    fun listItems(server: MinecraftServer): List<String>
     fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean
 
     fun createStack(item: String, count: Int = 1): IItemStack
@@ -28,6 +29,7 @@ interface IItemStack {
     val maxCount: Int
 
     val displayName: Text
+    val lore: List<Text>
 
     fun addCustomTag(tag: String)
     fun removeCustomTag(tag: String)
@@ -41,11 +43,16 @@ interface IItemStack {
     fun setUnbreakable(value: Boolean)
     fun setHideFlags(hideFlags: Int)
 
-    fun setNbtString(nbt: String?)
+    fun setNbtString(nbt: String?): Boolean
     fun getNbtString(): String?
 
-    fun setComponentsString(components: Map<String, String?>)
+    fun setComponentsString(components: Map<String, String?>): Boolean
     fun getComponentsString(): Map<String, String?>?
+
+    fun isDataOverlapping(
+        nbt: String?,
+        components: Map<String, String?>?,
+    ): Boolean
 
     fun copy(): IItemStack
 

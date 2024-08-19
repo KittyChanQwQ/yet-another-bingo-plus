@@ -1,0 +1,14 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": "Any Netherite Tool",
+    "item": "minecraft:netherite_pickaxe"
+  },
+  "objectives": [
+    "minecraft:netherite_axe",
+    "minecraft:netherite_hoe",
+    "minecraft:netherite_pickaxe",
+    "minecraft:netherite_shovel",
+    "minecraft:netherite_sword"
+  ]
+}

@@ -1,6 +1,7 @@
 package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.api.IObjectiveHandle
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.common.scoreboard.ScoreChange
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
@@ -16,8 +17,9 @@ import net.minecraft.text.Text
 class ScoreboardManager : IScoreboardManager {
 
     override fun createDummyObjective(server: MinecraftServer, name: String, displayName: Text): IObjectiveHandle {
-        val objective = server.scoreboard.getNullableObjective(name) ?: run {
-            server.scoreboard.addObjective(
+        val scoreboard: ServerScoreboard = server.scoreboard
+        val objective = scoreboard.getNullableObjective(name) ?: run {
+            scoreboard.addObjective(
                 name,
                 ScoreboardCriterion.DUMMY,
                 displayName,
@@ -25,7 +27,7 @@ class ScoreboardManager : IScoreboardManager {
             )
         }
 
-        return ObjectiveHandle(objective)
+        return ObjectiveHandle(scoreboard, objective)
     }
 
     override fun setScoreboardText(server: MinecraftServer, handle: IObjectiveHandle, textLines: List<ScoreChange.Create>) {
@@ -91,11 +93,23 @@ class ScoreboardManager : IScoreboardManager {
     override fun getPlayerName(player: ServerPlayerEntity): String {
         return player.entityName
     }
+
+    override fun getByName(server: MinecraftServer, name: String): IObjectiveHandle? {
+        val scoreboard: ServerScoreboard = server.scoreboard
+        val objective = scoreboard.getNullableObjective(name) ?: return null
+        return ObjectiveHandle(scoreboard, objective)
+    }
 }
 
 class ObjectiveHandle(
+    private val scoreboard: ServerScoreboard,
     val objective: ScoreboardObjective,
 ) : IObjectiveHandle {
     override val name: String
         get() = objective.name
+
+    override fun getForPlayer(player: IPlayerHandle): Int? {
+        val playerImpl = player as PlayerManager.PlayerHandle
+        return scoreboard.getPlayerScore(playerImpl.player.entityName, objective)?.score
+    }
 }

@@ -12,8 +12,17 @@ class MotdController(
     private val state: BingoState,
 ) : BingoComponent() {
 
+    private val GameState.motdPrefix get() = "${color}[$motd]§f "
+
     private fun updateMotd(state: GameState) {
-        server.setMotd("${state.color}[${state.motd}]§f Minecraft BINGO")
+        var motd = server.serverMotd.takeIf { it.isNotBlank() }
+            ?: "Minecraft BINGO"
+
+        for (entry in GameState.entries) {
+            motd = motd.removePrefix(entry.motdPrefix)
+        }
+
+        server.setMotd(state.motdPrefix + motd)
     }
 
     init {

@@ -1,0 +1,14 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": "All Wooden Tools",
+    "item": "minecraft:wooden_pickaxe"
+  },
+  "objectives": [
+    "minecraft:wooden_axe",
+    "minecraft:wooden_hoe",
+    "minecraft:wooden_pickaxe",
+    "minecraft:wooden_shovel",
+    "minecraft:wooden_sword"
+  ]
+}

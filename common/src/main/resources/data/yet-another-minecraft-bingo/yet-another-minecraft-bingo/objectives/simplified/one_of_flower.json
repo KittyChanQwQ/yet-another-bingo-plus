@@ -1,0 +1,10 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": "Any Flower",
+    "item": "minecraft:poppy"
+  },
+  "objectives": [
+    "#minecraft:flowers"
+  ]
+}

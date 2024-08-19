@@ -8,3 +8,10 @@ val json = Json {
     encodeDefaults = true
     prettyPrint = true
 }
+
+val jsonUnpretty = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+    encodeDefaults = true
+    prettyPrint = false
+}
