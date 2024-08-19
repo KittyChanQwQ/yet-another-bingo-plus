@@ -85,10 +85,10 @@ class CardViewService(
     }
 
     fun isViewingPreviewCard(player: ServerPlayerEntity)
-        = state.state == GameState.PREGAME && options.showPreviewCard && (state.isLobbyMode || teamService.isPlaying(player))
+        = state.state == GameState.PREGAME && options.showPreviewCard && state.isLobbyMode && !teamService.isPlaying(player)
 
     fun isViewingTeamCard(player: ServerPlayerEntity, team: BingoTeam)
-        = state.state == GameState.PLAYING && team.includesPlayer(player)
+        = (state.state == GameState.PLAYING || options.showPreviewCard) && team.includesPlayer(player)
 
     fun isViewingSpectatorCards(player: ServerPlayerEntity) = when (state.state) {
         // if the state is not POSTGAME, players must have permission to receive the spectator cards
