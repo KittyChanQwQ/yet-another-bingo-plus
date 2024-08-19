@@ -31,7 +31,7 @@ object PlayerManagerMixinHandler {
     fun shouldSpawnInLobby(server: MinecraftServer): Boolean {
         val scope = BingoKoin.getScope(server) ?: return false
         val state = scope.get<BingoState>()
-        return state.isLobbyMode && state.state == GameState.PREGAME
+        return state.isLobbyMode && (state.state == GameState.PREGAME || state.state == GameState.PRELOADING)
     }
 
     fun getPregameSpawnData(server: MinecraftServer): NbtCompound? {

@@ -38,6 +38,11 @@ class EventManager(
             }
         }
 
+        ServerTickEvents.END_SERVER_TICK.register { server ->
+            val events = getEvents(server) ?: return@register
+            events.onGameTickEnd(Unit)
+        }
+
         ServerPlayConnectionEvents.JOIN.register { handler, _, server ->
             val player = handler.player
             server.execute {

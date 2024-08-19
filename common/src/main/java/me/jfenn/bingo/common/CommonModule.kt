@@ -181,6 +181,7 @@ val commonModule = module {
         scopedOf(::ElytraService)
         scopedOf(::SpawnService)
         scopedOf(::PlayerController)
+        scopedOf(::SpawnPreloadingController)
 
         scopedOf(::OfflinePlayerCache)
         scopedOf(::TeamService)
@@ -276,4 +277,5 @@ fun Scope.commonInit() {
 
     get<PlayerController>()
     get<ChestController>()
+    get<SpawnPreloadingController>()
 }

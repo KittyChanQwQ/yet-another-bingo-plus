@@ -22,6 +22,7 @@ class ScopedEvents(
 ) : BingoComponent(), ScopeCallback {
 
     val onGameTick = EventListener<Unit>()
+    val onGameTickEnd = EventListener<Unit>()
     val onUpdateTick = EventListener<Unit>()
 
     val onPlayerJoin = EventListener<ServerPlayerEntity>()

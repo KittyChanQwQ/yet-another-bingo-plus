@@ -62,6 +62,7 @@ class PlayerController(
 
         val gameMode = when (state.state) {
             GameState.UNINITIALIZED,
+            GameState.PRELOADING,
             GameState.PREGAME -> GameMode.ADVENTURE
             GameState.LOADING,
             GameState.COUNTDOWN,
@@ -139,7 +140,7 @@ class PlayerController(
         // reset advancements state
         advancementManager.clearAdvancements(player)
 
-        if (state.state == GameState.PREGAME) {
+        if (state.state == GameState.PREGAME || state.state == GameState.PRELOADING) {
             spawnService.teleportToLobby(player)
         } else {
             // teleport the player to their spawnpoint

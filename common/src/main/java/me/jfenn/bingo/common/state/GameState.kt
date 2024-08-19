@@ -7,6 +7,7 @@ enum class GameState(
     /** This state shouldn't show up in actual use; it's immediately changed from the default in ScopeManager */
     UNINITIALIZED("§a", "PRE-GAME"),
     PREGAME("§a", "PRE-GAME"),
+    PRELOADING("§a", "PRE-GAME"),
     LOADING("§c", "IN-GAME"),
     COUNTDOWN("§c", "IN-GAME"),
     PLAYING("§c", "IN-GAME"),

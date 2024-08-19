@@ -123,7 +123,7 @@ class GameService(
         }
 
         // change to the loading state (until all players have loaded terrain)
-        state.changeState(events, GameState.LOADING)
+        state.changeState(events, GameState.PRELOADING)
 
         broadcastStart()
 
