@@ -2,17 +2,17 @@ package me.jfenn.bingo.common.spawn
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.api.IExecutors
+import me.jfenn.bingo.api.IServerWorldFactory
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.ServerTask
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.world.chunk.ChunkStatus
+import net.minecraft.text.Text
 import org.slf4j.Logger
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CompletableFuture
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -23,19 +23,15 @@ import kotlin.math.min
 class SpawnPreloadingController(
     events: ScopedEvents,
     private val state: BingoState,
+    private val config: BingoConfig,
     private val spawnService: SpawnService,
     private val server: MinecraftServer,
+    private val serverWorldFactory: IServerWorldFactory,
+    private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
     private val log: Logger,
 ) : BingoComponent() {
 
-    private var startedLoading: Instant? = null
-    private val chunksToLoad = Collections.newSetFromMap<Pair<Int, Int>>(ConcurrentHashMap())
-
-    private fun waitForChunk(world: ServerWorld, pos: Pair<Int, Int>) {
-        val (x, z) = pos
-        world.getChunk(x, z, ChunkStatus.FULL)
-        log.info("Loaded chunk ($x, $z) in ${startedLoading?.let { Clock.System.now() - it }}")
-    }
+    private var chunkFutureList: List<CompletableFuture<*>> = emptyList()
 
     private fun isWithinDistance(dx: Int, dz: Int, distance: Int): Boolean {
         val deltaX = max(0, dx.absoluteValue - 1)
@@ -48,10 +44,10 @@ class SpawnPreloadingController(
 
     init {
         events.onEnter(GameState.PRELOADING) {
-            startedLoading = Clock.System.now()
+            val startedLoading = Clock.System.now()
 
             val world = spawnService.getSpawnDimension()
-            val viewDistance = server.playerManager.viewDistance
+            val viewDistance = config.server.preloadViewDistance
             val chunkOffsets = buildList {
                 for (x in -viewDistance..viewDistance) for (z in -viewDistance..viewDistance) {
                     if (isWithinDistance(x, z, viewDistance)) {
@@ -60,7 +56,7 @@ class SpawnPreloadingController(
                 }
             }
 
-            state.getRegisteredTeams()
+            val chunks = state.getRegisteredTeams()
                 .mapNotNull { it.spawnpoint }
                 .flatMap { (x, z) ->
                     chunkOffsets
@@ -69,26 +65,39 @@ class SpawnPreloadingController(
                         }
                 }
                 .toSet()
-                .also {
-                    chunksToLoad.clear()
-                    chunksToLoad.addAll(it)
-                }
 
-            log.info("Pre-generating ${chunksToLoad.size} chunks within a view distance of ${viewDistance}...")
-            for (chunk in chunksToLoad.toList()) {
-                server.send(ServerTask(server.ticks) {
-                    waitForChunk(world, chunk)
-                    chunksToLoad.remove(chunk)
-                })
+            log.info("[SpawnPreloadingController] Pre-generating ${chunks.size} chunks within a view distance of ${viewDistance}...")
+            val worldImpl = serverWorldFactory.forWorld(world)
+            val futures = chunks.map { chunk ->
+                worldImpl.getChunkAsync(chunk)
+                    .whenComplete { _, _ ->
+                        log.debug(
+                            "[SpawnPreloadingController] Finished chunk {} in {}",
+                            chunk,
+                            Clock.System.now() - startedLoading
+                        )
+                    }
             }
+
+            chunkFutureList = futures
+            CompletableFuture.allOf(*futures.toTypedArray())
+                .whenCompleteAsync({ _, _ ->
+                    log.info("[SpawnPreloadingController] Finished preloading spawn chunks in ${Clock.System.now() - startedLoading}")
+                    chunkFutureList = emptyList()
+                    state.changeState(events, GameState.LOADING)
+                }, serverTaskExecutor)
         }
 
         events.onGameTick {
             if (state.state != GameState.PRELOADING) return@onGameTick
 
-            if (chunksToLoad.isEmpty()) {
-                log.info("Finished preloading spawn chunks in ${startedLoading?.let { Clock.System.now() - it }}")
-                state.changeState(events, GameState.LOADING)
+            for (player in server.playerManager.playerList) {
+                val percentage = chunkFutureList.count { it.isDone }
+                    .times(100f)
+                    .div(chunkFutureList.size)
+                    .let { String.format("%.0f", it) + "%" }
+
+                player.sendMessage(Text.literal("Loading spawns... $percentage"), true)
             }
         }
     }

@@ -62,8 +62,9 @@ class PlayerController(
 
         val gameMode = when (state.state) {
             GameState.UNINITIALIZED,
-            GameState.PRELOADING,
-            GameState.PREGAME -> GameMode.ADVENTURE
+            GameState.PREGAME,
+            GameState.STARTING,
+            GameState.PRELOADING -> GameMode.ADVENTURE
             GameState.LOADING,
             GameState.COUNTDOWN,
             GameState.PLAYING -> when {

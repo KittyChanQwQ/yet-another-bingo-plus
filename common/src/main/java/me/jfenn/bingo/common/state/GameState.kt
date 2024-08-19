@@ -7,6 +7,7 @@ enum class GameState(
     /** This state shouldn't show up in actual use; it's immediately changed from the default in ScopeManager */
     UNINITIALIZED("§a", "PRE-GAME"),
     PREGAME("§a", "PRE-GAME"),
+    STARTING("§a", "PRE-GAME"),
     PRELOADING("§a", "PRE-GAME"),
     LOADING("§c", "IN-GAME"),
     COUNTDOWN("§c", "IN-GAME"),
@@ -14,7 +15,7 @@ enum class GameState(
     POSTGAME("§6", "POST-GAME");
 
     val isPlayingOrCountdown get() = when (this) {
-        GameState.LOADING, GameState.COUNTDOWN, GameState.PLAYING -> true
+        LOADING, COUNTDOWN, PLAYING -> true
         else -> false
     }
 }

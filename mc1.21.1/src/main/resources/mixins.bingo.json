@@ -9,6 +9,8 @@
     "MinecraftServerSkipStartRegionMixin",
     "PlayerEntityMixin",
     "PlayerManagerMixin",
+    "ServerChunkLoadingManagerAccessor",
+    "ServerChunkManagerAccessor",
     "ServerPlayNetworkHandlerMixin"
   ],
   "client": [

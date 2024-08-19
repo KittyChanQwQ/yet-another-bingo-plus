@@ -116,14 +116,22 @@ class GameService(
             player.networkHandler.sendPacket(SubtitleS2CPacket(text.string(StringKey.GameAnnounceStarting)))
         }
 
+        // change to the starting state (ensures that start cannot be used again, if this is async)
+        state.changeState(events, GameState.STARTING)
+
         if (state.isLobbyMode) {
             // spread player teams to spawnpoint
             spawnService.createSpawnpoints()
-            chestService.createChestSpawnpoints()
-        }
+                .thenRunAsync({
+                    chestService.createChestSpawnpoints()
 
-        // change to the loading state (until all players have loaded terrain)
-        state.changeState(events, GameState.PRELOADING)
+                    // change to the loading state (until all players have loaded terrain)
+                    state.changeState(events, GameState.PRELOADING)
+                }, server)
+        } else {
+            // change to the loading state (until all players have loaded terrain)
+            state.changeState(events, GameState.PRELOADING)
+        }
 
         broadcastStart()
 

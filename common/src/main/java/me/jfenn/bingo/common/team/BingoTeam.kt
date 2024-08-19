@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
@@ -13,6 +14,7 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
+import java.util.concurrent.CompletableFuture
 
 @Serializable
 @JvmInline
@@ -38,6 +40,9 @@ data class BingoTeam(
     var map: BingoMap? = null,
     val players: MutableSet<BingoPlayerProfile> = mutableSetOf(),
 ) {
+
+    @Transient
+    var spawnpointFuture: CompletableFuture<BlockPosition>? = null
 
     val key get() = BingoTeamKey(id)
 
