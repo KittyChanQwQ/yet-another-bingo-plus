@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.spawn
 
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.api.IServerWorldFactory
 import me.jfenn.bingo.common.config.BingoConfig
@@ -9,10 +8,13 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -28,6 +30,7 @@ class SpawnPreloadingController(
     private val server: MinecraftServer,
     private val serverWorldFactory: IServerWorldFactory,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
+    private val text: TextProvider,
     private val log: Logger,
 ) : BingoComponent() {
 
@@ -91,13 +94,17 @@ class SpawnPreloadingController(
         events.onGameTick {
             if (state.state != GameState.PRELOADING) return@onGameTick
 
-            for (player in server.playerManager.playerList) {
-                val percentage = chunkFutureList.count { it.isDone }
-                    .times(100f)
-                    .div(chunkFutureList.size)
-                    .let { String.format("%.0f", it) + "%" }
+            val doneCount = chunkFutureList.count { it.isDone }
+            val percentage = doneCount.times(100f)
+                .div(chunkFutureList.size)
+                .let { String.format("%.0f", it) + "%" }
 
-                player.sendMessage(Text.literal("Loading spawns... $percentage"), true)
+            val message = Text.empty()
+                .append(text.string(StringKey.LobbyLoadingTerrain))
+                .append(" $percentage ($doneCount/${chunkFutureList.size})")
+
+            for (player in server.playerManager.playerList) {
+                player.sendMessage(message, true)
             }
         }
     }

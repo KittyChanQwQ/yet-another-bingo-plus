@@ -104,6 +104,7 @@
   "bingo.config.hide_on_chat": "Hide in Chat Screen",
   "bingo.config.hide_on_chat.description": "Hides the Bingo Card overlay when the chat screen is open.",
   "bingo.config.needs_restart": "You will need to restart Minecraft for this setting to take effect.",
+  "bingo.lobby.loading_terrain": "Loading terrain...",
   "bingo.lobby.sounds_muted": "Certain sounds in this lobby may be muted to avoid spam.",
   "bingo.lobby.team_changed": "➾  You have been moved to %s",
   "bingo.lobby.click_to_join": "Click to join!",
