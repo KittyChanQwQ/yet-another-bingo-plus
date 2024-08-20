@@ -4,6 +4,7 @@ import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
+import me.jfenn.bingo.api.commands.IExecutionSource
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.PlayerController
@@ -22,6 +23,11 @@ import java.util.concurrent.CompletableFuture
 class JoinCommand(
     commandManager: ICommandManager,
 ) : BaseCommand() {
+
+    private fun IExecutionSource.isNotProcessingTeams(): Boolean {
+        val state = scope.get<BingoState>()
+        return state.state != GameState.STARTING && state.state != GameState.PRELOADING
+    }
 
     private fun IExecutionContext.joinTeam(
         player: ServerPlayerEntity,
@@ -80,13 +86,13 @@ class JoinCommand(
         commandManager.register("join") {
             for (team in BingoTeam.TEAM_BLOCKS.values) {
                 literal(team.id.removePrefix("bingo_")) {
-                    requires { hasPermission(Permission.COMMAND_JOIN) }
+                    requires { hasPermission(Permission.COMMAND_JOIN) && isNotProcessingTeams() }
                     executes {
                         joinTeam(player!!, team)
                     }
 
                     player("player") { playerArg ->
-                        requires { hasPermission(Permission.COMMAND_JOIN_PLAYER) }
+                        requires { hasPermission(Permission.COMMAND_JOIN_PLAYER) && isNotProcessingTeams() }
                         executes {
                             val player = getArgument(playerArg)
                             joinTeam(player, team)
