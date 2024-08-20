@@ -125,6 +125,12 @@ class MenuController(
             if (to != GameState.PREGAME) {
                 menu?.cleanup()
                 menu = null
+
+                // discard team picker entities which aren't part of the menu
+                val lobbyWorld = server.lobbyWorld ?: return@onStateChange
+                lobbyWorld.iterateEntities()
+                    .filter { !it.isPlayer && it.commandTags.contains(instanceTag) }
+                    .forEach { it.discard() }
             }
         }
 
