@@ -34,15 +34,14 @@ class JoinCommand(
         val chestService = scope.get<ChestService>()
         val taskExecutor = scope.get<IExecutors.IServerTaskExecutor>()
 
-        if (!hasPermission(Permission.COMMAND_JOIN_PLAYER)) {
-            if (state.state != GameState.PREGAME) {
-                sendMessage(
-                    Text.literal("⚠  ")
-                        .append("Cannot join a team - The game has already started!")
-                        .formatted(Formatting.YELLOW)
-                )
-                return
-            }
+        // If a player tries to /join during a game, and doesn't have COMMAND_JOIN_PLAYER
+        if (state.state != GameState.PREGAME && !hasPermission(Permission.COMMAND_JOIN_PLAYER)) {
+            sendMessage(
+                Text.literal("⚠  ")
+                    .append("Cannot join a team - The game has already started!")
+                    .formatted(Formatting.YELLOW)
+            )
+            return
         }
 
         val createSpawnpointFuture = when (state.state) {
