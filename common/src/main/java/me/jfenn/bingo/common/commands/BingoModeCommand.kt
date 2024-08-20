@@ -44,7 +44,7 @@ class BingoModeCommand(
         commandManager.register("bingo") {
             literal("mode") {
                 requires {
-                    hasState(GameState.PREGAME) && hasPermission(Permission.CONFIGURE_GAME)
+                    hasState(GameState.PREGAME, GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
                 }
                 literal("lockout") {
                     executes { toggleMode(BingoOptions::isLockoutMode) }
