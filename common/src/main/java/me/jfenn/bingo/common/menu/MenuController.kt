@@ -121,9 +121,11 @@ class MenuController(
             menu?.tick()
         }
 
-        events.onEnter(GameState.PLAYING) {
-            menu?.cleanup()
-            menu = null
+        events.onStateChange { (_, to) ->
+            if (to != GameState.PREGAME) {
+                menu?.cleanup()
+                menu = null
+            }
         }
 
         events.onChangeOptions {
