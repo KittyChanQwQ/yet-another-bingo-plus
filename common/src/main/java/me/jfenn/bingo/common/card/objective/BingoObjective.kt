@@ -20,10 +20,13 @@ import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.generated.StringKey
+import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.*
 import kotlin.time.Duration
+
+private val NON_ITALIC_STYLE = Style.EMPTY.withItalic(false)
 
 @Serializable
 sealed class BingoObjective {
@@ -74,8 +77,10 @@ sealed class BingoObjective {
         return this.display.item?.copy()?.also { stack ->
             stack.setDisplay(
                 name = this.display.name
-                    ?.takeIf { it != stack.displayName },
-                lore = displayLore(entry),
+                    ?.takeIf { it != stack.displayName }
+                    ?.let { Text.empty().append(it).setStyle(NON_ITALIC_STYLE) },
+                lore = displayLore(entry)
+                    ?.map { Text.empty().append(it).setStyle(NON_ITALIC_STYLE) },
             )
             stack.setHideFlags(255)
         }
