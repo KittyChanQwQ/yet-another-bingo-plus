@@ -9,7 +9,9 @@
     "MinecraftServerUnsafeSkipCloseMixin",
     "PlayerEntityMixin",
     "PlayerManagerMixin",
-    "ServerPlayNetworkHandlerMixin"
+    "ServerChunkManagerAccessor",
+    "ServerPlayNetworkHandlerMixin",
+    "ThreadedAnvilChunkStorageAccessor"
   ],
   "client": [
   ],

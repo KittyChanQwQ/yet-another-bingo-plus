@@ -19,6 +19,7 @@ val sharedModule = module {
     singleOf(::ItemStackFactory) bind IItemStackFactory::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     singleOf(::ScoreboardManager) bind IScoreboardManager::class
+    single { ServerWorldImpl } bind IServerWorldFactory::class
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
     singleOf(::StatManagerImpl) bind IStatManager::class
     single { StatusEffectsImpl } bind IStatusEffectsFactory::class
@@ -29,5 +30,6 @@ val sharedModule = module {
     scope<BingoScope> {
         scopedOf(::PlayerManager) bind IPlayerManager::class
         scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, ILevelStorage::class)
+        scoped { Executors.createServerTaskExecutor(get()) }
     }
 }
