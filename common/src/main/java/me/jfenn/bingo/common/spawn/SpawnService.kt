@@ -1,6 +1,8 @@
 package me.jfenn.bingo.common.spawn
 
+import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.api.IServerWorldFactory
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.config.BingoConfig
@@ -13,7 +15,6 @@ import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.math.BlockPos
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
@@ -31,6 +32,8 @@ class SpawnService(
     private val itemStackFactory: IItemStackFactory,
     private val playerManager: IPlayerManager,
     private val spreadPlayersFactory: SpreadPlayers.Factory,
+    private val serverWorldFactory: IServerWorldFactory,
+    private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
 ) {
 
     fun getSpawnDimension(): ServerWorld {
@@ -40,6 +43,30 @@ class SpawnService(
             log.error("[SpawnService] Could not find spawnDimension '${options.spawnDimension}'; defaulting to minecraft:overworld")
             server.overworld
         }
+    }
+
+    init {
+        // Add load tickets for team spawn chunks on startup
+        for (team in state.getRegisteredTeams()) {
+            team.spawnpoint?.let { spawnPos ->
+                onSpawnpointUpdated(team, spawnPos)
+            }
+        }
+    }
+
+    private fun onSpawnpointUpdated(team: BingoTeam, spawnPos: BlockPosition) {
+        // If a team already has this spawnpoint & a ticket, there's nothing else to do
+        if (team.spawnpoint == spawnPos && team.spawnpointTicket != null)
+            return
+
+        // Otherwise, remove the completed future & add a new spawn ticket
+        team.spawnpointFuture = null
+        team.spawnpointTicket?.close()
+
+        val worldImpl = serverWorldFactory.forWorld(getSpawnDimension())
+        val newTicket = worldImpl.addTicket(spawnPos.toChunkPos())
+        team.spawnpointTicket = newTicket
+        team.spawnpoint = spawnPos
     }
 
     /**
@@ -53,20 +80,24 @@ class SpawnService(
         return if (distance <= 0) {
             // if the distance is 0, find one spawn point for all teams
             val future = spread.findSpawnPosAsync(Pair(0, 0))
-                .thenApply { BlockPosition.fromBlockPos(it) }
 
             for (team in state.getRegisteredTeams()) {
                 team.spawnpointFuture = future
-                future.whenComplete { spawnPos, _ ->
-                    team.spawnpoint = spawnPos
-                    team.spawnpointFuture = null
-                }
+                future.whenCompleteAsync({ spawnPos, _ ->
+                    onSpawnpointUpdated(team, spawnPos)
+                }, serverTaskExecutor)
             }
 
             future.thenRun {}
         } else {
             // spread player teams to spawnpoint
             spread.spreadAsync(state.getRegisteredTeams(), distance)
+                .whenCompleteAsync ({ map, throwable ->
+                    for ((key, spawnPos) in map) {
+                        val team = state.teams[key] ?: continue
+                        onSpawnpointUpdated(team, spawnPos)
+                    }
+                }, serverTaskExecutor)
                 .thenRun {}
         }
     }
@@ -99,7 +130,7 @@ class SpawnService(
         val spawn = team?.let {
             getTeamSpawnpoint(team)
         } ?: run {
-            world.spawnPos
+            BlockPosition.fromBlockPos(world.spawnPos)
         }
 
         // if the player already has the exact block position, don't teleport them again
@@ -110,14 +141,55 @@ class SpawnService(
         player.teleport(world, spawn.x + Random.nextDouble(), spawn.y.toDouble(), spawn.z + Random.nextDouble(), player.yaw, player.pitch)
         player.setSpawnPoint(
             world.registryKey,
-            spawn,
+            spawn.toBlockPos(),
             0f, true, false,
         )
     }
 
+    sealed class GetSpawnpointResult {
+        class Found(val position: BlockPosition) : GetSpawnpointResult()
+        class SearchChunk(val startChunk: Pair<Int, Int>) : GetSpawnpointResult()
+    }
+    private fun getTeamSpawnpointInternal(team: BingoTeam): GetSpawnpointResult {
+        val world = getSpawnDimension()
+        val spawnpoint = team.spawnpoint ?: run {
+            log.warn("[SpawnService] Team ${team.id} does not have a stored spawn point! Finding a new spawn position...")
+
+            // Get the chunk of an existing spawnpoint
+            val (x, y) = state.getRegisteredTeams()
+                .mapNotNull { it.spawnpoint }
+                .maxByOrNull { it.x.absoluteValue }
+                ?.toChunkPos()
+                ?: Pair(0, 0)
+
+            // Move "spreadPlayersDistance" away from the existing chunk on the x-axis
+            val xSign = x.sign.takeIf { it != 0 } ?: 1
+            val newSpawnChunk = Pair(x + (options.spawnDistance * xSign), y)
+
+            // Search for a spawn
+            return GetSpawnpointResult.SearchChunk(newSpawnChunk)
+        }
+
+        val pos = spawnpoint.toBlockPos().mutableCopy()
+        while (
+            !isEmptyBlock(world, pos, world.getBlockState(pos))
+            || !isEmptyBlock(world, pos.up(), world.getBlockState(pos.up()))
+        ) {
+            pos.y += 1
+            if (pos.y >= world.logicalHeight) {
+                log.warn("[SpawnService] Spawn position for team $team is obstructed up to build height! Finding a new spawn position...")
+                return GetSpawnpointResult.SearchChunk(spawnpoint.toChunkPos())
+            }
+        }
+
+        val spawnPos = BlockPosition.fromBlockPos(pos)
+        onSpawnpointUpdated(team, spawnPos)
+        return GetSpawnpointResult.Found(spawnPos)
+    }
+
     fun getTeamSpawnpointAsync(team: BingoTeam): CompletableFuture<BlockPosition?> {
         if (!state.isLobbyMode) {
-            log.error("[SpawnService] Attempted getTeamSpawnpoint, but isLobbyMode=false!")
+            log.error("[SpawnService] Attempted getTeamSpawnpointAsync, but isLobbyMode=false!")
             return CompletableFuture.completedFuture(null)
         }
 
@@ -126,103 +198,42 @@ class SpawnService(
             return existingFuture.thenApply(Function.identity())
         }
 
-        val world = getSpawnDimension()
-        val spawnpoint = team.spawnpoint ?: run {
-            log.warn("[SpawnService] Team ${team.id} does not have a stored spawn point! Finding a new spawn position...")
-
-            // Get the chunk of an existing spawnpoint
-            val (x, y) = state.getRegisteredTeams()
-                .mapNotNull { it.spawnpoint }
-                .maxByOrNull { it.x.absoluteValue }
-                ?.toChunkPos()
-                ?: Pair(0, 0)
-
-            // Move "spreadPlayersDistance" away from the existing chunk on the x-axis
-            val xSign = x.sign.takeIf { it != 0 } ?: 1
-            val newSpawnChunk = Pair(x + (options.spawnDistance * xSign), y)
-
-            // Store the team's new spawn position & return
-            val spread = spreadPlayersFactory.forWorld(world)
-            val future = spread.findSpawnPosAsync(newSpawnChunk)
-                .thenApply { BlockPosition.fromBlockPos(it) }
-
-            team.spawnpointFuture = future
-            return future.whenComplete({ newSpawnPos, _ ->
-                team.spawnpoint = newSpawnPos
-                team.spawnpointFuture = null
-            })
-        }
-
-        val pos = spawnpoint.toBlockPos().mutableCopy()
-        while (
-            !isEmptyBlock(world, pos, world.getBlockState(pos))
-            || !isEmptyBlock(world, pos.up(), world.getBlockState(pos.up()))
-        ) {
-            pos.y += 1
-            if (pos.y >= world.logicalHeight) {
-                log.warn("[SpawnService] Spawn position for team $team is obstructed up to build height! Finding a new spawn position...")
-
+        return when (val result = getTeamSpawnpointInternal(team)) {
+            is GetSpawnpointResult.SearchChunk -> {
+                val world = getSpawnDimension()
                 val spread = spreadPlayersFactory.forWorld(world)
-                val future = spread.findSpawnPosAsync(spawnpoint.toChunkPos())
-                    .thenApply { BlockPosition.fromBlockPos(it) }
+                val future = spread.findSpawnPosAsync(result.startChunk)
 
                 team.spawnpointFuture = future
-                return future.whenComplete({ newSpawnPos, _ ->
-                    team.spawnpoint = newSpawnPos
-                    team.spawnpointFuture = null
+                future.whenComplete({ newSpawnPos, _ ->
+                    onSpawnpointUpdated(team, newSpawnPos)
                 })
             }
+            is GetSpawnpointResult.Found -> CompletableFuture.completedFuture(result.position)
         }
-
-        return CompletableFuture.completedFuture(BlockPosition.fromBlockPos(pos))
     }
 
-    fun getTeamSpawnpoint(team: BingoTeam): BlockPos? {
+    /**
+     * This is only used when spawning/respawning players, and should rarely need to
+     * search for a new chunk
+     */
+    fun getTeamSpawnpoint(team: BingoTeam): BlockPosition? {
         if (!state.isLobbyMode) {
             log.error("[SpawnService] Attempted getTeamSpawnpoint, but isLobbyMode=false!")
             return null
         }
 
-        val world = getSpawnDimension()
-        val spawnpoint = team.spawnpoint ?: run {
-            log.warn("[SpawnService] Team ${team.id} does not have a stored spawn point! Finding a new spawn position...")
-
-            // Get the chunk of an existing spawnpoint
-            val (x, y) = state.getRegisteredTeams()
-                .mapNotNull { it.spawnpoint }
-                .maxByOrNull { it.x.absoluteValue }
-                ?.toChunkPos()
-                ?: Pair(0, 0)
-
-            // Move "spreadPlayersDistance" away from the existing chunk on the x-axis
-            val xSign = x.sign.takeIf { it != 0 } ?: 1
-            val newSpawnChunk = Pair(x + (options.spawnDistance * xSign), y)
-
-            // Store the team's new spawn position & return
-            val spread = spreadPlayersFactory.forWorld(world)
-            val newSpawnPos = spread.findSpawnPos(newSpawnChunk)
-            team.spawnpoint = BlockPosition.fromBlockPos(newSpawnPos)
-            return newSpawnPos
-        }
-
-        val pos = spawnpoint.toBlockPos().mutableCopy()
-        while (
-            !isEmptyBlock(world, pos, world.getBlockState(pos))
-            || !isEmptyBlock(world, pos.up(), world.getBlockState(pos.up()))
-        ) {
-            pos.y += 1
-            if (pos.y >= world.logicalHeight) {
-                log.warn("[SpawnService] Spawn position for team $team is obstructed up to build height! Finding a new spawn position...")
-
+        return when (val result = getTeamSpawnpointInternal(team)) {
+            is GetSpawnpointResult.SearchChunk -> {
+                val world = getSpawnDimension()
                 val spread = spreadPlayersFactory.forWorld(world)
-                val newSpawnPos = spread.findSpawnPos(spawnpoint.toChunkPos())
-                team.spawnpoint = BlockPosition.fromBlockPos(newSpawnPos)
+                val spawnPos = spread.findSpawnPos(result.startChunk)
 
-                return newSpawnPos
+                onSpawnpointUpdated(team, spawnPos)
+                spawnPos
             }
+            is GetSpawnpointResult.Found -> result.position
         }
-
-        return pos
     }
 
     /**

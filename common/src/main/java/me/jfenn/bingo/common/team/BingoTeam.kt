@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.jfenn.bingo.api.IServerWorld
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
@@ -43,6 +44,9 @@ data class BingoTeam(
 
     @Transient
     var spawnpointFuture: CompletableFuture<BlockPosition>? = null
+
+    @Transient
+    var spawnpointTicket: IServerWorld.IChunkTicketHandle? = null
 
     val key get() = BingoTeamKey(id)
 

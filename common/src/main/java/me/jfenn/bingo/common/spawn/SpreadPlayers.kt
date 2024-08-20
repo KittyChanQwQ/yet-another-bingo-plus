@@ -5,6 +5,7 @@ import me.jfenn.bingo.api.IServerWorld
 import me.jfenn.bingo.api.IServerWorldFactory
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.block.Blocks
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
@@ -52,6 +53,7 @@ class SpreadPlayers(
     private val logicalHeight = world.logicalHeight
     private val bottomY = world.bottomY
     private val seaLevel = world.seaLevel
+    private val worldSpawnPos = BlockPosition.fromBlockPos(world.spawnPos)
 
     init {
         log.info("[SpreadPlayers] Initialized in dimension ${world.registryKey.value} with coordinateScale=$coordinateScale, logicalHeight=$logicalHeight, bottomY=$bottomY, seaLevel=$seaLevel")
@@ -222,12 +224,14 @@ class SpreadPlayers(
         }
     }
 
-    /**
-     * Searches for a valid spawn position, starting at the provided chunk and iterating
-     * outwards on the X axis.
-     */
-    fun findSpawnPosAsync(startChunk: Pair<Int, Int>): CompletableFuture<BlockPos> {
-        var (x, z) = startChunk
+    sealed class Result<T> {
+        data class NextChunk<T>(val nextChunk: Pair<Int, Int>) : Result<T>()
+        data class Finish<T>(val block: BlockPosition) : Result<T>()
+        data class Success<T>(val result: T) : Result<T>()
+    }
+
+    private fun processChunkCoords(chunk: Pair<Int, Int>): Result<Unit> {
+        var (x, z) = chunk
         val xSign = x.sign.takeIf { it != 0 } ?: 1
 
         // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
@@ -235,7 +239,7 @@ class SpreadPlayers(
         val biomeTest = world.getBiome(chunkCenter)
         if (invalidSpawnBiomes.contains(biomeTest.key.get())) {
             x += 4 * xSign
-            return findSpawnPosAsync(Pair(x, z))
+            return Result.NextChunk(Pair(x, z))
         }
 
         // Scale the chunkCenter to match overworld positions for the worldBorder
@@ -250,96 +254,103 @@ class SpreadPlayers(
             val centerChunk = world.getChunk(centerChunkPos.x, centerChunkPos.z)
             val centerPos = selectChunkPosition(centerChunk)
             if (centerPos != null) {
-                return CompletableFuture.completedFuture(centerPos)
+                return Result.Finish(BlockPosition.fromBlockPos(centerPos))
             }
 
             log.error("Could not find any valid spawn location due to the world border. Using the default world spawn, which may be buggy...")
-            return CompletableFuture.completedFuture(world.spawnPos)
+            return Result.Finish(worldSpawnPos)
         }
 
-        return worldImpl.getChunkAsync(startChunk).thenComposeAsync({ chunk ->
-            if (chunk == null) {
-                log.error("Could not find any valid spawn location because getChunk returned null. Using the default world spawn, which may be buggy...")
-                return@thenComposeAsync CompletableFuture.completedFuture(world.spawnPos)
-            }
+        return Result.Success(Unit)
+    }
 
-            val spawnBlockPos = selectChunkPosition(chunk)
-            if (spawnBlockPos == null) {
-                log.info("Skipping chunk ($x, $z) which contains no valid spawn locations")
-                x += 1 * xSign
-                return@thenComposeAsync findSpawnPosAsync(Pair(x, z))
-            }
+    private fun processChunk(chunkPos: Pair<Int, Int>, chunk: Chunk): Result<BlockPosition> {
+        var (x, z) = chunkPos
+        val xSign = x.sign.takeIf { it != 0 } ?: 1
 
-            if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
-                log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
-                x += 4 * xSign
-                return@thenComposeAsync findSpawnPosAsync(Pair(x, z))
-            }
+        val spawnBlockPos = selectChunkPosition(chunk)
+        if (spawnBlockPos == null) {
+            log.info("Skipping chunk ($x, $z) which contains no valid spawn locations")
+            x += 1 * xSign
+            return Result.NextChunk(Pair(x, z))
+        }
 
-            CompletableFuture.completedFuture(
-                BlockPos(spawnBlockPos.x, spawnBlockPos.y + 1, spawnBlockPos.z)
-            )
-        }, taskExecutor)
+        if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
+            log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
+            x += 4 * xSign
+            return Result.NextChunk(Pair(x, z))
+        }
+
+        return Result.Success(BlockPosition(spawnBlockPos.x, spawnBlockPos.y + 1, spawnBlockPos.z))
     }
 
     /**
      * Searches for a valid spawn position, starting at the provided chunk and iterating
      * outwards on the X axis.
      */
-    fun findSpawnPos(startChunk: Pair<Int, Int>): BlockPos {
-        var (x, z) = startChunk
-        val xSign = x.sign.takeIf { it != 0 } ?: 1
+    fun findSpawnPosAsync(startChunk: Pair<Int, Int>): CompletableFuture<BlockPosition> {
+        var chunkPos = startChunk
 
         while (true) {
-            // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
-            val chunkCenter = BlockPos(x*16 + 8, logicalHeight, z*16 + 8)
-            val biomeTest = world.getBiome(chunkCenter)
-            if (invalidSpawnBiomes.contains(biomeTest.key.get())) {
-                x += 4 * xSign
-                continue
+            when (val result = processChunkCoords(chunkPos)) {
+                is Result.Success -> {}
+                is Result.NextChunk -> {
+                    chunkPos = result.nextChunk
+                    continue
+                }
+                is Result.Finish -> {
+                    return CompletableFuture.completedFuture(result.block)
+                }
             }
 
-            // Scale the chunkCenter to match overworld positions for the worldBorder
-            val chunkCenterInOverworld = BlockPos(
-                chunkCenter.x.times(coordinateScale).toInt(),
-                chunkCenter.y,
-                chunkCenter.z.times(coordinateScale).toInt(),
-            )
-            if (!worldBorder.contains(chunkCenterInOverworld)) {
-                log.warn("Selected chunk is outside of the world border - attempting to find any valid position...")
-                val centerChunkPos = ChunkPos(worldBorderCenterInWorld)
-                val centerChunk = world.getChunk(centerChunkPos.x, centerChunkPos.z)
-                selectChunkPosition(centerChunk)
-                    ?.let { return it }
+            return worldImpl.getChunkAsync(startChunk).thenComposeAsync({ chunk ->
+                if (chunk == null) {
+                    log.error("Could not find any valid spawn location because getChunk returned null. Using the default world spawn, which may be buggy...")
+                    return@thenComposeAsync CompletableFuture.completedFuture(worldSpawnPos)
+                }
 
-                log.error("Could not find any valid spawn location due to the world border. Using the default world spawn, which may be buggy...")
-                return world.spawnPos
+                when (val result = processChunk(chunkPos, chunk)) {
+                    is Result.NextChunk -> findSpawnPosAsync(result.nextChunk)
+                    is Result.Finish -> CompletableFuture.completedFuture(result.block)
+                    is Result.Success -> CompletableFuture.completedFuture(result.result)
+                }
+            }, taskExecutor)
+        }
+    }
+
+    /**
+     * Searches for a valid spawn position, starting at the provided chunk and iterating
+     * outwards on the X axis.
+     */
+    fun findSpawnPos(startChunk: Pair<Int, Int>): BlockPosition {
+        var chunkPos = startChunk
+
+        while (true) {
+            when (val result = processChunkCoords(chunkPos)) {
+                is Result.Success -> {}
+                is Result.NextChunk -> {
+                    chunkPos = result.nextChunk
+                    continue
+                }
+                is Result.Finish -> {
+                    return result.block
+                }
             }
 
-            // This "!!" looks unsafe. but maybe it isn't though? (it should actually be fine)
-            val chunk = world.getChunk(x, z, ChunkStatus.FULL, true)!!
+            val chunk = world.getChunk(chunkPos.first, chunkPos.second, ChunkStatus.FULL, true)!!
 
-            val spawnBlockPos = selectChunkPosition(chunk)
-            if (spawnBlockPos == null) {
-                log.info("Skipping chunk ($x, $z) which contains no valid spawn locations")
-                x += 1 * xSign
-                continue
+            return when (val result = processChunk(chunkPos, chunk)) {
+                is Result.NextChunk -> findSpawnPos(result.nextChunk)
+                is Result.Finish -> result.block
+                is Result.Success -> result.result
             }
-
-            if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
-                log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
-                x += 4 * xSign
-                continue
-            }
-
-            return BlockPos(spawnBlockPos.x, spawnBlockPos.y + 1, spawnBlockPos.z)
         }
     }
 
     fun spreadAsync(
         teams: List<BingoTeam>,
         distance: Int
-    ) : CompletableFuture<Void> {
+    ) : CompletableFuture<Map<BingoTeamKey, BlockPosition>> {
         val groups = spreadGroups(teams.size, distance)
 
         val positions = teams.indices.map { i ->
@@ -355,21 +366,24 @@ class SpreadPlayers(
                     log.error("findSpawnPosAsync for ${team.id} failed:", e)
                     // fall back to the world's spawnPos - this isn't ideal, but it should work in most dimensions
                     // (except the nether)
-                    world.spawnPos
+                    worldSpawnPos
                 }
                 .whenComplete { pos, _ ->
                     log.info("Using spawn position $pos for ${team.id}")
                 }
-                .thenApply { BlockPosition.fromBlockPos(it) }
 
             team.spawnpointFuture = future
-            future.whenComplete { newSpawnPos, _ ->
-                team.spawnpoint = newSpawnPos
-                team.spawnpointFuture = null
-            }
+            future
         }.toTypedArray()
 
         return CompletableFuture.allOf(*positions)
+            .thenApply {
+                teams.indices.associate { i ->
+                    val team = teams[i]
+                    val position = positions[i]
+                    team.key to (position.getNow(null) ?: BlockPosition.fromBlockPos(world.spawnPos))
+                }
+            }
     }
 
 }
