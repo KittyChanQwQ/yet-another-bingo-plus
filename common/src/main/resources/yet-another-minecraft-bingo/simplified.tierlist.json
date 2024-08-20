@@ -34,7 +34,6 @@
         "minecraft:ice",
         "minecraft:iron_ore",
         "minecraft:lapis_ore",
-        "minecraft:lingering_potion",
         "minecraft:lodestone",
         "minecraft:mace",
         "minecraft:mycelium",
@@ -507,6 +506,20 @@
             "minecraft:bamboo",
             "minecraft:bamboo_block",
             "minecraft:bamboo_planks"
+        ],
+        [
+            "minecraft:crimson_nylium",
+            "minecraft:bee_nest",
+            "minecraft:grass_block",
+            "minecraft:mycelium",
+            "minecraft:podzol",
+            "minecraft:red_mushroom_block",
+            "minecraft:brown_mushroom_block"
+        ],
+        [
+            "minecraft:blue_ice",
+            "minecraft:ice",
+            "minecraft:packed_ice"
         ],
         [
             "minecraft:coal_ore",

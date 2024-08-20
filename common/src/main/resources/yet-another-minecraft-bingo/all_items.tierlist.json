@@ -45,7 +45,6 @@
         "minecraft:iron_ore",
         "minecraft:lapis_ore",
         "minecraft:large_amethyst_bud",
-        "minecraft:lingering_potion",
         "minecraft:lodestone",
         "minecraft:mace",
         "minecraft:medium_amethyst_bud",
@@ -1711,6 +1710,20 @@
             "minecraft:bamboo_stairs",
             "minecraft:bamboo_trapdoor",
             "minecraft:stripped_bamboo_block"
+        ],
+        [
+            "minecraft:crimson_nylium",
+            "minecraft:bee_nest",
+            "minecraft:grass_block",
+            "minecraft:mycelium",
+            "minecraft:podzol",
+            "minecraft:red_mushroom_block",
+            "minecraft:brown_mushroom_block"
+        ],
+        [
+            "minecraft:blue_ice",
+            "minecraft:ice",
+            "minecraft:packed_ice"
         ],
         [
             "minecraft:coal_ore",
