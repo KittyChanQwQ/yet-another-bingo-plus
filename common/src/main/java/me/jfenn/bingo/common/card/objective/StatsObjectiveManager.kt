@@ -8,6 +8,8 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MAX
+import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MIN
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
@@ -62,13 +64,18 @@ class StatsObjectiveManager(
             ?: Text.literal(statNameFallback)
 
         val display = ObjectiveDisplay.Resolved(
-            name = statName,
+            name = statName.append(": $FORMAT_MIN"),
             decoration = CardTile.Decoration.ADVANCEMENT,
         )
-        objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
-            .let {
-                it.copy(name = Text.empty().append(it.name).append(": ${objective.valueMin}"))
-            }
+        objective.display = objectiveDisplayService.resolve(
+            id = objective.id,
+            data = objective.data.display,
+            fallback = display,
+            substitutions = mapOf(
+                FORMAT_MIN to objective.valueMin.toString(),
+                FORMAT_MAX to objective.valueMax.toString(),
+            )
+        )
 
         return true
     }

@@ -13,21 +13,34 @@ class ObjectiveDisplayService(
     private val itemStackFactory: IItemStackFactory,
     private val log: Logger,
 ) {
+    private fun insertSubstitutions(
+        str: String,
+        substitutions: Map<String, String>,
+    ): String {
+        var ret = str
+        for ((key, value) in substitutions) {
+            ret = ret.replace(key, value)
+        }
+        return ret
+    }
+
     fun resolve(
         id: String,
         data: ObjectiveDisplay.Data?,
-        fallback: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY
+        fallback: ObjectiveDisplay.Resolved = ObjectiveDisplay.Resolved.EMPTY,
+        substitutions: Map<String, String> = emptyMap(),
     ): ObjectiveDisplay.Resolved = run {
-        if (data == null) return@run fallback
-
         try {
-            val name = data.name?.let {
-                textSerializer.fromJson(jsonUnpretty.encodeToString(it))
-            } ?: fallback.name
-            val lore = data.lore?.map {
+            val nameJson = data?.name?.let { jsonUnpretty.encodeToString(it) }
+                ?: fallback.name?.let { textSerializer.toJson(it) }
+
+            val name = nameJson?.let { insertSubstitutions(it, substitutions) }
+                ?.let { textSerializer.fromJson(it) }
+
+            val lore = data?.lore?.map {
                 textSerializer.fromJson(jsonUnpretty.encodeToString(it))
             } ?: fallback.lore
-            val item = data.item?.let {
+            val item = data?.item?.let {
                 val stack = itemStackFactory.createStack(data.item)
                 stack.setNbtString(data.itemNbt)
                 data.itemComponents?.let {
@@ -38,7 +51,7 @@ class ObjectiveDisplayService(
                 stack
             } ?: fallback.item
 
-            val decoration = data.decoration ?: fallback.decoration
+            val decoration = data?.decoration ?: fallback.decoration
 
             ObjectiveDisplay.Resolved(
                 name = name,

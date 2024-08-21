@@ -27,4 +27,10 @@ class ObjectiveDisplay {
         val itemComponents: Map<String, JsonElement>? = null,
         val decoration: CardTile.Decoration? = null,
     )
+
+    companion object {
+        const val FORMAT_MIN = "%min%"
+        const val FORMAT_MAX = "%max%"
+        const val FORMAT_COUNT = "%count%"
+    }
 }

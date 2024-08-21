@@ -9,10 +9,11 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_COUNT
+import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MIN
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 import org.slf4j.Logger
 import kotlin.math.max
 
@@ -79,25 +80,25 @@ class ItemObjectiveManager(
         objective.itemCount = objective.itemCount.coerceIn(1, stack.maxCount)
 
         val display = ObjectiveDisplay.Resolved(
-            name = stack.displayName,
+            name = stack.displayName.copy()
+                .append(if (objective.itemCount > 1) " x${FORMAT_COUNT}" else ""),
             item = stack,
             decoration = when {
                 objective.itemNbt != null || !objective.itemComponents.isNullOrEmpty() -> CardTile.Decoration.ADVANCEMENT
                 else -> CardTile.Decoration.NONE
             }
         )
-        objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
-            .let { it.copy(name = it.name?.withCount(objective.itemCount)) }
+        objective.display = objectiveDisplayService.resolve(
+            id = objective.id,
+            data = objective.data.display,
+            fallback = display,
+            substitutions = mapOf(
+                FORMAT_COUNT to objective.itemCount.toString(),
+                FORMAT_MIN to objective.itemCount.toString(),
+            )
+        )
 
         return true
-    }
-
-    private fun Text.withCount(count: Int): Text {
-        return if (count > 1) {
-            Text.empty().append(this).append(" x${count}")
-        } else {
-            this
-        }
     }
 
     override fun init(card: BingoCard) {

@@ -14,7 +14,15 @@ class DatapackFunctionService(
     private val commandRunner: ICommandRunner,
 ): BingoComponent() {
 
-    private val commandFiles = GameState.entries.associateWith { state ->
+    private val supportedEvents = setOf(
+        GameState.PREGAME,
+        GameState.LOADING,
+        GameState.COUNTDOWN,
+        GameState.PLAYING,
+        GameState.POSTGAME
+    )
+
+    private val commandFiles = supportedEvents.associateWith { state ->
         Config.readStream(
             file = "commands/on_${state.name.lowercase()}.mcfunction",
             shouldWriteDefault = true,
@@ -28,6 +36,9 @@ class DatapackFunctionService(
      * run "#yet-another-minecraft-bingo:on_playing" functions when the game state is changed
      */
     fun runStateChange(state: GameState) {
+        if (state !in supportedEvents)
+            return
+
         kotlin.runCatching {
             commandRunner.runSilentCommand(server, "function #${MOD_ID_BINGO}:on_${state.name.lowercase()}")
         }
