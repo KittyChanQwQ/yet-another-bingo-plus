@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.card.objective.*
 import me.jfenn.bingo.common.card.tierlist.TierListCommand
 import me.jfenn.bingo.common.card.tierlist.TierListManager
+import me.jfenn.bingo.common.card.tierlist.TierListService
 import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
@@ -117,6 +118,7 @@ val commonModule = module {
         scoped { get<BingoScope>().state }
         scoped { get<BingoState>().options }
 
+        scopedOf(::TierListService)
         scopedOf(::ObjectiveService)
         scopedOf(::ObjectiveDisplayService)
         scopedOf(::AdvancementObjectiveManager)
@@ -139,6 +141,7 @@ val commonModule = module {
                     get<StatsObjectiveManager>(),
                     get<ScoreboardObjectiveManager>(),
                 ),
+                get(),
                 get(),
             )
         }

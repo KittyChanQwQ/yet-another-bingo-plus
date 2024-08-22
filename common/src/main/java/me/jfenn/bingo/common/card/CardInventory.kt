@@ -43,7 +43,7 @@ class CardInventory(
                     state.state == GameState.POSTGAME
 
             if (isVisible) {
-                objective.visualItem(entry)?.let {
+                entry.display.item?.let {
                     return@List it.stack
                 }
             }

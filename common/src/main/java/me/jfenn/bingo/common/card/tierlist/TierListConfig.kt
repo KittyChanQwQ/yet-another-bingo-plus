@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.card.tierlist
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import me.jfenn.bingo.common.card.TagExpansionService
 import java.util.*
@@ -20,6 +21,7 @@ data class TierListConfig(
     val c: Set<TierListEntry>,
     @SerialName("D")
     val d: Set<TierListEntry>,
+    val name: JsonElement? = null,
     val groups: List<Set<String>> = emptyList(),
     val requirements: Requirements = Requirements(),
 ) {

@@ -1,10 +1,11 @@
 package me.jfenn.bingo.common.commands
 
 import me.jfenn.bingo.api.commands.ICommandManager
+import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.URL_WIKI
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.card.tierlist.TierLabel
-import me.jfenn.bingo.common.card.tierlist.TierListState
+import me.jfenn.bingo.common.card.tierlist.TierListService
+import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
@@ -18,11 +19,11 @@ import java.util.*
 class BingoCommand(
     commandManager: ICommandManager,
     private val text: TextProvider,
-    private val tierListState: TierListState,
 ) : BingoComponent() {
-    private fun getOptionsText(
-        options: BingoOptions,
-    ): List<Text> = buildList {
+    private fun IExecutionContext.getOptionsText(): List<Text> = buildList {
+        val options = scope.get<BingoOptions>()
+        val tierListService = scope.get<TierListService>()
+
         add(Text.empty())
 
         text.string(StringKey.FullName)
@@ -100,7 +101,7 @@ class BingoCommand(
 
         text.string(StringKey.OptionsTierList)
             .append(": ")
-            .append(options.formatTierLists(tierListState).formatted(Formatting.YELLOW))
+            .append(tierListService.formatTierLists(options).formatted(Formatting.YELLOW))
             .formatted(Formatting.GRAY)
             .also {
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo tierlist"))
@@ -113,8 +114,7 @@ class BingoCommand(
     init {
         commandManager.register("bingo") {
             executes {
-                val options = scope.get<BingoOptions>()
-                getOptionsText(options).forEach { sendMessage(it) }
+                getOptionsText().forEach { sendMessage(it) }
             }
         }
     }

@@ -3,10 +3,7 @@ package me.jfenn.bingo.common.card
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
-import me.jfenn.bingo.common.card.tierlist.TierLabel
-import me.jfenn.bingo.common.card.tierlist.TierListConfig
-import me.jfenn.bingo.common.card.tierlist.TierListEntry
-import me.jfenn.bingo.common.card.tierlist.TierListState
+import me.jfenn.bingo.common.card.tierlist.*
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.state.BingoState
@@ -31,7 +28,8 @@ class CardService(
     private val options: BingoOptions,
     private val teamService: TeamService,
     private val configService: ConfigService,
-    private val tierListService: TierListState,
+    private val tierListState: TierListState,
+    private val tierListService: TierListService,
     private val objectiveManager: BingoObjectiveManager,
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
@@ -41,7 +39,7 @@ class CardService(
     }
 
     private fun validateLists() {
-        tierListService.tierLists.entries
+        tierListState.tierLists.entries
             .filter { (_, list) -> Build.isDebug || list.shouldValidate }
             .forEach { (name, list) -> validateList(name, list) }
     }
@@ -67,8 +65,8 @@ class CardService(
         options.tierLists.keys.all { isListSupported(it, err) }
 
     private fun isListSupported(name: String, err: (Text) -> Unit): Boolean {
-        val list = tierListService.tierLists[name] ?: return true
-        val listName by lazy { TierListState.title(name).formatted(Formatting.BLUE) }
+        val list = tierListState.tierLists[name] ?: return true
+        val listName by lazy { tierListService.getName(name, list).formatted(Formatting.BLUE) }
         val reqs by list::requirements
 
         var isSupported = true
@@ -212,7 +210,7 @@ class CardService(
         // Collect the selected tier list configs by weight
         val tiers = options.tierLists.entries
             .mapNotNull { (name, weight) ->
-                val list = tierListService.tierLists[name]
+                val list = tierListState.tierLists[name]
                     ?.expandTags(tagExpansionService)
 
                 if (list == null) {

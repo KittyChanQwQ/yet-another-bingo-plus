@@ -2,10 +2,18 @@ package me.jfenn.bingo.common.card.objective
 
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
+import me.jfenn.bingo.common.card.tierlist.TierListService
+import me.jfenn.bingo.common.utils.joinText
+import net.minecraft.text.Style
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import org.slf4j.Logger
+
+private val NON_ITALIC_STYLE = Style.EMPTY.withItalic(false)
 
 class BingoObjectiveManager(
     private val providers: List<IObjectiveManager>,
+    private val tierListService: TierListService,
     private val log: Logger,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
@@ -39,6 +47,37 @@ class BingoObjectiveManager(
     override fun init(card: BingoCard) {
         for (provider in providers)
             provider.init(card)
+
+        for (entry in card.entries) {
+            val objective = card.objectives[entry.objectiveId] ?: continue
+
+            val lore = buildList {
+                objective.display.lore?.let { addAll(it) }
+
+                val desc = listOfNotNull(
+                    entry.tier?.text(),
+                    entry.source?.let { tierListService.getName(it).formatted(Formatting.BLUE) },
+                    entry.tileName?.let { Text.literal(it).formatted(Formatting.GRAY) },
+                )
+
+                desc.takeIf { it.isNotEmpty() }
+                    ?.joinText(Text.literal(" • ").formatted(Formatting.GRAY))
+                    ?.let { add(it) }
+            }.takeIf { it.isNotEmpty() }
+
+            val item = objective.display.item?.copy()?.also { stack ->
+                stack.setDisplay(
+                    name = objective.display.name
+                        ?.takeIf { it != stack.displayName }
+                        ?.let { Text.empty().append(it).setStyle(NON_ITALIC_STYLE) },
+                    lore = lore
+                        ?.map { Text.empty().append(it).setStyle(NON_ITALIC_STYLE) },
+                )
+                stack.setHideFlags(255)
+            }
+
+            entry.display = objective.display.copy(lore = lore, item = item)
+        }
     }
 
     override fun tick(card: BingoCard) {

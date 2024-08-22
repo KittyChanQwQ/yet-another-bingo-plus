@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.tierlist.TierListService
 import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.text.TextProvider
@@ -19,6 +20,7 @@ fun MenuComponent.registerTierLists(
     cardService: CardService = koinScope.get(),
     text: TextProvider = koinScope.get(),
     tierLists: TierListState = koinScope.get(),
+    tierListService: TierListService = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY, position) {
         putString("text", text.serialized(text.string(StringKey.OptionsTierList)))
@@ -54,7 +56,7 @@ fun MenuComponent.registerTierLists(
             position = position.add(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
             text = Text.literal(""),
             textProp = computedProperty {
-                pages[page].getOrNull(i)?.let { TierListState.title(it) }
+                pages[page].getOrNull(i)?.let { tierListService.getName(it) }
             },
             toggleProp = toggleProp,
             permissionGetter = permissionGetter,

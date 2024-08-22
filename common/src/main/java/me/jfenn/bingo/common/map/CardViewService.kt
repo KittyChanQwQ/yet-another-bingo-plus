@@ -114,10 +114,10 @@ class CardViewService(
         val isAchieved = team != null && objective.hasAchieved(team.key)
 
         return CardTile(
-            item = if (isHidden) null else objective.visualItem(entry),
+            item = if (isHidden) null else entry.display.item,
             itemTier = entry.tier.takeIf { !options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
-            name = objective.display.name.takeIf { !isHidden },
-            lore = objective.displayLore(entry).takeIf { !isHidden } ?: emptyList(),
+            name = entry.display.name.takeIf { !isHidden },
+            lore = entry.display.lore.takeIf { !isHidden } ?: emptyList(),
             decoration = objective.display.decoration.takeIf { isFreeSpace || !isHidden },
             isHidden = isHidden,
             isLocked = isLocked,

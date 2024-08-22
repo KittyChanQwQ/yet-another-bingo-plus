@@ -33,6 +33,7 @@ class TierListCommand(
         val options = scope.get<BingoOptions>()
         val events = scope.get<ScopedEvents>()
         val cardService = scope.get<CardService>()
+        val tierListService = scope.get<TierListService>()
 
         val isEnabled = options.tierLists.contains(listName)
         if (!isEnabled && !tierListState.tierLists.keys.contains(listName)) {
@@ -53,7 +54,7 @@ class TierListCommand(
         Text.literal("ℹ  ")
             .append(textProvider.string(StringKey.OptionsTierList))
             .append(": ")
-            .append(options.formatTierLists(tierListState))
+            .append(tierListService.formatTierLists(options))
             .formatted(Formatting.AQUA)
             .also { sendFeedback(it) }
     }

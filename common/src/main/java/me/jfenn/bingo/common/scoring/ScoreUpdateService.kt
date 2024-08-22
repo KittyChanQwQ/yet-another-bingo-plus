@@ -45,7 +45,7 @@ class ScoreUpdateService(
         team: BingoTeam,
         objective: BingoObjective,
     ) {
-        val item = objective.visualItem(null)
+        val item = objective.display.item
 
         val packet = ScoredItemPacket(
             player = scoredPlayer,

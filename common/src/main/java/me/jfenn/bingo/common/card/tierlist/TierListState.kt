@@ -8,8 +8,6 @@ import net.minecraft.text.Text
 class TierListState {
     var tierLists: Map<String, TierListConfig> = emptyMap()
 
-    fun entries() = tierLists.keys.map { title(it) to it }
-
     companion object {
         fun title(listName: String): MutableText {
             return Text.translatableWithFallback("$MOD_ID.tierlist.$listName", listName.formatTitle())
