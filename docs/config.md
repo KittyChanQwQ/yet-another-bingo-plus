@@ -40,7 +40,7 @@ This file supplies the default options for the game menu - used whenever the "Re
 
 ## `*.tierlist.json`
 
-The tier list files are used to generate the BINGO card from a set of [tier lists](./tier-editor). These are randomized for each game according to the configured [item distribution](./item-distribution).
+The tier list files are used to generate the BINGO card from a set of [tier lists](./tier-editor). These are randomized for each game according to the configured [item distribution](./game-options#item-distribution).
 
 Multiple tier lists can be used at once! Any file ending with `.tierlist.json` will be shown as an option in the game.
 

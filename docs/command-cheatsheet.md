@@ -27,7 +27,7 @@ description: A reference page for all of the game commands provided in Yet Anoth
 | `/bingo timelimit #`                 | Sets the time limit of the game, in minutes (or "off" for no timer)                    |
 | `/bingo mode <option>`               | Toggles on/off the different Bingo modes, such as Lockout, Inventory, or Hidden Items. |
 | `/bingo goal <option>`               | Changes the number of Bingo lines needed for a team to win the game.                   |
-| `/bingo itemdist # # # # #`          | Changes the [item distribution](./item-distribution) used to generate the card.        |
+| `/bingo itemdist # # # # #`          | Changes the [item distribution](./game-options#item-distribution) used to generate the card.        |
 | `/bingo tierlist <name>`             | Changes the tier list used to generate the card.                                       |
 | `/bingo reroll`                      | Re-rolls the card for completely new random items.                                     |
 | `/bingo card <tile> set <objective>` | Manually changes the specified tile on the Bingo Card.                                 |
