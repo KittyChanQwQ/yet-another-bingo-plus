@@ -49,7 +49,7 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: 'Getting Started', link: '/getting-started' },
-          { text: 'Item Distribution', link: '/item-distribution' },
+          { text: 'Game Options', link: '/game-options' },
           { text: 'Command Cheatsheet', link: '/command-cheatsheet' },
         ],
       },
