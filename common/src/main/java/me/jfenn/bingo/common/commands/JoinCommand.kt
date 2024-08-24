@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.commands
 
 import me.jfenn.bingo.api.IExecutors
-import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.api.commands.IExecutionSource
@@ -15,7 +16,6 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
@@ -30,7 +30,7 @@ class JoinCommand(
     }
 
     private fun IExecutionContext.joinTeam(
-        player: ServerPlayerEntity,
+        player: IPlayerHandle,
         team: BingoTeam,
     ) {
         val state = scope.get<BingoState>()
@@ -56,7 +56,7 @@ class JoinCommand(
         }
 
         createSpawnpointFuture.whenCompleteAsync({ _, _ ->
-            teamService.joinTeam(player, team)
+            teamService.joinTeam(player.player, team)
 
             if (state.state == GameState.PLAYING) {
                 // if a player's team is changed in-game, move them to their new spawnpoint
@@ -71,11 +71,10 @@ class JoinCommand(
 
         if (player != this.player) {
             val textProvider = scope.get<TextProvider>()
-            val scoreboardManager = scope.get<IScoreboardManager>()
             sendFeedback(
                 textProvider.string(
                     StringKey.CommandJoinSuccess,
-                    scoreboardManager.getPlayerName(player),
+                    player.name,
                     teamService.getTeamName(team),
                 )
             )
@@ -88,14 +87,14 @@ class JoinCommand(
                 literal(team.id.removePrefix("bingo_")) {
                     requires { hasPermission(Permission.COMMAND_JOIN) && isNotProcessingTeams() }
                     executes {
-                        joinTeam(player!!, team)
+                        joinTeam(scope.get<IPlayerManager>().forPlayer(player!!), team)
                     }
 
                     player("player") { playerArg ->
                         requires { hasPermission(Permission.COMMAND_JOIN_PLAYER) && isNotProcessingTeams() }
                         executes {
                             val player = getArgument(playerArg)
-                            joinTeam(player, team)
+                            joinTeam(scope.get<IPlayerManager>().forPlayer(player), team)
                         }
                     }
                 }

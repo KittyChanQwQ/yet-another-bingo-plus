@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.controller
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -11,7 +12,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.ActionResult
 
 class LobbyChaosController(
     events: ScopedEvents,
@@ -55,7 +55,7 @@ class LobbyChaosController(
             if (shouldPreventLobbyChaos(player)) {
                 val blockState = player.world.getBlockState(it.hit.blockPos)
                 if (blockState.block == Blocks.BREWING_STAND)
-                    return@onUseBlock ActionResult.FAIL
+                    return@onUseBlock ActionResult.Fail(Unit)
             }
 
             null

@@ -7,6 +7,8 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 interface IItemStackFactory {
+    val emptyStack: IItemStack
+
     fun listItems(server: MinecraftServer): List<String>
     fun isEnabledInWorld(item: String, server: MinecraftServer): Boolean
 
@@ -27,6 +29,7 @@ interface IItemStack {
     val identifier: Identifier
     var count: Int
     val maxCount: Int
+    val isEmpty get() = count <= 0
 
     val displayName: Text
     val lore: List<Text>

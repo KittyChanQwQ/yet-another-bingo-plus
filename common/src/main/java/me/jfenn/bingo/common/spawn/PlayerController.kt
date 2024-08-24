@@ -1,9 +1,6 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.EffectType
-import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.IStatusEffectsFactory
+import me.jfenn.bingo.api.*
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -48,7 +45,7 @@ class PlayerController(
 ) : BingoComponent() {
 
     fun updateGameMode(
-        player: ServerPlayerEntity,
+        player: IPlayerHandle,
         forceReset: Boolean = false,
     ) {
         val lobbyWorld = server.lobbyWorld ?: return
@@ -57,8 +54,8 @@ class PlayerController(
             return
         }
 
-        val isOnTeam = teamService.isPlaying(player)
-        log.debug("updateGameMode(${player.uuidAsString}, forceReset=$forceReset)")
+        val isOnTeam = teamService.isPlaying(player.player)
+        log.debug("updateGameMode({}}, forceReset=$forceReset)", player.uuid)
 
         val gameMode = when (state.state) {
             GameState.UNINITIALIZED,
@@ -72,17 +69,17 @@ class PlayerController(
                     GameState.PLAYING -> GameMode.SURVIVAL
                     else -> GameMode.ADVENTURE
                 }
-                !cardViewService.supportsCardHud(player) && vanishIntegration.isInstalled() -> GameMode.ADVENTURE
+                !cardViewService.supportsCardHud(player.player) && vanishIntegration.isInstalled() -> GameMode.ADVENTURE
                 else -> GameMode.SPECTATOR
             }
             GameState.POSTGAME -> when {
-                cardViewService.supportsCardHud(player) -> GameMode.SPECTATOR
+                cardViewService.supportsCardHud(player.player) -> GameMode.SPECTATOR
                 else -> GameMode.CREATIVE
             }
         }
 
         if (
-            player.interactionManager.gameMode != gameMode ||
+            player.player.interactionManager.gameMode != gameMode ||
             (player.serverWorld == lobbyWorld && state.state != GameState.PREGAME) ||
             forceReset
         ) {
@@ -93,17 +90,17 @@ class PlayerController(
                 respawnPlayer(player)
             }
 
-            player.changeGameMode(gameMode)
+            player.player.changeGameMode(gameMode)
         }
 
         // if the player is not on a team, they should be vanished
         val isVanished = !isOnTeam && (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN || state.state == GameState.PLAYING)
-        vanishIntegration.setVanish(player, isVanished)
+        vanishIntegration.setVanish(player.player, isVanished)
 
         // allow players in adventure mode to fly
         if (isVanished && vanishIntegration.isInstalled()) {
-            player.abilities.allowFlying = true
-            player.sendAbilitiesUpdate()
+            player.player.abilities.allowFlying = true
+            player.player.sendAbilitiesUpdate()
         }
     }
 
@@ -128,18 +125,18 @@ class PlayerController(
         player.hungerManager.exhaustion = 0f
     }
 
-    private fun respawnPlayer(player: ServerPlayerEntity) {
-        log.debug("respawnPlayer(${player.uuidAsString})")
+    private fun respawnPlayer(player: IPlayerHandle) {
+        log.debug("respawnPlayer({})", player.uuid)
         // reset player info
-        resetPlayerHealth(player)
-        player.inventory.clear()
+        resetPlayerHealth(player.player)
+        player.player.inventory.clear()
 
         // unlock all crafting recipes, if set
         if (state.state == GameState.PLAYING && options.isUnlockRecipes)
-            player.unlockRecipes(server.recipeManager.values())
+            player.player.unlockRecipes(server.recipeManager.values())
 
         // reset advancements state
-        advancementManager.clearAdvancements(player)
+        advancementManager.clearAdvancements(player.player)
 
         if (state.state == GameState.PREGAME || state.state == GameState.PRELOADING) {
             spawnService.teleportToLobby(player)
@@ -148,7 +145,7 @@ class PlayerController(
             spawnService.teleportPlayer(player)
 
             // give spawn equipment to the player if they are on a team
-            if (teamService.isPlaying(player) && state.state == GameState.PLAYING) {
+            if (teamService.isPlaying(player.player) && state.state == GameState.PLAYING) {
                 spawnService.giveSpawnEquipment(listOf(player))
             }
         }
@@ -168,14 +165,15 @@ class PlayerController(
             state.playersJoinedIds.add(player.uuid)
         }
 
-        events.onPlayerRespawn { player ->
+        events.onPlayerRespawn { event ->
             val lobbyWorld = server.lobbyWorld ?: return@onPlayerRespawn
+            val player = event.player
 
             // if in pregame, move to the lobby world
             if (state.state == GameState.PREGAME) {
-                val spawnPos = state.lobbySpawnPos.toBlockPos()
-                player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
-                player.teleport(lobbyWorld, spawnPos.x + 0.5, spawnPos.y.toDouble(), spawnPos.z + 0.5, 180f, 0f)
+                val spawnPos = state.lobbySpawnPos
+                player.setSpawnPoint(lobbyWorld, spawnPos, 180f, true, false)
+                player.teleport(lobbyWorld, spawnPos.toVector3d().add(0.5, 0.0, 0.5), 180f, 0f)
             }
 
             // if playing, give the player new spawn equipment
@@ -183,7 +181,7 @@ class PlayerController(
                 state.state == GameState.PLAYING
                 // if KEEP_INVENTORY is on, we don't need to replace these items
                 && !server.gameRules.get(GameRules.KEEP_INVENTORY).get()
-                && teamService.isPlaying(player)
+                && teamService.isPlaying(player.player)
             ) {
                 spawnService.giveSpawnEquipment(listOf(player))
             }
@@ -193,7 +191,7 @@ class PlayerController(
         events.onEnter(GameState.LOADING) { prevState ->
             if (prevState == GameState.LOADING) return@onEnter
 
-            for (player in server.playerManager.playerList) {
+            for (player in playerManager.getPlayers()) {
                 updateGameMode(player, forceReset = true)
             }
         }
@@ -202,25 +200,25 @@ class PlayerController(
         events.onEnter(GameState.PLAYING) { prevState ->
             if (prevState == GameState.PLAYING) return@onEnter
 
-            for (player in server.playerManager.playerList) {
+            for (player in playerManager.getPlayers()) {
                 updateGameMode(player, forceReset = true)
             }
         }
 
         // Transition from PLAYING -> POSTGAME
         events.onEnter(GameState.POSTGAME) {
-            for (player in server.playerManager.playerList) {
+            for (player in playerManager.getPlayers()) {
                 updateGameMode(player)
 
                 if (!state.isLobbyMode) {
                     // if running with isLobbyMode=false, take the elytra back after a game
-                    elytraService.takeElytra(playerManager.forPlayer(player))
+                    elytraService.takeElytra(player)
                 }
             }
         }
 
         events.onGameTick {
-            for (player in server.playerManager.playerList) {
+            for (player in playerManager.getPlayers()) {
                 // If the player has just joined, update their gamemode
                 val playerUuid = player.uuid
                 if (playerUuid in state.playersJoinedIds) {
@@ -229,25 +227,25 @@ class PlayerController(
                 }
 
                 // ensure that players don't run out of hunger in the lobby
-                if (state.isLobbyMode && state.state == GameState.PREGAME && player.hungerManager.foodLevel < 10) {
-                    player.hungerManager.foodLevel = 10
+                if (state.isLobbyMode && state.state == GameState.PREGAME && player.player.hungerManager.foodLevel < 10) {
+                    player.player.hungerManager.foodLevel = 10
                 }
 
-                if (state.state == GameState.PLAYING && player.health > 0f && !player.isSpectator) {
+                if (state.state == GameState.PLAYING && player.player.health > 0f && !player.isSpectator) {
                     // if elytra mode is configured, give the player an elytra
-                    if (options.isElytra && teamService.isPlaying(player))
-                        elytraService.giveElytra(playerManager.forPlayer(player))
+                    if (options.isElytra && teamService.isPlaying(player.player))
+                        elytraService.giveElytra(playerManager.forPlayer(player.player))
 
                     // if the player is spectating in adventure mode,
                     // they should be able to fly
-                    if (state.isLobbyMode && player.interactionManager.gameMode == GameMode.ADVENTURE) {
-                        val isSpectating = !teamService.isPlaying(player)
+                    if (state.isLobbyMode && player.player.interactionManager.gameMode == GameMode.ADVENTURE) {
+                        val isSpectating = !teamService.isPlaying(player.player)
                         if (isSpectating) {
-                            resetPlayerHealth(player)
+                            resetPlayerHealth(player.player)
                         }
-                        if (isSpectating != player.abilities.allowFlying) {
-                            player.abilities.allowFlying = isSpectating
-                            player.sendAbilitiesUpdate()
+                        if (isSpectating != player.player.abilities.allowFlying) {
+                            player.player.abilities.allowFlying = isSpectating
+                            player.player.sendAbilitiesUpdate()
                         }
                     }
                 }

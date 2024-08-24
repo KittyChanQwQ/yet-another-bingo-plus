@@ -67,13 +67,14 @@ class BingoOptionsCommands(
         val options = scope.get<BingoOptions>()
         val events = scope.get<ScopedEvents>()
         val playerController = scope.get<PlayerController>()
+        val playerManager = scope.get<IPlayerManager>()
 
         options.isNightVision = !options.isNightVision
         events.onChangeOptions(Unit)
 
         // if night vision is changed, update all players
         if (state.state == GameState.PLAYING) {
-            server.playerManager.playerList.forEach { player ->
+            playerManager.getPlayers().forEach { player ->
                 playerController.updateGameMode(player, forceReset = false)
             }
         }

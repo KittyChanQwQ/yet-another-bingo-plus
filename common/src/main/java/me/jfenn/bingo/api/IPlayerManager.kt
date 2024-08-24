@@ -1,9 +1,11 @@
 package me.jfenn.bingo.api
 
 import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
+import org.joml.Vector3d
 import java.util.*
 
 interface IPlayerManager {
@@ -49,6 +51,14 @@ interface IPlayerHandle {
     fun setStack(slot: Int, stack: IItemStack)
 
     fun playSound(sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float)
+
+    val serverWorld: ServerWorld
+    val blockPos: BlockPosition
+    val yaw: Float
+    val pitch: Float
+
+    fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float)
+    fun setSpawnPoint(world: ServerWorld, spawn: BlockPosition, angle: Float, forced: Boolean, sendMessage: Boolean)
 }
 
 enum class PlayerSoundEvent {

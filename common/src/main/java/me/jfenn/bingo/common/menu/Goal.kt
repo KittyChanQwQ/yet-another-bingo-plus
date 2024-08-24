@@ -1,18 +1,17 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
+import org.joml.Vector3d
 
 fun MenuComponent.registerGoal(
-    position: Vec3d,
+    position: Vector3d,
     options: BingoOptions,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     text: TextProvider = koinScope.get(),
@@ -47,7 +46,7 @@ fun MenuComponent.registerGoal(
     )
 
     registerButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 3 * MENU_ITEM_HEIGHT), 0.0),
+        position = position.add(0.0, -(MENU_ITEM_OFFSET + 3 * MENU_ITEM_HEIGHT), 0.0, Vector3d()),
         text = Text.empty(),
         textProp = computedProperty { Text.literal("⇄ ").append(text.string(options.cardGoal.string())) },
         permissionGetter = permissionGetter,
@@ -63,12 +62,13 @@ fun MenuComponent.registerGoal(
         markDirty()
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", text.serialized(text.string(StringKey.OptionsGoal)))
-        putString("billboard", "fixed")
-        putString("alignment", "center")
-        putInt("background", 0)
-        putBoolean("shadow", true)
-        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
+    registerEntity(me.jfenn.bingo.api.EntityType.TEXT_DISPLAY) {
+        pos = position
+        this.value = text.string(StringKey.OptionsGoal)
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.CENTER
+        background = 0
+        shadow = true
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 }

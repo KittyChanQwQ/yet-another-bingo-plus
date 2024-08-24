@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spectator.SpectatorInventoryScreenHandler
 import me.jfenn.bingo.common.state.BingoState
@@ -16,7 +17,6 @@ import net.minecraft.inventory.Inventory
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.ActionResult
 import net.minecraft.world.GameMode
 
 class PlayerSpectatorController(
@@ -90,7 +90,7 @@ class PlayerSpectatorController(
                 )
             }
 
-            ActionResult.FAIL
+            ActionResult.Fail(Unit)
         }
 
         events.onUseEntity {
@@ -130,7 +130,7 @@ class PlayerSpectatorController(
                 )
             }
 
-            ActionResult.FAIL
+            ActionResult.Fail(Unit)
         }
 
         events.onAttackEntity {
@@ -143,7 +143,7 @@ class PlayerSpectatorController(
             // if the player is spectating a game, do not
             // allow them to attack any entity
 
-            ActionResult.FAIL
+            ActionResult.Fail(Unit)
         }
     }
 

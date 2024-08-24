@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.spawn
 
 import me.jfenn.bingo.api.IExecutors
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.IServerWorldFactory
 import me.jfenn.bingo.api.item.IItemStackFactory
@@ -13,7 +14,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
@@ -102,7 +102,7 @@ class SpawnService(
         }
     }
 
-    fun teleportToLobby(player: ServerPlayerEntity) {
+    fun teleportToLobby(player: IPlayerHandle) {
         val lobbyWorld = server.lobbyWorld
         if (lobbyWorld == null) {
             log.error("[SpawnService] Attempted teleportToLobby, but the lobby world is null!")
@@ -110,15 +110,17 @@ class SpawnService(
         }
 
         val spawn = state.lobbySpawnPos
-        player.teleport(lobbyWorld, spawn.x.toDouble(), spawn.y.toDouble(), spawn.z.toDouble(), 180f, 0f)
+        player.teleport(lobbyWorld, spawn.toVector3d(), 180f, 0f)
         player.setSpawnPoint(
-            lobbyWorld.registryKey,
-            spawn.toBlockPos(),
-            0f, true, false,
+            world = lobbyWorld,
+            spawn = spawn,
+            angle = 0f,
+            forced = true,
+            sendMessage = false,
         )
     }
 
-    fun teleportPlayer(player: ServerPlayerEntity) {
+    fun teleportPlayer(player: IPlayerHandle) {
         if (!state.isLobbyMode) {
             log.error("[SpawnService] Attempted teleportPlayer, but isLobbyMode=false!")
             return
@@ -126,7 +128,7 @@ class SpawnService(
 
         val world = getSpawnDimension()
 
-        val team = teamService.getPlayerTeam(player)
+        val team = teamService.getPlayerTeam(player.player)
         val spawn = team?.let {
             getTeamSpawnpoint(team)
         } ?: run {
@@ -134,15 +136,17 @@ class SpawnService(
         }
 
         // if the player already has the exact block position, don't teleport them again
-        val needsTeleport = player.world != world || player.blockX != spawn.x || player.blockY != spawn.y || player.blockZ != spawn.z
+        val needsTeleport = player.serverWorld != world || player.blockPos != spawn
         if (!needsTeleport) return
 
         // random offset for each player to prevent collision grouping
-        player.teleport(world, spawn.x + Random.nextDouble(), spawn.y.toDouble(), spawn.z + Random.nextDouble(), player.yaw, player.pitch)
+        player.teleport(world, spawn.toVector3d().add(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()), player.yaw, player.pitch)
         player.setSpawnPoint(
-            world.registryKey,
-            spawn.toBlockPos(),
-            0f, true, false,
+            world = world,
+            spawn = spawn,
+            angle = 0f,
+            forced = true,
+            sendMessage = false,
         )
     }
 
@@ -239,7 +243,7 @@ class SpawnService(
     /**
      * Equip the player with any configured spawn equipment
      */
-    fun giveSpawnEquipment(players: List<ServerPlayerEntity>) {
+    fun giveSpawnEquipment(players: List<IPlayerHandle>) {
         if (!state.isLobbyMode) {
             log.error("[SpawnService] Attempted giveSpawnEquipment, but isLobbyMode=false!")
             return
@@ -262,7 +266,7 @@ class SpawnService(
                 // copy the stack for each player
                 val playerStack = stack.copy()
                 // if the item can be equipped (e.g. iron chestplate), put it in an equipment slot
-                playerManager.forPlayer(player).giveOrEquipStack(playerStack)
+                player.giveOrEquipStack(playerStack)
             }
         }
     }

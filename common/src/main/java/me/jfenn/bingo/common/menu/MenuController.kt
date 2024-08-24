@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.api.ILevelStorage
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.api.*
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.config.BlockPosition
@@ -19,22 +18,18 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.measureTime
-import me.jfenn.bingo.common.utils.toNbt
+import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.decoration.DisplayEntity
-import net.minecraft.entity.decoration.InteractionEntity
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
 import net.minecraft.world.Heightmap
 import net.minecraft.world.chunk.ChunkStatus
+import org.joml.Vector3d
 import org.joml.Vector3f
 import org.slf4j.Logger
 import java.io.IOException
@@ -48,6 +43,7 @@ class MenuController(
     scopeManager: ScopeManager,
     private val log: Logger,
     private val server: MinecraftServer,
+    private val entityManager: IEntityManager,
     private val interactionEntityEvents: InteractionEntityEvents,
     private val state: BingoState,
     private val teamService: TeamService,
@@ -94,6 +90,7 @@ class MenuController(
                     log = log,
                     koinScope = koinScope,
                     world = lobbyWorld,
+                    entityManager = entityManager,
                     interactionEntityEvents = interactionEntityEvents,
                     menuPos = menuPos,
                     instanceTag = instanceTag,
@@ -271,60 +268,50 @@ class MenuController(
 
             val team = BingoTeam.TEAM_BLOCKS[blockState.block] ?: continue
             teamPositions[team.key] = blockPos
-            spawnTeamEntity(lobbyWorld, Vec3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team, instanceTag)
+            spawnTeamEntity(lobbyWorld, Vector3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team, instanceTag)
             lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
         }
     }
 
     private fun spawnTeamEntity(
         lobbyWorld: ServerWorld,
-        position: Vec3d,
+        position: Vector3d,
         team: BingoTeam,
         instanceTag: String,
     ) {
-        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+        entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.add(0.0, 1.5, 0.0).toNbt())
-                    putString("text", text.serialized(
-                        Text.literal("${team.symbol} ")
-                            .append(text.string(StringKey.TeamName, text.string(team.name)))
-                            .formatted(team.formatting)
-                            .let { Texts.bracketed(it) }
-                    ))
-                    putString("billboard", "vertical")
-                    putString("alignment", "center")
-                    putInt("background", 0)
-                    putBoolean("shadow", true)
-                })
+                pos = position + Vector3d(0.0, 1.5, 0.0)
+                value = Text.literal("${team.symbol} ")
+                    .append(text.string(StringKey.TeamName, text.string(team.name)))
+                    .formatted(team.formatting)
+                    .let { Texts.bracketed(it) }
+                billboard = ITextDisplayEntity.Billboard.VERTICAL
+                alignment = ITextDisplayEntity.TextAlignment.CENTER
+                background = 0
+                shadow = true
             }
-            .also { it.addCommandTag(instanceTag) }
-            .also { lobbyWorld.spawnEntity(it) }
+            .also { it.commandTags += instanceTag }
+            .also { entityManager.spawnEntity(lobbyWorld, it) }
 
-        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+        entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.add(0.0, 1.0, 0.0).toNbt())
-                    putString("text", text.serialized(
-                        text.string(StringKey.LobbyClickToJoin)
-                    ))
-                    putString("billboard", "vertical")
-                    putString("alignment", "center")
-                })
+                pos = position + Vector3d(0.0, 1.0, 0.0)
+                value = text.string(StringKey.LobbyClickToJoin)
+                billboard = ITextDisplayEntity.Billboard.VERTICAL
+                alignment = ITextDisplayEntity.TextAlignment.CENTER
             }
-            .also { it.addCommandTag(instanceTag) }
-            .also { lobbyWorld.spawnEntity(it) }
+            .also { it.commandTags += instanceTag }
+            .also { entityManager.spawnEntity(lobbyWorld, it) }
 
-        val interactionListenerEntity = InteractionEntity(EntityType.INTERACTION, lobbyWorld)
+        val interactionListenerEntity = entityManager.createEntity(EntityType.INTERACTION, lobbyWorld)
             .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.add(0.0, -1.0, 0.0).toNbt())
-                    putFloat("width", 2f)
-                    putFloat("height", 4f)
-                })
+                pos = position + Vector3d(0.0, -1.0, 0.0)
+                width = 2f
+                height = 4f
             }
-            .also { it.addCommandTag(instanceTag) }
-            .also { lobbyWorld.spawnEntity(it) }
+            .also { it.commandTags += instanceTag }
+            .also { entityManager.spawnEntity(lobbyWorld, it) }
 
         interactionEntityEvents.onInteract(interactionListenerEntity) { player ->
             val color = Color.fromInt(team.formatting.colorValue ?: 0)

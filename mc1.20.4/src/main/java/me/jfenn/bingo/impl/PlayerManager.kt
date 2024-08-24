@@ -7,6 +7,7 @@ import me.jfenn.bingo.api.PlayerSoundCategory
 import me.jfenn.bingo.api.PlayerSoundEvent
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.MobEntity
@@ -18,6 +19,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import org.joml.Vector3d
 import java.util.*
 
 class PlayerManager(
@@ -147,6 +149,28 @@ class PlayerManager(
                 volume,
                 pitch,
             )
+        }
+
+        override val serverWorld: ServerWorld by player::serverWorld
+
+        override val blockPos: BlockPosition
+            get() = BlockPosition(player.blockX, player.blockY, player.blockZ)
+
+        override val yaw: Float by player::yaw
+        override val pitch: Float by player::pitch
+
+        override fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float) {
+            player.teleport(world, pos.x, pos.y, pos.z, yaw, pitch)
+        }
+
+        override fun setSpawnPoint(
+            world: ServerWorld,
+            spawn: BlockPosition,
+            angle: Float,
+            forced: Boolean,
+            sendMessage: Boolean
+        ) {
+            player.setSpawnPoint(world.registryKey, spawn.toBlockPos(), angle, forced, sendMessage)
         }
     }
 }

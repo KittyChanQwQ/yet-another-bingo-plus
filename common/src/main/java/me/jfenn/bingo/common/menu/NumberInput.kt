@@ -1,15 +1,16 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.EntityType
+import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.toNbt
-import net.minecraft.entity.EntityType
+import me.jfenn.bingo.common.utils.plus
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
+import org.joml.Vector3d
 
 fun MenuComponent.registerNumberInput(
-    position: Vec3d,
+    position: Vector3d,
     valueProp: MutableProperty<Int>,
     minValueProp: Property<Int>,
     maxValueProp: Property<Int>,
@@ -23,7 +24,7 @@ fun MenuComponent.registerNumberInput(
     val maxValue by maxValueProp
 
     registerButton(
-        position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
+        position = position + Vector3d(0.0, -MENU_ITEM_OFFSET, 0.0),
         text = Text.literal("+"),
         permissionGetter = permissionGetter,
     ) {
@@ -32,7 +33,7 @@ fun MenuComponent.registerNumberInput(
     }
 
     registerButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
+        position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
         text = Text.literal("-"),
         permissionGetter = permissionGetter,
     ) {
@@ -40,12 +41,13 @@ fun MenuComponent.registerNumberInput(
         markDirty()
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY, position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
-        putString("text", text.serialized(format(value)))
-        putString("billboard", "fixed")
-        putString("alignment", "center")
-        putInt("background", 0)
-        putBoolean("shadow", true)
-        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY) {
+        pos = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)
+        this.value = format(value)
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.CENTER
+        background = 0
+        shadow = true
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 }

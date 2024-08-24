@@ -44,7 +44,9 @@ class ClientNetworkingImpl(
     ) : IClientPacketHandlerS2C<T> {
         private val event = EventListener<ClientPacket<T>>()
 
-        override fun onPacket(receiver: (ClientPacket<T>) -> Unit) = event(receiver)
+        override fun onPacket(receiver: (ClientPacket<T>) -> Unit) {
+            event(receiver)
+        }
 
         init {
             ClientPlayNetworking.registerGlobalReceiver(converter.id) { client, _, buf, _ ->

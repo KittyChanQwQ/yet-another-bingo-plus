@@ -1,20 +1,21 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.EntityType
+import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.tierlist.TierListService
 import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.toNbt
+import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
+import org.joml.Vector3d
 
 fun MenuComponent.registerTierLists(
-    position: Vec3d,
+    position: Vector3d,
     options: BingoOptions,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     cardService: CardService = koinScope.get(),
@@ -22,13 +23,14 @@ fun MenuComponent.registerTierLists(
     tierLists: TierListState = koinScope.get(),
     tierListService: TierListService = koinScope.get(),
 ) {
-    registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", text.serialized(text.string(StringKey.OptionsTierList)))
-        putString("billboard", "fixed")
-        putString("alignment", "center")
-        putInt("background", 0)
-        putBoolean("shadow", true)
-        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY) {
+        pos = position
+        this.value = text.string(StringKey.OptionsTierList)
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.CENTER
+        background = 0
+        shadow = true
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 
     val pages = tierLists.tierLists.keys.chunked(4)
@@ -53,7 +55,7 @@ fun MenuComponent.registerTierLists(
         )
 
         registerToggleButton(
-            position = position.add(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
+            position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
             text = Text.literal(""),
             textProp = computedProperty {
                 pages[page].getOrNull(i)?.let { tierListService.getName(it) }
@@ -70,7 +72,7 @@ fun MenuComponent.registerTierLists(
 
     if (pages.size > 1) {
         registerButton(
-            position = position.add(0.0, -(MENU_ITEM_OFFSET + 4*MENU_ITEM_HEIGHT), 0.0),
+            position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + 4*MENU_ITEM_HEIGHT), 0.0),
             text = text.string(StringKey.OptionsTierListMore),
             textProp = computedProperty {
                 Text.literal(

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.event
 
+import me.jfenn.bingo.api.IEntity
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.utils.EventListener
@@ -13,7 +14,7 @@ class InteractionEntityEvents {
 
     val onInteract = EventListener<Pair<InteractionEntity, ServerPlayerEntity>>()
 
-    fun onInteract(entity: InteractionEntity, consumer: (ServerPlayerEntity) -> Unit) {
+    fun onInteract(entity: IEntity, consumer: (ServerPlayerEntity) -> Unit) {
         INTERACT_LISTENERS[entity.uuid] = consumer
     }
 

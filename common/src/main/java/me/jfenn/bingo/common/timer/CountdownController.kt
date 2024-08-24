@@ -2,9 +2,7 @@ package me.jfenn.bingo.common.timer
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.api.EffectType
-import me.jfenn.bingo.api.IStatusEffectsFactory
-import me.jfenn.bingo.api.ITickManager
+import me.jfenn.bingo.api.*
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -13,10 +11,9 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityType
-import net.minecraft.nbt.NbtCompound
+import me.jfenn.bingo.common.utils.plus
 import net.minecraft.server.MinecraftServer
+import org.joml.Vector3d
 import kotlin.time.Duration.Companion.seconds
 
 class CountdownController(
@@ -29,12 +26,13 @@ class CountdownController(
     private val tickManager: ITickManager,
     private val statusEffectsFactory: IStatusEffectsFactory,
     private val spawnService: SpawnService,
+    private val entityManager: IEntityManager,
 ) : BingoComponent() {
 
     private var countdownUntil: Instant? = null
     private var prevSeconds: Int = -1
 
-    private val entityMap = mutableMapOf<BingoTeamKey, Entity>()
+    private val entityMap = mutableMapOf<BingoTeamKey, IBatEntity>()
 
     private val playingPlayerList get() = server.playerManager.playerList
         .filter { teamService.isPlaying(it) }
@@ -59,34 +57,33 @@ class CountdownController(
             val entity = entityMap.getOrPut(team.key) {
                 // Create a new bat entity in the spawn dimension
                 val world = spawnService.getSpawnDimension()
-                val marker = EntityType.BAT.create(world) ?: return@forEach
-                marker.readNbt(NbtCompound().apply {
-                    putBoolean("Invulnerable", true)
-                    putBoolean("NoGravity", true)
-                    putBoolean("Silent", true)
-                    putBoolean("NoAI", true)
-                    putBoolean("PersistenceRequired", true)
-                })
+                val marker = entityManager.createEntity(EntityType.BAT, world)
+                marker.apply {
+                    invulnerable = true
+                    noGravity = true
+                    silent = true
+                    noAI = true
+                    persistenceRequired = true
+                }
+
                 val spawnPoint = team.spawnpoint ?: return@forEach
-                with(spawnPoint) { marker.setPosition(x.toDouble() + 0.5, y.toDouble() - 0.4, z.toDouble() + 0.5) }
-                world.spawnEntity(marker)
+                marker.pos = spawnPoint.toVector3d() + Vector3d(0.5, -0.4, 0.5)
+                entityManager.spawnEntity(world, marker)
 
                 // Make the bat invisible
-                statusEffectsFactory.getStatusEffects(marker).apply {
-                    addEffect(
-                        type = EffectType.INVISIBILITY,
-                        duration = -1,
-                        amplifier = 0,
-                        ambient = false,
-                        visible = false,
-                    )
-                }
+                marker.addEffect(
+                    type = EffectType.INVISIBILITY,
+                    duration = -1,
+                    amplifier = 0,
+                    ambient = false,
+                    visible = false,
+                )
 
                 marker
             }
 
             for (player in team.players.mapNotNull { server.playerManager.getPlayer(it.uuid) }) {
-                player.startRiding(entity, true)
+                player.startRiding(entity.entity, true)
             }
         }
     }
