@@ -29,13 +29,19 @@ interface IPlayerManager {
 
 }
 
-interface IPlayerHandle {
+interface IPlayerHandle : ILivingEntity {
     val player: ServerPlayerEntity
     val isAlive: Boolean
     val isSpectator: Boolean
-
-    val uuid: UUID
     val name: String
+
+    var fireTicks: Int
+    var isOnFire: Boolean
+    var foodLevel: Int
+    val maxFoodLevel: Int get() = 20
+    var saturationLevel: Float
+    val maxSaturationLevel: Float get() = 5f
+    var exhaustion: Float
 
     fun allHeldStacks(): Sequence<IItemStack>
     fun allInventorySlots(): Sequence<Pair<Int, IItemStack>>
@@ -54,8 +60,6 @@ interface IPlayerHandle {
 
     val serverWorld: ServerWorld
     val blockPos: BlockPosition
-    val yaw: Float
-    val pitch: Float
 
     fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float)
     fun setSpawnPoint(world: ServerWorld, spawn: BlockPosition, angle: Float, forced: Boolean, sendMessage: Boolean)

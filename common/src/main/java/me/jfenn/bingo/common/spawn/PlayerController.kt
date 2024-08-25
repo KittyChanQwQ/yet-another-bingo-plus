@@ -1,6 +1,9 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.*
+import me.jfenn.bingo.api.EffectType
+import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -11,7 +14,6 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.VanishIntegration
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
 import org.slf4j.Logger
@@ -40,7 +42,6 @@ class PlayerController(
     private val elytraService: ElytraService,
     private val advancementManager: IAdvancementManager,
     private val vanishIntegration: VanishIntegration,
-    private val statusEffectsFactory: IStatusEffectsFactory,
     private val playerManager: IPlayerManager,
 ) : BingoComponent() {
 
@@ -104,31 +105,30 @@ class PlayerController(
         }
     }
 
-    private fun resetPlayerHealth(player: ServerPlayerEntity) {
-        val statusEffects = statusEffectsFactory.getStatusEffects(player)
-        statusEffects.getEffects()
+    private fun resetPlayerHealth(player: IPlayerHandle) {
+        player.getEffects()
             // Night vision needs to be filtered so that this doesn't cancel out [NightVisionController]
             .filterNot { options.isNightVision && it.type == EffectType.NIGHT_VISION }
             // Avoid cancelling out effects from [CountdownController]
             .filterNot { state.state == GameState.COUNTDOWN && it.type == EffectType.INVISIBILITY }
             .forEach {
                 log.debug("[PlayerController] Removing effect {} from {}", it.type, player)
-                statusEffects.removeEffect(it)
+                player.removeEffect(it)
             }
 
         player.fireTicks = 0
         player.isOnFire = false
         player.health = player.maxHealth
         player.air = player.maxAir
-        player.hungerManager.foodLevel = 20
-        player.hungerManager.saturationLevel = 5f
-        player.hungerManager.exhaustion = 0f
+        player.foodLevel = player.maxFoodLevel
+        player.saturationLevel = player.maxSaturationLevel
+        player.exhaustion = 0f
     }
 
     private fun respawnPlayer(player: IPlayerHandle) {
         log.debug("respawnPlayer({})", player.uuid)
         // reset player info
-        resetPlayerHealth(player.player)
+        resetPlayerHealth(player)
         player.player.inventory.clear()
 
         // unlock all crafting recipes, if set
@@ -241,7 +241,7 @@ class PlayerController(
                     if (state.isLobbyMode && player.player.interactionManager.gameMode == GameMode.ADVENTURE) {
                         val isSpectating = !teamService.isPlaying(player.player)
                         if (isSpectating) {
-                            resetPlayerHealth(player.player)
+                            resetPlayerHealth(player)
                         }
                         if (isSpectating != player.player.abilities.allowFlying) {
                             player.player.abilities.allowFlying = isSpectating

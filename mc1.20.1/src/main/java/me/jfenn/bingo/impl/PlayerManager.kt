@@ -84,15 +84,25 @@ class PlayerManager(
 
     inner class PlayerHandle(
         override val player: ServerPlayerEntity
-    ) : IPlayerHandle {
+    ) : IPlayerHandle, LivingEntityImpl(player) {
         override val isAlive: Boolean
             get() = player.isAlive
         override val isSpectator: Boolean
             get() = player.isSpectator
-        override val uuid: UUID
-            get() = player.uuid
+
         override val name: String
             get() = player.entityName
+
+        override var fireTicks: Int by player::fireTicks
+        override var isOnFire: Boolean
+            get() = player.isOnFire
+            set(value) {
+                player.isOnFire = value
+            }
+
+        override var foodLevel: Int by player.hungerManager::foodLevel
+        override var saturationLevel: Float by player.hungerManager::saturationLevel
+        override var exhaustion: Float by player.hungerManager::exhaustion
 
         override fun allHeldStacks(): Sequence<IItemStack> {
             return sequence {
@@ -153,9 +163,6 @@ class PlayerManager(
 
         override val blockPos: BlockPosition
             get() = BlockPosition(player.blockX, player.blockY, player.blockZ)
-
-        override val yaw: Float by player::yaw
-        override val pitch: Float by player::pitch
 
         override fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float) {
             player.teleport(world, pos.x, pos.y, pos.z, yaw, pitch)

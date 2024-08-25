@@ -15,6 +15,7 @@ val sharedModule = module {
     singleOf(::AdvancementManager) bind IAdvancementManager::class
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
+    single { EntityManagerImpl } bind IEntityManager::class
     single { Executors } bind IExecutors::class
     singleOf(::ItemStackFactory) bind IItemStackFactory::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
@@ -23,7 +24,6 @@ val sharedModule = module {
     single { ServerWorldImpl } bind IServerWorldFactory::class
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
     singleOf(::StatManagerImpl) bind IStatManager::class
-    single { StatusEffectsImpl } bind IStatusEffectsFactory::class
     singleOf(::TagAccessorImpl) bind ITagAccessor::class
     singleOf(::TeamManager) bind ITeamManager::class
     singleOf(::TextSerializer) bind ITextSerializer::class

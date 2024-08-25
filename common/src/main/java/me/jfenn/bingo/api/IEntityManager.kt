@@ -44,6 +44,11 @@ interface ILivingEntity : IEntity {
     var noAI: Boolean
     var persistenceRequired: Boolean
 
+    var health: Float
+    val maxHealth: Float
+    var air: Int
+    val maxAir: Int
+
     fun addEffect(type: EffectType, duration: Int, amplifier: Int, ambient: Boolean, visible: Boolean): IStatusEffectHandle
     fun getEffects(): List<IStatusEffectHandle>
     fun removeEffect(effect: IStatusEffectHandle)

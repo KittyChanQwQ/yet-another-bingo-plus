@@ -20,6 +20,7 @@ import net.minecraft.text.Text
 import org.joml.Matrix4f
 import org.joml.Vector3d
 import java.util.*
+import kotlin.reflect.KProperty
 
 object EntityManagerImpl : IEntityManager {
     private fun EntityType<*>.toMinecraftType(): net.minecraft.entity.EntityType<*> {
@@ -64,6 +65,27 @@ object EntityManagerImpl : IEntityManager {
         return world.iterateEntities()
             .asSequence()
             .map { forEntity(it) }
+    }
+}
+
+private class NbtBooleanDelegate(private val name: String) {
+    operator fun getValue(thisRef: EntityImpl, property: KProperty<*>): Boolean = thisRef.nbt.getBoolean(name)
+    operator fun setValue(thisRef: EntityImpl, property: KProperty<*>, value: Boolean) {
+        return thisRef.patchNbt { putBoolean(name, value) }
+    }
+}
+
+private class NbtIntDelegate(private val name: String) {
+    operator fun getValue(thisRef: EntityImpl, property: KProperty<*>): Int = thisRef.nbt.getInt(name)
+    operator fun setValue(thisRef: EntityImpl, property: KProperty<*>, value: Int) {
+        return thisRef.patchNbt { putInt(name, value) }
+    }
+}
+
+private class NbtFloatDelegate(private val name: String) {
+    operator fun getValue(thisRef: EntityImpl, property: KProperty<*>): Float = thisRef.nbt.getFloat(name)
+    operator fun setValue(thisRef: EntityImpl, property: KProperty<*>, value: Float) {
+        return thisRef.patchNbt { putFloat(name, value) }
     }
 }
 
@@ -122,18 +144,8 @@ open class EntityImpl(
 class InteractionEntityImpl(
     override val entity: InteractionEntity
 ) : IInteractionEntity, EntityImpl(entity) {
-    override var width: Float
-        get() = nbt.getFloat("width")
-        set(value) {
-            patchNbt { putFloat("width", value) }
-        }
-    override var height: Float
-        get() = nbt.getFloat("height")
-        set(value) {
-            patchNbt {
-                putFloat("height", value)
-            }
-        }
+    override var width: Float by NbtFloatDelegate("width")
+    override var height: Float by NbtFloatDelegate("height")
 }
 
 class TextDisplayEntityImpl(
@@ -152,11 +164,7 @@ class TextDisplayEntityImpl(
             }
         }
 
-    override var lineWidth: Int
-        get() = nbt.getInt("line_width")
-        set(value) {
-            patchNbt { putInt("line_width", value) }
-        }
+    override var lineWidth: Int by NbtIntDelegate("line_width")
 
     override var billboard: ITextDisplayEntity.Billboard
         get() = nbt.getString("billboard")
@@ -174,17 +182,8 @@ class TextDisplayEntityImpl(
             patchNbt { putString("alignment", value.name.lowercase()) }
         }
 
-    override var background: Int
-        get() = nbt.getInt("background")
-        set(value) {
-            patchNbt { putInt("background", value) }
-        }
-
-    override var shadow: Boolean
-        get() = nbt.getBoolean("shadow")
-        set(value) {
-            patchNbt { putBoolean("shadow", value) }
-        }
+    override var background: Int by NbtIntDelegate("background")
+    override var shadow: Boolean by NbtBooleanDelegate("shadow")
 
     override var transformation: Matrix4f
         get() = Matrix4f()
@@ -210,33 +209,19 @@ class ArmorStandEntityImpl(
 }
 
 open class LivingEntityImpl(
-    override val entity: LivingEntity
+    final override val entity: LivingEntity
 ) : ILivingEntity, EntityImpl(entity) {
-    override var invulnerable: Boolean
-        get() = nbt.getBoolean("Invulnerable")
-        set(value) {
-            patchNbt { putBoolean("Invulnerable", value) }
-        }
-    override var noGravity: Boolean
-        get() = nbt.getBoolean("NoGravity")
-        set(value) {
-            patchNbt { putBoolean("NoGravity", value) }
-        }
-    override var silent: Boolean
-        get() = nbt.getBoolean("Silent")
-        set(value) {
-            patchNbt { putBoolean("Silent", value) }
-        }
-    override var noAI: Boolean
-        get() = nbt.getBoolean("NoAI")
-        set(value) {
-            patchNbt { putBoolean("NoAI", value) }
-        }
-    override var persistenceRequired: Boolean
-        get() = nbt.getBoolean("PersistenceRequired")
-        set(value) {
-            patchNbt { putBoolean("PersistenceRequired", value) }
-        }
+    override var invulnerable: Boolean by NbtBooleanDelegate("Invulnerable")
+    override var noGravity: Boolean by NbtBooleanDelegate("NoGravity")
+    override var silent: Boolean by NbtBooleanDelegate("Silent")
+    override var noAI: Boolean by NbtBooleanDelegate("NoAI")
+    override var persistenceRequired: Boolean by NbtBooleanDelegate("PersistenceRequired")
+
+    override var health: Float by entity::health
+    override val maxHealth: Float by entity::maxHealth
+
+    override var air: Int by entity::air
+    override val maxAir: Int by entity::maxAir
 
     override fun addEffect(
         type: EffectType,
@@ -273,5 +258,5 @@ open class LivingEntityImpl(
 }
 
 class BatEntityImpl(
-    override val entity: BatEntity
+    entity: BatEntity
 ) : IBatEntity, LivingEntityImpl(entity)

@@ -31,7 +31,7 @@ class ItemStackFactory(
     private val jsonOps = server?.registryManager?.getOps(JsonOps.INSTANCE) ?: JsonOps.INSTANCE
     private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
 
-    override val emptyStack: IItemStack = forStack(ItemStack.EMPTY)
+    override val emptyStack: IItemStack = ItemStackImpl(ItemStack.EMPTY)
 
     override fun listItems(server: MinecraftServer): List<String> {
         return Registries.ITEM.streamEntries()
@@ -71,7 +71,7 @@ class ItemStackFactory(
     }
 
     override fun forStack(stack: ItemStack?): IItemStack {
-        return ItemStackImpl(stack ?: ItemStack.EMPTY)
+        return stack?.let(::ItemStackImpl) ?: emptyStack
     }
 
     override fun createFilledMap(): IFilledMap = createStack(Items.FILLED_MAP, 1).asFilledMap()!!

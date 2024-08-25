@@ -13,6 +13,10 @@ class DrawService(
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
     }
 
+    override fun setShaderColor(r: Float, g: Float, b: Float, a: Float) {
+        context.setShaderColor(r, g, b, a)
+    }
+
     override fun drawTexture(
         texture: Identifier,
         x: Int,

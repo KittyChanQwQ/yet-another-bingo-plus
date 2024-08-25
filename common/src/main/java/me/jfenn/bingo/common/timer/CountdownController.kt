@@ -24,9 +24,9 @@ class CountdownController(
     private val countdownService: CountdownService,
     private val teamService: TeamService,
     private val tickManager: ITickManager,
-    private val statusEffectsFactory: IStatusEffectsFactory,
     private val spawnService: SpawnService,
     private val entityManager: IEntityManager,
+    private val playerManager: IPlayerManager,
 ) : BingoComponent() {
 
     private var countdownUntil: Instant? = null
@@ -34,15 +34,14 @@ class CountdownController(
 
     private val entityMap = mutableMapOf<BingoTeamKey, IBatEntity>()
 
-    private val playingPlayerList get() = server.playerManager.playerList
-        .filter { teamService.isPlaying(it) }
+    private val playingPlayerList get() = playerManager.getPlayers()
+        .filter { teamService.isPlaying(it.player) }
 
     private fun forcePlayersInvisible() {
         for (player in playingPlayerList) {
             // Make the player invisible during the countdown
             // (otherwise, the player blocks other players' visibility)
-            val statusEffects = statusEffectsFactory.getStatusEffects(player)
-            statusEffects.addEffect(
+            player.addEffect(
                 type = EffectType.INVISIBILITY,
                 duration = -1,
                 amplifier = 0,

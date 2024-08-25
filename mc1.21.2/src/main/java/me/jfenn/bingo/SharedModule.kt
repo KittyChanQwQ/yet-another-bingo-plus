@@ -26,7 +26,6 @@ val sharedModule = module {
     single { ServerEventsImpl } bind IServerEvents::class
     single { ServerWorldImpl } bind IServerWorldFactory::class
     singleOf(::StatManagerImpl) bind IStatManager::class
-    single { StatusEffectsImpl } bind IStatusEffectsFactory::class
     singleOf(::TagAccessorImpl) bind ITagAccessor::class
     singleOf(::TeamManager) bind ITeamManager::class
     singleOf(::TextSerializer) bind ITextSerializer::class

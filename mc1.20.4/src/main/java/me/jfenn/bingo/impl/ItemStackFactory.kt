@@ -20,6 +20,8 @@ class ItemStackFactory(
     private val textSerializer: ITextSerializer,
 ) : IItemStackFactory {
 
+    override val emptyStack: IItemStack = ItemStackImpl(ItemStack.EMPTY)
+
     override fun listItems(server: MinecraftServer): List<String> {
         return Registries.ITEM.streamEntries()
             .map { it.registryKey().value.toString() }
@@ -58,7 +60,7 @@ class ItemStackFactory(
     }
 
     override fun forStack(stack: ItemStack?): IItemStack {
-        return ItemStackImpl(stack ?: ItemStack.EMPTY)
+        return stack?.let(::ItemStackImpl) ?: emptyStack
     }
 
     override fun createFilledMap(): IFilledMap = createStack(Items.FILLED_MAP, 1).asFilledMap()!!
