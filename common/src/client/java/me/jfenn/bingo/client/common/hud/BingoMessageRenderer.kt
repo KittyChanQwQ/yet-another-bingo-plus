@@ -7,7 +7,6 @@ import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.Identifier
-import org.joml.Quaternionf
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
@@ -87,7 +86,7 @@ class BingoMessageRenderer(
         val context = drawService.context
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
-        context.setShaderColor(1f, 1f, 1f, visibility.pow(2))
+        drawService.setShaderColor(1f, 1f, 1f, visibility.pow(2))
 
         val itemX = if (isLeftOfCard) -8 - ITEM_HEIGHT else 8
         val itemY = ITEM_HEIGHT/2 - 8
@@ -126,7 +125,7 @@ class BingoMessageRenderer(
             true,
         )
 
-        context.setShaderColor(1f, 1f, 1f, 1f)
+        drawService.setShaderColor(1f, 1f, 1f, 1f)
     }
 
 }

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.impl
 
+import com.mojang.blaze3d.systems.RenderSystem
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
 import net.minecraft.client.gui.DrawContext
@@ -14,6 +15,11 @@ class DrawService(
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
     }
 
+    override fun setShaderColor(r: Float, g: Float, b: Float, a: Float) {
+        context.draw()
+        RenderSystem.setShaderColor(r, g, b, a)
+    }
+
     override fun drawTexture(
         texture: Identifier,
         x: Int,
@@ -26,14 +32,18 @@ class DrawService(
         textureWidth: Int,
         textureHeight: Int
     ) {
-        context.drawGuiTexture(
-            RenderLayer::getGuiTextured,
-            with(texture) { Identifier.of(namespace, "textures/gui/sprites/$path.png") },
-            x, y,
-            width, height,
-            0, 0,
-            textureWidth, textureHeight
-        )
+        context.matrices.push()
+        context.matrices.translate(0.0, 0.0, z.toDouble())
+        try {
+            context.drawGuiTexture(
+                RenderLayer::getGuiTextured,
+                texture,
+                x, y,
+                width, height,
+            )
+        } finally {
+            context.matrices.pop()
+        }
     }
 
 }

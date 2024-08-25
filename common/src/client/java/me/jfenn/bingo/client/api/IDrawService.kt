@@ -9,6 +9,8 @@ import kotlin.math.roundToInt
 interface IDrawService {
     val context: DrawContext
 
+    fun setShaderColor(r: Float, g: Float, b: Float, a: Float)
+
     fun drawTexture(
         texture: Identifier,
         x: Int, y: Int, z: Int = 0,
