@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.common.utils.wrap
 import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
@@ -33,6 +34,7 @@ class BingoHudRenderer(
     companion object {
         const val CARD_WIDTH = 122
         const val CARD_HEIGHT = 132
+        const val TOOLTIP_MAX_LENGTH = 30
 
         val BLACK_A40 = Color.BLACK.copy(a = 64)
 
@@ -307,16 +309,23 @@ class BingoHudRenderer(
             val (tileX, tileY) = getItem(x, y, cardScale, mouseX, mouseY) ?: return
             val tile = view.tile(tileX, tileY) ?: return
 
-            context.matrices.push()
-            context.matrices.translate(0f, 0f, 2000f)
             val tooltip = buildList {
                 tile.name?.let { add(it) }
-                addAll(tile.lore)
+                addAll(
+                    tile.lore.flatMapIndexed { i, lore ->
+                        val isLast = i >= tile.lore.size - 1 // the last item (tile info) should never be wrapped
+                        if (isLast) listOf(lore)
+                        else lore.wrap(TOOLTIP_MAX_LENGTH)
+                    }
+                )
             }
+
             if (tooltip.isNotEmpty()) {
+                context.matrices.push()
+                context.matrices.translate(0f, 0f, 2000f)
                 context.drawTooltip(textRenderer, tooltip, mouseX, mouseY)
+                context.matrices.pop()
             }
-            context.matrices.pop()
         }
     }
 

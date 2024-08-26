@@ -12,10 +12,12 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.truncate
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import kotlin.time.Duration.Companion.seconds
 
 class CardViewService(
@@ -139,7 +141,10 @@ class CardViewService(
             teamKey = team?.key,
             teamColor = team?.mapColor,
             teamName = team
-                ?.let { textProvider.string(StringKey.CardTeamCardTitle, textProvider.string(it.name)) }
+                ?.let { t ->
+                    t.singlePlayer?.let { Text.literal(it.name).truncate(12) }
+                        ?: textProvider.string(StringKey.CardTeamCardTitle, textProvider.string(t.name))
+                }
                 ?: textProvider.string(StringKey.CardPreviewCard),
             tiles = state.card.entries
                 .map { entry ->

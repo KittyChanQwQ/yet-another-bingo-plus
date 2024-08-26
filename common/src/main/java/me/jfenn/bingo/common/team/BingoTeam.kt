@@ -52,6 +52,8 @@ data class BingoTeam(
 
     val formatting get() = Formatting.valueOf(textColor.name)
 
+    val singlePlayer get() = players.takeIf { it.size == 1 }?.first()
+
     fun isWinner(): Boolean = this.winner != null
 
     fun includesPlayer(player: ServerPlayerEntity): Boolean {

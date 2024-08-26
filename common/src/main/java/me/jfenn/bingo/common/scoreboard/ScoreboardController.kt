@@ -101,7 +101,10 @@ class ScoreboardController(
                         val score = team.score
 
                         if (isMultipleTeams) {
-                            textProvider.string(StringKey.ScoreboardTeam, Text.literal("${team.symbol} ").append(textProvider.string(team.name)).formatted(team.formatting))
+                            val teamName = Text.literal("${team.symbol} ")
+                                .append(team.singlePlayer?.name?.let { Text.literal(it) } ?: textProvider.string(team.name))
+                                .formatted(team.formatting)
+                            textProvider.string(StringKey.ScoreboardTeam, teamName)
                                 .also { add(it) }
                         }
                         textProvider.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}").formatted(team.formatting))
@@ -113,8 +116,13 @@ class ScoreboardController(
 
                     val leadingTeam = ScoreService.getLeading(state)
                     if (options.showLeadingTeam && isMultipleTeams) {
-                        val teamName = leadingTeam?.let { Text.literal("${it.symbol} ").append(textProvider.string(it.name)).formatted(it.formatting) }
+                        val teamName = leadingTeam?.let {
+                            Text.literal("${it.symbol} ")
+                                .append(it.singlePlayer?.name?.let { Text.literal(it) } ?: textProvider.string(it.name))
+                                .formatted(it.formatting)
+                        }
                             ?: textProvider.string(StringKey.ScoreboardLeadingTeamTie).formatted(Formatting.WHITE)
+
                         textProvider.string(StringKey.ScoreboardLeadingTeam, teamName)
                             .also { add(it) }
                     }
