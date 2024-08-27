@@ -9,7 +9,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
@@ -22,7 +21,6 @@ class GameOverService(
     private val state: BingoState,
     private val options: BingoOptions,
     private val textProvider: TextProvider,
-    private val teamService: TeamService,
     private val stats: StatsService,
     private val server: MinecraftServer,
 ) {
@@ -64,15 +62,15 @@ class GameOverService(
                 Text.empty()
                     .takeIf { options.isRankedMode }
                     ?: winningTeam?.let { winner ->
-                        textProvider.string(StringKey.GameEndCompletedCard, teamService.getTeamOrPlayerName(winner))
+                        textProvider.string(StringKey.GameEndCompletedCard, winner.getName(textProvider, playerName = true))
                     }
                     ?: ScoreService.getLeadingByLines(state)
                         ?.takeIf { state.options.cardGoal is BingoGoal.Lines }
                         ?.let { leader ->
-                            textProvider.string(StringKey.GameEndWonWithMoreLines, teamService.getTeamOrPlayerName(leader))
+                            textProvider.string(StringKey.GameEndWonWithMoreLines, leader.getName(textProvider, playerName = true))
                         }
                     ?: ScoreService.getLeadingByItems(state)?.let { leader ->
-                        textProvider.string(StringKey.GameEndWonWithMoreItems, teamService.getTeamOrPlayerName(leader))
+                        textProvider.string(StringKey.GameEndWonWithMoreItems, leader.getName(textProvider, playerName = true))
                     }
                     ?: textProvider.string(StringKey.GameEndDraw)
                 ).formatted(Formatting.YELLOW)

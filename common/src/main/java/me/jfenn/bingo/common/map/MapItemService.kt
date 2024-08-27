@@ -78,9 +78,8 @@ class MapItemService(
                     }
                 ).formatted(team.formatting, Formatting.ITALIC),
                 lore = listOf(
-                    Text.literal("${team.symbol} ")
-                        .append(teamService.getTeamOrPlayerName(team))
-                        .formatted(team.formatting)
+                    team.getName(textProvider, playerName = true, symbol = true)
+                        .copy()
                         .styled { it.withItalic(false) },
                     Text.empty(),
                     gameInfo.title.copy().formatted(Formatting.WHITE),

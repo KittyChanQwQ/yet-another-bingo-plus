@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
+import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
 
@@ -75,7 +76,7 @@ class JoinCommand(
                 textProvider.string(
                     StringKey.CommandJoinSuccess,
                     player.name,
-                    teamService.getTeamName(team),
+                    team.getName(textProvider),
                 )
             )
         }

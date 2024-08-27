@@ -17,7 +17,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
+import net.minecraft.text.Style
 import kotlin.time.Duration.Companion.seconds
 
 class CardViewService(
@@ -140,11 +140,9 @@ class CardViewService(
         return CardView(
             teamKey = team?.key,
             teamColor = team?.mapColor,
-            teamName = team
-                ?.let { t ->
-                    t.singlePlayer?.let { Text.literal(it.name).truncate(12) }
-                        ?: textProvider.string(StringKey.CardTeamCardTitle, textProvider.string(t.name))
-                }
+            teamName = team?.getName(textProvider, bracketed = false, teamNameKey = StringKey.CardTeamCardTitle)
+                ?.truncate(12)
+                ?.setStyle(Style.EMPTY)
                 ?: textProvider.string(StringKey.CardPreviewCard),
             tiles = state.card.entries
                 .map { entry ->

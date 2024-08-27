@@ -11,7 +11,6 @@ import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.WriteStatsService
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
@@ -28,7 +27,6 @@ class GameOverController(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
-    private val teamService: TeamService,
     private val textProvider: TextProvider,
     private val gameOverService: GameOverService,
     private val cardViewService: CardViewService,
@@ -75,7 +73,7 @@ class GameOverController(
                         val duration = win.instant - (state.startedAt ?: Clock.System.now())
                         Text.empty()
                             .append(Text.literal("${index + 1}. ").formatted(Formatting.GRAY))
-                            .append(teamService.getTeamOrPlayerName(team))
+                            .append(team.getName(textProvider, playerName = true))
                             .append(" - ${duration.formatString()}")
                             .also { yield(it) }
                     }
@@ -86,7 +84,7 @@ class GameOverController(
                     .forEach { team ->
                         Text.empty()
                             .append(Text.literal("DNF - ").formatted(Formatting.GRAY))
-                            .append(teamService.getTeamOrPlayerName(team))
+                            .append(team.getName(textProvider, playerName = true))
                             .also { yield(it) }
                     }
             }

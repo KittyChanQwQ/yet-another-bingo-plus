@@ -11,8 +11,6 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import kotlin.math.ceil
@@ -49,23 +47,6 @@ class TeamService(
         }
     }
 
-    fun getTeamName(team: BingoTeam): Text {
-        return textProvider.string(StringKey.TeamName, textProvider.string(team.name))
-            .formatted(team.formatting)
-            .let { Texts.bracketed(it) }
-    }
-
-    fun getTeamOrPlayerName(team: BingoTeam): Text {
-        val player = team.players
-            .takeIf { it.size == 1 }
-            ?.first()
-            ?: return getTeamName(team)
-
-        return Text.literal(player.name)
-            .formatted(team.formatting)
-            .let { Texts.bracketed(it) }
-    }
-
     fun createTeam(team: BingoTeam): ITeamHandle {
         return teamManager.createTeam(
             server,
@@ -94,7 +75,7 @@ class TeamService(
         teamManager.setPlayerTeam(player, createTeam(team))
         team.players.add(playerProfile)
         player.sendMessage(
-            textProvider.string(StringKey.LobbyTeamChanged, getTeamName(team))
+            textProvider.string(StringKey.LobbyTeamChanged, team.getName(textProvider))
                 .formatted(Formatting.YELLOW)
         )
 

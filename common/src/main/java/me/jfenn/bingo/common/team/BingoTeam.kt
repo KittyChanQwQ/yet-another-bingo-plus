@@ -9,11 +9,14 @@ import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.state.TeamWinner
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.FormattingSerializer
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
+import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
 
@@ -58,6 +61,24 @@ data class BingoTeam(
 
     fun includesPlayer(player: ServerPlayerEntity): Boolean {
         return players.any { it.uuid == player.uuid }
+    }
+
+    fun getName(
+        textProvider: TextProvider,
+        playerName: Boolean = false,
+        symbol: Boolean = playerName && players.size == 1,
+        bracketed: Boolean = true,
+        teamNameKey: StringKey? = StringKey.TeamName,
+    ): Text {
+        val teamName = (if (playerName) singlePlayer?.let { Text.literal(it.name) } else null)
+            ?: textProvider.string(name).let {
+                if (teamNameKey != null) textProvider.string(teamNameKey, it) else it
+            }
+
+        return teamName
+            .let { if (symbol) Text.empty().append("${this.symbol} ").append(it) else it }
+            .formatted(formatting)
+            .let { if (bracketed) Texts.bracketed(it) else it }
     }
 
     companion object {

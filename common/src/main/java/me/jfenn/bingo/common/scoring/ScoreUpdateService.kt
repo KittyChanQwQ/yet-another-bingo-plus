@@ -11,7 +11,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
@@ -27,7 +26,6 @@ class ScoreUpdateService(
     private val textProvider: TextProvider,
     private val playerSettingsService: PlayerSettingsService,
     private val playerManager: IPlayerManager,
-    private val teamService: TeamService,
 ) {
 
     private fun formatWithTime(message: Text): Text {
@@ -117,7 +115,7 @@ class ScoreUpdateService(
                     packet.player != null ->
                         Text.literal("${team.symbol} ${packet.player.name}")
                             .formatted(team.formatting)
-                    else -> teamService.getTeamOrPlayerName(team)
+                    else -> team.getName(textProvider, playerName = true, bracketed = false)
                 },
                 itemText,
             ).let { formatWithTime(it) }
@@ -156,7 +154,7 @@ class ScoreUpdateService(
     fun sendLineCaptured(team: BingoTeam) {
         if (!options.showCompletedLines) return
 
-        val teamName = teamService.getTeamOrPlayerName(team)
+        val teamName = team.getName(textProvider, playerName = true)
         val message = textProvider.string(StringKey.GameMessageScoredLine, teamName, textProvider.lineCount(team.score.lines))
             .formatted(Formatting.YELLOW)
             .let { formatWithTime(it) }
@@ -180,7 +178,7 @@ class ScoreUpdateService(
     }
 
     fun sendCardCompleted(team: BingoTeam) {
-        val message = textProvider.string(StringKey.GameMessageCompletedCard, teamService.getTeamOrPlayerName(team))
+        val message = textProvider.string(StringKey.GameMessageCompletedCard, team.getName(textProvider, playerName = true))
             .formatted(Formatting.YELLOW)
             .let { formatWithTime(it) }
 
@@ -202,7 +200,7 @@ class ScoreUpdateService(
     }
 
     fun sendTeamLeading(team: BingoTeam) {
-        val teamName = teamService.getTeamOrPlayerName(team)
+        val teamName = team.getName(textProvider, playerName = true)
         val score = team.score
         val message = when {
             options.showCompletedItems -> {
@@ -232,7 +230,7 @@ class ScoreUpdateService(
     }
 
     fun sendTeamTied(team: BingoTeam) {
-        val teamName = teamService.getTeamOrPlayerName(team)
+        val teamName = team.getName(textProvider, playerName = true)
         val score = team.score
         val message = when {
             options.showCompletedItems -> {
