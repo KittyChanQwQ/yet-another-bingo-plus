@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
@@ -30,6 +31,10 @@ fun MenuComponent.registerCardInfo(
     registerToggleButton(
         position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0, Vector3d()),
         text = text.string(StringKey.OptionsShowCompletions),
+        tooltip = buildList {
+            add(text.string(StringKey.OptionsShowCompletions).formatted(Formatting.GREEN))
+            add(text.string(StringKey.OptionsShowCompletionsTooltip))
+        },
         toggleProp = propertyRef(options::showOtherTeamCompletions),
         permissionGetter = permissionGetter,
     )
@@ -37,6 +42,10 @@ fun MenuComponent.registerCardInfo(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsPreviewCard),
+        tooltip = buildList {
+            add(text.string(StringKey.OptionsPreviewCard).formatted(Formatting.GREEN))
+            add(text.string(StringKey.OptionsPreviewCardTooltip))
+        },
         toggleProp = propertyRef(options::showPreviewCard),
         permissionGetter = permissionGetter,
     )
@@ -44,6 +53,10 @@ fun MenuComponent.registerCardInfo(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT*2), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsShowHiddenTiers),
+        tooltip = buildList {
+            add(text.string(StringKey.OptionsShowHiddenTiers).formatted(Formatting.GREEN))
+            add(text.string(StringKey.OptionsShowHiddenTiersTooltip))
+        },
         toggleProp = propertyRef(options::showHiddenTiers),
         permissionGetter = permissionGetter,
     ) {

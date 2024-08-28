@@ -35,7 +35,7 @@ class TooltipController(
     }
 
     fun sendTooltip(player: IPlayerHandle, prevTicks: Map<Pair<UUID, UUID>, Int>) {
-        val reachDistance = 1.5
+        val reachDistance = 3.0
         val origin = with(player.player.eyePos) { Vec3d(x, y, z) }
 
         val pitch = Quaternionf().fromAxisAngleDeg(Vector3f(1f, 0f, 0f), -player.pitch)
