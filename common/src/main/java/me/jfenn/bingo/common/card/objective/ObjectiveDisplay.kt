@@ -12,6 +12,7 @@ class ObjectiveDisplay {
         val lore: List<Text>? = null,
         val item: IItemStack? = null,
         val decoration: CardTile.Decoration = CardTile.Decoration.NONE,
+        val image: String? = null,
     ) {
         companion object {
             val EMPTY = Resolved()
@@ -26,6 +27,7 @@ class ObjectiveDisplay {
         val itemNbt: String? = null,
         val itemComponents: Map<String, JsonElement>? = null,
         val decoration: CardTile.Decoration? = null,
+        val image: String? = null,
     )
 
     companion object {

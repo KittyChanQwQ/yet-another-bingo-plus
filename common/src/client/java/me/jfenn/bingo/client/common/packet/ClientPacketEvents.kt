@@ -4,7 +4,9 @@ import me.jfenn.bingo.client.api.IClientNetworking
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardDisplayPacket
+import me.jfenn.bingo.common.map.CardImagePacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
+import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.scoring.ScoredItemLostPacket
 import me.jfenn.bingo.common.scoring.ScoredItemPacket
@@ -23,6 +25,8 @@ class ClientPacketEvents(
     val cardUpdateV2 = clientNetworking.registerS2C(CardUpdatePacket.V2)
     val cardUpdateV3 = clientNetworking.registerS2C(CardUpdatePacket.V3)
     val cardUpdateV4 = clientNetworking.registerS2C(CardUpdatePacket.V4)
+    val cardUpdateV5 = clientNetworking.registerS2C(CardUpdatePacket.V5)
+    val cardImageV1 = clientNetworking.registerS2C(CardImagePacket.V1)
     val gameOverV1 = clientNetworking.registerS2C(GameOverPacket.V1)
     val gameOverV2 = clientNetworking.registerS2C(GameOverPacket.V2)
     val gameOverV3 = clientNetworking.registerS2C(GameOverPacket.V3)
@@ -33,6 +37,7 @@ class ClientPacketEvents(
     val scoreMessageV1 = clientNetworking.registerS2C(ScoreMessagePacket.V1)
     val timerV1 = clientNetworking.registerS2C(TimerPacket.V1)
     val countdownV1 = clientNetworking.registerS2C(CountdownPacket.V1)
+    val tooltipV1 = clientNetworking.registerS2C(TooltipPacket.V1)
 
     val sendPlayerSettingsV1 = clientNetworking.registerC2S(PlayerSettings.V1_C2S)
     val receivePlayerSettingsV1 = clientNetworking.registerS2C(PlayerSettings.V1_S2C)

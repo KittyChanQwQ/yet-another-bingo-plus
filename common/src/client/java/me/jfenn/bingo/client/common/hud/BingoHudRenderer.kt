@@ -29,6 +29,7 @@ import kotlin.jvm.optionals.getOrNull
 
 class BingoHudRenderer(
     private val text: TextProvider,
+    private val hudState: BingoHudState,
 ) {
 
     companion object {
@@ -116,7 +117,7 @@ class BingoHudRenderer(
         // Draw a translucent background behind all card items
         context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.backgroundColor.asIntWithAlpha)
 
-        service.drawTexture(
+        service.drawGuiTexture(
             texture = if (isGui) colors.cardTextureGui else colors.cardTexture,
             x = 0, y = 0,
             u = 0f, v = 0f,
@@ -158,7 +159,7 @@ class BingoHudRenderer(
                     ?.let { Identifier.of("minecraft", "bingo/image_hidden_${it.name.lowercase()}")!! }
                     ?: IMAGE_HIDDEN_ID
 
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = texture,
                     x = itemX + 1, y = itemY + 1,
                     u = 0f, v = 0f,
@@ -167,12 +168,17 @@ class BingoHudRenderer(
                 )
             }
 
-            tile.item?.stack?.let { stack ->
-                // always draws centered at z=150... but 3d items can extend past this
-                // so any overlays should start at z=300 to be safe
-                context.drawItem(stack, itemX + 1, itemY + 1, itemX + itemY * CARD_WIDTH)
-                // draws the item count + durability bar
-                context.drawItemInSlot(textRenderer, stack, itemX, itemY)
+            val image = tile.image?.let { hudState.images[it] }
+            if (image != null) {
+                service.drawDynamicTexture(image.textureId, itemX + 1, itemY + 1, 16, 16)
+            } else {
+                tile.item?.stack?.let { stack ->
+                    // always draws centered at z=150... but 3d items can extend past this
+                    // so any overlays should start at z=300 to be safe
+                    context.drawItem(stack, itemX + 1, itemY + 1, itemX + itemY * CARD_WIDTH)
+                    // draws the item count + durability bar
+                    context.drawItemInSlot(textRenderer, stack, itemX, itemY)
+                }
             }
 
             if (tile.isAchieved && !tile.isFlashing && mouseX == -1 && mouseY == -1) {
@@ -187,7 +193,7 @@ class BingoHudRenderer(
             }
 
             if (tile.decoration == CardTile.Decoration.ADVANCEMENT) {
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = ADVANCEMENT_FRAME_ID,
                     x = itemX - 1, y = itemY - 1, z = 300,
                     u = 0f, v = 0f,
@@ -197,7 +203,7 @@ class BingoHudRenderer(
             }
 
             if (tile.decoration == CardTile.Decoration.MULTI_ITEM) {
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = FRAME_MULTI_ID,
                     x = itemX - 1, y = itemY - 1, z = 300,
                     u = 0f, v = 0f,
@@ -207,7 +213,7 @@ class BingoHudRenderer(
             }
 
             if (tile.decoration == CardTile.Decoration.FREE_SPACE) {
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = FRAME_FREE_SPACE_ID,
                     x = itemX - 1, y = itemY - 1, z = 301,
                     u = 0f, v = 0f,
@@ -217,7 +223,7 @@ class BingoHudRenderer(
             }
 
             if (tile.decoration == CardTile.Decoration.FORBIDDEN) {
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = FRAME_FORBIDDEN_ID,
                     x = itemX - 1, y = itemY - 1, z = 301,
                     u = 0f, v = 0f,
@@ -227,7 +233,7 @@ class BingoHudRenderer(
             }
 
             if (tile.isLocked) {
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = FRAME_LOCKED_ID,
                     x = itemX - 1, y = itemY - 1, z = 301,
                     u = 0f, v = 0f,
@@ -278,7 +284,7 @@ class BingoHudRenderer(
         }
 
         if (isFocused) {
-            service.drawTexture(
+            service.drawGuiTexture(
                 texture = colors.cardTextureOutline,
                 x = 0, y = 0,
                 u = 0f, v = 0f,

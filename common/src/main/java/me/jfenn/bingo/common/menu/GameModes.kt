@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
@@ -30,6 +31,10 @@ fun MenuComponent.registerGameModes(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsModeLockout),
+        tooltip = buildList {
+            add(text.string(StringKey.OptionsModeLockout).formatted(Formatting.DARK_GREEN))
+            add(text.string(StringKey.OptionsModeLockoutTooltip))
+        },
         toggleProp = propertyRef(options::isLockoutMode),
         permissionGetter = permissionGetter,
     )
@@ -37,6 +42,10 @@ fun MenuComponent.registerGameModes(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsModeInventory),
+        tooltip = buildList {
+            add(text.string(StringKey.OptionsModeInventory).formatted(Formatting.DARK_GREEN))
+            add(text.string(StringKey.OptionsModeInventoryTooltip))
+        },
         toggleProp = propertyRef(options::isInventoryMode),
         permissionGetter = permissionGetter,
     )
@@ -44,6 +53,10 @@ fun MenuComponent.registerGameModes(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsModeRanked),
+        tooltip = buildList {
+            add(text.string(StringKey.OptionsModeRanked).formatted(Formatting.DARK_GREEN))
+            add(text.string(StringKey.OptionsModeRankedTooltip))
+        },
         toggleProp = propertyRef(options::isRankedMode),
         permissionGetter = permissionGetter,
     )
@@ -51,6 +64,10 @@ fun MenuComponent.registerGameModes(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsModeHiddenItems),
+        tooltip = buildList {
+            add(text.string(StringKey.OptionsModeHiddenItems).formatted(Formatting.DARK_GREEN))
+            add(text.string(StringKey.OptionsModeHiddenItemsTooltip))
+        },
         toggleProp = propertyRef(options::isHiddenItemsMode),
         permissionGetter = permissionGetter,
     ) {

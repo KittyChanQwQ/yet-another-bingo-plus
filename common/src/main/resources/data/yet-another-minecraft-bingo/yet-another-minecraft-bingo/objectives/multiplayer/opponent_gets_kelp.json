@@ -1,8 +1,0 @@
-{
-  "type": "opponent",
-  "objective": "minecraft:kelp",
-  "conflictsWith": [
-    "minecraft:dried_kelp",
-    "minecraft:dried_kelp_block"
-  ]
-}

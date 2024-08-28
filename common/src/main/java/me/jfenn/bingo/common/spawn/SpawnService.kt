@@ -110,11 +110,11 @@ class SpawnService(
         }
 
         val spawn = state.lobbySpawnPos
-        player.teleport(lobbyWorld, spawn.toVector3d(), 180f, 0f)
+        player.teleport(lobbyWorld, spawn.toVector3d(), state.lobbySpawnYaw, 0f)
         player.setSpawnPoint(
             world = lobbyWorld,
             spawn = spawn,
-            angle = 0f,
+            angle = state.lobbySpawnYaw,
             forced = true,
             sendMessage = false,
         )

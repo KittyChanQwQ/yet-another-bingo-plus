@@ -172,8 +172,8 @@ class PlayerController(
             // if in pregame, move to the lobby world
             if (state.state == GameState.PREGAME) {
                 val spawnPos = state.lobbySpawnPos
-                player.setSpawnPoint(lobbyWorld, spawnPos, 180f, true, false)
-                player.teleport(lobbyWorld, spawnPos.toVector3d().add(0.5, 0.0, 0.5), 180f, 0f)
+                player.setSpawnPoint(lobbyWorld, spawnPos, state.lobbySpawnYaw, forced = true, sendMessage = false)
+                player.teleport(lobbyWorld, spawnPos.toVector3d().add(0.5, 0.0, 0.5), state.lobbySpawnYaw, 0f)
             }
 
             // if playing, give the player new spawn equipment

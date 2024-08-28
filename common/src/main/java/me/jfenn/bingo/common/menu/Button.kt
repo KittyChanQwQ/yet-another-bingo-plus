@@ -5,6 +5,7 @@ import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
+import me.jfenn.bingo.common.menu.tooltips.TooltipService
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -16,6 +17,7 @@ fun MenuComponent.registerButton(
     position: Vector3d,
     text: Text,
     textProp: Property<Text> = computedProperty { text },
+    tooltip: List<Text>? = null,
     isActiveProp: Property<Boolean> = ConstantProperty(false),
     width: Float = (text.string.length * 0.15f).coerceIn(MENU_HITBOX_WIDTH, 2f),
     height: Float = MENU_HITBOX_HEIGHT,
@@ -23,6 +25,7 @@ fun MenuComponent.registerButton(
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
     playerManager: IPlayerManager = koinScope.get(),
+    tooltipService: TooltipService = koinScope.get(),
     onClick: (player: ServerPlayerEntity) -> Unit,
 ) {
     val isActive by isActiveProp
@@ -34,6 +37,10 @@ fun MenuComponent.registerButton(
         this.width = width
         this.height = height
     }.onUpdate { entity ->
+        if (tooltip != null) {
+            tooltipService[entity] = tooltip
+        }
+
         interactionEntityEvents.onInteract(entity) { player ->
             if (permissionGetter(player)) {
                 onClick(player)
@@ -60,6 +67,7 @@ fun MenuComponent.registerToggleButton(
     position: Vector3d,
     text: Text,
     textProp: Property<Text?> = computedProperty { text },
+    tooltip: List<Text>? = null,
     toggleProp: MutableProperty<Boolean>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     onClick: (player: ServerPlayerEntity) -> Unit = {},
@@ -77,6 +85,7 @@ fun MenuComponent.registerToggleButton(
                     .append(it)
             } ?: Text.empty()
         },
+        tooltip = tooltip,
         isActiveProp = toggleProp,
         permissionGetter = permissionGetter,
     ) {

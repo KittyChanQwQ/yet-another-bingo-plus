@@ -103,7 +103,7 @@ class BingoMessageRenderer(
             }
 
             if (iconTexture != null) {
-                drawService.drawTexture(
+                drawService.drawGuiTexture(
                     texture = iconTexture,
                     x = itemX, y = itemY,
                     u = 0f, v = 0f,

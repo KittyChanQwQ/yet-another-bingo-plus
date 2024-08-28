@@ -78,6 +78,7 @@ class CardViewService(
             val view = map.view
             val updatePacket = CardUpdatePacket(view)
             when {
+                packets.cardUpdateV5.send(player, updatePacket) -> {}
                 packets.cardUpdateV4.send(player, updatePacket) -> {}
                 packets.cardUpdateV3.send(player, updatePacket) -> {}
                 packets.cardUpdateV2.send(player, updatePacket) -> {}
@@ -118,6 +119,7 @@ class CardViewService(
         return CardTile(
             item = if (isHidden) null else entry.display.item,
             itemTier = entry.tier.takeIf { !options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
+            image = if (isHidden) null else entry.display.image,
             name = entry.display.name.takeIf { !isHidden },
             lore = entry.display.lore.takeIf { !isHidden } ?: emptyList(),
             decoration = objective.display.decoration.takeIf { isFreeSpace || !isHidden },

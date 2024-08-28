@@ -21,6 +21,8 @@ import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
+import net.minecraft.block.PlayerSkullBlock
+import net.minecraft.block.WallSignBlock
 import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
@@ -29,14 +31,17 @@ import net.minecraft.text.Texts
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.Heightmap
 import net.minecraft.world.chunk.ChunkStatus
+import org.joml.Matrix4f
 import org.joml.Vector3d
 import org.joml.Vector3f
+import org.joml.Vector4f
 import org.slf4j.Logger
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.*
 import java.util.zip.ZipInputStream
+import kotlin.math.atan2
 
 class MenuController(
     events: ScopedEvents,
@@ -80,8 +85,9 @@ class MenuController(
                 return@onEnter
             }
 
-            val lobbySpawnPos = getLobbySpawnPosition(lobbyWorld)
+            val (lobbySpawnPos, lobbySpawnYaw) = getLobbySpawnPosition(lobbyWorld)
             state.lobbySpawnPos = lobbySpawnPos
+            state.lobbySpawnYaw = lobbySpawnYaw
 
             val menuPos = getMenuPosition(lobbyWorld)
             if (menuPos != null) {
@@ -92,7 +98,7 @@ class MenuController(
                     world = lobbyWorld,
                     entityManager = entityManager,
                     interactionEntityEvents = interactionEntityEvents,
-                    menuPos = menuPos,
+                    matrix = menuPos,
                     instanceTag = instanceTag,
                 )
                 menu = menuInstance
@@ -213,37 +219,50 @@ class MenuController(
         }
     }
 
-    private fun getMenuPosition(lobbyWorld: ServerWorld): BlockPosition? = log.measureTime("[MenuController] Locating menu position...") {
+    private fun getMenuPosition(lobbyWorld: ServerWorld): Matrix4f? = log.measureTime("[MenuController] Locating menu position...") {
         // Find a column of three vertical wall_sign blocks for the menu position
         for (pos in searchLobbyBlocks()) {
             val blocks = listOf(
                 pos.move(y = 1).toBlockPos(),
                 pos.toBlockPos(),
                 pos.move(y = -1).toBlockPos()
-            )
-            val isMenuPos = blocks.all {
-                lobbyWorld.getBlockState(it).block == Blocks.OAK_WALL_SIGN
+            ).associateWith { lobbyWorld.getBlockState(it) }
+
+            val isMenuPos = blocks.values.all {
+                it.block == Blocks.OAK_WALL_SIGN
             }
 
             if (isMenuPos) {
-                for (blockPos in blocks) {
+                for ((blockPos) in blocks) {
                     lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
                 }
-                return@measureTime pos
+
+                val centerState = blocks.values.first()
+                val direction = centerState.get(WallSignBlock.FACING)
+                val directionVec = direction.vector
+                val yaw = atan2(directionVec.x.toFloat(), directionVec.z.toFloat())
+
+                val matrix4f = Matrix4f()
+                matrix4f.translate(pos.x.toFloat(), pos.y.toFloat(), pos.z.toFloat())
+                matrix4f.rotateY(yaw)
+                return@measureTime matrix4f
             }
         }
 
         null
-    }.also { log.info("Set menu position to $it") }
+    }.also { log.info("Set menu position to ${it?.transform(Vector4f())}") }
 
-    private fun getLobbySpawnPosition(lobbyWorld: ServerWorld): BlockPosition = log.measureTime("[MenuController] Locating spawn position...") {
+    private fun getLobbySpawnPosition(lobbyWorld: ServerWorld): Pair<BlockPosition, Float> = log.measureTime("[MenuController] Locating spawn position...") {
         // If a player head is in the lobby structure, use it as the player spawn
         for (pos in searchLobbyBlocks()) {
             val blockPos = pos.toBlockPos()
-            val isPlayerHead = lobbyWorld.getBlockState(blockPos).block == Blocks.PLAYER_HEAD
+            val blockState = lobbyWorld.getBlockState(blockPos)
+            val isPlayerHead = blockState.block == Blocks.PLAYER_HEAD
             if (isPlayerHead) {
+                val rotation = blockState.get(PlayerSkullBlock.ROTATION)
+                val yaw = (rotation - 8).toFloat() * 360f / 16f
                 lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
-                return@measureTime pos
+                return@measureTime Pair(pos, yaw)
             }
         }
 
@@ -252,7 +271,7 @@ class MenuController(
         val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING)
         val spawnY = heightmap.get(0, 0)
 
-        BlockPosition(0, spawnY, 0)
+        BlockPosition(0, spawnY, 0) to 180f
     }.also { log.info("Set lobby spawnpoint to $it") }
 
     private val teamPositions = mutableMapOf<BingoTeamKey, BlockPos>()

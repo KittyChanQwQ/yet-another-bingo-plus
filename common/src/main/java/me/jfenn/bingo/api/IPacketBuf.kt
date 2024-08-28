@@ -25,6 +25,9 @@ interface IPacketBuf {
     fun writeText(text: Text)
     fun readText(): Text
 
+    fun writeByteArray(array: ByteArray)
+    fun readByteArray(): ByteArray
+
     fun <T> writeNullable(value: T?, callback: (T) -> Unit) {
         writeBoolean(value != null)
         value?.let(callback)

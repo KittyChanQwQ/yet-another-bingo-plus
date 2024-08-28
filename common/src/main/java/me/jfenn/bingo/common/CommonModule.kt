@@ -33,6 +33,8 @@ import me.jfenn.bingo.common.infobook.InfoBookController
 import me.jfenn.bingo.common.infobook.InfoBookService
 import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.MenuController
+import me.jfenn.bingo.common.menu.tooltips.TooltipController
+import me.jfenn.bingo.common.menu.tooltips.TooltipService
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.scoreboard.ScoreboardController
@@ -160,11 +162,15 @@ val commonModule = module {
         scopedOf(::MapItemService)
         scopedOf(::MapRenderService)
         scopedOf(::CardViewService)
+        scopedOf(::CardImageService)
         scopedOf(::CardService)
         scopedOf(::ScoreboardService)
         scopedOf(::PlayerSettingsService)
 
+        scopedOf(::TooltipService)
+        scopedOf(::TooltipController)
         scopedOf(::MenuController)
+
         scopedOf(::BingoMapController)
         scopedOf(::BossBarController)
         scopedOf(::DatapackFunctionService)
@@ -246,7 +252,9 @@ fun Koin.commonInit() {
 }
 
 fun Scope.commonInit() {
+    get<TooltipController>()
     get<MenuController>()
+
     get<BingoMapController>()
     get<BossBarController>()
     get<GameRuleController>()

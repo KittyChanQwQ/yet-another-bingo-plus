@@ -36,6 +36,7 @@ data class BingoState(
     var updatedAt: Instant? = null,
     var endedAt: Instant? = null,
     var lobbySpawnPos: BlockPosition = BlockPosition(0, 0, 0),
+    var lobbySpawnYaw: Float = 0f,
     var timeOffline: Duration = Duration.ZERO,
     val options: BingoOptions = ConfigService().options,
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),

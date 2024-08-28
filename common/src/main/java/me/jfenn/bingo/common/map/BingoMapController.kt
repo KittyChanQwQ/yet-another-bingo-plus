@@ -16,10 +16,13 @@ class BingoMapController(
     private val state: BingoState,
     private val cardService: CardService,
     private val cardViewService: CardViewService,
+    private val cardImageService: CardImageService,
 ) : BingoComponent() {
 
     init {
         events.onGameTick {
+            cardImageService.sendNecessaryImages()
+
             // update all card map images
             if (state.state == GameState.PREGAME) {
                 // if in pregame, update the preview card!
@@ -37,6 +40,10 @@ class BingoMapController(
             for (player in server.playerManager.playerList) {
                 cardViewService.sendUpdatePackets(player)
             }
+        }
+
+        events.onPlayerJoin { player ->
+            cardImageService.clearPlayerState(player.uuid)
         }
 
         events.onEnter(GameState.PREGAME) {

@@ -11,7 +11,13 @@ interface IDrawService {
 
     fun setShaderColor(r: Float, g: Float, b: Float, a: Float)
 
-    fun drawTexture(
+    fun drawDynamicTexture(
+        texture: Identifier,
+        x: Int, y: Int,
+        width: Int, height: Int
+    )
+
+    fun drawGuiTexture(
         texture: Identifier,
         x: Int, y: Int, z: Int = 0,
         u: Float, v: Float,
@@ -41,7 +47,7 @@ interface IDrawService {
             val partWidth = min(centerWidth - (xPart * textureCenterWidth), textureCenterWidth)
             for (yPart in 0 until yParts) {
                 val partHeight = min(centerHeight - (yPart * textureCenterHeight), textureCenterHeight)
-                drawTexture(
+                drawGuiTexture(
                     texture,
                     x = x + sliceSize + xPart*textureCenterWidth, y = y + sliceSize + yPart*textureCenterHeight,
                     u = sliceSize.toFloat(), v = sliceSize.toFloat(),
@@ -54,14 +60,14 @@ interface IDrawService {
         // Draw horizontal borders
         for (xPart in 0 until xParts) {
             val xPartWidth = min(centerWidth - (xPart * textureCenterWidth), textureCenterWidth)
-            drawTexture(
+            drawGuiTexture(
                 texture,
                 x = x + sliceSize + xPart*textureCenterWidth, y = y,
                 u = sliceSize.toFloat(), v = 0f,
                 width = xPartWidth, height = sliceSize,
                 textureWidth = textureWidth, textureHeight = textureHeight,
             )
-            drawTexture(
+            drawGuiTexture(
                 texture,
                 x = x + sliceSize + xPart*textureCenterWidth, y = y + height - sliceSize,
                 u = sliceSize.toFloat(), v = textureHeight.toFloat() - sliceSize,
@@ -73,14 +79,14 @@ interface IDrawService {
         // Draw vertical borders
         for (yPart in 0 until yParts) {
             val yPartHeight = min(centerHeight - (yPart * textureCenterHeight), textureCenterHeight)
-            drawTexture(
+            drawGuiTexture(
                 texture,
                 x = x, y = y + sliceSize + yPart*textureCenterHeight,
                 u = 0f, v = sliceSize.toFloat(),
                 width = sliceSize, height = yPartHeight,
                 textureWidth = textureWidth, textureHeight = textureHeight,
             )
-            drawTexture(
+            drawGuiTexture(
                 texture,
                 x = x + width - sliceSize, y = y + sliceSize + yPart*textureCenterHeight,
                 u = textureWidth.toFloat() - sliceSize, v = sliceSize.toFloat(),
@@ -90,28 +96,28 @@ interface IDrawService {
         }
 
         // Draw corners
-        drawTexture(
+        drawGuiTexture(
             texture,
             x = x, y = y,
             u = 0f, v = 0f,
             width = sliceSize, height = sliceSize,
             textureWidth = textureWidth, textureHeight = textureHeight,
         )
-        drawTexture(
+        drawGuiTexture(
             texture,
             x = x + width - sliceSize, y = y,
             u = textureWidth.toFloat() - sliceSize, v = 0f,
             width = sliceSize, height = sliceSize,
             textureWidth = textureWidth, textureHeight = textureHeight,
         )
-        drawTexture(
+        drawGuiTexture(
             texture,
             x = x, y = y + height - sliceSize,
             u = 0f, v = textureHeight.toFloat() - sliceSize,
             width = sliceSize, height = sliceSize,
             textureWidth = textureWidth, textureHeight = textureHeight,
         )
-        drawTexture(
+        drawGuiTexture(
             texture,
             x = x + width - sliceSize, y = y + height - sliceSize,
             u = textureWidth.toFloat() - sliceSize, v = textureHeight.toFloat() - sliceSize,

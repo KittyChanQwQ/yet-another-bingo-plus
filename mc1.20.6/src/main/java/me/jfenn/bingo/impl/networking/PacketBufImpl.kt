@@ -32,4 +32,7 @@ class PacketBufImpl(
 
     override fun writeText(text: Text) = TextCodecs.REGISTRY_PACKET_CODEC.encode(buf, text)
     override fun readText(): Text = TextCodecs.REGISTRY_PACKET_CODEC.decode(buf)
+
+    override fun writeByteArray(array: ByteArray) = buf.writeByteArray(array).let {}
+    override fun readByteArray(): ByteArray = buf.readByteArray()
 }
