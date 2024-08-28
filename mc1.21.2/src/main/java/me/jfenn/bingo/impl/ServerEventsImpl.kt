@@ -13,10 +13,7 @@ import me.jfenn.bingo.common.utils.ReturnEventListener
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.event.player.AttackBlockCallback
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.fabricmc.fabric.api.event.player.UseEntityCallback
+import net.fabricmc.fabric.api.event.player.*
 import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.server.MinecraftServer
@@ -50,15 +47,12 @@ object ServerEventsImpl : IServerEvents {
         }
     }
 
-    /*
-    private fun <T> ActionResult<T>.toTypedActionResult(): TypedActionResult<T> {
-        return when (this) {
-            is ActionResult.Fail -> TypedActionResult.fail(value)
-            is ActionResult.Success -> TypedActionResult.success(value)
-            is ActionResult.Pass -> TypedActionResult.pass(value)
-        }
+    private fun ActionResult<IItemStack?>.toTypedActionResult(): net.minecraft.util.ActionResult {
+        return takeIf { it is ActionResult.Success }
+            ?.value?.stack
+            ?.let { net.minecraft.util.ActionResult.SUCCESS.withNewHandStack(it) }
+            ?: this.map {}.toActionResult()
     }
-    */
 
     init {
         ServerTickEvents.START_SERVER_TICK.register {
@@ -106,18 +100,14 @@ object ServerEventsImpl : IServerEvents {
                 ?: net.minecraft.util.ActionResult.PASS
         }
 
-        // TODO: BROKEN YARN MAPPINGS
-        /*
         UseItemCallback.EVENT.register { player, world, hand ->
-            if (player !is ServerPlayerEntity) return@register TypedActionResult.pass(null)
-            val playerImpl = getPlayerImpl(player) ?: return@register TypedActionResult.pass(null)
+            if (player !is ServerPlayerEntity) return@register net.minecraft.util.ActionResult.PASS
+            val playerImpl = getPlayerImpl(player) ?: return@register net.minecraft.util.ActionResult.PASS
             val results = onUseItem(UseItemEvent(player.server, playerImpl, world, hand))
             ActionResult.collapse(results)
-                ?.map { it?.stack }
                 ?.toTypedActionResult()
-                ?: TypedActionResult.pass(null)
+                ?: net.minecraft.util.ActionResult.PASS
         }
-        */
 
         AttackEntityCallback.EVENT.register { player, world, hand, entity, hit ->
             if (player !is ServerPlayerEntity) return@register net.minecraft.util.ActionResult.PASS
