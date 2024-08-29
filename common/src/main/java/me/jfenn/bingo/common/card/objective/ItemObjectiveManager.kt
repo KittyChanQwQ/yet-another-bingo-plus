@@ -116,9 +116,12 @@ class ItemObjectiveManager(
                 stack.isDataOverlapping(nbt = objective.itemNbt, components = objective.itemComponents)
     }
 
-    private fun canSatisfy(stack: IItemStack, objective: BingoObjective.ItemEntry) : Boolean {
-        return canSatisfyPartial(stack, objective) &&
-                stack.count >= objective.itemCount
+    private fun countSatisfied(stacks: List<IItemStack>, objective: BingoObjective.ItemEntry) : Int {
+        val count = stacks
+            .filter { canSatisfyPartial(it, objective) }
+            .sumOf { it.count }
+
+        return count
     }
 
     override fun tick(card: BingoCard) {
@@ -127,6 +130,12 @@ class ItemObjectiveManager(
         val lockedTeams = objectiveService.getLockedTeams()
         val lockedTeamKeys = lockedTeams.map { it.key }.toSet()
         val lockedTeamPlayers = lockedTeams.flatMap { it.players }.map { it.uuid }.toSet()
+
+        val playersToItems = objectiveService.getTeamPlayers()
+            .map { (team, player) ->
+                val inventory = player.allHeldStacks().toList()
+                Triple(team, player, inventory)
+            }
 
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
             objectiveService.updateTeamsOnceAchieved(objective)
@@ -140,52 +149,54 @@ class ItemObjectiveManager(
         // first, we need to check that each player still has all their items
         // and remove them from playersHolding if not
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
-            for (player in playerManager.getPlayers()) {
+            for ((_, player, inventory) in playersToItems) {
                 // if the player has no objectives to lose, skip
                 if (!objective.playersHolding.containsKey(player.uuid)) continue
                 // if the player is on a locked team, skip
                 if (lockedTeamPlayers.contains(player.uuid)) continue
 
-                val hasItem = player.allHeldStacks().any { canSatisfy(it, objective) }
+                val count = countSatisfied(inventory, objective)
 
                 // if the player does not have the item anymore, mark it lost
-                if (!hasItem) {
+                if (count < objective.itemCount) {
                     objective.playersHolding.remove(player.uuid)
                 }
             }
         }
 
-        for ((team, player) in objectiveService.getTeamPlayers()) {
+        for ((team, player, inventory) in playersToItems) {
             // if the team is locked, skip
             if (lockedTeamKeys.contains(team.key)) continue
 
             // check inventory for new collected items
-            for (stack in player.allHeldStacks()) {
-                // get any objectives for the itemId, if it is on the card
-                val itemId = stack.identifier.toString()
-                val objectives = card.itemObjectives[itemId] ?: continue
+            val objectives = inventory.asSequence()
+                .map { it.identifier.toString() }
+                .distinct()
+                .flatMap { card.itemObjectives[it] ?: emptyList() }
 
-                for (objective in objectives) {
-                    // if the item hasn't been achieved and can be satisfied, mark it as collected
-                    if (canSatisfyPartial(stack, objective)) {
-                        objective.teamsSeen += team.key
-                    } else {
-                        continue
-                    }
+            for (objective in objectives) {
+                // count the number of items in the player's inventory that can satisfy this objective
+                val count = countSatisfied(inventory, objective)
 
-                    val progress = stack.count / objective.itemCount.coerceAtLeast(1).toFloat()
-                    objective.teamsProgress.compute(team.key) { _, prev -> max(prev ?: 0f, progress) }
+                // if the item hasn't been achieved and can be satisfied, mark it as collected
+                if (count > 0) {
+                    objective.teamsSeen += team.key
+                } else {
+                    continue
+                }
 
-                    if (!canSatisfy(stack, objective))
-                        continue
+                val progress = count / objective.itemCount.coerceAtLeast(1).toFloat()
+                objective.teamsProgress.compute(team.key) { _, prev -> max(prev ?: 0f, progress) }
 
-                    if (!objective.playersHolding.containsKey(player.uuid)) {
-                        objective.playersHolding[player.uuid] = BingoObjectiveCapture(
-                            team = team.key,
-                            player = BingoPlayerProfile.fromPlayer(player),
-                            instant = now,
-                        )
-                    }
+                if (count < objective.itemCount)
+                    continue
+
+                if (!objective.playersHolding.containsKey(player.uuid)) {
+                    objective.playersHolding[player.uuid] = BingoObjectiveCapture(
+                        team = team.key,
+                        player = BingoPlayerProfile.fromPlayer(player),
+                        instant = now,
+                    )
                 }
             }
         }
