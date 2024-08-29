@@ -136,12 +136,12 @@ class MapItemController(
                 }
 
                 if (canHaveCards) {
-                    if (playerTeam != null && cardViewService.isViewingTeamCard(player.player, playerTeam)) {
-                        // give player a new map, if they don't have one?
-                        giveMapCardItem(player)
-                    } else if (cardViewService.isViewingSpectatorCards(player.player)) {
+                    if (cardViewService.isViewingSpectatorCards(player.player)) {
                         if (state.isLobbyMode)
                             giveSpectatorMapItems(player)
+                    } else if (playerTeam != null && cardViewService.isViewingTeamCard(player.player, playerTeam)) {
+                        // give player a new map, if they don't have one?
+                        giveMapCardItem(player)
                     }
                 }
 
