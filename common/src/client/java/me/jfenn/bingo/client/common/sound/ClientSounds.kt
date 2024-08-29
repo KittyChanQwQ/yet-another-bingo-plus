@@ -12,6 +12,7 @@ class ClientSounds {
     // as well as a translation key under "bingo.sound.*"
     enum class Key {
         ITEM_SCORED,
+        ITEM_LOST,
         OPPONENT_SCORED,
         GAME_WON,
         GAME_LOST,

@@ -5,6 +5,12 @@
       "yet-another-minecraft-bingo:item_scored"
     ]
   },
+  "item_lost": {
+    "subtitle": "bingo.sound.item_lost",
+    "sounds": [
+      "yet-another-minecraft-bingo:item_lost"
+    ]
+  },
   "opponent_scored": {
     "subtitle": "bingo.sound.opponent_scored",
     "sounds": [

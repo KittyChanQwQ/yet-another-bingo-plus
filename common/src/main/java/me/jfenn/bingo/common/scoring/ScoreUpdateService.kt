@@ -137,6 +137,22 @@ class ScoreUpdateService(
         }
     }
 
+    fun sendItemLost(team: BingoTeam) {
+        val playerList = team.players.mapNotNull { playerManager.getPlayer(it.uuid) }
+        for (player in playerList) {
+            when {
+                packetManager.scoredItemLostV1.send(player.player, ScoredItemLostPacket()) -> {}
+                else -> {
+                    player.playSound(
+                        PlayerSoundEvent.ENTITY_SHULKER_AMBIENT,
+                        PlayerSoundCategory.RECORDS,
+                        0.8f, 1.5f
+                    )
+                }
+            }
+        }
+    }
+
     fun sendLineCaptured(team: BingoTeam) {
         if (!options.showCompletedLines) return
 

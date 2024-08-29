@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardDisplayPacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
+import me.jfenn.bingo.common.scoring.ScoredItemLostPacket
 import me.jfenn.bingo.common.scoring.ScoredItemPacket
 import me.jfenn.bingo.common.stats.packets.StatsCheckPacket
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
@@ -28,6 +29,7 @@ class ClientPacketEvents(
     val gameOverV4 = clientNetworking.registerS2C(GameOverPacket.V4)
     val gameOverV5 = clientNetworking.registerS2C(GameOverPacket.V5)
     val scoredItemV1 = clientNetworking.registerS2C(ScoredItemPacket.V1)
+    val scoredItemLostV1 = clientNetworking.registerS2C(ScoredItemLostPacket.V1)
     val scoreMessageV1 = clientNetworking.registerS2C(ScoreMessagePacket.V1)
     val timerV1 = clientNetworking.registerS2C(TimerPacket.V1)
     val countdownV1 = clientNetworking.registerS2C(CountdownPacket.V1)

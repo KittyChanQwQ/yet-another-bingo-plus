@@ -42,22 +42,26 @@ class ScoredItemCheck(
             // iterate through all updated objectives on the card
             rootObjectives
                 .takeIf { sendUpdates }
-                // if the objective has been updated in this tick and is achieved by the team
-                ?.filter { it.updatedAt(team.key) > tickStart && it.hasAchieved(team.key) }
+                // if the objective has been updated in this tick
+                ?.filter { it.updatedAt(team.key) > tickStart }
                 ?.forEach { objective ->
-                    // find the player that captured the objective
-                    val player = objective.players
-                        .mapNotNull { (uuid, instant) ->
-                            team.players.find { it.uuid == uuid }?.let { it to instant }
-                        }
-                        .maxByOrNull { (_, capture) -> capture.instant }
-                        ?.first
+                    if (objective.hasAchieved(team.key)) {
+                        // find the player that captured the objective
+                        val player = objective.players
+                            .mapNotNull { (uuid, instant) ->
+                                team.players.find { it.uuid == uuid }?.let { it to instant }
+                            }
+                            .maxByOrNull { (_, capture) -> capture.instant }
+                            ?.first
 
-                    scoreUpdateService.sendItemCaptured(
-                        scoredPlayer = player,
-                        team = team,
-                        objective = objective,
-                    )
+                        scoreUpdateService.sendItemCaptured(
+                            scoredPlayer = player,
+                            team = team,
+                            objective = objective,
+                        )
+                    } else {
+                        scoreUpdateService.sendItemLost(team)
+                    }
                 }
 
             // update the score for each modified team

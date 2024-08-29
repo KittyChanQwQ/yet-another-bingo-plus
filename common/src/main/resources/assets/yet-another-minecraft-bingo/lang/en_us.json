@@ -222,6 +222,7 @@
   "bingo.command.stats.reset.game": "High scores (best time) for the current game configuration have been cleared.",
   "bingo.command.stats.reset.all": "All high scores (best time, max win streak) on this server have been cleared.",
   "bingo.sound.item_scored": "Item Scored",
+  "bingo.sound.item_lost": "Item Lost",
   "bingo.sound.opponent_scored": "Opponent Scored",
   "bingo.sound.game_won": "Bingo Game Won",
   "bingo.sound.game_lost": "Bingo Game Lost",

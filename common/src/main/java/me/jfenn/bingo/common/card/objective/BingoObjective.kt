@@ -69,7 +69,7 @@ sealed class BingoObjective {
      * the current tile (regardless of whether it can be scored)
      */
     open fun hasSeen(team: BingoTeamKey): Boolean {
-        return teamsSeen.contains(team)
+        return teamsSeen.contains(team) || teamsAchieved.containsKey(team)
     }
 
     fun getProgress(team: BingoTeamKey) = teamsProgress[team] ?: 0f

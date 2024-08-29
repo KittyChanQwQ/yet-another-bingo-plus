@@ -30,6 +30,14 @@ class ScorePacketReceiver(
             )
         }
 
+        clientPacketEvents.scoredItemLostV1.onPacket { _ ->
+            soundService.play(
+                sound = ClientSounds.Key.ITEM_LOST,
+                volume = 0.8f,
+                pitch = 1.5f,
+            )
+        }
+
         clientPacketEvents.gameOverV1.onPacket(::onGameOver)
         clientPacketEvents.gameOverV2.onPacket(::onGameOver)
         clientPacketEvents.gameOverV3.onPacket(::onGameOver)
