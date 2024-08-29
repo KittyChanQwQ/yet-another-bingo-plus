@@ -7,7 +7,6 @@ import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
@@ -60,17 +59,22 @@ class InverseObjectiveManager(
                 objective.playersOnceAchieved.addAll(inverse.playersHolding.keys)
             }
 
-            val playersHolding = objectiveService.getTeamPlayers()
-                .filter { (_, player) -> !inverse.playersHolding.containsKey(player.uuid) }
-                .filter { (_, player) ->
-                    !objective.playersOnceAchieved.contains(player.uuid)
+            val teamsAchieved = state.getRegisteredTeams()
+                .filter { team ->
+                    // A team should hold this tile as long as no players have achieved the objective
+                    team.players.none { player ->
+                        inverse.playersHolding.containsKey(player.uuid) ||
+                                objective.playersOnceAchieved.contains(player.uuid)
+                    }
                 }
+
+            val playersHolding = teamsAchieved.flatMap { team -> team.players.map { team to it } }
                 .associateBy(
                     { (_, player) -> player.uuid },
                     { (team, player) ->
                         BingoObjectiveCapture(
                             team = team.key,
-                            player = BingoPlayerProfile.fromPlayer(player),
+                            player = player,
                             instant = state.startedAt ?: Instant.DISTANT_PAST
                         )
                     }
