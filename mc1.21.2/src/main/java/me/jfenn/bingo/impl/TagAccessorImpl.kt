@@ -15,7 +15,7 @@ class TagAccessorImpl : ITagAccessor {
             return null
         }
 
-        return Registries.ITEM.getEntryList(tag).getOrNull()
+        return Registries.ITEM.getOptional(tag).getOrNull()
             ?.map { it.idAsString }
     }
 }

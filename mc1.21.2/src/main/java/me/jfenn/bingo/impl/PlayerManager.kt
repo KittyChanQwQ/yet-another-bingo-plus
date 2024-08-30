@@ -52,16 +52,17 @@ class PlayerManager(
         return PlayerHandle(player)
     }
 
-    fun PlayerSoundEvent.toSoundEvent() = when (this) {
+    private fun PlayerSoundEvent.toSoundEvent() = when (this) {
         PlayerSoundEvent.BLOCK_LEVER_CLICK -> SoundEvents.BLOCK_LEVER_CLICK
         PlayerSoundEvent.ENTITY_PLAYER_LEVELUP -> SoundEvents.ENTITY_PLAYER_LEVELUP
+        PlayerSoundEvent.ENTITY_SHULKER_AMBIENT -> SoundEvents.ENTITY_SHULKER_AMBIENT
         PlayerSoundEvent.BLOCK_NOTE_BLOCK_BASS -> SoundEvents.BLOCK_NOTE_BLOCK_BASS.value()
         PlayerSoundEvent.ITEM_LODESTONE_COMPASS_LOCK -> SoundEvents.ITEM_LODESTONE_COMPASS_LOCK
         PlayerSoundEvent.BLOCK_PORTAL_TRAVEL -> SoundEvents.BLOCK_PORTAL_TRAVEL
         PlayerSoundEvent.BLOCK_NOTE_BLOCK_PLING -> SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()
     }
 
-    fun PlayerSoundCategory.toSoundCategory() = when (this) {
+    private fun PlayerSoundCategory.toSoundCategory() = when (this) {
         PlayerSoundCategory.MAIN -> SoundCategory.MASTER
         PlayerSoundCategory.RECORDS -> SoundCategory.RECORDS
         PlayerSoundCategory.BLOCKS -> SoundCategory.BLOCKS
