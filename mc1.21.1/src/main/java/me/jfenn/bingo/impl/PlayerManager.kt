@@ -8,6 +8,7 @@ import me.jfenn.bingo.api.PlayerSoundEvent
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.item.Equipment
@@ -24,7 +25,6 @@ import java.util.*
 
 class PlayerManager(
     private val server: MinecraftServer,
-    private val itemStackFactory: IItemStackFactory,
 ) : IPlayerManager {
     override fun forPlayer(player: ServerPlayerEntity): IPlayerHandle {
         return PlayerHandle(player)
@@ -52,22 +52,6 @@ class PlayerManager(
         return PlayerHandle(player)
     }
 
-    private fun PlayerSoundEvent.toSoundEvent() = when (this) {
-        PlayerSoundEvent.BLOCK_LEVER_CLICK -> SoundEvents.BLOCK_LEVER_CLICK
-        PlayerSoundEvent.ENTITY_PLAYER_LEVELUP -> SoundEvents.ENTITY_PLAYER_LEVELUP
-        PlayerSoundEvent.ENTITY_SHULKER_AMBIENT -> SoundEvents.ENTITY_SHULKER_AMBIENT
-        PlayerSoundEvent.BLOCK_NOTE_BLOCK_BASS -> SoundEvents.BLOCK_NOTE_BLOCK_BASS.value()
-        PlayerSoundEvent.ITEM_LODESTONE_COMPASS_LOCK -> SoundEvents.ITEM_LODESTONE_COMPASS_LOCK
-        PlayerSoundEvent.BLOCK_PORTAL_TRAVEL -> SoundEvents.BLOCK_PORTAL_TRAVEL
-        PlayerSoundEvent.BLOCK_NOTE_BLOCK_PLING -> SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()
-    }
-
-    private fun PlayerSoundCategory.toSoundCategory() = when (this) {
-        PlayerSoundCategory.MAIN -> SoundCategory.MASTER
-        PlayerSoundCategory.RECORDS -> SoundCategory.RECORDS
-        PlayerSoundCategory.BLOCKS -> SoundCategory.BLOCKS
-    }
-
     override fun playToAround(
         player: ServerPlayerEntity?,
         sound: PlayerSoundEvent,
@@ -83,101 +67,122 @@ class PlayerManager(
         player?.networkHandler?.sendPacket(packet)
         server.playerManager.sendToAround(player, x, y, z, soundEntry.value().getDistanceToTravel(volume).toDouble(), world.registryKey, packet)
     }
+}
 
-    inner class PlayerHandle(
-        override val player: ServerPlayerEntity
-    ) : IPlayerHandle, LivingEntityImpl(player) {
-        override val isAlive: Boolean
-            get() = player.isAlive
-        override val isSpectator: Boolean
-            get() = player.isSpectator
+class PlayerHandle(
+    override val player: ServerPlayerEntity
+) : IPlayerHandle, LivingEntityImpl(player) {
 
-        override val name: String
-            get() = player.nameForScoreboard
+    private val itemStackFactory: IItemStackFactory by lazy {
+        BingoKoin.getScope(player.server)!!.get<IItemStackFactory>()
+    }
 
-        override var fireTicks: Int by player::fireTicks
-        override var isOnFire: Boolean
-            get() = player.isOnFire
-            set(value) {
-                player.isOnFire = value
-            }
+    override val isAlive: Boolean
+        get() = player.isAlive
+    override val isSpectator: Boolean
+        get() = player.isSpectator
 
-        override var foodLevel: Int by player.hungerManager::foodLevel
-        override var saturationLevel: Float by player.hungerManager::saturationLevel
-        override var exhaustion: Float by player.hungerManager::exhaustion
+    override val name: String
+        get() = player.nameForScoreboard
 
-        override fun allHeldStacks(): Sequence<IItemStack> {
-            return sequence {
-                // yield all items in inventory
-                yieldAll(allInventorySlots().map { (_, stack) -> stack })
-
-                // yield the current cursor stack
-                yield(itemStackFactory.forStack(player.currentScreenHandler.cursorStack))
-            }
+    override var fireTicks: Int by player::fireTicks
+    override var isOnFire: Boolean
+        get() = player.isOnFire
+        set(value) {
+            player.isOnFire = value
         }
 
-        override fun allInventorySlots(): Sequence<Pair<Int, IItemStack>> {
-            return sequence {
-                // yield all items in inventory
-                for (i in 0 until player.inventory.size()) {
-                    yield(Pair(i, player.inventory.getStack(i)))
-                }
-            }.map { (i, stack) ->
-                i to itemStackFactory.forStack(stack)
-            }
-        }
+    override var foodLevel: Int by player.hungerManager::foodLevel
+    override var saturationLevel: Float by player.hungerManager::saturationLevel
+    override var exhaustion: Float by player.hungerManager::exhaustion
 
-        override fun giveOrEquipStack(stack: IItemStack) {
-            val itemStack = stack.stack
+    override fun allHeldStacks(): Sequence<IItemStack> {
+        return sequence {
+            // yield all items in inventory
+            yieldAll(allInventorySlots().map { (_, stack) -> stack })
 
-            // if the item can be equipped (e.g. iron chestplate), put it in an equipment slot
-            val slot = Equipment.fromStack(itemStack)?.slotType
-            if (slot != null && player.canEquip(itemStack) && slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND) {
-                player.equipStack(slot, itemStack)
-            } else {
-                // otherwise, put it in the player's inventory
-                player.giveItemStack(itemStack)
-            }
-        }
-
-        override fun giveItemStack(stack: IItemStack) {
-            player.giveItemStack(stack.stack)
-        }
-
-        override fun removeStack(slot: Int) {
-            player.inventory.removeStack(slot)
-        }
-
-        override fun setStack(slot: Int, stack: IItemStack) {
-            player.getStackReference(slot).set(stack.stack)
-        }
-
-        override fun playSound(sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float) {
-            player.playSoundToPlayer(
-                sound.toSoundEvent(),
-                category.toSoundCategory(),
-                volume,
-                pitch,
-            )
-        }
-
-        override val serverWorld: ServerWorld by player::serverWorld
-
-        override val blockPos: BlockPosition
-            get() = BlockPosition(player.blockX, player.blockY, player.blockZ)
-
-        override fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float) {
-            player.teleport(world, pos.x, pos.y, pos.z, yaw, pitch)
-        }
-
-        override fun setSpawnPoint(
-            world: ServerWorld,
-            spawn: BlockPosition,
-            angle: Float,
-            forced: Boolean,
-            sendMessage: Boolean
-        ) {
-            player.setSpawnPoint(world.registryKey, spawn.toBlockPos(), angle, forced, sendMessage)
+            // yield the current cursor stack
+            yield(itemStackFactory.forStack(player.currentScreenHandler.cursorStack))
         }
     }
+
+    override fun allInventorySlots(): Sequence<Pair<Int, IItemStack>> {
+        return sequence {
+            // yield all items in inventory
+            for (i in 0 until player.inventory.size()) {
+                yield(Pair(i, player.inventory.getStack(i)))
+            }
+        }.map { (i, stack) ->
+            i to itemStackFactory.forStack(stack)
+        }
+    }
+
+    override fun giveOrEquipStack(stack: IItemStack) {
+        val itemStack = stack.stack
+
+        // if the item can be equipped (e.g. iron chestplate), put it in an equipment slot
+        val slot = Equipment.fromStack(itemStack)?.slotType
+        if (slot != null && player.canEquip(itemStack) && slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND) {
+            player.equipStack(slot, itemStack)
+        } else {
+            // otherwise, put it in the player's inventory
+            player.giveItemStack(itemStack)
+        }
+    }
+
+    override fun giveItemStack(stack: IItemStack) {
+        player.giveItemStack(stack.stack)
+    }
+
+    override fun removeStack(slot: Int) {
+        player.inventory.removeStack(slot)
+    }
+
+    override fun setStack(slot: Int, stack: IItemStack) {
+        player.getStackReference(slot).set(stack.stack)
+    }
+
+    override fun playSound(sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float) {
+        player.playSoundToPlayer(
+            sound.toSoundEvent(),
+            category.toSoundCategory(),
+            volume,
+            pitch,
+        )
+    }
+
+    override val serverWorld: ServerWorld by player::serverWorld
+
+    override val blockPos: BlockPosition
+        get() = BlockPosition(player.blockX, player.blockY, player.blockZ)
+
+    override fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float) {
+        player.teleport(world, pos.x, pos.y, pos.z, yaw, pitch)
+    }
+
+    override fun setSpawnPoint(
+        world: ServerWorld,
+        spawn: BlockPosition,
+        angle: Float,
+        forced: Boolean,
+        sendMessage: Boolean
+    ) {
+        player.setSpawnPoint(world.registryKey, spawn.toBlockPos(), angle, forced, sendMessage)
+    }
+}
+
+private fun PlayerSoundEvent.toSoundEvent() = when (this) {
+    PlayerSoundEvent.BLOCK_LEVER_CLICK -> SoundEvents.BLOCK_LEVER_CLICK
+    PlayerSoundEvent.ENTITY_PLAYER_LEVELUP -> SoundEvents.ENTITY_PLAYER_LEVELUP
+    PlayerSoundEvent.ENTITY_SHULKER_AMBIENT -> SoundEvents.ENTITY_SHULKER_AMBIENT
+    PlayerSoundEvent.BLOCK_NOTE_BLOCK_BASS -> SoundEvents.BLOCK_NOTE_BLOCK_BASS.value()
+    PlayerSoundEvent.ITEM_LODESTONE_COMPASS_LOCK -> SoundEvents.ITEM_LODESTONE_COMPASS_LOCK
+    PlayerSoundEvent.BLOCK_PORTAL_TRAVEL -> SoundEvents.BLOCK_PORTAL_TRAVEL
+    PlayerSoundEvent.BLOCK_NOTE_BLOCK_PLING -> SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()
+}
+
+private fun PlayerSoundCategory.toSoundCategory() = when (this) {
+    PlayerSoundCategory.MAIN -> SoundCategory.MASTER
+    PlayerSoundCategory.RECORDS -> SoundCategory.RECORDS
+    PlayerSoundCategory.BLOCKS -> SoundCategory.BLOCKS
 }

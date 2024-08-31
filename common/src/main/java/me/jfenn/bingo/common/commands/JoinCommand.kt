@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.commands
 
 import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.api.commands.IExecutionSource
@@ -17,7 +16,6 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
-import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
 
@@ -88,14 +86,14 @@ class JoinCommand(
                 literal(team.id.removePrefix("bingo_")) {
                     requires { hasPermission(Permission.COMMAND_JOIN) && isNotProcessingTeams() }
                     executes {
-                        joinTeam(scope.get<IPlayerManager>().forPlayer(player!!), team)
+                        joinTeam(player!!, team)
                     }
 
                     player("player") { playerArg ->
                         requires { hasPermission(Permission.COMMAND_JOIN_PLAYER) && isNotProcessingTeams() }
                         executes {
                             val player = getArgument(playerArg)
-                            joinTeam(scope.get<IPlayerManager>().forPlayer(player), team)
+                            joinTeam(player, team)
                         }
                     }
                 }

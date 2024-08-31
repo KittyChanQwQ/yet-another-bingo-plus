@@ -4,20 +4,19 @@ import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.tierlist.*
+import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
+import java.util.*
 import kotlin.math.ceil
 import kotlin.random.Random
 import kotlin.reflect.full.declaredMemberProperties
@@ -26,7 +25,6 @@ class CardService(
     private val log: Logger,
     private val state: BingoState,
     private val options: BingoOptions,
-    private val teamService: TeamService,
     private val configService: ConfigService,
     private val tierListState: TierListState,
     private val tierListService: TierListService,
@@ -108,17 +106,24 @@ class CardService(
         return isSupported
     }
 
-    fun shuffleCard() {
-        // Change the BINGO seed to a new value
-        state.seed = Random.nextLong()
-        // Re-generate the card
-        generateCard()
-    }
-
-    fun generateCard() {
+    fun shuffleCard(card: BingoCard) {
         if (!options.isValid()) return
 
-        state.card = generate(options, state.seed)
+        // Change the BINGO seed to a new value
+        val newSeed = Random.nextLong()
+        val newCard = generate(card.id, newSeed, card.goal, options)
+        state.replaceCard(newCard)
+    }
+
+    fun generateCard(
+        card: BingoCard = state.getActiveCard(),
+        seed: Long = card.seed
+    ): BingoCard? {
+        if (!options.isValid()) return null
+
+        val newCard = generate(card.id, seed, card.goal, options)
+        state.replaceCard(newCard)
+        return newCard
     }
 
     fun replaceEntry(x: Int, y: Int, objectiveId: String) {
@@ -132,9 +137,10 @@ class CardService(
 
     fun replaceEntry(x: Int, y: Int, objective: BingoObjective) {
         val generatorState = CardGeneratorState(random = Random.Default)
+        val activeCard = state.getActiveCard()
 
         // Overwrite the entry being replaced
-        val entries = state.card.entries.toMutableList()
+        val entries = activeCard.entries.toMutableList()
         entries[x + y * 5] = BingoCardEntry(
             objectiveId = objective.id,
             tier = null,
@@ -151,7 +157,7 @@ class CardService(
         // If any objectives already exist on the card, use them instead of the new instance
         // (so that partial completion/state doesn't get lost if this is used mid-game)
         for (key in objectives.keys.toSet()) {
-            state.card.objectives[key]?.let {
+            activeCard.objectives[key]?.let {
                 objectives[key] = it
             }
         }
@@ -160,30 +166,22 @@ class CardService(
 
         assignTileNames(entries)
         // Set the card
-        state.card = BingoCard(
-            id = state.card.id,
+        val newCard = BingoCard(
+            id = activeCard.id,
+            seed = activeCard.seed,
             entries = entries,
             objectives = objectives,
+            goal = activeCard.goal
         )
+        state.replaceCard(newCard)
     }
 
-    fun showInventory(player: ServerPlayerEntity) {
-        player.openHandledScreen(SimpleNamedScreenHandlerFactory(
-            { syncId, inv, _ ->
-                CardScreenHandler(
-                    syncId = syncId,
-                    options = options,
-                    state = state,
-                    team = teamService.getPlayerTeam(player),
-                    card = state.card,
-                    playerInventory = inv,
-                )
-            },
-            Text.literal("BINGO Card")
-        ))
-    }
-
-    private fun generate(options: BingoOptions, seed: Long): BingoCard {
+    private fun generate(
+        id: UUID,
+        seed: Long,
+        goal: BingoGoal?,
+        options: BingoOptions
+    ): BingoCard {
         val dist = options.itemDistribution
         assert(dist.size == TierLabel.entries.size) { "Item distribution does not match the number of tiers (${TierLabel.entries.size})!" }
         assert(dist.sum() <= 25) { "Item distribution exceeds 25!" }
@@ -327,8 +325,11 @@ class CardService(
         assignTileNames(items)
 
         return BingoCard(
+            id = id,
+            seed = seed,
             entries = items,
-            objectives = objectives
+            objectives = objectives,
+            goal = goal
         )
     }
 

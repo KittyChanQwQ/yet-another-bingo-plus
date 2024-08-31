@@ -36,7 +36,7 @@ class NightVisionController(
                     (state.state.isPlayingOrCountdown && !isOnTeam && config.nightVisionInSpectator && state.isLobbyMode) ||
                             (state.state == GameState.POSTGAME && config.nightVisionInPostgame && state.isLobbyMode) ||
                             (state.state.isPlayingOrCountdown && isOnTeam && options.isNightVision)
-                    ) && playerSettingsService.getPlayer(player.player).nightVision
+                    ) && playerSettingsService.getPlayer(player).nightVision
 
             if (shouldHaveNightVision) {
                 val hasEffect = player.getEffects().any { it.type == EffectType.NIGHT_VISION }

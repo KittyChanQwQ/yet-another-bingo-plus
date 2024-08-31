@@ -7,8 +7,6 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 
 class PreviewCardCommand(
     commandManager: ICommandManager,
@@ -27,14 +25,10 @@ class PreviewCardCommand(
                     val events = scope.get<ScopedEvents>()
                     events.onChangeOptions.invoke(Unit)
 
-                    Text.literal("ℹ  ")
-                        .append(
-                            text.string(StringKey.OptionsPreviewCard)
-                                .append(": ${options.showPreviewCard}")
-                                .formatted(Formatting.ITALIC)
-                        )
-                        .formatted(Formatting.AQUA)
-                        .let { sendMessage(it) }
+                    sendInfoFeedback(
+                        text.string(StringKey.OptionsPreviewCard)
+                            .append(": ${options.showPreviewCard}")
+                    )
                 }
             }
         }

@@ -8,11 +8,7 @@ import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardScoreResetS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardScoreUpdateS2CPacket
-import net.minecraft.scoreboard.ScoreHolder
-import net.minecraft.scoreboard.ScoreboardCriterion
-import net.minecraft.scoreboard.ScoreboardDisplaySlot
-import net.minecraft.scoreboard.ScoreboardObjective
-import net.minecraft.scoreboard.ServerScoreboard
+import net.minecraft.scoreboard.*
 import net.minecraft.scoreboard.number.BlankNumberFormat
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
@@ -125,7 +121,7 @@ class ObjectiveHandle(
         get() = objective.name
 
     override fun getForPlayer(player: IPlayerHandle): Int? {
-        val playerImpl = player as PlayerManager.PlayerHandle
+        val playerImpl = player as PlayerHandle
         return scoreboard.getScore(playerImpl.player, objective)?.score
     }
 }

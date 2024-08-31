@@ -35,7 +35,10 @@ class CardImageService(
     }
 
     fun sendNecessaryImages() {
-        val images = state.card.entries.mapNotNull { it.display.image }.toSet()
+        val images = state.cards
+            .flatMap { card -> card.entries.mapNotNull { it.display.image } }
+            .toSet()
+
         val players = playerManager.getPlayers()
 
         // When custom images are present on the card, ensure that a CardImagePacket has been sent to each player

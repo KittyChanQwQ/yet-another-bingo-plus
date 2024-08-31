@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
-import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.common.Permission
@@ -17,9 +16,6 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.text.Text
-import net.minecraft.text.Texts
-import net.minecraft.util.Formatting
 import kotlin.time.Duration.Companion.minutes
 
 class BingoCommands : BaseCommand() {
@@ -126,63 +122,6 @@ class BingoCommands : BaseCommand() {
                                 1
                             }
                     )
-            )
-            .then(
-                // show or set the current BINGO card seed
-                LiteralArgumentBuilder.literal<ServerCommandSource>("seed")
-                    .require(
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .executesInScope { ctx ->
-                        val state = get<BingoState>()
-
-                        ctx.source.sendMessage(
-                            Text.empty()
-                                .append("ℹ  The current Bingo Card seed is: ")
-                                .append(Texts.bracketedCopyable(state.seed.toString()))
-                                .formatted(Formatting.AQUA)
-                        )
-                        1
-                    }
-                    .then(
-                        RequiredArgumentBuilder.argument<ServerCommandSource, Long>(
-                            "seed",
-                            LongArgumentType.longArg(),
-                        )
-                            .require(
-                                requireState(GameState.PREGAME, GameState.PLAYING),
-                                requirePermission(Permission.CONFIGURE_GAME),
-                            )
-                            .executesInScope { ctx ->
-                                val state = get<BingoState>()
-                                val cardService = get<CardService>()
-
-                                state.seed = LongArgumentType.getLong(ctx, "seed")
-                                cardService.generateCard()
-
-                                ctx.source.sendMessage(
-                                    Text.empty()
-                                        .append("ℹ  Changed the Bingo Card seed to: ")
-                                        .append(Texts.bracketedCopyable(state.seed.toString()))
-                                        .formatted(Formatting.AQUA)
-                                )
-                                1
-                            }
-                    )
-            )
-            .then(
-                // re-roll the bingo card in a round (operator only)
-                LiteralArgumentBuilder.literal<ServerCommandSource>("reroll")
-                    .require(
-                        requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .executesInScope { ctx ->
-                        val cardService = get<CardService>()
-                        cardService.shuffleCard()
-                        ctx.source.player?.sendInfoMessage("Card re-rolled.")
-                        1
-                    }
             )
             .then(
                 // End the game, if running

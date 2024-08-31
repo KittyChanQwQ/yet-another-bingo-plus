@@ -38,12 +38,12 @@ class InfoBookController(
         }
 
         events.onChangePlayerSettings { player ->
-            bookService.updateBookItem(playerManager.forPlayer(player))
+            bookService.updateBookItem(player)
         }
 
         events.onPlayerChannelRegister { player ->
             // Update the book to reflect whether the player uses the bingo HUD
-            bookService.updateBookItem(playerManager.forPlayer(player))
+            bookService.updateBookItem(player)
         }
     }
 }

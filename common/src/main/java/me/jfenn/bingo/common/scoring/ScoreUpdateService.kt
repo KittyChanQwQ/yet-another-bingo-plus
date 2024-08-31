@@ -96,7 +96,7 @@ class ScoreUpdateService(
         // Send players a message that the item was captured
         for (player in playerList) {
             // if the player has item messages turned off, skip them...
-            if (!playerSettingsService.getPlayer(player.player).itemMessages)
+            if (!playerSettingsService.getPlayer(player).itemMessages)
                 continue
 
             val isOnTeam = team.includesPlayer(player.player)
@@ -167,12 +167,12 @@ class ScoreUpdateService(
             message = message,
         )
 
-        server.playerManager.playerList
+        playerManager.getPlayers()
             .filter { playerSettingsService.getPlayer(it).scoreMessages }
             .forEach {
                 when {
                     packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
-                    else -> it.sendMessage(message, false)
+                    else -> it.player.sendMessage(message, false)
                 }
             }
     }
@@ -219,12 +219,12 @@ class ScoreUpdateService(
             message = message,
         )
 
-        server.playerManager.playerList
+        playerManager.getPlayers()
             .filter { playerSettingsService.getPlayer(it).leadingMessages }
             .forEach {
                 when {
                     packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
-                    else -> it.sendMessage(message, false)
+                    else -> it.player.sendMessage(message, false)
                 }
             }
     }
@@ -249,12 +249,12 @@ class ScoreUpdateService(
             message = message,
         )
 
-        server.playerManager.playerList
+        playerManager.getPlayers()
             .filter { playerSettingsService.getPlayer(it).leadingMessages }
             .forEach {
                 when {
                     packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
-                    else -> it.sendMessage(message, false)
+                    else -> it.player.sendMessage(message, false)
                 }
             }
     }

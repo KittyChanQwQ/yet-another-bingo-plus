@@ -1,16 +1,21 @@
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.CardScreenHandler
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.TeamService
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
 import net.minecraft.item.BoatItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import net.minecraft.util.UseAction
 import net.minecraft.util.hit.HitResult
@@ -19,9 +24,10 @@ import java.util.*
 class MapItemHandler(
     events: ScopedEvents,
     private val server: MinecraftServer,
-    private val cardService: CardService,
     private val mapItemService: MapItemService,
     private val itemStackFactory: IItemStackFactory,
+    private val teamService: TeamService,
+    private val state: BingoState,
 ) : BingoComponent() {
 
     // set of players for which the bingo map item was used in the current tick
@@ -53,6 +59,27 @@ class MapItemHandler(
         }
 
         return isUsable
+    }
+
+    fun showInventory(player: ServerPlayerEntity) {
+        val team = teamService.getPlayerTeam(player)
+        val card = team?.let { state.getCard(it) } ?: state.getActiveCard()
+
+        player.openHandledScreen(
+            SimpleNamedScreenHandlerFactory(
+            { syncId, inv, _ ->
+                CardScreenHandler(
+                    syncId = syncId,
+                    options = state.options,
+                    state = state,
+                    team = teamService.getPlayerTeam(player),
+                    card = card,
+                    playerInventory = inv,
+                )
+            },
+            Text.literal("BINGO Card")
+        )
+        )
     }
 
     init {
@@ -138,7 +165,7 @@ class MapItemHandler(
                 val isInCooldown = server.ticks < (itemCooldown[player.uuid] ?: 0) + 10
 
                 if (usedBingoMap.contains(player.uuid) && !isInCooldown && !player.isSneaking) {
-                    cardService.showInventory(player)
+                    showInventory(player)
                 }
 
                 if (usedAnyItem.contains(player.uuid) || player.itemUseTimeLeft > 0)

@@ -23,14 +23,12 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.*
-import kotlin.random.Random
 import kotlin.time.Duration
 
 @Serializable
 data class BingoState(
     var isLobbyMode: Boolean = false,
     var gameId: UuidAsString = UUID.randomUUID(),
-    var seed: Long = Random.nextLong(),
     var state: GameState = GameState.UNINITIALIZED,
     var startedAt: Instant? = null,
     var updatedAt: Instant? = null,
@@ -41,14 +39,52 @@ data class BingoState(
     val options: BingoOptions = ConfigService().options,
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
     var previewMap: BingoMap? = null,
-    // This is a temporary card that should be overwritten by `CardService.generate()`
-    var card: BingoCard = BingoCard.EMPTY,
+    var activeCardId: UuidAsString? = null,
+    val cards: MutableList<BingoCard> = mutableListOf(
+        // This is a temporary card that should be overwritten by `CardService.generate()`
+        BingoCard.EMPTY
+    ),
     var endReason: GameEndReason? = null,
     // Stores a set of recently-joined player UUIDs for [PlayerController]
     val playersJoinedIds: MutableSet<UuidAsString> = mutableSetOf(),
     // Stores if the game was ended manually (with "/bingo end")
     var isForfeit: Boolean = false,
 ) {
+
+    fun getActiveCard(): BingoCard {
+        return cards.find { it.id == activeCardId }
+            ?: cards.firstOrNull()
+            ?: throw IllegalArgumentException("No cards in state")
+    }
+
+    fun setActiveCard(index: Int): Int {
+        if (cards.isEmpty()) {
+            throw IllegalArgumentException("No cards in state... something somewhere has gone very wrong.")
+        }
+
+        val cardIndex = index.coerceIn(cards.indices)
+        activeCardId = cards[cardIndex].id
+        return cardIndex
+    }
+
+    fun replaceCard(card: BingoCard) {
+        val index = cards.indexOfFirst { it.id == card.id }
+            .takeIf { it != -1 }
+            ?: throw IllegalArgumentException("Unknown card provided in replaceCard")
+
+        cards[index] = card
+    }
+
+    fun getCard(team: BingoTeam): BingoCard {
+        return team.card
+            ?.let { cardId -> cards.find { it.id == cardId } }
+            ?: BingoCard.EMPTY
+    }
+
+    fun getCardGoal(team: BingoTeam): BingoGoal {
+        val card = getCard(team)
+        return card.goal ?: options.cardGoal
+    }
 
     /**
      * Returns true if there is only one player in the game
@@ -82,6 +118,7 @@ data class BingoState(
     }
 
     fun updateScore(team: BingoTeam): TeamScore {
+        val card = getCard(team)
         val score = card.getTeamScore(team)
         team.score = score
         return score
@@ -92,7 +129,7 @@ data class BingoState(
      */
     fun updateWinner(team: BingoTeam): Boolean {
         val score = team.score
-        val isWinner = when (val goal = options.cardGoal) {
+        val isWinner = when (val goal = getCardGoal(team)) {
             is BingoGoal.Items -> score.items >= goal.items
             is BingoGoal.Lines -> score.lines >= goal.lines
         }
@@ -144,9 +181,8 @@ data class BingoState(
      * (should only be called when isLobbyMode=false)
      */
     fun reset() {
-        // set a new gameId & seed
+        // set a new gameId
         gameId = UUID.randomUUID()
-        seed = Random.nextLong()
         startedAt = null
         updatedAt = null
         endedAt = null
@@ -154,7 +190,8 @@ data class BingoState(
         teams.clear()
         // previewMap we don't clear, as it can be reused...
         // [BingoMapController] calls generateCard when entering PREGAME, so this card should be immediately replaced
-        card = BingoCard.EMPTY
+        cards.clear()
+        cards.add(BingoCard.EMPTY)
         endReason = null
         isForfeit = false
     }

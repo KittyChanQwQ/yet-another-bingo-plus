@@ -1,9 +1,6 @@
 package me.jfenn.bingo.common.team
 
-import me.jfenn.bingo.api.IMapService
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.ITeamHandle
-import me.jfenn.bingo.api.ITeamManager
+import me.jfenn.bingo.api.*
 import me.jfenn.bingo.common.commands.CommandTreeHandler
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.state.BingoState
@@ -26,10 +23,14 @@ class TeamService(
     private val mapService: IMapService,
 ) {
 
+    fun getPlayerTeam(player: IPlayerHandle) = getPlayerTeam(player.player)
+
     fun getPlayerTeam(player: ServerPlayerEntity): BingoTeam? {
         val team = teamManager.getPlayerTeam(player) ?: return null
         return state.teams[BingoTeamKey(team.name)]
     }
+
+    fun isPlaying(player: IPlayerHandle) = isPlaying(player.player)
 
     fun isPlaying(player: ServerPlayerEntity): Boolean {
         return getPlayerTeam(player) != null
@@ -47,7 +48,7 @@ class TeamService(
         }
     }
 
-    fun createTeam(team: BingoTeam): ITeamHandle {
+    private fun createTeam(team: BingoTeam): ITeamHandle {
         return teamManager.createTeam(
             server,
             teamName = team.id,
@@ -59,6 +60,7 @@ class TeamService(
     fun joinTeam(player: ServerPlayerEntity, teamTemplate: BingoTeam) {
         if (getPlayerTeam(player)?.key == teamTemplate.key) return
         val team = state.registerTeam(teamTemplate)
+        team.card = state.cards.firstOrNull()?.id
         val playerProfile = BingoPlayerProfile.fromPlayer(playerManager.forPlayer(player))
 
         // Remove player from their existing team
@@ -66,9 +68,12 @@ class TeamService(
         if (oldTeam != null) {
             oldTeam.players.remove(playerProfile)
 
-            // Remove any of the player's held/scored items from the card
-            for (objective in state.card.objectives.values) {
-                objective.removePlayer(playerProfile.uuid)
+            if (!oldTeam.isWinner()) {
+                // Remove any of the player's held/scored items from the card
+                val card = state.getCard(oldTeam)
+                for (objective in card.objectives.values) {
+                    objective.removePlayer(playerProfile.uuid)
+                }
             }
         }
 

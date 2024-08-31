@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -14,6 +15,7 @@ class BingoMapController(
     events: ScopedEvents,
     private val server: MinecraftServer,
     private val state: BingoState,
+    private val playerManager: IPlayerManager,
     private val cardService: CardService,
     private val cardViewService: CardViewService,
     private val cardImageService: CardImageService,
@@ -37,7 +39,7 @@ class BingoMapController(
         events.onUpdateTick {
             // Periodically send all valid cards to all players
             // to fix any missed events...
-            for (player in server.playerManager.playerList) {
+            for (player in playerManager.getPlayers()) {
                 cardViewService.sendUpdatePackets(player)
             }
         }
@@ -47,7 +49,9 @@ class BingoMapController(
         }
 
         events.onEnter(GameState.PREGAME) {
-            cardService.generateCard()
+            for (card in state.cards) {
+                cardService.generateCard(card)
+            }
             for (player in server.playerManager.playerList) {
                 cardViewService.sendClearDisplayPacket(player)
             }

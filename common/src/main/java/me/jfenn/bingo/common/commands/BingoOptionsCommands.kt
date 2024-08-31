@@ -33,10 +33,9 @@ class BingoOptionsCommands(
         events.onChangeOptions(Unit)
 
         // Send a message that the goal was changed
-        Text.literal("ℹ  ")
-            .append(textProvider.string(StringKey.ScoreboardGoal, goal.format(textProvider)))
-            .formatted(Formatting.AQUA)
-            .also { sendFeedback(it) }
+        sendInfoFeedback(
+            textProvider.string(StringKey.ScoreboardGoal, goal.format(textProvider))
+        )
     }
 
     private fun IExecutionContext.toggleElytra() {

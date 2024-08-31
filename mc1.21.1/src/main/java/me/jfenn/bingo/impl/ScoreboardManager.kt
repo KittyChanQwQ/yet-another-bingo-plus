@@ -125,7 +125,7 @@ class ObjectiveHandle(
         get() = objective.name
 
     override fun getForPlayer(player: IPlayerHandle): Int? {
-        val playerImpl = player as PlayerManager.PlayerHandle
+        val playerImpl = player as PlayerHandle
         return scoreboard.getScore(playerImpl.player, objective)?.score
     }
 }

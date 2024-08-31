@@ -1,7 +1,10 @@
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.api.IMapService
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoConfig
@@ -25,6 +28,7 @@ class CardViewService(
     private val config: BingoConfig,
     private val options: BingoOptions,
     private val state: BingoState,
+    private val playerManager: IPlayerManager,
     private val teamService: TeamService,
     private val mapService: IMapService,
     private val mapRenderService: MapRenderService,
@@ -41,7 +45,7 @@ class CardViewService(
      * True if the Bingo Card HUD packets are supported by the player's client
      * False if the packets are not supported, or if the player's supported packets are not yet known
      */
-    fun supportsCardHud(player: ServerPlayerEntity): Boolean {
+    fun supportsCardHud(player: IPlayerHandle): Boolean {
         return config.supportClientHud &&
                 packets.cardDisplayV1.isSupported(player)
     }
@@ -56,7 +60,7 @@ class CardViewService(
         ))
     }
 
-    fun sendUpdatePackets(player: ServerPlayerEntity) {
+    fun sendUpdatePackets(player: IPlayerHandle) {
         if (!supportsCardHud(player))
             return
 
@@ -87,23 +91,29 @@ class CardViewService(
         }
     }
 
-    fun isViewingPreviewCard(player: ServerPlayerEntity)
+    fun isViewingPreviewCard(player: IPlayerHandle)
         = state.state == GameState.PREGAME && options.showPreviewCard && state.isLobbyMode && !teamService.isPlaying(player)
 
-    fun isViewingTeamCard(player: ServerPlayerEntity, team: BingoTeam)
+    fun isViewingTeamCard(player: IPlayerHandle, team: BingoTeam)
         = (state.state == GameState.PLAYING || options.showPreviewCard) && team.includesPlayer(player)
 
-    fun isViewingSpectatorCards(player: ServerPlayerEntity) = when (state.state) {
+    fun isViewingSpectatorCards(player: IPlayerHandle) = when (state.state) {
         // if the state is not POSTGAME, players must have permission to receive the spectator cards
         GameState.PLAYING -> !teamService.isPlaying(player) && permissions.hasPermission(player, Permission.SPECTATOR_VIEW_CARDS)
         GameState.POSTGAME -> true
         else -> false
     }
 
-    fun isViewingCard(player: ServerPlayerEntity, team: BingoTeam?): Boolean {
+    fun isViewingCard(player: IPlayerHandle, team: BingoTeam?): Boolean {
         return (team == null && isViewingPreviewCard(player)) ||
                 (team != null && isViewingTeamCard(player, team)) ||
                 (team != null && isViewingSpectatorCards(player))
+    }
+
+    fun getPlayerCard(player: IPlayerHandle): BingoCard {
+        return teamService.getPlayerTeam(player.player)
+            ?.let { state.getCard(it) }
+            ?: state.getActiveCard()
     }
 
     private fun getTileState(
@@ -139,6 +149,9 @@ class CardViewService(
     }
 
     fun getMapView(team: BingoTeam?): CardView {
+        val card = team?.let { state.getCard(it) }
+            ?: state.getActiveCard()
+
         return CardView(
             teamKey = team?.key,
             teamColor = team?.mapColor,
@@ -146,9 +159,9 @@ class CardViewService(
                 ?.truncate(12)
                 ?.setStyle(Style.EMPTY)
                 ?: textProvider.string(StringKey.CardPreviewCard),
-            tiles = state.card.entries
+            tiles = card.entries
                 .map { entry ->
-                    val goal = state.card.objectives[entry.objectiveId]
+                    val goal = card.objectives[entry.objectiveId]
                     goal?.let { getTileState(team, entry, it) }
                         ?: CardTile.EMPTY
                 }
@@ -175,7 +188,7 @@ class CardViewService(
         mapRenderService.update(team, map, view)
         map.view = view
 
-        for (player in server.playerManager.playerList) {
+        for (player in playerManager.getPlayers()) {
             sendUpdatePackets(player)
         }
     }

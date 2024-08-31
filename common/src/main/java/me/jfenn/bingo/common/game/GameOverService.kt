@@ -118,7 +118,9 @@ class GameOverService(
         }
         val bestWinStreak = stats.getBestWinStreak(player.uuid)
 
-        val capturedItems = state.card.countItems { it.players.containsKey(player.uuid) }
+        val capturedItems = state.cards.sumOf { card ->
+            card.countItems { it.players.containsKey(player.uuid) }
+        }
         val bestCapturedItems = stats.getBestCapturedItems(player.uuid, options)
 
         return GameOverPlayerInfo(

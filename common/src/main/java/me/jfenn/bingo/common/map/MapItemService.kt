@@ -5,7 +5,10 @@ import kotlinx.datetime.format.DateTimeComponents
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.*
+import me.jfenn.bingo.common.NBT_BINGO_CARD
+import me.jfenn.bingo.common.NBT_BINGO_IGNORE
+import me.jfenn.bingo.common.NBT_BINGO_KEEP
+import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -39,7 +42,6 @@ class MapItemService(
             addCustomTag(NBT_BINGO_VANISH)
             addCustomTag(NBT_BINGO_KEEP)
             addCustomTag(NBT_BINGO_CARD)
-            addCustomTag(NBT_BINGO_CARD_PREFIX + state.card.id.toString())
         }
 
         return item
@@ -111,7 +113,6 @@ class MapItemService(
             addCustomTag(NBT_BINGO_VANISH)
             addCustomTag(NBT_BINGO_KEEP)
             addCustomTag(NBT_BINGO_CARD)
-            addCustomTag(NBT_BINGO_CARD_PREFIX + state.card.id.toString())
         }
 
         return item

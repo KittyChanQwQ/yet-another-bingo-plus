@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.event
 
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IServerPacketHandlerC2S
 import me.jfenn.bingo.api.ServerPacket
 import me.jfenn.bingo.api.item.IItemStack
@@ -9,7 +10,6 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.common.utils.ReturnEventListener
 import net.minecraft.entity.Entity
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import org.koin.core.scope.Scope
 import org.koin.core.scope.ScopeCallback
@@ -23,10 +23,10 @@ class ScopedEvents(
     val onGameTickEnd = EventListener<Unit>()
     val onUpdateTick = EventListener<Unit>()
 
-    val onPlayerJoin = EventListener<ServerPlayerEntity>()
-    val onPlayerLeave = EventListener<ServerPlayerEntity>()
+    val onPlayerJoin = EventListener<IPlayerHandle>()
+    val onPlayerLeave = EventListener<IPlayerHandle>()
     val onPlayerRespawn = EventListener<PlayerEvent>()
-    val onPlayerChannelRegister = EventListener<ServerPlayerEntity>()
+    val onPlayerChannelRegister = EventListener<IPlayerHandle>()
 
     val onEntityLoad = EventListener<Pair<Entity, ServerWorld>>()
     val onUseBlock = ReturnEventListener<UseBlockEvent, ActionResult<Unit>?>()
@@ -38,7 +38,7 @@ class ScopedEvents(
     val onStateChange = EventListener<Pair<GameState, GameState>>()
 
     val onChangeOptions = EventListener<Unit>()
-    val onChangePlayerSettings = EventListener<ServerPlayerEntity>()
+    val onChangePlayerSettings = EventListener<IPlayerHandle>()
 
     val onClose = EventListener<Unit>()
 

@@ -3,16 +3,20 @@ package me.jfenn.bingo.common.card
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.card.objective.BingoObjective
+import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.UuidAsString
 import java.util.*
+import kotlin.random.Random
 
 @Serializable
 class BingoCard(
     val id: UuidAsString = UUID.randomUUID(),
+    val seed: Long = Random.nextLong(),
     val entries: List<BingoCardEntry>,
     val objectives: Map<String, BingoObjective>,
+    var goal: BingoGoal? = null
 ) {
 
     init {

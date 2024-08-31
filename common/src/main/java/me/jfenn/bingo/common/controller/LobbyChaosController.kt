@@ -35,7 +35,7 @@ class LobbyChaosController(
         events.onPlayerJoin { player ->
             if (!state.isLobbyMode) return@onPlayerJoin
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
-                player.sendMessage(textProvider.string(StringKey.LobbySoundsMuted))
+                player.player.sendMessage(textProvider.string(StringKey.LobbySoundsMuted))
             }
         }
 

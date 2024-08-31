@@ -10,7 +10,6 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import kotlin.reflect.KMutableProperty1
 
 class BingoModeCommand(
@@ -28,16 +27,16 @@ class BingoModeCommand(
         val events = scope.get<ScopedEvents>()
         events.onChangeOptions(Unit)
 
-        Text.literal("ℹ  ")
-            .append(text.string(StringKey.OptionsGameMode))
-            .append(": ")
-            .append(
-                options.formatGameMode()
-                    .map { text.string(it) }
-                    .joinText()
-            )
-            .formatted(Formatting.AQUA)
-            .let { sendMessage(it) }
+        sendInfoFeedback(
+            Text.empty()
+                .append(text.string(StringKey.OptionsGameMode))
+                .append(": ")
+                .append(
+                    options.formatGameMode()
+                        .map { text.string(it) }
+                        .joinText()
+                )
+        )
     }
 
     init {

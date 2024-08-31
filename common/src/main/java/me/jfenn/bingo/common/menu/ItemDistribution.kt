@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.api.EntityType
 import me.jfenn.bingo.api.ITextDisplayEntity
-import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.text.TextProvider
@@ -20,7 +19,6 @@ fun MenuComponent.registerItemDistribution(
     itemDistributionProp: MutableProperty<List<Int>>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     cardService: CardService = koinScope.get(),
-    textSerializer: ITextSerializer = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     var itemDistribution by itemDistributionProp

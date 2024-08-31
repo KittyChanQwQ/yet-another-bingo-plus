@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameService
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
@@ -12,11 +13,11 @@ import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.math.Vec3d
 import org.joml.Vector3d
 
 fun MenuComponent.registerMenuPage(
     position: Vector3d,
+    state: BingoState = koinScope.get(),
     options: BingoOptions = koinScope.get(),
     gameService: GameService = koinScope.get(),
     cardService: CardService = koinScope.get(),
@@ -120,7 +121,7 @@ fun MenuComponent.registerMenuPage(
         permissionGetter = permissionGetter,
     ) {
         // Shuffle the current card + seed
-        cardService.shuffleCard()
+        cardService.shuffleCard(state.getActiveCard())
         markDirty()
     }
 

@@ -70,11 +70,11 @@ class PlayerController(
                     GameState.PLAYING -> GameMode.SURVIVAL
                     else -> GameMode.ADVENTURE
                 }
-                !cardViewService.supportsCardHud(player.player) && vanishIntegration.isInstalled() -> GameMode.ADVENTURE
+                !cardViewService.supportsCardHud(player) && vanishIntegration.isInstalled() -> GameMode.ADVENTURE
                 else -> GameMode.SPECTATOR
             }
             GameState.POSTGAME -> when {
-                cardViewService.supportsCardHud(player.player) -> GameMode.SPECTATOR
+                cardViewService.supportsCardHud(player) -> GameMode.SPECTATOR
                 else -> GameMode.CREATIVE
             }
         }
@@ -157,8 +157,7 @@ class PlayerController(
 
             // if in pregame, move to the lobby world
             if (state.state == GameState.PREGAME) {
-                val spawnPos = state.lobbySpawnPos.toBlockPos()
-                player.setSpawnPoint(lobbyWorld.registryKey, spawnPos, 180f, true, false)
+                player.setSpawnPoint(lobbyWorld, state.lobbySpawnPos, state.lobbySpawnYaw, forced = true, sendMessage = false)
             }
 
             // schedule an updateGameMode (handled in the next onGameTick)

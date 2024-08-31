@@ -1,19 +1,19 @@
 package me.jfenn.bingo.common.config
 
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.common.event.ScopedEvents
-import net.minecraft.server.network.ServerPlayerEntity
 
 class PlayerSettingsService(
     private val configService: ConfigService,
     private val events: ScopedEvents,
 ) {
 
-    fun getPlayer(player: ServerPlayerEntity): PlayerSettings {
+    fun getPlayer(player: IPlayerHandle): PlayerSettings {
         return configService.playerConfig[player.uuid]
     }
 
     fun setPlayer(
-        player: ServerPlayerEntity,
+        player: IPlayerHandle,
         settings: PlayerSettings,
         seenTutorial: Boolean = false,
     ) {

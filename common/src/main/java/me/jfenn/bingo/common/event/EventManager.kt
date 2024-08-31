@@ -42,7 +42,7 @@ class EventManager(
             event.server.execute {
                 getEvents(event.server)
                     ?.onPlayerJoin
-                    ?.invoke(event.player.player)
+                    ?.invoke(event.player)
             }
         }
 
@@ -50,7 +50,7 @@ class EventManager(
             event.server.execute {
                 getEvents(event.server)
                     ?.onPlayerLeave
-                    ?.invoke(event.player.player)
+                    ?.invoke(event.player)
             }
         }
 
@@ -99,7 +99,7 @@ class EventManager(
 
         serverEvents.onPlayerChannelRegister { event ->
             event.server.execute {
-                getEvents(event.server)?.onPlayerChannelRegister?.invoke(event.player.player)
+                getEvents(event.server)?.onPlayerChannelRegister?.invoke(event.player)
             }
         }
     }

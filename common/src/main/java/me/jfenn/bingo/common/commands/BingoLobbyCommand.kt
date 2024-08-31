@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.commands
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
@@ -64,8 +63,7 @@ class BingoLobbyCommand(
                             if (readWarning != null && readWarning > Clock.System.now() - 5.minutes) {
                                 sendMessage(text.string(StringKey.CommandLobbyRestarting))
 
-                                val playerName = scope.get<IPlayerManager>().forPlayer(player).name
-                                log.info("[BingoLobbyCommand] $playerName used '/bingo lobby confirm' and has accepted the warnings.")
+                                log.info("[BingoLobbyCommand] ${player.name} used '/bingo lobby confirm' and has accepted the warnings.")
 
                                 val configService = scope.get<ConfigService>()
                                 configService.writeConfig(configService.config.apply {

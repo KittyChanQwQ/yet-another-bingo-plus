@@ -171,7 +171,8 @@ class MapRenderService(
 
     // keep a full card of 25 items in-memory, using LRU eviction
     // (could need extra space to handle rotating items)
-    private val imageMap = LruHashMap<TileImageKey, BingoTileImage?>(25)
+    // worst case = all 8 teams each have their own card of 25 unique items
+    private val imageMap = LruHashMap<TileImageKey, BingoTileImage?>(25*8)
 
     private inline fun drawTileDecorations(
         tile: TileImageKey,

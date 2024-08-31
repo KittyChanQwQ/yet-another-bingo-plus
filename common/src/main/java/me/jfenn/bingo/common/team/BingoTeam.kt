@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IServerWorld
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
@@ -11,6 +12,7 @@ import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.state.TeamWinner
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.FormattingSerializer
+import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
@@ -36,6 +38,7 @@ data class BingoTeam(
     @Serializable(with = FormattingSerializer::class)
     val mapColor: Formatting,
     val textColor: TextColor,
+    var card: UuidAsString? = null,
     var score: TeamScore = TeamScore.ZERO,
     var winner: TeamWinner? = null,
     var spawnpoint: BlockPosition? = null,
@@ -58,6 +61,8 @@ data class BingoTeam(
     val singlePlayer get() = players.takeIf { it.size == 1 }?.first()
 
     fun isWinner(): Boolean = this.winner != null
+
+    fun includesPlayer(player: IPlayerHandle) = includesPlayer(player.player)
 
     fun includesPlayer(player: ServerPlayerEntity): Boolean {
         return players.any { it.uuid == player.uuid }

@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.scoreboard
 
 import me.jfenn.bingo.api.IObjectiveHandle
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.api.item.IItemStackFactory
@@ -36,9 +37,9 @@ class ScoreboardService(
         return objective
     }
 
-    fun shouldDisplayScoreboard(player: ServerPlayerEntity) : Boolean {
+    fun shouldDisplayScoreboard(player: IPlayerHandle) : Boolean {
         // if the player is not on a team and isLobbyMode=false, then they should not see the scoreboard
-        val isOnTeam = teamService.isPlaying(player)
+        val isOnTeam = teamService.isPlaying(player.player)
         if (!state.isLobbyMode && !isOnTeam) return false
 
         // if the player has turned the scoreboard off
@@ -51,9 +52,9 @@ class ScoreboardService(
         if (cardViewService.supportsCardHud(player)) return true
 
         // if the player is holding the map item, show the scoreboard; otherwise, hide it
-        val isHoldingMapItem = player.interactionManager.gameMode != GameMode.SURVIVAL
-                || mapItemService.isMapItem(itemStackFactory.forStack(player.mainHandStack))
-                || mapItemService.isMapItem(itemStackFactory.forStack(player.offHandStack))
+        val isHoldingMapItem = player.player.interactionManager.gameMode != GameMode.SURVIVAL
+                || mapItemService.isMapItem(itemStackFactory.forStack(player.player.mainHandStack))
+                || mapItemService.isMapItem(itemStackFactory.forStack(player.player.offHandStack))
 
         return isHoldingMapItem
     }

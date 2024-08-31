@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoreboard
 
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -12,7 +13,6 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.MinecraftServer
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -23,11 +23,11 @@ import kotlin.time.Duration
  */
 class ScoreboardController(
     events: ScopedEvents,
-    private val server: MinecraftServer,
     private val options: BingoOptions,
     private val state: BingoState,
     private val teamService: TeamService,
     private val scoreboardService: ScoreboardService,
+    private val playerManager: IPlayerManager,
     private val playerSettingsService: PlayerSettingsService,
     private val textProvider: TextProvider,
 ) : BingoComponent() {
@@ -150,12 +150,12 @@ class ScoreboardController(
                 }
 
                 // Determine which players should be shown the scoreboard
-                val players = server.playerManager.playerList
-                    .filter { teamService.getPlayerTeam(it)?.key == team?.key }
+                val players = playerManager.getPlayers()
+                    .filter { teamService.getPlayerTeam(it.player)?.key == team?.key }
                     .filter { playerSettingsService.getPlayer(it).scoreboard }
                     .filter { scoreboardService.shouldDisplayScoreboard(it) }
 
-                scoreboardService.setScoreboardContents(objective, scoreboardText, players)
+                scoreboardService.setScoreboardContents(objective, scoreboardText, players.map { it.player })
             }
         }
     }

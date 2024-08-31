@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.scoring
 
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -16,21 +17,22 @@ import org.slf4j.Logger
  * satisfy a tile on the card, and updates the score if found.
  */
 class ScoredItemCheck(
-    events: ScopedEvents,
     private val log: Logger,
     private val options: BingoOptions,
     private val state: BingoState,
     private val gameService: GameService,
     private val scoreUpdateService: ScoreUpdateService,
     private val objectiveManager: BingoObjectiveManager,
+    events: ScopedEvents,
 ) : BingoComponent() {
 
     private fun updateScores(
+        card: BingoCard,
         tickStart: Instant,
         sendUpdates: Boolean,
     ) {
         val prevLeadingTeam = ScoreService.getLeading(state)
-        val rootObjectives = state.card.entries.mapNotNull { state.card.objectives[it.objectiveId] }
+        val rootObjectives = card.entries.mapNotNull { card.objectives[it.objectiveId] }
 
         // find teams where any card objective has been modified since the last tick
         val teams = state.getRegisteredTeams()
@@ -96,7 +98,7 @@ class ScoredItemCheck(
         }
 
         // check if the game is in a stalemate
-        if (ScoreService.isLockout(state)) {
+        if (ScoreService.isLockout(state, card)) {
             gameService.end(GameEndReason.LOCKOUT)
             return
         }
@@ -115,51 +117,67 @@ class ScoredItemCheck(
         }
     }
 
+    private fun tickCard(card: BingoCard) {
+        // Initialize objectives
+        if (!card.isInitialized) {
+            // No, this isn't a bug...
+            // init() needs to be called multiple times to populate display info on dependent objectives
+            objectiveManager.init(card)
+            objectiveManager.init(card)
+            objectiveManager.init(card)
+
+            card.isInitialized = true
+        }
+
+        if (state.state == GameState.PLAYING) {
+            val tickStart = state.updatedAt ?: Instant.DISTANT_PAST
+
+            // Update all objectives
+            objectiveManager.tick(card)
+
+            updateScores(
+                card = card,
+                tickStart = tickStart,
+                sendUpdates = true,
+            )
+        }
+    }
+
     init {
         events.onGameTick {
-            // Initialize objectives
-            if (!state.card.isInitialized) {
-                // No, this isn't a bug...
-                // init() needs to be called multiple times to populate display info on dependent objectives
-                objectiveManager.init(state.card)
-                objectiveManager.init(state.card)
-                objectiveManager.init(state.card)
+            val cards = state.getRegisteredTeams()
+                .map { state.getCard(it) }
+                .distinct()
 
-                state.card.isInitialized = true
-            }
-
-            if (state.state == GameState.PLAYING) {
-                val tickStart = state.updatedAt ?: Instant.DISTANT_PAST
-
-                // Update all objectives
-                objectiveManager.tick(state.card)
-
-                updateScores(
-                    tickStart = tickStart,
-                    sendUpdates = true,
-                )
+            for (card in cards) {
+                tickCard(card)
             }
         }
 
         events.onEnter(GameState.PLAYING) {
-            // Run one tick when the game starts
-            // - this prevents notification spam for tiles that the player has already captured at the start of the game
-            objectiveManager.tick(state.card)
-            objectiveManager.tick(state.card)
-            objectiveManager.tick(state.card)
+            for (card in state.cards) {
+                // Run one tick when the game starts
+                // - this prevents notification spam for tiles that the player has already captured at the start of the game
+                objectiveManager.tick(card)
+                objectiveManager.tick(card)
+                objectiveManager.tick(card)
 
-            updateScores(
-                tickStart = Instant.DISTANT_PAST,
-                sendUpdates = false,
-            )
+                updateScores(
+                    card = card,
+                    tickStart = Instant.DISTANT_PAST,
+                    sendUpdates = false,
+                )
+            }
         }
 
         events.onEnter(GameState.POSTGAME) {
             // Mark all goals as "seen" when game ends
             // (if hidden items is true, players should see all items after the game)
             val teamKeys = state.teams.keys
-            for (goal in state.card.objectives.values) {
-                goal.teamsSeen = teamKeys.toMutableSet()
+            for (card in state.cards) {
+                for (goal in card.objectives.values) {
+                    goal.teamsSeen = teamKeys.toMutableSet()
+                }
             }
         }
     }

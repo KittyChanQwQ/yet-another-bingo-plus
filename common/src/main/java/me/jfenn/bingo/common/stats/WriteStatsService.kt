@@ -80,7 +80,9 @@ class WriteStatsService(
             ).also { insertTeams.add(it) }
 
             for (player in team.players) {
-                val itemCount = state.card.countItems { it.players.containsKey(player.uuid) }
+                val itemCount = state.cards.sumOf { card ->
+                    card.countItems { it.players.containsKey(player.uuid) }
+                }
                 val insertPlayer = GamePlayerInfo(
                     teamId = insertTeam.id,
                     gameId = insertGame.id,

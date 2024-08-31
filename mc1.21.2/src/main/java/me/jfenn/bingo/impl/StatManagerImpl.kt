@@ -32,7 +32,7 @@ class StatManagerImpl : IStatManager {
         private val name: T,
     ) : IStatHandle {
         override fun getForPlayer(player: IPlayerHandle): Int {
-            require(player is PlayerManager.PlayerHandle)
+            require(player is PlayerHandle)
             val statHandler: StatHandler = player.player.statHandler
             return statHandler.getStat(type, name)
         }
@@ -42,7 +42,7 @@ class StatManagerImpl : IStatManager {
         private val type: StatType<T>,
     ) : IStatHandle {
         override fun getForPlayer(player: IPlayerHandle): Int {
-            require(player is PlayerManager.PlayerHandle)
+            require(player is PlayerHandle)
             val statHandler: StatHandler = player.player.statHandler
 
             var count = 0
