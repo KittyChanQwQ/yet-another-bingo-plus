@@ -42,7 +42,7 @@ class ScoredItemCheck(
             rootObjectives
                 .takeIf { sendUpdates }
                 // if the objective has been updated in this tick
-                ?.filter { it.updatedAt(team.key) >= tickStart }
+                ?.filter { it.updatedAt(team.key) == tickStart }
                 ?.forEach { objective ->
                     if (objective.hasAchieved(team.key)) {
                         // find the player that captured the objective
