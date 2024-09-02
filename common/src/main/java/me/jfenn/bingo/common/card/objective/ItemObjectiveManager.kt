@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.datetime.Clock
-import me.jfenn.bingo.api.IPlayerManager
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
@@ -12,6 +11,7 @@ import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_COUNT
 import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MIN
 import me.jfenn.bingo.common.map.CardTile
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
@@ -20,8 +20,8 @@ import kotlin.math.max
 class ItemObjectiveManager(
     private val log: Logger,
     private val server: MinecraftServer,
+    private val state: BingoState,
     private val itemStackFactory: IItemStackFactory,
-    private val playerManager: IPlayerManager,
     private val objectiveRegistry: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
@@ -125,7 +125,7 @@ class ItemObjectiveManager(
     }
 
     override fun tick(card: BingoCard) {
-        val now = Clock.System.now()
+        val now = state.updatedAt ?: Instant.DISTANT_PAST
 
         val lockedTeams = objectiveService.getLockedTeams()
         val lockedTeamKeys = lockedTeams.map { it.key }.toSet()

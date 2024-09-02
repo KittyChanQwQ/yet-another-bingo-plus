@@ -14,7 +14,6 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -93,6 +92,7 @@ class SpawnPreloadingController(
 
         events.onGameTick {
             if (state.state != GameState.PRELOADING) return@onGameTick
+            if (chunkFutureList.isEmpty()) return@onGameTick
 
             val doneCount = chunkFutureList.count { it.isDone }
             val percentage = doneCount.times(100f)

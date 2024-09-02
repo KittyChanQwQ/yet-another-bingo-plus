@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IStatHandle
 import me.jfenn.bingo.api.IStatManager
@@ -99,7 +100,7 @@ class StatsObjectiveManager(
     }
 
     override fun tick(card: BingoCard) {
-        val now = Clock.System.now()
+        val now = state.updatedAt ?: Instant.DISTANT_PAST
 
         for (objective in card.objectivesByInstance<BingoObjective.StatsEntry>()) {
             val stat = objective.stat ?: continue

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IAdvancementManager
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.BingoCard
@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.map.CardTile
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Style
@@ -18,6 +19,7 @@ import org.slf4j.Logger
 class AdvancementObjectiveManager(
     private val log: Logger,
     private val server: MinecraftServer,
+    private val state: BingoState,
     private val advancementManager: IAdvancementManager,
     private val itemStackFactory: IItemStackFactory,
     private val objectiveRegistryState: ObjectiveRegistryState,
@@ -91,7 +93,7 @@ class AdvancementObjectiveManager(
     }
 
     override fun tick(card: BingoCard) {
-        val now = Clock.System.now()
+        val now = state.updatedAt ?: Instant.DISTANT_PAST
 
         for (objective in card.objectivesByInstance<BingoObjective.AdvancementEntry>()) {
             val advancement = objective.advancement ?: continue

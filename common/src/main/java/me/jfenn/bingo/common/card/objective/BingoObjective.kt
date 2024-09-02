@@ -17,12 +17,9 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Style
 import net.minecraft.text.Text
 import java.util.*
 import kotlin.time.Duration
-
-private val NON_ITALIC_STYLE = Style.EMPTY.withItalic(false)
 
 @Serializable
 sealed class BingoObjective {
@@ -94,9 +91,9 @@ sealed class BingoObjective {
      * for the specified team.
      */
     fun updatedAt(team: BingoTeamKey?): Instant {
-        return listOfNotNull(achievedAt(team), lostAt(team))
-            .maxOrNull()
-            ?: Instant.DISTANT_PAST
+        val achieved = achievedAt(team) ?: Instant.DISTANT_PAST
+        val lost = lostAt(team) ?: Instant.DISTANT_PAST
+        return maxOf(achieved, lost)
     }
 
     /**

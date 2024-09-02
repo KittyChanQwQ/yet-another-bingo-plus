@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.scoring
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.config.BingoOptions
@@ -10,6 +9,7 @@ import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import org.slf4j.Logger
 
 /**
  * Searches for items in each player's inventory that can
@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.state.GameState
  */
 class ScoredItemCheck(
     events: ScopedEvents,
+    private val log: Logger,
     private val options: BingoOptions,
     private val state: BingoState,
     private val gameService: GameService,
@@ -32,18 +33,16 @@ class ScoredItemCheck(
         val rootObjectives = state.card.entries.mapNotNull { state.card.objectives[it.objectiveId] }
 
         // find teams where any card objective has been modified since the last tick
-        val updatedTeams = state.getRegisteredTeams()
-            .filter { team -> rootObjectives.maxOf { it.updatedAt(team.key) } > tickStart }
+        val teams = state.getRegisteredTeams()
+            // if the team is already a winner, their score should not change
+            .filter { !it.isWinner() }
 
-        // if there are no updated teams, we can skip the remaining checks...
-        if (updatedTeams.isEmpty()) return
-
-        for (team in updatedTeams) {
+        for (team in teams) {
             // iterate through all updated objectives on the card
             rootObjectives
                 .takeIf { sendUpdates }
                 // if the objective has been updated in this tick
-                ?.filter { it.updatedAt(team.key) > tickStart }
+                ?.filter { it.updatedAt(team.key) >= tickStart }
                 ?.forEach { objective ->
                     if (objective.hasAchieved(team.key)) {
                         // find the player that captured the objective
@@ -53,6 +52,8 @@ class ScoredItemCheck(
                             }
                             .maxByOrNull { (_, capture) -> capture.instant }
                             ?.first
+
+                        log.info("[ScoredItemCheck] ${player?.name ?: team.id} got ${objective.id}")
 
                         scoreUpdateService.sendItemCaptured(
                             scoredPlayer = player,
@@ -68,6 +69,10 @@ class ScoredItemCheck(
             val scoreBefore = team.score
             val scoreAfter = state.updateScore(team)
 
+            if (scoreAfter != scoreBefore) {
+                log.info("[ScoredItemCheck] Updated score for team {}: {}", team.id, scoreAfter)
+            }
+
             // if the team has scored a line, post a message
             if (scoreAfter.lines > scoreBefore.lines && sendUpdates) {
                 scoreUpdateService.sendLineCaptured(team)
@@ -75,7 +80,7 @@ class ScoredItemCheck(
         }
 
         // check if a team has won the game
-        for (team in updatedTeams) {
+        for (team in teams) {
             val isWinner = state.updateWinner(team)
 
             if (isWinner && options.isRankedMode && sendUpdates) {
@@ -103,7 +108,7 @@ class ScoredItemCheck(
             if (leadingTeam != null) {
                 scoreUpdateService.sendTeamLeading(leadingTeam)
             } else {
-                updatedTeams.firstOrNull()?.let {
+                teams.firstOrNull()?.let {
                     scoreUpdateService.sendTeamTied(it)
                 }
             }
@@ -124,7 +129,7 @@ class ScoredItemCheck(
             }
 
             if (state.state == GameState.PLAYING) {
-                val tickStart = Clock.System.now()
+                val tickStart = state.updatedAt ?: Instant.DISTANT_PAST
 
                 // Update all objectives
                 objectiveManager.tick(state.card)

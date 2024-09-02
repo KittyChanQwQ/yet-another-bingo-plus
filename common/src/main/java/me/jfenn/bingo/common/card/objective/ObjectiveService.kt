@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
@@ -85,7 +85,7 @@ class ObjectiveService(
         }
 
         if (teams != null) {
-            val now = Clock.System.now()
+            val now = state.updatedAt ?: Instant.DISTANT_PAST
             val newTeamsAchieved = teams
                 .associateWith { objective.teamsAchieved[it] ?: now }
                 .toMutableMap()
