@@ -1,11 +1,3 @@
-### New Features:
-
-- Added a sound for "Item Lost" (when a tile is lost in inventory mode)
-
 ### Bugs Squashed:
 
-- Fixed "Never get {item}" objectives not working correctly in multiplayer
-
-- Fixed team maps not being given to unmodded players after the game
-
-- Count "# of item" goals even if they're in separate stacks in the player's inventory
+- Fixed an issue causing win conditions to fail for some users ([#102](https://gitlab.com/horrific-tweaks/bingo/-/issues/102)) - thanks to Eren Okcu & AverageFlame for help testing :)
