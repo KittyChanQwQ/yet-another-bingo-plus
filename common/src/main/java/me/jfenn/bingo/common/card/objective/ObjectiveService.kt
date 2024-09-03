@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -12,7 +12,6 @@ import java.util.*
 
 class ObjectiveService(
     private val state: BingoState,
-    private val options: BingoOptions,
     private val offlinePlayerCache: OfflinePlayerCache,
 ) {
 
@@ -31,20 +30,23 @@ class ObjectiveService(
             }
     }
 
-    fun getLockedTeams() = state.getRegisteredTeams().filter { it.isWinner() }
+    // "locked teams" currently prevents team cards from changing after the team has completed the card
+    // TODO: completed card states should be saved as a CardView instead, and objective states should only include teams actively using the card
+    fun getLockedTeams(card: BingoCard) = state.getRegisteredTeams().filter { it.card != card.id || it.isWinner() }
 
     /**
      * Updates components of the objective state, but ensures that
      * values do not change for any teams that should not be updated
      */
     fun update(
+        card: BingoCard,
         objective: BingoObjective,
         playersHolding: Map<UUID, BingoObjectiveCapture>? = null,
         players: Map<UUID, BingoObjectiveCapture>? = null,
         teamsProgress: Map<BingoTeamKey, Float>? = null,
         teams: Set<BingoTeamKey>? = null,
     ) {
-        val lockedTeams = getLockedTeams()
+        val lockedTeams = getLockedTeams(card)
         val lockedTeamKeys = lockedTeams.map { it.key }.toSet()
 
         if (playersHolding != null) {
@@ -119,9 +121,10 @@ class ObjectiveService(
     }
 
     fun getPlayers(
+        card: BingoCard,
         playersHolding: Map<UUID, BingoObjectiveCapture>,
         players: Map<UUID, BingoObjectiveCapture>,
-        shouldRetainCaptures: Boolean = !options.isInventoryMode,
+        shouldRetainCaptures: Boolean = !card.options.isInventoryMode,
     ): Map<UUID, BingoObjectiveCapture> {
         // Once captured, most objectives can only be lost if isInventoryMode=true
         // therefore, combine both players & playersHolding before updating the objective
@@ -131,7 +134,7 @@ class ObjectiveService(
         }
 
         return when {
-            options.isLockoutMode -> {
+            card.options.isLockoutMode -> {
                 // oldest capture first
                 val teamHolding = combinedPlayersHolding.minByOrNull { it.value.instant }
                     ?.value?.team

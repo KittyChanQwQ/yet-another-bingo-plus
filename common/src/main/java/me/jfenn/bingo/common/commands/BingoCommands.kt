@@ -4,8 +4,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameService
@@ -14,7 +12,6 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.sendInfoMessage
-import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.server.command.ServerCommandSource
 import kotlin.time.Duration.Companion.minutes
 
@@ -23,48 +20,6 @@ class BingoCommands : BaseCommand() {
     init {
         LiteralArgumentBuilder.literal<ServerCommandSource>("bingo")
             .require(requireBingoInstance())
-            .then(
-                LiteralArgumentBuilder.literal<ServerCommandSource>("itemdist")
-                    .require(
-                        requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .then(run {
-                        val args = TierLabel.entries
-                            .map { tier ->
-                                RequiredArgumentBuilder.argument<ServerCommandSource, Int>(
-                                    tier.name,
-                                    IntegerArgumentType.integer(0, 25)
-                                )
-                            }
-                            .toMutableList()
-
-                        var last = args.removeLast().executesInScope { ctx ->
-                            val options = get<BingoOptions>()
-                            val events = get<ScopedEvents>()
-                            val cardService = get<CardService>()
-
-                            val itemDist = TierLabel.entries
-                                .map { IntegerArgumentType.getInteger(ctx, it.name) }
-
-                            if (itemDist.size == 5 && itemDist.sum() > 25) {
-                                ctx.source.player?.sendWarningMessage("Item distribution must add up to 25!")
-                                return@executesInScope 0
-                            }
-
-                            options.itemDistribution = itemDist
-                            events.onChangeOptions(Unit)
-                            cardService.generateCard()
-                            ctx.source.player?.sendInfoMessage("Item distribution changed: $itemDist")
-                            1
-                        }
-
-                        while (args.isNotEmpty())
-                            last = args.removeLast().then(last)
-
-                        last
-                    })
-            )
             .then(
                 // Change the time limit setting (while the game is running)
                 LiteralArgumentBuilder.literal<ServerCommandSource>("timelimit")

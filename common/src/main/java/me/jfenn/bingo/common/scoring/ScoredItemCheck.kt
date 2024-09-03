@@ -2,7 +2,10 @@ package me.jfenn.bingo.common.scoring
 
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.BingoCard
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
+import me.jfenn.bingo.common.config.BingoCardOptions
+import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameEndReason
@@ -10,6 +13,7 @@ import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
 import org.slf4j.Logger
 
 /**
@@ -21,6 +25,7 @@ class ScoredItemCheck(
     private val options: BingoOptions,
     private val state: BingoState,
     private val gameService: GameService,
+    private val cardService: CardService,
     private val scoreUpdateService: ScoreUpdateService,
     private val objectiveManager: BingoObjectiveManager,
     events: ScopedEvents,
@@ -31,7 +36,7 @@ class ScoredItemCheck(
         tickStart: Instant,
         sendUpdates: Boolean,
     ) {
-        val prevLeadingTeam = ScoreService.getLeading(state)
+        val prevLeadingTeam = ScoreService.getLeading(state, card)
         val rootObjectives = card.entries.mapNotNull { card.objectives[it.objectiveId] }
 
         // find teams where any card objective has been modified since the last tick
@@ -61,6 +66,7 @@ class ScoredItemCheck(
                             scoredPlayer = player,
                             team = team,
                             objective = objective,
+                            card = card,
                         )
                     } else {
                         scoreUpdateService.sendItemLost(team)
@@ -69,9 +75,10 @@ class ScoredItemCheck(
 
             // update the score for each modified team
             val scoreBefore = team.score
-            val scoreAfter = state.updateScore(team)
+            val scoreAfter = card.getTeamScore(team)
 
             if (scoreAfter != scoreBefore) {
+                team.score = scoreAfter
                 log.info("[ScoredItemCheck] Updated score for team {}: {}", team.id, scoreAfter)
             }
 
@@ -83,28 +90,31 @@ class ScoredItemCheck(
 
         // check if a team has won the game
         for (team in teams) {
-            val isWinner = state.updateWinner(team)
+            val isWinner = when (val goal = card.options.goal) {
+                is BingoGoal.Items -> team.score.items >= goal.items
+                is BingoGoal.Lines -> team.score.lines >= goal.lines
+            }
 
             if (isWinner && options.isRankedMode && sendUpdates) {
                 // announce that another team has completed their card
                 scoreUpdateService.sendCardCompleted(team)
             }
 
-            if (isWinner && !options.isRankedMode) {
-                // end the game, since a team has won
-                gameService.end(GameEndReason.BINGO)
+            if (isWinner) {
+                // end the card, since a team has won
+                finishCard(team, card)
                 return
             }
         }
 
-        // check if the game is in a stalemate
+        // check if the card is in a stalemate
         if (ScoreService.isLockout(state, card)) {
-            gameService.end(GameEndReason.LOCKOUT)
+            endCard(card, GameEndReason.LOCKOUT)
             return
         }
 
         // check if the leading team has changed, and announce the leader
-        val leadingTeam = ScoreService.getLeading(state)
+        val leadingTeam = ScoreService.getLeading(state, card)
         if (prevLeadingTeam != leadingTeam && options.showLeadingTeam && state.getRegisteredTeams().size > 1 && sendUpdates) {
             // if the leading team should be shown, announce the new leader
             if (leadingTeam != null) {
@@ -117,40 +127,76 @@ class ScoredItemCheck(
         }
     }
 
+    private fun endCard(card: BingoCard, endReason: GameEndReason) {
+        val teams = state.getRegisteredTeams()
+            .filter { it.card == card.id }
+
+        for (team in teams) {
+            finishCard(team, card, endReason)
+        }
+    }
+
+    private fun finishCard(team: BingoTeam, card: BingoCard, endReason: GameEndReason = GameEndReason.BINGO) {
+        val nextCard = state.cards.find { it.id == card.nextCardId }
+            // if in infinite mode, keep creating new cards
+            ?: if (options.isInfiniteMode) {
+                cardService.newCardTail(
+                    card.options.takeIf { it.isValid() }?.copy()
+                        ?: BingoCardOptions()
+                )
+            } else null
+
+        if (options.isRankedMode) {
+            // in ranked mode, the winning team immediately moves onto the next card
+            team.card = nextCard?.id
+        } else if (nextCard == null) {
+            // if we run out of cards (and are not in ranked mode), end the game
+            gameService.end(endReason)
+        } else {
+            // otherwise, move all teams on this card to the next
+            val teams = state.getRegisteredTeams()
+                .filter { it.card == card.id }
+
+            teams.forEach { it.card = nextCard.id }
+        }
+    }
+
     private fun tickCard(card: BingoCard) {
-        // Initialize objectives
-        if (!card.isInitialized) {
-            // No, this isn't a bug...
-            // init() needs to be called multiple times to populate display info on dependent objectives
-            objectiveManager.init(card)
-            objectiveManager.init(card)
-            objectiveManager.init(card)
+        val tickStart = state.updatedAt ?: Instant.DISTANT_PAST
 
-            card.isInitialized = true
-        }
+        // Update all objectives
+        objectiveManager.tick(card)
 
-        if (state.state == GameState.PLAYING) {
-            val tickStart = state.updatedAt ?: Instant.DISTANT_PAST
-
-            // Update all objectives
-            objectiveManager.tick(card)
-
-            updateScores(
-                card = card,
-                tickStart = tickStart,
-                sendUpdates = true,
-            )
-        }
+        updateScores(
+            card = card,
+            tickStart = tickStart,
+            sendUpdates = true,
+        )
     }
 
     init {
         events.onGameTick {
-            val cards = state.getRegisteredTeams()
-                .map { state.getCard(it) }
-                .distinct()
+            for (card in state.cards) {
+                // Initialize objectives
+                if (!card.isInitialized) {
+                    // No, this isn't a bug...
+                    // init() needs to be called multiple times to populate display info on dependent objectives
+                    objectiveManager.init(card)
+                    objectiveManager.init(card)
+                    objectiveManager.init(card)
 
-            for (card in cards) {
-                tickCard(card)
+                    card.isInitialized = true
+                }
+            }
+
+            if (state.state == GameState.PLAYING) {
+                val cards = state.getRegisteredTeams()
+                    .mapNotNull { state.getCard(it) }
+                    .distinct()
+
+                for (card in cards) {
+                    tickCard(card)
+                }
             }
         }
 

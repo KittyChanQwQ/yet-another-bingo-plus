@@ -4,6 +4,7 @@ import me.jfenn.bingo.api.EntityType
 import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.network.ServerPlayerEntity
@@ -15,9 +16,15 @@ fun MenuComponent.registerGameModes(
     position: Vector3d,
     options: BingoOptions,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
+    state: BingoState = koinScope.get(),
     cardService: CardService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
+    val cardOptions by DelegatedProperty(
+        getter = { state.getActiveCard().options },
+        setter = {},
+    )
+
     registerEntity(EntityType.TEXT_DISPLAY) {
         pos = position
         this.value = text.string(StringKey.OptionsGameMode)
@@ -35,7 +42,15 @@ fun MenuComponent.registerGameModes(
             add(text.string(StringKey.OptionsModeLockout).formatted(Formatting.DARK_GREEN))
             add(text.string(StringKey.OptionsModeLockoutTooltip))
         },
-        toggleProp = propertyRef(options::isLockoutMode),
+        toggleProp = DelegatedProperty(
+            getter = {
+                cardOptions.isLockoutMode
+            },
+            setter = {
+                cardOptions.isLockoutMode = it
+                markDirty()
+            }
+        ),
         permissionGetter = permissionGetter,
     )
 
@@ -46,7 +61,15 @@ fun MenuComponent.registerGameModes(
             add(text.string(StringKey.OptionsModeInventory).formatted(Formatting.DARK_GREEN))
             add(text.string(StringKey.OptionsModeInventoryTooltip))
         },
-        toggleProp = propertyRef(options::isInventoryMode),
+        toggleProp = DelegatedProperty(
+            getter = {
+                cardOptions.isInventoryMode
+            },
+            setter = {
+                cardOptions.isInventoryMode = it
+                markDirty()
+            }
+        ),
         permissionGetter = permissionGetter,
     )
 
@@ -68,7 +91,15 @@ fun MenuComponent.registerGameModes(
             add(text.string(StringKey.OptionsModeHiddenItems).formatted(Formatting.DARK_GREEN))
             add(text.string(StringKey.OptionsModeHiddenItemsTooltip))
         },
-        toggleProp = propertyRef(options::isHiddenItemsMode),
+        toggleProp = DelegatedProperty(
+            getter = {
+                cardOptions.isHiddenItemsMode
+            },
+            setter = {
+                cardOptions.isHiddenItemsMode = it
+                markDirty()
+            }
+        ),
         permissionGetter = permissionGetter,
     ) {
         cardService.generateCard()

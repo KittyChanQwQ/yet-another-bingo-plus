@@ -62,11 +62,12 @@ class ScoreboardController(
 
             for (team in activeTeams + null) {
                 val objective = scoreboardService.getScoreboardObjective(team)
+                val teamCard = team?.let { state.getCard(it) } ?: state.getActiveCard()
 
                 val scoreboardText = buildList<Text?> {
                     add(null)
 
-                    options.formatGameMode()
+                    options.formatGameMode(teamCard)
                         .map { textProvider.string(it) }
                         .wrapText(2)
                         .forEachIndexed { index, t ->
@@ -86,7 +87,7 @@ class ScoreboardController(
                             })
                         }
 
-                    textProvider.string(StringKey.ScoreboardGoal, Text.empty().append(options.cardGoal.format(textProvider)).formatted(Formatting.YELLOW))
+                    textProvider.string(StringKey.ScoreboardGoal, state.formatCardGoals(teamCard, textProvider).formatted(Formatting.YELLOW))
                         .also { add(it) }
                     if (options.showRemainingTime && options.timeLimit != null) {
                         textProvider.string(StringKey.ScoreboardTimeLeft, state.formatTimeRemaining(textProvider, normalColor = Formatting.YELLOW))
@@ -112,7 +113,7 @@ class ScoreboardController(
                         add(null)
                     }
 
-                    val leadingTeam = ScoreService.getLeading(state)
+                    val leadingTeam = ScoreService.getLeading(state, teamCard)
                     if (options.showLeadingTeam && isMultipleTeams) {
                         val teamName = leadingTeam?.getName(textProvider, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
                             ?: textProvider.string(StringKey.ScoreboardLeadingTeamTie).formatted(Formatting.WHITE)

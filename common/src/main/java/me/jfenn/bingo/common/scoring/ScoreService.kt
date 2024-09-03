@@ -8,10 +8,10 @@ import me.jfenn.bingo.common.team.BingoTeam
 object ScoreService {
 
     fun isLockout(state: BingoState, card: BingoCard): Boolean {
-        if (!state.options.isLockoutMode) return false
+        if (!card.options.isLockoutMode) return false
         // if we're in inventory mode, then teams can lose tiles...
         // so it shouldn't be possible to get into a stalemate
-        if (state.options.isInventoryMode) return false
+        if (card.options.isInventoryMode) return false
         // if we're in ranked mode, don't end the game from a lockout at all
         if (state.options.isRankedMode) return false
         // if there's only one team, then the game shouldn't end by lockout...
@@ -28,7 +28,7 @@ object ScoreService {
 
         // if the goal is "full card", disregard any stalemate conditions
         // (otherwise the game would end instantly)
-        val cardGoal = card.goal ?: state.options.cardGoal
+        val cardGoal = card.options.goal
         if (cardGoal.isFullCard())
             return false
 
@@ -72,10 +72,10 @@ object ScoreService {
         return isLockout || isGoalImpossible
     }
 
-    fun getLeading(state: BingoState, allowTies: Boolean = false): BingoTeam? {
-        // TODO: needs to account for # of completed cards
+    fun getLeading(state: BingoState, card: BingoCard, allowTies: Boolean = false): BingoTeam? {
+        // TODO: needs to account for # of completed cards (+ GameOverService)
         return getLeadingByLines(state, allowTies)
-            ?.takeIf { state.options.cardGoal is BingoGoal.Lines }
+            ?.takeIf { card.options.goal is BingoGoal.Lines }
             ?: getLeadingByItems(state, allowTies)
     }
 

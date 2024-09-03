@@ -37,6 +37,7 @@ class BingoCardCommand(
     }
 
     private fun IExecutionSource.hasConfigureGame() = hasState(GameState.PREGAME, GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
+    private val IExecutionContext.state get() = scope.get<BingoState>()
     private val IExecutionContext.cardService get() = scope.get<CardService>()
     private val IExecutionContext.cardViewService get() = scope.get<CardViewService>()
 
@@ -78,12 +79,11 @@ class BingoCardCommand(
         sendInfoFeedback(
             Text.empty()
                 .append("Changed the Bingo Card seed to: ")
-                .append(Texts.bracketedCopyable(newCard?.seed.toString()))
+                .append(Texts.bracketedCopyable(newCard.seed.toString()))
         )
     }
 
     private fun IExecutionContext.setItemDist(itemDist: List<Int>) {
-        val state = scope.get<BingoState>()
         val events = scope.get<ScopedEvents>()
         val card = cardViewService.getPlayerCard(player!!)
 
@@ -92,7 +92,7 @@ class BingoCardCommand(
             throw IllegalArgumentException("Item distribution must add up to 25!")
         }
 
-        state.options.itemDistribution = itemDist
+        card.options.itemDistribution = itemDist
         events.onChangeOptions(Unit)
         cardService.generateCard(card)
         sendInfoFeedback(Text.literal("Item distribution changed: $itemDist"))
@@ -154,6 +154,19 @@ class BingoCardCommand(
             literal("reroll") {
                 requires { hasConfigureGame() }
                 executes { rerollCard() }
+            }
+
+            literal("push") {
+                requires { hasConfigureGame() && hasState(GameState.PREGAME) }
+                executes {
+                    val card = state.getActiveCard()
+                    cardService.newCard(card.options)
+                }
+            }
+
+            literal("pop") {
+                requires { hasConfigureGame() && hasState(GameState.PREGAME) }
+                executes { state.popCard() }
             }
         }
     }

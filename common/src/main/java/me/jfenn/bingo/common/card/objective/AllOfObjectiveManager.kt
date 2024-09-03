@@ -84,6 +84,7 @@ class AllOfObjectiveManager(
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
 
             val players = objectiveService.getPlayers(
+                card = card,
                 playersHolding = playersHolding,
                 players = objective.players,
             )
@@ -93,6 +94,7 @@ class AllOfObjectiveManager(
             )
 
             objectiveService.update(
+                card = card,
                 objective = objective,
                 teamsProgress = teamsProgress,
                 playersHolding = playersHolding,

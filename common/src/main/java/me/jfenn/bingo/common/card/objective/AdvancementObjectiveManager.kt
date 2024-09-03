@@ -127,6 +127,7 @@ class AdvancementObjectiveManager(
                 }
 
             val players = objectiveService.getPlayers(
+                card = card,
                 playersHolding = playersHolding,
                 players = objective.players,
                 shouldRetainCaptures = false
@@ -137,6 +138,7 @@ class AdvancementObjectiveManager(
             )
 
             objectiveService.update(
+                card = card,
                 objective = objective,
                 teamsProgress = teamsProgress,
                 playersHolding = playersHolding,

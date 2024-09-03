@@ -127,7 +127,7 @@ class ItemObjectiveManager(
     override fun tick(card: BingoCard) {
         val now = state.updatedAt ?: Instant.DISTANT_PAST
 
-        val lockedTeams = objectiveService.getLockedTeams()
+        val lockedTeams = objectiveService.getLockedTeams(card)
         val lockedTeamKeys = lockedTeams.map { it.key }.toSet()
         val lockedTeamPlayers = lockedTeams.flatMap { it.players }.map { it.uuid }.toSet()
 
@@ -203,6 +203,7 @@ class ItemObjectiveManager(
 
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
             val players = objectiveService.getPlayers(
+                card = card,
                 playersHolding = objective.playersHolding,
                 players = objective.players,
             ).toMutableMap()
@@ -211,6 +212,7 @@ class ItemObjectiveManager(
             ).toMutableSet()
 
             objectiveService.update(
+                card = card,
                 objective = objective,
                 players = players,
                 teams = teams,

@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
@@ -139,6 +140,8 @@ class GameService(
     }
 
     fun end(reason: GameEndReason?) {
+        if (state.endedAt != null) return
+
         state.endReason = reason
         state.endedAt = Clock.System.now()
         state.changeState(events, GameState.POSTGAME)
@@ -151,6 +154,8 @@ class GameService(
     }
 
     private fun broadcastStart() {
+        val firstCard = state.cards.firstOrNull() ?: BingoCard.EMPTY
+
         sequence {
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
 
@@ -160,7 +165,7 @@ class GameService(
                 .also { yield(it) }
 
             Text.literal("  ")
-                .append(text.string(StringKey.ScoreboardMode, options.formatGameMode().map { text.string(it) }.joinText()))
+                .append(text.string(StringKey.ScoreboardMode, options.formatGameMode(firstCard).map { text.string(it) }.joinText()))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
@@ -171,7 +176,7 @@ class GameService(
 
             Text.empty()
                 .append("  ")
-                .append(text.string(StringKey.ScoreboardGoal, options.cardGoal.format(text)))
+                .append(text.string(StringKey.ScoreboardGoal, state.formatCardGoals(firstCard, text)))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 

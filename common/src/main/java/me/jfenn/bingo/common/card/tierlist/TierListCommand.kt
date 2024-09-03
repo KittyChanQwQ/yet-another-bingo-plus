@@ -6,8 +6,8 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
@@ -22,31 +22,33 @@ class TierListCommand(
 ) : BingoComponent() {
 
     private fun IExecutionContext.toggleTierList(listName: String) {
-        val options = scope.get<BingoOptions>()
+        val cardViewService = scope.get<CardViewService>()
+        val card = cardViewService.getPlayerCard(player!!)
         when {
-            options.tierLists.contains(listName) -> setTierList(listName, null)
+            card.options.tierLists.contains(listName) -> setTierList(listName, null)
             else -> setTierList(listName, 1)
         }
     }
 
     private fun IExecutionContext.setTierList(listName: String, weight: Int?) {
-        val options = scope.get<BingoOptions>()
         val events = scope.get<ScopedEvents>()
         val cardService = scope.get<CardService>()
         val tierListService = scope.get<TierListService>()
+        val cardViewService = scope.get<CardViewService>()
+        val card = cardViewService.getPlayerCard(player!!)
 
-        val isEnabled = options.tierLists.contains(listName)
+        val isEnabled = card.options.tierLists.contains(listName)
         if (!isEnabled && !tierListState.tierLists.keys.contains(listName)) {
             throw IllegalArgumentException("Tier list '${listName}' is not available.")
         }
 
-        if (weight == null && options.tierLists.size <= 1) {
+        if (weight == null && card.options.tierLists.size <= 1) {
             throw IllegalArgumentException("Tier lists setting must not be empty!")
         }
 
         when {
-            weight != null -> options.tierLists += (listName to weight)
-            else -> options.tierLists -= listName
+            weight != null -> card.options.tierLists += (listName to weight)
+            else -> card.options.tierLists -= listName
         }
 
         events.onChangeOptions(Unit)
@@ -54,7 +56,7 @@ class TierListCommand(
         Text.literal("ℹ  ")
             .append(textProvider.string(StringKey.OptionsTierList))
             .append(": ")
-            .append(tierListService.formatTierLists(options))
+            .append(tierListService.formatTierLists(card.options))
             .formatted(Formatting.AQUA)
             .also { sendFeedback(it) }
     }

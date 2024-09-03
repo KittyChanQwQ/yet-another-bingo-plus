@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.card.tierlist
 import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.MOD_ID
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.common.utils.jsonUnpretty
@@ -23,7 +23,7 @@ class TierListService(
         return listName ?: Text.translatableWithFallback("$MOD_ID.tierlist.$key", key.formatTitle())
     }
 
-    fun formatTierLists(options: BingoOptions) : MutableText {
+    fun formatTierLists(options: BingoCardOptions) : MutableText {
         val lists = options.tierLists
             .mapNotNull { (name, weight) ->
                 val list = tierListState.tierLists[name] ?: return@mapNotNull null

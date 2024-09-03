@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.stats
 
 import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
@@ -63,8 +62,6 @@ class StatsCommand(
     }
 
     private fun IExecutionContext.clearPlayerStats(playerToReset: IPlayerHandle) {
-        val playerManager = scope.get<IPlayerManager>()
-
         statsService.resetPlayerStats(playerToReset.uuid)
 
         text.string(StringKey.CommandStatsResetPlayer, playerToReset.name)

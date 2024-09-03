@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IStatHandle
@@ -140,6 +139,7 @@ class StatsObjectiveManager(
                 }
 
             val players = objectiveService.getPlayers(
+                card = card,
                 playersHolding = playersHolding,
                 players = objective.players,
                 shouldRetainCaptures = false,
@@ -150,6 +150,7 @@ class StatsObjectiveManager(
             )
 
             objectiveService.update(
+                card = card,
                 objective = objective,
                 teamsProgress = teamsProgress,
                 playersHolding = playersHolding,

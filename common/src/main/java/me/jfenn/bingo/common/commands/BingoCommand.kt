@@ -6,7 +6,9 @@ import me.jfenn.bingo.common.URL_WIKI
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.card.tierlist.TierListService
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.BINGO_VERSION
@@ -21,8 +23,11 @@ class BingoCommand(
     private val text: TextProvider,
 ) : BingoComponent() {
     private fun IExecutionContext.getOptionsText(): List<Text> = buildList {
+        val state = scope.get<BingoState>()
         val options = scope.get<BingoOptions>()
         val tierListService = scope.get<TierListService>()
+        val cardViewService = scope.get<CardViewService>()
+        val card = cardViewService.getPlayerCard(player!!)
 
         add(Text.empty())
 
@@ -37,7 +42,7 @@ class BingoCommand(
 
         text.string(
             StringKey.ScoreboardMode,
-            options.formatGameMode()
+            options.formatGameMode(card)
                 .map { text.string(it) }
                 .joinText()
                 .formatted(Formatting.YELLOW)
@@ -60,7 +65,7 @@ class BingoCommand(
 
         text.string(StringKey.OptionsGoal)
             .append(": ")
-            .append(options.cardGoal.format(text).formatted(Formatting.YELLOW))
+            .append(state.formatCardGoals(card, text).formatted(Formatting.YELLOW))
             .formatted(Formatting.GRAY)
             .also {
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo goal"))
@@ -88,7 +93,7 @@ class BingoCommand(
             .append(
                 TierLabel.entries
                     .mapIndexed { index, label ->
-                        Text.literal(options.itemDistribution[index].toString())
+                        Text.literal(card.options.itemDistribution[index].toString())
                             .formatted(label.formatting)
                     }
                     .joinText(Text.literal(" "))
@@ -101,7 +106,7 @@ class BingoCommand(
 
         text.string(StringKey.OptionsTierList)
             .append(": ")
-            .append(tierListService.formatTierLists(options).formatted(Formatting.YELLOW))
+            .append(tierListService.formatTierLists(card.options).formatted(Formatting.YELLOW))
             .formatted(Formatting.GRAY)
             .also {
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo tierlist"))

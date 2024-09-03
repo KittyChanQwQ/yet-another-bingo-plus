@@ -27,7 +27,17 @@ fun MenuComponent.registerMenuPage(
 ) {
     var page = 0
 
-    val itemDistributionProp = propertyRef(options::itemDistribution)
+    val itemDistributionProp = DelegatedProperty(
+        getter = {
+            state.getActiveCard().options.itemDistribution
+        },
+        setter = {
+            val card = state.getActiveCard()
+            card.options.itemDistribution = it
+            cardService.generateCard(card)
+            markDirty()
+        }
+    )
     val permissionGetter = { player: ServerPlayerEntity ->
         permissionsIntegration.hasPermission(player, Permission.CONFIGURE_GAME)
     }
@@ -46,7 +56,6 @@ fun MenuComponent.registerMenuPage(
             )
             registerGoal(
                 position = position + Vector3d(0.6, 0.0, 0.0),
-                options = options,
                 permissionGetter = permissionGetter,
             )
             registerTimer(

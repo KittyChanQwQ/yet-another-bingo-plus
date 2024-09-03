@@ -120,15 +120,16 @@ class CardViewService(
         team: BingoTeam?,
         entry: BingoCardEntry,
         objective: BingoObjective,
+        card: BingoCard,
     ) : CardTile {
         val isFreeSpace = objective is BingoObjective.FreeSpace
-        val isHidden = options.isHiddenItemsMode && (team == null || !objective.hasSeen(team.key)) && !isFreeSpace
-        val isLocked = options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key)
+        val isHidden = card.options.isHiddenItemsMode && (team == null || !objective.hasSeen(team.key)) && !isFreeSpace
+        val isLocked = card.options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key)
         val isAchieved = team != null && objective.hasAchieved(team.key)
 
         return CardTile(
             item = if (isHidden) null else entry.display.item,
-            itemTier = entry.tier.takeIf { !options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
+            itemTier = entry.tier.takeIf { !card.options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
             image = if (isHidden) null else entry.display.image,
             name = entry.display.name.takeIf { !isHidden },
             lore = entry.display.lore.takeIf { !isHidden } ?: emptyList(),
@@ -162,7 +163,7 @@ class CardViewService(
             tiles = card.entries
                 .map { entry ->
                     val goal = card.objectives[entry.objectiveId]
-                    goal?.let { getTileState(team, entry, it) }
+                    goal?.let { getTileState(team, entry, it, card) }
                         ?: CardTile.EMPTY
                 }
                 .toMutableList(),

@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.tierlist.TierListService
 import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
@@ -18,6 +19,7 @@ fun MenuComponent.registerTierLists(
     position: Vector3d,
     options: BingoOptions,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
+    state: BingoState = koinScope.get(),
     cardService: CardService = koinScope.get(),
     text: TextProvider = koinScope.get(),
     tierLists: TierListState = koinScope.get(),
@@ -36,7 +38,8 @@ fun MenuComponent.registerTierLists(
     val pages = tierLists.tierLists.keys.chunked(4)
 
     // Update options.tierList/tierListPage to ensure that there is a tier list selected
-    options.tierListPage = pages.indexOfFirst { it.contains(options.tierLists.keys.firstOrNull()) }
+    options.tierListPage = pages
+        .indexOfFirst { it.contains(state.getActiveCard().options.tierLists.keys.firstOrNull()) }
         .takeIf { it != -1 }
         ?: 0
 
@@ -44,12 +47,13 @@ fun MenuComponent.registerTierLists(
 
     for (i in 0..3) {
         val toggleProp = DelegatedProperty(
-            getter = { options.tierLists.contains(pages[page].getOrNull(i)) },
+            getter = { state.getActiveCard().options.tierLists.contains(pages[page].getOrNull(i)) },
             setter = { isEnabled ->
                 val list = pages[page].getOrNull(i) ?: return@DelegatedProperty
+                val cardOptions = state.getActiveCard().options
                 when {
-                    isEnabled -> options.tierLists += (list to 1)
-                    options.tierLists.size > 1 -> options.tierLists -= list
+                    isEnabled -> cardOptions.tierLists += (list to 1)
+                    cardOptions.tierLists.size > 1 -> cardOptions.tierLists -= list
                 }
             }
         )
@@ -77,10 +81,10 @@ fun MenuComponent.registerTierLists(
             textProp = computedProperty {
                 Text.literal(
                     pages.indices
-                        .joinToString(" ") {
-                            val hasSelected = pages[it].any { options.tierLists.containsKey(it) }
+                        .joinToString(" ") { index ->
+                            val hasSelected = pages[index].any { state.getActiveCard().options.tierLists.containsKey(it) }
                             when {
-                                page == it -> if (hasSelected) "■" else "□"
+                                page == index -> if (hasSelected) "■" else "□"
                                 else -> if (hasSelected) "◆" else "◇"
                             }
                         }

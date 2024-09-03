@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.ElytraService
 import me.jfenn.bingo.common.spawn.PlayerController
@@ -26,8 +27,9 @@ class BingoOptionsCommands(
     private fun IExecutionSource.hasConfigureGame() = hasState(GameState.PREGAME, GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
 
     private fun IExecutionContext.setGoal(goal: BingoGoal) {
-        val state = scope.get<BingoState>()
-        state.options.cardGoal = goal
+        val cardViewService = scope.get<CardViewService>()
+        val card = cardViewService.getPlayerCard(player!!)
+        card.options.goal = goal
 
         val events = scope.get<ScopedEvents>()
         events.onChangeOptions(Unit)

@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.scoring
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.PlayerSoundCategory
 import me.jfenn.bingo.api.PlayerSoundEvent
+import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
@@ -42,6 +43,7 @@ class ScoreUpdateService(
         scoredPlayer: BingoPlayerProfile?,
         team: BingoTeam,
         objective: BingoObjective,
+        card: BingoCard,
     ) {
         val item = objective.display.item
 
@@ -101,7 +103,7 @@ class ScoreUpdateService(
 
             val isOnTeam = team.includesPlayer(player.player)
             // if playing in hidden items mode, don't reveal the item to the other teams!
-            val isItemHidden = options.isHiddenItemsMode && !isOnTeam
+            val isItemHidden = card.options.isHiddenItemsMode && !isOnTeam
             val itemText = Texts.bracketed(
                 when {
                     isItemHidden -> Text.literal("*****").formatted(Formatting.OBFUSCATED)

@@ -87,6 +87,7 @@ class InverseObjectiveManager(
             val teams = objective.playersHolding.map { it.value.team }.toMutableSet()
 
             objectiveService.update(
+                card = card,
                 objective = objective,
                 playersHolding = playersHolding,
                 players = players,

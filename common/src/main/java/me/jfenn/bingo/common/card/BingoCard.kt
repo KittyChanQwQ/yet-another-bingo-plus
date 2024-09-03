@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.card
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.card.objective.BingoObjective
-import me.jfenn.bingo.common.config.BingoGoal
+import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.UuidAsString
@@ -13,10 +13,11 @@ import kotlin.random.Random
 @Serializable
 class BingoCard(
     val id: UuidAsString = UUID.randomUUID(),
+    var nextCardId: UuidAsString? = null,
     val seed: Long = Random.nextLong(),
     val entries: List<BingoCardEntry>,
     val objectives: Map<String, BingoObjective>,
-    var goal: BingoGoal? = null
+    val options: BingoCardOptions,
 ) {
 
     init {
@@ -122,6 +123,7 @@ class BingoCard(
         val EMPTY get() = BingoCard(
             entries = List(25) { BingoCardEntry(FREE_SPACE.id, null, null) },
             objectives = mapOf(FREE_SPACE.id to FREE_SPACE),
+            options = BingoCardOptions(),
         )
     }
 

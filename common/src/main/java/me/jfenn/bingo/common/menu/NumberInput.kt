@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.api.EntityType
 import me.jfenn.bingo.api.ITextDisplayEntity
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
@@ -17,7 +16,6 @@ fun MenuComponent.registerNumberInput(
     step: Int = 1,
     format: (Int) -> Text = { Text.literal(it.toString()) },
     permissionGetter: (ServerPlayerEntity) -> Boolean,
-    text: TextProvider = koinScope.get(),
 ) {
     var value by valueProp
     val minValue by minValueProp

@@ -135,6 +135,7 @@ class ScoreboardObjectiveManager(
                 }
 
             val players = objectiveService.getPlayers(
+                card = card,
                 playersHolding = playersHolding,
                 players = objective.players,
                 shouldRetainCaptures = false,
@@ -145,6 +146,7 @@ class ScoreboardObjectiveManager(
             )
 
             objectiveService.update(
+                card = card,
                 objective = objective,
                 teamsProgress = teamsProgress,
                 playersHolding = playersHolding,

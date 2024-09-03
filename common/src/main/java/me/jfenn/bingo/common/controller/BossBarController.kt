@@ -2,11 +2,14 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -31,9 +34,9 @@ class BossBarController(
     private val textProvider: TextProvider,
 ) : BingoComponent() {
 
-    private val bossbarId = Identifier.of("fennifith", "bingo")
+    private fun createBossbar(team: BingoTeam?): CommandBossBar {
+        val bossbarId = Identifier.of(MOD_ID_BINGO, team?.id ?: "preview")
 
-    private fun getBossbar(): CommandBossBar {
         // if the boss bar already exists, recreate it
         server.bossBarManager.get(bossbarId)
             ?.also { server.bossBarManager.remove(it) }
@@ -47,13 +50,20 @@ class BossBarController(
             }
     }
 
-    private val bossBar by lazy { getBossbar() }
+    private val bossBars = mutableMapOf<BingoTeamKey?, CommandBossBar>()
+
+    private fun getBossbar(team: BingoTeam?) = bossBars.getOrPut(team?.key) { createBossbar(team) }
 
     private fun updateBossBar(player: IPlayerHandle) {
         val settings = playerSettingsService.getPlayer(player)
-        if (settings.bossbar && (state.isLobbyMode || teamService.isPlaying(player.player)))
-            bossBar.addPlayer(player.player)
-        else bossBar.removePlayer(player.player)
+        val team = teamService.getPlayerTeam(player)
+
+        for ((teamKey, bossBar) in bossBars) {
+            val shouldIncludePlayer = state.isLobbyMode || team != null
+            if (settings.bossbar && teamKey == team?.key && shouldIncludePlayer)
+                bossBar.addPlayer(player.player)
+            else bossBar.removePlayer(player.player)
+        }
     }
 
     init {
@@ -64,20 +74,25 @@ class BossBarController(
             for (player in playerManager.getPlayers())
                 updateBossBar(player)
 
-            if (options.showRemainingTime) {
-                val timeLimit = options.timeLimit
-                val duration = state.ingameDuration()
-                if (timeLimit != null && duration != null) {
-                    bossBar.value = ((1f - (duration.inWholeSeconds / timeLimit.inWholeSeconds.toFloat())) * bossBar.maxValue).toInt()
-                }
-            }
+            for (team in state.getRegisteredTeams() + null) {
+                val bossBar = getBossbar(team)
 
-            val goalText = Text.empty().append(options.cardGoal.format(textProvider)).formatted(Formatting.BOLD)
-            bossBar.name = when {
-                options.showRemainingTime -> {
-                    textProvider.string(StringKey.BossbarTimeRemainingOrGoal, state.formatTimeRemaining(textProvider).formatted(Formatting.BOLD), goalText)
+                if (options.showRemainingTime) {
+                    val timeLimit = options.timeLimit
+                    val duration = state.ingameDuration()
+                    if (timeLimit != null && duration != null) {
+                        bossBar.value = ((1f - (duration.inWholeSeconds / timeLimit.inWholeSeconds.toFloat())) * bossBar.maxValue).toInt()
+                    }
                 }
-                else -> goalText
+
+                val card = team?.let { state.getCard(it) } ?: state.getActiveCard()
+                val goalText = state.formatCardGoals(card, textProvider).formatted(Formatting.BOLD)
+                bossBar.name = when {
+                    options.showRemainingTime -> {
+                        textProvider.string(StringKey.BossbarTimeRemainingOrGoal, state.formatTimeRemaining(textProvider).formatted(Formatting.BOLD), goalText)
+                    }
+                    else -> goalText
+                }
             }
         }
     }

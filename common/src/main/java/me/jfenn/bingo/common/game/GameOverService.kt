@@ -64,8 +64,9 @@ class GameOverService(
                     ?: winningTeam?.let { winner ->
                         textProvider.string(StringKey.GameEndCompletedCard, winner.getName(textProvider, playerName = true))
                     }
+                    // TODO: needs to account for # of completed cards (+ ScoreService)
                     ?: ScoreService.getLeadingByLines(state)
-                        ?.takeIf { state.options.cardGoal is BingoGoal.Lines }
+                        ?.takeIf { state.cards.last().options.goal is BingoGoal.Lines }
                         ?.let { leader ->
                             textProvider.string(StringKey.GameEndWonWithMoreLines, leader.getName(textProvider, playerName = true))
                         }

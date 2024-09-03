@@ -60,7 +60,6 @@ class TeamService(
     fun joinTeam(player: ServerPlayerEntity, teamTemplate: BingoTeam) {
         if (getPlayerTeam(player)?.key == teamTemplate.key) return
         val team = state.registerTeam(teamTemplate)
-        team.card = state.cards.firstOrNull()?.id
         val playerProfile = BingoPlayerProfile.fromPlayer(playerManager.forPlayer(player))
 
         // Remove player from their existing team
@@ -71,8 +70,10 @@ class TeamService(
             if (!oldTeam.isWinner()) {
                 // Remove any of the player's held/scored items from the card
                 val card = state.getCard(oldTeam)
-                for (objective in card.objectives.values) {
-                    objective.removePlayer(playerProfile.uuid)
+                if (card != null) {
+                    for (objective in card.objectives.values) {
+                        objective.removePlayer(playerProfile.uuid)
+                    }
                 }
             }
         }

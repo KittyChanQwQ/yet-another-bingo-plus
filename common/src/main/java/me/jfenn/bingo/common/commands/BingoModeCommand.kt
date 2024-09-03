@@ -3,8 +3,11 @@ package me.jfenn.bingo.common.commands
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.card.BingoCard
+import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
@@ -16,6 +19,23 @@ class BingoModeCommand(
     commandManager: ICommandManager,
     private val text: TextProvider,
 ) {
+    private fun IExecutionContext.sendModeFeedback(
+        card: BingoCard = scope.get<CardViewService>().getPlayerCard(player!!)
+    ) {
+        val options = scope.get<BingoOptions>()
+
+        sendInfoFeedback(
+            Text.empty()
+                .append(text.string(StringKey.OptionsGameMode))
+                .append(": ")
+                .append(
+                    options.formatGameMode(card)
+                        .map { text.string(it) }
+                        .joinText()
+                )
+        )
+    }
+
     private fun IExecutionContext.toggleMode(
         prop: KMutableProperty1<BingoOptions, Boolean>,
         value: Boolean? = null,
@@ -27,16 +47,23 @@ class BingoModeCommand(
         val events = scope.get<ScopedEvents>()
         events.onChangeOptions(Unit)
 
-        sendInfoFeedback(
-            Text.empty()
-                .append(text.string(StringKey.OptionsGameMode))
-                .append(": ")
-                .append(
-                    options.formatGameMode()
-                        .map { text.string(it) }
-                        .joinText()
-                )
-        )
+        sendModeFeedback()
+    }
+
+    private fun IExecutionContext.toggleCardMode(
+        prop: KMutableProperty1<BingoCardOptions, Boolean>,
+        value: Boolean? = null,
+    ) {
+        val cardViewService = scope.get<CardViewService>()
+        val card = cardViewService.getPlayerCard(player!!)
+
+        val newValue = value ?: (!prop.get(card.options))
+        prop.set(card.options, newValue)
+
+        val events = scope.get<ScopedEvents>()
+        events.onChangeOptions(Unit)
+
+        sendModeFeedback(card)
     }
 
     init {
@@ -46,13 +73,13 @@ class BingoModeCommand(
                     hasState(GameState.PREGAME, GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
                 }
                 literal("lockout") {
-                    executes { toggleMode(BingoOptions::isLockoutMode) }
+                    executes { toggleCardMode(BingoCardOptions::isLockoutMode) }
                 }
                 literal("inventory") {
-                    executes { toggleMode(BingoOptions::isInventoryMode) }
+                    executes { toggleCardMode(BingoCardOptions::isInventoryMode) }
                 }
                 literal("hidden_items") {
-                    executes { toggleMode(BingoOptions::isHiddenItemsMode) }
+                    executes { toggleCardMode(BingoCardOptions::isHiddenItemsMode) }
                 }
             }
         }

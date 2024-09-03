@@ -65,6 +65,7 @@ class OpponentObjectiveManager(
                 }
 
             objectiveService.update(
+                card = card,
                 objective = objective,
                 teams = teams
             )
