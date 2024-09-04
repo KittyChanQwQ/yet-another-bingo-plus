@@ -67,7 +67,7 @@ class MapItemService(
 
     fun createMementoMapItem(team: BingoTeam): IItemStack {
         val teamMap = teamService.getTeamMap(team)
-        val gameInfo = gameOverService.getGameInfo()
+        val gameInfo = state.gameOverInfo ?: return itemStackFactory.emptyStack
 
         val item = itemStackFactory.createFilledMap().apply {
             mapId = teamMap.mapId
@@ -84,8 +84,8 @@ class MapItemService(
                         .copy()
                         .styled { it.withItalic(false) },
                     Text.empty(),
-                    gameInfo.title.copy().formatted(Formatting.WHITE),
-                    gameInfo.message,
+                    gameOverService.getTitle(gameInfo).copy().formatted(Formatting.WHITE),
+                    gameOverService.getMessage(gameInfo),
                     Text.literal(state.ingameDuration()?.formatString() ?: ""),
                     Text.literal(state.startedAt?.format(timeFormat) ?: "")
                 ),

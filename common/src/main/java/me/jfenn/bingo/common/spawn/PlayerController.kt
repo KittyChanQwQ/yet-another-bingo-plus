@@ -55,7 +55,8 @@ class PlayerController(
             return
         }
 
-        val isOnTeam = teamService.isPlaying(player.player)
+        val team = teamService.getPlayerTeam(player.player)
+        val isOnActiveTeam = team != null && !team.isWinner()
         log.debug("updateGameMode({}}, forceReset=$forceReset)", player.uuid)
 
         val gameMode = when (state.state) {
@@ -66,7 +67,7 @@ class PlayerController(
             GameState.LOADING,
             GameState.COUNTDOWN,
             GameState.PLAYING -> when {
-                isOnTeam -> when (state.state) {
+                isOnActiveTeam -> when (state.state) {
                     GameState.PLAYING -> GameMode.SURVIVAL
                     else -> GameMode.ADVENTURE
                 }
@@ -86,7 +87,7 @@ class PlayerController(
         ) {
             // This indicates that a player is starting the game, or has logged back on after a game has started
             // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
-            val shouldRespawnPlayer = state.state == GameState.PREGAME || state.state == GameState.LOADING || isOnTeam
+            val shouldRespawnPlayer = state.state == GameState.PREGAME || state.state == GameState.LOADING || isOnActiveTeam
             if (shouldRespawnPlayer && state.state != GameState.POSTGAME) {
                 respawnPlayer(player)
             }
@@ -95,7 +96,7 @@ class PlayerController(
         }
 
         // if the player is not on a team, they should be vanished
-        val isVanished = !isOnTeam && (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN || state.state == GameState.PLAYING)
+        val isVanished = !isOnActiveTeam && (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN || state.state == GameState.PLAYING)
         vanishIntegration.setVanish(player.player, isVanished)
 
         // allow players in adventure mode to fly

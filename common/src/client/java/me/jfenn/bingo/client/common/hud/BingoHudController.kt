@@ -98,7 +98,9 @@ class BingoHudController(
             cardScale = cardScale,
             // if the client can only see one card, enable team outlines
             // inverse: if the client can see every card, we don't need to show the outlines
-            showTeamOutlines = !config.client.showMultipleCards || state.display?.display?.size?.let { it <= 1 } == true,
+            showTeamOutlines = config.client.cardTeamOutlines && (
+                !config.client.showMultipleCards || state.display?.display?.size?.let { it <= 1 } == true
+            ),
         )
 
         itemScoredRenderer.drawMessages(
@@ -129,7 +131,8 @@ class BingoHudController(
                     x = cardX.toInt(),
                     y = y.toInt(),
                     z = config.client.cardOverlap.z,
-                    cardScale =  cardScale
+                    cardScale =  cardScale,
+                    showTeamOutlines = false
                 )
             }
         }

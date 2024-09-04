@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoCardOptions
-import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.utils.UuidAsString
 import java.util.*
 import kotlin.random.Random
@@ -115,6 +115,7 @@ class BingoCard(
         return TeamScore(
             items = countItems(team),
             lines = countLines(team),
+            cards = team.countCards(),
         )
     }
 

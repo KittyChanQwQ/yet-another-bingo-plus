@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.controller.GameRuleController
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
@@ -29,8 +30,12 @@ fun MenuComponent.registerFeatures(
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0, Vector3d()),
-        text = text.string(StringKey.OptionsUnlockRecipes),
-        toggleProp = propertyRef(options::isUnlockRecipes),
+        text = text.string(StringKey.OptionsPreviewCard),
+        tooltip = buildList {
+            add(text.string(StringKey.OptionsPreviewCard).formatted(Formatting.GREEN))
+            add(text.string(StringKey.OptionsPreviewCardTooltip))
+        },
+        toggleProp = propertyRef(options::showPreviewCard),
         permissionGetter = permissionGetter,
     )
 

@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.BINGO_VERSION
@@ -27,6 +28,7 @@ class BingoCommand(
         val options = scope.get<BingoOptions>()
         val tierListService = scope.get<TierListService>()
         val cardViewService = scope.get<CardViewService>()
+        val team = scope.get<TeamService>().getPlayerTeam(player!!)
         val card = cardViewService.getPlayerCard(player!!)
 
         add(Text.empty())
@@ -65,7 +67,7 @@ class BingoCommand(
 
         text.string(StringKey.OptionsGoal)
             .append(": ")
-            .append(state.formatCardGoals(card, text).formatted(Formatting.YELLOW))
+            .append(state.formatCardGoals(team, text).formatted(Formatting.YELLOW))
             .formatted(Formatting.GRAY)
             .also {
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo goal"))

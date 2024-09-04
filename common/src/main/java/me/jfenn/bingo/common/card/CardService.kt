@@ -34,24 +34,7 @@ class CardService(
 ) {
     init {
         validateLists()
-
-        if (state.cards.isEmpty()) {
-            log.info("[CardService] Generating initial cards from config.json")
-
-            val cardOptionsList = options.cards
-                .takeIf { it.isNotEmpty() && options.isValid() }
-                ?: listOf(BingoCardOptions())
-
-            // Note: cardOptionsList is reversed, since newCard adds to the front of the cards
-            // (same as /bingo card push)
-            for (cardOptions in cardOptionsList.reversed()) {
-                try {
-                    newCard(cardOptions)
-                } catch (e: Throwable) {
-                    log.info("[CardService] Cannot create card from config:", e)
-                }
-            }
-        }
+        createInitialCards()
     }
 
     private fun validateLists() {
@@ -73,6 +56,26 @@ class CardService(
                 log.error("[CardService] Tier list $name.tierlist.json contains unsupported group entries!")
                 log.error("  If this is a built-in list, deleting it from your config folder will allow the mod to recreate it.")
                 log.error("  If this is a custom list you've created, you'll need to convert it to a datapack to use 'one_of' objectives: https://minecraft.horrific.dev/bingo/custom-objectives")
+            }
+        }
+    }
+
+    fun createInitialCards() {
+        if (state.cards.isNotEmpty()) return
+
+        log.info("[CardService] Generating initial cards from config.json")
+
+        val cardOptionsList = options.cards
+            .takeIf { it.isNotEmpty() && options.isValid() }
+            ?: listOf(BingoCardOptions())
+
+        // Note: cardOptionsList is reversed, since newCard adds to the front of the cards
+        // (same as /bingo card push)
+        for (cardOptions in cardOptionsList.reversed()) {
+            try {
+                newCard(cardOptions)
+            } catch (e: Throwable) {
+                log.info("[CardService] Cannot create card from config:", e)
             }
         }
     }
@@ -133,7 +136,7 @@ class CardService(
         val newCard = generate(
             id = UUID.randomUUID(),
             seed = Random.nextLong(),
-            cardOptions = cardOptions,
+            cardOptions = cardOptions.copy(),
         )
 
         state.pushCard(newCard)

@@ -132,6 +132,21 @@ class BingoCardCommand(
                         executes { setCardSeed(getArgument(seedArg)) }
                     }
                 }
+
+                literal("stack") {
+                    literal("push") {
+                        requires { hasConfigureGame() && hasState(GameState.PREGAME) }
+                        executes {
+                            val card = state.getActiveCard()
+                            cardService.newCard(card.options)
+                        }
+                    }
+
+                    literal("pop") {
+                        requires { hasConfigureGame() && hasState(GameState.PREGAME) }
+                        executes { state.popCard() }
+                    }
+                }
             }
 
             literal("itemdist") {
@@ -154,19 +169,6 @@ class BingoCardCommand(
             literal("reroll") {
                 requires { hasConfigureGame() }
                 executes { rerollCard() }
-            }
-
-            literal("push") {
-                requires { hasConfigureGame() && hasState(GameState.PREGAME) }
-                executes {
-                    val card = state.getActiveCard()
-                    cardService.newCard(card.options)
-                }
-            }
-
-            literal("pop") {
-                requires { hasConfigureGame() && hasState(GameState.PREGAME) }
-                executes { state.popCard() }
             }
         }
     }

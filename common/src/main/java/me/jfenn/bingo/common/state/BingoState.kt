@@ -5,10 +5,11 @@ import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.game.GameEndReason
+import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -39,7 +40,7 @@ data class BingoState(
     var previewMap: BingoMap? = null,
     // This is a temporary list that should be overwritten by `CardService.generate()`
     val cards: MutableList<BingoCard> = mutableListOf(),
-    var endReason: GameEndReason? = null,
+    var gameOverInfo: GameOverService.GameOverInfo? = null,
     // Stores a set of recently-joined player UUIDs for [PlayerController]
     val playersJoinedIds: MutableSet<UuidAsString> = mutableSetOf(),
     // Stores if the game was ended manually (with "/bingo end")
@@ -52,9 +53,15 @@ data class BingoState(
     }
 
     fun pushCard(card: BingoCard) {
-        card.nextCardId = cards.firstOrNull()?.id
+        val nextCard = cards.firstOrNull()
+        card.nextCardId = nextCard?.id
         cards.add(0, card)
         options.cards = cards.map { it.options }
+
+        for (team in teams.values) {
+            if (team.cardId == nextCard?.id)
+                team.cardId = card.id
+        }
     }
 
     fun pushCardTail(card: BingoCard) {
@@ -65,8 +72,16 @@ data class BingoState(
     }
 
     fun popCard() {
-        cards.removeFirst()
+        if (cards.size == 1) return
+
+        val removedCard = cards.removeFirst()
         options.cards = cards.map { it.options }
+
+        val firstCard = cards.first()
+        for (team in teams.values) {
+            if (team.cardId == removedCard.id)
+                team.cardId = firstCard.id
+        }
     }
 
     fun replaceCard(card: BingoCard) {
@@ -79,18 +94,7 @@ data class BingoState(
     }
 
     fun getCard(team: BingoTeam): BingoCard? {
-        return team.card?.let { cardId -> cards.find { it.id == cardId } }
-    }
-
-    fun getOrAssignCard(team: BingoTeam): BingoCard {
-        val card = team.card?.let { cardId -> cards.find { it.id == cardId } }
-        return if (card == null) {
-            val firstCard = cards.first()
-            team.card = firstCard.id
-            firstCard
-        } else {
-            card
-        }
+        return team.cardId?.let { cardId -> cards.find { it.id == cardId } }
     }
 
     /**
@@ -105,7 +109,7 @@ data class BingoState(
     }
 
     fun registerTeam(team: BingoTeam): BingoTeam {
-        return teams.getOrPut(team.key) { team.copy() }
+        return teams.getOrPut(team.key) { team.copy(cardId = cards.first().id) }
     }
 
     fun getPreviewMap(mapService: IMapService): BingoMap {
@@ -155,12 +159,17 @@ data class BingoState(
             .formatted(if (secondsRemaining.inWholeSeconds <= 30 && secondsRemaining.inWholeSeconds % 2 == 0L) { alertColor } else { normalColor })
     }
 
-    fun formatCardGoals(card: BingoCard, text: TextProvider): MutableText {
-        val index = cards.indexOf(card)
-        val remainingCards = cards.size - 1 - index
+    fun formatCardGoals(team: BingoTeam?, text: TextProvider): MutableText {
+        val card = cards.find { it.id == team?.cardId } ?: cards.first()
+        val remainingCards = (options.winCondition as? BingoWinCondition.Cards)
+            ?.cards
+            ?.minus(1)
+            ?.minus(team?.countCards() ?: 0)
+            ?.takeIf { it > 0 }
+
         return card.options.goal.format(text)
             .also {
-                if (remainingCards > 0)
+                if (remainingCards != null)
                     it.append(Text.literal(" +$remainingCards").formatted(Formatting.BOLD))
             }
     }
@@ -179,10 +188,9 @@ data class BingoState(
         timeOffline = Duration.ZERO
         teams.clear()
         // previewMap we don't clear, as it can be reused...
-        // [BingoMapController] calls generateCard when entering PREGAME, so this card should be immediately replaced
+        // [ScoredItemCheck] calls createInitialCards when entering PREGAME, so this card should be immediately replaced
         cards.clear()
-        cards.add(BingoCard.EMPTY)
-        endReason = null
+        gameOverInfo = null
         isForfeit = false
     }
 

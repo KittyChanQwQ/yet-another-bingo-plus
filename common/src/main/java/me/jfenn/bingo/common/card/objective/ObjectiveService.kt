@@ -32,7 +32,7 @@ class ObjectiveService(
 
     // "locked teams" currently prevents team cards from changing after the team has completed the card
     // TODO: completed card states should be saved as a CardView instead, and objective states should only include teams actively using the card
-    fun getLockedTeams(card: BingoCard) = state.getRegisteredTeams().filter { it.card != card.id || it.isWinner() }
+    fun getLockedTeams(card: BingoCard) = state.getRegisteredTeams().filter { it.cardId != card.id || it.isWinner() }
 
     /**
      * Updates components of the objective state, but ensures that

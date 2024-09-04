@@ -97,11 +97,14 @@ class CardViewService(
     fun isViewingTeamCard(player: IPlayerHandle, team: BingoTeam)
         = (state.state == GameState.PLAYING || options.showPreviewCard) && team.includesPlayer(player)
 
-    fun isViewingSpectatorCards(player: IPlayerHandle) = when (state.state) {
-        // if the state is not POSTGAME, players must have permission to receive the spectator cards
-        GameState.PLAYING -> !teamService.isPlaying(player) && permissions.hasPermission(player, Permission.SPECTATOR_VIEW_CARDS)
-        GameState.POSTGAME -> true
-        else -> false
+    fun isViewingSpectatorCards(player: IPlayerHandle): Boolean {
+        val team = teamService.getPlayerTeam(player)
+        return when (state.state) {
+            // if the state is not POSTGAME, players must have permission to receive the spectator cards
+            GameState.PLAYING -> (team == null || team.isWinner()) && permissions.hasPermission(player, Permission.SPECTATOR_VIEW_CARDS)
+            GameState.POSTGAME -> true
+            else -> false
+        }
     }
 
     fun isViewingCard(player: IPlayerHandle, team: BingoTeam?): Boolean {
@@ -143,7 +146,7 @@ class CardViewService(
                 !isLocked && team != null -> objective.getProgress(team.key)
                 else -> 0f
             },
-            teamKeys = if (options.showOtherTeamCompletions && state.state != GameState.POSTGAME)
+            teamKeys = if (options.showCompletedItems && state.state != GameState.POSTGAME)
                 objective.teamsAchieved.keys.filter { it != team?.key }
             else emptyList(),
         )

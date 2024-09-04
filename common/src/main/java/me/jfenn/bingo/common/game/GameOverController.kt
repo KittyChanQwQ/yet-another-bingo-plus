@@ -10,7 +10,6 @@ import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.stats.WriteStatsService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
@@ -33,14 +32,13 @@ class GameOverController(
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
     private val packetManager: ServerPacketEvents,
-    private val writeStatsService: WriteStatsService,
     events: ScopedEvents,
 ) {
 
     private fun broadcastGameOver(info: GameOverService.GameOverInfo) {
         sequence {
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
-            yield(Text.empty().append("  ").append(info.message))
+            yield(Text.empty().append("  ").append(gameOverService.getMessage(info)))
 
             Text.literal("  ")
                 .append(
@@ -60,7 +58,7 @@ class GameOverController(
                 )
                 .also { yield(it) }
 
-            if (options.isRankedMode) {
+            if (!options.endGameWhenComplete) {
                 yield(Text.empty())
                 // List all teams that have completed the card
                 state.getRegisteredTeams()
@@ -106,14 +104,18 @@ class GameOverController(
             }
         }
 
+        val winningTeam = info.winningTeamKey?.let { state.teams[it] }
+        val title = gameOverService.getTitle(info)
+        val message = gameOverService.getMessage(info)
+
         for (player in playerManager.getPlayers()) {
             val playerInfo = info.playerInfo[player.uuid]
-            val isWinner = info.winningTeam?.includesPlayer(player.player) ?: false
+            val isWinner = winningTeam?.includesPlayer(player.player) ?: false
 
             val packet = GameOverPacket(
-                title = info.title,
-                subtitle = info.message,
-                winner = info.winningTeam?.key,
+                title = title,
+                subtitle = message,
+                winner = info.winningTeamKey,
                 duration = state.ingameDuration() ?: Duration.ZERO,
                 canSendRestart = server.isDedicated && state.isLobbyMode && permissions.hasPermission(
                     player.player,
@@ -152,40 +154,26 @@ class GameOverController(
                 }
                 else -> {
                     // if the player does not have the mod, send the vanilla title message
-                    player.player.networkHandler.sendPacket(TitleS2CPacket(info.title))
-                    player.player.networkHandler.sendPacket(SubtitleS2CPacket(info.message))
+                    player.player.networkHandler.sendPacket(TitleS2CPacket(title))
+                    player.player.networkHandler.sendPacket(SubtitleS2CPacket(message))
                     Sounds.playGameOver(player)
                 }
             }
         }
     }
 
-    private var gameOverInfo: GameOverService.GameOverInfo? = null
-
     init {
         events.onEnter(GameState.POSTGAME) {
-            // Get the game over info first
-            // (which needs to query the previous best time from stats.db)
-            val info = gameOverService.getGameInfo()
-            gameOverInfo = info
-
-            // Then, write the game to stats.db
-            writeStatsService.writeGame()
-
-            // Finally, send game info
+            val info = state.gameOverInfo ?: return@onEnter
             broadcastGameOver(info)
             sendGameOverPacket(info, isUpdate = false)
         }
 
         events.onUpdateTick {
-            if (state.state == GameState.POSTGAME) {
-                // If the game is currently over, keep sending the result to players
-                // (this prevents state loss if relogging / switching dimensions)
-                gameOverInfo?.let {
-                    sendGameOverPacket(it, isUpdate = true)
-                }
-            } else {
-                gameOverInfo = null
+            // If the game is currently over, keep sending the result to players
+            // (this prevents state loss if relogging / switching dimensions)
+            state.gameOverInfo?.let {
+                sendGameOverPacket(it, isUpdate = true)
             }
         }
     }

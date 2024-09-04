@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -26,7 +27,8 @@ class BingoCardsWidget(
 
     private val screen: Screen,
     private val drawServiceFactory: IDrawServiceFactory = koin.get(),
-    private val renderer: BingoHudRenderer = koin.get()
+    private val renderer: BingoHudRenderer = koin.get(),
+    private val config: BingoConfig = koin.get()
 ) {
 
     private var targetScrollX: Float = 0f
@@ -138,7 +140,7 @@ class BingoCardsWidget(
                 cardScale = 1f,
                 mouseX = mouseX,
                 mouseY = mouseY,
-                showTeamOutlines = isSingleView,
+                showTeamOutlines = isSingleView && config.client.cardTeamOutlines,
                 isFocused = isHovered && !isSingleView && onViewClick != null,
                 isMouseOver = isHovered,
                 isGui = true, // uses an alternative card texture with a shadow to reduce clutter when overlapped

@@ -73,4 +73,11 @@ class TextProvider(
         }
     }
 
+    fun cardCount(number: Int): MutableText {
+        return when (number) {
+            1 -> string(StringKey.GameCardSingle)
+            else -> string(StringKey.GameCardCount, number)
+        }
+    }
+
 }

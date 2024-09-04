@@ -8,8 +8,6 @@ import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.scope.BingoKoin
-import me.jfenn.bingo.common.state.TeamScore
-import me.jfenn.bingo.common.state.TeamWinner
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.FormattingSerializer
 import me.jfenn.bingo.common.utils.UuidAsString
@@ -38,9 +36,10 @@ data class BingoTeam(
     @Serializable(with = FormattingSerializer::class)
     val mapColor: Formatting,
     val textColor: TextColor,
-    var card: UuidAsString? = null,
+    var cardId: UuidAsString? = null,
     var score: TeamScore = TeamScore.ZERO,
     var winner: TeamWinner? = null,
+    val completedCards: MutableList<TeamCompletedCard> = mutableListOf(),
     var spawnpoint: BlockPosition? = null,
     var chestSpawnpoint: BlockPosition? = null,
     val chatCoordinates: MutableList<CoordsCommand.CoordinatesEntry> = mutableListOf(),
@@ -85,6 +84,8 @@ data class BingoTeam(
             .formatted(formatting)
             .let { if (bracketed) Texts.bracketed(it) else it }
     }
+
+    fun countCards(): Int = completedCards.count { it.isWinner }
 
     companion object {
 

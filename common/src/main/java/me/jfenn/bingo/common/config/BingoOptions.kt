@@ -17,10 +17,12 @@ import kotlin.time.Duration
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
 data class BingoOptions(
+    var winCondition: BingoWinCondition = BingoWinCondition.Cards(1),
     var cards: List<BingoCardOptions> = listOf(BingoCardOptions()),
 
-    var isInfiniteMode: Boolean = false,
-    var isRankedMode: Boolean = false,
+    var skipCardWhenLost: Boolean = true,
+    var skipCardWhenStalemate: Boolean = true,
+    var endGameWhenComplete: Boolean = true,
 
     var timeLimit: Duration? = null,
     var tierListPage: Int = 0,
@@ -35,7 +37,7 @@ data class BingoOptions(
     // team spawnpoint settings
     var spawnDimension: String = "minecraft:overworld",
     @JsonNames("spreadPlayersDistance")
-    var spawnDistance: Int = 100,
+    var spawnDistance: Int = 25,
 
     // score info settings
     var showRemainingTime: Boolean = true,
@@ -44,9 +46,7 @@ data class BingoOptions(
     var showLeadingTeam: Boolean = true,
 
     // bingo card settings
-    @JsonNames("drawOtherTeamCompletions")
-    var showOtherTeamCompletions: Boolean = false,
-    var showPreviewCard: Boolean = false,
+    var showPreviewCard: Boolean = true,
     var showHiddenTiers: Boolean = false,
 
     var isPlayerKit: Boolean = false,
@@ -77,8 +77,8 @@ data class BingoOptions(
         val gameMode = buildList {
             if (card.options.isLockoutMode) add(StringKey.OptionsModeLockout)
             if (card.options.isInventoryMode) add(StringKey.OptionsModeInventory)
-            if (isRankedMode) add(StringKey.OptionsModeRanked)
             if (card.options.isHiddenItemsMode) add(StringKey.OptionsModeHiddenItems)
+            if (winCondition is BingoWinCondition.Infinite) add(StringKey.OptionsWinConditionInfinite)
         }
 
         return gameMode.ifEmpty { listOf(StringKey.OptionsModeStandard) }
@@ -115,7 +115,7 @@ data class BingoOptions(
         val md = MessageDigest.getInstance("SHA-512")
 
         sequence {
-            yield(isInfiniteMode.toString())
+            yield(json.encodeToString(winCondition))
 
             for (card in cards) {
                 // card difficulty

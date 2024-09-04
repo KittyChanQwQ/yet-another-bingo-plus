@@ -15,6 +15,7 @@ fun MenuComponent.registerNumberInput(
     maxValueProp: Property<Int>,
     step: Int = 1,
     format: (Int) -> Text = { Text.literal(it.toString()) },
+    isVisible: () -> Boolean = { true },
     permissionGetter: (ServerPlayerEntity) -> Boolean,
 ) {
     var value by valueProp
@@ -23,7 +24,10 @@ fun MenuComponent.registerNumberInput(
 
     registerButton(
         position = position + Vector3d(0.0, -MENU_ITEM_OFFSET, 0.0),
-        text = Text.literal("+"),
+        text = Text.empty(),
+        textProp = computedProperty {
+            Text.literal("+").takeIf { isVisible() } ?: Text.empty()
+        },
         permissionGetter = permissionGetter,
     ) {
         value = (value + step).coerceIn(minValue, maxValue)
@@ -32,7 +36,10 @@ fun MenuComponent.registerNumberInput(
 
     registerButton(
         position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
-        text = Text.literal("-"),
+        text = Text.empty(),
+        textProp = computedProperty {
+            Text.literal("-").takeIf { isVisible() } ?: Text.empty()
+        },
         permissionGetter = permissionGetter,
     ) {
         value = (value - step).coerceIn(minValue, maxValue)
@@ -41,7 +48,7 @@ fun MenuComponent.registerNumberInput(
 
     registerEntity(EntityType.TEXT_DISPLAY) {
         pos = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)
-        this.value = format(value)
+        this.value = format(value).takeIf { isVisible() } ?: Text.empty()
         billboard = ITextDisplayEntity.Billboard.FIXED
         alignment = ITextDisplayEntity.TextAlignment.CENTER
         background = 0

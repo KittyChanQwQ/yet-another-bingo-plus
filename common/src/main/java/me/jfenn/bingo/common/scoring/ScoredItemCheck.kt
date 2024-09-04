@@ -4,9 +4,9 @@ import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
-import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.game.GameService
@@ -14,6 +14,8 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamCompletedCard
+import me.jfenn.bingo.common.team.TeamWinner
 import org.slf4j.Logger
 
 /**
@@ -36,13 +38,11 @@ class ScoredItemCheck(
         tickStart: Instant,
         sendUpdates: Boolean,
     ) {
-        val prevLeadingTeam = ScoreService.getLeading(state, card)
         val rootObjectives = card.entries.mapNotNull { card.objectives[it.objectiveId] }
 
-        // find teams where any card objective has been modified since the last tick
         val teams = state.getRegisteredTeams()
             // if the team is already a winner, their score should not change
-            .filter { !it.isWinner() }
+            .filter { !it.isWinner() && it.cardId == card.id }
 
         for (team in teams) {
             // iterate through all updated objectives on the card
@@ -88,76 +88,67 @@ class ScoredItemCheck(
             }
         }
 
-        // check if a team has won the game
+        // check if a team has completed the card
         for (team in teams) {
             val isWinner = when (val goal = card.options.goal) {
                 is BingoGoal.Items -> team.score.items >= goal.items
                 is BingoGoal.Lines -> team.score.lines >= goal.lines
             }
 
-            if (isWinner && options.isRankedMode && sendUpdates) {
-                // announce that another team has completed their card
-                scoreUpdateService.sendCardCompleted(team)
-            }
-
             if (isWinner) {
-                // end the card, since a team has won
-                finishCard(team, card)
-                return
-            }
-        }
+                onCardCompleted(team, card, true)
 
-        // check if the card is in a stalemate
-        if (ScoreService.isLockout(state, card)) {
-            endCard(card, GameEndReason.LOCKOUT)
-            return
-        }
-
-        // check if the leading team has changed, and announce the leader
-        val leadingTeam = ScoreService.getLeading(state, card)
-        if (prevLeadingTeam != leadingTeam && options.showLeadingTeam && state.getRegisteredTeams().size > 1 && sendUpdates) {
-            // if the leading team should be shown, announce the new leader
-            if (leadingTeam != null) {
-                scoreUpdateService.sendTeamLeading(leadingTeam)
-            } else {
-                teams.firstOrNull()?.let {
-                    scoreUpdateService.sendTeamTied(it)
+                if (options.skipCardWhenLost) {
+                    teams.filter { it.cardId == card.id }
+                        .forEach { onCardCompleted(it, card, false) }
                 }
+
+                break
+            }
+        }
+
+        // check if any team has won the game
+        if (options.endGameWhenComplete && teams.any { it.isWinner() }) {
+            gameService.end(GameEndReason.BINGO)
+        }
+
+        // skip the card if it is in a stalemate
+        if (options.skipCardWhenStalemate && ScoreService.isLockout(state, card)) {
+            if (options.endGameWhenComplete && options.winCondition == BingoWinCondition.Cards(1)) {
+                // if there's only one card, end the game when there's a lockout
+                gameService.end(GameEndReason.LOCKOUT)
+            } else {
+                // otherwise, skip to the next card when a lockout occurs
+                teams.filter { it.cardId == card.id }
+                    .forEach { onCardCompleted(it, card, false) }
             }
         }
     }
 
-    private fun endCard(card: BingoCard, endReason: GameEndReason) {
-        val teams = state.getRegisteredTeams()
-            .filter { it.card == card.id }
+    private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean) {
+        val now = state.updatedAt ?: Instant.DISTANT_PAST
 
-        for (team in teams) {
-            finishCard(team, card, endReason)
-        }
-    }
+        team.completedCards += TeamCompletedCard(
+            id = card.id,
+            completedAt = now,
+            isWinner = isWinner,
+            score = team.score,
+        )
 
-    private fun finishCard(team: BingoTeam, card: BingoCard, endReason: GameEndReason = GameEndReason.BINGO) {
-        val nextCard = state.cards.find { it.id == card.nextCardId }
-            // if in infinite mode, keep creating new cards
-            ?: if (options.isInfiniteMode) {
-                cardService.newCardTail(
-                    card.options.takeIf { it.isValid() }?.copy()
-                        ?: BingoCardOptions()
-                )
-            } else null
-
-        if (options.isRankedMode) {
-            // in ranked mode, the winning team immediately moves onto the next card
-            team.card = nextCard?.id
-        } else if (nextCard == null) {
-            // if we run out of cards (and are not in ranked mode), end the game
-            gameService.end(endReason)
+        val condition = options.winCondition
+        if (condition is BingoWinCondition.Cards && team.countCards() >= condition.cards) {
+            // the team has won the game
+            team.winner = TeamWinner(now)
+            // add to playersJoinedIds - tells [PlayerController] to run updateGameMode
+            // which should place winning teams in spectator
+            state.playersJoinedIds += team.players.map { it.uuid }
         } else {
-            // otherwise, move all teams on this card to the next
-            val teams = state.getRegisteredTeams()
-                .filter { it.card == card.id }
+            team.cardId = card.nextCardId
+        }
 
-            teams.forEach { it.card = nextCard.id }
+        if (isWinner && !options.endGameWhenComplete) {
+            // announce that another team has completed their card
+            scoreUpdateService.sendCardCompleted(team)
         }
     }
 
@@ -172,6 +163,40 @@ class ScoredItemCheck(
             tickStart = tickStart,
             sendUpdates = true,
         )
+    }
+
+    private fun postTickCards(
+        prevLeadingTeam: BingoTeam?,
+    ) {
+        // check if the leading team has changed, and announce the leader
+        val leadingTeam = ScoreService.getLeading(state)
+        if (prevLeadingTeam != leadingTeam && options.showLeadingTeam && state.getRegisteredTeams().size > 1) {
+            // if the leading team should be shown, announce the new leader
+            if (leadingTeam != null) {
+                scoreUpdateService.sendTeamLeading(leadingTeam)
+            } else {
+                val tiedTeam = ScoreService.getLeading(state, allowTies = true)
+                tiedTeam?.let {
+                    scoreUpdateService.sendTeamTied(it)
+                }
+            }
+        }
+
+        val teams = state.getRegisteredTeams()
+            // if the team is already a winner, their score should not change
+            .filter { !it.isWinner() }
+
+        // if a team overruns / is missing a card, assign one!
+        val newCard by lazy {
+            val card = state.cards.last()
+            cardService.newCardTail(card.options)
+        }
+
+        for (team in teams) {
+            if (team.cardId == null || state.cards.none { it.id == team.cardId }) {
+                team.cardId = newCard.id
+            }
+        }
     }
 
     init {
@@ -190,6 +215,8 @@ class ScoredItemCheck(
             }
 
             if (state.state == GameState.PLAYING) {
+                val prevLeadingTeam = ScoreService.getLeading(state)
+
                 val cards = state.getRegisteredTeams()
                     .mapNotNull { state.getCard(it) }
                     .distinct()
@@ -197,7 +224,14 @@ class ScoredItemCheck(
                 for (card in cards) {
                     tickCard(card)
                 }
+
+                postTickCards(prevLeadingTeam)
             }
+        }
+
+        events.onEnter(GameState.PREGAME) {
+            // When entering PREGAME, generate initial cards from the config if they weren't already created
+            cardService.createInitialCards()
         }
 
         events.onEnter(GameState.PLAYING) {

@@ -46,21 +46,19 @@ fun MenuComponent.registerMenuPage(
         component(koinScope) {
             registerGameModes(
                 position = position + Vector3d(-3.5, 0.0, 0.0),
-                options = options,
-                permissionGetter = permissionGetter,
-            )
-            registerFeatures(
-                position = position + Vector3d(-1.3, 0.0, 0.0),
-                options = options,
                 permissionGetter = permissionGetter,
             )
             registerGoal(
-                position = position + Vector3d(0.6, 0.0, 0.0),
+                position = position + Vector3d(-1.5, 0.0, 0.0),
+                permissionGetter = permissionGetter,
+            )
+            registerWinCondition(
+                position = position + Vector3d(0.3, 0.0, 0.0),
                 permissionGetter = permissionGetter,
             )
             registerTimer(
                 timerMinutesProp = propertyRef(options::timeLimit),
-                position = position + Vector3d(2.0, 0.0, 0.0),
+                position = position + Vector3d(1.8, 0.0, 0.0),
                 permissionGetter = permissionGetter,
             )
             registerTeams(
@@ -69,9 +67,9 @@ fun MenuComponent.registerMenuPage(
             )
         },
         component(koinScope) {
-            registerDimensionMenu(
+            registerFeatures(
                 position = position + Vector3d(-3.5, 0.0, 0.0),
-                dimensionProperty = propertyRef(options::spawnDimension),
+                options = options,
                 permissionGetter = permissionGetter,
             )
             registerSpawnKit(
@@ -92,17 +90,21 @@ fun MenuComponent.registerMenuPage(
         },
         component(koinScope) {
             registerScoreInfo(
-                position = position + Vector3d(-3.0, 0.0, 0.0),
+                position = position + Vector3d(-3.5, 0.0, 0.0),
                 options = options,
                 permissionGetter = permissionGetter,
             )
-            registerCardInfo(
-                position = position + Vector3d(0.0, 0.0, 0.0),
-                options = options,
+            registerWinBehavior(
+                position = position + Vector3d(-0.9, 0.0, 0.0),
+                permissionGetter = permissionGetter,
+            )
+            registerDimensionMenu(
+                position = position + Vector3d(1.4, 0.0, 0.0),
+                dimensionProperty = propertyRef(options::spawnDimension),
                 permissionGetter = permissionGetter,
             )
             registerSpawnDistance(
-                position = position + Vector3d(3.0, 0.0, 0.0),
+                position = position + Vector3d(3.5, 0.0, 0.0),
                 spawnDistanceProp = propertyRef(options::spawnDistance),
                 permissionGetter = permissionGetter,
             )

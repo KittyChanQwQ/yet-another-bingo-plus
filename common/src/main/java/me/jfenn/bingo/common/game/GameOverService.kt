@@ -2,19 +2,21 @@ package me.jfenn.bingo.common.game
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.common.config.BingoGoal
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import java.util.*
 import kotlin.time.Duration
 
 class GameOverService(
@@ -25,16 +27,18 @@ class GameOverService(
     private val server: MinecraftServer,
 ) {
 
+    @Serializable
     class GameOverInfo(
-        val title: Text,
-        val message: Text,
+        val reason: GameEndReason?,
         val endedAt: Instant,
-        val winningTeam: BingoTeam?,
-        val playerInfo: Map<UUID, GameOverPlayerInfo>,
+        val winningTeamKey: BingoTeamKey?,
+        val leadingTeamKey: LeadingTeam?,
+        val playerInfo: Map<UuidAsString, GameOverPlayerInfo>,
         val isBestTime: Boolean,
         val prevBestTime: Duration?,
     )
 
+    @Serializable
     class GameOverPlayerInfo(
         val winStreak: Long,
         val bestWinStreak: Long?,
@@ -45,7 +49,48 @@ class GameOverService(
         val isBestCapturedItems: Boolean,
     )
 
-    fun getGameInfo(): GameOverInfo {
+    @Serializable
+    sealed class LeadingTeam {
+        abstract val leader: BingoTeamKey
+
+        @Serializable
+        @SerialName("cards")
+        class Cards(override val leader: BingoTeamKey): LeadingTeam()
+        @Serializable
+        @SerialName("lines")
+        class Lines(override val leader: BingoTeamKey): LeadingTeam()
+        @Serializable
+        @SerialName("items")
+        class Items(override val leader: BingoTeamKey): LeadingTeam()
+    }
+
+    fun getTitle(info: GameOverInfo): Text {
+        return info.reason?.let { textProvider.string(it.stringKey) }
+            ?: textProvider.string(StringKey.GameEndGameOver)
+    }
+
+    fun getMessage(info: GameOverInfo): Text {
+        return (
+            Text.empty().takeIf { !options.endGameWhenComplete }
+                ?: info.winningTeamKey?.let { state.teams[it] }?.let { winner ->
+                    textProvider.string(StringKey.GameEndCompletedCard, winner.getName(textProvider, playerName = true))
+                }
+                ?: info.leadingTeamKey?.let { leadingTeamKey ->
+                    val leader = state.teams[leadingTeamKey.leader]
+                        ?.getName(textProvider, playerName = true)
+                        ?: Text.literal("[unknown]")
+
+                    when (leadingTeamKey) {
+                        is LeadingTeam.Cards -> textProvider.string(StringKey.GameEndWonWithMoreCards, leader)
+                        is LeadingTeam.Lines -> textProvider.string(StringKey.GameEndWonWithMoreLines, leader)
+                        is LeadingTeam.Items -> textProvider.string(StringKey.GameEndWonWithMoreItems, leader)
+                    }
+                }
+                ?: textProvider.string(StringKey.GameEndDraw)
+        ).formatted(Formatting.YELLOW)
+    }
+
+    fun getGameInfo(reason: GameEndReason?): GameOverInfo {
         val winningTeams = state.getRegisteredTeams()
             .filter { it.isWinner() }
 
@@ -54,27 +99,10 @@ class GameOverService(
             .takeIf { it.size == 1 }
             ?.firstOrNull()
 
-        val title = state.endReason
-            ?.let { textProvider.string(it.stringKey) }
-            ?: textProvider.string(StringKey.GameEndGameOver)
-
-        val message = (
-                Text.empty()
-                    .takeIf { options.isRankedMode }
-                    ?: winningTeam?.let { winner ->
-                        textProvider.string(StringKey.GameEndCompletedCard, winner.getName(textProvider, playerName = true))
-                    }
-                    // TODO: needs to account for # of completed cards (+ ScoreService)
-                    ?: ScoreService.getLeadingByLines(state)
-                        ?.takeIf { state.cards.last().options.goal is BingoGoal.Lines }
-                        ?.let { leader ->
-                            textProvider.string(StringKey.GameEndWonWithMoreLines, leader.getName(textProvider, playerName = true))
-                        }
-                    ?: ScoreService.getLeadingByItems(state)?.let { leader ->
-                        textProvider.string(StringKey.GameEndWonWithMoreItems, leader.getName(textProvider, playerName = true))
-                    }
-                    ?: textProvider.string(StringKey.GameEndDraw)
-                ).formatted(Formatting.YELLOW)
+        val leadingTeam =
+            ScoreService.getLeadingByCards(state)?.let { LeadingTeam.Cards(it.key) }
+                ?: ScoreService.getLeadingByLines(state)?.let { LeadingTeam.Lines(it.key) }
+                ?: ScoreService.getLeadingByItems(state)?.let { LeadingTeam.Items(it.key) }
 
         val playerInfo = buildMap {
             for (team in state.getRegisteredTeams()) {
@@ -92,9 +120,9 @@ class GameOverService(
                 && winningTeams.isNotEmpty()
 
         return GameOverInfo(
-            title = title,
-            message = message,
-            winningTeam = winningTeam,
+            reason = reason,
+            winningTeamKey = winningTeam?.key,
+            leadingTeamKey = leadingTeam,
             playerInfo = playerInfo,
             endedAt = Clock.System.now(),
             isBestTime = isBestTime,

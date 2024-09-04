@@ -9,7 +9,7 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.TeamScore
+import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.text.TextProvider
@@ -56,16 +56,16 @@ class ScoreUpdateService(
             itemId = item?.identifier?.toString(),
         )
 
-        // unless showOtherTeamCompletions=true, the exact scored item should be hidden from other teams
+        // unless showCompletedItems=false, the exact scored item should be hidden from other teams
         val otherTeamPacket = when {
-            options.showOtherTeamCompletions -> packet.copy(isViewerOnTeam = false)
-            else -> packet.copy(isViewerOnTeam = false, score = TeamScore.ZERO, itemId = null)
+            !options.showCompletedItems -> packet.copy(isViewerOnTeam = false, score = TeamScore.ZERO, itemId = null)
+            card.options.isHiddenItemsMode -> packet.copy(isViewerOnTeam = false, itemId = null)
+            else -> packet.copy(isViewerOnTeam = false)
         }
 
         // decide if all players should get notified when a different team completes an item
-        val sendToEveryone = options.showOtherTeamCompletions || options.showCompletedItems
         val playerList = when {
-            sendToEveryone -> playerManager.getPlayers()
+            options.showCompletedItems -> playerManager.getPlayers()
             else -> team.players.mapNotNull { playerManager.getPlayer(it.uuid) }
         }
 

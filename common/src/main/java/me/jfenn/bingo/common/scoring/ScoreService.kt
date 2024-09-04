@@ -12,8 +12,6 @@ object ScoreService {
         // if we're in inventory mode, then teams can lose tiles...
         // so it shouldn't be possible to get into a stalemate
         if (card.options.isInventoryMode) return false
-        // if we're in ranked mode, don't end the game from a lockout at all
-        if (state.options.isRankedMode) return false
         // if there's only one team, then the game shouldn't end by lockout...
         if (state.getRegisteredTeams().size <= 1) return false
 
@@ -72,17 +70,44 @@ object ScoreService {
         return isLockout || isGoalImpossible
     }
 
-    fun getLeading(state: BingoState, card: BingoCard, allowTies: Boolean = false): BingoTeam? {
-        // TODO: needs to account for # of completed cards (+ GameOverService)
-        return getLeadingByLines(state, allowTies)
-            ?.takeIf { card.options.goal is BingoGoal.Lines }
-            ?: getLeadingByItems(state, allowTies)
+    fun getLeading(state: BingoState, allowTies: Boolean = false): BingoTeam? {
+        return getLeadingByCards(state, allowTies)
+                ?: getLeadingByLines(state, allowTies)
+                    ?: getLeadingByItems(state, allowTies)
+    }
+
+    fun getLeadingByCards(state: BingoState, allowTies: Boolean = false): BingoTeam? {
+        var max: BingoTeam? = null
+        var maxCards = 0
+        for (team in state.getRegisteredTeams()) {
+            val teamCards = team.score.cards
+
+            if (teamCards > maxCards) {
+                max = team
+                maxCards = teamCards
+            } else if (teamCards == maxCards && !allowTies) {
+                max = null
+            }
+        }
+
+        return max
     }
 
     fun getLeadingByLines(state: BingoState, allowTies: Boolean = false): BingoTeam? {
+        val teams = state.getRegisteredTeams()
+        val maxCards = teams.maxOfOrNull { it.countCards() } ?: 0
+        val leadingTeams = teams.filter { it.countCards() >= maxCards }
+
+        val isLinesGoal = leadingTeams
+            .mapNotNull { team -> state.cards.find { it.id == team.cardId } }
+            .all { it.options.goal is BingoGoal.Lines }
+
+        if (!isLinesGoal)
+            return null
+
         var max: BingoTeam? = null
         var maxLines = 0
-        for (team in state.getRegisteredTeams()) {
+        for (team in leadingTeams) {
             val teamLines = team.score.lines
 
             if (teamLines > maxLines) {
@@ -97,9 +122,13 @@ object ScoreService {
     }
 
     fun getLeadingByItems(state: BingoState, allowTies: Boolean = false): BingoTeam? {
+        val teams = state.getRegisteredTeams()
+        val maxCards = teams.maxOfOrNull { it.countCards() } ?: 0
+        val leadingTeams = teams.filter { it.countCards() >= maxCards }
+
         var max: BingoTeam? = null
         var maxItems = 0
-        for (team in state.getRegisteredTeams()) {
+        for (team in leadingTeams) {
             val teamItems = team.score.items
 
             if (teamItems > maxItems) {

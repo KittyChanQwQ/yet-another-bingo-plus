@@ -3,9 +3,9 @@ package me.jfenn.bingo.common.scoring
 import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.event.packet.PacketConverter
-import me.jfenn.bingo.common.state.TeamScore
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.team.TeamScore
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import java.util.*
@@ -33,6 +33,7 @@ data class ScoredItemPacket(
                 score = TeamScore(
                     items = buf.readInt(),
                     lines = buf.readInt(),
+                    cards = 0,
                 ),
                 itemId = if (buf.readBoolean()) { buf.readString() } else null,
             )

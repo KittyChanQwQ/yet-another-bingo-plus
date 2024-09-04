@@ -41,7 +41,7 @@ class NightVisionController(
             if (shouldHaveNightVision) {
                 val hasEffect = player.getEffects().any { it.type == EffectType.NIGHT_VISION }
                 if (!hasEffect) {
-                    log.debug("[NightVisionController] Adding night vision to {}", player)
+                    log.debug("[NightVisionController] Adding night vision to {}", player.name)
                     player.addEffect(
                         type = EffectType.NIGHT_VISION,
                         duration = -1,
@@ -54,7 +54,7 @@ class NightVisionController(
                 // if the player has infinite night vision (and should not), remove it
                 val effect = player.getEffects().find { it.type == EffectType.NIGHT_VISION }
                 if (effect?.duration == -1) {
-                    log.debug("[NightVisionController] Removing night vision from {}", player)
+                    log.debug("[NightVisionController] Removing night vision from {}", player.name)
                     player.removeEffect(effect)
                 }
             }

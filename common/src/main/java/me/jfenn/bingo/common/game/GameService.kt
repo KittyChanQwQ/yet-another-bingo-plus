@@ -14,6 +14,7 @@ import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.stats.WriteStatsService
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
@@ -39,6 +40,8 @@ class GameService(
     private val cardService: CardService,
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
+    private val gameOverService: GameOverService,
+    private val writeStatsService: WriteStatsService,
     private val text: TextProvider,
 ) {
 
@@ -142,8 +145,16 @@ class GameService(
     fun end(reason: GameEndReason?) {
         if (state.endedAt != null) return
 
-        state.endReason = reason
-        state.endedAt = Clock.System.now()
+        // Get the game over info first
+        // (which needs to query the previous best time from stats.db)
+        val info = gameOverService.getGameInfo(reason)
+        state.gameOverInfo = info
+        state.endedAt = info.endedAt
+
+        // Then, write the game to stats.db
+        writeStatsService.writeGame()
+
+        // Finally, change state to POSTGAME (announces in GameOverController)
         state.changeState(events, GameState.POSTGAME)
 
         // if lobbyMode=false, immediately change state back to PREGAME once the POSTGAME events are sent
@@ -176,7 +187,7 @@ class GameService(
 
             Text.empty()
                 .append("  ")
-                .append(text.string(StringKey.ScoreboardGoal, state.formatCardGoals(firstCard, text)))
+                .append(text.string(StringKey.ScoreboardGoal, state.formatCardGoals(null, text)))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
