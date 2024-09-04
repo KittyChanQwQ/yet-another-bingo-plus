@@ -2,7 +2,11 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.api.EntityType
 import me.jfenn.bingo.api.IEntity
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.EventListener
+import me.jfenn.bingo.generated.StringKey
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import org.koin.core.scope.Scope
 import java.util.*
 import kotlin.reflect.KMutableProperty0
@@ -124,5 +128,14 @@ open class MenuComponent(
         entities.forEach { tracker?.despawn(it) }
         onDespawn.invoke(Unit)
         this.tracker = null
+    }
+}
+
+fun MenuComponent.buildTooltip(title: StringKey): List<Text> {
+    val text = koinScope.get<TextProvider>()
+    val description = StringKey.entries.find { it.key == "${title.key}.tooltip" }!!
+    return buildList {
+        add(text.string(title).formatted(Formatting.GREEN))
+        add(text.string(description))
     }
 }

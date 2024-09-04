@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.map.CardDisplayPacket
 import me.jfenn.bingo.common.map.CardImagePacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
+import me.jfenn.bingo.common.scoring.CardCompletedPacket
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.scoring.ScoredItemLostPacket
 import me.jfenn.bingo.common.scoring.ScoredItemPacket
@@ -27,6 +28,7 @@ class ServerPacketEvents(
     val cardUpdateV4 = serverNetworking.registerS2C(CardUpdatePacket.V4)
     val cardUpdateV5 = serverNetworking.registerS2C(CardUpdatePacket.V5)
     val cardImageV1 = serverNetworking.registerS2C(CardImagePacket.V1)
+    val cardCompletedV1 = serverNetworking.registerS2C(CardCompletedPacket.V1)
     val gameOverV1 = serverNetworking.registerS2C(GameOverPacket.V1)
     val gameOverV2 = serverNetworking.registerS2C(GameOverPacket.V2)
     val gameOverV3 = serverNetworking.registerS2C(GameOverPacket.V3)

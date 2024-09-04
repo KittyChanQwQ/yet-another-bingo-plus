@@ -38,6 +38,12 @@ class ScorePacketReceiver(
             )
         }
 
+        clientPacketEvents.cardCompletedV1.onPacket { (packet) ->
+            soundService.play(
+                if (packet.isWinner) ClientSounds.Key.GAME_WON else ClientSounds.Key.GAME_LOST
+            )
+        }
+
         clientPacketEvents.gameOverV1.onPacket(::onGameOver)
         clientPacketEvents.gameOverV2.onPacket(::onGameOver)
         clientPacketEvents.gameOverV3.onPacket(::onGameOver)

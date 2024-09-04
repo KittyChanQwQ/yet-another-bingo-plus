@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
@@ -28,20 +29,23 @@ fun MenuComponent.registerWinBehavior(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsWinBehaviorSkipCardWhenLost),
+        tooltip = buildTooltip(StringKey.OptionsWinBehaviorSkipCardWhenLost),
         toggleProp = propertyRef(options::skipCardWhenLost),
         permissionGetter = permissionGetter,
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0, Vector3d()),
-        text = text.string(StringKey.OptionsWinBehaviorSkipCardWhenStalemate),
-        toggleProp = propertyRef(options::skipCardWhenStalemate),
+        text = text.string(StringKey.OptionsWinBehaviorEndWhenStalemate),
+        tooltip = buildTooltip(StringKey.OptionsWinBehaviorEndWhenStalemate),
+        toggleProp = propertyRef(options::endGameWhenStalemate),
         permissionGetter = permissionGetter,
     )
 
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsWinBehaviorEndWhenComplete),
+        tooltip = buildTooltip(StringKey.OptionsWinBehaviorEndWhenComplete),
         toggleProp = propertyRef(options::endGameWhenComplete),
         permissionGetter = permissionGetter,
     )

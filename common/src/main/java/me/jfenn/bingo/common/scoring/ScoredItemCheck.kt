@@ -96,6 +96,7 @@ class ScoredItemCheck(
             }
 
             if (isWinner) {
+                log.info("[ScoredItemCheck] Team {} has completed their card", team.id)
                 onCardCompleted(team, card, true)
 
                 if (options.skipCardWhenLost) {
@@ -109,20 +110,24 @@ class ScoredItemCheck(
 
         // check if any team has won the game
         if (options.endGameWhenComplete && teams.any { it.isWinner() }) {
+            log.info("[ScoredItemCheck] Ending the game because a team has won")
             gameService.end(GameEndReason.BINGO)
         }
 
         // skip the card if it is in a stalemate
-        if (options.skipCardWhenStalemate && ScoreService.isLockout(state, card)) {
-            if (options.endGameWhenComplete && options.winCondition == BingoWinCondition.Cards(1)) {
+        if (ScoreService.isLockout(state, card)) {
+            if (options.endGameWhenStalemate) {
+                log.info("[ScoredItemCheck] Ending the game because the card has reached a stalemate")
                 // if there's only one card, end the game when there's a lockout
                 gameService.end(GameEndReason.LOCKOUT)
             } else {
+                log.info("[ScoredItemCheck] Skipping the current card because it has reached a stalemate")
                 // otherwise, skip to the next card when a lockout occurs
                 teams.filter { it.cardId == card.id }
                     .forEach { onCardCompleted(it, card, false) }
             }
         }
+
     }
 
     private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean) {
@@ -146,9 +151,9 @@ class ScoredItemCheck(
             team.cardId = card.nextCardId
         }
 
-        if (isWinner && !options.endGameWhenComplete) {
+        if (!options.endGameWhenComplete || condition != BingoWinCondition.Cards(1)) {
             // announce that another team has completed their card
-            scoreUpdateService.sendCardCompleted(team)
+            scoreUpdateService.sendCardCompleted(team, isWinner)
         }
     }
 

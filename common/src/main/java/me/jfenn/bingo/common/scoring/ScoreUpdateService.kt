@@ -179,24 +179,37 @@ class ScoreUpdateService(
             }
     }
 
-    fun sendCardCompleted(team: BingoTeam) {
-        val message = textProvider.string(StringKey.GameMessageCompletedCard, team.getName(textProvider, playerName = true))
-            .formatted(Formatting.YELLOW)
-            .let { formatWithTime(it) }
+    fun sendCardCompleted(team: BingoTeam, isWinner: Boolean) {
+        if (isWinner) {
+            val message = textProvider.string(StringKey.GameMessageCompletedCard, team.getName(textProvider, playerName = true))
+                .formatted(Formatting.YELLOW)
+                .let { formatWithTime(it) }
 
-        val scoreMessage = ScoreMessagePacket(
-            player = null,
-            isViewerOnTeam = true,
-            item = null,
-            messageType = ScoreMessagePacket.MessageType.CARD_COMPLETED,
-            message = message,
-        )
+            val scoreMessage = ScoreMessagePacket(
+                player = null,
+                isViewerOnTeam = true,
+                item = null,
+                messageType = ScoreMessagePacket.MessageType.CARD_COMPLETED,
+                message = message,
+            )
 
-        server.playerManager.playerList
+            playerManager.getPlayers()
+                .forEach {
+                    when {
+                        packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
+                        else -> it.player.sendMessage(message, false)
+                    }
+                }
+        }
+
+        val completedPacket = CardCompletedPacket(isWinner = isWinner)
+
+        playerManager.getPlayers()
+            .filter { team.includesPlayer(it) }
             .forEach {
                 when {
-                    packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
-                    else -> it.sendMessage(message, false)
+                    packetManager.cardCompletedV1.send(it, completedPacket) -> {}
+                    else -> {}
                 }
             }
     }

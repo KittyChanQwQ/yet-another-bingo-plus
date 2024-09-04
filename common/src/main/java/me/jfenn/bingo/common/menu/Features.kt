@@ -31,10 +31,7 @@ fun MenuComponent.registerFeatures(
     registerToggleButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsPreviewCard),
-        tooltip = buildList {
-            add(text.string(StringKey.OptionsPreviewCard).formatted(Formatting.GREEN))
-            add(text.string(StringKey.OptionsPreviewCardTooltip))
-        },
+        tooltip = buildTooltip(StringKey.OptionsPreviewCard),
         toggleProp = propertyRef(options::showPreviewCard),
         permissionGetter = permissionGetter,
     )

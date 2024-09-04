@@ -56,6 +56,7 @@ fun MenuComponent.registerWinCondition(
     registerToggleButton(
         position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + 3 * MENU_ITEM_HEIGHT), 0.0),
         text = text.string(StringKey.OptionsWinConditionInfinite),
+        tooltip = buildTooltip(StringKey.OptionsWinConditionInfinite),
         toggleProp = infiniteModeProp,
         permissionGetter = permissionGetter,
     )
