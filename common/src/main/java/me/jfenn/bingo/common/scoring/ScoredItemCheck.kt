@@ -14,6 +14,7 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamWinner
 import org.slf4j.Logger
@@ -32,6 +33,10 @@ class ScoredItemCheck(
     private val objectiveManager: BingoObjectiveManager,
     events: ScopedEvents,
 ) : BingoComponent() {
+
+    // Card completed packets should only be sent if the game continues and does not end
+    // - these are stored in a map temporarily and are sent/cleared at the end of each tick
+    private val pendingCardCompletedPackets = mutableMapOf<BingoTeamKey, CardCompletedPacket>()
 
     private fun updateScores(
         card: BingoCard,
@@ -108,12 +113,6 @@ class ScoredItemCheck(
             }
         }
 
-        // check if any team has won the game
-        if (options.endGameWhenComplete && teams.any { it.isWinner() }) {
-            log.info("[ScoredItemCheck] Ending the game because a team has won")
-            gameService.end(GameEndReason.BINGO)
-        }
-
         // skip the card if it is in a stalemate
         if (ScoreService.isLockout(state, card)) {
             if (options.endGameWhenStalemate) {
@@ -127,7 +126,6 @@ class ScoredItemCheck(
                     .forEach { onCardCompleted(it, card, false) }
             }
         }
-
     }
 
     private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean) {
@@ -153,7 +151,7 @@ class ScoredItemCheck(
 
         if (!options.endGameWhenComplete || condition != BingoWinCondition.Cards(1)) {
             // announce that another team has completed their card
-            scoreUpdateService.sendCardCompleted(team, isWinner)
+            pendingCardCompletedPackets[team.key] = CardCompletedPacket(isWinner)
         }
     }
 
@@ -173,9 +171,29 @@ class ScoredItemCheck(
     private fun postTickCards(
         prevLeadingTeam: BingoTeam?,
     ) {
+        val cardCompletedPackets = pendingCardCompletedPackets.toList()
+        pendingCardCompletedPackets.clear()
+
+        val teams = state.getRegisteredTeams()
+
+        // check if any team has won the game
+        if (options.endGameWhenComplete && teams.any { it.isWinner() }) {
+            log.info("[ScoredItemCheck] Ending the game because a team has won")
+            gameService.end(GameEndReason.BINGO)
+            return
+        }
+
+        // otherwise, send any pending card completed packets
+        if (state.endedAt == null) {
+            for ((teamKey, packet) in cardCompletedPackets) {
+                val team = state.teams[teamKey] ?: continue
+                scoreUpdateService.sendCardCompleted(team, packet.isWinner)
+            }
+        }
+
         // check if the leading team has changed, and announce the leader
         val leadingTeam = ScoreService.getLeading(state)
-        if (prevLeadingTeam != leadingTeam && options.showLeadingTeam && state.getRegisteredTeams().size > 1) {
+        if (prevLeadingTeam != leadingTeam && options.showLeadingTeam && teams.size > 1) {
             // if the leading team should be shown, announce the new leader
             if (leadingTeam != null) {
                 scoreUpdateService.sendTeamLeading(leadingTeam)
@@ -187,17 +205,13 @@ class ScoredItemCheck(
             }
         }
 
-        val teams = state.getRegisteredTeams()
-            // if the team is already a winner, their score should not change
-            .filter { !it.isWinner() }
-
         // if a team overruns / is missing a card, assign one!
         val newCard by lazy {
             val card = state.cards.last()
             cardService.newCardTail(card.options)
         }
 
-        for (team in teams) {
+        for (team in teams.filter { !it.isWinner() }) {
             if (team.cardId == null || state.cards.none { it.id == team.cardId }) {
                 team.cardId = newCard.id
             }

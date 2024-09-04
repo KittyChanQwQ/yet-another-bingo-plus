@@ -277,7 +277,7 @@ class BingoEndScreen(
         cardsWidget.render(context, mouseX, mouseY, delta)
 
         if (gameOver.packet.isWinner) {
-            fireworkRenderer.render(context, textRenderer, width, height, delta)
+            fireworkRenderer.render(context, textRenderer, width/2, height/2)
         }
     }
 

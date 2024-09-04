@@ -1,14 +1,22 @@
 package me.jfenn.bingo.client.common.hud
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import me.jfenn.bingo.common.map.Color
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
+import org.joml.Vector2d
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sin
 
-class BingoEndFireworkRenderer {
+class BingoEndFireworkRenderer(
+    private val startedAt: Instant = Clock.System.now(),
+    private var range: Int = 500,
+) {
 
     private val starVelocityScale = 1.5
 
@@ -22,16 +30,16 @@ class BingoEndFireworkRenderer {
     )
 
     class StarInfo(
-        var x: Double,
-        var y: Double,
-        var rot: Double,
+        val x: Double,
+        val y: Double,
+        val rot: Double,
         val xVel: Double,
         val yVel: Double,
         val rotVel: Double,
-        val color: Int,
+        val color: Color,
     )
 
-    private val stars = List(50) {
+    private val stars = MutableList(50) {
         val theta = Math.random() * PI * 2
         val vel = 1 + Math.random()
         StarInfo(
@@ -39,32 +47,45 @@ class BingoEndFireworkRenderer {
             y = 0.0,
             rot = Math.random() * PI * 2,
             xVel = cos(theta) * vel * starVelocityScale,
-            yVel = sin(theta) * vel * starVelocityScale,
+            yVel = sin(theta) * vel * starVelocityScale - 0.2,
             rotVel = (Math.random() - 0.5) * 0.5 * starVelocityScale,
-            color = colors.random(),
+            color = Color.fromInt(colors.random()),
         )
     }
+
+    fun isDone() = stars.isEmpty()
 
     fun render(
         context: DrawContext,
         textRenderer: TextRenderer,
-        width: Int,
-        height: Int,
-        delta: Float,
+        centerX: Int,
+        centerY: Int,
     ) {
-        for (star in stars) {
-            star.x += star.xVel * delta
-            star.y += star.yVel * delta
-            star.rot += star.rotVel * delta
+        val now = Clock.System.now()
+        val ticks = (now - startedAt).inWholeMilliseconds.toDouble() / 50.0
 
-            star.y += 0.2
+        val iterator = stars.iterator()
+        for (star in iterator) {
+            val x = star.x + star.xVel * ticks
+            val y = star.y + star.yVel * ticks
+            val rot = star.rot + star.rotVel * ticks
+            val alpha = 1f - (Vector2d(x, y).length() / range).toFloat().pow(3)
+
+            if (alpha <= 0.025f) {
+                iterator.remove()
+                continue
+            }
 
             context.matrices.push()
-            context.matrices.translate(width/2.0, height/2.0, 0.0)
-            context.matrices.translate(star.x, star.y, 2000.0)
-            context.matrices.multiply(Quaternionf(AxisAngle4f(star.rot.toFloat(), 0f, 0f, 1f)))
+            context.matrices.translate(centerX.toDouble(), centerY.toDouble(), 0.0)
+            context.matrices.translate(x, y, 2000.0)
+            context.matrices.multiply(Quaternionf(AxisAngle4f(rot.toFloat(), 0f, 0f, 1f)))
 
-            context.drawText(textRenderer, "★", -4, -4, star.color, false)
+            val color = star.color
+                .copy(a = (alpha * 255).toInt().coerceIn(1, 255))
+                .asIntWithAlpha
+
+            context.drawText(textRenderer, "★", -4, -4, color, false)
 
             context.matrices.pop()
         }

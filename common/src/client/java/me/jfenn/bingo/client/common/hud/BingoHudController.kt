@@ -62,11 +62,14 @@ class BingoHudController(
         )
     )
 
+    private var fireworkRenderer: BingoEndFireworkRenderer? = null
+
     private fun drawHud(drawService: IDrawService) {
         val teamKeys = state.display?.display
         if (teamKeys.isNullOrEmpty()) return
 
         val context = drawService.context
+        val textRenderer = MinecraftClient.getInstance().textRenderer
 
         // If the selected team is one of the displayed cards, try to find its view state...
         val selectedTeam = state.selectedTeam
@@ -87,6 +90,17 @@ class BingoHudController(
 
         val x = cardAlignment.x * (context.scaledWindowWidth - (BingoHudRenderer.CARD_WIDTH * cardScale)) + offsetX
         val y = cardAlignment.y * (context.scaledWindowHeight - (BingoHudRenderer.CARD_HEIGHT * cardScale)) + offsetY
+
+        if (fireworkRenderer?.isDone() == true) {
+            fireworkRenderer = null
+        } else {
+            fireworkRenderer?.render(
+                context = context,
+                textRenderer = textRenderer,
+                centerX = x.toInt() + (BingoHudRenderer.CARD_WIDTH/2),
+                centerY = y.toInt() + (BingoHudRenderer.CARD_HEIGHT/2)
+            )
+        }
 
         renderer.drawCard(
             context,
@@ -142,7 +156,6 @@ class BingoHudController(
         val tooltipText = tooltipPacket?.text
         val tooltipStartedAt = state.tooltipStartedAt ?: Instant.DISTANT_PAST
         if (tooltipText != null) {
-            val textRenderer = MinecraftClient.getInstance().textRenderer
             val tooltip = tooltipText.flatMap { it.wrap(30) }
             val tooltipSize = tooltip.maxOfOrNull { textRenderer.getWidth(it) } ?: 0
             val tooltipX = context.scaledWindowWidth/2 - tooltipSize/2 - 12
@@ -227,6 +240,10 @@ class BingoHudController(
         packetEvents.cardUpdateV3.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV4.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV5.onPacket(::onCardUpdate)
+
+        packetEvents.cardCompletedV1.onPacket {
+            fireworkRenderer = BingoEndFireworkRenderer(range = (100 * config.client.cardScale).toInt())
+        }
 
         packetEvents.scoreMessageV1.onPacket { (packet) ->
             onScoreMessage(packet)

@@ -9,18 +9,16 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 
 class ScoreUpdateService(
-    private val server: MinecraftServer,
     private val packetManager: ServerPacketEvents,
     private val options: BingoOptions,
     private val state: BingoState,

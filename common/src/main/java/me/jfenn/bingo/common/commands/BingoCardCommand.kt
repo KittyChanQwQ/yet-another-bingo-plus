@@ -14,13 +14,17 @@ import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.cacheFor
+import me.jfenn.bingo.common.utils.joinText
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
+import net.minecraft.util.Formatting
 import kotlin.time.Duration.Companion.seconds
 
 class BingoCardCommand(
     commandManager: ICommandManager,
+    private val text: TextProvider,
 ) : BingoComponent() {
 
     companion object {
@@ -104,6 +108,40 @@ class BingoCardCommand(
         sendInfoFeedback(Text.literal("Card re-rolled."))
     }
 
+    private fun IExecutionContext.getCardStack() {
+        for ((i, card) in state.cards.withIndex()) {
+            val teams = state.getRegisteredTeams()
+                .filter { it.cardId == card.id }
+                .map { it.getName(text, symbol = false, teamNameKey = null) }
+
+            val nextCardIndex = state.cards.indexOfFirst { it.id == card.nextCardId }
+                .takeIf { it != -1 }
+
+            val mode = card.options.formatGameMode()
+                .map { text.string(it) }
+                .joinText()
+
+            val goal = card.options.goal.format(text)
+
+            val itemDist = card.options.formatItemDist()
+
+            buildList {
+                add(Text.literal("#${i+1}"))
+                add(itemDist)
+                add(mode)
+                add(goal)
+                if (teams.isNotEmpty()) {
+                    add(teams.joinText(Text.literal(" ")))
+                }
+                if (nextCardIndex != null && nextCardIndex != i+1) {
+                    add(Text.literal(" -> #${nextCardIndex+1}"))
+                }
+            }
+                .joinText(Text.literal(" | ").formatted(Formatting.GRAY))
+                .also { sendMessage(it) }
+        }
+    }
+
     init {
         commandManager.register("bingo") {
             literal("card") {
@@ -134,6 +172,8 @@ class BingoCardCommand(
                 }
 
                 literal("stack") {
+                    executes { getCardStack() }
+
                     literal("push") {
                         requires { hasConfigureGame() && hasState(GameState.PREGAME) }
                         executes {
