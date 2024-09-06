@@ -10,7 +10,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 data class CardTile(
-    val item: IItemStack?,
+    val item: IItemStack? = null,
     val itemTier: TierLabel?,
     val image: String? = null,
     val name: Text? = item?.displayName,

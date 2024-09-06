@@ -2,11 +2,14 @@ package me.jfenn.bingo.common.card
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.utils.UuidAsString
+import me.jfenn.bingo.common.utils.json
 import java.util.*
 import kotlin.random.Random
 
@@ -117,6 +120,16 @@ class BingoCard(
             lines = countLines(team),
             cards = team.countCards(),
         )
+    }
+
+    fun removeTeam(team: BingoTeam) {
+        objectives.values.forEach { it.removeTeam(team) }
+    }
+
+    fun copy(): BingoCard {
+        // This is a very silly way to do a deep-clone
+        val element = json.encodeToJsonElement(this)
+        return json.decodeFromJsonElement(element)
     }
 
     companion object {

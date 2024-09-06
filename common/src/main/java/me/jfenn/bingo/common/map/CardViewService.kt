@@ -125,6 +125,11 @@ class CardViewService(
         objective: BingoObjective,
         card: BingoCard,
     ) : CardTile {
+        // Contains the current state of the card; in case the team is the winner, their card reference will be
+        // the completed card state rather than the actual state for in-game teams
+        val actualCard = state.getCard(card.id)
+        val actualObjective = actualCard?.objectives?.get(objective.id)
+
         val isFreeSpace = objective is BingoObjective.FreeSpace
         val isHidden = card.options.isHiddenItemsMode && (team == null || !objective.hasSeen(team.key)) && !isFreeSpace
         val isLocked = card.options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key)
@@ -146,9 +151,11 @@ class CardViewService(
                 !isLocked && team != null -> objective.getProgress(team.key)
                 else -> 0f
             },
-            teamKeys = if (options.showCompletedItems && state.state != GameState.POSTGAME)
-                objective.teamsAchieved.keys.filter { it != team?.key }
-            else emptyList(),
+            teamKeys = actualObjective
+                ?.takeIf { options.showCompletedItems && state.state != GameState.POSTGAME }
+                ?.teamsAchieved?.keys
+                ?.filter { it != team?.key }
+                ?: emptyList(),
         )
     }
 

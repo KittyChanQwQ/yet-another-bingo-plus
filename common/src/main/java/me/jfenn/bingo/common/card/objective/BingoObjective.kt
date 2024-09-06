@@ -13,6 +13,7 @@ import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.jsonUnpretty
@@ -59,6 +60,20 @@ sealed class BingoObjective {
     open fun removePlayer(uuid: UUID) {
         playersHolding.remove(uuid)
         players.remove(uuid)
+    }
+
+    open fun removeTeam(team: BingoTeam) {
+        val teamKey = team.key
+        teamsSeen.remove(teamKey)
+        teamsAchieved.remove(teamKey)
+        teamsLost.remove(teamKey)
+        teamsOnceAchieved.remove(teamKey)
+        teamsProgress.remove(teamKey)
+
+        for (player in team.players) {
+            players.remove(player.uuid)
+            playersHolding.remove(player.uuid)
+        }
     }
 
     /**
@@ -213,6 +228,14 @@ sealed class BingoObjective {
             super.removePlayer(uuid)
             playersOnceAchieved.remove(uuid)
         }
+
+        override fun removeTeam(team: BingoTeam) {
+            super.removeTeam(team)
+
+            for (player in team.players) {
+                playersOnceAchieved.remove(player.uuid)
+            }
+        }
     }
 
     @Serializable
@@ -256,6 +279,14 @@ sealed class BingoObjective {
             super.removePlayer(uuid)
             baseStats.remove(uuid)
         }
+
+        override fun removeTeam(team: BingoTeam) {
+            super.removeTeam(team)
+
+            for (player in team.players) {
+                baseStats.remove(player.uuid)
+            }
+        }
     }
 
     @Serializable
@@ -281,6 +312,14 @@ sealed class BingoObjective {
         override fun removePlayer(uuid: UUID) {
             super.removePlayer(uuid)
             baseScores.remove(uuid)
+        }
+
+        override fun removeTeam(team: BingoTeam) {
+            super.removeTeam(team)
+
+            for (player in team.players) {
+                baseScores.remove(player.uuid)
+            }
         }
     }
 }

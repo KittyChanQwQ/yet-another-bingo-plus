@@ -18,6 +18,8 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamWinner
 import org.slf4j.Logger
+import java.util.*
+import kotlin.random.Random
 
 /**
  * Searches for items in each player's inventory that can
@@ -132,7 +134,8 @@ class ScoredItemCheck(
         val now = state.updatedAt ?: Instant.DISTANT_PAST
 
         team.completedCards += TeamCompletedCard(
-            id = card.id,
+            // Copy the card in its winning state
+            card = card.copy().also { initCard(it) },
             completedAt = now,
             isWinner = isWinner,
             score = team.score,
@@ -146,7 +149,12 @@ class ScoredItemCheck(
             // which should place winning teams in spectator
             state.playersJoinedIds += team.players.map { it.uuid }
         } else {
-            team.cardId = card.nextCardId
+            val nextCard = card.nextCardId?.let { state.getCard(it) }
+            team.cardId = nextCard?.id
+
+            if (nextCard != null) {
+                onCardAssigned(nextCard, listOf(team))
+            }
         }
 
         if (!options.endGameWhenComplete || condition != BingoWinCondition.Cards(1)) {
@@ -206,31 +214,71 @@ class ScoredItemCheck(
         }
 
         // if a team overruns / is missing a card, assign one!
-        val newCard by lazy {
-            val card = state.cards.last()
-            cardService.newCardTail(card.options)
-        }
+        val teamsWithoutCards = teams
+            .filter { !it.isWinner() }
+            .filter { team -> team.cardId == null || state.cards.none { it.id == team.cardId } }
 
-        for (team in teams.filter { !it.isWinner() }) {
-            if (team.cardId == null || state.cards.none { it.id == team.cardId }) {
-                team.cardId = newCard.id
+        if (teamsWithoutCards.isNotEmpty()) {
+            val newCard = cardService.generate(
+                id = UUID.randomUUID(),
+                seed = Random.nextLong(),
+                cardOptions = state.cards.last().options,
+            )
+
+            state.pushCardTail(newCard)
+
+            teamsWithoutCards.forEach {
+                it.cardId = newCard.id
             }
+
+            onCardAssigned(newCard, teamsWithoutCards)
         }
     }
 
+    private fun initCard(card: BingoCard) {
+        // Initialize objectives
+        if (!card.isInitialized) {
+            // No, this isn't a bug...
+            // init() needs to be called multiple times to populate display info on dependent objectives
+            objectiveManager.init(card)
+            objectiveManager.init(card)
+            objectiveManager.init(card)
+
+            card.isInitialized = true
+        }
+    }
+
+    private fun onCardAssigned(card: BingoCard, removeTeams: List<BingoTeam>) {
+        initCard(card)
+
+        for (team in removeTeams) {
+            state.cards.forEach { it.removeTeam(team) }
+        }
+
+        // Run one tick when the game starts
+        // - this prevents notification spam for tiles that the player has already captured at the start of the game
+        objectiveManager.tick(card)
+        objectiveManager.tick(card)
+        objectiveManager.tick(card)
+
+        updateScores(
+            card = card,
+            tickStart = Instant.DISTANT_PAST,
+            sendUpdates = false,
+        )
+    }
+
     init {
+        // Re-initialize completed cards when loading from a saved state
+        for (team in state.getRegisteredTeams()) {
+            for (completion in team.completedCards) {
+                initCard(completion.card)
+            }
+        }
+
         events.onGameTick {
             for (card in state.cards) {
-                // Initialize objectives
-                if (!card.isInitialized) {
-                    // No, this isn't a bug...
-                    // init() needs to be called multiple times to populate display info on dependent objectives
-                    objectiveManager.init(card)
-                    objectiveManager.init(card)
-                    objectiveManager.init(card)
-
-                    card.isInitialized = true
-                }
+                initCard(card)
             }
 
             if (state.state == GameState.PLAYING) {
@@ -255,16 +303,9 @@ class ScoredItemCheck(
 
         events.onEnter(GameState.PLAYING) {
             for (card in state.cards) {
-                // Run one tick when the game starts
-                // - this prevents notification spam for tiles that the player has already captured at the start of the game
-                objectiveManager.tick(card)
-                objectiveManager.tick(card)
-                objectiveManager.tick(card)
-
-                updateScores(
+                onCardAssigned(
                     card = card,
-                    tickStart = Instant.DISTANT_PAST,
-                    sendUpdates = false,
+                    removeTeams = emptyList(),
                 )
             }
         }

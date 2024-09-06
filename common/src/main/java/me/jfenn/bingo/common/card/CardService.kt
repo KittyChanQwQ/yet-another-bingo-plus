@@ -143,19 +143,6 @@ class CardService(
         return newCard
     }
 
-    fun newCardTail(cardOptions: BingoCardOptions): BingoCard {
-        if (!cardOptions.isValid()) throw IllegalArgumentException("Cannot create card; invalid options")
-
-        val newCard = generate(
-            id = UUID.randomUUID(),
-            seed = Random.nextLong(),
-            cardOptions = cardOptions,
-        )
-
-        state.pushCardTail(newCard)
-        return newCard
-    }
-
     fun shuffleCard(card: BingoCard) {
         if (!card.options.isValid()) throw IllegalArgumentException("Cannot reroll card; invalid options")
 
