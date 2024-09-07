@@ -43,6 +43,12 @@ interface IPlayerHandle : ILivingEntity {
     val maxSaturationLevel: Float get() = 5f
     var exhaustion: Float
 
+    /**
+     * vaguely determine if the held item will be used or not
+     * (e.g. suspicious stew, potions, etc. - vs. static items such as iron ingots)
+     */
+    fun canUseItem(stack: IItemStack): Boolean
+
     fun allHeldStacks(): Sequence<IItemStack>
     fun allInventorySlots(): Sequence<Pair<Int, IItemStack>>
 

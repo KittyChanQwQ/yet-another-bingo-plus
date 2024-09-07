@@ -11,6 +11,10 @@ import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.MobEntity
+import net.minecraft.item.BlockItem
+import net.minecraft.item.BoatItem
+import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
 import net.minecraft.registry.Registries
@@ -19,6 +23,8 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.util.UseAction
+import net.minecraft.util.hit.HitResult
 import org.joml.Vector3d
 import java.util.*
 
@@ -105,6 +111,27 @@ class PlayerManager(
         override var foodLevel: Int by player.hungerManager::foodLevel
         override var saturationLevel: Float by player.hungerManager::saturationLevel
         override var exhaustion: Float by player.hungerManager::exhaustion
+
+        override fun canUseItem(stack: IItemStack): Boolean {
+            val itemStack: ItemStack = stack.stack
+            return when {
+                itemStack.isEmpty -> false
+                itemStack.useAction == UseAction.EAT -> player.canConsume(false)
+                itemStack.useAction == UseAction.DRINK -> true
+                itemStack.useAction == UseAction.BLOCK -> true // blocking with a shield
+                itemStack.item is BoatItem -> true // trying to place a boat
+                itemStack.item is BlockItem -> {
+                    // if holding a block, check if it can be placed on a surface within reach
+                    val hit = player.raycast(5.0, 0f, false)
+                    hit.type == HitResult.Type.BLOCK
+                }
+                itemStack.item == Items.FIREWORK_ROCKET -> player.isFallFlying || player.isTouchingWater
+                itemStack.item == Items.SUSPICIOUS_STEW -> true
+                itemStack.isUsedOnRelease -> true
+                itemStack.useAction == UseAction.NONE -> false
+                else -> true
+            }
+        }
 
         override fun allHeldStacks(): Sequence<IItemStack> {
             return sequence {

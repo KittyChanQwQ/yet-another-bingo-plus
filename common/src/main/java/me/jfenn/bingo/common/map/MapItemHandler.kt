@@ -7,18 +7,11 @@ import me.jfenn.bingo.common.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamService
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.BlockItem
-import net.minecraft.item.BoatItem
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
-import net.minecraft.util.UseAction
-import net.minecraft.util.hit.HitResult
 import java.util.*
 
 class MapItemHandler(
@@ -36,30 +29,6 @@ class MapItemHandler(
     private val usedAnyItem = mutableSetOf<UUID>()
 
     private val itemCooldown = mutableMapOf<UUID, Int>()
-
-    private fun isItemUsable(itemStack: ItemStack, player: PlayerEntity): Boolean {
-        // vaguely determine if the held item will be used or not
-        // (e.g. suspicious stew, potions, etc. - vs. static items such as iron ingots)
-        val isUsable = when {
-            itemStack.isEmpty -> false
-            itemStack.useAction == UseAction.EAT -> player.canConsume(false)
-            itemStack.useAction == UseAction.DRINK -> true
-            itemStack.useAction == UseAction.BLOCK -> true // blocking with a shield
-            itemStack.item is BoatItem -> true // trying to place a boat
-            itemStack.item is BlockItem -> {
-                // if holding a block, check if it can be placed on a surface within reach
-                val hit = player.raycast(5.0, 0f, false)
-                hit.type == HitResult.Type.BLOCK
-            }
-            itemStack.item == Items.FIREWORK_ROCKET -> player.isFallFlying || player.isTouchingWater
-            itemStack.item == Items.SUSPICIOUS_STEW -> true
-            itemStack.isUsedOnRelease -> true
-            itemStack.useAction == UseAction.NONE -> false
-            else -> true
-        }
-
-        return isUsable
-    }
 
     fun showInventory(player: ServerPlayerEntity) {
         val team = teamService.getPlayerTeam(player)
@@ -97,12 +66,12 @@ class MapItemHandler(
                 val otherItemStack = player.getStackInHand(when (hand) {
                     Hand.MAIN_HAND -> Hand.OFF_HAND
                     else -> Hand.MAIN_HAND
-                })
+                }).let { itemStackFactory.forStack(it) }
 
                 if (hand == Hand.OFF_HAND && !otherItemStack.isEmpty)
                     return@onUseItem ActionResult.Pass(itemStack)
 
-                if (hand == Hand.MAIN_HAND && isItemUsable(otherItemStack, player))
+                if (hand == Hand.MAIN_HAND && event.player.canUseItem(otherItemStack))
                     return@onUseItem ActionResult.Pass(itemStack)
 
                 usedBingoMap.add(player.uuid)
@@ -110,7 +79,7 @@ class MapItemHandler(
             }
 
             // if the item *can* be used, and *isn't* a bingo map, it should prevent the bingo map from being used
-            if (usedBingoMap.contains(player.uuid) && isItemUsable(itemStack.stack, player)) {
+            if (usedBingoMap.contains(player.uuid) && event.player.canUseItem(itemStack)) {
                 // println("Removing; item used ($hand, with ${itemStack.translationKey})")
                 usedBingoMap.remove(player.uuid)
             }
