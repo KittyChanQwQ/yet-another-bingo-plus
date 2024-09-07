@@ -337,8 +337,9 @@ class MenuController(
             val effect = DustParticleEffect(Vector3f(color.r / 255f, color.g / 255f, color.b / 255f), 1f)
             (player.world as? ServerWorld)?.spawnParticles(player, effect, true, position.x, position.y, position.z, 10, 1.0, 1.0, 1.0, 0.2)
 
-            Sounds.playTeamChanged(playerManager.forPlayer(player))
-            teamService.joinTeam(player, team)
+            val playerImpl = playerManager.forPlayer(player)
+            Sounds.playTeamChanged(playerImpl)
+            teamService.joinTeam(playerImpl, team)
         }
     }
 

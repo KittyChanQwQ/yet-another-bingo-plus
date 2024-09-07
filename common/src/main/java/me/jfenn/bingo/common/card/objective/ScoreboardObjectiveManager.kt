@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IPlayerHandle
@@ -102,11 +101,8 @@ class ScoreboardObjectiveManager(
 
             objectiveService.updateTeamsOnceAchieved(objective)
 
-            val teamPlayers = state.getRegisteredTeams()
-                .associate { it.key to it.players }
-                .mapValues { (_, players) ->
-                    players.map { offlinePlayerCache.getOfflinePlayer(it) }
-                }
+            val teamPlayers = objectiveService.getPlayersByTeam()
+                .mapKeys { it.key.key }
 
             val teamsProgress = teamPlayers.map { (team, players) ->
                 val scoreboardProgress = players.maxOf { getScoreboardValue(objective, scoreboard, it) }
@@ -146,7 +142,6 @@ class ScoreboardObjectiveManager(
             )
 
             objectiveService.update(
-                card = card,
                 objective = objective,
                 teamsProgress = teamsProgress,
                 playersHolding = playersHolding,

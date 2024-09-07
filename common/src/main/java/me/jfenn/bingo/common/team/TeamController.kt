@@ -41,7 +41,7 @@ class TeamController(
                 val isTeamJoined = playerTeam?.players?.add(playerProfile) ?: false
 
                 if (isTeamLeft || isTeamJoined) {
-                    teamService.onTeamChanged(player.player)
+                    teamService.onTeamChanged(player)
                     state.playersJoinedIds.add(player.uuid)
                 }
             }

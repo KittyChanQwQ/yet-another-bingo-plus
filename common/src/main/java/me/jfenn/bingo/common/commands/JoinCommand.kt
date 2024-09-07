@@ -55,7 +55,7 @@ class JoinCommand(
         }
 
         createSpawnpointFuture.whenCompleteAsync({ _, _ ->
-            teamService.joinTeam(player.player, team)
+            teamService.joinTeam(player, team)
 
             if (state.state == GameState.PLAYING) {
                 // if a player's team is changed in-game, move them to their new spawnpoint

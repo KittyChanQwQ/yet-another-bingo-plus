@@ -150,7 +150,6 @@ class StatsObjectiveManager(
             )
 
             objectiveService.update(
-                card = card,
                 objective = objective,
                 teamsProgress = teamsProgress,
                 playersHolding = playersHolding,

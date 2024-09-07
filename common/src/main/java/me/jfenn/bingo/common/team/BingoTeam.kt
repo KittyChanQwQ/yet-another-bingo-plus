@@ -61,6 +61,8 @@ data class BingoTeam(
 
     fun isWinner(): Boolean = this.winner != null
 
+    fun isPlaying() = !isWinner()
+
     fun includesPlayer(player: IPlayerHandle) = includesPlayer(player.player)
 
     fun includesPlayer(player: ServerPlayerEntity): Boolean {

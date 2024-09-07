@@ -166,7 +166,7 @@ class CardViewService(
         return CardView(
             teamKey = team?.key,
             teamColor = team?.mapColor,
-            teamName = team?.getName(textProvider, playerName = true, bracketed = false, teamNameKey = StringKey.CardTeamCardTitle)
+            teamName = team?.getName(textProvider, playerName = true, symbol = false, bracketed = false, teamNameKey = StringKey.CardTeamCardTitle)
                 ?.truncate(12)
                 ?.setStyle(Style.EMPTY)
                 ?: textProvider.string(StringKey.CardPreviewCard),

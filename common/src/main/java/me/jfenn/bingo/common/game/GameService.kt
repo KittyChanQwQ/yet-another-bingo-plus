@@ -88,7 +88,7 @@ class GameService(
 
             // Otherwise, we can just auto-assign a team
             for (player in playersWithoutATeam) {
-                teamService.joinTeam(player.player, BingoTeam.TEAM_BLOCKS.values.random())
+                teamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
             }
         }
 

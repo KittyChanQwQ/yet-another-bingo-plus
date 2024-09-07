@@ -108,7 +108,15 @@ class BingoCardCommand(
         sendInfoFeedback(Text.literal("Card re-rolled."))
     }
 
+    private fun IExecutionContext.getCardTags() = buildMap {
+        for ((i, card) in state.cards.withIndex()) {
+            this["#${i+1}"] = card
+        }
+    }
+
     private fun IExecutionContext.getCardStack() {
+        sendMessage(Text.literal("Bingo Cards:").formatted(Formatting.GRAY))
+
         for ((i, card) in state.cards.withIndex()) {
             val teams = state.getRegisteredTeams()
                 .filter { it.cardId == card.id }
@@ -126,7 +134,7 @@ class BingoCardCommand(
             val itemDist = card.options.formatItemDist()
 
             buildList {
-                add(Text.literal("#${i+1}"))
+                add(Text.literal("  #${i+1}"))
                 add(itemDist)
                 add(mode)
                 add(goal)
@@ -140,6 +148,23 @@ class BingoCardCommand(
                 .joinText(Text.literal(" | ").formatted(Formatting.GRAY))
                 .also { sendMessage(it) }
         }
+    }
+
+    private fun IExecutionContext.assignTeamCard(teamLabel: String, cardTag: String) {
+        val team = state.teams.values
+            .find { it.key.label == teamLabel }
+            ?: throw IllegalArgumentException("Could not find team '$teamLabel'")
+
+        val card = getCardTags()[cardTag]
+            ?: throw IllegalArgumentException("Could not find card '$cardTag'")
+
+        team.cardId = card.id
+        sendInfoFeedback(
+            Text.empty()
+                .append("Team ")
+                .append(team.getName(text))
+                .append(" assigned to card $cardTag")
+        )
     }
 
     init {
@@ -168,6 +193,18 @@ class BingoCardCommand(
 
                     long("seed") { seedArg ->
                         executes { setCardSeed(getArgument(seedArg)) }
+                    }
+                }
+
+                literal("assign") {
+                    string("team", { state.teams.keys.map { it.label } }) { teamArg ->
+                        string("card", { getCardTags().keys }, greedy = true) { cardArg ->
+                            executes {
+                                val teamLabel = getArgument(teamArg)
+                                val cardTag = getArgument(cardArg)
+                                assignTeamCard(teamLabel, cardTag)
+                            }
+                        }
                     }
                 }
 

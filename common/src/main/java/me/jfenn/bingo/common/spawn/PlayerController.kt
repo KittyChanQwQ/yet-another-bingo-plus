@@ -56,7 +56,7 @@ class PlayerController(
         }
 
         val team = teamService.getPlayerTeam(player.player)
-        val isOnActiveTeam = team != null && !team.isWinner()
+        val isOnActiveTeam = team?.isPlaying() == true
         log.debug("updateGameMode({}}, forceReset=$forceReset)", player.uuid)
 
         val gameMode = when (state.state) {

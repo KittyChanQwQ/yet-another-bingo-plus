@@ -122,6 +122,10 @@ class BingoCard(
         )
     }
 
+    fun removePlayer(playerId: UUID) {
+        objectives.values.forEach { it.removePlayer(playerId) }
+    }
+
     fun removeTeam(team: BingoTeam) {
         objectives.values.forEach { it.removeTeam(team) }
     }

@@ -57,30 +57,17 @@ class TeamService(
         )
     }
 
-    fun joinTeam(player: ServerPlayerEntity, teamTemplate: BingoTeam) {
+    fun joinTeam(player: IPlayerHandle, teamTemplate: BingoTeam) {
         if (getPlayerTeam(player)?.key == teamTemplate.key) return
         val team = state.registerTeam(teamTemplate)
-        val playerProfile = BingoPlayerProfile.fromPlayer(playerManager.forPlayer(player))
+        val playerProfile = BingoPlayerProfile.fromPlayer(player)
 
         // Remove player from their existing team
-        val oldTeam = getPlayerTeam(player)
-        if (oldTeam != null) {
-            oldTeam.players.remove(playerProfile)
+        getPlayerTeam(player)?.players?.remove(playerProfile)
 
-            if (!oldTeam.isWinner()) {
-                // Remove any of the player's held/scored items from the card
-                val card = state.getCard(oldTeam)
-                if (card != null) {
-                    for (objective in card.objectives.values) {
-                        objective.removePlayer(playerProfile.uuid)
-                    }
-                }
-            }
-        }
-
-        teamManager.setPlayerTeam(player, createTeam(team))
+        teamManager.setPlayerTeam(player.player, createTeam(team))
         team.players.add(playerProfile)
-        player.sendMessage(
+        player.player.sendMessage(
             textProvider.string(StringKey.LobbyTeamChanged, team.getName(textProvider))
                 .formatted(Formatting.YELLOW)
         )
@@ -88,15 +75,20 @@ class TeamService(
         onTeamChanged(player)
     }
 
-    fun onTeamChanged(player: ServerPlayerEntity) {
+    fun onTeamChanged(player: IPlayerHandle) {
         // Send a new command tree once player is on a team
-        commandTreeHandler.sendCommandTree(player)
+        commandTreeHandler.sendCommandTree(player.player)
+
+        // Remove any of the player's held/scored items from the card
+        for (card in state.cards) {
+            card.removePlayer(player.uuid)
+        }
     }
 
     fun shuffleTeams(numTeams: Int) {
         val teams = BingoTeam.TEAM_BLOCKS.values.shuffled()
 
-        val players = server.playerManager.playerList
+        val players = playerManager.getPlayers()
         val playersPerTeam = ceil(players.size / numTeams.coerceIn(1, teams.size).toDouble()).toInt()
 
         players.shuffled()

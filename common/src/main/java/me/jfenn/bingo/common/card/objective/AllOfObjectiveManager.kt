@@ -94,7 +94,6 @@ class AllOfObjectiveManager(
             )
 
             objectiveService.update(
-                card = card,
                 objective = objective,
                 teamsProgress = teamsProgress,
                 playersHolding = playersHolding,
