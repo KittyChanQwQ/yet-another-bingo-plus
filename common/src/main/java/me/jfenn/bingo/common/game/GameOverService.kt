@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.game
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -36,6 +35,7 @@ class GameOverService(
         val playerInfo: Map<UuidAsString, GameOverPlayerInfo>,
         val isBestTime: Boolean,
         val prevBestTime: Duration?,
+        val scoreRankings: List<GameOverScoreRanking>,
     )
 
     @Serializable
@@ -90,7 +90,7 @@ class GameOverService(
         ).formatted(Formatting.YELLOW)
     }
 
-    fun getGameInfo(reason: GameEndReason?): GameOverInfo {
+    fun getGameInfo(reason: GameEndReason?, endedAt: Instant): GameOverInfo {
         val winningTeams = state.getRegisteredTeams()
             .filter { it.isWinner() }
 
@@ -119,14 +119,34 @@ class GameOverService(
                 && !state.isForfeit
                 && winningTeams.isNotEmpty()
 
+        val scoreRankings = state.getRegisteredTeams()
+            .map { team ->
+                val duration = team.winner?.instant?.let { completedAt ->
+                    completedAt - (state.startedAt ?: completedAt)
+                }
+
+                GameOverScoreRanking(
+                    key = team.key,
+                    score = team.totalScore,
+                    duration = duration,
+                )
+            }
+            .sortedWith(
+                Comparator.comparingLong<GameOverScoreRanking> { it.duration?.inWholeMilliseconds ?: Long.MAX_VALUE }
+                    .thenComparingInt { -it.score.cards }
+                    .thenComparingInt { -it.score.lines }
+                    .thenComparingInt { -it.score.items }
+            )
+
         return GameOverInfo(
             reason = reason,
             winningTeamKey = winningTeam?.key,
             leadingTeamKey = leadingTeam,
             playerInfo = playerInfo,
-            endedAt = Clock.System.now(),
+            endedAt = endedAt,
             isBestTime = isBestTime,
             prevBestTime = prevBestTime,
+            scoreRankings = scoreRankings,
         )
     }
 
@@ -147,12 +167,8 @@ class GameOverService(
         }
         val bestWinStreak = stats.getBestWinStreak(player.uuid)
 
-        // include any completed and in-progress cards
-        val teamCards = state.cards.filter { card -> team.completedCards.none { it.card.id == card.id } }
-            .plus(team.completedCards.map { it.card })
-
-        val capturedItems = teamCards.sumOf { card ->
-            card.countItems { it.players.containsKey(player.uuid) }
+        val capturedItems = team.completedCards.sumOf { completion ->
+            completion.card.countItems { it.players.containsKey(player.uuid) }
         }
         val bestCapturedItems = stats.getBestCapturedItems(player.uuid, options)
 

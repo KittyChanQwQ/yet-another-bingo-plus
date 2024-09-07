@@ -1,7 +1,9 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
+import me.jfenn.bingo.client.api.IScrollableWidgetFactory
 import me.jfenn.bingo.client.api.IWorldService
+import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
@@ -11,6 +13,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
+import net.minecraft.text.Text
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
 import org.koin.core.Koin
@@ -25,6 +28,7 @@ class BingoEndScreen(
     private val gameOver: BingoHudState.GameOver,
     private val canEscape: Boolean = false,
     private val text: TextProvider = koin.get(),
+    scrollableWidgetFactory: IScrollableWidgetFactory = koin.get(),
 ) : Screen(text.string(StringKey.CardTitle)) {
 
     private val worldService = koin.get<IWorldService>()
@@ -51,6 +55,23 @@ class BingoEndScreen(
 
     private var dismissButton: ButtonWidget? = null
     private var restartButton: ButtonWidget? = null
+    private var scoresButton: ButtonWidget? = null
+
+    enum class EndScreenTab(val title: StringKey) {
+        SCORES(StringKey.GameEndTabScores),
+        CARDS(StringKey.GameEndTabCards),
+    }
+
+    private val GameOverPacket.shouldDefaultToScoresTab: Boolean get() {
+        // If there are multiple teams & either more than one team completed the game, or the game was a draw
+        val completedTeamCount = scores.count { it.duration != null }
+        return completedTeamCount > 1 || (completedTeamCount == 0 && scores.size > 1)
+    }
+
+    // If multiple teams have a duration (i.e. have completed the game), show the score list by default
+    private var tab: EndScreenTab = if (gameOver.packet.shouldDefaultToScoresTab) EndScreenTab.SCORES else EndScreenTab.CARDS
+
+    private val scoresWidget = scrollableWidgetFactory.create(BingoEndScoresWidget(koin, gameOver))
 
     private fun reopenWorld() {
         val client = client ?: return
@@ -63,6 +84,7 @@ class BingoEndScreen(
 
     private fun updateButtons() {
         val client = client ?: return
+        clearChildren()
 
         val dismissButton = dismissButton ?: ButtonWidget.builder(text.string(StringKey.CardClose)) { close() }
             .width(BUTTON_WIDTH)
@@ -96,6 +118,33 @@ class BingoEndScreen(
         restartButton.x = (width/2) + 4
         restartButton.y = (height/2) + (BingoHudRenderer.CARD_HEIGHT /2) + 8
         addDrawableChild(restartButton)
+
+        val scoresButton = scoresButton ?: ButtonWidget.builder(Text.empty()) {
+            val newTab = EndScreenTab.entries.findLast { it != tab }!!
+            tab = newTab
+            updateButtons()
+        }
+            .size(80, 20)
+            .position(0, 0)
+            .build()
+            .also {
+                scoresButton = it
+            }
+
+        scoresButton.message = EndScreenTab.entries.findLast { it != tab }!!.let { text.string(it.title).append(" >>") }
+        scoresButton.x = width - 84
+        scoresButton.y = height - 24
+        if (gameOver.packet.scores.size > 1 || tab == EndScreenTab.SCORES) {
+            addDrawableChild(scoresButton)
+        }
+
+        if (tab == EndScreenTab.SCORES) {
+            scoresWidget.x = (width * 0.1f).toInt()
+            scoresWidget.y = (height/2) - (BingoHudRenderer.CARD_HEIGHT/2)
+            scoresWidget.width = (width * 0.8f).toInt()
+            scoresWidget.height = BingoHudRenderer.CARD_HEIGHT
+            addDrawableChild(scoresWidget.widget)
+        }
     }
 
     override fun init() {
@@ -269,12 +318,14 @@ class BingoEndScreen(
         renderGameDuration(context, titleY - 20)
         renderWinStreak(context, titleY - 20)
 
-        cardsWidget.views = gameOver.views
-        cardsWidget.winner = gameOver.packet.winner
-        cardsWidget.x = width/2
-        cardsWidget.y = height/2
-        cardsWidget.width = width * 6/10
-        cardsWidget.render(context, mouseX, mouseY, delta)
+        if (tab == EndScreenTab.CARDS) {
+            cardsWidget.views = gameOver.views
+            cardsWidget.winner = gameOver.packet.winner
+            cardsWidget.x = width/2
+            cardsWidget.y = height/2
+            cardsWidget.width = width * 6/10
+            cardsWidget.render(context, mouseX, mouseY, delta)
+        }
 
         if (gameOver.packet.isWinner) {
             fireworkRenderer.render(context, textRenderer, width/2, height/2)

@@ -11,10 +11,12 @@ import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.FormattingSerializer
 import me.jfenn.bingo.common.utils.UuidAsString
+import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
@@ -59,6 +61,16 @@ data class BingoTeam(
 
     val singlePlayer get() = players.takeIf { it.size == 1 }?.first()
 
+    val totalScore: TeamScore get() {
+        val containsScore = completedCards.any { it.card.id == cardId }
+        val scores = completedCards.map { it.score } + (if (containsScore) emptyList() else listOf(score))
+        return TeamScore(
+            cards = score.cards,
+            lines = scores.sumOf { it.lines },
+            items = scores.sumOf { it.items },
+        )
+    }
+
     fun isWinner(): Boolean = this.winner != null
 
     fun isPlaying() = !isWinner()
@@ -85,6 +97,14 @@ data class BingoTeam(
             .let { if (symbol) Text.empty().append("${this.symbol} ").append(it) else it }
             .formatted(formatting)
             .let { if (bracketed) Texts.bracketed(it) else it }
+            .also { t ->
+                t.style = t.style.withHoverEvent(
+                    HoverEvent(
+                        HoverEvent.Action.SHOW_TEXT,
+                        players.map { Text.literal(it.name) }.joinText(Text.literal("\n"))
+                    )
+                )
+            }
     }
 
     fun countCards(): Int = completedCards.count { it.isWinner }

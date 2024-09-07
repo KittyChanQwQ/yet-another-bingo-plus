@@ -108,6 +108,15 @@ class GameOverController(
         val title = gameOverService.getTitle(info)
         val message = gameOverService.getMessage(info)
 
+        val scoreRankings = info.scoreRankings.map {
+            GameOverPacket.ScoreRanking(
+                key = it.key,
+                name = state.teams[it.key]?.getName(textProvider, playerName = true) ?: Text.literal("[unknown]"),
+                score = it.score,
+                duration = it.duration,
+            )
+        }
+
         for (player in playerManager.getPlayers()) {
             val playerInfo = info.playerInfo[player.uuid]
             val isWinner = winningTeam?.includesPlayer(player.player) ?: false
@@ -138,9 +147,11 @@ class GameOverController(
                 prevBestTime = info.prevBestTime,
 
                 seed = server.overworld.seed,
+                scores = scoreRankings,
             )
 
             when {
+                packetManager.gameOverV6.send(player.player, packet) -> {}
                 packetManager.gameOverV5.send(player.player, packet) -> {}
                 packetManager.gameOverV4.send(player.player, packet) -> {}
                 packetManager.gameOverV3.send(player.player, packet) -> {}

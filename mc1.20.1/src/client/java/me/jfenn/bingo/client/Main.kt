@@ -32,6 +32,7 @@ object Main : ClientModInitializer {
         single { DrawService } bind IDrawServiceFactory::class
         singleOf(::HudCallbackImpl) bind IHudCallback::class
         single { NativeImageFactory } bind INativeImageFactory::class
+        single { ScrollableWidgetFactory } bind IScrollableWidgetFactory::class
         single { OptionsAccessor } bind IOptionsAccessor::class
         single { SessionAccessor } bind ISessionAccessor::class
 

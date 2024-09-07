@@ -37,4 +37,13 @@ interface IPacketBuf {
         return if (readBoolean()) callback() else null
     }
 
+    fun <T> writeList(value: Collection<T>, callback: (T) -> Unit) {
+        val list = value.toList()
+        writeInt(list.size)
+        list.forEach(callback)
+    }
+
+    fun <T> readList(callback: () -> T): List<T> {
+        return List(readInt()) { callback() }
+    }
 }

@@ -145,6 +145,7 @@ class ScoredItemCheck(
         if (condition is BingoWinCondition.Cards && team.countCards() >= condition.cards) {
             // the team has won the game
             team.winner = TeamWinner(now)
+            team.cardId = null
             // add to playersJoinedIds - tells [PlayerController] to run updateGameMode
             // which should place winning teams in spectator
             state.playersJoinedIds += team.players.map { it.uuid }
@@ -164,6 +165,7 @@ class ScoredItemCheck(
     }
 
     private fun tickCard(card: BingoCard) {
+        if (state.endedAt != null) return
         val tickStart = state.updatedAt ?: Instant.DISTANT_PAST
 
         // Update all objectives
@@ -179,6 +181,8 @@ class ScoredItemCheck(
     private fun postTickCards(
         prevLeadingTeam: BingoTeam?,
     ) {
+        if (state.endedAt != null) return
+
         val cardCompletedPackets = pendingCardCompletedPackets.toList()
         pendingCardCompletedPackets.clear()
 
@@ -192,11 +196,9 @@ class ScoredItemCheck(
         }
 
         // otherwise, send any pending card completed packets
-        if (state.endedAt == null) {
-            for ((teamKey, packet) in cardCompletedPackets) {
-                val team = state.teams[teamKey] ?: continue
-                scoreUpdateService.sendCardCompleted(team, packet.isWinner)
-            }
+        for ((teamKey, packet) in cardCompletedPackets) {
+            val team = state.teams[teamKey] ?: continue
+            scoreUpdateService.sendCardCompleted(team, packet.isWinner)
         }
 
         // check if the leading team has changed, and announce the leader

@@ -16,6 +16,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.WriteStatsService
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
@@ -145,11 +146,26 @@ class GameService(
     fun end(reason: GameEndReason?) {
         if (state.endedAt != null) return
 
+        // Create completion info for any teams that have not already completed the card
+        val endedAt = Clock.System.now()
+        for (team in state.getRegisteredTeams()) {
+            val card = state.cards.find { it.id == team.cardId }
+            if (card != null) {
+                team.cardId = null
+                team.completedCards += TeamCompletedCard(
+                    card = card.copy(),
+                    completedAt = endedAt,
+                    isWinner = false,
+                    score = team.score
+                )
+            }
+        }
+
         // Get the game over info first
         // (which needs to query the previous best time from stats.db)
-        val info = gameOverService.getGameInfo(reason)
+        val info = gameOverService.getGameInfo(reason, endedAt = endedAt)
         state.gameOverInfo = info
-        state.endedAt = info.endedAt
+        state.endedAt = endedAt
 
         // Then, write the game to stats.db
         writeStatsService.writeGame()

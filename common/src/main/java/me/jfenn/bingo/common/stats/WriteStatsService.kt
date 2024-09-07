@@ -79,13 +79,9 @@ class WriteStatsService(
                 isWinner = team.isWinner()
             ).also { insertTeams.add(it) }
 
-            // include any completed and in-progress cards
-            val teamCards = state.cards.filter { card -> team.completedCards.none { it.card.id == card.id } }
-                .plus(team.completedCards.map { it.card })
-
             for (player in team.players) {
-                val itemCount = teamCards.sumOf { card ->
-                    card.countItems { it.players.containsKey(player.uuid) }
+                val itemCount = team.completedCards.sumOf { completion ->
+                    completion.card.countItems { it.players.containsKey(player.uuid) }
                 }
                 val insertPlayer = GamePlayerInfo(
                     teamId = insertTeam.id,

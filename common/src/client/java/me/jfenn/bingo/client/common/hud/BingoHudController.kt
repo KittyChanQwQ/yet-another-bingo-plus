@@ -242,7 +242,9 @@ class BingoHudController(
         packetEvents.cardUpdateV5.onPacket(::onCardUpdate)
 
         packetEvents.cardCompletedV1.onPacket {
-            fireworkRenderer = BingoEndFireworkRenderer(range = (100 * config.client.cardScale).toInt())
+            if (it.packet.isWinner) {
+                fireworkRenderer = BingoEndFireworkRenderer(range = (100 * config.client.cardScale).toInt())
+            }
         }
 
         packetEvents.scoreMessageV1.onPacket { (packet) ->
@@ -254,6 +256,7 @@ class BingoHudController(
         packetEvents.gameOverV3.onPacket(::onGameOver)
         packetEvents.gameOverV4.onPacket(::onGameOver)
         packetEvents.gameOverV5.onPacket(::onGameOver)
+        packetEvents.gameOverV6.onPacket(::onGameOver)
 
         packetEvents.tooltipV1.onPacket {
             state.tooltip = it.packet
