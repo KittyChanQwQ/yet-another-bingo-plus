@@ -2,6 +2,7 @@ package me.jfenn.bingo.impl
 
 import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
@@ -11,6 +12,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.suggestion.SuggestionProvider
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.commands.*
 import me.jfenn.bingo.common.scope.BingoKoin
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -67,6 +69,11 @@ class CommandManagerImpl(
                     is CommandArgument.Integer -> RequiredArgumentBuilder.argument(
                         arg.name,
                         IntegerArgumentType.integer(arg.min, arg.max)
+                    )
+
+                    is CommandArgument.NumberLong -> RequiredArgumentBuilder.argument(
+                        arg.name,
+                        LongArgumentType.longArg(arg.min, arg.max)
                     )
 
                     is CommandArgument.Player -> RequiredArgumentBuilder.argument(
@@ -151,7 +158,7 @@ open class ExecutionSourceImpl(
     override val server: MinecraftServer = source.server
     override val scope: Scope = BingoKoin.getScope(source.server)
         ?: throw IllegalArgumentException("No scope registered for this server!")
-    override val player: ServerPlayerEntity? = source.player
+    override val player: IPlayerHandle? = source.player?.let { PlayerHandle(it) }
 }
 
 class ExecutionContextImpl(
@@ -170,6 +177,7 @@ class ExecutionContextImpl(
             is CommandArgument.Text -> TextArgumentType.getTextArgument(ctx, arg.name) as T
             is CommandArgument.Bool -> BoolArgumentType.getBool(ctx, arg.name) as T
             is CommandArgument.Integer -> IntegerArgumentType.getInteger(ctx, arg.name) as T
+            is CommandArgument.NumberLong -> LongArgumentType.getLong(ctx, arg.name) as T
             is CommandArgument.Player -> EntityArgumentType.getPlayer(ctx, arg.name) as T
         }
     }
