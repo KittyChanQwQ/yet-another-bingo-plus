@@ -21,6 +21,7 @@ import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
+import net.minecraft.text.Text
 import kotlin.time.Duration.Companion.seconds
 
 class CardViewService(
@@ -54,10 +55,12 @@ class CardViewService(
      * Send an empty CardDisplayPacket to clear the HUD state
      */
     fun sendClearDisplayPacket(player: ServerPlayerEntity) {
-        packets.cardDisplayV1.send(player, CardDisplayPacket(
-            teamInfo = emptyMap(),
-            display = emptyList(),
-        ))
+        packets.cardDisplayV1.send(
+            player, CardDisplayPacket(
+                teamInfo = emptyMap(),
+                display = emptyList(),
+            )
+        )
     }
 
     fun sendUpdatePackets(player: IPlayerHandle) {
@@ -74,12 +77,20 @@ class CardViewService(
 
         packets.cardDisplayV1.send(player, packet)
 
+        val isViewingSpectatorCards = displayTeams.size > 1
+
         for (team in displayTeams) {
             val map = team
                 ?.let { teamService.getTeamMap(it) }
                 ?: state.getPreviewMap(mapService)
 
-            val view = map.view
+            val view = when {
+                // When the player is viewing multiple cards, use player names on the card titles
+                // (otherwise, it only shows the team name)
+                isViewingSpectatorCards -> map.view.copy(teamName = getMapName(team, playerName = true))
+                else -> map.view
+            }
+
             val updatePacket = CardUpdatePacket(view)
             when {
                 packets.cardUpdateV5.send(player, updatePacket) -> {}
@@ -91,17 +102,23 @@ class CardViewService(
         }
     }
 
-    fun isViewingPreviewCard(player: IPlayerHandle)
-        = state.state == GameState.PREGAME && options.showPreviewCard && state.isLobbyMode && !teamService.isPlaying(player)
+    fun isViewingPreviewCard(player: IPlayerHandle) =
+        state.state == GameState.PREGAME && options.showPreviewCard && state.isLobbyMode && !teamService.isPlaying(
+            player
+        )
 
-    fun isViewingTeamCard(player: IPlayerHandle, team: BingoTeam)
-        = (state.state == GameState.PLAYING || options.showPreviewCard) && team.includesPlayer(player)
+    fun isViewingTeamCard(player: IPlayerHandle, team: BingoTeam) =
+        (state.state == GameState.PLAYING || options.showPreviewCard) && team.includesPlayer(player)
 
     fun isViewingSpectatorCards(player: IPlayerHandle): Boolean {
         val team = teamService.getPlayerTeam(player)
         return when (state.state) {
             // if the state is not POSTGAME, players must have permission to receive the spectator cards
-            GameState.PLAYING -> (team == null || team.isWinner()) && permissions.hasPermission(player, Permission.SPECTATOR_VIEW_CARDS)
+            GameState.PLAYING -> (team == null || team.isWinner()) && permissions.hasPermission(
+                player,
+                Permission.SPECTATOR_VIEW_CARDS
+            )
+
             GameState.POSTGAME -> true
             else -> false
         }
@@ -124,7 +141,7 @@ class CardViewService(
         entry: BingoCardEntry,
         objective: BingoObjective,
         card: BingoCard,
-    ) : CardTile {
+    ): CardTile {
         // Contains the current state of the card; in case the team is the winner, their card reference will be
         // the completed card state rather than the actual state for in-game teams
         val actualCard = state.getCard(card.id)
@@ -132,7 +149,8 @@ class CardViewService(
 
         val isFreeSpace = objective is BingoObjective.FreeSpace
         val isHidden = card.options.isHiddenItemsMode && (team == null || !objective.hasSeen(team.key)) && !isFreeSpace
-        val isLocked = card.options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key)
+        val isLocked =
+            card.options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key)
         val isAchieved = team != null && objective.hasAchieved(team.key)
 
         return CardTile(
@@ -159,17 +177,27 @@ class CardViewService(
         )
     }
 
-    fun getMapView(team: BingoTeam?): CardView {
+    private fun getMapName(team: BingoTeam?, playerName: Boolean = false): Text {
+        return team?.getName(
+            textProvider,
+            playerName = playerName,
+            symbol = false,
+            bracketed = false,
+            teamNameKey = StringKey.CardTeamCardTitle
+        )
+            ?.truncate(12)
+            ?.setStyle(Style.EMPTY)
+            ?: textProvider.string(StringKey.CardPreviewCard)
+    }
+
+    private fun getMapView(team: BingoTeam?): CardView {
         val card = team?.let { state.getCard(it) }
             ?: state.getActiveCard()
 
         return CardView(
             teamKey = team?.key,
             teamColor = team?.mapColor,
-            teamName = team?.getName(textProvider, playerName = true, symbol = false, bracketed = false, teamNameKey = StringKey.CardTeamCardTitle)
-                ?.truncate(12)
-                ?.setStyle(Style.EMPTY)
-                ?: textProvider.string(StringKey.CardPreviewCard),
+            teamName = getMapName(team),
             tiles = card.entries
                 .map { entry ->
                     val goal = card.objectives[entry.objectiveId]
