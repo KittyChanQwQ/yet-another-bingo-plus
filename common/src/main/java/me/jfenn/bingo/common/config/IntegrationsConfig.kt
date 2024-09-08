@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.integrations.voice.VoiceGroupSettings
+import me.jfenn.bingo.integrations.voice.VoiceGroupType
 
 @Serializable
 data class IntegrationsConfig(
@@ -19,7 +20,7 @@ data class IntegrationsConfig(
         val useCombinedGroupForSingleplayerTeams: Boolean = true,
         val useCombinedGroupAlways: Boolean = false,
         val teamGroups: VoiceGroupSettings? = VoiceGroupSettings(name = "Bingo: %s Team"),
-        val spectatorGroup: VoiceGroupSettings? = VoiceGroupSettings(name = "Bingo: Spectators"),
+        val spectatorGroup: VoiceGroupSettings? = VoiceGroupSettings(name = "Bingo: Spectators", type = VoiceGroupType.NORMAL),
         val combinedGroup: VoiceGroupSettings? = VoiceGroupSettings(name = "Bingo"),
     )
 }

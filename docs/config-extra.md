@@ -79,6 +79,10 @@ Controls whether the mod's [Chunky integration](./mods/chunky) is enabled. If th
 
 Specifies the dimensions and distance (in blocks) that Chunky should automatically pre-generate, if the `"chunky"` config is `true`.
 
+### `"voice"`
+
+Provides settings for the mod's [Voice Chat Integration](./mods/voice). If enabled, the mod will create groups for each team at the start of the round, and move players into one combined group when it ends.
+
 ## `"databaseUrl"` / `"databaseUser"` / `"databasePass"`
 (default: null)
 

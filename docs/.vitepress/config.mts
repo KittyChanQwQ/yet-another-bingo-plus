@@ -80,6 +80,7 @@ export default defineConfig({
           { text: 'Chunky', link: '/mods/chunky' },
           { text: 'LuckPerms', link: '/mods/luckperms' },
           { text: 'Vanish', link: '/mods/vanish' },
+          { text: 'Voice Chat', link: '/mods/voice' },
         ]
       },
       {
