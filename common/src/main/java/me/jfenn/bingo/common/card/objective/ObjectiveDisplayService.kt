@@ -66,7 +66,7 @@ class ObjectiveDisplayService(
         display.copy(
             name = display.name?.let { name ->
                 when {
-                    name == display.item?.displayName -> name
+                    name.string == display.item?.displayName?.string -> name
                     else -> Text.empty().append(name).formatted(Formatting.ITALIC)
                 }
             },

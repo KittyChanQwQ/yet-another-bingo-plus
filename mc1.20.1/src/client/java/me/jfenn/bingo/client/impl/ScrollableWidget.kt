@@ -26,7 +26,7 @@ class ScrollableWidget(
     }
 
     override fun getDeltaYPerScroll(): Double {
-        return 1.0
+        return 9.0
     }
 
     override fun renderButton(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {

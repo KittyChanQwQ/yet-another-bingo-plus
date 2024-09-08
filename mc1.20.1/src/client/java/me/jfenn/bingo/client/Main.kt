@@ -35,6 +35,7 @@ object Main : ClientModInitializer {
         single { ScrollableWidgetFactory } bind IScrollableWidgetFactory::class
         single { OptionsAccessor } bind IOptionsAccessor::class
         single { SessionAccessor } bind ISessionAccessor::class
+        single { TabsWidgetFactory } bind ITabsWidgetFactory::class
 
         single { BingoWorldState() }
         singleOf(::WorldServiceImpl) bind IWorldService::class

@@ -26,8 +26,8 @@ class BingoEndScoresWidget(
 
     override fun renderContents(drawService: IDrawService, mouseX: Int, mouseY: Int) {
         val teamCol = 4
-        val scoreCol = (contentWidth * 0.5f).toInt()
-        val timeCol = (contentWidth * 0.9f).toInt()
+        val scoreCol = (contentWidth * 0.4f).toInt()
+        val timeCol = (contentWidth * 0.8f).toInt()
 
         val yOffset = (entryHeight/2) - (textRenderer.fontHeight/2)
 
