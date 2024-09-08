@@ -21,6 +21,7 @@ class BingoCard(
     val entries: List<BingoCardEntry>,
     val objectives: Map<String, BingoObjective>,
     val options: BingoCardOptions,
+    var ticks: Int = 0,
 ) {
 
     init {

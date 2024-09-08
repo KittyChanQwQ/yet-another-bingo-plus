@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.scoring
 
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
@@ -17,6 +18,9 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamWinner
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
+import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
 import kotlin.random.Random
@@ -33,6 +37,8 @@ class ScoredItemCheck(
     private val cardService: CardService,
     private val scoreUpdateService: ScoreUpdateService,
     private val objectiveManager: BingoObjectiveManager,
+    private val playerManager: IPlayerManager,
+    private val text: TextProvider,
     events: ScopedEvents,
 ) : BingoComponent() {
 
@@ -128,6 +134,10 @@ class ScoredItemCheck(
                     .forEach { onCardCompleted(it, card, false) }
             }
         }
+
+        // we want ticks to stop at Int.MAX_VALUE so that it does not overflow into a negative
+        if (card.ticks < Int.MAX_VALUE)
+            card.ticks++
     }
 
     private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean) {
@@ -150,6 +160,28 @@ class ScoredItemCheck(
             // which should place winning teams in spectator
             state.playersJoinedIds += team.players.map { it.uuid }
         } else {
+            // If the team is supposed to get a new card, check that it has >3 ticks
+            // (this relates to init() calling the tick function 3 times)
+            // - if the card is immediately achieved, we should end the game because this might be an infinite loop
+            if (card.ticks <= 3) {
+                val cardGoal = card.options.goal.format(text)
+                val cardScore = when (card.options.goal) {
+                    is BingoGoal.Items -> text.itemCount(team.score.items)
+                    is BingoGoal.Lines -> text.lineCount(team.score.lines)
+                }
+                val message = text.string(StringKey.CommandStartWillImmediatelyEnd, cardGoal, cardScore).formatted(Formatting.RED)
+                for (player in playerManager.getPlayers()) {
+                    player.player.sendMessage(message)
+                }
+
+                log.error("[ScoredItemCheck] Ending the game because a card was completed immediately")
+                log.error(" - This is done to avoid repeatedly creating new cards in a loop. You should check the 'Goal' settings to make sure that cards aren't completed as soon as the game starts.")
+
+                state.isForfeit = true
+                gameService.end(null)
+                return
+            }
+
             val nextCard = card.nextCardId?.let { state.getCard(it) }
             team.cardId = nextCard?.id
 

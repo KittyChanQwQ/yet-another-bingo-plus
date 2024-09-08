@@ -240,6 +240,7 @@
   "bingo.command.start.players_missing_teams": "Some players have not picked a team! (%s)",
   "bingo.command.start.players_missing_teams_hint": "Run '/bingo shuffleteams' to assign teams. Use '/bingo start ignore_warnings' or sneak+click to ignore.",
   "bingo.command.start.already_started": "The game has already been started!",
+  "bingo.command.start.will_immediately_end": "The goal is set to %s, but the card already has %s completed!",
   "bingo.command.lobby.warning1": "Bingo is currently running in survival mode - which will not overwrite your world save.",
   "bingo.command.lobby.warning2": "However, turning on 'lobby mode' will DELETE YOUR WORLD FOLDER after each game to start from a fresh seed.",
   "bingo.command.lobby.warning3": "There is no way to recover lost data if you enable this setting. Are you sure you want to continue?",

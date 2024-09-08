@@ -7,6 +7,8 @@ import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.objective.BingoObjective
+import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -106,6 +108,30 @@ class GameService(
         if (!options.isValid()) {
             sendFeedback(text.string(StringKey.CommandStartInvalidDistribution))
             return false
+        }
+
+        val initialTeamCards = state.getRegisteredTeams()
+            .mapNotNull { state.getCard(it) }
+            .distinctBy { it.id }
+
+        for (card in initialTeamCards) {
+            // Count any lines/items that will initially be achieved when the game starts
+            val initialLines = card.countLines { it is BingoObjective.FreeSpace || it is BingoObjective.InverseEntry }
+            val initialItems = card.countItems { it is BingoObjective.FreeSpace || it is BingoObjective.InverseEntry }
+
+            // If these immediately satisfy the goal, then the config is invalid
+            val goal = card.options.goal
+            if (goal is BingoGoal.Lines && goal.lines <= initialLines) {
+                val feedback = text.string(StringKey.CommandStartWillImmediatelyEnd, goal.format(text), text.lineCount(initialLines))
+                sendFeedback(feedback)
+                return false
+            }
+
+            if (goal is BingoGoal.Items && goal.items <= initialItems) {
+                val feedback = text.string(StringKey.CommandStartWillImmediatelyEnd, goal.format(text), text.itemCount(initialItems))
+                sendFeedback(feedback)
+                return false
+            }
         }
 
         // save the current config, if overwrite option is set
