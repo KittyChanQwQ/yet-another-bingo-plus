@@ -25,6 +25,7 @@ modrinth {
         optional.project "jei"
         optional.project "rei"
         optional.project "emi"
+        optional.project "simple-voice-chat"
     }
     syncBodyFrom = rootProject.file("README.md").text
 }

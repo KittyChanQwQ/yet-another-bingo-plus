@@ -50,9 +50,18 @@ dependencies {
         exclude(group: "org.quiltmc.parsers")
     }
 
-    modCompileOnlyApi(libs.jei)
-    modCompileOnlyApi(libs.roughlyenoughitems)
-    modCompileOnlyApi(libs.emi)
+    modCompileOnly(libs.jei)
+    modCompileOnly(libs.roughlyenoughitems)
+    modCompileOnly(libs.emi)
+    modCompileOnly(libs.voicechat)
+    // modCompileOnly(libs.plasmovoice) {
+    //     exclude(group: "org.jetbrains.kotlin")
+    //     exclude(group: "org.jetbrains.kotlinx")
+    //     exclude(group: "org.jetbrains")
+    //     exclude(group: "org.projectlombok")
+    //     exclude(group: "com.google.guava")
+    //     exclude(group: "com.google.code.gson")
+    // }
 }
 
 tasks.register('bingoDatapack', Zip) {

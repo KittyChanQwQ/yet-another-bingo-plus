@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.team
 
 import me.jfenn.bingo.api.*
-import me.jfenn.bingo.common.commands.CommandTreeHandler
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
@@ -15,9 +15,9 @@ import kotlin.math.ceil
 class TeamService(
     private val log: Logger,
     private val server: MinecraftServer,
+    private val events: ScopedEvents,
     private val state: BingoState,
     private val teamManager: ITeamManager,
-    private val commandTreeHandler: CommandTreeHandler,
     private val textProvider: TextProvider,
     private val playerManager: IPlayerManager,
     private val mapService: IMapService,
@@ -72,17 +72,7 @@ class TeamService(
                 .formatted(Formatting.YELLOW)
         )
 
-        onTeamChanged(player)
-    }
-
-    fun onTeamChanged(player: IPlayerHandle) {
-        // Send a new command tree once player is on a team
-        commandTreeHandler.sendCommandTree(player.player)
-
-        // Remove any of the player's held/scored items from the card
-        for (card in state.cards) {
-            card.removePlayer(player.uuid)
-        }
+        events.onChangeTeam(player)
     }
 
     fun shuffleTeams(numTeams: Int) {

@@ -189,10 +189,18 @@ class ScoredItemCheck(
         val teams = state.getRegisteredTeams()
 
         // check if any team has won the game
-        if (options.endGameWhenComplete && teams.any { it.isWinner() }) {
-            log.info("[ScoredItemCheck] Ending the game because a team has won")
-            gameService.end(GameEndReason.BINGO)
-            return
+        if (options.endGameWhenComplete) {
+            if (teams.any { it.isWinner() }) {
+                log.info("[ScoredItemCheck] Ending the game because a team has won")
+                gameService.end(GameEndReason.BINGO)
+                return
+            }
+        } else {
+            if (teams.all { it.isWinner() }) {
+                log.info("[ScoredItemCheck] Ending the game because all teams have finished")
+                gameService.end(GameEndReason.BINGO)
+                return
+            }
         }
 
         // otherwise, send any pending card completed packets
@@ -320,6 +328,13 @@ class ScoredItemCheck(
                 for (goal in card.objectives.values) {
                     goal.teamsSeen = teamKeys.toMutableSet()
                 }
+            }
+        }
+
+        events.onChangeTeam { player ->
+            // Remove any of the player's held/scored items from the card
+            for (card in state.cards) {
+                card.removePlayer(player.uuid)
             }
         }
     }

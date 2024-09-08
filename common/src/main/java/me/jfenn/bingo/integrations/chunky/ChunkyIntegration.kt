@@ -1,4 +1,4 @@
-package me.jfenn.bingo.integrations
+package me.jfenn.bingo.integrations.chunky
 
 import me.jfenn.bingo.api.ICommandRunner
 import me.jfenn.bingo.common.config.BingoConfig

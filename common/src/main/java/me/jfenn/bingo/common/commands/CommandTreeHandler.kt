@@ -19,6 +19,10 @@ class CommandTreeHandler(
                 sendCommandTree(player)
             }
         }
+
+        events.onChangeTeam {
+            sendCommandTree(it.player)
+        }
     }
 
 }

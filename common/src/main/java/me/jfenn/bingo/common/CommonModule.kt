@@ -51,9 +51,12 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.*
 import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.impl.ServerCloseEvent
-import me.jfenn.bingo.integrations.ChunkyIntegration
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
+import me.jfenn.bingo.integrations.chunky.ChunkyController
+import me.jfenn.bingo.integrations.chunky.ChunkyIntegration
+import me.jfenn.bingo.integrations.voice.VoiceGroupController
+import me.jfenn.bingo.integrations.voice.VoiceIntegration
 import org.koin.core.Koin
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.scopedOf
@@ -82,6 +85,7 @@ val commonModule = module {
     factoryOf(PermissionsIntegration::create)
     factoryOf(VanishIntegration::create)
     factoryOf(ChunkyIntegration::create)
+    factoryOf(VoiceIntegration::create)
 
     singleOf(::BingoCommand)
     singleOf(::BingoCardCommand)
@@ -175,7 +179,6 @@ val commonModule = module {
         scopedOf(::BossBarController)
         scopedOf(::DatapackFunctionService)
         scopedOf(::GameRuleController)
-        scopedOf(::IntegrationController)
         scopedOf(::LobbyChaosController)
         scopedOf(::MapItemController)
         scopedOf(::MapItemHandler)
@@ -184,6 +187,9 @@ val commonModule = module {
         scopedOf(::PlayerSettingsController)
         scopedOf(::PlayerSpectatorController)
         scopedOf(::ScoreboardController)
+
+        scopedOf(::ChunkyController)
+        scopedOf(::VoiceGroupController)
 
         scopedOf(::ChestService)
         scopedOf(::ChestController)
@@ -258,7 +264,6 @@ fun Scope.commonInit() {
     get<BingoMapController>()
     get<BossBarController>()
     get<GameRuleController>()
-    get<IntegrationController>()
     get<LobbyChaosController>()
     get<MapItemController>()
     get<MapItemHandler>()
@@ -278,6 +283,9 @@ fun Scope.commonInit() {
     get<StatsSyncController>()
 
     get<TeamController>()
+
+    get<ChunkyController>()
+    get<VoiceGroupController>()
 
     get<CountdownController>()
     get<TimerCheck>()

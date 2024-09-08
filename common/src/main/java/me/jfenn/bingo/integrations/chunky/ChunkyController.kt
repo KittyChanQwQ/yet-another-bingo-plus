@@ -1,12 +1,11 @@
-package me.jfenn.bingo.common.controller
+package me.jfenn.bingo.integrations.chunky
 
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.integrations.ChunkyIntegration
 import net.minecraft.server.MinecraftServer
 
-class IntegrationController(
+class ChunkyController(
     events: ScopedEvents,
     private val server: MinecraftServer,
     private val chunkyIntegration: ChunkyIntegration,

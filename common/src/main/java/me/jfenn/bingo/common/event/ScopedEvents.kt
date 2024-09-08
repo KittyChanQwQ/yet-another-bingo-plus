@@ -39,6 +39,7 @@ class ScopedEvents(
 
     val onChangeOptions = EventListener<Unit>()
     val onChangePlayerSettings = EventListener<IPlayerHandle>()
+    val onChangeTeam = EventListener<IPlayerHandle>()
 
     val onClose = EventListener<Unit>()
 
