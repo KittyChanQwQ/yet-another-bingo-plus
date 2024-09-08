@@ -65,7 +65,7 @@ class GameOverService(
     }
 
     fun getTitle(info: GameOverInfo): Text {
-        return info.reason?.let { textProvider.string(it.stringKey) }
+        return info.reason?.format(textProvider)
             ?: textProvider.string(StringKey.GameEndGameOver)
     }
 

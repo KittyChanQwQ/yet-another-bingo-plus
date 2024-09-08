@@ -1,11 +1,44 @@
 package me.jfenn.bingo.common.game
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import net.minecraft.text.Text
 
-enum class GameEndReason(
-    val stringKey: StringKey,
-) {
-    BINGO(StringKey.GameEndReasonBingo),
-    LOCKOUT(StringKey.GameEndReasonLockout),
-    TIMER(StringKey.GameEndReasonTimer),
+@Serializable
+sealed class GameEndReason {
+    abstract fun format(text: TextProvider): Text
+
+    @Serializable
+    @SerialName("bingo")
+    data object Bingo : GameEndReason() {
+        override fun format(text: TextProvider): Text {
+            return text.string(StringKey.GameEndReasonBingo)
+        }
+    }
+
+    @Serializable
+    @SerialName("lockout")
+    data object Lockout : GameEndReason() {
+        override fun format(text: TextProvider): Text {
+            return text.string(StringKey.GameEndReasonLockout)
+        }
+    }
+
+    @Serializable
+    @SerialName("timer")
+    data object Timer : GameEndReason() {
+        override fun format(text: TextProvider): Text {
+            return text.string(StringKey.GameEndReasonTimer)
+        }
+    }
+
+    @Serializable
+    @SerialName("command")
+    class Command(val playerName: String) : GameEndReason() {
+        override fun format(text: TextProvider): Text {
+            return text.string(StringKey.GameEndReasonCommand, playerName)
+        }
+    }
 }

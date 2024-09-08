@@ -120,7 +120,7 @@ class ScoredItemCheck(
             if (options.endGameWhenStalemate) {
                 log.info("[ScoredItemCheck] Ending the game because the card has reached a stalemate")
                 // if there's only one card, end the game when there's a lockout
-                gameService.end(GameEndReason.LOCKOUT)
+                gameService.end(GameEndReason.Lockout)
             } else {
                 log.info("[ScoredItemCheck] Skipping the current card because it has reached a stalemate")
                 // otherwise, skip to the next card when a lockout occurs
@@ -192,13 +192,13 @@ class ScoredItemCheck(
         if (options.endGameWhenComplete) {
             if (teams.any { it.isWinner() }) {
                 log.info("[ScoredItemCheck] Ending the game because a team has won")
-                gameService.end(GameEndReason.BINGO)
+                gameService.end(GameEndReason.Bingo)
                 return
             }
         } else {
             if (teams.all { it.isWinner() }) {
                 log.info("[ScoredItemCheck] Ending the game because all teams have finished")
-                gameService.end(GameEndReason.BINGO)
+                gameService.end(GameEndReason.Bingo)
                 return
             }
         }

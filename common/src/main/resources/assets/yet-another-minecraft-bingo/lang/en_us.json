@@ -208,6 +208,7 @@
   "bingo.game.end.reason_bingo": "BINGO!",
   "bingo.game.end.reason_lockout": "Lockout!",
   "bingo.game.end.reason_timer": "Out of time!",
+  "bingo.game.end.reason_command": "Stopped by %s",
   "bingo.game.end.completed_card": "%s completed their card!",
   "bingo.game.end.won_with_more_cards": "%s had the most cards!",
   "bingo.game.end.won_with_more_lines": "%s had the most lines!",

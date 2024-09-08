@@ -3,9 +3,11 @@ package me.jfenn.bingo.common.commands
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -85,11 +87,13 @@ class BingoCommands : BaseCommand() {
                         requireState(GameState.PLAYING),
                         requirePermission(Permission.CONFIGURE_GAME),
                     )
-                    .executesInScope {
+                    .executesInScope { ctx ->
                         val gameService = get<GameService>()
                         val state = get<BingoState>()
                         state.isForfeit = true
-                        gameService.end(null)
+
+                        val player = ctx.source.player?.let { get<IPlayerManager>().forPlayer(it) }
+                        gameService.end(GameEndReason.Command(player?.name ?: "[unknown]"))
                         1
                     }
             )
