@@ -319,6 +319,11 @@ class ScoredItemCheck(
         }
 
         events.onGameTick {
+            // Team cards might have their own (copied) instances that don't get initialized right away
+            state.getRegisteredTeams()
+                .mapNotNull { state.getCard(it) }
+                .map { initCard(it) }
+
             for (card in state.cards) {
                 initCard(card)
             }

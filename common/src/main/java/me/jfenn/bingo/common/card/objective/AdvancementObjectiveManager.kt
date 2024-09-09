@@ -100,7 +100,7 @@ class AdvancementObjectiveManager(
 
             objectiveService.updateTeamsOnceAchieved(objective)
 
-            val teamPlayers = objectiveService.getPlayersByTeam()
+            val teamPlayers = objectiveService.getPlayersByTeam(card)
                 .mapKeys { it.key.key }
 
             val teamsProgress = teamPlayers.map { (team, players) ->
@@ -108,7 +108,7 @@ class AdvancementObjectiveManager(
                 team to progress
             }.toMap()
 
-            objectiveService.updateTeamsSeen(objective) { team ->
+            objectiveService.updateTeamsSeen(card, objective) { team ->
                 teamPlayers[team]
                     ?.any { advancementManager.isAnyObtained(it.player, advancement) }
                     ?: false

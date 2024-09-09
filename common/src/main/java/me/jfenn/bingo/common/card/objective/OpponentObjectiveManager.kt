@@ -53,7 +53,7 @@ class OpponentObjectiveManager(
 
             objective.teamsSeen = opponent.teamsSeen
 
-            val teams = objectiveService.getTeams()
+            val teams = objectiveService.getAllTeams()
                 .filter { team -> opponent.playersHolding.values.any { it.team != team.key } }
                 .map { it.key }
                 .toSet()

@@ -15,22 +15,27 @@ class ObjectiveService(
     private val offlinePlayerCache: OfflinePlayerCache,
 ) {
 
-    fun getTeams(): Sequence<BingoTeam> {
+    fun getAllTeams(): Sequence<BingoTeam> {
         return state.getRegisteredTeams()
             .asSequence()
             .filter { it.isPlaying() }
     }
 
-    fun getTeamPlayers(): Sequence<Pair<BingoTeam, IPlayerHandle>> = sequence {
-        for (team in getTeams()) {
+    fun getTeams(card: BingoCard): Sequence<BingoTeam> {
+        return getAllTeams()
+            .filter { it.cardId == card.id }
+    }
+
+    fun getTeamPlayers(card: BingoCard): Sequence<Pair<BingoTeam, IPlayerHandle>> = sequence {
+        for (team in getTeams(card)) {
             for (player in team.players) {
                 yield(Pair(team, offlinePlayerCache.getOfflinePlayer(player)))
             }
         }
     }
 
-    fun getPlayersByTeam(): Map<BingoTeam, List<IPlayerHandle>> {
-        return getTeams()
+    fun getPlayersByTeam(card: BingoCard): Map<BingoTeam, List<IPlayerHandle>> {
+        return getTeams(card)
             .associateWith { team ->
                 team.players.map { offlinePlayerCache.getOfflinePlayer(it) }
             }
@@ -120,6 +125,7 @@ class ObjectiveService(
     }
 
     fun updateTeamsSeen(
+        card: BingoCard,
         objective: BingoObjective,
         condition: (BingoTeamKey) -> Boolean
     ) {
@@ -127,7 +133,7 @@ class ObjectiveService(
         // teamsSeen is only ever additive
         // (we don't need to check teams again once they're in the set)
 
-        val teamsNotSeen = getTeams().map { it.key }.toSet() - objective.teamsSeen
+        val teamsNotSeen = getTeams(card).map { it.key }.toSet() - objective.teamsSeen
         objective.teamsSeen.addAll(teamsNotSeen.filter(condition))
     }
 

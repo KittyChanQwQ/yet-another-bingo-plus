@@ -62,7 +62,7 @@ class OneOfObjectiveManager(
 
             objectiveService.updateTeamsOnceAchieved(objective)
 
-            objectiveService.updateTeamsSeen(objective) { team ->
+            objectiveService.updateTeamsSeen(card, objective) { team ->
                 objectives.any { it.hasSeen(team) }
             }
 

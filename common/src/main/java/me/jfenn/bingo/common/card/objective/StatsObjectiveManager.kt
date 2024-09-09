@@ -120,7 +120,7 @@ class StatsObjectiveManager(
                 team to progress
             }.toMap()
 
-            objectiveService.updateTeamsSeen(objective) { team ->
+            objectiveService.updateTeamsSeen(card, objective) { team ->
                 teamPlayers[team]
                     ?.any { getStatValue(objective, stat, it) > 0 }
                     ?: false

@@ -127,7 +127,7 @@ class ItemObjectiveManager(
     override fun tick(card: BingoCard) {
         val now = state.updatedAt ?: Instant.DISTANT_PAST
 
-        val playersToItems = objectiveService.getTeamPlayers()
+        val playersToItems = objectiveService.getTeamPlayers(card)
             .map { (team, player) ->
                 val inventory = player.allHeldStacks().toList()
                 Triple(team, player, inventory)

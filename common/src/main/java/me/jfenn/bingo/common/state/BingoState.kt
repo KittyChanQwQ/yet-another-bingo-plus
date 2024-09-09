@@ -94,7 +94,7 @@ data class BingoState(
     }
 
     fun getCard(team: BingoTeam): BingoCard? {
-        return if (team.isWinner()) {
+        return if (team.isWinner() || state == GameState.POSTGAME) {
             team.completedCards.lastOrNull()?.card
         } else {
             team.cardId?.let { cardId -> cards.find { it.id == cardId } }

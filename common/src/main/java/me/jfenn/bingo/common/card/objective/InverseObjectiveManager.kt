@@ -59,7 +59,7 @@ class InverseObjectiveManager(
                 objective.playersOnceAchieved.addAll(inverse.playersHolding.keys)
             }
 
-            val teamsAchieved = objectiveService.getTeams()
+            val teamsAchieved = objectiveService.getTeams(card)
                 .filter { team ->
                     // A team should hold this tile as long as no players have achieved the objective
                     team.players.none { player ->

@@ -13,7 +13,6 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MI
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
-import me.jfenn.bingo.common.team.OfflinePlayerCache
 import me.jfenn.bingo.common.utils.formatTitle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
@@ -24,7 +23,6 @@ class ScoreboardObjectiveManager(
     private val server: MinecraftServer,
     private val scoreboardManager: IScoreboardManager,
     private val state: BingoState,
-    private val offlinePlayerCache: OfflinePlayerCache,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
@@ -101,7 +99,7 @@ class ScoreboardObjectiveManager(
 
             objectiveService.updateTeamsOnceAchieved(objective)
 
-            val teamPlayers = objectiveService.getPlayersByTeam()
+            val teamPlayers = objectiveService.getPlayersByTeam(card)
                 .mapKeys { it.key.key }
 
             val teamsProgress = teamPlayers.map { (team, players) ->
@@ -112,7 +110,7 @@ class ScoreboardObjectiveManager(
                 team to progress
             }.toMap()
 
-            objectiveService.updateTeamsSeen(objective) { team ->
+            objectiveService.updateTeamsSeen(card, objective) { team ->
                 teamPlayers[team]
                     ?.any { getScoreboardValue(objective, scoreboard, it) > 0 }
                     ?: false
