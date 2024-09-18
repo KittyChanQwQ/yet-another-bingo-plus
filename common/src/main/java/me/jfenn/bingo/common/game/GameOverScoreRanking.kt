@@ -6,7 +6,8 @@ import me.jfenn.bingo.common.team.TeamScore
 import kotlin.time.Duration
 
 @Serializable
-class GameOverScoreRanking(
+data class GameOverScoreRanking(
+    val index: Int,
     val key: BingoTeamKey,
     val score: TeamScore,
     val duration: Duration?

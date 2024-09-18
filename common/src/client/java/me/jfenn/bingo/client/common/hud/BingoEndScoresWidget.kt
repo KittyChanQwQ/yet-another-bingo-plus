@@ -57,7 +57,7 @@ class BingoEndScoresWidget(
             val isObfuscated = (now - gameOver.packet.endedAt).inWholeSeconds < (i+1).toLong()
 
             val teamText = Text.empty()
-                .append("#${i+1} ")
+                .append("#${score.index+1} ")
                 .append(score.name)
                 .let { if (isObfuscated) it.formatted(Formatting.OBFUSCATED) else it }
 

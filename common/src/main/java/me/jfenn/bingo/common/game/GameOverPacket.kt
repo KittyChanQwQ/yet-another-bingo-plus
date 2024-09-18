@@ -42,6 +42,7 @@ data class GameOverPacket(
 ) {
 
     class ScoreRanking(
+        val index: Int,
         val key: BingoTeamKey,
         val name: Text,
         val score: TeamScore,
@@ -282,6 +283,7 @@ data class GameOverPacket(
 
                 scores = buf.readList {
                     ScoreRanking(
+                        index = buf.readInt(),
                         key = BingoTeamKey(buf.readString()),
                         name = buf.readText(),
                         score = TeamScore.V1.fromPacketBuf(buf),
@@ -318,6 +320,7 @@ data class GameOverPacket(
             dest.writeNullable(source.seed, dest::writeLong)
 
             dest.writeList(source.scores) {
+                dest.writeInt(it.index)
                 dest.writeString(it.key.id)
                 dest.writeText(it.name)
                 TeamScore.V1.toPacketBuf(it.score, dest)

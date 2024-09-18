@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.game
 
-import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService
@@ -58,33 +58,25 @@ class GameOverController(
                 )
                 .also { yield(it) }
 
-            if (!options.endGameWhenComplete) {
+            if (
+                (!options.endGameWhenComplete || options.winCondition is BingoWinCondition.Infinite)
+                && info.scoreRankings.size > 1
+            ) {
                 yield(Text.empty())
                 // List all teams that have completed the card
-                state.getRegisteredTeams()
-                    .filter { it.isWinner() }
-                    .mapNotNull { team ->
-                        team.winner?.let { team to it }
-                    }
-                    .sortedBy { (_, win) -> win.instant }
-                    .forEachIndexed { index, (team, win) ->
-                        val duration = win.instant - (state.startedAt ?: Clock.System.now())
-                        Text.empty()
-                            .append(Text.literal("${index + 1}. ").formatted(Formatting.GRAY))
-                            .append(team.getName(textProvider, playerName = true))
-                            .append(" - ${duration.formatString()}")
-                            .also { yield(it) }
-                    }
+                for (score in info.scoreRankings) {
+                    val duration = score.duration?.formatString() ?: "DNF"
+                    val teamName = state.teams[score.key]?.getName(textProvider, playerName = true)
+                        ?: Text.literal("[unknown]")
 
-                // List any teams that started the card but did not finish
-                state.getRegisteredTeams()
-                    .filter { !it.isWinner() }
-                    .forEach { team ->
-                        Text.empty()
-                            .append(Text.literal("DNF - ").formatted(Formatting.GRAY))
-                            .append(team.getName(textProvider, playerName = true))
-                            .also { yield(it) }
-                    }
+                    Text.empty()
+                        .append(Text.literal("${score.index + 1}. ").formatted(Formatting.GRAY))
+                        .append(teamName)
+                        .append(" - ")
+                        .append(score.score.formatText(textProvider))
+                        .append(" - $duration")
+                        .also { yield(it) }
+                }
             }
 
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
@@ -110,6 +102,7 @@ class GameOverController(
 
         val scoreRankings = info.scoreRankings.map {
             GameOverPacket.ScoreRanking(
+                index = it.index,
                 key = it.key,
                 name = state.teams[it.key]?.getName(textProvider, playerName = true) ?: Text.literal("[unknown]"),
                 score = it.score,

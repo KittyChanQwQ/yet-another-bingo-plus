@@ -4,6 +4,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
@@ -112,20 +113,22 @@ class GameOverService(
             }
         }
 
+        val gameDuration = state.ingameDuration()
         val prevBestTime = stats.getBestTime(options, server.isSingleplayer && state.isSingleplayer())
         // if prevBestTime didn't exist, or if the new duration is less than the prev time
         // ... and the game was actually completed & won by a team
-        val isBestTime = (prevBestTime == null || state.ingameDuration()?.let { it < prevBestTime } == true)
+        val isBestTime = (prevBestTime == null || gameDuration?.let { it < prevBestTime } == true)
                 && !state.isForfeit
                 && winningTeams.isNotEmpty()
 
-        val scoreRankings = state.getRegisteredTeams()
+        val scoreRankingScores = state.getRegisteredTeams()
             .map { team ->
                 val duration = team.winner?.instant?.let { completedAt ->
                     completedAt - (state.startedAt ?: completedAt)
                 }
 
                 GameOverScoreRanking(
+                    index = 0,
                     key = team.key,
                     score = team.totalScore,
                     duration = duration,
@@ -137,6 +140,28 @@ class GameOverService(
                     .thenComparingInt { -it.score.lines }
                     .thenComparingInt { -it.score.items }
             )
+
+        val scoreRankings = buildList<GameOverScoreRanking> {
+            var index = -1
+            for (ranking in scoreRankingScores) {
+                // Only increment the index if the teams are not tied
+                val prevRanking = lastOrNull()
+                if (prevRanking?.score != ranking.score || prevRanking.duration != ranking.duration) {
+                    index++
+                }
+
+                add(ranking.copy(index = index))
+            }
+        }
+            .let { rankings ->
+                // If we're in infinite mode, then there isn't a "finish"
+                // - use the game duration as each team's completion time, instead of showing DNF
+                if (options.winCondition is BingoWinCondition.Infinite) {
+                    rankings.map { it.copy(duration = gameDuration) }
+                } else {
+                    rankings
+                }
+            }
 
         return GameOverInfo(
             reason = reason,
