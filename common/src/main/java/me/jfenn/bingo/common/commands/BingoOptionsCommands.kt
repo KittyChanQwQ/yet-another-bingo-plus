@@ -7,6 +7,7 @@ import me.jfenn.bingo.api.commands.IExecutionSource
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -37,6 +38,16 @@ class BingoOptionsCommands(
         // Send a message that the goal was changed
         sendInfoFeedback(
             textProvider.string(StringKey.ScoreboardGoal, goal.format(textProvider))
+        )
+    }
+
+    private fun IExecutionContext.setGoalCards(cards: Int) {
+        val options = scope.get<BingoOptions>()
+        options.winCondition = BingoWinCondition.Cards(cards)
+
+        // Send a message that the goal was changed
+        sendInfoFeedback(
+            textProvider.string(StringKey.ScoreboardGoal, textProvider.cardCount(cards))
         )
     }
 
@@ -102,6 +113,12 @@ class BingoOptionsCommands(
                         executes {
                             val count = getArgument(countArg).coerceIn(1, BingoGoal.MAX_LINES)
                             setGoal(BingoGoal.Lines(count))
+                        }
+                    }
+                    literal("cards") {
+                        executes {
+                            val count = getArgument(countArg).coerceAtLeast(1)
+                            setGoalCards(count)
                         }
                     }
                 }

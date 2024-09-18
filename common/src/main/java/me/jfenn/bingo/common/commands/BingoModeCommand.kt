@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.GameState
@@ -66,6 +67,14 @@ class BingoModeCommand(
         sendModeFeedback(card)
     }
 
+    private fun IExecutionContext.toggleInfiniteMode() {
+        val options = scope.get<BingoOptions>()
+        options.winCondition = when (options.winCondition) {
+            is BingoWinCondition.Cards -> BingoWinCondition.Infinite
+            is BingoWinCondition.Infinite -> BingoWinCondition.Cards(1)
+        }
+    }
+
     init {
         commandManager.register("bingo") {
             literal("mode") {
@@ -80,6 +89,9 @@ class BingoModeCommand(
                 }
                 literal("hidden_items") {
                     executes { toggleCardMode(BingoCardOptions::isHiddenItemsMode) }
+                }
+                literal("infinite") {
+                    executes { toggleInfiniteMode() }
                 }
             }
         }
