@@ -218,7 +218,8 @@ class CardService(
     fun generate(
         id: UUID,
         seed: Long,
-        cardOptions: BingoCardOptions
+        cardOptions: BingoCardOptions,
+        excludeObjectives: Set<String> = emptySet(),
     ): BingoCard {
         val dist = cardOptions.itemDistribution
         assert(dist.size == TierLabel.entries.size) { "Item distribution does not match the number of tiers (${TierLabel.entries.size})!" }
@@ -228,6 +229,8 @@ class CardService(
         // (e.g. elytra mode, player/team kits...)
         val excludedObjectives = if (configService.config.excludeSpawnKitItemsFromCards) {
             buildSet {
+                addAll(excludeObjectives)
+
                 if (options.isPlayerKit)
                     addAll(options.playerKitItems.map { it.id })
                 if (options.isTeamKit)

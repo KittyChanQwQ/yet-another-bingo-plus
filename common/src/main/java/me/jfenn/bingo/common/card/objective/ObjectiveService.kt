@@ -21,6 +21,14 @@ class ObjectiveService(
             .filter { it.isPlaying() }
     }
 
+    fun getAllTeamPlayers(): Sequence<Pair<BingoTeam, IPlayerHandle>> = sequence {
+        for (team in getAllTeams()) {
+            for (player in team.players) {
+                yield(Pair(team, offlinePlayerCache.getOfflinePlayer(player)))
+            }
+        }
+    }
+
     fun getTeams(card: BingoCard): Sequence<BingoTeam> {
         return getAllTeams()
             .filter { it.cardId == card.id }

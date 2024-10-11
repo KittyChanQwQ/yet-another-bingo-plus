@@ -33,6 +33,22 @@ class AdvancementObjectiveManager(
         return advancementManager.listAdvancements(server) + dataKeys
     }
 
+    override fun listExcludedIds(): Iterable<String> {
+        val players = objectiveService.getAllTeamPlayers()
+            .map { (_, player) -> player }
+            .toList()
+
+        return advancementManager.listAdvancements(server)
+            .filter { id ->
+                val advancement = advancementManager.getAdvancement(server, id)
+                    ?: return@filter false
+
+                players.any { player ->
+                    advancementManager.isDone(player.player, advancement)
+                }
+            }
+    }
+
     override fun find(id: String, state: CardGeneratorState): BingoObjective.AdvancementEntry? {
         // If the objective is a data ID
         (objectiveRegistryState.objectives[id] as? ObjectiveData.Advancement)

@@ -265,6 +265,7 @@ class ScoredItemCheck(
                 id = UUID.randomUUID(),
                 seed = Random.nextLong(),
                 cardOptions = state.cards.last().options,
+                excludeObjectives = objectiveManager.listExcludedIds().toSet(),
             )
 
             state.pushCardTail(newCard)

@@ -33,6 +33,13 @@ class ItemObjectiveManager(
         return itemStackFactory.listItems(server) + dataKeys
     }
 
+    override fun listExcludedIds(): Iterable<String> {
+        return objectiveService.getAllTeamPlayers()
+            .flatMap { (_, player) -> player.allHeldStacks() }
+            .map { it.identifier.toString() }
+            .asIterable()
+    }
+
     override fun find(id: String, state: CardGeneratorState): BingoObjective.ItemEntry? {
         // If the objective is a data ID
         (objectiveRegistry.objectives[id] as? ObjectiveData.Item)

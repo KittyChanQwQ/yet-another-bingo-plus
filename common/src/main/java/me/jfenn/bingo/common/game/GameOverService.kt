@@ -130,7 +130,7 @@ class GameOverService(
                 GameOverScoreRanking(
                     index = 0,
                     key = team.key,
-                    score = team.totalScore,
+                    score = team.score,
                     duration = duration,
                 )
             }

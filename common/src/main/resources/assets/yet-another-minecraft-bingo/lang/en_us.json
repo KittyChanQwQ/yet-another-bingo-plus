@@ -204,6 +204,7 @@
   "bingo.scoreboard.leading_team_tie": "Tie",
   "bingo.scoreboard.items_scored": "Items scored: %s",
   "bingo.scoreboard.lines_scored": "Lines scored: %s",
+  "bingo.scoreboard.cards_scored": "Cards scored: %s",
   "bingo.game.end.game_over": "Game over!",
   "bingo.game.end.reason_bingo": "BINGO!",
   "bingo.game.end.reason_lockout": "Lockout!",

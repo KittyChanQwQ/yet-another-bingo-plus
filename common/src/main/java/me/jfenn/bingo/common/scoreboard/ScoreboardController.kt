@@ -2,12 +2,14 @@ package me.jfenn.bingo.common.scoreboard
 
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
@@ -59,14 +61,13 @@ class ScoreboardController(
         events.onUpdateTick {
             val activeTeams = state.getRegisteredTeams()
             val isMultipleTeams = state.state == GameState.PREGAME || activeTeams.size > 1
+            val isMultiCardWinCondition = options.winCondition != BingoWinCondition.Cards(1)
 
             for (team in activeTeams + null) {
                 val objective = scoreboardService.getScoreboardObjective(team)
                 val teamCard = team?.let { state.getCard(it) } ?: state.getActiveCard()
 
                 val scoreboardText = buildList<Text?> {
-                    add(null)
-
                     options.formatGameMode(teamCard)
                         .map { textProvider.string(it) }
                         .wrapText(2)
@@ -110,6 +111,10 @@ class ScoreboardController(
                             .also { add(it) }
                         textProvider.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}").formatted(team.formatting))
                             .also { add(it) }
+                        if (isMultiCardWinCondition) {
+                            textProvider.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}").formatted(team.formatting))
+                                .also { add(it) }
+                        }
                         add(null)
                     }
 
@@ -129,23 +134,34 @@ class ScoreboardController(
                         else -> leadingTeam?.formatting ?: Formatting.WHITE
                     }
 
-                    if (options.showCompletedItems && isMultipleTeams && team != leadingTeam) {
-                        // if the leading team is a tie, find one of the tied teams to get the item/line count
-                        val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByItems(state, allowTies = true)
-                        val itemsScored = leadingOrTied?.score?.items ?: 0
-                        textProvider.string(StringKey.ScoreboardItemsScored, Text.literal("$itemsScored").formatted(formatting))
-                            .also { add(it) }
-                    }
-                    if (options.showCompletedLines && isMultipleTeams && team != leadingTeam) {
-                        // if the leading team is a tie, find one of the tied teams to get the item/line count
-                        val leadingOrTied = leadingTeam ?: ScoreService.getLeadingByLines(state, allowTies = true)
-                        val linesScored = leadingOrTied?.score?.lines ?: 0
-                        textProvider.string(StringKey.ScoreboardLinesScored, Text.literal("$linesScored").formatted(formatting))
-                            .also { add(it) }
+                    val leadingTeamScore = when {
+                        leadingTeam == null -> TeamScore(
+                            // if the leading team is a tie, find one of the tied teams to get the item/line/card count
+                            items = ScoreService.getLeadingByItems(state, allowTies = true)?.score?.items ?: 0,
+                            lines = ScoreService.getLeadingByLines(state, allowTies = true)?.score?.lines ?: 0,
+                            cards = ScoreService.getLeadingByCards(state, allowTies = true)?.score?.cards ?: 0,
+                        )
+                        else -> leadingTeam.score
                     }
 
-                    if (lastOrNull() != null)
-                        add(null)
+                    if ((options.showCompletedItems || options.showCompletedLines) && isMultipleTeams && team != leadingTeam) {
+                        if (isMultiCardWinCondition && leadingTeamScore.cards != team?.score?.cards) {
+                            textProvider.string(StringKey.ScoreboardCardsScored, Text.literal("${leadingTeamScore.cards}").formatted(formatting))
+                                .also { add(it) }
+                        } else {
+                            if (options.showCompletedItems) {
+                                textProvider.string(StringKey.ScoreboardItemsScored, Text.literal("${leadingTeamScore.items}").formatted(formatting))
+                                    .also { add(it) }
+                            }
+                            if (options.showCompletedLines) {
+                                textProvider.string(StringKey.ScoreboardLinesScored, Text.literal("${leadingTeamScore.lines}").formatted(formatting))
+                                    .also { add(it) }
+                            }
+                        }
+                    }
+
+                    if (last() == null)
+                        removeLast()
                 }.mapIndexed { i, text ->
                     text ?: Text.literal(" ".repeat(i))
                 }
