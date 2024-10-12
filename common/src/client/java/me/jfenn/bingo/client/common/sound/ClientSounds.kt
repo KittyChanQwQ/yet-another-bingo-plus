@@ -18,18 +18,20 @@ class ClientSounds {
         GAME_LOST,
         TIMER_TICK,
         START_COUNTDOWN,
-        START_RELEASE,
+        START_RELEASE;
+
+        val id get() = Identifier.of(MOD_ID_BINGO, name.lowercase())!!
     }
 
     private val soundEvents = Key.entries.associateWith {
-        SoundEvent.of(Identifier.of(MOD_ID_BINGO, it.name.lowercase())!!)
+        SoundEvent.of(it.id)
     }
 
     operator fun get(key: Key) = soundEvents[key]!!
 
     init {
-        for (event in soundEvents.values) {
-            Registry.register(Registries.SOUND_EVENT, event.id, event)
+        for ((key, event) in soundEvents) {
+            Registry.register(Registries.SOUND_EVENT, key.id, event)
         }
     }
 

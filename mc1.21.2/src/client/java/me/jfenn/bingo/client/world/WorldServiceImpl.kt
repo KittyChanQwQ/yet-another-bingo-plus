@@ -24,7 +24,7 @@ class WorldServiceImpl(
     override fun createBingoWorld() {
         val parent = client.currentScreen
         worldState.state = ScreenState.CreateBingoWorld
-        CreateWorldScreen.create(client, parent)
+        CreateWorldScreen.show(client, parent)
     }
 
     override fun isBingoWorld(server: MinecraftServer): Boolean {

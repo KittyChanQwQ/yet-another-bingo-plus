@@ -7,8 +7,8 @@ import net.minecraft.util.Util
 import java.util.concurrent.ExecutorService
 
 object Executors : IExecutors {
-    override val main: ExecutorService = Util.getMainWorkerExecutor()
-    override val io: ExecutorService = Util.getIoWorkerExecutor()
+    override val main: ExecutorService = Util.getMainWorkerExecutor().service
+    override val io: ExecutorService = Util.getIoWorkerExecutor().service
 
     override fun createServerTaskExecutor(server: MinecraftServer): IExecutors.IServerTaskExecutor {
         return ServerTaskExecutor(server)

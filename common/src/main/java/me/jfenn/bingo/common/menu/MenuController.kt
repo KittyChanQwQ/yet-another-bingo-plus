@@ -1,6 +1,8 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.api.*
+import me.jfenn.bingo.api.block.IWallSignBlockState
+import me.jfenn.bingo.api.particle.IParticleFactory
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.config.BlockPosition
@@ -22,8 +24,6 @@ import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
 import net.minecraft.block.PlayerSkullBlock
-import net.minecraft.block.WallSignBlock
-import net.minecraft.particle.DustParticleEffect
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
@@ -33,7 +33,6 @@ import net.minecraft.world.Heightmap
 import net.minecraft.world.chunk.ChunkStatus
 import org.joml.Matrix4f
 import org.joml.Vector3d
-import org.joml.Vector3f
 import org.joml.Vector4f
 import org.slf4j.Logger
 import java.io.IOException
@@ -55,6 +54,8 @@ class MenuController(
     private val text: TextProvider,
     private val playerManager: IPlayerManager,
     private val levelStorage: ILevelStorage,
+    private val particleFactory: IParticleFactory,
+    private val serverWorldFactory: IServerWorldFactory,
 ) : BingoComponent() {
 
     private var menu: MenuInstance? = null
@@ -220,26 +221,30 @@ class MenuController(
     }
 
     private fun getMenuPosition(lobbyWorld: ServerWorld): Matrix4f? = log.measureTime("[MenuController] Locating menu position...") {
+        val lobbyWorldImpl = serverWorldFactory.forWorld(lobbyWorld)
+
         // Find a column of three vertical wall_sign blocks for the menu position
         for (pos in searchLobbyBlocks()) {
             val blocks = listOf(
                 pos.move(y = 1).toBlockPos(),
                 pos.toBlockPos(),
                 pos.move(y = -1).toBlockPos()
-            ).associateWith { lobbyWorld.getBlockState(it) }
-
-            val isMenuPos = blocks.values.all {
-                it.block == Blocks.OAK_WALL_SIGN
+            ).associateWith {
+                lobbyWorldImpl.getBlockState(BlockPosition.fromBlockPos(it))
+                    as? IWallSignBlockState
             }
 
-            if (isMenuPos) {
+            val isMenuPos = blocks.values.all {
+                it?.block == Blocks.OAK_WALL_SIGN
+            }
+            val centerState = blocks.values.first()
+
+            if (isMenuPos && centerState != null) {
                 for ((blockPos) in blocks) {
                     lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
                 }
 
-                val centerState = blocks.values.first()
-                val direction = centerState.get(WallSignBlock.FACING)
-                val directionVec = direction.vector
+                val directionVec = centerState.facing
                 val yaw = atan2(directionVec.x.toFloat(), directionVec.z.toFloat())
 
                 val matrix4f = Matrix4f()
@@ -333,11 +338,12 @@ class MenuController(
             .also { entityManager.spawnEntity(lobbyWorld, it) }
 
         interactionEntityEvents.onInteract(interactionListenerEntity) { player ->
-            val color = Color.fromInt(team.formatting.colorValue ?: 0)
-            val effect = DustParticleEffect(Vector3f(color.r / 255f, color.g / 255f, color.b / 255f), 1f)
-            (player.world as? ServerWorld)?.spawnParticles(player, effect, true, position.x, position.y, position.z, 10, 1.0, 1.0, 1.0, 0.2)
-
             val playerImpl = playerManager.forPlayer(player)
+
+            val color = Color.fromInt(team.formatting.colorValue ?: 0)
+            particleFactory.createDustParticle(color, 1f)
+                .spawn(playerImpl, position, 10, Vector3d(1.0), 0.2)
+
             Sounds.playTeamChanged(playerImpl)
             teamService.joinTeam(playerImpl, team)
         }

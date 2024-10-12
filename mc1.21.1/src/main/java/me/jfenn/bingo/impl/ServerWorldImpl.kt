@@ -2,7 +2,10 @@ package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.api.IServerWorld
 import me.jfenn.bingo.api.IServerWorldFactory
+import me.jfenn.bingo.api.block.IBlockState
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.impl.block.BlockStateImpl
 import me.jfenn.bingo.mixin.ServerChunkLoadingManagerAccessor
 import me.jfenn.bingo.mixin.ServerChunkManagerAccessor
 import net.minecraft.server.world.ChunkTicketType
@@ -22,6 +25,11 @@ class ServerWorldImpl(
 
         private val TICKET_HELD = ChunkTicketType.create("$MOD_ID_BINGO-held") { _: Any?, _: Any? -> 0 }
         private val TICKET_ASYNC = ChunkTicketType.create("$MOD_ID_BINGO-async") { _: Any?, _: Any? -> 0 }
+    }
+
+    override fun getBlockState(pos: BlockPosition): IBlockState {
+        return world.getBlockState(pos.toBlockPos())
+            .let { BlockStateImpl.fromBlockState(it) }
     }
 
     private val taskExecutor = Executors.createServerTaskExecutor(world.server)

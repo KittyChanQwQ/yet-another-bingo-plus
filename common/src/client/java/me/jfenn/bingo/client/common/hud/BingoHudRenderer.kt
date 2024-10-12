@@ -172,12 +172,10 @@ class BingoHudRenderer(
             if (image != null) {
                 service.drawDynamicTexture(image.textureId, itemX + 1, itemY + 1, 16, 16)
             } else {
-                tile.item?.stack?.let { stack ->
+                tile.item?.let { stack ->
                     // always draws centered at z=150... but 3d items can extend past this
                     // so any overlays should start at z=300 to be safe
-                    context.drawItem(stack, itemX + 1, itemY + 1, itemX + itemY * CARD_WIDTH)
-                    // draws the item count + durability bar
-                    context.drawItemInSlot(textRenderer, stack, itemX, itemY)
+                    service.drawItemStack(stack, itemX + 1, itemY + 1, itemX + itemY * CARD_WIDTH)
                 }
             }
 

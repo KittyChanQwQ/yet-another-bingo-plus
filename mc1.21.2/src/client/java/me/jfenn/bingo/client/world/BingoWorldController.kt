@@ -46,7 +46,7 @@ class BingoWorldController(
             if (screen is TitleScreen) {
                 if (state == ScreenState.ImmediatelyReopenBingoWorld) {
                     worldState.state = ScreenState.CreateBingoWorld
-                    CreateWorldScreen.create(client, screen)
+                    CreateWorldScreen.show(client, screen)
                     return@register
                 }
 
@@ -62,7 +62,7 @@ class BingoWorldController(
                 // Copy the built-in lobby data pack to the world creator's temp dir
                 // - we want this to happen on every world creation, so that the pack is available
                 //   even if the user has not specifically pressed the "BINGO!" button.
-                screen.dataPackTempDir?.let {
+                screen.getOrCreateDataPackTempDir()?.let {
                     DatapackService.copyDataPack(it.resolve(DATAPACK_FILE))
                 }
 

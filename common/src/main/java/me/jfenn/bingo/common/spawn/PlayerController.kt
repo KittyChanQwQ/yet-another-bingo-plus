@@ -1,9 +1,6 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.EffectType
-import me.jfenn.bingo.api.IAdvancementManager
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.api.*
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -41,6 +38,7 @@ class PlayerController(
     private val cardViewService: CardViewService,
     private val elytraService: ElytraService,
     private val advancementManager: IAdvancementManager,
+    private val recipeManager: IRecipeManager,
     private val vanishIntegration: VanishIntegration,
     private val playerManager: IPlayerManager,
 ) : BingoComponent() {
@@ -134,7 +132,7 @@ class PlayerController(
 
         // unlock all crafting recipes, if set
         if (state.state == GameState.PLAYING && options.isUnlockRecipes)
-            player.player.unlockRecipes(server.recipeManager.values())
+            recipeManager.unlockRecipes(player, recipeManager.listRecipes())
 
         // reset advancements state
         advancementManager.clearAdvancements(player.player)

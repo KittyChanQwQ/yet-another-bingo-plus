@@ -1,10 +1,14 @@
 package me.jfenn.bingo.client.impl
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.impl.ItemStackFactory
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
+import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 import org.joml.Matrix4f
 
@@ -19,6 +23,16 @@ class DrawService(
     override fun setShaderColor(r: Float, g: Float, b: Float, a: Float) {
         context.draw()
         RenderSystem.setShaderColor(r, g, b, a)
+    }
+
+    override fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int) {
+        require(stack is ItemStackFactory.ItemStackImpl)
+        val itemStack: ItemStack = stack.stack
+        context.drawItem(itemStack, x, y, seed)
+
+        // draws the item count + durability bar
+        val textRenderer = MinecraftClient.getInstance().textRenderer
+        context.drawStackOverlay(textRenderer, stack.stack, x, y)
     }
 
     override fun drawDynamicTexture(texture: Identifier, x: Int, y: Int, width: Int, height: Int) {

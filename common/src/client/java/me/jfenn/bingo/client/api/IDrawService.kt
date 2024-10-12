@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.api
 
+import me.jfenn.bingo.api.item.IItemStack
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
 import kotlin.math.ceil
@@ -10,6 +11,8 @@ interface IDrawService {
     val context: DrawContext
 
     fun setShaderColor(r: Float, g: Float, b: Float, a: Float)
+
+    fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int)
 
     fun drawDynamicTexture(
         texture: Identifier,

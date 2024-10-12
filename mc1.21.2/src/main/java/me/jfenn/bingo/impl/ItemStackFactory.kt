@@ -46,7 +46,7 @@ class ItemStackFactory(
             return false
         }
 
-        val features = listOf(FeatureFlags.TRADE_REBALANCE, FeatureFlags.BUNDLE)
+        val features = listOf(FeatureFlags.WINTER_DROP, FeatureFlags.TRADE_REBALANCE)
         return features.all {
             when {
                 itemInstance.requiredFeatures.contains(it) -> server.overworld.enabledFeatures.contains(it)
