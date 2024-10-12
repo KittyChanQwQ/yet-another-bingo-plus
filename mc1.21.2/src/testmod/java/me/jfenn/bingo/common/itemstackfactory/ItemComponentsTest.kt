@@ -8,18 +8,14 @@ import assertk.assertions.isTrue
 import io.mockk.mockk
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.test.BaseGameTest
-import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.impl.ItemStackFactory
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.ItemEnchantmentsComponent
-import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
-import net.minecraft.server.command.EnchantCommand
 import net.minecraft.test.GameTest
 import net.minecraft.test.TestContext
 import net.minecraft.text.Text
@@ -89,8 +85,8 @@ class ItemComponentsTest : BaseGameTest() {
         )
 
         val stack = ItemStack(Items.GOLDEN_SWORD, 1)
-        val enchantmentRegistry = context.world.server.registryManager.get(RegistryKeys.ENCHANTMENT)
-        val fireAspect = enchantmentRegistry.getEntry(Enchantments.FIRE_ASPECT).get()
+        val enchantmentRegistry = context.world.server.registryManager.getOptional(RegistryKeys.ENCHANTMENT).get()
+        val fireAspect = enchantmentRegistry.getEntry(enchantmentRegistry.get(Enchantments.FIRE_ASPECT))
         stack[DataComponentTypes.ENCHANTMENTS] = ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT)
             .also { it.set(fireAspect, 2) }
             .build()
