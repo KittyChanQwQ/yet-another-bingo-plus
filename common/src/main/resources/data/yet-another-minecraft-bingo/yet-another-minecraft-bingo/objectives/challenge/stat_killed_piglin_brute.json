@@ -1,0 +1,8 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:piglin_head"
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:piglin_brute"
+}

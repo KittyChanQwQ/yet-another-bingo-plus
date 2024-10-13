@@ -1,7 +1,8 @@
 {
   "type": "stats",
   "display": {
-    "item": "minecraft:red_bed"
+    "item": "minecraft:player_head",
+    "image": "yet-another-minecraft-bingo:skull_cross"
   },
   "statType": "minecraft:custom",
   "statName": "minecraft:deaths",
