@@ -28,7 +28,7 @@ class PlayerSpectatorController(
 
     init {
         events.onUseBlock {
-            if (state.isLobbyMode) return@onUseBlock null
+            if (!state.isLobbyMode) return@onUseBlock null
             val player = it.player as? ServerPlayerEntity ?: return@onUseBlock null
             if (state.state != GameState.PLAYING) return@onUseBlock null
             if (teamService.isPlaying(player)) return@onUseBlock null
@@ -94,7 +94,7 @@ class PlayerSpectatorController(
         }
 
         events.onUseEntity {
-            if (state.isLobbyMode) return@onUseEntity null
+            if (!state.isLobbyMode) return@onUseEntity null
             val player = it.player as? ServerPlayerEntity ?: return@onUseEntity null
             if (state.state != GameState.PLAYING) return@onUseEntity null
             if (teamService.isPlaying(player)) return@onUseEntity null
@@ -134,7 +134,7 @@ class PlayerSpectatorController(
         }
 
         events.onAttackEntity {
-            if (state.isLobbyMode) return@onAttackEntity null
+            if (!state.isLobbyMode) return@onAttackEntity null
             val player = it.player as? ServerPlayerEntity ?: return@onAttackEntity null
             if (state.state != GameState.PLAYING) return@onAttackEntity null
             if (teamService.isPlaying(player)) return@onAttackEntity null
