@@ -264,7 +264,7 @@ class ScoredItemCheck(
             val newCard = cardService.generate(
                 id = UUID.randomUUID(),
                 seed = Random.nextLong(),
-                cardOptions = state.cards.last().options,
+                cardOptions = state.cards.last().options.copy(),
                 excludeObjectives = objectiveManager.listExcludedIds().toSet(),
             )
 

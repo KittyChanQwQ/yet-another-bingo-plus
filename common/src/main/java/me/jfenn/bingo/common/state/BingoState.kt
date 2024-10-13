@@ -56,7 +56,6 @@ data class BingoState(
         val nextCard = cards.firstOrNull()
         card.nextCardId = nextCard?.id
         cards.add(0, card)
-        options.cards = cards.map { it.options }
 
         for (team in teams.values) {
             if (team.cardId == nextCard?.id)
@@ -68,14 +67,12 @@ data class BingoState(
         cards.lastOrNull()?.nextCardId = card.id
         card.nextCardId = null
         cards.add(card)
-        options.cards = cards.map { it.options }
     }
 
     fun popCard() {
         if (cards.size == 1) return
 
         val removedCard = cards.removeFirst()
-        options.cards = cards.map { it.options }
 
         val firstCard = cards.first()
         for (team in teams.values) {
@@ -90,7 +87,6 @@ data class BingoState(
             ?: throw IllegalArgumentException("Unknown card provided in replaceCard")
 
         cards[index] = card
-        options.cards = cards.map { it.options }
     }
 
     fun getCard(team: BingoTeam): BingoCard? {

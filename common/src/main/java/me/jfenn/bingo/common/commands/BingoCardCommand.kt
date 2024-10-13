@@ -215,7 +215,7 @@ class BingoCardCommand(
                         requires { hasConfigureGame() && hasState(GameState.PREGAME) }
                         executes {
                             val card = state.getActiveCard()
-                            cardService.newCard(card.options)
+                            cardService.newCard(card.options.copy())
                         }
                     }
 

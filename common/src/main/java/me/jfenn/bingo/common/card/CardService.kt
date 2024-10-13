@@ -69,6 +69,8 @@ class CardService(
             .takeIf { it.isNotEmpty() && options.isValid() }
             ?: listOf(BingoCardOptions())
 
+        options.cards = cardOptionsList
+
         // Note: cardOptionsList is reversed, since newCard adds to the front of the cards
         // (same as /bingo card push)
         for (cardOptions in cardOptionsList.reversed()) {
@@ -136,7 +138,7 @@ class CardService(
         val newCard = generate(
             id = UUID.randomUUID(),
             seed = Random.nextLong(),
-            cardOptions = cardOptions.copy(),
+            cardOptions = cardOptions,
         )
 
         state.pushCard(newCard)
