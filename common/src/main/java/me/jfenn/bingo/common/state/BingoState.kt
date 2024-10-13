@@ -1,16 +1,15 @@
 package me.jfenn.bingo.common.state
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.game.GameEndReason
+import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -23,31 +22,84 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.*
-import kotlin.random.Random
 import kotlin.time.Duration
 
 @Serializable
 data class BingoState(
     var isLobbyMode: Boolean = false,
     var gameId: UuidAsString = UUID.randomUUID(),
-    var seed: Long = Random.nextLong(),
     var state: GameState = GameState.UNINITIALIZED,
     var startedAt: Instant? = null,
     var updatedAt: Instant? = null,
     var endedAt: Instant? = null,
     var lobbySpawnPos: BlockPosition = BlockPosition(0, 0, 0),
+    var lobbySpawnYaw: Float = 0f,
     var timeOffline: Duration = Duration.ZERO,
     val options: BingoOptions = ConfigService().options,
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
     var previewMap: BingoMap? = null,
-    // This is a temporary card that should be overwritten by `CardService.generate()`
-    var card: BingoCard = BingoCard.EMPTY,
-    var endReason: GameEndReason? = null,
+    // This is a temporary list that should be overwritten by `CardService.generate()`
+    val cards: MutableList<BingoCard> = mutableListOf(),
+    var gameOverInfo: GameOverService.GameOverInfo? = null,
     // Stores a set of recently-joined player UUIDs for [PlayerController]
     val playersJoinedIds: MutableSet<UuidAsString> = mutableSetOf(),
     // Stores if the game was ended manually (with "/bingo end")
     var isForfeit: Boolean = false,
 ) {
+
+    fun getActiveCard(): BingoCard {
+        return cards.firstOrNull()
+            ?: throw IllegalArgumentException("No cards in state")
+    }
+
+    fun pushCard(card: BingoCard) {
+        val nextCard = cards.firstOrNull()
+        card.nextCardId = nextCard?.id
+        cards.add(0, card)
+
+        for (team in teams.values) {
+            if (team.cardId == nextCard?.id)
+                team.cardId = card.id
+        }
+    }
+
+    fun pushCardTail(card: BingoCard) {
+        cards.lastOrNull()?.nextCardId = card.id
+        card.nextCardId = null
+        cards.add(card)
+    }
+
+    fun popCard() {
+        if (cards.size == 1) return
+
+        val removedCard = cards.removeFirst()
+
+        val firstCard = cards.first()
+        for (team in teams.values) {
+            if (team.cardId == removedCard.id)
+                team.cardId = firstCard.id
+        }
+    }
+
+    fun replaceCard(card: BingoCard) {
+        val index = cards.indexOfFirst { it.id == card.id }
+            .takeIf { it != -1 }
+            ?: throw IllegalArgumentException("Unknown card provided in replaceCard")
+
+        cards[index] = card
+    }
+
+    fun getCard(team: BingoTeam): BingoCard? {
+        return if (team.isWinner() || state == GameState.POSTGAME) {
+            team.completedCards.lastOrNull()?.card
+        } else {
+            team.cardId?.let { cardId -> cards.find { it.id == cardId } }
+        }
+    }
+
+    fun getCard(id: UUID): BingoCard? {
+        return cards.find { it.id == id }
+    }
 
     /**
      * Returns true if there is only one player in the game
@@ -61,7 +113,7 @@ data class BingoState(
     }
 
     fun registerTeam(team: BingoTeam): BingoTeam {
-        return teams.getOrPut(team.key) { team.copy() }
+        return teams.getOrPut(team.key) { team.copy(cardId = cards.first().id) }
     }
 
     fun getPreviewMap(mapService: IMapService): BingoMap {
@@ -78,32 +130,6 @@ data class BingoState(
         val prevState = this.state
         this.state = newState
         events.onStateChange(prevState to newState)
-    }
-
-    fun updateScore(team: BingoTeam): TeamScore {
-        val score = card.getTeamScore(team)
-        team.score = score
-        return score
-    }
-
-    /**
-     * @return true if the team is now a winner (and was not before)
-     */
-    fun updateWinner(team: BingoTeam): Boolean {
-        val score = team.score
-        val isWinner = when (val goal = options.cardGoal) {
-            is BingoGoal.Items -> score.items >= goal.items
-            is BingoGoal.Lines -> score.lines >= goal.lines
-        }
-
-        if (isWinner && team.winner == null) {
-            team.winner = TeamWinner(
-                instant = Clock.System.now()
-            )
-            return true
-        }
-
-        return false
     }
 
     fun ingameDuration(): Duration? {
@@ -137,24 +163,38 @@ data class BingoState(
             .formatted(if (secondsRemaining.inWholeSeconds <= 30 && secondsRemaining.inWholeSeconds % 2 == 0L) { alertColor } else { normalColor })
     }
 
+    fun formatCardGoals(team: BingoTeam?, text: TextProvider): MutableText {
+        val card = cards.find { it.id == team?.cardId } ?: cards.first()
+        val remainingCards = (options.winCondition as? BingoWinCondition.Cards)
+            ?.cards
+            ?.minus(1)
+            ?.minus(team?.countCards() ?: 0)
+            ?.takeIf { it > 0 }
+
+        return card.options.goal.format(text)
+            .also {
+                if (remainingCards != null)
+                    it.append(Text.literal(" +$remainingCards").formatted(Formatting.BOLD))
+            }
+    }
+
     /**
      * If a game is over & we want to reset this to its default state
      * without restarting...
      * (should only be called when isLobbyMode=false)
      */
     fun reset() {
-        // set a new gameId & seed
+        // set a new gameId
         gameId = UUID.randomUUID()
-        seed = Random.nextLong()
         startedAt = null
         updatedAt = null
         endedAt = null
         timeOffline = Duration.ZERO
         teams.clear()
         // previewMap we don't clear, as it can be reused...
-        // [BingoMapController] calls generateCard when entering PREGAME, so this card should be immediately replaced
-        card = BingoCard.EMPTY
-        endReason = null
+        // [ScoredItemCheck] calls createInitialCards when entering PREGAME, so this card should be immediately replaced
+        cards.clear()
+        gameOverInfo = null
         isForfeit = false
     }
 

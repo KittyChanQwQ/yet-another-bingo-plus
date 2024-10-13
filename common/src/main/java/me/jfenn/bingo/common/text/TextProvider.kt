@@ -15,7 +15,7 @@ class TextProvider(
     private val textSerializer: ITextSerializer,
 ) {
 
-    val lang: Map<StringKey, String> = this::class.java.getResourceAsStream("/assets/yet-another-minecraft-bingo/lang/en_us.json")
+    private val lang: Map<StringKey, String> = this::class.java.getResourceAsStream("/assets/yet-another-minecraft-bingo/lang/en_us.json")
         ?.use { stream ->
             @OptIn(ExperimentalSerializationApi::class)
             json.decodeFromStream<Map<String, String>>(stream)
@@ -70,6 +70,13 @@ class TextProvider(
         return when (number) {
             1 -> string(StringKey.GameLineSingle)
             else -> string(StringKey.GameLineCount, number)
+        }
+    }
+
+    fun cardCount(number: Int): MutableText {
+        return when (number) {
+            1 -> string(StringKey.GameCardSingle)
+            else -> string(StringKey.GameCardCount, number)
         }
     }
 

@@ -1,8 +1,8 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.api.IPacketBuf
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.api.IPacketBuf
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.Text
 
@@ -30,4 +30,7 @@ class PacketBufImpl(
 
     override fun writeText(text: Text) = buf.writeText(text).let {}
     override fun readText(): Text = buf.readText()
+
+    override fun writeByteArray(array: ByteArray) = buf.writeByteArray(array).let {}
+    override fun readByteArray(): ByteArray = buf.readByteArray()
 }

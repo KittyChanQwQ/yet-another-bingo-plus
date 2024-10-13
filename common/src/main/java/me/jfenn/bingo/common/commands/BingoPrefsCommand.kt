@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.commands
 
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
@@ -7,8 +8,7 @@ import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.utils.formatTitle
-import me.jfenn.bingo.common.utils.sendInfoMessage
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KMutableProperty1
 
@@ -17,7 +17,7 @@ class BingoPrefsCommand(
 ) : BingoComponent() {
 
     private fun IExecutionContext.toggleBooleanSetting(
-        player: ServerPlayerEntity,
+        player: IPlayerHandle,
         field: KMutableProperty1<PlayerSettings, Boolean>,
     ) {
         val handler = scope.get<PlayerSettingsService>()
@@ -28,7 +28,7 @@ class BingoPrefsCommand(
     }
 
     private fun IExecutionContext.changeBooleanSetting(
-        player: ServerPlayerEntity,
+        player: IPlayerHandle,
         field: KMutableProperty1<PlayerSettings, Boolean>,
         value: Boolean,
     ) {
@@ -38,7 +38,7 @@ class BingoPrefsCommand(
         field.set(settings, value)
         handler.setPlayer(player, settings, seenTutorial = true)
 
-        player.sendInfoMessage("${field.name.formatTitle()}: $value")
+        sendInfoMessage(Text.literal("${field.name.formatTitle()}: $value"))
     }
 
     init {

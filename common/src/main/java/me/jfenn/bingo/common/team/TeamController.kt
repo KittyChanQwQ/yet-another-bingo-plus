@@ -13,7 +13,7 @@ class TeamController(
     private val playerManager: IPlayerManager,
     private val teamManager: ITeamManager,
     private val server: MinecraftServer,
-    events: ScopedEvents,
+    private val events: ScopedEvents,
 ) {
     init {
         events.onEnter(GameState.PREGAME) {
@@ -41,7 +41,7 @@ class TeamController(
                 val isTeamJoined = playerTeam?.players?.add(playerProfile) ?: false
 
                 if (isTeamLeft || isTeamJoined) {
-                    teamService.onTeamChanged(player.player)
+                    events.onChangeTeam(player)
                     state.playersJoinedIds.add(player.uuid)
                 }
             }

@@ -1,13 +1,14 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.EntityType
+import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.toNbt
+import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
+import org.joml.Vector3d
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -15,7 +16,7 @@ import kotlin.time.Duration.Companion.minutes
 const val MAX_TIMER_MINUTES: Long = 360
 
 fun MenuComponent.registerTimer(
-    position: Vec3d,
+    position: Vector3d,
     timerMinutesProp: MutableProperty<Duration?>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     text: TextProvider = koinScope.get(),
@@ -23,7 +24,7 @@ fun MenuComponent.registerTimer(
     var timerMinutes by timerMinutesProp
 
     registerButton(
-        position = position.add(0.0, -MENU_ITEM_OFFSET, 0.0),
+        position = position + Vector3d(0.0, -MENU_ITEM_OFFSET, 0.0),
         text = Text.literal("+"),
         permissionGetter = permissionGetter,
     ) {
@@ -35,7 +36,7 @@ fun MenuComponent.registerTimer(
     }
 
     registerButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
+        position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
         text = Text.literal("-"),
         permissionGetter = permissionGetter,
     ) {
@@ -46,7 +47,9 @@ fun MenuComponent.registerTimer(
         timerMinutes = newMins?.minutes
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY, position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)) {
+    registerEntity(EntityType.TEXT_DISPLAY) {
+        pos = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)
+
         val timerText = timerMinutes
             ?.inWholeMinutes
             ?.let { minutes ->
@@ -55,23 +58,22 @@ fun MenuComponent.registerTimer(
             }
             ?: text.string(StringKey.OptionsTimeLimitOff)
 
-        putString("text", text.serialized(timerText))
-        putString("billboard", "fixed")
-        putString("alignment", "center")
-        putInt("background", 0)
-        putBoolean("shadow", true)
-        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
+        this.value = timerText
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.CENTER
+        background = 0
+        shadow = true
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", text.serialized(
-            text.string(StringKey.OptionsTimeLimit)
-        ))
-        putString("billboard", "fixed")
-        putString("alignment", "center")
-        putInt("background", 0)
-        putBoolean("shadow", true)
-        putInt("line_width", 50)
-        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY) {
+        pos = position
+        this.value = text.string(StringKey.OptionsTimeLimit)
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.CENTER
+        background = 0
+        shadow = true
+        lineWidth = 50
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 }

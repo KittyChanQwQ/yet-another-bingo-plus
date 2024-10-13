@@ -38,11 +38,18 @@ class ScorePacketReceiver(
             )
         }
 
+        clientPacketEvents.cardCompletedV1.onPacket { (packet) ->
+            soundService.play(
+                if (packet.isWinner) ClientSounds.Key.GAME_WON else ClientSounds.Key.GAME_LOST
+            )
+        }
+
         clientPacketEvents.gameOverV1.onPacket(::onGameOver)
         clientPacketEvents.gameOverV2.onPacket(::onGameOver)
         clientPacketEvents.gameOverV3.onPacket(::onGameOver)
         clientPacketEvents.gameOverV4.onPacket(::onGameOver)
         clientPacketEvents.gameOverV5.onPacket(::onGameOver)
+        clientPacketEvents.gameOverV6.onPacket(::onGameOver)
 
         clientPacketEvents.timerV1.onPacket { (packet) ->
             if (packet.secondsRemaining in 1..20 && packet.secondsRemaining % 2 != 0) {

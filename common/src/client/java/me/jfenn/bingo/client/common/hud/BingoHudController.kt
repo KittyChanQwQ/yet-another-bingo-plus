@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.api.ClientPacket
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.client.api.IHudCallback
@@ -15,6 +16,7 @@ import me.jfenn.bingo.common.map.CardUpdatePacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.wrap
 import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
@@ -27,6 +29,7 @@ import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
 import org.koin.core.Koin
 import org.lwjgl.glfw.GLFW
+import kotlin.time.Duration.Companion.milliseconds
 
 class BingoHudController(
     private val koin: Koin,
@@ -59,11 +62,14 @@ class BingoHudController(
         )
     )
 
+    private var fireworkRenderer: BingoEndFireworkRenderer? = null
+
     private fun drawHud(drawService: IDrawService) {
         val teamKeys = state.display?.display
         if (teamKeys.isNullOrEmpty()) return
 
         val context = drawService.context
+        val textRenderer = MinecraftClient.getInstance().textRenderer
 
         // If the selected team is one of the displayed cards, try to find its view state...
         val selectedTeam = state.selectedTeam
@@ -85,6 +91,17 @@ class BingoHudController(
         val x = cardAlignment.x * (context.scaledWindowWidth - (BingoHudRenderer.CARD_WIDTH * cardScale)) + offsetX
         val y = cardAlignment.y * (context.scaledWindowHeight - (BingoHudRenderer.CARD_HEIGHT * cardScale)) + offsetY
 
+        if (fireworkRenderer?.isDone() == true) {
+            fireworkRenderer = null
+        } else {
+            fireworkRenderer?.render(
+                context = context,
+                textRenderer = textRenderer,
+                centerX = x.toInt() + (BingoHudRenderer.CARD_WIDTH/2),
+                centerY = y.toInt() + (BingoHudRenderer.CARD_HEIGHT/2)
+            )
+        }
+
         renderer.drawCard(
             context,
             drawService,
@@ -95,7 +112,9 @@ class BingoHudController(
             cardScale = cardScale,
             // if the client can only see one card, enable team outlines
             // inverse: if the client can see every card, we don't need to show the outlines
-            showTeamOutlines = !config.client.showMultipleCards || state.display?.display?.size?.let { it <= 1 } == true,
+            showTeamOutlines = config.client.cardTeamOutlines && (
+                !config.client.showMultipleCards || state.display?.display?.size?.let { it <= 1 } == true
+            ),
         )
 
         itemScoredRenderer.drawMessages(
@@ -126,8 +145,32 @@ class BingoHudController(
                     x = cardX.toInt(),
                     y = y.toInt(),
                     z = config.client.cardOverlap.z,
-                    cardScale =  cardScale
+                    cardScale =  cardScale,
+                    showTeamOutlines = false
                 )
+            }
+        }
+
+        val now = Clock.System.now()
+        val tooltipPacket = state.tooltip
+        val tooltipText = tooltipPacket?.text
+        val tooltipStartedAt = state.tooltipStartedAt ?: Instant.DISTANT_PAST
+        if (tooltipText != null) {
+            val tooltip = tooltipText.flatMap { it.wrap(30) }
+            val tooltipSize = tooltip.maxOfOrNull { textRenderer.getWidth(it) } ?: 0
+            val tooltipX = context.scaledWindowWidth/2 - tooltipSize/2 - 12
+            val tooltipY = (context.scaledWindowHeight * 0.5).toInt() + 18 + 12
+
+            val fadeIn = ((now - tooltipStartedAt) / 250.milliseconds).coerceIn(0.0, 1.0)
+            val fadeOut = 1.0 - ((now - tooltipPacket.createdAt.plus(100.milliseconds)) / 250.milliseconds).coerceIn(0.0, 1.0)
+
+            drawService.setShaderColor(1f, 1f, 1f, (fadeIn * fadeOut).toFloat())
+            context.drawTooltip(textRenderer, tooltip, tooltipX, tooltipY)
+            drawService.setShaderColor(1f, 1f, 1f, 1f)
+
+            if (fadeOut <= 0.0) {
+                state.tooltip = null
+                state.tooltipStartedAt = null
             }
         }
     }
@@ -161,13 +204,13 @@ class BingoHudController(
         }
     }
 
-    private fun onScoreMessage(packet: ScoreMessagePacket) {
-        if (!packet.isViewerOnTeam && !config.client.messageFromOtherTeams)
+    private fun onScoreMessage(packet: ClientPacket<ScoreMessagePacket>) {
+        if (!packet.packet.isViewerOnTeam && !config.client.messageFromOtherTeams)
             return
 
         val scoreMessage = BingoHudState.ScoreMessage(
             createdAt = Clock.System.now(),
-            packet = packet,
+            packet = packet.packet,
         )
 
         state.messages.add(scoreMessage)
@@ -196,16 +239,30 @@ class BingoHudController(
         packetEvents.cardUpdateV2.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV3.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV4.onPacket(::onCardUpdate)
+        packetEvents.cardUpdateV5.onPacket(::onCardUpdate)
 
-        packetEvents.scoreMessageV1.onPacket { (packet) ->
-            onScoreMessage(packet)
+        packetEvents.cardCompletedV1.onPacket {
+            if (it.packet.isWinner) {
+                fireworkRenderer = BingoEndFireworkRenderer(range = (100 * config.client.cardScale).toInt())
+            }
         }
+
+        packetEvents.scoreMessageV1.onPacket(::onScoreMessage)
+        packetEvents.scoreMessageV2.onPacket(::onScoreMessage)
 
         packetEvents.gameOverV1.onPacket(::onGameOver)
         packetEvents.gameOverV2.onPacket(::onGameOver)
         packetEvents.gameOverV3.onPacket(::onGameOver)
         packetEvents.gameOverV4.onPacket(::onGameOver)
         packetEvents.gameOverV5.onPacket(::onGameOver)
+        packetEvents.gameOverV6.onPacket(::onGameOver)
+
+        packetEvents.tooltipV1.onPacket {
+            state.tooltip = it.packet
+            if (state.tooltipStartedAt == null) {
+                state.tooltipStartedAt = it.packet.createdAt
+            }
+        }
 
         hud.onRender {
             // Do not draw the HUD if the F3 or chat overlay is shown
@@ -226,7 +283,7 @@ class BingoHudController(
         }
 
         ClientPlayConnectionEvents.DISCONNECT.register { _, client ->
-            client.execute { state.reset() }
+            client.execute { state.resetAll() }
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register { _ ->
@@ -234,7 +291,7 @@ class BingoHudController(
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { _ ->
-            MinecraftClient.getInstance().execute { state.reset() }
+            MinecraftClient.getInstance().execute { state.resetAll() }
         }
 
         InvalidateRenderStateCallback.EVENT.register {

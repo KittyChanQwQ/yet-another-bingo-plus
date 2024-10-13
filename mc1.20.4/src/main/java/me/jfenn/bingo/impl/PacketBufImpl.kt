@@ -30,4 +30,7 @@ class PacketBufImpl(
 
     override fun writeText(text: Text) = buf.writeText(text).let {}
     override fun readText(): Text = buf.readText()
+
+    override fun writeByteArray(array: ByteArray) = buf.writeByteArray(array).let {}
+    override fun readByteArray(): ByteArray = buf.readByteArray()
 }

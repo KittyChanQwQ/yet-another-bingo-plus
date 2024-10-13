@@ -7,8 +7,8 @@ import net.minecraft.util.Formatting
 
 data class CardView(
     val teamKey: BingoTeamKey?,
-    val teamColor: Formatting?,
-    val teamName: Text,
+    val teamColor: Formatting? = null,
+    val teamName: Text = Text.empty(),
     val tiles: MutableList<CardTile>,
     val players: List<BingoPlayerProfile>
 ) {

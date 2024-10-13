@@ -52,7 +52,7 @@ class TimerCheck(
             val timeLimit = options.timeLimit
             if (timeLimit != null && duration >= timeLimit) {
                 // end the game!
-                gameService.end(GameEndReason.TIMER)
+                gameService.end(GameEndReason.Timer)
             }
         }
     }

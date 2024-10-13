@@ -109,7 +109,7 @@ class ObjectiveHandle(
         get() = objective.name
 
     override fun getForPlayer(player: IPlayerHandle): Int? {
-        val playerImpl = player as PlayerManager.PlayerHandle
+        val playerImpl = player as PlayerHandle
         return scoreboard.getPlayerScore(playerImpl.player.entityName, objective)?.score
     }
 }

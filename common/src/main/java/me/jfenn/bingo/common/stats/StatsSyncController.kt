@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.stats
 
 import me.jfenn.bingo.api.IExecutors
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -9,7 +10,6 @@ import me.jfenn.bingo.common.stats.data.PlayerGameSummary
 import me.jfenn.bingo.common.stats.packets.StatsCheckPacket
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
-import net.minecraft.server.network.ServerPlayerEntity
 import org.slf4j.Logger
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -28,14 +28,14 @@ class StatsSyncController(
 
     private val pendingPlayerIds = Collections.newSetFromMap(ConcurrentHashMap<UUID, Boolean>())
 
-    private fun broadcastHash(player: ServerPlayerEntity) = executor.submit {
+    private fun broadcastHash(player: IPlayerHandle) = executor.submit {
         log.info("[StatsSyncController] Broadcasting stats hash to player {}", player.uuid)
         val hash = stats.fetchGamesByPlayerSha512(player.uuid)
         val packet = StatsCheckPacket(hashSha512 = hash)
         packets.statsHashV1S2C.send(player, packet)
     }
 
-    private fun sendKnownIds(player: ServerPlayerEntity) = executor.submit {
+    private fun sendKnownIds(player: IPlayerHandle) = executor.submit {
         log.info("[StatsSyncController] Client responded with a hash mismatch - starting sync for player {}", player.uuid)
 
         for (ids in stats.fetchGamesByPlayer(player.uuid)) {
@@ -57,7 +57,7 @@ class StatsSyncController(
         }
     }
 
-    private fun checkForMissingIds(player: ServerPlayerEntity, gameIds: Set<UUID>) = executor.submit {
+    private fun checkForMissingIds(player: IPlayerHandle, gameIds: Set<UUID>) = executor.submit {
         val missingIds = stats.checkIfIdsExist(player.uuid, gameIds)
 
         // if there are ids missing, send the client a packet to request them
@@ -67,7 +67,7 @@ class StatsSyncController(
         }
     }
 
-    private fun sendRequestedIds(player: ServerPlayerEntity, gameIds: Set<UUID>) = executor.submit {
+    private fun sendRequestedIds(player: IPlayerHandle, gameIds: Set<UUID>) = executor.submit {
         for (gameId in gameIds) {
             val gameSummary = stats.findById(gameId = gameId, playerId = player.uuid)
             if (gameSummary == null) {

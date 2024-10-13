@@ -50,7 +50,7 @@ object PlayerManagerMixinHandler {
         nbt.put("Pos", position)
 
         val rotation = NbtList()
-        rotation.add(NbtFloat.of(180f)) // yaw
+        rotation.add(NbtFloat.of(state.lobbySpawnYaw)) // yaw
         rotation.add(NbtFloat.of(0f)) // pitch
         nbt.put("Rotation", rotation)
         return nbt

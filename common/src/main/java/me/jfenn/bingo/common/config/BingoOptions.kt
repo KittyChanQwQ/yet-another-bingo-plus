@@ -4,13 +4,10 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonNames
-import me.jfenn.bingo.common.card.tierlist.TierListState
+import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.spawn.SpawnItem
-import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 import java.security.MessageDigest
 import java.util.*
 import kotlin.reflect.KMutableProperty1
@@ -20,18 +17,15 @@ import kotlin.time.Duration
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
 data class BingoOptions(
-    var cardGoal: BingoGoal = BingoGoal.Lines(3),
-    var timeLimit: Duration? = null,
-    var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
-    var tierLists: Map<String, Int> = mapOf("all_items" to 1, "challenge" to 1),
-    var tierListPage: Int = 0,
+    var winCondition: BingoWinCondition = BingoWinCondition.Cards(1),
+    var cards: List<BingoCardOptions> = listOf(BingoCardOptions()),
 
-    // game mode settings
-    var isLockoutMode: Boolean = false,
-    var isInventoryMode: Boolean = false,
-    var isRankedMode: Boolean = false,
-    @JsonNames("hiddenItems")
-    var isHiddenItemsMode: Boolean = false,
+    var skipCardWhenLost: Boolean = true,
+    var endGameWhenStalemate: Boolean = true,
+    var endGameWhenComplete: Boolean = true,
+
+    var timeLimit: Duration? = null,
+    var tierListPage: Int = 0,
 
     // game feature settings
     var isElytra: Boolean = false,
@@ -43,7 +37,7 @@ data class BingoOptions(
     // team spawnpoint settings
     var spawnDimension: String = "minecraft:overworld",
     @JsonNames("spreadPlayersDistance")
-    var spawnDistance: Int = 100,
+    var spawnDistance: Int = 25,
 
     // score info settings
     var showRemainingTime: Boolean = true,
@@ -52,9 +46,7 @@ data class BingoOptions(
     var showLeadingTeam: Boolean = true,
 
     // bingo card settings
-    @JsonNames("drawOtherTeamCompletions")
-    var showOtherTeamCompletions: Boolean = false,
-    var showPreviewCard: Boolean = false,
+    var showPreviewCard: Boolean = true,
     var showHiddenTiers: Boolean = false,
 
     var isPlayerKit: Boolean = false,
@@ -78,36 +70,15 @@ data class BingoOptions(
 ) {
 
     fun isValid(): Boolean {
-        return itemDistribution.sum() <= 25 && tierLists.isNotEmpty()
+        return cards.all { it.isValid() }
     }
 
-    fun formatTierLists(state: TierListState) : MutableText {
-        val lists = tierLists
-            .filter { (name, _) -> state.tierLists.containsKey(name) }
-            .map { (name, weight) -> name to weight.coerceAtLeast(1) }
-            .toMap()
-
-        val showPercentage = lists.size > 1
-        val total = lists.values.sum()
-
-        return lists.entries
-            .map { (name, weight) ->
-                when {
-                    showPercentage -> Text.empty()
-                        .append(TierListState.title(name))
-                        .append(String.format(" (%.0f%%)", weight * 100f / total))
-                    else -> TierListState.title(name)
-                }
-            }
-            .joinText()
-    }
-
-    fun formatGameMode(): List<StringKey> {
+    fun formatGameMode(card: BingoCard): List<StringKey> {
         val gameMode = buildList {
-            if (isLockoutMode) add(StringKey.OptionsModeLockout)
-            if (isInventoryMode) add(StringKey.OptionsModeInventory)
-            if (isRankedMode) add(StringKey.OptionsModeRanked)
-            if (isHiddenItemsMode) add(StringKey.OptionsModeHiddenItems)
+            if (card.options.isLockoutMode) add(StringKey.OptionsModeLockout)
+            if (card.options.isInventoryMode) add(StringKey.OptionsModeInventory)
+            if (card.options.isHiddenItemsMode) add(StringKey.OptionsModeHiddenItems)
+            if (winCondition is BingoWinCondition.Infinite) add(StringKey.OptionsWinConditionInfinite)
         }
 
         return gameMode.ifEmpty { listOf(StringKey.OptionsModeStandard) }
@@ -144,15 +115,19 @@ data class BingoOptions(
         val md = MessageDigest.getInstance("SHA-512")
 
         sequence {
-            // card difficulty
-            yield(json.encodeToString(cardGoal))
-            yield(json.encodeToString(itemDistribution))
-            yield(json.encodeToString(tierLists.toSortedMap().toMap())) // note: map sort order affects the resulting hash!
-            // gamemodes
-            yield(isLockoutMode.toString())
-            yield(isInventoryMode.toString())
-            yield(isRankedMode.toString())
-            yield(isHiddenItemsMode.toString())
+            yield(json.encodeToString(winCondition))
+
+            for (card in cards) {
+                // card difficulty
+                yield(json.encodeToString(card.goal))
+                yield(json.encodeToString(card.itemDistribution))
+                yield(json.encodeToString(card.tierLists.toSortedMap().toMap())) // note: map sort order affects the resulting hash!
+                // gamemodes
+                yield(card.isLockoutMode.toString())
+                yield(card.isInventoryMode.toString())
+                yield(card.isHiddenItemsMode.toString())
+                yield(",")
+            }
             // features
             yield(isKeepInventory.toString())
             yield(isElytra.toString())

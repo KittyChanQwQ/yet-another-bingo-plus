@@ -16,7 +16,6 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
@@ -33,7 +32,7 @@ class InfoBookService(
     private val itemStackFactory: IItemStackFactory,
 ) {
 
-    private fun getIntroPage(player: ServerPlayerEntity) =
+    private fun getIntroPage(player: IPlayerHandle) =
         Text.empty()
             .append(
                 text.string(
@@ -72,7 +71,7 @@ class InfoBookService(
             .append("\n\n")
             .append(text.string(StringKey.IntroHaveFun))
 
-    private fun getHintsPage(player: ServerPlayerEntity) =
+    private fun getHintsPage(player: IPlayerHandle) =
         Text.empty()
             .append(Text.literal("Hints").formatted(Formatting.BOLD))
             .append("\n\n")
@@ -117,7 +116,7 @@ class InfoBookService(
                 }
             )
 
-    private fun getSettingsPage(player: ServerPlayerEntity, settings: PlayerSettings) =
+    private fun getSettingsPage(player: IPlayerHandle, settings: PlayerSettings) =
         Text.empty()
             .append(text.string(StringKey.PlayerSettings).formatted(Formatting.BOLD))
             .append("\n\n")
@@ -207,7 +206,7 @@ class InfoBookService(
     private fun isBookItem(stack: IWrittenBook) =
         stack.hasCustomTag(NBT_BINGO_INFO_BOOK)
 
-    private fun createBookItem(player: ServerPlayerEntity) : IWrittenBook {
+    private fun createBookItem(player: IPlayerHandle) : IWrittenBook {
         val stack = itemStackFactory.createWrittenBook()
         stack.addCustomTag(NBT_BINGO_INFO_BOOK)
         stack.addCustomTag(NBT_BINGO_IGNORE)
@@ -216,13 +215,13 @@ class InfoBookService(
         if (state.isLobbyMode && state.state == GameState.PREGAME && config.lobbyTutorialBook)
             stack.addCustomTag(NBT_BINGO_KEEP)
 
-        stack.title =  text.raw(StringKey.FullName)
-        stack.author = scoreboardManager.getPlayerName(player)
+        stack.title = text.raw(StringKey.FullName)
+        stack.author = player.name
         updateBookItem(player, stack)
         return stack
     }
 
-    private fun updateBookItem(player: ServerPlayerEntity, stack: IWrittenBook) {
+    private fun updateBookItem(player: IPlayerHandle, stack: IWrittenBook) {
         val settings = playerSettingsService.getPlayer(player)
 
         stack.setPages(buildList {
@@ -244,7 +243,7 @@ class InfoBookService(
         player.allHeldStacks()
             .mapNotNull { it.asWrittenBook() }
             .filter { isBookItem(it) }
-            .forEach { updateBookItem(player.player, it) }
+            .forEach { updateBookItem(player, it) }
     }
 
     fun giveBookItem(player: IPlayerHandle) {
@@ -253,7 +252,7 @@ class InfoBookService(
             if (isBookItem(stack)) {
                 // prevent players from taking someone else's book...
                 if (stack.author != scoreboardManager.getPlayerName(player.player))
-                    updateBookItem(player.player, stack)
+                    updateBookItem(player, stack)
 
                 bookCount++
 
@@ -265,7 +264,7 @@ class InfoBookService(
         }
 
         if (bookCount == 0) {
-            val bookItem = createBookItem(player.player)
+            val bookItem = createBookItem(player)
             player.giveItemStack(bookItem)
         }
     }

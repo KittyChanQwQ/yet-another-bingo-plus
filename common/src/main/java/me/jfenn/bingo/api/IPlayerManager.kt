@@ -1,9 +1,11 @@
 package me.jfenn.bingo.api
 
 import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
+import org.joml.Vector3d
 import java.util.*
 
 interface IPlayerManager {
@@ -27,13 +29,25 @@ interface IPlayerManager {
 
 }
 
-interface IPlayerHandle {
+interface IPlayerHandle : ILivingEntity {
     val player: ServerPlayerEntity
     val isAlive: Boolean
     val isSpectator: Boolean
-
-    val uuid: UUID
     val name: String
+
+    var fireTicks: Int
+    var isOnFire: Boolean
+    var foodLevel: Int
+    val maxFoodLevel: Int get() = 20
+    var saturationLevel: Float
+    val maxSaturationLevel: Float get() = 5f
+    var exhaustion: Float
+
+    /**
+     * vaguely determine if the held item will be used or not
+     * (e.g. suspicious stew, potions, etc. - vs. static items such as iron ingots)
+     */
+    fun canUseItem(stack: IItemStack): Boolean
 
     fun allHeldStacks(): Sequence<IItemStack>
     fun allInventorySlots(): Sequence<Pair<Int, IItemStack>>
@@ -49,6 +63,12 @@ interface IPlayerHandle {
     fun setStack(slot: Int, stack: IItemStack)
 
     fun playSound(sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float)
+
+    val serverWorld: ServerWorld
+    val blockPos: BlockPosition
+
+    fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float)
+    fun setSpawnPoint(world: ServerWorld, spawn: BlockPosition, angle: Float, forced: Boolean, sendMessage: Boolean)
 }
 
 enum class PlayerSoundEvent {

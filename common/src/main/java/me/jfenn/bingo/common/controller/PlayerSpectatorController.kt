@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spectator.SpectatorInventoryScreenHandler
 import me.jfenn.bingo.common.state.BingoState
@@ -16,7 +17,6 @@ import net.minecraft.inventory.Inventory
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.ActionResult
 import net.minecraft.world.GameMode
 
 class PlayerSpectatorController(
@@ -28,7 +28,7 @@ class PlayerSpectatorController(
 
     init {
         events.onUseBlock {
-            if (state.isLobbyMode) return@onUseBlock null
+            if (!state.isLobbyMode) return@onUseBlock null
             val player = it.player as? ServerPlayerEntity ?: return@onUseBlock null
             if (state.state != GameState.PLAYING) return@onUseBlock null
             if (teamService.isPlaying(player)) return@onUseBlock null
@@ -90,11 +90,11 @@ class PlayerSpectatorController(
                 )
             }
 
-            ActionResult.FAIL
+            ActionResult.Fail(Unit)
         }
 
         events.onUseEntity {
-            if (state.isLobbyMode) return@onUseEntity null
+            if (!state.isLobbyMode) return@onUseEntity null
             val player = it.player as? ServerPlayerEntity ?: return@onUseEntity null
             if (state.state != GameState.PLAYING) return@onUseEntity null
             if (teamService.isPlaying(player)) return@onUseEntity null
@@ -130,11 +130,11 @@ class PlayerSpectatorController(
                 )
             }
 
-            ActionResult.FAIL
+            ActionResult.Fail(Unit)
         }
 
         events.onAttackEntity {
-            if (state.isLobbyMode) return@onAttackEntity null
+            if (!state.isLobbyMode) return@onAttackEntity null
             val player = it.player as? ServerPlayerEntity ?: return@onAttackEntity null
             if (state.state != GameState.PLAYING) return@onAttackEntity null
             if (teamService.isPlaying(player)) return@onAttackEntity null
@@ -143,7 +143,7 @@ class PlayerSpectatorController(
             // if the player is spectating a game, do not
             // allow them to attack any entity
 
-            ActionResult.FAIL
+            ActionResult.Fail(Unit)
         }
     }
 

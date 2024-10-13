@@ -12,6 +12,7 @@ data class ClientConfig(
     var cardOffsetX: Int = 0,
     var cardOffsetY: Int = 0,
     var cardOverlap: CardOverlap = CardOverlap.UNDERNEATH,
+    var cardTeamOutlines: Boolean = true,
     var showMultipleCards: Boolean = false,
     var hideOnF3: Boolean = true,
     var hideOnChat: Boolean = false,

@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.api.ILevelStorage
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.api.*
+import me.jfenn.bingo.api.block.IWallSignBlockState
+import me.jfenn.bingo.api.particle.IParticleFactory
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.config.BlockPosition
@@ -19,41 +20,42 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.measureTime
-import me.jfenn.bingo.common.utils.toNbt
+import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.decoration.DisplayEntity
-import net.minecraft.entity.decoration.InteractionEntity
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.particle.DustParticleEffect
+import net.minecraft.block.PlayerSkullBlock
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
 import net.minecraft.world.Heightmap
 import net.minecraft.world.chunk.ChunkStatus
-import org.joml.Vector3f
+import org.joml.Matrix4f
+import org.joml.Vector3d
+import org.joml.Vector4f
 import org.slf4j.Logger
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.*
 import java.util.zip.ZipInputStream
+import kotlin.math.atan2
 
 class MenuController(
     events: ScopedEvents,
     scopeManager: ScopeManager,
     private val log: Logger,
     private val server: MinecraftServer,
+    private val entityManager: IEntityManager,
     private val interactionEntityEvents: InteractionEntityEvents,
     private val state: BingoState,
     private val teamService: TeamService,
     private val text: TextProvider,
     private val playerManager: IPlayerManager,
     private val levelStorage: ILevelStorage,
+    private val particleFactory: IParticleFactory,
+    private val serverWorldFactory: IServerWorldFactory,
 ) : BingoComponent() {
 
     private var menu: MenuInstance? = null
@@ -84,8 +86,9 @@ class MenuController(
                 return@onEnter
             }
 
-            val lobbySpawnPos = getLobbySpawnPosition(lobbyWorld)
+            val (lobbySpawnPos, lobbySpawnYaw) = getLobbySpawnPosition(lobbyWorld)
             state.lobbySpawnPos = lobbySpawnPos
+            state.lobbySpawnYaw = lobbySpawnYaw
 
             val menuPos = getMenuPosition(lobbyWorld)
             if (menuPos != null) {
@@ -94,8 +97,9 @@ class MenuController(
                     log = log,
                     koinScope = koinScope,
                     world = lobbyWorld,
+                    entityManager = entityManager,
                     interactionEntityEvents = interactionEntityEvents,
-                    menuPos = menuPos,
+                    matrix = menuPos,
                     instanceTag = instanceTag,
                 )
                 menu = menuInstance
@@ -216,37 +220,54 @@ class MenuController(
         }
     }
 
-    private fun getMenuPosition(lobbyWorld: ServerWorld): BlockPosition? = log.measureTime("[MenuController] Locating menu position...") {
+    private fun getMenuPosition(lobbyWorld: ServerWorld): Matrix4f? = log.measureTime("[MenuController] Locating menu position...") {
+        val lobbyWorldImpl = serverWorldFactory.forWorld(lobbyWorld)
+
         // Find a column of three vertical wall_sign blocks for the menu position
         for (pos in searchLobbyBlocks()) {
             val blocks = listOf(
                 pos.move(y = 1).toBlockPos(),
                 pos.toBlockPos(),
                 pos.move(y = -1).toBlockPos()
-            )
-            val isMenuPos = blocks.all {
-                lobbyWorld.getBlockState(it).block == Blocks.OAK_WALL_SIGN
+            ).associateWith {
+                lobbyWorldImpl.getBlockState(BlockPosition.fromBlockPos(it))
+                    as? IWallSignBlockState
             }
 
-            if (isMenuPos) {
-                for (blockPos in blocks) {
+            val isMenuPos = blocks.values.all {
+                it?.block == Blocks.OAK_WALL_SIGN
+            }
+            val centerState = blocks.values.first()
+
+            if (isMenuPos && centerState != null) {
+                for ((blockPos) in blocks) {
                     lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
                 }
-                return@measureTime pos
+
+                val directionVec = centerState.facing
+                val yaw = atan2(directionVec.x.toFloat(), directionVec.z.toFloat())
+
+                val matrix4f = Matrix4f()
+                matrix4f.translate(pos.x.toFloat(), pos.y.toFloat(), pos.z.toFloat())
+                matrix4f.rotateY(yaw)
+                return@measureTime matrix4f
             }
         }
 
         null
-    }.also { log.info("Set menu position to $it") }
+    }.also { log.info("Set menu position to ${it?.transform(Vector4f())}") }
 
-    private fun getLobbySpawnPosition(lobbyWorld: ServerWorld): BlockPosition = log.measureTime("[MenuController] Locating spawn position...") {
+    private fun getLobbySpawnPosition(lobbyWorld: ServerWorld): Pair<BlockPosition, Float> = log.measureTime("[MenuController] Locating spawn position...") {
         // If a player head is in the lobby structure, use it as the player spawn
         for (pos in searchLobbyBlocks()) {
             val blockPos = pos.toBlockPos()
-            val isPlayerHead = lobbyWorld.getBlockState(blockPos).block == Blocks.PLAYER_HEAD
+            val blockState = lobbyWorld.getBlockState(blockPos)
+            val isPlayerHead = blockState.block == Blocks.PLAYER_HEAD
             if (isPlayerHead) {
+                val rotation = blockState.get(PlayerSkullBlock.ROTATION)
+                val yaw = (rotation - 8).toFloat() * 360f / 16f
                 lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
-                return@measureTime pos
+                return@measureTime Pair(pos, yaw)
             }
         }
 
@@ -255,7 +276,7 @@ class MenuController(
         val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING)
         val spawnY = heightmap.get(0, 0)
 
-        BlockPosition(0, spawnY, 0)
+        BlockPosition(0, spawnY, 0) to 180f
     }.also { log.info("Set lobby spawnpoint to $it") }
 
     private val teamPositions = mutableMapOf<BingoTeamKey, BlockPos>()
@@ -271,68 +292,60 @@ class MenuController(
 
             val team = BingoTeam.TEAM_BLOCKS[blockState.block] ?: continue
             teamPositions[team.key] = blockPos
-            spawnTeamEntity(lobbyWorld, Vec3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team, instanceTag)
+            spawnTeamEntity(lobbyWorld, Vector3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team, instanceTag)
             lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
         }
     }
 
     private fun spawnTeamEntity(
         lobbyWorld: ServerWorld,
-        position: Vec3d,
+        position: Vector3d,
         team: BingoTeam,
         instanceTag: String,
     ) {
-        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+        entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.add(0.0, 1.5, 0.0).toNbt())
-                    putString("text", text.serialized(
-                        Text.literal("${team.symbol} ")
-                            .append(text.string(StringKey.TeamName, text.string(team.name)))
-                            .formatted(team.formatting)
-                            .let { Texts.bracketed(it) }
-                    ))
-                    putString("billboard", "vertical")
-                    putString("alignment", "center")
-                    putInt("background", 0)
-                    putBoolean("shadow", true)
-                })
+                pos = position + Vector3d(0.0, 1.5, 0.0)
+                value = Text.literal("${team.symbol} ")
+                    .append(text.string(StringKey.TeamName, text.string(team.name)))
+                    .formatted(team.formatting)
+                    .let { Texts.bracketed(it) }
+                billboard = ITextDisplayEntity.Billboard.VERTICAL
+                alignment = ITextDisplayEntity.TextAlignment.CENTER
+                background = 0
+                shadow = true
             }
-            .also { it.addCommandTag(instanceTag) }
-            .also { lobbyWorld.spawnEntity(it) }
+            .also { it.commandTags += instanceTag }
+            .also { entityManager.spawnEntity(lobbyWorld, it) }
 
-        DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+        entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.add(0.0, 1.0, 0.0).toNbt())
-                    putString("text", text.serialized(
-                        text.string(StringKey.LobbyClickToJoin)
-                    ))
-                    putString("billboard", "vertical")
-                    putString("alignment", "center")
-                })
+                pos = position + Vector3d(0.0, 1.0, 0.0)
+                value = text.string(StringKey.LobbyClickToJoin)
+                billboard = ITextDisplayEntity.Billboard.VERTICAL
+                alignment = ITextDisplayEntity.TextAlignment.CENTER
             }
-            .also { it.addCommandTag(instanceTag) }
-            .also { lobbyWorld.spawnEntity(it) }
+            .also { it.commandTags += instanceTag }
+            .also { entityManager.spawnEntity(lobbyWorld, it) }
 
-        val interactionListenerEntity = InteractionEntity(EntityType.INTERACTION, lobbyWorld)
+        val interactionListenerEntity = entityManager.createEntity(EntityType.INTERACTION, lobbyWorld)
             .apply {
-                readNbt(NbtCompound().apply {
-                    put("Pos", position.add(0.0, -1.0, 0.0).toNbt())
-                    putFloat("width", 2f)
-                    putFloat("height", 4f)
-                })
+                pos = position + Vector3d(0.0, -1.0, 0.0)
+                width = 2f
+                height = 4f
             }
-            .also { it.addCommandTag(instanceTag) }
-            .also { lobbyWorld.spawnEntity(it) }
+            .also { it.commandTags += instanceTag }
+            .also { entityManager.spawnEntity(lobbyWorld, it) }
 
         interactionEntityEvents.onInteract(interactionListenerEntity) { player ->
-            val color = Color.fromInt(team.formatting.colorValue ?: 0)
-            val effect = DustParticleEffect(Vector3f(color.r / 255f, color.g / 255f, color.b / 255f), 1f)
-            (player.world as? ServerWorld)?.spawnParticles(player, effect, true, position.x, position.y, position.z, 10, 1.0, 1.0, 1.0, 0.2)
+            val playerImpl = playerManager.forPlayer(player)
 
-            Sounds.playTeamChanged(playerManager.forPlayer(player))
-            teamService.joinTeam(player, team)
+            val color = Color.fromInt(team.formatting.colorValue ?: 0)
+            particleFactory.createDustParticle(color, 1f)
+                .spawn(playerImpl, position, 10, Vector3d(1.0), 0.2)
+
+            Sounds.playTeamChanged(playerImpl)
+            teamService.joinTeam(playerImpl, team)
         }
     }
 

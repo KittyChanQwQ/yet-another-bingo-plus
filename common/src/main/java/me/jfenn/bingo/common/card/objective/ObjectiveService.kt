@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -12,26 +12,42 @@ import java.util.*
 
 class ObjectiveService(
     private val state: BingoState,
-    private val options: BingoOptions,
     private val offlinePlayerCache: OfflinePlayerCache,
 ) {
 
-    fun getTeamPlayers(): List<Pair<BingoTeam, IPlayerHandle>> = buildList {
-        for (team in state.getRegisteredTeams()) {
+    fun getAllTeams(): Sequence<BingoTeam> {
+        return state.getRegisteredTeams()
+            .asSequence()
+            .filter { it.isPlaying() }
+    }
+
+    fun getAllTeamPlayers(): Sequence<Pair<BingoTeam, IPlayerHandle>> = sequence {
+        for (team in getAllTeams()) {
             for (player in team.players) {
-                add(Pair(team, offlinePlayerCache.getOfflinePlayer(player)))
+                yield(Pair(team, offlinePlayerCache.getOfflinePlayer(player)))
             }
         }
     }
 
-    fun getPlayersByTeam(): Map<BingoTeam, List<IPlayerHandle>> {
-        return state.getRegisteredTeams()
+    fun getTeams(card: BingoCard): Sequence<BingoTeam> {
+        return getAllTeams()
+            .filter { it.cardId == card.id }
+    }
+
+    fun getTeamPlayers(card: BingoCard): Sequence<Pair<BingoTeam, IPlayerHandle>> = sequence {
+        for (team in getTeams(card)) {
+            for (player in team.players) {
+                yield(Pair(team, offlinePlayerCache.getOfflinePlayer(player)))
+            }
+        }
+    }
+
+    fun getPlayersByTeam(card: BingoCard): Map<BingoTeam, List<IPlayerHandle>> {
+        return getTeams(card)
             .associateWith { team ->
                 team.players.map { offlinePlayerCache.getOfflinePlayer(it) }
             }
     }
-
-    fun getLockedTeams() = state.getRegisteredTeams().filter { it.isWinner() }
 
     /**
      * Updates components of the objective state, but ensures that
@@ -44,43 +60,18 @@ class ObjectiveService(
         teamsProgress: Map<BingoTeamKey, Float>? = null,
         teams: Set<BingoTeamKey>? = null,
     ) {
-        val lockedTeams = getLockedTeams()
-        val lockedTeamKeys = lockedTeams.map { it.key }.toSet()
-
         if (playersHolding != null) {
             val newPlayersHolding = playersHolding.toMutableMap()
-
-            newPlayersHolding.values
-                .filter { lockedTeamKeys.contains(it.team) }
-                .onEach { newPlayersHolding.remove(it.player.uuid) }
-
-            objective.playersHolding.entries
-                .filter { lockedTeamKeys.contains(it.value.team) }
-                .toMap()
-                .let { newPlayersHolding.putAll(it) }
-
             objective.playersHolding = newPlayersHolding
         }
 
         if (players != null) {
             val newPlayers = players.toMutableMap()
-
-            newPlayers.values
-                .filter { lockedTeamKeys.contains(it.team) }
-                .onEach { newPlayers.remove(it.player.uuid) }
-
-            objective.players.entries
-                .filter { lockedTeamKeys.contains(it.value.team) }
-                .toMap()
-                .let { newPlayers.putAll(it) }
-
             objective.players = newPlayers
         }
 
         if (teamsProgress != null) {
             val newTeamsProgress = teamsProgress.toMutableMap()
-            lockedTeamKeys.forEach { newTeamsProgress.remove(it) }
-            newTeamsProgress.putAll(objective.teamsProgress.filterKeys { lockedTeamKeys.contains(it) })
             objective.teamsProgress = newTeamsProgress
         }
 
@@ -95,33 +86,16 @@ class ObjectiveService(
                 .associateWith { objective.teamsLost[it] ?: now }
                 .toMutableMap()
 
-            newTeamsAchieved.keys
-                .filter { lockedTeamKeys.contains(it) }
-                .onEach { newTeamsAchieved.remove(it) }
-
-            newTeamsLost.keys
-                .filter { lockedTeamKeys.contains(it) }
-                .onEach { newTeamsLost.remove(it) }
-
-            objective.teamsAchieved.entries
-                .filter { lockedTeamKeys.contains(it.key) }
-                .toMap()
-                .let { newTeamsAchieved.putAll(it) }
-
-            objective.teamsLost.entries
-                .filter { lockedTeamKeys.contains(it.key) }
-                .toMap()
-                .let { newTeamsLost.putAll(it) }
-
             objective.teamsAchieved = newTeamsAchieved
             objective.teamsLost = newTeamsLost
         }
     }
 
     fun getPlayers(
+        card: BingoCard,
         playersHolding: Map<UUID, BingoObjectiveCapture>,
         players: Map<UUID, BingoObjectiveCapture>,
-        shouldRetainCaptures: Boolean = !options.isInventoryMode,
+        shouldRetainCaptures: Boolean = !card.options.isInventoryMode,
     ): Map<UUID, BingoObjectiveCapture> {
         // Once captured, most objectives can only be lost if isInventoryMode=true
         // therefore, combine both players & playersHolding before updating the objective
@@ -131,7 +105,7 @@ class ObjectiveService(
         }
 
         return when {
-            options.isLockoutMode -> {
+            card.options.isLockoutMode -> {
                 // oldest capture first
                 val teamHolding = combinedPlayersHolding.minByOrNull { it.value.instant }
                     ?.value?.team
@@ -151,10 +125,7 @@ class ObjectiveService(
     fun getTeams(
         players: Map<UUID, BingoObjectiveCapture>,
     ): Set<BingoTeamKey> {
-        return state.getRegisteredTeams()
-            .filter { team -> team.players.any { players.containsKey(it.uuid) } }
-            .map { it.key }
-            .toSet()
+        return players.values.map { it.team }.toSet()
     }
 
     fun updateTeamsOnceAchieved(objective: BingoObjective) {
@@ -162,6 +133,7 @@ class ObjectiveService(
     }
 
     fun updateTeamsSeen(
+        card: BingoCard,
         objective: BingoObjective,
         condition: (BingoTeamKey) -> Boolean
     ) {
@@ -169,7 +141,7 @@ class ObjectiveService(
         // teamsSeen is only ever additive
         // (we don't need to check teams again once they're in the set)
 
-        val teamsNotSeen = state.getRegisteredTeams().map { it.key }.toSet() - objective.teamsSeen
+        val teamsNotSeen = getTeams(card).map { it.key }.toSet() - objective.teamsSeen
         objective.teamsSeen.addAll(teamsNotSeen.filter(condition))
     }
 

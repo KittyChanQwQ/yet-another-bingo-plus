@@ -1,29 +1,26 @@
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.CardScreenHandler
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.BlockItem
-import net.minecraft.item.BoatItem
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
+import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.team.TeamService
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.ActionResult
+import net.minecraft.text.Text
 import net.minecraft.util.Hand
-import net.minecraft.util.TypedActionResult
-import net.minecraft.util.UseAction
-import net.minecraft.util.hit.HitResult
 import java.util.*
 
 class MapItemHandler(
     events: ScopedEvents,
     private val server: MinecraftServer,
-    private val cardService: CardService,
     private val mapItemService: MapItemService,
     private val itemStackFactory: IItemStackFactory,
+    private val teamService: TeamService,
+    private val state: BingoState,
 ) : BingoComponent() {
 
     // set of players for which the bingo map item was used in the current tick
@@ -33,95 +30,101 @@ class MapItemHandler(
 
     private val itemCooldown = mutableMapOf<UUID, Int>()
 
-    private fun isItemUsable(itemStack: ItemStack, player: PlayerEntity): Boolean {
-        // vaguely determine if the held item will be used or not
-        // (e.g. suspicious stew, potions, etc. - vs. static items such as iron ingots)
-        val isUsable = when {
-            itemStack.isEmpty -> false
-            itemStack.useAction == UseAction.EAT -> player.canConsume(false)
-            itemStack.useAction == UseAction.DRINK -> true
-            itemStack.useAction == UseAction.BLOCK -> true // blocking with a shield
-            itemStack.item is BoatItem -> true // trying to place a boat
-            itemStack.item is BlockItem -> {
-                // if holding a block, check if it can be placed on a surface within reach
-                val hit = player.raycast(5.0, 0f, false)
-                hit.type == HitResult.Type.BLOCK
-            }
-            itemStack.item == Items.FIREWORK_ROCKET -> player.isFallFlying || player.isTouchingWater
-            itemStack.item == Items.SUSPICIOUS_STEW -> true
-            itemStack.isUsedOnRelease -> true
-            itemStack.useAction == UseAction.NONE -> false
-            else -> true
-        }
+    fun showInventory(player: ServerPlayerEntity) {
+        val team = teamService.getPlayerTeam(player)
+        val card = team?.let { state.getCard(it) } ?: state.getActiveCard()
 
-        return isUsable
+        player.openHandledScreen(
+            SimpleNamedScreenHandlerFactory(
+            { syncId, inv, _ ->
+                CardScreenHandler(
+                    syncId = syncId,
+                    options = state.options,
+                    state = state,
+                    team = teamService.getPlayerTeam(player),
+                    card = card,
+                    playerInventory = inv,
+                )
+            },
+            Text.literal("BINGO Card")
+        )
+        )
     }
 
     init {
-        events.onUseItem { (player, _, hand) ->
-            if (player !is ServerPlayerEntity) return@onUseItem TypedActionResult.pass(null)
+        events.onUseItem { event ->
+            val player = event.player.player
+            val hand = event.hand
             val itemStack = player.getStackInHand(hand)
+                ?.let { itemStackFactory.forStack(it) }
+                ?: return@onUseItem null
 
             usedAnyItem.add(player.uuid)
 
             // if the item is the player's bingo map, open the item details chest
-            if (mapItemService.isMapItem(itemStackFactory.forStack(itemStack))) {
+            if (mapItemService.isMapItem(itemStack)) {
                 val otherItemStack = player.getStackInHand(when (hand) {
                     Hand.MAIN_HAND -> Hand.OFF_HAND
                     else -> Hand.MAIN_HAND
-                })
+                }).let { itemStackFactory.forStack(it) }
 
                 if (hand == Hand.OFF_HAND && !otherItemStack.isEmpty)
-                    return@onUseItem TypedActionResult.pass(itemStack)
+                    return@onUseItem ActionResult.Pass(itemStack)
 
-                if (hand == Hand.MAIN_HAND && isItemUsable(otherItemStack, player))
-                    return@onUseItem TypedActionResult.pass(itemStack)
+                if (hand == Hand.MAIN_HAND && event.player.canUseItem(otherItemStack))
+                    return@onUseItem ActionResult.Pass(itemStack)
 
                 usedBingoMap.add(player.uuid)
-                return@onUseItem TypedActionResult.success(itemStack, false)
+                return@onUseItem ActionResult.Success(itemStack)
             }
 
             // if the item *can* be used, and *isn't* a bingo map, it should prevent the bingo map from being used
-            if (usedBingoMap.contains(player.uuid) && isItemUsable(itemStack, player)) {
+            if (usedBingoMap.contains(player.uuid) && event.player.canUseItem(itemStack)) {
                 // println("Removing; item used ($hand, with ${itemStack.translationKey})")
                 usedBingoMap.remove(player.uuid)
             }
 
-            TypedActionResult.pass(itemStack)
+            ActionResult.Pass(itemStack)
         }
 
-        events.onUseBlock { (player, _, hand) ->
+        events.onUseBlock { event ->
+            val player = event.player
             usedAnyItem.add(player.uuid)
 
-            val itemStack = player.getStackInHand(hand)
+            val itemStack = player.player.getStackInHand(event.hand)
+                ?.let { itemStackFactory.forStack(it) }
+                ?: return@onUseBlock null
 
             if (
                 usedBingoMap.contains(player.uuid)
-                && !mapItemService.isMapItem(itemStackFactory.forStack(itemStack))
+                && !mapItemService.isMapItem(itemStack)
                 && !itemStack.isEmpty
             ) {
                 // println("Removing; block used ($hand, with ${itemStack.translationKey})")
                 usedBingoMap.remove(player.uuid)
             }
 
-            ActionResult.PASS
+            ActionResult.Pass(Unit)
         }
 
-        events.onUseEntity { (player, _, hand) ->
+        events.onUseEntity { event ->
+            val player = event.player
             usedAnyItem.add(player.uuid)
 
-            val itemStack = player.getStackInHand(hand)
+            val itemStack = player.player.getStackInHand(event.hand)
+                ?.let { itemStackFactory.forStack(it) }
+                ?: return@onUseEntity null
 
             if (
                 usedBingoMap.contains(player.uuid)
-                && !mapItemService.isMapItem(itemStackFactory.forStack(itemStack))
+                && !mapItemService.isMapItem(itemStack)
                 && !itemStack.isEmpty
             ) {
                 // println("Removing; entity used")
                 usedBingoMap.remove(player.uuid)
             }
 
-            ActionResult.PASS
+            ActionResult.Pass(Unit)
         }
 
         events.onGameTick {
@@ -131,7 +134,7 @@ class MapItemHandler(
                 val isInCooldown = server.ticks < (itemCooldown[player.uuid] ?: 0) + 10
 
                 if (usedBingoMap.contains(player.uuid) && !isInCooldown && !player.isSneaking) {
-                    cardService.showInventory(player)
+                    showInventory(player)
                 }
 
                 if (usedAnyItem.contains(player.uuid) || player.itemUseTimeLeft > 0)

@@ -28,7 +28,7 @@ class ServerNetworkingImpl(
         init {
             ServerPlayNetworking.registerGlobalReceiver(converter.id) { server, player, _, buf, _ ->
                 val packet = converter.fromPacketBuf(PacketBufImpl(buf, itemStackFactory))
-                val data = ServerPacket(player, packet)
+                val data = ServerPacket(PlayerHandle(player), packet)
                 server.execute {
                     onPacket(data)
                 }

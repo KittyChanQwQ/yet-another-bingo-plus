@@ -80,6 +80,7 @@ export default defineConfig({
           { text: 'Chunky', link: '/mods/chunky' },
           { text: 'LuckPerms', link: '/mods/luckperms' },
           { text: 'Vanish', link: '/mods/vanish' },
+          { text: 'Voice Chat', link: '/mods/voice' },
         ]
       },
       {
@@ -88,6 +89,7 @@ export default defineConfig({
         items: [
           { text: 'Tier Lists', link: '/custom-tier-lists' },
           { text: 'Objectives', link: '/custom-objectives' },
+          { text: 'Objective Icons', link: '/custom-objective-images' },
           { text: 'Function Tags', link: '/custom-function-tags' },
         ],
       },

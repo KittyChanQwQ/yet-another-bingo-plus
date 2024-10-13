@@ -1,17 +1,10 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.common.event.model.*
+import me.jfenn.bingo.api.IServerEvents
+import me.jfenn.bingo.common.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.event.player.*
-import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.ActionResult
-import net.minecraft.util.TypedActionResult
 
 /**
  * Binds the Fabric API events to a scoped event system in [ScopedEvents]
@@ -20,6 +13,7 @@ import net.minecraft.util.TypedActionResult
  */
 class EventManager(
     private val scopeManager: ScopeManager,
+    serverEvents: IServerEvents
 ) : BingoComponent() {
 
     private fun getEvents(server: MinecraftServer?) : ScopedEvents? {
@@ -29,8 +23,8 @@ class EventManager(
     }
 
     init {
-        ServerTickEvents.START_SERVER_TICK.register { server ->
-            val events = getEvents(server) ?: return@register
+        serverEvents.onTickStart { server ->
+            val events = getEvents(server) ?: return@onTickStart
             events.onGameTick(Unit)
 
             if (server.ticks % 10 == 0) {
@@ -38,102 +32,74 @@ class EventManager(
             }
         }
 
-        ServerTickEvents.END_SERVER_TICK.register { server ->
-            val events = getEvents(server) ?: return@register
-            events.onGameTickEnd(Unit)
+        serverEvents.onTickEnd { server ->
+            getEvents(server)
+                ?.onGameTickEnd
+                ?.invoke(Unit)
         }
 
-        ServerPlayConnectionEvents.JOIN.register { handler, _, server ->
-            val player = handler.player
-            server.execute {
-                val events = getEvents(server) ?:return@execute
-                events.onPlayerJoin.invoke(player)
+        serverEvents.onPlayerJoin { event ->
+            event.server.execute {
+                getEvents(event.server)
+                    ?.onPlayerJoin
+                    ?.invoke(event.player)
             }
         }
 
-        ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
-            val player = handler.player
-            server.execute {
-                getEvents(server)?.onPlayerLeave?.invoke(player)
+        serverEvents.onPlayerDisconnect { event ->
+            event.server.execute {
+                getEvents(event.server)
+                    ?.onPlayerLeave
+                    ?.invoke(event.player)
             }
         }
 
-        ServerPlayerEvents.AFTER_RESPAWN.register { _, player, _ ->
-            getEvents(player.server)?.onPlayerRespawn?.invoke(player)
+        serverEvents.onAfterRespawn { event ->
+            getEvents(event.server)?.onPlayerRespawn?.invoke(event)
         }
 
-        ServerEntityEvents.ENTITY_LOAD.register { entity, world ->
-            getEvents(world.server)?.onEntityLoad?.invoke(entity to world)
+        serverEvents.onEntityLoad { event ->
+            getEvents(event.server)?.onEntityLoad?.invoke(event.entity to event.world)
         }
 
-        UseBlockCallback.EVENT.register { player, world, hand, hit ->
-            val results = getEvents(world.server)?.onUseBlock?.invoke(
-                UseBlockEvent(player, world, hand, hit)
-            ) ?: emptyList()
+        serverEvents.onUseBlock { event ->
+            val results = getEvents(event.server)?.onUseBlock?.invoke(event)
+                ?: emptyList()
 
-            when {
-                ActionResult.FAIL in results -> ActionResult.FAIL
-                ActionResult.SUCCESS in results -> ActionResult.SUCCESS
-                else -> ActionResult.PASS
-            }
+            ActionResult.collapse(results) ?: ActionResult.Pass(Unit)
         }
 
-        UseEntityCallback.EVENT.register { player, world, hand, entity, hit ->
-            val results = getEvents(world.server)?.onUseEntity?.invoke(
-                UseEntityEvent(player, world, hand, entity, hit)
-            ) ?: emptyList()
+        serverEvents.onUseEntity { event ->
+            val results = getEvents(event.server)?.onUseEntity?.invoke(event)
+                ?: emptyList()
 
-            when {
-                ActionResult.FAIL in results -> ActionResult.FAIL
-                ActionResult.SUCCESS in results -> ActionResult.SUCCESS
-                else -> ActionResult.PASS
-            }
+            ActionResult.collapse(results) ?: ActionResult.Pass(Unit)
         }
 
-        UseItemCallback.EVENT.register { player, world, hand ->
-            val results = getEvents(world.server)?.onUseItem?.invoke(
-                UseItemEvent(player, world, hand)
-            ) ?: emptyList()
+        serverEvents.onUseItem { event ->
+            val results = getEvents(event.server)?.onUseItem?.invoke(event)
+                ?: emptyList()
 
-            results.find { it?.result == ActionResult.FAIL }
-                ?.let { return@register it }
-
-            results.find { it?.result == ActionResult.SUCCESS }
-                ?.let { return@register it }
-
-            // Otherwise, return a PASS result (preferring a returned value)
-            results.find { it?.result == ActionResult.PASS }
-                ?: TypedActionResult.pass(null)
+            ActionResult.collapse(results) ?: ActionResult.Pass(null)
         }
 
-        AttackEntityCallback.EVENT.register { player, world, hand, entity, hit ->
-            val results = getEvents(world.server)?.onAttackEntity?.invoke(
-                AttackEntityEvent(player, world, hand, entity, hit)
-            ) ?: emptyList()
+        serverEvents.onAttackEntity { event ->
+            val results = getEvents(event.server)?.onAttackEntity?.invoke(event)
+                ?: emptyList()
 
-            when {
-                ActionResult.FAIL in results -> ActionResult.FAIL
-                ActionResult.SUCCESS in results -> ActionResult.SUCCESS
-                else -> ActionResult.PASS
-            }
+            ActionResult.collapse(results) ?: ActionResult.Pass(Unit)
         }
 
-        AttackBlockCallback.EVENT.register { player, world, hand, blockPos, direction ->
-            val results = getEvents(world.server)?.onAttackBlock?.invoke(
-                AttackBlockEvent(player, world, hand, blockPos, direction)
-            ) ?: emptyList()
+        serverEvents.onAttackBlock { event ->
+            val results = getEvents(event.server)?.onAttackBlock?.invoke(event)
+                ?: emptyList()
 
-            when {
-                ActionResult.FAIL in results -> ActionResult.FAIL
-                ActionResult.SUCCESS in results -> ActionResult.SUCCESS
-                else -> ActionResult.PASS
-            }
+            ActionResult.collapse(results) ?: ActionResult.Pass(Unit)
         }
 
-        S2CPlayChannelEvents.REGISTER.register { handler, _, server, _ ->
-            val player = handler.player
-            server.execute {
-                getEvents(server)?.onPlayerChannelRegister?.invoke(player)
+        serverEvents.onPlayerChannelRegister { event ->
+            event.server.execute {
+                getEvents(event.server)?.onPlayerChannelRegister?.invoke(event.player)
             }
         }
     }

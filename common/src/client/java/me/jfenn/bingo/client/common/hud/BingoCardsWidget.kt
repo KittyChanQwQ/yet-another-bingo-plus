@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -26,7 +27,8 @@ class BingoCardsWidget(
 
     private val screen: Screen,
     private val drawServiceFactory: IDrawServiceFactory = koin.get(),
-    private val renderer: BingoHudRenderer = koin.get()
+    private val renderer: BingoHudRenderer = koin.get(),
+    private val config: BingoConfig = koin.get()
 ) {
 
     private var targetScrollX: Float = 0f
@@ -34,6 +36,7 @@ class BingoCardsWidget(
 
     private val cardsAreaMargin get() = screen.width * 2/10
     private val cardsAreaWidth get() = screen.width - cardsAreaMargin*2
+    private val cardsTotalWidth get() =  views.size * BingoHudRenderer.CARD_WIDTH
 
     private fun viewsWithPositions(
         callback: (view: CardView, x: Int, y: Int, z: Int, xDelta: Float) -> Unit
@@ -43,13 +46,12 @@ class BingoCardsWidget(
         val xMin = x - (width/2)
         val xMax = x + (width/2) - BingoHudRenderer.CARD_WIDTH
 
-        val widthTotal = views.size * BingoHudRenderer.CARD_WIDTH
-        val widthDiff = (widthTotal - cardsAreaWidth).coerceAtLeast(0) / 2
+        val widthDiff = (cardsTotalWidth - cardsAreaWidth).coerceAtLeast(0) / 2
 
         val scrollCenterX = (scrollX - 0.5f) * -2f
         val widthOffset = scrollCenterX * widthDiff
 
-        val screenX = x - widthTotal/2
+        val screenX = x - cardsTotalWidth/2
         val screenY = y - BingoHudRenderer.CARD_HEIGHT/2
 
         val zOrder = views.indices.toList()
@@ -138,7 +140,7 @@ class BingoCardsWidget(
                 cardScale = 1f,
                 mouseX = mouseX,
                 mouseY = mouseY,
-                showTeamOutlines = isSingleView,
+                showTeamOutlines = isSingleView && config.client.cardTeamOutlines,
                 isFocused = isHovered && !isSingleView && onViewClick != null,
                 isMouseOver = isHovered,
                 isGui = true, // uses an alternative card texture with a shadow to reduce clutter when overlapped
@@ -146,6 +148,23 @@ class BingoCardsWidget(
             )
 
             context.matrices.pop()
+        }
+
+        if (cardsTotalWidth > cardsAreaWidth) {
+            val barX = x - (width/2)
+            val barY = y + (height/2) + 3
+
+            val barHeight = 2
+            val barFilledWidth = width * cardsAreaWidth / cardsTotalWidth.coerceAtLeast(1)
+            val barOffsetMax = width - barFilledWidth
+            val barOffsetScrolled = (scrollX * barOffsetMax).roundToInt()
+
+            val barColorBg = 0x80000000.toInt()
+            val barColorFilled = 0xff6b6b85.toInt()
+
+            context.fill(barX, barY, barX + barOffsetScrolled, barY + barHeight, 0, barColorBg)
+            context.fill(barX + barOffsetScrolled, barY, barX + barOffsetScrolled + barFilledWidth, barY + barHeight, 0, barColorFilled)
+            context.fill(barX + barOffsetScrolled + barFilledWidth, barY, barX + width, barY + barHeight, 0, barColorBg)
         }
     }
 

@@ -5,13 +5,11 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.map.CardTile
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 
 class OpponentObjectiveManager(
-    private val state: BingoState,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
@@ -55,7 +53,7 @@ class OpponentObjectiveManager(
 
             objective.teamsSeen = opponent.teamsSeen
 
-            val teams = state.getRegisteredTeams()
+            val teams = objectiveService.getAllTeams()
                 .filter { team -> opponent.playersHolding.values.any { it.team != team.key } }
                 .map { it.key }
                 .toSet()

@@ -20,6 +20,12 @@ class BingoObjectiveManager(
         return providers.flatMap { it.list() }
     }
 
+    override fun listExcludedIds(): Iterable<String> = sequence {
+        for (provider in providers) {
+            yieldAll(provider.listExcludedIds())
+        }
+    }.asIterable()
+
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
         // remove an "advancement!" or "item!" prefix from the id
         val type = id.substringBefore('!')

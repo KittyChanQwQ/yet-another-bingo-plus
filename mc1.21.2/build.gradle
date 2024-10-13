@@ -1,0 +1,23 @@
+plugins {
+    alias(libs.plugins.kotlin.plugin.serialization)
+    id 'bingo.mod'
+    id 'bingo.publish'
+}
+
+processResources {
+    from("../common/src/main/resources") {
+        include "yet-another-minecraft-bingo/icon.png"
+    }
+}
+
+loom.accessWidenerPath = file("src/main/resources/bingo-impl.accesswidener")
+
+dependencies {
+    implementation libs.insert.koin.core
+    include libs.insert.koin.core
+    implementation libs.insert.koin.logger.slf4j
+    include libs.insert.koin.logger.slf4j
+
+    api project(path: ":common", configuration: "namedElements")
+    include project(':common')
+}

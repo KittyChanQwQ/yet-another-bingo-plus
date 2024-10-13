@@ -90,6 +90,8 @@ class ClientNetworkingImpl(
             }
         }
 
-        override fun onPacket(receiver: (ClientPacket<T>) -> Unit) = event(receiver)
+        override fun onPacket(receiver: (ClientPacket<T>) -> Unit) {
+            event(receiver)
+        }
     }
 }

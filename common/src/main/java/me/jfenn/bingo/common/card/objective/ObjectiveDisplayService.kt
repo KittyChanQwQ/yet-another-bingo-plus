@@ -51,13 +51,12 @@ class ObjectiveDisplayService(
                 stack
             } ?: fallback.item
 
-            val decoration = data?.decoration ?: fallback.decoration
-
             ObjectiveDisplay.Resolved(
                 name = name,
                 lore = lore,
                 item = item,
-                decoration = decoration,
+                decoration = data?.decoration ?: fallback.decoration,
+                image = data?.image ?: fallback.image,
             )
         } catch (e: Throwable) {
             log.error("Unable to resolve objective display for '$id'", e)
@@ -67,7 +66,7 @@ class ObjectiveDisplayService(
         display.copy(
             name = display.name?.let { name ->
                 when {
-                    name == display.item?.displayName -> name
+                    name.string == display.item?.displayName?.string -> name
                     else -> Text.empty().append(name).formatted(Formatting.ITALIC)
                 }
             },

@@ -1,25 +1,20 @@
 package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
-import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.sendInfoMessage
-import me.jfenn.bingo.common.utils.sendWarningMessage
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.text.Text
-import net.minecraft.text.Texts
-import net.minecraft.util.Formatting
 import kotlin.time.Duration.Companion.minutes
 
 class BingoCommands : BaseCommand() {
@@ -27,48 +22,6 @@ class BingoCommands : BaseCommand() {
     init {
         LiteralArgumentBuilder.literal<ServerCommandSource>("bingo")
             .require(requireBingoInstance())
-            .then(
-                LiteralArgumentBuilder.literal<ServerCommandSource>("itemdist")
-                    .require(
-                        requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .then(run {
-                        val args = TierLabel.entries
-                            .map { tier ->
-                                RequiredArgumentBuilder.argument<ServerCommandSource, Int>(
-                                    tier.name,
-                                    IntegerArgumentType.integer(0, 25)
-                                )
-                            }
-                            .toMutableList()
-
-                        var last = args.removeLast().executesInScope { ctx ->
-                            val options = get<BingoOptions>()
-                            val events = get<ScopedEvents>()
-                            val cardService = get<CardService>()
-
-                            val itemDist = TierLabel.entries
-                                .map { IntegerArgumentType.getInteger(ctx, it.name) }
-
-                            if (itemDist.size == 5 && itemDist.sum() > 25) {
-                                ctx.source.player?.sendWarningMessage("Item distribution must add up to 25!")
-                                return@executesInScope 0
-                            }
-
-                            options.itemDistribution = itemDist
-                            events.onChangeOptions(Unit)
-                            cardService.generateCard()
-                            ctx.source.player?.sendInfoMessage("Item distribution changed: $itemDist")
-                            1
-                        }
-
-                        while (args.isNotEmpty())
-                            last = args.removeLast().then(last)
-
-                        last
-                    })
-            )
             .then(
                 // Change the time limit setting (while the game is running)
                 LiteralArgumentBuilder.literal<ServerCommandSource>("timelimit")
@@ -128,74 +81,19 @@ class BingoCommands : BaseCommand() {
                     )
             )
             .then(
-                // show or set the current BINGO card seed
-                LiteralArgumentBuilder.literal<ServerCommandSource>("seed")
-                    .require(
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .executesInScope { ctx ->
-                        val state = get<BingoState>()
-
-                        ctx.source.sendMessage(
-                            Text.empty()
-                                .append("ℹ  The current Bingo Card seed is: ")
-                                .append(Texts.bracketedCopyable(state.seed.toString()))
-                                .formatted(Formatting.AQUA)
-                        )
-                        1
-                    }
-                    .then(
-                        RequiredArgumentBuilder.argument<ServerCommandSource, Long>(
-                            "seed",
-                            LongArgumentType.longArg(),
-                        )
-                            .require(
-                                requireState(GameState.PREGAME, GameState.PLAYING),
-                                requirePermission(Permission.CONFIGURE_GAME),
-                            )
-                            .executesInScope { ctx ->
-                                val state = get<BingoState>()
-                                val cardService = get<CardService>()
-
-                                state.seed = LongArgumentType.getLong(ctx, "seed")
-                                cardService.generateCard()
-
-                                ctx.source.sendMessage(
-                                    Text.empty()
-                                        .append("ℹ  Changed the Bingo Card seed to: ")
-                                        .append(Texts.bracketedCopyable(state.seed.toString()))
-                                        .formatted(Formatting.AQUA)
-                                )
-                                1
-                            }
-                    )
-            )
-            .then(
-                // re-roll the bingo card in a round (operator only)
-                LiteralArgumentBuilder.literal<ServerCommandSource>("reroll")
-                    .require(
-                        requireState(GameState.PREGAME, GameState.PLAYING),
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .executesInScope { ctx ->
-                        val cardService = get<CardService>()
-                        cardService.shuffleCard()
-                        ctx.source.player?.sendInfoMessage("Card re-rolled.")
-                        1
-                    }
-            )
-            .then(
                 // End the game, if running
                 LiteralArgumentBuilder.literal<ServerCommandSource>("end")
                     .require(
                         requireState(GameState.PLAYING),
                         requirePermission(Permission.CONFIGURE_GAME),
                     )
-                    .executesInScope {
+                    .executesInScope { ctx ->
                         val gameService = get<GameService>()
                         val state = get<BingoState>()
                         state.isForfeit = true
-                        gameService.end(null)
+
+                        val player = ctx.source.player?.let { get<IPlayerManager>().forPlayer(it) }
+                        gameService.end(GameEndReason.Command(player?.name ?: "[unknown]"))
                         1
                     }
             )

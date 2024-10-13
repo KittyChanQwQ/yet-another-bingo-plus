@@ -1,17 +1,17 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.EntityType
+import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
-import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.entity.EntityType
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
+import org.joml.Vector3d
 import java.util.concurrent.CompletableFuture
 import kotlin.time.Duration
 
@@ -19,7 +19,7 @@ private var statsHash: String = ""
 private var statsFuture: CompletableFuture<Duration?> = CompletableFuture.completedFuture(null)
 
 fun MenuComponent.registerPlayerCount(
-    position: Vec3d,
+    position: Vector3d,
     server: MinecraftServer = koinScope.get(),
     text: TextProvider = koinScope.get(),
     options: BingoOptions = koinScope.get(),
@@ -42,7 +42,9 @@ fun MenuComponent.registerPlayerCount(
         }
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY, position) {
+    registerEntity(EntityType.TEXT_DISPLAY) {
+        pos = position
+
         val playerCount = text.string(
             StringKey.OptionsPlayerCount,
             Text.literal("${server.currentPlayerCount} / ${server.maxPlayerCount}")
@@ -57,18 +59,17 @@ fun MenuComponent.registerPlayerCount(
                 ?: text.string(StringKey.StatsBestTimeNotSet).formatted(Formatting.GRAY)
         )
 
-        putString("text", text.serialized(
-            Text.empty().let {
-                if (server.currentPlayerCount > 1)
-                    it.append(playerCount).append("   ")
-                it.append(bestTime)
-            }
-        ))
-        putInt("line_width", 1000)
-        putString("billboard", "fixed")
-        putString("alignment", "center")
-        putInt("background", 0)
-        putBoolean("shadow", true)
-        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
+        this.value = Text.empty().let {
+            if (server.currentPlayerCount > 1)
+                it.append(playerCount).append("   ")
+            it.append(bestTime)
+        }
+
+        lineWidth = 1000
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.CENTER
+        background = 0
+        shadow = true
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 }

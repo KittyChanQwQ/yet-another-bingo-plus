@@ -7,7 +7,6 @@ import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.Identifier
-import org.joml.Quaternionf
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
@@ -87,12 +86,15 @@ class BingoMessageRenderer(
         val context = drawService.context
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
-        context.setShaderColor(1f, 1f, 1f, visibility.pow(2))
+        drawService.setShaderColor(1f, 1f, 1f, visibility.pow(2))
 
         val itemX = if (isLeftOfCard) -8 - ITEM_HEIGHT else 8
         val itemY = ITEM_HEIGHT/2 - 8
+        val image = message.packet.image?.let { state.images[it] }
         val itemStack = message.packet.item?.stack
-        if (itemStack != null) {
+        if (image != null) {
+            drawService.drawDynamicTexture(image, itemX, itemY, 16, 16)
+        } else if (itemStack != null) {
             context.drawItem(itemStack, itemX, itemY)
         } else {
             val iconTexture = when (message.packet.messageType) {
@@ -104,7 +106,7 @@ class BingoMessageRenderer(
             }
 
             if (iconTexture != null) {
-                drawService.drawTexture(
+                drawService.drawGuiTexture(
                     texture = iconTexture,
                     x = itemX, y = itemY,
                     u = 0f, v = 0f,
@@ -126,7 +128,7 @@ class BingoMessageRenderer(
             true,
         )
 
-        context.setShaderColor(1f, 1f, 1f, 1f)
+        drawService.setShaderColor(1f, 1f, 1f, 1f)
     }
 
 }

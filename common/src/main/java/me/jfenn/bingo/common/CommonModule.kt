@@ -33,6 +33,8 @@ import me.jfenn.bingo.common.infobook.InfoBookController
 import me.jfenn.bingo.common.infobook.InfoBookService
 import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.MenuController
+import me.jfenn.bingo.common.menu.tooltips.TooltipController
+import me.jfenn.bingo.common.menu.tooltips.TooltipService
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.scoreboard.ScoreboardController
@@ -49,9 +51,12 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.*
 import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.impl.ServerCloseEvent
-import me.jfenn.bingo.integrations.ChunkyIntegration
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
+import me.jfenn.bingo.integrations.chunky.ChunkyController
+import me.jfenn.bingo.integrations.chunky.ChunkyIntegration
+import me.jfenn.bingo.integrations.voice.VoiceGroupController
+import me.jfenn.bingo.integrations.voice.VoiceIntegration
 import org.koin.core.Koin
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.scopedOf
@@ -80,6 +85,7 @@ val commonModule = module {
     factoryOf(PermissionsIntegration::create)
     factoryOf(VanishIntegration::create)
     factoryOf(ChunkyIntegration::create)
+    factoryOf(VoiceIntegration::create)
 
     singleOf(::BingoCommand)
     singleOf(::BingoCardCommand)
@@ -160,16 +166,19 @@ val commonModule = module {
         scopedOf(::MapItemService)
         scopedOf(::MapRenderService)
         scopedOf(::CardViewService)
+        scopedOf(::CardImageService)
         scopedOf(::CardService)
         scopedOf(::ScoreboardService)
         scopedOf(::PlayerSettingsService)
 
+        scopedOf(::TooltipService)
+        scopedOf(::TooltipController)
         scopedOf(::MenuController)
+
         scopedOf(::BingoMapController)
         scopedOf(::BossBarController)
         scopedOf(::DatapackFunctionService)
         scopedOf(::GameRuleController)
-        scopedOf(::IntegrationController)
         scopedOf(::LobbyChaosController)
         scopedOf(::MapItemController)
         scopedOf(::MapItemHandler)
@@ -178,6 +187,9 @@ val commonModule = module {
         scopedOf(::PlayerSettingsController)
         scopedOf(::PlayerSpectatorController)
         scopedOf(::ScoreboardController)
+
+        scopedOf(::ChunkyController)
+        scopedOf(::VoiceGroupController)
 
         scopedOf(::ChestService)
         scopedOf(::ChestController)
@@ -246,11 +258,12 @@ fun Koin.commonInit() {
 }
 
 fun Scope.commonInit() {
+    get<TooltipController>()
     get<MenuController>()
+
     get<BingoMapController>()
     get<BossBarController>()
     get<GameRuleController>()
-    get<IntegrationController>()
     get<LobbyChaosController>()
     get<MapItemController>()
     get<MapItemHandler>()
@@ -270,6 +283,9 @@ fun Scope.commonInit() {
     get<StatsSyncController>()
 
     get<TeamController>()
+
+    get<ChunkyController>()
+    get<VoiceGroupController>()
 
     get<CountdownController>()
     get<TimerCheck>()

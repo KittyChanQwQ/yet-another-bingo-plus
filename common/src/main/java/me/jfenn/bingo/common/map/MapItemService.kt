@@ -5,7 +5,10 @@ import kotlinx.datetime.format.DateTimeComponents
 import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.*
+import me.jfenn.bingo.common.NBT_BINGO_CARD
+import me.jfenn.bingo.common.NBT_BINGO_IGNORE
+import me.jfenn.bingo.common.NBT_BINGO_KEEP
+import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -39,7 +42,6 @@ class MapItemService(
             addCustomTag(NBT_BINGO_VANISH)
             addCustomTag(NBT_BINGO_KEEP)
             addCustomTag(NBT_BINGO_CARD)
-            addCustomTag(NBT_BINGO_CARD_PREFIX + state.card.id.toString())
         }
 
         return item
@@ -65,7 +67,7 @@ class MapItemService(
 
     fun createMementoMapItem(team: BingoTeam): IItemStack {
         val teamMap = teamService.getTeamMap(team)
-        val gameInfo = gameOverService.getGameInfo()
+        val gameInfo = state.gameOverInfo ?: return itemStackFactory.emptyStack
 
         val item = itemStackFactory.createFilledMap().apply {
             mapId = teamMap.mapId
@@ -78,13 +80,12 @@ class MapItemService(
                     }
                 ).formatted(team.formatting, Formatting.ITALIC),
                 lore = listOf(
-                    Text.literal("${team.symbol} ")
-                        .append(teamService.getTeamOrPlayerName(team))
-                        .formatted(team.formatting)
+                    team.getName(textProvider, playerName = true, symbol = true)
+                        .copy()
                         .styled { it.withItalic(false) },
                     Text.empty(),
-                    gameInfo.title.copy().formatted(Formatting.WHITE),
-                    gameInfo.message,
+                    gameOverService.getTitle(gameInfo).copy().formatted(Formatting.WHITE),
+                    gameOverService.getMessage(gameInfo),
                     Text.literal(state.ingameDuration()?.formatString() ?: ""),
                     Text.literal(state.startedAt?.format(timeFormat) ?: "")
                 ),
@@ -112,7 +113,6 @@ class MapItemService(
             addCustomTag(NBT_BINGO_VANISH)
             addCustomTag(NBT_BINGO_KEEP)
             addCustomTag(NBT_BINGO_CARD)
-            addCustomTag(NBT_BINGO_CARD_PREFIX + state.card.id.toString())
         }
 
         return item

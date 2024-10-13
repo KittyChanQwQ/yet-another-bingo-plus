@@ -1,13 +1,15 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.api.IEntity
+import me.jfenn.bingo.api.IEntityManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
-import net.minecraft.entity.Entity
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
-import net.minecraft.util.math.Vec3d
+import org.joml.Matrix4f
+import org.joml.Vector3d
+import org.joml.Vector3f
+import org.joml.Vector4f
 import org.koin.core.scope.Scope
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,8 +18,9 @@ class MenuInstance(
     private val log: Logger,
     koinScope: Scope,
     private val world: ServerWorld,
+    private val entityManager: IEntityManager,
     private val interactionEntityEvents: InteractionEntityEvents,
-    private val menuPos: BlockPosition,
+    private val matrix: Matrix4f,
     private val instanceTag: String,
 ) {
 
@@ -26,8 +29,8 @@ class MenuInstance(
     }
 
     private val menuComponent = component(koinScope) {
-        registerPlayerCount(Vec3d(menuPos.x.toDouble(), menuPos.y + 2.0, menuPos.z + 0.55))
-        registerMenuPage(Vec3d(menuPos.x.toDouble(), menuPos.y + 1.0, menuPos.z + 0.55))
+        registerPlayerCount(Vector3d(0.0, 2.0, 0.55))
+        registerMenuPage(Vector3d(0.0, 1.0, 0.55))
     }
 
     fun tick() {
@@ -42,21 +45,43 @@ class MenuInstance(
         menuComponent.despawn()
     }
 
-    fun <T: Entity> spawn(info: MenuEntityHandle<T>, nbt: NbtCompound): T? {
-        @Suppress("UNCHECKED_CAST")
-        var entity: T? = world.getEntity(info.id) as? T
+    private fun IEntity.resetPos() {
+        pos = Vector3d()
+        yaw = 0f
+    }
 
-        val chunkPos = ChunkPos.toLong(BlockPos(info.pos.x.toInt(), 0, info.pos.z.toInt()))
-        val isLoaded = world.isChunkLoaded(chunkPos)
-        if (!isLoaded) return null
+    private fun IEntity.transformPos() {
+        val pos4f = with(pos) { Vector4f(x.toFloat(), y.toFloat(), z.toFloat(), 1f) }
+        pos = matrix.transform(pos4f).let { Vector3d(it.x.toDouble(), it.y.toDouble(), it.z.toDouble()) }
+
+        val angles = Vector3f()
+        matrix.getEulerAnglesXYZ(angles)
+        yaw += Math.toDegrees(-angles.y.toDouble()).toFloat()
+    }
+
+    fun <T: IEntity> spawn(info: MenuEntityHandle<T>): T? {
+        @Suppress("UNCHECKED_CAST")
+        var entity: T? = entityManager.getEntity(world, info.id)
+            ?.takeIf { it.type == info.type }
+                as? T
 
         if (entity == null) {
-            entity = info.type.create(world)!!
+            entity = entityManager.createEntity(info.type, world)
             entity.uuid = info.id
-            entity.readNbt(nbt)
-            entity.addCommandTag(instanceTag)
+            entity.commandTags = setOf(instanceTag)
+            entity.resetPos()
+            info.init.invoke(entity)
+            entity.transformPos()
+
+            val chunkPos = ChunkPos.toLong(BlockPos(entity.pos.x.toInt(), 0, entity.pos.z.toInt()))
+            val isLoaded = world.isChunkLoaded(chunkPos)
+            if (!isLoaded) {
+                entity.discard()
+                return null
+            }
+
             // Try to spawn the entity into the world...
-            val isSuccess = world.spawnEntity(entity)
+            val isSuccess = entityManager.spawnEntity(world, entity)
             // If the entity cannot be spawned, discard it and return null
             // (the MenuComponent should then be marked dirty, and will try again on the next tick)
             if (!isSuccess) {
@@ -65,8 +90,10 @@ class MenuInstance(
                 return null
             }
         } else {
-            entity.readNbt(nbt)
-            entity.addCommandTag(instanceTag)
+            entity.commandTags = setOf(instanceTag)
+            entity.resetPos()
+            info.init.invoke(entity)
+            entity.transformPos()
         }
 
         if (entity.type != info.type) {
@@ -80,7 +107,7 @@ class MenuInstance(
 
     fun despawn(info: MenuEntityHandle<*>) {
         interactionEntityEvents.INTERACT_LISTENERS.remove(info.id)
-        val entity = world.getEntity(info.id)
+        val entity = entityManager.getEntity(world, info.id)
         entity?.discard()
     }
 

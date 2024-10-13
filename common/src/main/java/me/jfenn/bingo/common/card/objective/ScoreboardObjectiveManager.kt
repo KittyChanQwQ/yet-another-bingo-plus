@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IObjectiveHandle
 import me.jfenn.bingo.api.IPlayerHandle
@@ -14,7 +13,6 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MI
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
-import me.jfenn.bingo.common.team.OfflinePlayerCache
 import me.jfenn.bingo.common.utils.formatTitle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
@@ -25,7 +23,6 @@ class ScoreboardObjectiveManager(
     private val server: MinecraftServer,
     private val scoreboardManager: IScoreboardManager,
     private val state: BingoState,
-    private val offlinePlayerCache: OfflinePlayerCache,
     private val objectiveRegistryState: ObjectiveRegistryState,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
@@ -102,11 +99,8 @@ class ScoreboardObjectiveManager(
 
             objectiveService.updateTeamsOnceAchieved(objective)
 
-            val teamPlayers = state.getRegisteredTeams()
-                .associate { it.key to it.players }
-                .mapValues { (_, players) ->
-                    players.map { offlinePlayerCache.getOfflinePlayer(it) }
-                }
+            val teamPlayers = objectiveService.getPlayersByTeam(card)
+                .mapKeys { it.key.key }
 
             val teamsProgress = teamPlayers.map { (team, players) ->
                 val scoreboardProgress = players.maxOf { getScoreboardValue(objective, scoreboard, it) }
@@ -116,7 +110,7 @@ class ScoreboardObjectiveManager(
                 team to progress
             }.toMap()
 
-            objectiveService.updateTeamsSeen(objective) { team ->
+            objectiveService.updateTeamsSeen(card, objective) { team ->
                 teamPlayers[team]
                     ?.any { getScoreboardValue(objective, scoreboard, it) > 0 }
                     ?: false
@@ -135,6 +129,7 @@ class ScoreboardObjectiveManager(
                 }
 
             val players = objectiveService.getPlayers(
+                card = card,
                 playersHolding = playersHolding,
                 players = objective.players,
                 shouldRetainCaptures = false,

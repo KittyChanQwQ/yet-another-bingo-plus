@@ -31,8 +31,11 @@ object Main : ClientModInitializer {
         singleOf(::ClientNetworkingImpl) bind IClientNetworking::class
         single { DrawService } bind IDrawServiceFactory::class
         singleOf(::HudCallbackImpl) bind IHudCallback::class
+        single { NativeImageFactory } bind INativeImageFactory::class
+        single { ScrollableWidgetFactory } bind IScrollableWidgetFactory::class
         single { OptionsAccessor } bind IOptionsAccessor::class
         single { SessionAccessor } bind ISessionAccessor::class
+        single { TabsWidgetFactory } bind ITabsWidgetFactory::class
 
         single { BingoWorldState() }
         singleOf(::WorldServiceImpl) bind IWorldService::class

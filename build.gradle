@@ -49,6 +49,36 @@ allprojects {
 				includeGroup("mezz.jei")
 			}
 		}
+		maven {
+			// https://modrepo.de/minecraft/voicechat/api/getting_started
+			name = "Simple Voice Chat"
+			url = "https://maven.maxhenkel.de/repository/public"
+			content {
+				includeGroup("de.maxhenkel.voicechat")
+			}
+		}
+		// maven {
+		// 	// https://plasmovoice.com/docs/api/
+		// 	name = "Plasmo Voice"
+		// 	url = "https://repo.plasmoverse.com/releases"
+		// 	content {
+		// 		includeGroup("su.plo.config")
+		// 		includeGroup("su.plo.voice.api")
+		// 		includeGroup("su.plo.voice")
+		// 		includeGroup("su.plo.slib")
+		// 	}
+		// }
+		// maven {
+		// 	// https://plasmovoice.com/docs/api/
+		// 	name = "Plasmo Voice"
+		// 	url = "https://repo.plasmoverse.com/snapshots"
+		// 	content {
+		// 		includeGroup("su.plo.config")
+		// 		includeGroup("su.plo.voice.api")
+		// 		includeGroup("su.plo.voice")
+		// 		includeGroup("su.plo.slib")
+		// 	}
+		// }
 	}
 }
 

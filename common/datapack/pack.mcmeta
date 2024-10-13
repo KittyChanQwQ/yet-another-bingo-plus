@@ -1,7 +1,15 @@
 {
-  "pack": {
-    "pack_format": 15,
-    "supported_formats": [15, 48],
-    "description": "Bingo Lobby"
-  }
+    "pack": {
+        "pack_format": 15,
+        "supported_formats": [15, 50],
+        "description": "Bingo Lobby"
+    },
+    "overlays": {
+        "entries": [
+            {
+                "formats": [49, 100],
+                "directory": "overlay-1-21-2"
+            }
+        ]
+    }
 }

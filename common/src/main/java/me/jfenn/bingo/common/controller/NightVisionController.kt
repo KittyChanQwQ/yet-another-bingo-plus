@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.api.EffectType
-import me.jfenn.bingo.api.IStatusEffectsFactory
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
@@ -10,24 +11,21 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
-import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import org.slf4j.Logger
 
 class NightVisionController(
     private val log: Logger,
-    private val server: MinecraftServer,
     private val config: BingoConfig,
     private val state: BingoState,
     private val options: BingoOptions,
     private val teamService: TeamService,
     private val playerSettingsService: PlayerSettingsService,
-    private val statusEffectsFactory: IStatusEffectsFactory,
+    private val playerManager: IPlayerManager,
     events: ScopedEvents,
 ) : BingoComponent() {
 
-    private fun updateNightVision(player: ServerPlayerEntity) {
-        val isOnTeam = teamService.isPlaying(player)
+    private fun updateNightVision(player: IPlayerHandle) {
+        val isOnTeam = teamService.isPlaying(player.player)
 
         // give the player night_vision if configured
         // ...and remove it if not
@@ -40,13 +38,11 @@ class NightVisionController(
                             (state.state.isPlayingOrCountdown && isOnTeam && options.isNightVision)
                     ) && playerSettingsService.getPlayer(player).nightVision
 
-            val statusEffects = statusEffectsFactory.getStatusEffects(player)
-
             if (shouldHaveNightVision) {
-                val hasEffect = statusEffects.getEffects().any { it.type == EffectType.NIGHT_VISION }
+                val hasEffect = player.getEffects().any { it.type == EffectType.NIGHT_VISION }
                 if (!hasEffect) {
-                    log.debug("[NightVisionController] Adding night vision to {}", player)
-                    statusEffects.addEffect(
+                    log.debug("[NightVisionController] Adding night vision to {}", player.name)
+                    player.addEffect(
                         type = EffectType.NIGHT_VISION,
                         duration = -1,
                         amplifier = 0,
@@ -56,10 +52,10 @@ class NightVisionController(
                 }
             } else {
                 // if the player has infinite night vision (and should not), remove it
-                val effect = statusEffects.getEffects().find { it.type == EffectType.NIGHT_VISION }
+                val effect = player.getEffects().find { it.type == EffectType.NIGHT_VISION }
                 if (effect?.duration == -1) {
-                    log.debug("[NightVisionController] Removing night vision from {}", player)
-                    statusEffects.removeEffect(effect)
+                    log.debug("[NightVisionController] Removing night vision from {}", player.name)
+                    player.removeEffect(effect)
                 }
             }
         }
@@ -67,7 +63,7 @@ class NightVisionController(
 
     init {
         events.onUpdateTick {
-            for (player in server.playerManager.playerList) {
+            for (player in playerManager.getPlayers()) {
                 // Night vision is apparently super buggy and doesn't apply if invoked in `resetPlayerHealth()`...
                 // (seems like effects get cleared in a few other places - so we need to make sure it persists)
                 updateNightVision(player)

@@ -1,0 +1,21 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:player_head",
+    "itemNbt": "{SkullOwner:{Id:[I;-1276966911,-1368112079,-1600901210,-1579811967],Properties:{textures:[{Value:\"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjhlNzI1Nzc5YzIzNGM1OTBjY2U4NTRkYjVjMTA0ODVlZDhkOGEzM2ZhOWIyYmRjMzQyNGI2OGJiMTM4MGJlZCJ9fX0=\"}]}}}",
+    "itemComponents": {
+      "profile": {
+        "id": [-1276966911,-1368112079,-1600901210,-1579811967],
+        "properties": [
+          {
+            "name": "textures",
+            "value": "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjhlNzI1Nzc5YzIzNGM1OTBjY2U4NTRkYjVjMTA0ODVlZDhkOGEzM2ZhOWIyYmRjMzQyNGI2OGJiMTM4MGJlZCJ9fX0="
+          }
+        ]
+      }
+    },
+    "image": "yet-another-minecraft-bingo:guardian_head"
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:guardian"
+}

@@ -7,6 +7,7 @@ import me.jfenn.bingo.api.ServerPacket
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.event.packet.PacketConverter
 import me.jfenn.bingo.common.utils.EventListener
+import me.jfenn.bingo.impl.PlayerHandle
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.RegistryByteBuf
@@ -47,9 +48,9 @@ class ServerNetworkingImpl(
             }
 
             ServerPlayNetworking.registerGlobalReceiver(id) { packet, ctx ->
-                val player = ctx.player()
+                val player = PlayerHandle(ctx.player())
                 val data = ServerPacket(player, packet.value)
-                player.server.execute {
+                ctx.server().execute {
                     onPacket(data)
                 }
             }

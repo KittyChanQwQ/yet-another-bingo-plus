@@ -1,42 +1,46 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.EntityType
 import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
-import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.toNbt
-import net.minecraft.entity.EntityType
-import net.minecraft.nbt.NbtFloat
-import net.minecraft.nbt.NbtList
+import me.jfenn.bingo.common.menu.tooltips.TooltipService
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.Direction
-import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
+import org.joml.Vector3d
 
 fun MenuComponent.registerButton(
-    position: Vec3d,
+    position: Vector3d,
     text: Text,
     textProp: Property<Text> = computedProperty { text },
+    tooltip: List<Text>? = null,
     isActiveProp: Property<Boolean> = ConstantProperty(false),
     width: Float = (text.string.length * 0.15f).coerceIn(MENU_HITBOX_WIDTH, 2f),
     height: Float = MENU_HITBOX_HEIGHT,
     facing: Direction = Direction.SOUTH,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
-    textProvider: TextProvider = koinScope.get(),
     playerManager: IPlayerManager = koinScope.get(),
+    tooltipService: TooltipService = koinScope.get(),
     onClick: (player: ServerPlayerEntity) -> Unit,
 ) {
     val isActive by isActiveProp
     val buttonText by textProp
 
     val offset = -width / 2.0
-    registerEntity(EntityType.INTERACTION, position.add(facing.vector.x * offset, 0.0, facing.vector.z * offset)) {
-        putFloat("width", width)
-        putFloat("height", height)
+    registerEntity(EntityType.INTERACTION) {
+        pos = position.add(facing.vector.x * offset, 0.0, facing.vector.z * offset, Vector3d())
+        this.width = width
+        this.height = height
     }.onUpdate { entity ->
+        if (tooltip != null) {
+            tooltipService[entity] = tooltip
+        }
+
         interactionEntityEvents.onInteract(entity) { player ->
             if (permissionGetter(player)) {
                 onClick(player)
@@ -45,27 +49,25 @@ fun MenuComponent.registerButton(
         }
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY, position) {
-        put("Rotation", NbtList().apply {
-            add(NbtFloat.of(facing.asRotation()))
-            add(NbtFloat.of(0f))
-        })
-        putString("text", textProvider.serialized(
-            Text.empty()
-                .append(buttonText)
-                .formatted(if (isActive) Formatting.BLACK else Formatting.GRAY)
-        ))
-        putString("billboard", "fixed")
-        putString("alignment", "center")
-        putInt("background", (if (isActive) 0xA0_FFFFFFu else 0x00_000000u).toInt())
-        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
+    registerEntity(EntityType.TEXT_DISPLAY) {
+        pos = position
+        pitch = facing.asRotation()
+        yaw = 0f
+        this.value = Text.empty()
+            .append(buttonText)
+            .formatted(if (isActive) Formatting.BLACK else Formatting.GRAY)
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.CENTER
+        background = (if (isActive) 0xA0_FFFFFFu else 0x00_000000u).toInt()
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 }
 
 fun MenuComponent.registerToggleButton(
-    position: Vec3d,
+    position: Vector3d,
     text: Text,
     textProp: Property<Text?> = computedProperty { text },
+    tooltip: List<Text>? = null,
     toggleProp: MutableProperty<Boolean>,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     onClick: (player: ServerPlayerEntity) -> Unit = {},
@@ -83,6 +85,7 @@ fun MenuComponent.registerToggleButton(
                     .append(it)
             } ?: Text.empty()
         },
+        tooltip = tooltip,
         isActiveProp = toggleProp,
         permissionGetter = permissionGetter,
     ) {

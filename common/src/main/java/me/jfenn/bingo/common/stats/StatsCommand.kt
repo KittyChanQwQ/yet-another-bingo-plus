@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.stats
 
 import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
@@ -10,7 +9,6 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -63,13 +61,10 @@ class StatsCommand(
         )
     }
 
-    private fun IExecutionContext.clearPlayerStats(playerToReset: ServerPlayerEntity) {
-        val playerManager = scope.get<IPlayerManager>()
-        val playerToResetImpl = playerManager.forPlayer(playerToReset)
+    private fun IExecutionContext.clearPlayerStats(playerToReset: IPlayerHandle) {
+        statsService.resetPlayerStats(playerToReset.uuid)
 
-        statsService.resetPlayerStats(playerToResetImpl.uuid)
-
-        text.string(StringKey.CommandStatsResetPlayer, playerToResetImpl.name)
+        text.string(StringKey.CommandStatsResetPlayer, playerToReset.name)
             .formatted(Formatting.YELLOW)
             .also { sendMessage(it) }
     }
@@ -101,8 +96,7 @@ class StatsCommand(
                     }
                     executes {
                         val player = getArgument(playerArg)
-                        scope.get<IPlayerManager>().forPlayer(player)
-                            .let { getStatsSummary(it) }
+                        getStatsSummary(player)
                     }
                 }
 
@@ -133,8 +127,7 @@ class StatsCommand(
                 }
                 executes {
                     val player = player ?: throw IllegalArgumentException("Must be called on player")
-                    scope.get<IPlayerManager>().forPlayer(player)
-                        .let { getStatsSummary(it) }
+                    getStatsSummary(player)
                 }
             }
         }

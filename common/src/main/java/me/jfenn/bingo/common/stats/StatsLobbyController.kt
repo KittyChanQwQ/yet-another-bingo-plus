@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.stats
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.api.*
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -12,20 +12,15 @@ import me.jfenn.bingo.common.stats.data.PlayerStatsSummary
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
-import me.jfenn.bingo.common.utils.toNbt
+import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.decoration.ArmorStandEntity
-import net.minecraft.entity.decoration.DisplayEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.math.Vec3d
+import org.joml.Matrix4f
+import org.joml.Vector3d
 import org.slf4j.Logger
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -39,6 +34,7 @@ class StatsLobbyController(
     private val textProvider: TextProvider,
     private val playerManager: IPlayerManager,
     private val itemStackFactory: IItemStackFactory,
+    private val entityManager: IEntityManager,
     events: ScopedEvents
 ) {
     companion object {
@@ -51,97 +47,91 @@ class StatsLobbyController(
 
     private var pendingStats: CompletableFuture<PlayerStatsSummary>? = null
 
-    private var statsPos: Vec3d? = null
-
-    private val emptyText = textProvider.serialized(Text.empty())
+    private var statsPos: Vector3d? = null
 
     private var nameEntityUuid: UUID? = null
-    private val nameEntity: DisplayEntity.TextDisplayEntity? get() {
+    private val nameEntity: ITextDisplayEntity? get() {
         val lobbyWorld = server.lobbyWorld ?: return null
 
-        if (nameEntityUuid != null)
-            return lobbyWorld.getEntity(nameEntityUuid) as? DisplayEntity.TextDisplayEntity
+        nameEntityUuid?.let {
+            return entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity
+        }
 
         val pos = statsPos ?: return null
 
-        val entity = EntityType.TEXT_DISPLAY.create(lobbyWorld)!!
-        entity.readNbt(NbtCompound().apply {
-            put("Pos", pos.add(0.0, 2.2, 0.0).toNbt())
-            putString("text", emptyText)
-            putString("billboard", "fixed")
-            putString("alignment", "right")
-            putInt("background", 0x80_000000.toInt())
-        })
-        lobbyWorld.spawnEntity(entity)
+        val entity = entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+            .apply {
+                this.pos = pos + Vector3d(0.0, 2.2, 0.0)
+                value = Text.empty()
+                billboard = ITextDisplayEntity.Billboard.FIXED
+                alignment = ITextDisplayEntity.TextAlignment.RIGHT
+                background = 0x80_000000.toInt()
+            }
+            .also {
+                entityManager.spawnEntity(lobbyWorld, it)
+            }
+
         nameEntityUuid = entity.uuid
         return entity
     }
 
     private var leftEntityUuid: UUID? = null
-    private val leftEntity: DisplayEntity.TextDisplayEntity? get() {
+    private val leftEntity: ITextDisplayEntity? get() {
         val lobbyWorld = server.lobbyWorld ?: return null
 
-        if (leftEntityUuid != null)
-            return lobbyWorld.getEntity(leftEntityUuid) as? DisplayEntity.TextDisplayEntity
+        leftEntityUuid?.let {
+            return entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity
+        }
 
         val pos = statsPos ?: return null
 
-        val entity = EntityType.TEXT_DISPLAY.create(lobbyWorld)!!
-        entity.readNbt(NbtCompound().apply {
-            put("Pos", pos.add(-1.8, 0.5, 0.0).toNbt())
-            put("transformation", listOf(
-                .5f, 0f, 0f, 0f,
-                0f, .5f, 0f, 0f,
-                0f, 0f, .5f, 0f,
-                0f, 0f, 0f, 1f,
-            ).toNbt())
-            putString("text", emptyText)
-            putString("billboard", "fixed")
-            putString("alignment", "right")
-            putInt("background", 0xb0_000000.toInt())
-        })
-        lobbyWorld.spawnEntity(entity)
+        val entity = entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+            .apply {
+                this.pos = pos + Vector3d(-1.8, 0.5, 0.0)
+                value = Text.empty()
+                billboard = ITextDisplayEntity.Billboard.FIXED
+                alignment = ITextDisplayEntity.TextAlignment.RIGHT
+                background = 0xb0_000000.toInt()
+                transformation = Matrix4f().scale(.5f)
+            }
+            .also {
+                entityManager.spawnEntity(lobbyWorld, it)
+            }
+
         leftEntityUuid = entity.uuid
         return entity
     }
 
     private var rightEntityUuid: UUID? = null
-    private val rightEntity: DisplayEntity.TextDisplayEntity? get() {
+    private val rightEntity: ITextDisplayEntity? get() {
         val lobbyWorld = server.lobbyWorld ?: return null
 
-        if (rightEntityUuid != null)
-            return lobbyWorld.getEntity(rightEntityUuid) as? DisplayEntity.TextDisplayEntity
+        rightEntityUuid?.let {
+            return entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity
+        }
 
         val pos = statsPos ?: return null
 
-        val entity = EntityType.TEXT_DISPLAY.create(lobbyWorld)!!
-        entity.readNbt(NbtCompound().apply {
-            put("Pos", pos.add(1.8, 0.5, 0.0).toNbt())
-            put("transformation", listOf(
-                .5f, 0f, 0f, 0f,
-                0f, .5f, 0f, 0f,
-                0f, 0f, .5f, 0f,
-                0f, 0f, 0f, 1f,
-            ).toNbt())
-            putString("text", emptyText)
-            putString("billboard", "fixed")
-            putString("alignment", "left")
-            putInt("background", 0xb0_000000.toInt())
-        })
-        lobbyWorld.spawnEntity(entity)
+        val entity = entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
+            .apply {
+                this.pos = pos + Vector3d(1.8, 0.5, 0.0)
+                value = Text.empty()
+                billboard = ITextDisplayEntity.Billboard.FIXED
+                alignment = ITextDisplayEntity.TextAlignment.LEFT
+                background = 0xb0_000000.toInt()
+                transformation = Matrix4f().scale(.5f)
+            }
+            .also {
+                entityManager.spawnEntity(lobbyWorld, it)
+            }
+
         rightEntityUuid = entity.uuid
         return entity
     }
 
-    private fun DisplayEntity.TextDisplayEntity.updateText(text: Text) {
-        readNbt(writeNbt(NbtCompound()).apply {
-            putString("text", textProvider.serialized(text))
-        })
-    }
-
     private fun getArmorStand() = server.lobbyWorld
-        ?.iterateEntities()
-        ?.filterIsInstance<ArmorStandEntity>()
+        ?.let { entityManager.iterateEntities(it) }
+        ?.mapNotNull { it as? IArmorStandEntity }
         ?.firstOrNull()
 
     private fun spawnSummary(
@@ -154,13 +144,13 @@ class StatsLobbyController(
             return
         }
 
-        statsPos = armorStand.pos
+        statsPos = armorStand.pos.let { Vector3d(it.x, it.y, it.z) }
 
         val playerHead = itemStackFactory.createPlayerHead()
         playerHead.setSkullOwner(player)
-        armorStand.equipStack(EquipmentSlot.HEAD, playerHead.stack)
+        armorStand.equipStack(IArmorStandEntity.EquipmentSlot.HEAD, playerHead)
 
-        nameEntity?.updateText(Text.literal(playerManager.forPlayer(player).name))
+        nameEntity?.value = Text.literal(playerManager.forPlayer(player).name)
 
         val favoriteTeam = BingoTeam.TEAM_BLOCKS.values
             .find { it.key == summary.favoriteTeam }
@@ -174,7 +164,7 @@ class StatsLobbyController(
                     .append(" (${(summary.favoriteTeamPercentage * 100f).toInt()}%)")
             }
 
-        val divider = Text.literal("\uD83E\uDF2D".repeat(26))
+        val divider = Text.literal("\uD83E\uDF2D".repeat(28))
         val allTimeStats = buildList<Text> {
             add(textProvider.string(StringKey.StatsAllTime).append(" ★").formatted(Formatting.BOLD, Formatting.YELLOW))
             add(divider)
@@ -264,21 +254,21 @@ class StatsLobbyController(
                 for (t in allTimeStats)
                     text.append(margin).append(t).append("$margin\n")
             }
-            .let { leftEntity?.updateText(it) }
+            .let { leftEntity?.value = it }
 
         Text.literal("\n")
             .also { text ->
                 for (t in monthlyStats)
                     text.append(margin).append(t).append("$margin\n")
             }
-            .let { rightEntity?.updateText(it) }
+            .let { rightEntity?.value = it }
     }
 
     private fun resetSummary() {
-        leftEntity?.updateText(Text.empty())
-        rightEntity?.updateText(Text.empty())
-        nameEntity?.updateText(Text.empty())
-        getArmorStand()?.equipStack(EquipmentSlot.HEAD, ItemStack.EMPTY)
+        leftEntity?.value = Text.empty()
+        rightEntity?.value = Text.empty()
+        nameEntity?.value = Text.empty()
+        getArmorStand()?.equipStack(IArmorStandEntity.EquipmentSlot.HEAD, itemStackFactory.emptyStack)
     }
 
     private fun tickPlayer(player: ServerPlayerEntity) {

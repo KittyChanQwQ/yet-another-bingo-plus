@@ -1,31 +1,35 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.config.BingoGoal
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
+import org.joml.Vector3d
 
 fun MenuComponent.registerGoal(
-    position: Vec3d,
-    options: BingoOptions,
+    position: Vector3d,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
+    state: BingoState = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
+    val cardOptions by DelegatedProperty(
+        getter = { state.getActiveCard().options },
+        setter = {},
+    )
+
     val countProp = DelegatedProperty(
         getter = {
-            when (val goal = options.cardGoal) {
+            when (val goal = cardOptions.goal) {
                 is BingoGoal.Items -> goal.items
                 is BingoGoal.Lines -> goal.lines
             }
         },
         setter = { count ->
-            options.cardGoal = when (options.cardGoal) {
+            cardOptions.goal = when (cardOptions.goal) {
                 is BingoGoal.Items -> BingoGoal.Items(count)
                 is BingoGoal.Lines -> BingoGoal.Lines(count)
             }
@@ -37,38 +41,39 @@ fun MenuComponent.registerGoal(
         valueProp = countProp,
         minValueProp = ConstantProperty(1),
         maxValueProp = computedProperty {
-            when (options.cardGoal) {
+            when (cardOptions.goal) {
                 is BingoGoal.Items -> BingoGoal.MAX_ITEMS
                 is BingoGoal.Lines -> BingoGoal.MAX_LINES
             }
         },
-        format = { options.cardGoal.format(text) },
+        format = { cardOptions.goal.format(text) },
         permissionGetter = permissionGetter,
     )
 
     registerButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 3 * MENU_ITEM_HEIGHT), 0.0),
+        position = position.add(0.0, -(MENU_ITEM_OFFSET + 3 * MENU_ITEM_HEIGHT), 0.0, Vector3d()),
         text = Text.empty(),
-        textProp = computedProperty { Text.literal("⇄ ").append(text.string(options.cardGoal.string())) },
+        textProp = computedProperty { Text.literal("⇄ ").append(text.string(cardOptions.goal.string())) },
         permissionGetter = permissionGetter,
     ) {
-        when (val goal = options.cardGoal) {
+        when (val goal = cardOptions.goal) {
             is BingoGoal.Items -> {
-                options.cardGoal = BingoGoal.Lines(goal.items.coerceAtMost(BingoGoal.MAX_LINES))
+                cardOptions.goal = BingoGoal.Lines(goal.items.coerceAtMost(BingoGoal.MAX_LINES))
             }
             is BingoGoal.Lines -> {
-                options.cardGoal = BingoGoal.Items(goal.lines)
+                cardOptions.goal = BingoGoal.Items(goal.lines)
             }
         }
         markDirty()
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", text.serialized(text.string(StringKey.OptionsGoal)))
-        putString("billboard", "fixed")
-        putString("alignment", "center")
-        putInt("background", 0)
-        putBoolean("shadow", true)
-        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
+    registerEntity(me.jfenn.bingo.api.EntityType.TEXT_DISPLAY) {
+        pos = position
+        this.value = text.string(StringKey.OptionsGoal)
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.CENTER
+        background = 0
+        shadow = true
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 }

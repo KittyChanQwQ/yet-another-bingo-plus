@@ -5,8 +5,17 @@ import net.minecraft.nbt.NbtFloat
 import net.minecraft.nbt.NbtList
 import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
+import org.joml.Vector3d
 
 fun Vec3d.toNbt(): NbtList {
+    return NbtList().apply {
+        add(NbtDouble.of(x))
+        add(NbtDouble.of(y))
+        add(NbtDouble.of(z))
+    }
+}
+
+fun Vector3d.toNbt(): NbtList {
     return NbtList().apply {
         add(NbtDouble.of(x))
         add(NbtDouble.of(y))

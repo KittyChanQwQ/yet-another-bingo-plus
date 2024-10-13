@@ -2,18 +2,23 @@ package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IServerWorld
 import me.jfenn.bingo.common.commands.CoordsCommand
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.scope.BingoKoin
-import me.jfenn.bingo.common.state.TeamScore
-import me.jfenn.bingo.common.state.TeamWinner
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.FormattingSerializer
+import me.jfenn.bingo.common.utils.UuidAsString
+import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.HoverEvent
+import net.minecraft.text.Text
+import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
 
@@ -33,8 +38,10 @@ data class BingoTeam(
     @Serializable(with = FormattingSerializer::class)
     val mapColor: Formatting,
     val textColor: TextColor,
+    var cardId: UuidAsString? = null,
     var score: TeamScore = TeamScore.ZERO,
     var winner: TeamWinner? = null,
+    val completedCards: MutableList<TeamCompletedCard> = mutableListOf(),
     var spawnpoint: BlockPosition? = null,
     var chestSpawnpoint: BlockPosition? = null,
     val chatCoordinates: MutableList<CoordsCommand.CoordinatesEntry> = mutableListOf(),
@@ -52,11 +59,55 @@ data class BingoTeam(
 
     val formatting get() = Formatting.valueOf(textColor.name)
 
+    val singlePlayer get() = players.takeIf { it.size == 1 }?.first()
+
+    val totalScore: TeamScore get() {
+        val containsScore = completedCards.any { it.card.id == cardId }
+        val scores = completedCards.map { it.score } + (if (containsScore) emptyList() else listOf(score))
+        return TeamScore(
+            cards = score.cards,
+            lines = scores.sumOf { it.lines },
+            items = scores.sumOf { it.items },
+        )
+    }
+
     fun isWinner(): Boolean = this.winner != null
+
+    fun isPlaying() = !isWinner()
+
+    fun includesPlayer(player: IPlayerHandle) = includesPlayer(player.player)
 
     fun includesPlayer(player: ServerPlayerEntity): Boolean {
         return players.any { it.uuid == player.uuid }
     }
+
+    fun getName(
+        textProvider: TextProvider,
+        playerName: Boolean = false,
+        symbol: Boolean = playerName && players.size == 1,
+        bracketed: Boolean = true,
+        teamNameKey: StringKey? = StringKey.TeamName,
+    ): Text {
+        val teamName = (if (playerName) singlePlayer?.let { Text.literal(it.name) } else null)
+            ?: textProvider.string(name).let {
+                if (teamNameKey != null) textProvider.string(teamNameKey, it) else it
+            }
+
+        return teamName
+            .let { if (symbol) Text.empty().append("${this.symbol} ").append(it) else it }
+            .formatted(formatting)
+            .let { if (bracketed) Texts.bracketed(it) else it }
+            .also { t ->
+                t.style = t.style.withHoverEvent(
+                    HoverEvent(
+                        HoverEvent.Action.SHOW_TEXT,
+                        players.map { Text.literal(it.name) }.joinText(Text.literal("\n"))
+                    )
+                )
+            }
+    }
+
+    fun countCards(): Int = completedCards.count { it.isWinner }
 
     companion object {
 

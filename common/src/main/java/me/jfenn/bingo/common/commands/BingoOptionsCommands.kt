@@ -7,7 +7,9 @@ import me.jfenn.bingo.api.commands.IExecutionSource
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.ElytraService
 import me.jfenn.bingo.common.spawn.PlayerController
@@ -26,17 +28,27 @@ class BingoOptionsCommands(
     private fun IExecutionSource.hasConfigureGame() = hasState(GameState.PREGAME, GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
 
     private fun IExecutionContext.setGoal(goal: BingoGoal) {
-        val state = scope.get<BingoState>()
-        state.options.cardGoal = goal
+        val cardViewService = scope.get<CardViewService>()
+        val card = cardViewService.getPlayerCard(player!!)
+        card.options.goal = goal
 
         val events = scope.get<ScopedEvents>()
         events.onChangeOptions(Unit)
 
         // Send a message that the goal was changed
-        Text.literal("ℹ  ")
-            .append(textProvider.string(StringKey.ScoreboardGoal, goal.format(textProvider)))
-            .formatted(Formatting.AQUA)
-            .also { sendFeedback(it) }
+        sendInfoFeedback(
+            textProvider.string(StringKey.ScoreboardGoal, goal.format(textProvider))
+        )
+    }
+
+    private fun IExecutionContext.setGoalCards(cards: Int) {
+        val options = scope.get<BingoOptions>()
+        options.winCondition = BingoWinCondition.Cards(cards)
+
+        // Send a message that the goal was changed
+        sendInfoFeedback(
+            textProvider.string(StringKey.ScoreboardGoal, textProvider.cardCount(cards))
+        )
     }
 
     private fun IExecutionContext.toggleElytra() {
@@ -67,13 +79,14 @@ class BingoOptionsCommands(
         val options = scope.get<BingoOptions>()
         val events = scope.get<ScopedEvents>()
         val playerController = scope.get<PlayerController>()
+        val playerManager = scope.get<IPlayerManager>()
 
         options.isNightVision = !options.isNightVision
         events.onChangeOptions(Unit)
 
         // if night vision is changed, update all players
         if (state.state == GameState.PLAYING) {
-            server.playerManager.playerList.forEach { player ->
+            playerManager.getPlayers().forEach { player ->
                 playerController.updateGameMode(player, forceReset = false)
             }
         }
@@ -100,6 +113,12 @@ class BingoOptionsCommands(
                         executes {
                             val count = getArgument(countArg).coerceIn(1, BingoGoal.MAX_LINES)
                             setGoal(BingoGoal.Lines(count))
+                        }
+                    }
+                    literal("cards") {
+                        executes {
+                            val count = getArgument(countArg).coerceAtLeast(1)
+                            setGoalCards(count)
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
@@ -7,7 +8,6 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.integrations.PermissionsIntegration
-import net.minecraft.server.network.ServerPlayerEntity
 import org.slf4j.Logger
 
 class PlayerSettingsController(
@@ -18,7 +18,7 @@ class PlayerSettingsController(
     private val packetManager: ServerPacketEvents,
 ) : BingoComponent() {
 
-    private fun receivePlayerSettings(player: ServerPlayerEntity, settings: PlayerSettings) {
+    private fun receivePlayerSettings(player: IPlayerHandle, settings: PlayerSettings) {
         if (permissions.hasPermission(player, Permission.CONFIGURE_PLAYER)) {
             log.debug("[PlayerSettingsController] Server - processing settings change from {}", player)
             playerSettingsService.setPlayer(player, settings)

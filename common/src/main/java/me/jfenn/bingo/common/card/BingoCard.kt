@@ -2,17 +2,26 @@ package me.jfenn.bingo.common.card
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 import me.jfenn.bingo.common.card.objective.BingoObjective
-import me.jfenn.bingo.common.state.TeamScore
+import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.utils.UuidAsString
+import me.jfenn.bingo.common.utils.json
 import java.util.*
+import kotlin.random.Random
 
 @Serializable
 class BingoCard(
     val id: UuidAsString = UUID.randomUUID(),
+    var nextCardId: UuidAsString? = null,
+    val seed: Long = Random.nextLong(),
     val entries: List<BingoCardEntry>,
     val objectives: Map<String, BingoObjective>,
+    val options: BingoCardOptions,
+    var ticks: Int = 0,
 ) {
 
     init {
@@ -110,7 +119,22 @@ class BingoCard(
         return TeamScore(
             items = countItems(team),
             lines = countLines(team),
+            cards = team.countCards(),
         )
+    }
+
+    fun removePlayer(playerId: UUID) {
+        objectives.values.forEach { it.removePlayer(playerId) }
+    }
+
+    fun removeTeam(team: BingoTeam) {
+        objectives.values.forEach { it.removeTeam(team) }
+    }
+
+    fun copy(): BingoCard {
+        // This is a very silly way to do a deep-clone
+        val element = json.encodeToJsonElement(this)
+        return json.decodeFromJsonElement(element)
     }
 
     companion object {
@@ -118,6 +142,7 @@ class BingoCard(
         val EMPTY get() = BingoCard(
             entries = List(25) { BingoCardEntry(FREE_SPACE.id, null, null) },
             objectives = mapOf(FREE_SPACE.id to FREE_SPACE),
+            options = BingoCardOptions(),
         )
     }
 

@@ -1,56 +1,82 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.EntityType
+import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.entity.EntityType
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
+import org.joml.Vector3d
 
 fun MenuComponent.registerGameModes(
-    position: Vec3d,
-    options: BingoOptions,
+    position: Vector3d,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
+    state: BingoState = koinScope.get(),
     cardService: CardService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
-    registerEntity(EntityType.TEXT_DISPLAY, position) {
-        putString("text", text.serialized(text.string(StringKey.OptionsGameMode)))
-        putString("billboard", "fixed")
-        putString("alignment", "center")
-        putInt("background", 0)
-        putBoolean("shadow", true)
-        put("transformation", Matrix4f().scale(MENU_TEXT_SCALE).toNbt())
+    val cardOptions by DelegatedProperty(
+        getter = { state.getActiveCard().options },
+        setter = {},
+    )
+
+    registerEntity(EntityType.TEXT_DISPLAY) {
+        pos = position
+        this.value = text.string(StringKey.OptionsGameMode)
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.CENTER
+        background = 0
+        shadow = true
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 
     registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0),
+        position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsModeLockout),
-        toggleProp = propertyRef(options::isLockoutMode),
+        tooltip = buildTooltip(StringKey.OptionsModeLockout),
+        toggleProp = DelegatedProperty(
+            getter = {
+                cardOptions.isLockoutMode
+            },
+            setter = {
+                cardOptions.isLockoutMode = it
+                markDirty()
+            }
+        ),
         permissionGetter = permissionGetter,
     )
 
     registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
+        position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsModeInventory),
-        toggleProp = propertyRef(options::isInventoryMode),
+        tooltip = buildTooltip(StringKey.OptionsModeInventory),
+        toggleProp = DelegatedProperty(
+            getter = {
+                cardOptions.isInventoryMode
+            },
+            setter = {
+                cardOptions.isInventoryMode = it
+                markDirty()
+            }
+        ),
         permissionGetter = permissionGetter,
     )
 
     registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0),
-        text = text.string(StringKey.OptionsModeRanked),
-        toggleProp = propertyRef(options::isRankedMode),
-        permissionGetter = permissionGetter,
-    )
-
-    registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0),
+        position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0, Vector3d()),
         text = text.string(StringKey.OptionsModeHiddenItems),
-        toggleProp = propertyRef(options::isHiddenItemsMode),
+        tooltip = buildTooltip(StringKey.OptionsModeHiddenItems),
+        toggleProp = DelegatedProperty(
+            getter = {
+                cardOptions.isHiddenItemsMode
+            },
+            setter = {
+                cardOptions.isHiddenItemsMode = it
+                markDirty()
+            }
+        ),
         permissionGetter = permissionGetter,
     ) {
         cardService.generateCard()

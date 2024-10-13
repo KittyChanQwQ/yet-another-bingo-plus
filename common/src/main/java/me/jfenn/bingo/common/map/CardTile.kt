@@ -10,8 +10,9 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 data class CardTile(
-    val item: IItemStack?,
+    val item: IItemStack? = null,
     val itemTier: TierLabel?,
+    val image: String? = null,
     val name: Text? = item?.displayName,
     val lore: List<Text> = item?.lore ?: emptyList(),
     val decoration: Decoration?,
@@ -27,6 +28,7 @@ data class CardTile(
     val mapRenderKey = item?.let {
         MapRenderService.TileImageKey(
             name = item.identifier.path,
+            image = image,
             count = item.count,
             decoration = decoration,
         )
@@ -217,6 +219,67 @@ data class CardTile(
             } else {
                 dest.writeBoolean(false)
             }
+
+            dest.writeInt(source.lore.size)
+            for (text in source.lore) {
+                dest.writeText(text)
+            }
+
+            dest.writeString(source.decoration?.name ?: "")
+
+            dest.writeBoolean(source.isHidden)
+            dest.writeBoolean(source.isLocked)
+            dest.writeBoolean(source.isFlashing)
+            dest.writeBoolean(source.isAchieved)
+
+            dest.writeFloat(source.progress)
+
+            dest.writeInt(source.teamKeys.size)
+            for (team in source.teamKeys) {
+                dest.writeString(team.id)
+            }
+        }
+    }
+
+    object V4 : PacketConverter<CardTile> {
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_tile_v4")!!
+
+        override fun fromPacketBuf(buf: IPacketBuf): CardTile {
+            return CardTile(
+                item = buf.readNullable(buf::readItemStack),
+                itemTier = buf.readNullable {
+                    TierLabel.valueOf(buf.readString())
+                },
+                image = buf.readNullable(buf::readString),
+                name = buf.readNullable(buf::readText),
+                lore = List(buf.readInt()) { buf.readText() },
+                decoration = try {
+                    Decoration.valueOf(buf.readString())
+                } catch (e: IllegalArgumentException) {
+                    null
+                },
+                isHidden = buf.readBoolean(),
+                isLocked = buf.readBoolean(),
+                isFlashing = buf.readBoolean(),
+                isAchieved = buf.readBoolean(),
+                progress = buf.readFloat(),
+                teamKeys = List(buf.readInt()) {
+                    val color = buf.readString().lowercase()
+                    when (color) {
+                        "light_purple" -> "pink"
+                        "gold" -> "orange"
+                        "dark_gray" -> "gray"
+                        else -> color.removePrefix("bingo_")
+                    }.let { BingoTeamKey("bingo_$it") }
+                },
+            )
+        }
+
+        override fun toPacketBuf(source: CardTile, dest: IPacketBuf) {
+            dest.writeNullable(source.item, dest::writeItemStack)
+            dest.writeNullable(source.itemTier?.name, dest::writeString)
+            dest.writeNullable(source.image, dest::writeString)
+            dest.writeNullable(source.name, dest::writeText)
 
             dest.writeInt(source.lore.size)
             for (text in source.lore) {

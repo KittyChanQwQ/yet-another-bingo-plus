@@ -1,17 +1,15 @@
 package me.jfenn.bingo.common.game
 
-import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.stats.WriteStatsService
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
@@ -28,21 +26,19 @@ class GameOverController(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
-    private val teamService: TeamService,
     private val textProvider: TextProvider,
     private val gameOverService: GameOverService,
     private val cardViewService: CardViewService,
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
     private val packetManager: ServerPacketEvents,
-    private val writeStatsService: WriteStatsService,
     events: ScopedEvents,
 ) {
 
     private fun broadcastGameOver(info: GameOverService.GameOverInfo) {
         sequence {
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
-            yield(Text.empty().append("  ").append(info.message))
+            yield(Text.empty().append("  ").append(gameOverService.getMessage(info)))
 
             Text.literal("  ")
                 .append(
@@ -62,33 +58,25 @@ class GameOverController(
                 )
                 .also { yield(it) }
 
-            if (options.isRankedMode) {
+            if (
+                (!options.endGameWhenComplete || options.winCondition is BingoWinCondition.Infinite)
+                && info.scoreRankings.size > 1
+            ) {
                 yield(Text.empty())
                 // List all teams that have completed the card
-                state.getRegisteredTeams()
-                    .filter { it.isWinner() }
-                    .mapNotNull { team ->
-                        team.winner?.let { team to it }
-                    }
-                    .sortedBy { (_, win) -> win.instant }
-                    .forEachIndexed { index, (team, win) ->
-                        val duration = win.instant - (state.startedAt ?: Clock.System.now())
-                        Text.empty()
-                            .append(Text.literal("${index + 1}. ").formatted(Formatting.GRAY))
-                            .append(teamService.getTeamOrPlayerName(team))
-                            .append(" - ${duration.formatString()}")
-                            .also { yield(it) }
-                    }
+                for (score in info.scoreRankings) {
+                    val duration = score.duration?.formatString() ?: "DNF"
+                    val teamName = state.teams[score.key]?.getName(textProvider, playerName = true)
+                        ?: Text.literal("[unknown]")
 
-                // List any teams that started the card but did not finish
-                state.getRegisteredTeams()
-                    .filter { !it.isWinner() }
-                    .forEach { team ->
-                        Text.empty()
-                            .append(Text.literal("DNF - ").formatted(Formatting.GRAY))
-                            .append(teamService.getTeamOrPlayerName(team))
-                            .also { yield(it) }
-                    }
+                    Text.empty()
+                        .append(Text.literal("${score.index + 1}. ").formatted(Formatting.GRAY))
+                        .append(teamName)
+                        .append(" - ")
+                        .append(score.score.formatText(textProvider))
+                        .append(" - $duration")
+                        .also { yield(it) }
+                }
             }
 
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
@@ -108,14 +96,28 @@ class GameOverController(
             }
         }
 
+        val winningTeam = info.winningTeamKey?.let { state.teams[it] }
+        val title = gameOverService.getTitle(info)
+        val message = gameOverService.getMessage(info)
+
+        val scoreRankings = info.scoreRankings.map {
+            GameOverPacket.ScoreRanking(
+                index = it.index,
+                key = it.key,
+                name = state.teams[it.key]?.getName(textProvider, playerName = true) ?: Text.literal("[unknown]"),
+                score = it.score,
+                duration = it.duration,
+            )
+        }
+
         for (player in playerManager.getPlayers()) {
             val playerInfo = info.playerInfo[player.uuid]
-            val isWinner = info.winningTeam?.includesPlayer(player.player) ?: false
+            val isWinner = winningTeam?.includesPlayer(player.player) ?: false
 
             val packet = GameOverPacket(
-                title = info.title,
-                subtitle = info.message,
-                winner = info.winningTeam?.key,
+                title = title,
+                subtitle = message,
+                winner = info.winningTeamKey,
                 duration = state.ingameDuration() ?: Duration.ZERO,
                 canSendRestart = server.isDedicated && state.isLobbyMode && permissions.hasPermission(
                     player.player,
@@ -138,9 +140,11 @@ class GameOverController(
                 prevBestTime = info.prevBestTime,
 
                 seed = server.overworld.seed,
+                scores = scoreRankings,
             )
 
             when {
+                packetManager.gameOverV6.send(player.player, packet) -> {}
                 packetManager.gameOverV5.send(player.player, packet) -> {}
                 packetManager.gameOverV4.send(player.player, packet) -> {}
                 packetManager.gameOverV3.send(player.player, packet) -> {}
@@ -154,40 +158,26 @@ class GameOverController(
                 }
                 else -> {
                     // if the player does not have the mod, send the vanilla title message
-                    player.player.networkHandler.sendPacket(TitleS2CPacket(info.title))
-                    player.player.networkHandler.sendPacket(SubtitleS2CPacket(info.message))
+                    player.player.networkHandler.sendPacket(TitleS2CPacket(title))
+                    player.player.networkHandler.sendPacket(SubtitleS2CPacket(message))
                     Sounds.playGameOver(player)
                 }
             }
         }
     }
 
-    private var gameOverInfo: GameOverService.GameOverInfo? = null
-
     init {
         events.onEnter(GameState.POSTGAME) {
-            // Get the game over info first
-            // (which needs to query the previous best time from stats.db)
-            val info = gameOverService.getGameInfo()
-            gameOverInfo = info
-
-            // Then, write the game to stats.db
-            writeStatsService.writeGame()
-
-            // Finally, send game info
+            val info = state.gameOverInfo ?: return@onEnter
             broadcastGameOver(info)
             sendGameOverPacket(info, isUpdate = false)
         }
 
         events.onUpdateTick {
-            if (state.state == GameState.POSTGAME) {
-                // If the game is currently over, keep sending the result to players
-                // (this prevents state loss if relogging / switching dimensions)
-                gameOverInfo?.let {
-                    sendGameOverPacket(it, isUpdate = true)
-                }
-            } else {
-                gameOverInfo = null
+            // If the game is currently over, keep sending the result to players
+            // (this prevents state loss if relogging / switching dimensions)
+            state.gameOverInfo?.let {
+                sendGameOverPacket(it, isUpdate = true)
             }
         }
     }

@@ -25,6 +25,9 @@ interface IPacketBuf {
     fun writeText(text: Text)
     fun readText(): Text
 
+    fun writeByteArray(array: ByteArray)
+    fun readByteArray(): ByteArray
+
     fun <T> writeNullable(value: T?, callback: (T) -> Unit) {
         writeBoolean(value != null)
         value?.let(callback)
@@ -34,4 +37,13 @@ interface IPacketBuf {
         return if (readBoolean()) callback() else null
     }
 
+    fun <T> writeList(value: Collection<T>, callback: (T) -> Unit) {
+        val list = value.toList()
+        writeInt(list.size)
+        list.forEach(callback)
+    }
+
+    fun <T> readList(callback: () -> T): List<T> {
+        return List(readInt()) { callback() }
+    }
 }

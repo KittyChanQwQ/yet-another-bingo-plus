@@ -4,7 +4,10 @@ import me.jfenn.bingo.api.IServerNetworking
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardDisplayPacket
+import me.jfenn.bingo.common.map.CardImagePacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
+import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
+import me.jfenn.bingo.common.scoring.CardCompletedPacket
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.scoring.ScoredItemLostPacket
 import me.jfenn.bingo.common.scoring.ScoredItemPacket
@@ -23,16 +26,22 @@ class ServerPacketEvents(
     val cardUpdateV2 = serverNetworking.registerS2C(CardUpdatePacket.V2)
     val cardUpdateV3 = serverNetworking.registerS2C(CardUpdatePacket.V3)
     val cardUpdateV4 = serverNetworking.registerS2C(CardUpdatePacket.V4)
+    val cardUpdateV5 = serverNetworking.registerS2C(CardUpdatePacket.V5)
+    val cardImageV1 = serverNetworking.registerS2C(CardImagePacket.V1)
+    val cardCompletedV1 = serverNetworking.registerS2C(CardCompletedPacket.V1)
     val gameOverV1 = serverNetworking.registerS2C(GameOverPacket.V1)
     val gameOverV2 = serverNetworking.registerS2C(GameOverPacket.V2)
     val gameOverV3 = serverNetworking.registerS2C(GameOverPacket.V3)
     val gameOverV4 = serverNetworking.registerS2C(GameOverPacket.V4)
     val gameOverV5 = serverNetworking.registerS2C(GameOverPacket.V5)
+    val gameOverV6 = serverNetworking.registerS2C(GameOverPacket.V6)
     val scoredItemV1 = serverNetworking.registerS2C(ScoredItemPacket.V1)
     val scoredItemLostV1 = serverNetworking.registerS2C(ScoredItemLostPacket.V1)
     val scoreMessageV1 = serverNetworking.registerS2C(ScoreMessagePacket.V1)
+    val scoreMessageV2 = serverNetworking.registerS2C(ScoreMessagePacket.V2)
     val timerV1 = serverNetworking.registerS2C(TimerPacket.V1)
     val countdownV1 = serverNetworking.registerS2C(CountdownPacket.V1)
+    val tooltipV1 = serverNetworking.registerS2C(TooltipPacket.V1)
 
     val sendPlayerSettingsV1 = serverNetworking.registerC2S(PlayerSettings.V1_C2S)
     val receivePlayerSettingsV1 = serverNetworking.registerS2C(PlayerSettings.V1_S2C)

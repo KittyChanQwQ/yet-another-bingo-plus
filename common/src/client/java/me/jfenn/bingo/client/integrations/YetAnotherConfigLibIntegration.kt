@@ -229,6 +229,23 @@ class YetAnotherConfigLibIntegrationImpl(
                                     .controller { BooleanControllerBuilder.create(it) }
                                     .build(),
                                 Option.createBuilder<Boolean>()
+                                    .name(text.string(StringKey.ConfigShowTeamOutlines))
+                                    .description(
+                                        OptionDescription.of(
+                                            text.string(StringKey.ConfigShowTeamOutlinesDescription)
+                                        )
+                                    )
+                                    .binding(
+                                        defaultConfig.client.cardTeamOutlines,
+                                        { config.client.cardTeamOutlines },
+                                        {
+                                            config.client.cardTeamOutlines = it
+                                            configService.writeConfig(config)
+                                        }
+                                    )
+                                    .controller { BooleanControllerBuilder.create(it) }
+                                    .build(),
+                                Option.createBuilder<Boolean>()
                                     .name(text.string(StringKey.ConfigHideOnF3))
                                     .description(
                                         OptionDescription.of(

@@ -5,11 +5,7 @@ import me.jfenn.bingo.api.item.*
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.NbtElement
-import net.minecraft.nbt.NbtList
-import net.minecraft.nbt.NbtString
-import net.minecraft.nbt.StringNbtReader
+import net.minecraft.nbt.*
 import net.minecraft.predicate.NbtPredicate
 import net.minecraft.registry.Registries
 import net.minecraft.resource.featuretoggle.FeatureFlags
@@ -23,6 +19,8 @@ class ItemStackFactory(
     private val logger: Logger,
     private val textSerializer: ITextSerializer,
 ) : IItemStackFactory {
+
+    override val emptyStack: IItemStack = ItemStackImpl(ItemStack.EMPTY)
 
     override fun listItems(server: MinecraftServer): List<String> {
         return Registries.ITEM.streamEntries()
@@ -62,7 +60,7 @@ class ItemStackFactory(
     }
 
     override fun forStack(stack: ItemStack?): IItemStack {
-        return ItemStackImpl(stack ?: ItemStack.EMPTY)
+        return stack?.let(::ItemStackImpl) ?: emptyStack
     }
 
     override fun createFilledMap(): IFilledMap = createStack(Items.FILLED_MAP, 1).asFilledMap()!!

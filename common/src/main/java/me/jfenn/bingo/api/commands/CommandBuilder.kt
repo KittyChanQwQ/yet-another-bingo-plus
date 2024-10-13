@@ -1,7 +1,7 @@
 package me.jfenn.bingo.api.commands
 
+import me.jfenn.bingo.api.IPlayerHandle
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import org.koin.core.scope.Scope
 
@@ -53,7 +53,19 @@ class CommandBuilder(
         parent.children += node
     }
 
-    fun player(name: String, configure: CommandBuilder.(arg: CommandArgument<ServerPlayerEntity>) -> Unit) {
+    fun long(
+        name: String,
+        min: Long = Long.MIN_VALUE,
+        max: Long = Long.MAX_VALUE,
+        configure: CommandBuilder.(arg: CommandArgument<Long>) -> Unit
+    ) {
+        val arg = CommandArgument.NumberLong(name, min, max)
+        val node = CommandNode.RequiredArgument(arg)
+        CommandBuilder(node).configure(arg)
+        parent.children += node
+    }
+
+    fun player(name: String, configure: CommandBuilder.(arg: CommandArgument<IPlayerHandle>) -> Unit) {
         val arg = CommandArgument.Player(name)
         val node = CommandNode.RequiredArgument(arg)
         CommandBuilder(node).configure(arg)
@@ -102,15 +114,21 @@ sealed class CommandArgument<T> {
         val max: Int,
     ) : CommandArgument<Int>()
 
+    class NumberLong(
+        override val name: kotlin.String,
+        val min: Long,
+        val max: Long,
+    ) : CommandArgument<Long>()
+
     class Player(
         override val name: kotlin.String,
-    ) : CommandArgument<ServerPlayerEntity>()
+    ) : CommandArgument<IPlayerHandle>()
 }
 
 interface IExecutionSource {
     val server: MinecraftServer
     val scope: Scope
-    val player: ServerPlayerEntity?
+    val player: IPlayerHandle?
 }
 
 interface IExecutionContext : IExecutionSource {

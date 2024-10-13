@@ -14,11 +14,13 @@ interface IServerPacketHandlerC2S<T> {
 }
 
 interface IServerPacketHandlerS2C<T> {
+    fun isSupported(player: IPlayerHandle): Boolean = isSupported(player.player)
     fun isSupported(player: ServerPlayerEntity): Boolean
+    fun send(player: IPlayerHandle, packet: T) = send(player.player, packet)
     fun send(player: ServerPlayerEntity, packet: T): Boolean
 }
 
 data class ServerPacket<T>(
-    val player: ServerPlayerEntity,
+    val player: IPlayerHandle,
     val packet: T
 )

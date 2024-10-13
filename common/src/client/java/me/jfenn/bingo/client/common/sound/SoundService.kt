@@ -7,7 +7,6 @@ import net.minecraft.client.sound.SoundInstance
 import net.minecraft.sound.SoundCategory
 
 class SoundService(
-    private val clientSounds: ClientSounds,
     private val config: BingoConfig,
 ) {
 
@@ -18,7 +17,7 @@ class SoundService(
         actualVolume: Float = volume * config.client.getSoundVolume(sound.name.lowercase()),
     ) {
         val instance = PositionedSoundInstance(
-            clientSounds[sound].id,
+            sound.id,
             SoundCategory.RECORDS,
             actualVolume,
             pitch,
@@ -28,6 +27,7 @@ class SoundService(
             SoundInstance.AttenuationType.NONE,
             0.0, 0.0, 0.0, true
         )
+        MinecraftClient.getInstance().soundManager.stopSounds(sound.id, null)
         MinecraftClient.getInstance().soundManager.play(instance)
     }
 

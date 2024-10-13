@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.commands
 
 import me.jfenn.bingo.api.IExecutors
-import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.api.commands.IExecutionSource
@@ -15,7 +15,6 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
@@ -30,7 +29,7 @@ class JoinCommand(
     }
 
     private fun IExecutionContext.joinTeam(
-        player: ServerPlayerEntity,
+        player: IPlayerHandle,
         team: BingoTeam,
     ) {
         val state = scope.get<BingoState>()
@@ -71,12 +70,11 @@ class JoinCommand(
 
         if (player != this.player) {
             val textProvider = scope.get<TextProvider>()
-            val scoreboardManager = scope.get<IScoreboardManager>()
             sendFeedback(
                 textProvider.string(
                     StringKey.CommandJoinSuccess,
-                    scoreboardManager.getPlayerName(player),
-                    teamService.getTeamName(team),
+                    player.name,
+                    team.getName(textProvider),
                 )
             )
         }

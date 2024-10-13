@@ -11,6 +11,12 @@
         "adapter": "kotlin",
         "value": "me.jfenn.bingo.client.integrations.jei.JeiEntrypoint"
       }
+    ],
+    "voicechat": [
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.integrations.voice.SimpleVoiceEntrypoint"
+      }
     ]
   },
   "depends": {

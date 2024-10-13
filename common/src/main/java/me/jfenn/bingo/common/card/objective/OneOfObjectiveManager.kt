@@ -62,7 +62,7 @@ class OneOfObjectiveManager(
 
             objectiveService.updateTeamsOnceAchieved(objective)
 
-            objectiveService.updateTeamsSeen(objective) { team ->
+            objectiveService.updateTeamsSeen(card, objective) { team ->
                 objectives.any { it.hasSeen(team) }
             }
 
@@ -76,6 +76,7 @@ class OneOfObjectiveManager(
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
 
             val players = objectiveService.getPlayers(
+                card = card,
                 playersHolding = playersHolding,
                 players = objective.players,
             )

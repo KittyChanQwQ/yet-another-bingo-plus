@@ -13,6 +13,7 @@ data class ScoreMessagePacket(
     val player: BingoPlayerProfile?,
     val isViewerOnTeam: Boolean,
     val item: IItemStack?,
+    val image: String? = null,
     val messageType: MessageType?,
     val message: Text,
 ) {
@@ -58,6 +59,45 @@ data class ScoreMessagePacket(
                 } else null,
                 isViewerOnTeam = buf.readBoolean(),
                 item = if (buf.readBoolean()) buf.readItemStack() else null,
+                messageType = try {
+                    MessageType.valueOf(buf.readString())
+                } catch (e: Throwable) {
+                    null
+                },
+                message = buf.readText(),
+            )
+        }
+    }
+
+    object V2 : PacketConverter<ScoreMessagePacket> {
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "score_message_v2")!!
+
+        override fun toPacketBuf(source: ScoreMessagePacket, dest: IPacketBuf) {
+            dest.writeNullable(source.player) {
+                dest.writeString(it.uuid.toString())
+                dest.writeString(it.name)
+            }
+
+            dest.writeBoolean(source.isViewerOnTeam)
+
+            dest.writeNullable(source.item, dest::writeItemStack)
+            dest.writeNullable(source.image, dest::writeString)
+
+            dest.writeString(source.messageType?.name ?: "")
+            dest.writeText(source.message)
+        }
+
+        override fun fromPacketBuf(buf: IPacketBuf): ScoreMessagePacket {
+            return ScoreMessagePacket(
+                player = buf.readNullable {
+                    BingoPlayerProfile(
+                        uuid = UUID.fromString(buf.readString()),
+                        name = buf.readString(),
+                    )
+                },
+                isViewerOnTeam = buf.readBoolean(),
+                item = buf.readNullable(buf::readItemStack),
+                image = buf.readNullable(buf::readString),
                 messageType = try {
                     MessageType.valueOf(buf.readString())
                 } catch (e: Throwable) {

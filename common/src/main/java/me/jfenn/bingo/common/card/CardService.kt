@@ -4,20 +4,19 @@ import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.tierlist.*
+import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
+import java.util.*
 import kotlin.math.ceil
 import kotlin.random.Random
 import kotlin.reflect.full.declaredMemberProperties
@@ -26,7 +25,6 @@ class CardService(
     private val log: Logger,
     private val state: BingoState,
     private val options: BingoOptions,
-    private val teamService: TeamService,
     private val configService: ConfigService,
     private val tierListState: TierListState,
     private val tierListService: TierListService,
@@ -36,6 +34,7 @@ class CardService(
 ) {
     init {
         validateLists()
+        createInitialCards()
     }
 
     private fun validateLists() {
@@ -61,8 +60,33 @@ class CardService(
         }
     }
 
+    fun createInitialCards() {
+        if (state.cards.isNotEmpty()) return
+
+        log.info("[CardService] Generating initial cards from config.json")
+
+        val cardOptionsList = options.cards
+            .takeIf { it.isNotEmpty() && options.isValid() }
+            ?: listOf(BingoCardOptions())
+
+        options.cards = cardOptionsList
+
+        // Note: cardOptionsList is reversed, since newCard adds to the front of the cards
+        // (same as /bingo card push)
+        for (cardOptions in cardOptionsList.reversed()) {
+            try {
+                newCard(cardOptions)
+            } catch (e: Throwable) {
+                log.info("[CardService] Cannot create card from config:", e)
+            }
+        }
+    }
+
     fun isSupported(err: (Text) -> Unit): Boolean =
-        options.tierLists.keys.all { isListSupported(it, err) }
+        state.cards
+            .flatMap { it.options.tierLists.keys }
+            .distinct()
+            .all { isListSupported(it, err) }
 
     private fun isListSupported(name: String, err: (Text) -> Unit): Boolean {
         val list = tierListState.tierLists[name] ?: return true
@@ -108,17 +132,39 @@ class CardService(
         return isSupported
     }
 
-    fun shuffleCard() {
-        // Change the BINGO seed to a new value
-        state.seed = Random.nextLong()
-        // Re-generate the card
-        generateCard()
+    fun newCard(cardOptions: BingoCardOptions): BingoCard {
+        if (!cardOptions.isValid()) throw IllegalArgumentException("Cannot create card; invalid options")
+
+        val newCard = generate(
+            id = UUID.randomUUID(),
+            seed = Random.nextLong(),
+            cardOptions = cardOptions,
+        )
+
+        state.pushCard(newCard)
+        return newCard
     }
 
-    fun generateCard() {
-        if (!options.isValid()) return
+    fun shuffleCard(card: BingoCard) {
+        if (!card.options.isValid()) throw IllegalArgumentException("Cannot reroll card; invalid options")
 
-        state.card = generate(options, state.seed)
+        // Change the BINGO seed to a new value
+        val newSeed = Random.nextLong()
+        val newCard = generate(card.id, newSeed, card.options)
+        state.replaceCard(newCard)
+    }
+
+    fun generateCard(
+        card: BingoCard = state.getActiveCard(),
+        seed: Long = card.seed
+    ): BingoCard {
+        if (!card.options.isValid()) {
+            throw IllegalArgumentException("Cannot generate card; invalid options")
+        }
+
+        val newCard = generate(card.id, seed, card.options)
+        state.replaceCard(newCard)
+        return newCard
     }
 
     fun replaceEntry(x: Int, y: Int, objectiveId: String) {
@@ -132,9 +178,10 @@ class CardService(
 
     fun replaceEntry(x: Int, y: Int, objective: BingoObjective) {
         val generatorState = CardGeneratorState(random = Random.Default)
+        val activeCard = state.getActiveCard()
 
         // Overwrite the entry being replaced
-        val entries = state.card.entries.toMutableList()
+        val entries = activeCard.entries.toMutableList()
         entries[x + y * 5] = BingoCardEntry(
             objectiveId = objective.id,
             tier = null,
@@ -151,7 +198,7 @@ class CardService(
         // If any objectives already exist on the card, use them instead of the new instance
         // (so that partial completion/state doesn't get lost if this is used mid-game)
         for (key in objectives.keys.toSet()) {
-            state.card.objectives[key]?.let {
+            activeCard.objectives[key]?.let {
                 objectives[key] = it
             }
         }
@@ -160,31 +207,23 @@ class CardService(
 
         assignTileNames(entries)
         // Set the card
-        state.card = BingoCard(
-            id = state.card.id,
+        val newCard = BingoCard(
+            id = activeCard.id,
+            seed = activeCard.seed,
             entries = entries,
             objectives = objectives,
+            options = activeCard.options
         )
+        state.replaceCard(newCard)
     }
 
-    fun showInventory(player: ServerPlayerEntity) {
-        player.openHandledScreen(SimpleNamedScreenHandlerFactory(
-            { syncId, inv, _ ->
-                CardScreenHandler(
-                    syncId = syncId,
-                    options = options,
-                    state = state,
-                    team = teamService.getPlayerTeam(player),
-                    card = state.card,
-                    playerInventory = inv,
-                )
-            },
-            Text.literal("BINGO Card")
-        ))
-    }
-
-    private fun generate(options: BingoOptions, seed: Long): BingoCard {
-        val dist = options.itemDistribution
+    fun generate(
+        id: UUID,
+        seed: Long,
+        cardOptions: BingoCardOptions,
+        excludeObjectives: Set<String> = emptySet(),
+    ): BingoCard {
+        val dist = cardOptions.itemDistribution
         assert(dist.size == TierLabel.entries.size) { "Item distribution does not match the number of tiers (${TierLabel.entries.size})!" }
         assert(dist.sum() <= 25) { "Item distribution exceeds 25!" }
 
@@ -192,6 +231,8 @@ class CardService(
         // (e.g. elytra mode, player/team kits...)
         val excludedObjectives = if (configService.config.excludeSpawnKitItemsFromCards) {
             buildSet {
+                addAll(excludeObjectives)
+
                 if (options.isPlayerKit)
                     addAll(options.playerKitItems.map { it.id })
                 if (options.isTeamKit)
@@ -208,7 +249,7 @@ class CardService(
         log.info("Using random BINGO card seed: $seed")
 
         // Collect the selected tier list configs by weight
-        val tiers = options.tierLists.entries
+        val tiers = cardOptions.tierLists.entries
             .mapNotNull { (name, weight) ->
                 val list = tierListState.tierLists[name]
                     ?.expandTags(tagExpansionService)
@@ -327,8 +368,11 @@ class CardService(
         assignTileNames(items)
 
         return BingoCard(
+            id = id,
+            seed = seed,
             entries = items,
-            objectives = objectives
+            objectives = objectives,
+            options = cardOptions
         )
     }
 

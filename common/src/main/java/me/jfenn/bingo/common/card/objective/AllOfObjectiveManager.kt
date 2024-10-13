@@ -62,7 +62,7 @@ class AllOfObjectiveManager(
 
             objectiveService.updateTeamsOnceAchieved(objective)
 
-            objectiveService.updateTeamsSeen(objective) { team ->
+            objectiveService.updateTeamsSeen(card, objective) { team ->
                 objectives.any { it.hasSeen(team) }
             }
 
@@ -72,7 +72,7 @@ class AllOfObjectiveManager(
 
             val progressTotal = objectives.size.coerceAtLeast(1).toFloat()
 
-            val teamsProgress = objectiveService.getPlayersByTeam()
+            val teamsProgress = objectiveService.getPlayersByTeam(card)
                 .mapKeys { it.key.key }
                 .mapValues { (_, players) ->
                     val progress = players.maxOfOrNull { capturesByPlayer[it.uuid]?.size ?: 0 } ?: 0
@@ -84,6 +84,7 @@ class AllOfObjectiveManager(
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
 
             val players = objectiveService.getPlayers(
+                card = card,
                 playersHolding = playersHolding,
                 players = objective.players,
             )

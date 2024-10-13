@@ -5,7 +5,10 @@ import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.objective.BingoObjective
+import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -13,7 +16,9 @@ import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.stats.WriteStatsService
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
@@ -38,6 +43,8 @@ class GameService(
     private val cardService: CardService,
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
+    private val gameOverService: GameOverService,
+    private val writeStatsService: WriteStatsService,
     private val text: TextProvider,
 ) {
 
@@ -84,7 +91,7 @@ class GameService(
 
             // Otherwise, we can just auto-assign a team
             for (player in playersWithoutATeam) {
-                teamService.joinTeam(player.player, BingoTeam.TEAM_BLOCKS.values.random())
+                teamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
             }
         }
 
@@ -101,6 +108,30 @@ class GameService(
         if (!options.isValid()) {
             sendFeedback(text.string(StringKey.CommandStartInvalidDistribution))
             return false
+        }
+
+        val initialTeamCards = state.getRegisteredTeams()
+            .mapNotNull { state.getCard(it) }
+            .distinctBy { it.id }
+
+        for (card in initialTeamCards) {
+            // Count any lines/items that will initially be achieved when the game starts
+            val initialLines = card.countLines { it is BingoObjective.FreeSpace || it is BingoObjective.InverseEntry }
+            val initialItems = card.countItems { it is BingoObjective.FreeSpace || it is BingoObjective.InverseEntry }
+
+            // If these immediately satisfy the goal, then the config is invalid
+            val goal = card.options.goal
+            if (goal is BingoGoal.Lines && goal.lines <= initialLines) {
+                val feedback = text.string(StringKey.CommandStartWillImmediatelyEnd, goal.format(text), text.lineCount(initialLines))
+                sendFeedback(feedback)
+                return false
+            }
+
+            if (goal is BingoGoal.Items && goal.items <= initialItems) {
+                val feedback = text.string(StringKey.CommandStartWillImmediatelyEnd, goal.format(text), text.itemCount(initialItems))
+                sendFeedback(feedback)
+                return false
+            }
         }
 
         // save the current config, if overwrite option is set
@@ -139,8 +170,33 @@ class GameService(
     }
 
     fun end(reason: GameEndReason?) {
-        state.endReason = reason
-        state.endedAt = Clock.System.now()
+        if (state.endedAt != null) return
+
+        // Create completion info for any teams that have not already completed the card
+        val endedAt = Clock.System.now()
+        for (team in state.getRegisteredTeams()) {
+            val card = state.cards.find { it.id == team.cardId }
+            if (card != null) {
+                team.cardId = null
+                team.completedCards += TeamCompletedCard(
+                    card = card.copy(),
+                    completedAt = endedAt,
+                    isWinner = false,
+                    score = team.score
+                )
+            }
+        }
+
+        // Get the game over info first
+        // (which needs to query the previous best time from stats.db)
+        val info = gameOverService.getGameInfo(reason, endedAt = endedAt)
+        state.gameOverInfo = info
+        state.endedAt = endedAt
+
+        // Then, write the game to stats.db
+        writeStatsService.writeGame()
+
+        // Finally, change state to POSTGAME (announces in GameOverController)
         state.changeState(events, GameState.POSTGAME)
 
         // if lobbyMode=false, immediately change state back to PREGAME once the POSTGAME events are sent
@@ -151,6 +207,8 @@ class GameService(
     }
 
     private fun broadcastStart() {
+        val firstCard = state.cards.firstOrNull() ?: BingoCard.EMPTY
+
         sequence {
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
 
@@ -160,7 +218,7 @@ class GameService(
                 .also { yield(it) }
 
             Text.literal("  ")
-                .append(text.string(StringKey.ScoreboardMode, options.formatGameMode().map { text.string(it) }.joinText()))
+                .append(text.string(StringKey.ScoreboardMode, options.formatGameMode(firstCard).map { text.string(it) }.joinText()))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 
@@ -171,7 +229,7 @@ class GameService(
 
             Text.empty()
                 .append("  ")
-                .append(text.string(StringKey.ScoreboardGoal, options.cardGoal.format(text)))
+                .append(text.string(StringKey.ScoreboardGoal, state.formatCardGoals(null, text)))
                 .formatted(Formatting.GRAY)
                 .also { yield(it) }
 

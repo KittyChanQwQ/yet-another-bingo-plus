@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.common.utils.wrap
 import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
@@ -28,11 +29,13 @@ import kotlin.jvm.optionals.getOrNull
 
 class BingoHudRenderer(
     private val text: TextProvider,
+    private val hudState: BingoHudState,
 ) {
 
     companion object {
         const val CARD_WIDTH = 122
         const val CARD_HEIGHT = 132
+        const val TOOLTIP_MAX_LENGTH = 30
 
         val BLACK_A40 = Color.BLACK.copy(a = 64)
 
@@ -114,7 +117,7 @@ class BingoHudRenderer(
         // Draw a translucent background behind all card items
         context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.backgroundColor.asIntWithAlpha)
 
-        service.drawTexture(
+        service.drawGuiTexture(
             texture = if (isGui) colors.cardTextureGui else colors.cardTexture,
             x = 0, y = 0,
             u = 0f, v = 0f,
@@ -156,7 +159,7 @@ class BingoHudRenderer(
                     ?.let { Identifier.of("minecraft", "bingo/image_hidden_${it.name.lowercase()}")!! }
                     ?: IMAGE_HIDDEN_ID
 
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = texture,
                     x = itemX + 1, y = itemY + 1,
                     u = 0f, v = 0f,
@@ -165,12 +168,15 @@ class BingoHudRenderer(
                 )
             }
 
-            tile.item?.stack?.let { stack ->
-                // always draws centered at z=150... but 3d items can extend past this
-                // so any overlays should start at z=300 to be safe
-                context.drawItem(stack, itemX + 1, itemY + 1, itemX + itemY * CARD_WIDTH)
-                // draws the item count + durability bar
-                context.drawItemInSlot(textRenderer, stack, itemX, itemY)
+            val image = tile.image?.let { hudState.images[it] }
+            if (image != null) {
+                service.drawDynamicTexture(image, itemX + 1, itemY + 1, 16, 16)
+            } else {
+                tile.item?.let { stack ->
+                    // always draws centered at z=150... but 3d items can extend past this
+                    // so any overlays should start at z=300 to be safe
+                    service.drawItemStack(stack, itemX + 1, itemY + 1, itemX + itemY * CARD_WIDTH)
+                }
             }
 
             if (tile.isAchieved && !tile.isFlashing && mouseX == -1 && mouseY == -1) {
@@ -185,7 +191,7 @@ class BingoHudRenderer(
             }
 
             if (tile.decoration == CardTile.Decoration.ADVANCEMENT) {
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = ADVANCEMENT_FRAME_ID,
                     x = itemX - 1, y = itemY - 1, z = 300,
                     u = 0f, v = 0f,
@@ -195,7 +201,7 @@ class BingoHudRenderer(
             }
 
             if (tile.decoration == CardTile.Decoration.MULTI_ITEM) {
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = FRAME_MULTI_ID,
                     x = itemX - 1, y = itemY - 1, z = 300,
                     u = 0f, v = 0f,
@@ -205,7 +211,7 @@ class BingoHudRenderer(
             }
 
             if (tile.decoration == CardTile.Decoration.FREE_SPACE) {
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = FRAME_FREE_SPACE_ID,
                     x = itemX - 1, y = itemY - 1, z = 301,
                     u = 0f, v = 0f,
@@ -215,7 +221,7 @@ class BingoHudRenderer(
             }
 
             if (tile.decoration == CardTile.Decoration.FORBIDDEN) {
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = FRAME_FORBIDDEN_ID,
                     x = itemX - 1, y = itemY - 1, z = 301,
                     u = 0f, v = 0f,
@@ -225,7 +231,7 @@ class BingoHudRenderer(
             }
 
             if (tile.isLocked) {
-                service.drawTexture(
+                service.drawGuiTexture(
                     texture = FRAME_LOCKED_ID,
                     x = itemX - 1, y = itemY - 1, z = 301,
                     u = 0f, v = 0f,
@@ -276,7 +282,7 @@ class BingoHudRenderer(
         }
 
         if (isFocused) {
-            service.drawTexture(
+            service.drawGuiTexture(
                 texture = colors.cardTextureOutline,
                 x = 0, y = 0,
                 u = 0f, v = 0f,
@@ -307,16 +313,23 @@ class BingoHudRenderer(
             val (tileX, tileY) = getItem(x, y, cardScale, mouseX, mouseY) ?: return
             val tile = view.tile(tileX, tileY) ?: return
 
-            context.matrices.push()
-            context.matrices.translate(0f, 0f, 2000f)
             val tooltip = buildList {
                 tile.name?.let { add(it) }
-                addAll(tile.lore)
+                addAll(
+                    tile.lore.flatMapIndexed { i, lore ->
+                        val isLast = i >= tile.lore.size - 1 // the last item (tile info) should never be wrapped
+                        if (isLast) listOf(lore)
+                        else lore.wrap(TOOLTIP_MAX_LENGTH)
+                    }
+                )
             }
+
             if (tooltip.isNotEmpty()) {
+                context.matrices.push()
+                context.matrices.translate(0f, 0f, 2000f)
                 context.drawTooltip(textRenderer, tooltip, mouseX, mouseY)
+                context.matrices.pop()
             }
-            context.matrices.pop()
         }
     }
 

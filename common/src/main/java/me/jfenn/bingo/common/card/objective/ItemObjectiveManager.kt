@@ -33,6 +33,13 @@ class ItemObjectiveManager(
         return itemStackFactory.listItems(server) + dataKeys
     }
 
+    override fun listExcludedIds(): Iterable<String> {
+        return objectiveService.getAllTeamPlayers()
+            .flatMap { (_, player) -> player.allHeldStacks() }
+            .map { it.identifier.toString() }
+            .asIterable()
+    }
+
     override fun find(id: String, state: CardGeneratorState): BingoObjective.ItemEntry? {
         // If the objective is a data ID
         (objectiveRegistry.objectives[id] as? ObjectiveData.Item)
@@ -127,11 +134,7 @@ class ItemObjectiveManager(
     override fun tick(card: BingoCard) {
         val now = state.updatedAt ?: Instant.DISTANT_PAST
 
-        val lockedTeams = objectiveService.getLockedTeams()
-        val lockedTeamKeys = lockedTeams.map { it.key }.toSet()
-        val lockedTeamPlayers = lockedTeams.flatMap { it.players }.map { it.uuid }.toSet()
-
-        val playersToItems = objectiveService.getTeamPlayers()
+        val playersToItems = objectiveService.getTeamPlayers(card)
             .map { (team, player) ->
                 val inventory = player.allHeldStacks().toList()
                 Triple(team, player, inventory)
@@ -140,10 +143,8 @@ class ItemObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
             objectiveService.updateTeamsOnceAchieved(objective)
 
-            // team progress is recalculated on each tick... except for teams that are locked (once a card is complete)
-            objective.teamsProgress = objective.teamsProgress
-                .filterKeys { lockedTeamKeys.contains(it) }
-                .toMutableMap()
+            // team progress is recalculated on each tick...
+            objective.teamsProgress.clear()
         }
 
         // first, we need to check that each player still has all their items
@@ -152,8 +153,6 @@ class ItemObjectiveManager(
             for ((_, player, inventory) in playersToItems) {
                 // if the player has no objectives to lose, skip
                 if (!objective.playersHolding.containsKey(player.uuid)) continue
-                // if the player is on a locked team, skip
-                if (lockedTeamPlayers.contains(player.uuid)) continue
 
                 val count = countSatisfied(inventory, objective)
 
@@ -165,9 +164,6 @@ class ItemObjectiveManager(
         }
 
         for ((team, player, inventory) in playersToItems) {
-            // if the team is locked, skip
-            if (lockedTeamKeys.contains(team.key)) continue
-
             // check inventory for new collected items
             val objectives = inventory.asSequence()
                 .map { it.identifier.toString() }
@@ -203,6 +199,7 @@ class ItemObjectiveManager(
 
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
             val players = objectiveService.getPlayers(
+                card = card,
                 playersHolding = objective.playersHolding,
                 players = objective.players,
             ).toMutableMap()

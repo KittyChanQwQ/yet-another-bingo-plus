@@ -34,7 +34,7 @@ class CardInventory(
                 ?: return@List ItemStack.EMPTY
 
             // If the items are hidden, don't show them in the card inventory!
-            val isVisible = !options.isHiddenItemsMode ||
+            val isVisible = !card.options.isHiddenItemsMode ||
                     // if the team isn't null and has seen the item
                     (team != null && objective.hasSeen(team.key)) ||
                     // if the team is null and the game is playing (i.e. the player is spectating)

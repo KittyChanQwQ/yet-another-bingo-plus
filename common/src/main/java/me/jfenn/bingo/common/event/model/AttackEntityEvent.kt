@@ -1,13 +1,15 @@
 package me.jfenn.bingo.common.event.model
 
+import me.jfenn.bingo.api.IPlayerHandle
 import net.minecraft.entity.Entity
-import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.EntityHitResult
 import net.minecraft.world.World
 
-data class AttackEntityEvent(
-    val player: PlayerEntity,
+class AttackEntityEvent(
+    val server: MinecraftServer,
+    val player: IPlayerHandle,
     val world: World,
     val hand: Hand,
     val entity: Entity,
