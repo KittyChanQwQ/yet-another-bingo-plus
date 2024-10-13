@@ -1,0 +1,13 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:red_bed"
+  },
+  "statType": "minecraft:custom",
+  "statName": "minecraft:deaths",
+  "min": {
+    "type": "random",
+    "min": 2,
+    "max": 8
+  }
+}

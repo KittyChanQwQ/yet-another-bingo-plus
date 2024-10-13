@@ -1,0 +1,14 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:oak_boat",
+    "name": "Row a Boat for %min%cm"
+  },
+  "statType": "minecraft:custom",
+  "statName": "minecraft:boat_one_cm",
+  "min": {
+    "type": "random",
+    "min": 1000,
+    "max": 10000
+  }
+}

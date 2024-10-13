@@ -7,7 +7,7 @@
   "statName": "minecraft:fish_caught",
   "min": {
     "type": "random",
-    "min": 4,
-    "max": 16
+    "min": 2,
+    "max": 8
   }
 }
