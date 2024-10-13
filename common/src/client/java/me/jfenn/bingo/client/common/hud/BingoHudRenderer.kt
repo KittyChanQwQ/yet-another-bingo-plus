@@ -170,7 +170,7 @@ class BingoHudRenderer(
 
             val image = tile.image?.let { hudState.images[it] }
             if (image != null) {
-                service.drawDynamicTexture(image.textureId, itemX + 1, itemY + 1, 16, 16)
+                service.drawDynamicTexture(image, itemX + 1, itemY + 1, 16, 16)
             } else {
                 tile.item?.let { stack ->
                     // always draws centered at z=150... but 3d items can extend past this

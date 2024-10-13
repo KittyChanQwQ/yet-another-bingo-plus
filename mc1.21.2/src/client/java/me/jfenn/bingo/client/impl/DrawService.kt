@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.client.api.INativeImage
 import me.jfenn.bingo.impl.ItemStackFactory
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -35,12 +36,13 @@ class DrawService(
         context.drawStackOverlay(textRenderer, stack.stack, x, y)
     }
 
-    override fun drawDynamicTexture(texture: Identifier, x: Int, y: Int, width: Int, height: Int) {
+    override fun drawDynamicTexture(texture: INativeImage, x: Int, y: Int, width: Int, height: Int) {
+        require(texture is NativeImageImpl)
         val matrix = context.matrices.peek().positionMatrix
             .let { Matrix4f(it) }
             .translate(x.toFloat(), y.toFloat(), 0f)
 
-        val vertexConsumer = context.vertexConsumers.getBuffer(RenderLayer.getGuiTextured(texture))
+        val vertexConsumer = context.vertexConsumers.getBuffer(texture.renderLayer)
         vertexConsumer.vertex(matrix, 0f, height.toFloat(), 0f).color(-1).texture(0.0f, 1.0f)
         vertexConsumer.vertex(matrix, width.toFloat(), height.toFloat(), 0f).color(-1).texture(1.0f, 1.0f)
         vertexConsumer.vertex(matrix, width.toFloat(), 0f, 0f).color(-1).texture(1.0f, 0.0f)

@@ -3,13 +3,12 @@ package me.jfenn.bingo.client.impl
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.client.api.IDrawService
 import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.client.api.INativeImage
 import me.jfenn.bingo.impl.ItemStackFactory
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.render.RenderLayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
-import org.joml.Matrix4f
 
 class DrawService(
     override val context: DrawContext,
@@ -33,16 +32,9 @@ class DrawService(
         context.drawItemInSlot(textRenderer, stack.stack, x, y)
     }
 
-    override fun drawDynamicTexture(texture: Identifier, x: Int, y: Int, width: Int, height: Int) {
-        val matrix = context.matrices.peek().positionMatrix
-            .let { Matrix4f(it) }
-            .translate(x.toFloat(), y.toFloat(), 0f)
-
-        val vertexConsumer = context.vertexConsumers.getBuffer(RenderLayer.getGui())
-        vertexConsumer.vertex(matrix, 0f, height.toFloat(), 0f).color(-1).texture(0.0f, 1.0f)
-        vertexConsumer.vertex(matrix, width.toFloat(), height.toFloat(), 0f).color(-1).texture(1.0f, 1.0f)
-        vertexConsumer.vertex(matrix, width.toFloat(), 0f, 0f).color(-1).texture(1.0f, 0.0f)
-        vertexConsumer.vertex(matrix, 0f, 0f, 0f).color(-1).texture(0.0f, 0.0f)
+    override fun drawDynamicTexture(texture: INativeImage, x: Int, y: Int, width: Int, height: Int) {
+        require(texture is NativeImageImpl)
+        context.drawTexture(texture.textureId, x, y, 0, 0f, 0f, width, height, texture.width, texture.height)
     }
 
     override fun drawGuiTexture(

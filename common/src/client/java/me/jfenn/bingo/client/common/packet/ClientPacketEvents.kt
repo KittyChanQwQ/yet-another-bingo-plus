@@ -38,6 +38,7 @@ class ClientPacketEvents(
     val scoredItemV1 = clientNetworking.registerS2C(ScoredItemPacket.V1)
     val scoredItemLostV1 = clientNetworking.registerS2C(ScoredItemLostPacket.V1)
     val scoreMessageV1 = clientNetworking.registerS2C(ScoreMessagePacket.V1)
+    val scoreMessageV2 = clientNetworking.registerS2C(ScoreMessagePacket.V2)
     val timerV1 = clientNetworking.registerS2C(TimerPacket.V1)
     val countdownV1 = clientNetworking.registerS2C(CountdownPacket.V1)
     val tooltipV1 = clientNetworking.registerS2C(TooltipPacket.V1)

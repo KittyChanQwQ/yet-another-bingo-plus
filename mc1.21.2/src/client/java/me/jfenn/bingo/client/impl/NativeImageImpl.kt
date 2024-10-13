@@ -4,6 +4,7 @@ import me.jfenn.bingo.client.api.INativeImage
 import me.jfenn.bingo.client.api.INativeImageFactory
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.util.Identifier
 
@@ -15,14 +16,21 @@ object NativeImageFactory : INativeImageFactory {
         val prefix = "$MOD_ID_BINGO/${id++}"
         val texture = NativeImageBackedTexture(width, height, true)
         val textureId = textureManager.registerDynamicTexture(prefix, texture)
-        return NativeImageImpl(texture, textureId)
+        return NativeImageImpl(texture, textureId, width, height)
     }
 }
 
 class NativeImageImpl(
     private val texture: NativeImageBackedTexture,
     override val textureId: Identifier,
+    override val width: Int,
+    override val height: Int,
 ) : INativeImage {
+
+    internal val renderLayer by lazy {
+        RenderLayer.getGuiTextured(textureId)
+    }
+
     override fun setPixel(x: Int, y: Int, color: Int) {
         texture.image?.setColorArgb(x, y, color)
     }

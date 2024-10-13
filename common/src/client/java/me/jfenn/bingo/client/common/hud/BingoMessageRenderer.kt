@@ -90,8 +90,11 @@ class BingoMessageRenderer(
 
         val itemX = if (isLeftOfCard) -8 - ITEM_HEIGHT else 8
         val itemY = ITEM_HEIGHT/2 - 8
+        val image = message.packet.image?.let { state.images[it] }
         val itemStack = message.packet.item?.stack
-        if (itemStack != null) {
+        if (image != null) {
+            drawService.drawDynamicTexture(image, itemX, itemY, 16, 16)
+        } else if (itemStack != null) {
             context.drawItem(itemStack, itemX, itemY)
         } else {
             val iconTexture = when (message.packet.messageType) {

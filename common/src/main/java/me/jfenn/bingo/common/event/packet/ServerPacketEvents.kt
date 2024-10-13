@@ -38,6 +38,7 @@ class ServerPacketEvents(
     val scoredItemV1 = serverNetworking.registerS2C(ScoredItemPacket.V1)
     val scoredItemLostV1 = serverNetworking.registerS2C(ScoredItemLostPacket.V1)
     val scoreMessageV1 = serverNetworking.registerS2C(ScoreMessagePacket.V1)
+    val scoreMessageV2 = serverNetworking.registerS2C(ScoreMessagePacket.V2)
     val timerV1 = serverNetworking.registerS2C(TimerPacket.V1)
     val countdownV1 = serverNetworking.registerS2C(CountdownPacket.V1)
     val tooltipV1 = serverNetworking.registerS2C(TooltipPacket.V1)

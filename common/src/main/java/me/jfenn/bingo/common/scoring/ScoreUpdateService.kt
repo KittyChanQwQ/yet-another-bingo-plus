@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoring
 
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.PlayerSoundCategory
 import me.jfenn.bingo.api.PlayerSoundEvent
@@ -35,6 +36,19 @@ class ScoreUpdateService(
             )
             .append(" ")
             .append(message)
+    }
+
+    private fun sendScoreMessage(player: IPlayerHandle, packet: ScoreMessagePacket, fallback: Text?): Boolean {
+        return when {
+            packetManager.scoreMessageV2.send(player.player, packet) -> true
+            packetManager.scoreMessageV1.send(player.player, packet) -> true
+            else -> {
+                if (fallback != null) {
+                    player.player.sendMessage(fallback, false)
+                }
+                false
+            }
+        }
     }
 
     fun sendItemCaptured(
@@ -128,10 +142,7 @@ class ScoreUpdateService(
                 message = chatMessage,
             )
 
-            when {
-                packetManager.scoreMessageV1.send(player.player, scoreMessage) -> {}
-                else -> player.player.sendMessage(chatMessage, false)
-            }
+            sendScoreMessage(player, scoreMessage, chatMessage)
         }
     }
 
@@ -170,10 +181,7 @@ class ScoreUpdateService(
         playerManager.getPlayers()
             .filter { playerSettingsService.getPlayer(it).scoreMessages }
             .forEach {
-                when {
-                    packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
-                    else -> it.player.sendMessage(message, false)
-                }
+                sendScoreMessage(it, scoreMessage, message)
             }
     }
 
@@ -193,10 +201,7 @@ class ScoreUpdateService(
 
             playerManager.getPlayers()
                 .forEach {
-                    when {
-                        packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
-                        else -> it.player.sendMessage(message, false)
-                    }
+                    sendScoreMessage(it, scoreMessage, message)
                 }
         }
 
@@ -235,10 +240,7 @@ class ScoreUpdateService(
         playerManager.getPlayers()
             .filter { playerSettingsService.getPlayer(it).leadingMessages }
             .forEach {
-                when {
-                    packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
-                    else -> it.player.sendMessage(message, false)
-                }
+                sendScoreMessage(it, scoreMessage, message)
             }
     }
 
@@ -265,10 +267,7 @@ class ScoreUpdateService(
         playerManager.getPlayers()
             .filter { playerSettingsService.getPlayer(it).leadingMessages }
             .forEach {
-                when {
-                    packetManager.scoreMessageV1.send(it, scoreMessage) -> {}
-                    else -> it.player.sendMessage(message, false)
-                }
+                sendScoreMessage(it, scoreMessage, message)
             }
     }
 

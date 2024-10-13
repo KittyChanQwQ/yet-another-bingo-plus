@@ -15,7 +15,7 @@ interface IDrawService {
     fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int)
 
     fun drawDynamicTexture(
-        texture: Identifier,
+        texture: INativeImage,
         x: Int, y: Int,
         width: Int, height: Int
     )

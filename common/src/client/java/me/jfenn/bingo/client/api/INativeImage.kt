@@ -8,6 +8,8 @@ interface INativeImageFactory {
 
 interface INativeImage: AutoCloseable {
     val textureId: Identifier
+    val width: Int
+    val height: Int
     fun setPixel(x: Int, y: Int, color: Int)
     fun upload()
 }

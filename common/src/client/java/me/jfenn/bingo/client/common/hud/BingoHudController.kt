@@ -204,13 +204,13 @@ class BingoHudController(
         }
     }
 
-    private fun onScoreMessage(packet: ScoreMessagePacket) {
-        if (!packet.isViewerOnTeam && !config.client.messageFromOtherTeams)
+    private fun onScoreMessage(packet: ClientPacket<ScoreMessagePacket>) {
+        if (!packet.packet.isViewerOnTeam && !config.client.messageFromOtherTeams)
             return
 
         val scoreMessage = BingoHudState.ScoreMessage(
             createdAt = Clock.System.now(),
-            packet = packet,
+            packet = packet.packet,
         )
 
         state.messages.add(scoreMessage)
@@ -247,9 +247,8 @@ class BingoHudController(
             }
         }
 
-        packetEvents.scoreMessageV1.onPacket { (packet) ->
-            onScoreMessage(packet)
-        }
+        packetEvents.scoreMessageV1.onPacket(::onScoreMessage)
+        packetEvents.scoreMessageV2.onPacket(::onScoreMessage)
 
         packetEvents.gameOverV1.onPacket(::onGameOver)
         packetEvents.gameOverV2.onPacket(::onGameOver)
