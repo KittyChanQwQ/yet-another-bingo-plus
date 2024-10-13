@@ -89,6 +89,7 @@ export default defineConfig({
         items: [
           { text: 'Tier Lists', link: '/custom-tier-lists' },
           { text: 'Objectives', link: '/custom-objectives' },
+          { text: 'Objective Icons', link: '/custom-objective-images' },
           { text: 'Function Tags', link: '/custom-function-tags' },
         ],
       },
