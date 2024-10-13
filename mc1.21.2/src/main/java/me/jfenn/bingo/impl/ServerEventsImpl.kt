@@ -75,7 +75,7 @@ object ServerEventsImpl : IServerEvents {
 
         ServerPlayerEvents.AFTER_RESPAWN.register { _, player, _ ->
             val playerImpl = getPlayerImpl(player) ?: return@register
-            onPlayerDisconnect(PlayerEvent(player.server, playerImpl))
+            onAfterRespawn(PlayerEvent(player.server, playerImpl))
         }
 
         ServerEntityEvents.ENTITY_LOAD.register { entity, world ->

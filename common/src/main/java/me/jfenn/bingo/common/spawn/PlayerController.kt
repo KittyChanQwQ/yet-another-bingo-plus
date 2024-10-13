@@ -164,6 +164,7 @@ class PlayerController(
         }
 
         events.onPlayerRespawn { event ->
+            if (!state.isLobbyMode) return@onPlayerRespawn
             val lobbyWorld = server.lobbyWorld ?: return@onPlayerRespawn
             val player = event.player
 
