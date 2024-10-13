@@ -24,6 +24,7 @@ class MapRenderService(
     private val log: Logger,
     private val server: MinecraftServer,
     private val mapService: IMapService,
+    private val imageService: CardImageService,
     private val state: BingoState,
 ) {
 
@@ -130,13 +131,15 @@ class MapRenderService(
 
                         val imgX = x - TILE_PADDING
                         val imgY = y - TILE_PADDING
+                        val imageNearestX = imgX * image.width / TILE_IMAGE
+                        val imageNearestY = imgY * image.height / TILE_IMAGE
 
-                        var color = if (imgX in 0 until TILE_IMAGE && imgY in 0 until TILE_IMAGE) {
-                            Color.fromInt(image.getRGB(imgX, imgY))
+                        var color = if (imageNearestX in 0 until image.width && imageNearestY in 0 until image.height) {
+                            Color.fromInt(image.getRGB(imageNearestX, imageNearestY))
                         } else Color.fromInt(0)
 
-                        val prevColor = if (imgX-1 in 0 until TILE_IMAGE && imgY-1 in 0 until TILE_IMAGE) {
-                            Color.fromInt(image.getRGB(imgX-1, imgY-1))
+                        val prevColor = if (imageNearestX-1 in 0 until image.width && imageNearestY-1 in 0 until image.height) {
+                            Color.fromInt(image.getRGB(imageNearestX-1, imageNearestY-1))
                         } else Color.fromInt(0)
 
                         if (color.a == 0) {
@@ -165,6 +168,7 @@ class MapRenderService(
 
     data class TileImageKey(
         val name: String,
+        val image: String?,
         val count: Int,
         val decoration: CardTile.Decoration?,
     )
@@ -244,7 +248,11 @@ class MapRenderService(
             return imageMap[key] ?: BingoTileImage.FALLBACK
 
         try {
-            val image = readTileImage(key.name).use { ImageIO.read(it) }
+            val imageStream = key.image
+                ?.let { imageService.readCardImageStream(it) }
+                ?: readTileImage(key.name)
+
+            val image = imageStream.use { ImageIO.read(it) }
             val tileImage = BingoTileImage.fromBufferedImage(image)
 
             drawTileDecorations(key) { x, y, color ->

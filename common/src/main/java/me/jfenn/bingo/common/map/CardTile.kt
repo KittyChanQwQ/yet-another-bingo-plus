@@ -28,6 +28,7 @@ data class CardTile(
     val mapRenderKey = item?.let {
         MapRenderService.TileImageKey(
             name = item.identifier.path,
+            image = image,
             count = item.count,
             decoration = decoration,
         )

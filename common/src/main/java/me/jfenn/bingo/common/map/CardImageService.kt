@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Identifier
+import java.io.InputStream
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
@@ -18,13 +19,18 @@ class CardImageService(
 
     private val playersWithImages = mutableMapOf<String, Set<UUID>>()
 
-    private fun readCardImage(id: String): CardImagePacket? {
+    fun readCardImageStream(id: String): InputStream? {
         val namespace = id.substringBefore(':')
         val path = "$MOD_ID_BINGO/images/${id.substringAfterLast(':')}.png"
-        val resource = server.resourceManager.getResource(Identifier.of(namespace, path)).getOrNull()
+        return server.resourceManager.getResource(Identifier.of(namespace, path))
+            .getOrNull()
+            ?.inputStream
+    }
+
+    private fun readCardImage(id: String): CardImagePacket? {
+        val bytes = readCardImageStream(id)?.use { it.readAllBytes() }
             ?: return null
 
-        val bytes = resource.inputStream.use { it.readAllBytes() }
         return CardImagePacket(id, bytes)
     }
 
