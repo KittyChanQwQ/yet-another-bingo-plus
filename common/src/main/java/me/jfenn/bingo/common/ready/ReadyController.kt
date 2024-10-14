@@ -104,7 +104,7 @@ class ReadyController(
                 }
             }
 
-            if (state.state == GameState.POSTGAME) {
+            if (state.state == GameState.POSTGAME && server.isDedicated) {
                 val hasAnyoneVoted = playerManager.getPlayers().any { readyState.isReady(it.uuid) }
                 if (
                     !readyState.isRunning &&
