@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.api.IDrawService
+import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
@@ -40,7 +41,7 @@ class ReadyHudRenderer(
 
         val titleText = when {
             ready.isReady -> text.string(StringKey.LobbyStartingPlayersReady, ready.readyPlayers, ready.totalPlayers)
-            else -> text.string(StringKey.LobbyStartingReadyUp, "Shift", "Y")
+            else -> text.string(StringKey.LobbyStartingReadyUp, Text.keybind("key.sneak"), Text.keybind(KEYBIND_OPEN_CARD))
         }
         val bodyText = when {
             ready.state == GameState.PREGAME -> text.string(StringKey.LobbyStartingTimeRemaining, ready.remainingDuration.formatHHMMSS())

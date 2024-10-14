@@ -14,6 +14,10 @@ object OptionsAccessor : IOptionsAccessor {
         return client.options.playerListKey.isPressed
     }
 
+    override fun isSneakPressed(): Boolean {
+        return client.options.sneakKey.isPressed
+    }
+
     override fun isHudHidden(): Boolean {
         return client.options.hudHidden
     }

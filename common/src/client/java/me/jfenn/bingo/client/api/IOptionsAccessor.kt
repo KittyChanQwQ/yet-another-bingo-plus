@@ -6,6 +6,8 @@ interface IOptionsAccessor {
 
     fun isPlayerListPressed(): Boolean
 
+    fun isSneakPressed(): Boolean
+
     fun isHudHidden(): Boolean
 
 }

@@ -13,6 +13,7 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
+import me.jfenn.bingo.common.ready.SetReadyPacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.text.TextProvider
@@ -314,17 +315,21 @@ class BingoHudController(
             if (client.isPaused) return@register
 
             if (openCardKey.wasPressed()) {
-                val display = state.display?.display
-                if (display.isNullOrEmpty()) {
-                    client.player?.sendMessage(text.string(StringKey.CardNoCards), true)
-                    return@register
+                if (optionsAccessor.isSneakPressed() && state.ready?.isRunning == true) {
+                    packetEvents.readySetV1.send(SetReadyPacket(!(state.ready?.isReady ?: false)))
+                } else {
+                    val display = state.display?.display
+                    if (display.isNullOrEmpty()) {
+                        client.player?.sendMessage(text.string(StringKey.CardNoCards), true)
+                        return@register
+                    }
+
+                    val hudScreen = state.gameOver
+                        ?.let { BingoEndScreen(koin, it, canEscape = true) }
+                        ?: BingoHudScreen(koin)
+
+                    client.setScreen(hudScreen)
                 }
-
-                val hudScreen = state.gameOver
-                    ?.let { BingoEndScreen(koin, it, canEscape = true) }
-                    ?: BingoHudScreen(koin)
-
-                client.setScreen(hudScreen)
             }
 
             if (toggleHudKey.wasPressed()) {
