@@ -30,12 +30,28 @@ class ServerWorldImpl(
             return server.worlds.map { forWorld(it) }
         }
 
-        override fun recreateWorlds(server: MinecraftServer, seed: Long) {
-            val levelProperties = server.saveProperties as LevelProperties
-            val levelPropertiesAccessor = levelProperties as LevelPropertiesAccessor
-            levelPropertiesAccessor.generatorOptions = levelPropertiesAccessor.generatorOptions.withSeed(OptionalLong.of(seed))
-
-            server.loadWorld()
+        override fun recreateWorlds(
+            server: MinecraftServer,
+            seed: Long,
+            callback: () -> kotlin.Unit
+        ) {
+            server.saving = true
+            try {
+                server.cancelTasks()
+                for (world in listWorlds(server)) {
+                    world.close()
+                    arrayOf("region", "poi", "entities")
+                        .map { world.directory.resolve(it).toFile() }
+                        .filter { it.exists() }
+                        .onEach { it.deleteRecursively() }
+                }
+                callback()
+                val levelPropertiesAccessor = (server.saveProperties as LevelProperties) as LevelPropertiesAccessor
+                levelPropertiesAccessor.generatorOptions = levelPropertiesAccessor.generatorOptions.withSeed(OptionalLong.of(seed))
+                server.loadWorld()
+            } finally {
+                server.saving = false
+            }
         }
 
         private val TICKET_HELD = ChunkTicketType.create("$MOD_ID_BINGO-held") { _: Any?, _: Any? -> 0 }

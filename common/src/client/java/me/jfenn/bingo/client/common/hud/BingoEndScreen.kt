@@ -4,9 +4,12 @@ import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.api.IScrollableWidgetFactory
 import me.jfenn.bingo.client.api.ITabsWidgetFactory
 import me.jfenn.bingo.client.api.IWorldService
+import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.Color
+import me.jfenn.bingo.common.ready.SetReadyPacket
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
@@ -28,6 +31,8 @@ class BingoEndScreen(
     private val gameOver: BingoHudState.GameOver,
     private val canEscape: Boolean = false,
     private val text: TextProvider = koin.get(),
+    private val packets: ClientPacketEvents = koin.get(),
+    private val state: BingoHudState = koin.get(),
     scrollableWidgetFactory: IScrollableWidgetFactory = koin.get(),
     tabsWidgetFactory: ITabsWidgetFactory = koin.get(),
 ) : Screen(text.string(StringKey.CardTitle)) {
@@ -85,16 +90,14 @@ class BingoEndScreen(
     private val scoresWidget = scrollableWidgetFactory.create(BingoEndScoresWidget(koin, gameOver))
 
     private fun reopenWorld() {
-        val client = client ?: return
         when {
-            client.isInSingleplayer -> worldService.disconnectAndReopen()
+            packets.readySetV1.isSupported() -> packets.readySetV1.send(SetReadyPacket(true))
             gameOver.packet.canSendRestart -> worldService.restartServer()
             else -> worldService.disconnect()
         }
     }
 
     private fun updateButtons() {
-        val client = client ?: return
         clearChildren()
 
         val dismissButton = dismissButton ?: ButtonWidget.builder(text.string(StringKey.CardClose)) { close() }
@@ -111,7 +114,7 @@ class BingoEndScreen(
 
         val restartButton = restartButton ?: ButtonWidget.builder(
             when {
-                client.isInSingleplayer -> text.string(StringKey.WorldNewGame)
+                packets.readySetV1.isSupported() -> text.string(StringKey.WorldNextRound)
                 gameOver.packet.canSendRestart -> text.string(StringKey.WorldRestart)
                 else -> text.string(StringKey.WorldDisconnect)
             }
@@ -204,6 +207,11 @@ class BingoEndScreen(
     private fun renderWinStreak(context: DrawContext, titleY: Int) {
         val winStreak = gameOver.packet.winStreak ?: return
         val now = Clock.System.now()
+
+        val ready = state.ready
+        if (ready != null && ready.isRunning) {
+            restartButton?.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
+        }
 
         context.matrices.push()
         context.matrices.translate(width * 0.8f + 20f, titleY.toFloat(), 0f)

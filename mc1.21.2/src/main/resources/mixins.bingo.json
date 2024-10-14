@@ -6,8 +6,8 @@
   "mixins": [
     "InteractionEntityMixin",
     "LevelPropertiesAccessor",
-    "MinecraftServerUnsafeSkipCloseMixin",
     "MinecraftServerSkipStartRegionMixin",
+    "MinecraftServerUnsafeSkipCloseMixin",
     "PlayerEntityMixin",
     "PlayerManagerMixin",
     "ServerChunkLoadingManagerAccessor",

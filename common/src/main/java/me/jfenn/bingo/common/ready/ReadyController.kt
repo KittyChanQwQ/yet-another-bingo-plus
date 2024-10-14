@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.ready
 
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.autorestart.ResetService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -11,12 +12,9 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
-import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -31,26 +29,11 @@ class ReadyController(
     private val gameService: GameService,
     private val playerManager: IPlayerManager,
     private val teamService: TeamService,
+    private val resetService: ResetService,
     private val packets: ServerPacketEvents,
     private val permissions: PermissionsIntegration,
     events: ScopedEvents,
 ) {
-
-    private val sentWarnings = mutableSetOf<Int>()
-
-    private fun broadcastRestartWarning(seconds: Int) {
-        if (seconds !in 1..5) return
-        if (seconds in sentWarnings)
-            return
-
-        sentWarnings.add(seconds)
-        server.playerManager.broadcast(
-            Text.literal("⚠ ")
-                .append(text.string(StringKey.CommandRestartWarning, seconds.seconds.formatStringSmall()))
-                .formatted(Formatting.GOLD),
-            false
-        )
-    }
 
     private fun isPregameReady(): Boolean {
         val players = playerManager.getPlayers()
@@ -104,30 +87,26 @@ class ReadyController(
                 }
             }
 
-            if (state.state == GameState.POSTGAME && server.isDedicated) {
+            if (state.state == GameState.POSTGAME) {
                 val hasAnyoneVoted = playerManager.getPlayers().any { readyState.isReady(it.uuid) }
                 if (
                     !readyState.isRunning &&
-                    (hasAnyoneVoted || !config.shutDownWhenReadyWaitsForFirstVote)
+                    (hasAnyoneVoted || !config.nextRoundWhenReadyWaitsForFirstVote)
                 ) {
-                    config.shutDownWhenReadySeconds?.let {
+                    config.nextRoundWhenReadySeconds?.let {
                         log.info("[ReadyController] Starting the POSTGAME timer for $it seconds")
                         readyState.startTimer(it.seconds)
                     }
                 }
 
-                if (readyState.isRunning) {
-                    broadcastRestartWarning(remainingTime?.inWholeSeconds?.toInt() ?: -1)
-                }
-
                 if (isComplete) {
-                    log.info("[ReadyController] Reached the end of the POSTGAME timer - shutting down.")
-                    server.stop(false)
+                    log.info("[ReadyController] Reached the end of the POSTGAME timer - running reset.")
+                    resetService.resetGame()
                 }
             }
 
             val updatePacket = ReadyUpdatePacket(
-                isRunning = readyState.isRunning,
+                isRunning = readyState.isRunning && !isComplete,
                 isReady = false,
                 state = state.state,
                 remainingDuration = readyState.remainingTime() ?: Duration.ZERO,

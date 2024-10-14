@@ -18,7 +18,7 @@ class ReadyCommand(
             requires {
                 val isLobbyMode = scope.get<BingoState>().isLobbyMode
                 val isPregameCountdown = hasState(GameState.PREGAME) && config.startWhenReadySeconds != null
-                val isPostgameCountdown = hasState(GameState.POSTGAME) && config.shutDownWhenReadySeconds != null
+                val isPostgameCountdown = hasState(GameState.POSTGAME) && config.nextRoundWhenReadySeconds != null
                 isLobbyMode && (isPregameCountdown || isPostgameCountdown) && hasPermission(Permission.COMMAND_READY)
             }
             executes {

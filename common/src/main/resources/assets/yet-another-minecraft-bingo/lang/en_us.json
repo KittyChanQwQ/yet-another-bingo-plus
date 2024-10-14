@@ -14,6 +14,7 @@
   "bingo.world.preparing": "Preparing a new Bingo world...",
   "bingo.world.new_game": "New Game",
   "bingo.world.restart": "Restart Server",
+  "bingo.world.next_round": "Next Round",
   "bingo.world.disconnect": "Disconnect",
   "bingo.card.close": "Close",
   "bingo.card.preview_card": "Preview Card",

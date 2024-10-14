@@ -114,6 +114,7 @@ class ScoreboardService(
                 val player = server.playerManager.getPlayer(playerId) ?: continue
                 scoreboardManager.sendObjectiveDelete(player, objective)
             }
+            scoreboardManager.removeObjective(server, objective)
         }
         scoreboardViews.clear()
     }

@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture
 interface IServerWorldFactory {
     fun forWorld(world: ServerWorld): IServerWorld
     fun listWorlds(server: MinecraftServer): List<IServerWorld>
-    fun recreateWorlds(server: MinecraftServer, seed: Long)
+    fun recreateWorlds(server: MinecraftServer, seed: Long, callback: () -> Unit)
 }
 
 interface IServerWorld {
