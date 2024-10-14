@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.measureTime
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
+import kotlin.random.Random
 
 class BingoResetCommand(
     private val log: Logger,
@@ -53,7 +54,7 @@ class BingoResetCommand(
 
             log.info("[Reset] Recreating worlds")
             scope.get<MenuController>().prepareLobbyFiles()
-            serverWorldFactory.recreateWorlds(server)
+            serverWorldFactory.recreateWorlds(server, Random.Default.nextLong())
 
             log.info("[Reset] Teleporting players back to lobby")
             state.changeState(events, GameState.PREGAME)

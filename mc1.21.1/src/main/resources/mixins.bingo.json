@@ -5,8 +5,9 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "InteractionEntityMixin",
-    "MinecraftServerUnsafeSkipCloseMixin",
+    "LevelPropertiesAccessor",
     "MinecraftServerSkipStartRegionMixin",
+    "MinecraftServerUnsafeSkipCloseMixin",
     "PlayerEntityMixin",
     "PlayerManagerMixin",
     "ServerChunkLoadingManagerAccessor",

@@ -6,6 +6,7 @@ import me.jfenn.bingo.api.block.IBlockState
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.impl.block.BlockStateImpl
+import me.jfenn.bingo.mixin.LevelPropertiesAccessor
 import me.jfenn.bingo.mixin.ServerChunkLoadingManagerAccessor
 import me.jfenn.bingo.mixin.ServerChunkManagerAccessor
 import net.minecraft.server.MinecraftServer
@@ -15,9 +16,10 @@ import net.minecraft.util.Unit
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.chunk.Chunk
 import net.minecraft.world.chunk.ChunkStatus
+import net.minecraft.world.level.LevelProperties
 import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.CompletableFuture
-
 
 class ServerWorldImpl(
     override val world: ServerWorld
@@ -28,7 +30,11 @@ class ServerWorldImpl(
             return server.worlds.map { forWorld(it) }
         }
 
-        override fun recreateWorlds(server: MinecraftServer) {
+        override fun recreateWorlds(server: MinecraftServer, seed: Long) {
+            val levelProperties = server.saveProperties as LevelProperties
+            val levelPropertiesAccessor = levelProperties as LevelPropertiesAccessor
+            levelPropertiesAccessor.generatorOptions = levelPropertiesAccessor.generatorOptions.withSeed(OptionalLong.of(seed))
+
             server.loadWorld()
         }
 
