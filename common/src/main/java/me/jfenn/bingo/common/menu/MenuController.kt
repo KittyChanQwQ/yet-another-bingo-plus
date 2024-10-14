@@ -151,7 +151,7 @@ class MenuController(
         }
     }
 
-    private fun prepareLobbyFiles() = log.measureTime("[MenuController] Preparing the BINGO lobby...") {
+    fun prepareLobbyFiles() = log.measureTime("[MenuController] Preparing the BINGO lobby...") {
         val storageDir = levelStorage.getLevelSaveDir(LOBBY_WORLD_ID)
             ?: run {
                 log.error("Unable to find world storage dir for $LOBBY_WORLD_ID")

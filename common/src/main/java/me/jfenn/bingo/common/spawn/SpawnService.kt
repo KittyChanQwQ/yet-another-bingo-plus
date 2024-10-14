@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.spawn
 
 import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.IServerWorldFactory
 import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
@@ -30,7 +29,6 @@ class SpawnService(
     private val config: BingoConfig,
     private val teamService: TeamService,
     private val itemStackFactory: IItemStackFactory,
-    private val playerManager: IPlayerManager,
     private val spreadPlayersFactory: SpreadPlayers.Factory,
     private val serverWorldFactory: IServerWorldFactory,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,

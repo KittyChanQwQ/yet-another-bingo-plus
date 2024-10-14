@@ -8,24 +8,39 @@ import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.impl.block.BlockStateImpl
 import me.jfenn.bingo.mixin.ServerChunkLoadingManagerAccessor
 import me.jfenn.bingo.mixin.ServerChunkManagerAccessor
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Unit
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.chunk.Chunk
 import net.minecraft.world.chunk.ChunkStatus
+import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
 
 class ServerWorldImpl(
-    private val world: ServerWorld
+    override val world: ServerWorld
 ): IServerWorld {
     companion object : IServerWorldFactory {
         override fun forWorld(world: ServerWorld): IServerWorld = ServerWorldImpl(world)
+        override fun listWorlds(server: MinecraftServer): List<IServerWorld> {
+            return server.worlds.map { forWorld(it) }
+        }
+
+        override fun recreateWorlds(server: MinecraftServer) {
+            server.loadWorld()
+        }
 
         private val TICKET_HELD = ChunkTicketType.create("$MOD_ID_BINGO-held") { _: Any?, _: Any? -> 0 }
         private val TICKET_ASYNC = ChunkTicketType.create("$MOD_ID_BINGO-async") { _: Any?, _: Any? -> 0 }
     }
+
+    override val identifier: String
+        get() = world.registryKey.value.toString()
+
+    override val directory: Path
+        get() = world.server.session.getWorldDirectory(world.registryKey)
 
     override fun getBlockState(pos: BlockPosition): IBlockState {
         return world.getBlockState(pos.toBlockPos())
@@ -73,5 +88,9 @@ class ServerWorldImpl(
         }, taskExecutor)
 
         return chunkFuture
+    }
+
+    override fun close() {
+        world.close()
     }
 }
