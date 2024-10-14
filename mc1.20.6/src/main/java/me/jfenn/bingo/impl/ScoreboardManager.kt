@@ -34,6 +34,12 @@ class ScoreboardManager : IScoreboardManager {
         return ObjectiveHandle(scoreboard, objective)
     }
 
+    override fun removeObjective(server: MinecraftServer, handle: IObjectiveHandle) {
+        require(handle is ObjectiveHandle)
+        val scoreboard: ServerScoreboard = server.scoreboard
+        scoreboard.removeObjective(handle.objective)
+    }
+
     override fun setScoreboardText(server: MinecraftServer, handle: IObjectiveHandle, textLines: List<ScoreChange.Create>) {
         require(handle is ObjectiveHandle)
 

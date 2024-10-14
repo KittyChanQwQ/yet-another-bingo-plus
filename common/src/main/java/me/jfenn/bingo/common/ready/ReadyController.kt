@@ -127,7 +127,7 @@ class ReadyController(
             }
 
             val updatePacket = ReadyUpdatePacket(
-                isRunning = readyState.isRunning,
+                isRunning = readyState.isRunning && !isComplete,
                 isReady = false,
                 state = state.state,
                 remainingDuration = readyState.remainingTime() ?: Duration.ZERO,

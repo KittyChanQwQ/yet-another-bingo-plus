@@ -82,8 +82,9 @@ class ScoreboardService(
                 // ensure that the player is only in one scoreboard view at a time
                 for (otherView in scoreboardViews.values - view) {
                     if (otherView.players.contains(player.uuid)) {
+                        val otherObjective = scoreboardManager.createDummyObjective(server, otherView.objectiveName, Text.empty())
+                        scoreboardManager.sendObjectiveDelete(player, otherObjective)
                         otherView.players -= player.uuid
-                        scoreboardManager.sendObjectiveDelete(player, objective)
                     }
                 }
 
@@ -113,6 +114,7 @@ class ScoreboardService(
                 val player = server.playerManager.getPlayer(playerId) ?: continue
                 scoreboardManager.sendObjectiveDelete(player, objective)
             }
+            scoreboardManager.removeObjective(server, objective)
         }
         scoreboardViews.clear()
     }

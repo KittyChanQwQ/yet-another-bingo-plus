@@ -4,9 +4,11 @@ import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.api.IScrollableWidgetFactory
 import me.jfenn.bingo.client.api.ITabsWidgetFactory
 import me.jfenn.bingo.client.api.IWorldService
+import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
@@ -28,6 +30,8 @@ class BingoEndScreen(
     private val gameOver: BingoHudState.GameOver,
     private val canEscape: Boolean = false,
     private val text: TextProvider = koin.get(),
+    private val packets: ClientPacketEvents = koin.get(),
+    private val state: BingoHudState = koin.get(),
     scrollableWidgetFactory: IScrollableWidgetFactory = koin.get(),
     tabsWidgetFactory: ITabsWidgetFactory = koin.get(),
 ) : Screen(text.string(StringKey.CardTitle)) {
@@ -204,6 +208,11 @@ class BingoEndScreen(
     private fun renderWinStreak(context: DrawContext, titleY: Int) {
         val winStreak = gameOver.packet.winStreak ?: return
         val now = Clock.System.now()
+
+        val ready = state.ready
+        if (ready != null && ready.isRunning) {
+            restartButton?.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
+        }
 
         context.matrices.push()
         context.matrices.translate(width * 0.8f + 20f, titleY.toFloat(), 0f)
