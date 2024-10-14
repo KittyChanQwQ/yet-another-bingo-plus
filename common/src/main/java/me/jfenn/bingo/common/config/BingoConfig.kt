@@ -32,7 +32,7 @@ data class BingoConfig(
     var supportClientHud: Boolean = true,
 
     // starts the game after the time limit - reduced when players vote /ready
-    val startWhenReadySeconds: Int? = 180,
+    val startWhenReadySeconds: Int? = 600,
     // shuts down after a time limit - reduced when players vote /ready
     val shutDownWhenReadySeconds: Int? = 600,
     val shutDownWhenReadyWaitsForFirstVote: Boolean = true,

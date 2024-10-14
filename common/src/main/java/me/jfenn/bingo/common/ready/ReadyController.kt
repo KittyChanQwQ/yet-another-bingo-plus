@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.ready
 
 import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -12,6 +13,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -30,6 +32,7 @@ class ReadyController(
     private val playerManager: IPlayerManager,
     private val teamService: TeamService,
     private val packets: ServerPacketEvents,
+    private val permissions: PermissionsIntegration,
     events: ScopedEvents,
 ) {
 
@@ -50,9 +53,9 @@ class ReadyController(
     }
 
     private fun isPregameReady(): Boolean {
-        return playerManager.getPlayers().all {
-            teamService.isPlaying(it) || readyState.isReady(it.uuid)
-        } && state.options.isValid()
+        val players = playerManager.getPlayers()
+        val isReady = players.all { teamService.isPlaying(it) } || players.any { readyState.isReady(it.uuid) }
+        return isReady && players.size > 1 && state.options.isValid()
     }
 
     init {
@@ -61,12 +64,14 @@ class ReadyController(
         }
 
         events.onChangeOptions {
-            log.info("[ReadyController] Cancelling the timer, as the game options have changed")
+            log.info("[ReadyController] Reset the timer, as the game options have changed")
             readyState.reset()
         }
 
         events.onPacket(packets.readySetV1) {
-            readyState.setReady(it.player.uuid, it.packet.isReady)
+            if (permissions.hasPermission(it.player, Permission.COMMAND_READY)) {
+                readyState.setReady(it.player.uuid, it.packet.isReady)
+            }
         }
 
         events.onUpdateTick {

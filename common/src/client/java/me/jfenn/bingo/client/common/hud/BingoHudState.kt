@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardDisplayPacket
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
+import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import java.util.concurrent.ConcurrentHashMap
@@ -19,6 +20,7 @@ class BingoHudState(
     val images: MutableMap<String, INativeImage> = ConcurrentHashMap(),
     var tooltip: TooltipPacket? = null,
     var tooltipStartedAt: Instant? = null,
+    var ready: ReadyUpdatePacket? = null,
 ) {
     fun reset() {
         display = null
@@ -27,6 +29,7 @@ class BingoHudState(
         messages.clear()
         tooltip = null
         tooltipStartedAt = null
+        ready = null
     }
 
     fun resetAll() {

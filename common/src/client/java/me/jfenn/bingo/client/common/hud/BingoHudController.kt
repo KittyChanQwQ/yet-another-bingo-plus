@@ -38,6 +38,7 @@ class BingoHudController(
     private val config: BingoConfig,
     private val renderer: BingoHudRenderer,
     private val itemScoredRenderer: BingoMessageRenderer,
+    private val readyHudRenderer: ReadyHudRenderer,
     private val state: BingoHudState,
     private val text: TextProvider,
     hud: IHudCallback,
@@ -151,6 +152,13 @@ class BingoHudController(
             }
         }
 
+        readyHudRenderer.drawReadyHud(
+            drawService = drawService,
+            x = context.scaledWindowWidth/2 - 50,
+            y = 40,
+            width = 100
+        )
+
         val now = Clock.System.now()
         val tooltipPacket = state.tooltip
         val tooltipText = tooltipPacket?.text
@@ -256,6 +264,10 @@ class BingoHudController(
         packetEvents.gameOverV4.onPacket(::onGameOver)
         packetEvents.gameOverV5.onPacket(::onGameOver)
         packetEvents.gameOverV6.onPacket(::onGameOver)
+
+        packetEvents.readyUpdateV1.onPacket {
+            state.ready = it.packet
+        }
 
         packetEvents.tooltipV1.onPacket {
             state.tooltip = it.packet

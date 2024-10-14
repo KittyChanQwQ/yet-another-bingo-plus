@@ -30,6 +30,9 @@ object Permission {
     /** "/join {team} {player}" command */
     val COMMAND_JOIN_PLAYER = PermissionKey("$MOD_ID.command.join_player", PermissionDefault.OPERATORS)
 
+    /** "/ready" command */
+    val COMMAND_READY = PermissionKey("$MOD_ID.command.ready", PermissionDefault.ALLOW)
+
     /** "/coords" command */
     val COMMAND_COORDS = PermissionKey("$MOD_ID.command.coords", PermissionDefault.ALLOW)
 
