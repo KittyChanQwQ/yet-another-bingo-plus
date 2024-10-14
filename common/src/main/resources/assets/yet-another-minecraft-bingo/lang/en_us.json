@@ -110,6 +110,8 @@
   "bingo.lobby.sounds_muted": "Certain sounds in this lobby may be muted to avoid spam.",
   "bingo.lobby.team_changed": "➾  You have been moved to %s",
   "bingo.lobby.click_to_join": "Click to join!",
+  "bingo.lobby.starting_in_ready": "Starting in %s - %s of %s ready!",
+  "bingo.lobby.starting_in_run_command": "Starting in %s - type /ready to speed up!",
   "bingo.options.reset_defaults": "Reset Defaults",
   "bingo.options.reroll_card": "Re-roll Card",
   "bingo.options.page": "Page %s",

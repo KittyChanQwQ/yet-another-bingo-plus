@@ -31,10 +31,15 @@ data class BingoConfig(
     // instead of the vanilla map/card behavior
     var supportClientHud: Boolean = true,
 
+    // starts the game after the time limit - reduced when players vote /ready
+    val startWhenReadySeconds: Int? = 180,
+    // shuts down after a time limit - reduced when players vote /ready
+    val shutDownWhenReadySeconds: Int? = 600,
+    val shutDownWhenReadyWaitsForFirstVote: Boolean = true,
+
     // shuts down the server once all players log out after a game
     @JsonNames("autoShutDownInPostgame")
     val shutDownWhenEveryoneDisconnects: Boolean = true,
-    val shutDownWhenGameOverSeconds: Int? = null,
     // shuts down the server faster, at the risk of bugs or data corruption
     val unsafeSkipWorldClose: Boolean = false,
 

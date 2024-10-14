@@ -3,8 +3,6 @@ package me.jfenn.bingo.common
 import me.jfenn.bingo.api.ICloseEvent
 import me.jfenn.bingo.common.autorestart.RestartCommand
 import me.jfenn.bingo.common.autorestart.RestartOnLeaveController
-import me.jfenn.bingo.common.autorestart.RestartTimerController
-import me.jfenn.bingo.common.autorestart.RestartTimerState
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryManager
@@ -35,6 +33,9 @@ import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.menu.tooltips.TooltipController
 import me.jfenn.bingo.common.menu.tooltips.TooltipService
+import me.jfenn.bingo.common.ready.ReadyCommand
+import me.jfenn.bingo.common.ready.ReadyController
+import me.jfenn.bingo.common.ready.ReadyTimerState
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.scoreboard.ScoreboardController
@@ -87,6 +88,8 @@ val commonModule = module {
     factoryOf(ChunkyIntegration::create)
     factoryOf(VoiceIntegration::create)
 
+    singleOf(::ReadyTimerState)
+
     singleOf(::BingoCommand)
     singleOf(::BingoCardCommand)
     singleOf(::BingoCommands)
@@ -101,6 +104,7 @@ val commonModule = module {
     singleOf(::JoinCommand)
     singleOf(::PreviewCardCommand)
     singleOf(::SpectatorCommand)
+    singleOf(::ReadyCommand)
     singleOf(::RestartCommand)
     singleOf(::StatsCommand)
     singleOf(::TierListCommand)
@@ -163,6 +167,8 @@ val commonModule = module {
         scopedOf(::InfoBookController)
         scopedOf(::InfoBookService)
 
+        scopedOf(::ReadyController)
+
         scopedOf(::MapItemService)
         scopedOf(::MapRenderService)
         scopedOf(::CardViewService)
@@ -212,9 +218,6 @@ val commonModule = module {
         scopedOf(::ScoredItemCheck)
         scopedOf(::ScoreUpdateService)
 
-        scoped { RestartTimerState() }
-        scopedOf(::RestartTimerController)
-
         scopedOf(::CommandTreeHandler)
     }
 }
@@ -245,6 +248,7 @@ fun Koin.commonInit() {
     get<JoinCommand>()
     get<PreviewCardCommand>()
     get<SpectatorCommand>()
+    get<ReadyCommand>()
     get<RestartCommand>()
     get<StatsCommand>()
     get<TierListCommand>()
@@ -271,6 +275,7 @@ fun Scope.commonInit() {
     get<NightVisionController>()
     get<PlayerSettingsController>()
     get<PlayerSpectatorController>()
+    get<ReadyController>()
     get<ScoreboardController>()
 
     get<GameOverController>()
@@ -292,7 +297,6 @@ fun Scope.commonInit() {
     get<TimerPacketController>()
     get<WaitUntilLoadedController>()
 
-    get<RestartTimerController>()
     get<CommandTreeHandler>()
 
     get<PlayerController>()

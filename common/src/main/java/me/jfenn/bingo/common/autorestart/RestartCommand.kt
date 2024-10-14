@@ -3,13 +3,12 @@ package me.jfenn.bingo.common.autorestart
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.*
+import me.jfenn.bingo.common.ready.ReadyTimerState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.sendInfoMessage
 import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.text.Text
 
 class RestartCommand : BaseCommand() {
     init {
@@ -30,10 +29,10 @@ class RestartCommand : BaseCommand() {
                     LiteralArgumentBuilder.literal<ServerCommandSource>("abort")
                         .executesInScope { ctx ->
                             val text = get<TextProvider>()
-                            val timerState = get<RestartTimerState>()
+                            val timerState = get<ReadyTimerState>()
 
-                            if (timerState.shutdownAt != null) {
-                                timerState.shutdownAt = null
+                            if (timerState.isRunning) {
+                                timerState.reset()
 
                                 ctx.source.sendFeedback(
                                     { text.string(StringKey.CommandRestartAborted) },

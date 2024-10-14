@@ -6,6 +6,7 @@ import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.menu.tooltips.TooltipService
+import me.jfenn.bingo.common.ready.ReadyTimerState
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -26,6 +27,7 @@ fun MenuComponent.registerButton(
     interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
     playerManager: IPlayerManager = koinScope.get(),
     tooltipService: TooltipService = koinScope.get(),
+    readyTimerState: ReadyTimerState = koinScope.get(),
     onClick: (player: ServerPlayerEntity) -> Unit,
 ) {
     val isActive by isActiveProp
@@ -45,6 +47,8 @@ fun MenuComponent.registerButton(
             if (permissionGetter(player)) {
                 onClick(player)
                 Sounds.playButtonSound(playerManager, player, entity.pos, player.serverWorld)
+                // Reset the ready state, assuming an option has been changed
+                readyTimerState.reset()
             }
         }
     }
