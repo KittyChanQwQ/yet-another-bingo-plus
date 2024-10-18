@@ -3,6 +3,8 @@ package me.jfenn.bingo.common.config
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
+import me.jfenn.bingo.common.card.filter.ObjectiveFilter
+import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.utils.UuidAsString
 import java.util.*
 
@@ -10,6 +12,22 @@ import java.util.*
 @OptIn(ExperimentalSerializationApi::class)
 data class BingoConfig(
     var version: Int = 0,
+
+    var itemFilters: Map<String, ObjectiveFilterList> = mapOf(
+        "everything" to ObjectiveFilterList(
+            ObjectiveFilter.Exclude("unobtainable")
+        ),
+        "simplified" to ObjectiveFilterList(
+            ObjectiveFilter.Include("simplified"),
+            ObjectiveFilter.Exclude("uncategorized"),
+            ObjectiveFilter.Exclude("unobtainable")
+        ),
+        "overworld-only" to ObjectiveFilterList(
+            ObjectiveFilter.Include("overworld"),
+            ObjectiveFilter.Exclude("uncategorized"),
+            ObjectiveFilter.Exclude("unobtainable")
+        )
+    ),
 
     // adds BINGO_IGNORE to spawn kit items, preventing them from being scored
     val preventScoringSpawnKitItems: Boolean = false,
