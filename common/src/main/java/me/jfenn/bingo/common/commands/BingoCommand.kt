@@ -106,14 +106,16 @@ class BingoCommand(
             }
             .let { add(it) }
 
-        text.string(StringKey.OptionsTierList)
-            .append(": ")
-            .append(tierListService.formatTierLists(card.options).formatted(Formatting.YELLOW))
-            .formatted(Formatting.GRAY)
-            .also {
-                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo tierlist"))
-            }
-            .let { add(it) }
+        tierListService.formatTierList(card.options)?.let { tierListName ->
+            text.string(StringKey.OptionsTierList)
+                .append(": ")
+                .append(tierListName.formatted(Formatting.YELLOW))
+                .formatted(Formatting.GRAY)
+                .also {
+                    it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo tierlist"))
+                }
+                .let { add(it) }
+        }
 
         add(Text.empty())
     }

@@ -121,7 +121,8 @@ data class BingoOptions(
                 // card difficulty
                 yield(json.encodeToString(card.goal))
                 yield(json.encodeToString(card.itemDistribution))
-                yield(json.encodeToString(card.tierLists.toSortedMap().toMap())) // note: map sort order affects the resulting hash!
+                yield(card.itemFilter.toString())
+                yield(json.encodeToString(card.tierList))
                 // gamemodes
                 yield(card.isLockoutMode.toString())
                 yield(card.isInventoryMode.toString())

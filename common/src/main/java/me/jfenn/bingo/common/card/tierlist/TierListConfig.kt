@@ -77,7 +77,7 @@ data class TierListConfig(
         val ret = LinkedList<Pair<TierListEntry, Double>>()
         for (entry in set) {
             val inverseWeight = groups
-                .filter { group -> entry.asList().any { group.contains(it) } }
+                .filter { group -> group.contains(entry.item) }
                 .sumOf { group -> group.size }
                 .coerceAtLeast(1)
 
@@ -109,11 +109,11 @@ data class TierListConfig(
             i = i.coerceAtMost(itemWeights.size - 1)
             val (item, _) = itemWeights.removeAt(i)
             // skip excluded items
-            if (item.asList().any { excluding.contains(it) }) continue
+            if (excluding.contains(item.item)) continue
 
             // if the chosen item is in any item groups, exclude all of those groups
-            excluding.addAll(item.asList())
-            for (group in groups.filter { group -> item.asList().any { group.contains(it) } }) {
+            excluding.add(item.item)
+            for (group in groups.filter { group -> group.contains(item.item) }) {
                 excluding.addAll(group)
             }
 
@@ -135,14 +135,23 @@ data class TierListConfig(
         )
     }
 
+    fun expandName(
+        listName: String,
+    ) : TierListConfig {
+        return this.copy(
+            s = this.s.map { it.copy(listName = listName) }.toSet(),
+            a = this.a.map { it.copy(listName = listName) }.toSet(),
+            b = this.b.map { it.copy(listName = listName) }.toSet(),
+            c = this.c.map { it.copy(listName = listName) }.toSet(),
+            d = this.d.map { it.copy(listName = listName) }.toSet(),
+        )
+    }
+
     private fun expandTags(
         expansionService: TagExpansionService,
         entry: TierListEntry,
     ): List<TierListEntry> {
-        return when (entry) {
-            is TierListEntry.MultiEntry -> emptyList()
-            is TierListEntry.SingleEntry -> expansionService.expandItemTag(entry.item).map { TierListEntry.SingleEntry(it) }
-        }
+        return expansionService.expandItemTag(entry.item).map { TierListEntry(it) }
     }
 
 }

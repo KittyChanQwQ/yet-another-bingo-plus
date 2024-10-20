@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
@@ -10,7 +11,10 @@ import net.minecraft.text.Text
 data class BingoCardOptions(
     var goal: BingoGoal = BingoGoal.Lines(3),
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
-    var tierLists: Map<String, Int> = mapOf("all_items" to 1, "challenge" to 1),
+    var itemFilter: ObjectiveFilterList =
+        ConfigService().config.itemFilters["everything"]
+            ?: ObjectiveFilterList.DEFAULT["everything"]!!,
+    var tierList: String? = null,
 
     // game mode settings
     var isLockoutMode: Boolean = false,
@@ -18,7 +22,7 @@ data class BingoCardOptions(
     var isHiddenItemsMode: Boolean = false,
 ) {
     fun isValid(): Boolean {
-        return itemDistribution.sum() <= 25 && tierLists.isNotEmpty()
+        return itemDistribution.sum() <= 25
     }
 
     fun formatGameMode(): List<StringKey> {

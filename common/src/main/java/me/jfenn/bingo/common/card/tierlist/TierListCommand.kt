@@ -21,42 +21,25 @@ class TierListCommand(
     private val textProvider: TextProvider,
 ) : BingoComponent() {
 
-    private fun IExecutionContext.toggleTierList(listName: String) {
-        val cardViewService = scope.get<CardViewService>()
-        val card = cardViewService.getPlayerCard(player!!)
-        when {
-            card.options.tierLists.contains(listName) -> setTierList(listName, null)
-            else -> setTierList(listName, 1)
-        }
-    }
-
-    private fun IExecutionContext.setTierList(listName: String, weight: Int?) {
+    private fun IExecutionContext.setTierList(listName: String?) {
         val events = scope.get<ScopedEvents>()
         val cardService = scope.get<CardService>()
         val tierListService = scope.get<TierListService>()
         val cardViewService = scope.get<CardViewService>()
         val card = cardViewService.getPlayerCard(player!!)
 
-        val isEnabled = card.options.tierLists.contains(listName)
-        if (!isEnabled && !tierListState.tierLists.keys.contains(listName)) {
+        if (!tierListState.tierLists.keys.contains(listName)) {
             throw IllegalArgumentException("Tier list '${listName}' is not available.")
         }
 
-        if (weight == null && card.options.tierLists.size <= 1) {
-            throw IllegalArgumentException("Tier lists setting must not be empty!")
-        }
-
-        when {
-            weight != null -> card.options.tierLists += (listName to weight)
-            else -> card.options.tierLists -= listName
-        }
+        card.options.tierList = listName
 
         events.onChangeOptions(Unit)
         cardService.generateCard()
         Text.literal("ℹ  ")
             .append(textProvider.string(StringKey.OptionsTierList))
             .append(": ")
-            .append(tierListService.formatTierLists(card.options))
+            .append(tierListService.formatTierList(card.options) ?: Text.literal("null"))
             .formatted(Formatting.AQUA)
             .also { sendFeedback(it) }
     }
@@ -67,25 +50,15 @@ class TierListCommand(
                 requires {
                     hasState(GameState.PREGAME, GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
                 }
+                literal("all") {
+                    executes {
+                        setTierList(null)
+                    }
+                }
                 string("tierlist", { tierListState.tierLists.keys.toList() }) { listNameArg ->
                     executes {
                         val listName = getArgument(listNameArg)
-                        toggleTierList(listName)
-                    }
-
-                    integer("weight", min = 1) { weightArg ->
-                        executes {
-                            val listName = getArgument(listNameArg)
-                            val weight = getArgument(weightArg)
-                            setTierList(listName, weight)
-                        }
-                    }
-
-                    literal("remove") {
-                        executes {
-                            val listName = getArgument(listNameArg)
-                            setTierList(listName, null)
-                        }
+                        setTierList(listName)
                     }
                 }
             }

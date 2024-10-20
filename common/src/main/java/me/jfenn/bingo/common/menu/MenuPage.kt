@@ -77,7 +77,7 @@ fun MenuComponent.registerMenuPage(
                 options = options,
                 permissionGetter = permissionGetter,
             )
-            registerTierLists(
+            registerItemFilters(
                 position = position + Vector3d(0.6, 0.0, 0.0),
                 options = options,
                 permissionGetter = permissionGetter,

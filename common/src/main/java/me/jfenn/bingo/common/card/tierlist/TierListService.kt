@@ -5,7 +5,6 @@ import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.utils.formatTitle
-import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -23,27 +22,11 @@ class TierListService(
         return listName ?: Text.translatableWithFallback("$MOD_ID.tierlist.$key", key.formatTitle())
     }
 
-    fun formatTierLists(options: BingoCardOptions) : MutableText {
-        val lists = options.tierLists
-            .mapNotNull { (name, weight) ->
-                val list = tierListState.tierLists[name] ?: return@mapNotNull null
-                getName(name, list) to weight.coerceAtLeast(1)
-            }
-            .toMap()
-
-        val showPercentage = lists.size > 1
-        val total = lists.values.sum()
-
-        return lists.entries
-            .map { (name, weight) ->
-                when {
-                    showPercentage -> Text.empty()
-                        .append(name)
-                        .append(String.format(" (%.0f%%)", weight * 100f / total))
-                    else -> name
-                }
-            }
-            .joinText()
+    fun formatTierList(options: BingoCardOptions) : MutableText? {
+        return options.tierList?.let { name ->
+            val list = tierListState.tierLists[name] ?: return@let null
+            getName(name, list)
+        }
     }
 
     fun entries() = tierListState.tierLists.entries
