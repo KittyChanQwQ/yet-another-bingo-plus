@@ -10,6 +10,7 @@ import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.team.BingoPlayerProfile
+import net.minecraft.command.CommandSource
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.item.*
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions
@@ -86,6 +87,9 @@ class PlayerHandle(
 
     override val name: String
         get() = player.nameForScoreboard
+
+    override val commandSource: CommandSource
+        get() = player.commandSource
 
     override var fireTicks: Int by player::fireTicks
     override var isOnFire: Boolean

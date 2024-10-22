@@ -3,6 +3,7 @@ package me.jfenn.bingo.api
 import me.jfenn.bingo.api.item.IItemStack
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.team.BingoPlayerProfile
+import net.minecraft.command.CommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import org.joml.Vector3d
@@ -31,9 +32,11 @@ interface IPlayerManager {
 
 interface IPlayerHandle : ILivingEntity {
     val player: ServerPlayerEntity
+    val world: ServerWorld
     val isAlive: Boolean
     val isSpectator: Boolean
     val name: String
+    val commandSource: CommandSource
 
     var fireTicks: Int
     var isOnFire: Boolean

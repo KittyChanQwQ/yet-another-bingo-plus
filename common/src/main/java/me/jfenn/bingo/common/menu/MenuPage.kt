@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoOptions
@@ -22,6 +23,7 @@ fun MenuComponent.registerMenuPage(
     gameService: GameService = koinScope.get(),
     cardService: CardService = koinScope.get(),
     permissionsIntegration: PermissionsIntegration = koinScope.get(),
+    playerManager: IPlayerManager = koinScope.get(),
     configService: ConfigService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
@@ -39,7 +41,7 @@ fun MenuComponent.registerMenuPage(
         }
     )
     val permissionGetter = { player: ServerPlayerEntity ->
-        permissionsIntegration.hasPermission(player, Permission.CONFIGURE_GAME)
+        permissionsIntegration.hasPermission(playerManager.forPlayer(player), Permission.CONFIGURE_GAME)
     }
 
     val pages = listOf(
