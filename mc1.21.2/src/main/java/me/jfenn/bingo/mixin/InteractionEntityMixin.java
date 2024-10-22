@@ -34,6 +34,8 @@ abstract class InteractionEntityMixin extends Entity {
             boolean success = InteractionEntityEvents.Companion.triggerInteract((InteractionEntity) (Object) this, serverPlayer);
 
             if (success) {
+                // For some reason the hand swing is broken in 1.21.2
+                serverPlayer.swingHand(Hand.MAIN_HAND, true);
                 ci.setReturnValue(ActionResult.SUCCESS);
                 ci.cancel();
             }

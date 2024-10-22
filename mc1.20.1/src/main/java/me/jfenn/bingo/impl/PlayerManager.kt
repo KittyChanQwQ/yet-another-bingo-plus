@@ -82,6 +82,9 @@ class PlayerHandle(
         BingoKoin.getScope(player.server)!!.get<IItemStackFactory>()
     }
 
+    override val world: ServerWorld
+        get() = player.serverWorld
+
     override val isAlive: Boolean
         get() = player.isAlive
     override val isSpectator: Boolean
