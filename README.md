@@ -100,10 +100,23 @@ BINGO commands (operator-only):
 
 The very pretty Bingo Card HUD and "Bingo!" button textures were made by [@marceles](https://marceles.carrd.co)!
 
-Spanish translations were contributed by ANDY!
-
 Parts of this mod are inspired from [Extremelyd1/minecraft-bingo](https://github.com/Extremelyd1/minecraft-bingo), the awesome Spigot/Paper version of this gamemode.
 
 The logo design was inspired by [Aikoyori/ProgrammingVTuberLogos](https://github.com/Aikoyori/ProgrammingVTuberLogos)
 
 Vanilla entity/challenge goal textures are from [minecraft-heads.com](https://minecraft-heads.com/)
+
+### Translations
+
+<table>
+<tbody>
+<td>
+
+[![Localized on CrowdIn](https://img.shields.io/badge/Localized_On-Crowdin-373d4c?style=for-the-badge&labelColor=464e62&logoColor=white&logo=Crowdin)](https://crowdin.com/project/yet-another-bingo)
+<br>**Help translate this mod into your language!** All text in this project is available [on CrowdIn](https://crowdin.com/project/yet-another-bingo) for anyone to submit translations.
+
+</td>
+</tbody>
+</table>
+
+Spanish translations were contributed by ANDY!

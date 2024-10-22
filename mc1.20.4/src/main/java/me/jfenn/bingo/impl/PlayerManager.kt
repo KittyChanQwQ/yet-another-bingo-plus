@@ -10,6 +10,7 @@ import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.team.BingoPlayerProfile
+import net.minecraft.command.CommandSource
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.MobEntity
 import net.minecraft.item.BlockItem
@@ -83,6 +84,9 @@ class PlayerHandle(
         BingoKoin.getScope(player.server)!!.get<IItemStackFactory>()
     }
 
+    override val world: ServerWorld
+        get() = player.serverWorld
+
     override val isAlive: Boolean
         get() = player.isAlive
     override val isSpectator: Boolean
@@ -90,6 +94,9 @@ class PlayerHandle(
 
     override val name: String
         get() = player.nameForScoreboard
+
+    override val commandSource: CommandSource
+        get() = player.commandSource
 
     override var fireTicks: Int by player::fireTicks
     override var isOnFire: Boolean

@@ -2,6 +2,8 @@ package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.scope.BingoKoin;
 import me.jfenn.bingo.mixinhandler.PlayerManagerMixinHandler;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.RespawnAnchorBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -11,6 +13,8 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -65,13 +69,30 @@ public abstract class PlayerManagerMixin {
             return;
         }
 
-        // this can be null if the player's previous spawnpoint failed... so it should default to the origin
+        // If the spawnpoint is a respawn anchor, get the current state
+        // (this will be affected by getRespawnTarget)
+        ServerWorld respawnAnchorWorld = server.getWorld(player.getSpawnPointDimension());
+        BlockPos respawnAnchorBlockPos = player.getSpawnPointPosition();
+        BlockState respawnAnchorBlockState = respawnAnchorWorld != null && respawnAnchorBlockPos != null
+                ? respawnAnchorWorld.getBlockState(respawnAnchorBlockPos)
+                : null;
+        if (respawnAnchorBlockState == null || !(respawnAnchorBlockState.getBlock() instanceof RespawnAnchorBlock)) {
+            // Indicates that this is not a respawn anchor block
+            respawnAnchorWorld = null;
+        }
+
+        // target can be null if the player's spawnpoint failed... so it should default to the team spawn
         boolean missingRespawnBlock = false;
         try {
             var target = player.getRespawnTarget(alive, TeleportTarget.NO_OP);
             missingRespawnBlock = target == null || target.missingRespawnBlock();
         } catch (Throwable e) {
             log.error("Exception thrown during PlayerEntity.getRespawnTarget", e);
+        }
+
+        // Reset the respawn anchor to the state captured before getRespawnTarget was called
+        if (respawnAnchorWorld != null) {
+            respawnAnchorWorld.setBlockState(respawnAnchorBlockPos, respawnAnchorBlockState);
         }
 
         // if the targeted spawnpoint is invalid (i.e. a broken bed, or otherwise somewhere that would reset to the world spawn) ...

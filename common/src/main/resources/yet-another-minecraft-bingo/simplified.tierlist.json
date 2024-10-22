@@ -9,6 +9,7 @@
         "minecraft:coal_ore",
         "minecraft:conduit",
         "minecraft:copper_ore",
+        "minecraft:creaking_heart",
         "minecraft:crimson_nylium",
         "minecraft:deepslate_coal_ore",
         "minecraft:deepslate_copper_ore",
@@ -341,6 +342,11 @@
         "minecraft:nether_brick",
         "minecraft:nether_bricks",
         "minecraft:netherrack",
+        "minecraft:pale_hanging_moss",
+        "minecraft:pale_moss_block",
+        "minecraft:pale_oak_log",
+        "minecraft:pale_oak_planks",
+        "minecraft:pale_oak_sapling",
         "minecraft:pointed_dripstone",
         "minecraft:polished_basalt",
         "minecraft:potato",
@@ -381,6 +387,7 @@
         "minecraft:birch_planks",
         "minecraft:birch_sapling",
         "minecraft:bowl",
+        "minecraft:bundle",
         "minecraft:charcoal",
         "minecraft:chest",
         "minecraft:chicken",
@@ -467,6 +474,7 @@
             "minecraft:jungle_log",
             "minecraft:mangrove_log",
             "minecraft:oak_log",
+            "minecraft:pale_oak_log",
             "minecraft:spruce_log"
         ],
         [
@@ -477,6 +485,7 @@
             "minecraft:jungle_planks",
             "minecraft:mangrove_planks",
             "minecraft:oak_planks",
+            "minecraft:pale_oak_planks",
             "minecraft:spruce_planks"
         ],
         [
@@ -486,17 +495,8 @@
             "minecraft:dark_oak_sapling",
             "minecraft:jungle_sapling",
             "minecraft:oak_sapling",
+            "minecraft:pale_oak_sapling",
             "minecraft:spruce_sapling"
-        ],
-        [
-            "minecraft:acacia_leaves",
-            "minecraft:birch_leaves",
-            "minecraft:cherry_leaves",
-            "minecraft:dark_oak_leaves",
-            "minecraft:jungle_leaves",
-            "minecraft:mangrove_leaves",
-            "minecraft:oak_leaves",
-            "minecraft:spruce_leaves"
         ],
         [
             "minecraft:shulker_box",

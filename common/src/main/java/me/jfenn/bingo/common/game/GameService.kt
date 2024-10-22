@@ -65,7 +65,7 @@ class GameService(
         val message = text.string(StringKey.CommandStartJoinATeamMessage)
 
         for (player in playersWithoutATeam) {
-            if (permissions.hasPermission(player.player, Permission.COMMAND_JOIN)) {
+            if (permissions.hasPermission(player, Permission.COMMAND_JOIN)) {
                 player.player.networkHandler.sendPacket(TitleS2CPacket(title))
                 player.player.networkHandler.sendPacket(SubtitleS2CPacket(message))
             }

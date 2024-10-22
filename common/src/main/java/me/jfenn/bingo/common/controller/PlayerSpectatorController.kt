@@ -16,7 +16,6 @@ import net.minecraft.inventory.DoubleInventory
 import net.minecraft.inventory.Inventory
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.world.GameMode
 
 class PlayerSpectatorController(
@@ -29,10 +28,10 @@ class PlayerSpectatorController(
     init {
         events.onUseBlock {
             if (!state.isLobbyMode) return@onUseBlock null
-            val player = it.player as? ServerPlayerEntity ?: return@onUseBlock null
+            val player = it.player
             if (state.state != GameState.PLAYING) return@onUseBlock null
             if (teamService.isPlaying(player)) return@onUseBlock null
-            if (player.interactionManager.gameMode != GameMode.ADVENTURE) return@onUseBlock null
+            if (player.player.interactionManager.gameMode != GameMode.ADVENTURE) return@onUseBlock null
 
             // if the player is spectating a game, do not
             // allow them to modify any inventory
@@ -71,7 +70,7 @@ class PlayerSpectatorController(
                 permissions.hasPermission(player, Permission.SPECTATOR_VIEW_INVENTORY)
                 && inventory != null
             ) {
-                player.openHandledScreen(
+                player.player.openHandledScreen(
                     SimpleNamedScreenHandlerFactory(
                         { syncId, inv, _ ->
                             SpectatorInventoryScreenHandler(
@@ -95,10 +94,10 @@ class PlayerSpectatorController(
 
         events.onUseEntity {
             if (!state.isLobbyMode) return@onUseEntity null
-            val player = it.player as? ServerPlayerEntity ?: return@onUseEntity null
+            val player = it.player
             if (state.state != GameState.PLAYING) return@onUseEntity null
             if (teamService.isPlaying(player)) return@onUseEntity null
-            if (player.interactionManager.gameMode != GameMode.ADVENTURE) return@onUseEntity null
+            if (player.player.interactionManager.gameMode != GameMode.ADVENTURE) return@onUseEntity null
 
             // if the player is spectating a game, do not
             // allow them to modify any inventory
@@ -114,7 +113,7 @@ class PlayerSpectatorController(
                 permissions.hasPermission(player, Permission.SPECTATOR_VIEW_INVENTORY)
                 && inventory != null
             ) {
-                player.openHandledScreen(
+                player.player.openHandledScreen(
                     SimpleNamedScreenHandlerFactory(
                         { syncId, inv, _ ->
                             SpectatorInventoryScreenHandler(
@@ -135,10 +134,10 @@ class PlayerSpectatorController(
 
         events.onAttackEntity {
             if (!state.isLobbyMode) return@onAttackEntity null
-            val player = it.player as? ServerPlayerEntity ?: return@onAttackEntity null
+            val player = it.player
             if (state.state != GameState.PLAYING) return@onAttackEntity null
             if (teamService.isPlaying(player)) return@onAttackEntity null
-            if (player.interactionManager.gameMode != GameMode.ADVENTURE) return@onAttackEntity null
+            if (player.player.interactionManager.gameMode != GameMode.ADVENTURE) return@onAttackEntity null
 
             // if the player is spectating a game, do not
             // allow them to attack any entity

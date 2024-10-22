@@ -120,7 +120,7 @@ class GameOverController(
                 winner = info.winningTeamKey,
                 duration = state.ingameDuration() ?: Duration.ZERO,
                 canSendRestart = server.isDedicated && state.isLobbyMode && permissions.hasPermission(
-                    player.player,
+                    player,
                     Permission.COMMAND_RESTART
                 ),
                 isWinner = isWinner,
