@@ -17,8 +17,10 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable(with = TierListEntry.Serializer::class)
 data class TierListEntry(
     val item: String,
-    val listName: String = "[unknown]"
 ) {
+
+    var listName: String = "[unknown]"
+    var tierLabel: TierLabel? = null
 
     @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
     companion object Serializer : KSerializer<TierListEntry> {

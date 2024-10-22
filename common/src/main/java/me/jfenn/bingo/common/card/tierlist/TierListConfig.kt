@@ -11,6 +11,8 @@ import kotlin.random.Random
 
 @Serializable
 data class TierListConfig(
+    // Contains uncategorized entries
+    val values: Set<TierListEntry> = emptySet(),
     @SerialName("S")
     val s: Set<TierListEntry>,
     @SerialName("A")
@@ -91,6 +93,11 @@ data class TierListConfig(
         val items = getTier(tier)
         val itemWeights = getWeightedSet(items)
 
+        getWeightedSet(values)
+            // divide by 5, since values are placed in each tier
+            .map { (entry, weight) -> entry to weight / 5.0 }
+            .let { itemWeights.addAll(it) }
+
         while (itemWeights.isNotEmpty()) {
             val itemWeightTotal = itemWeights.sumOf { it.second }
             val choice = random.nextDouble(0.0, itemWeightTotal)
@@ -122,29 +129,50 @@ data class TierListConfig(
         }
     }
 
+    fun contains(entry: TierListEntry): Boolean {
+        return values.contains(entry)
+                || s.contains(entry)
+                || a.contains(entry)
+                || b.contains(entry)
+                || c.contains(entry)
+                || d.contains(entry)
+    }
+
+    private fun mapTiers(map: (Set<TierListEntry>, tier: TierLabel?) -> Set<TierListEntry>): TierListConfig {
+        return this.copy(
+            values = map(this.values, null),
+            s = map(this.s, TierLabel.S),
+            a = map(this.a, TierLabel.A),
+            b = map(this.b, TierLabel.B),
+            c = map(this.c, TierLabel.C),
+            d = map(this.d, TierLabel.D),
+        )
+    }
+
     fun expandTags(
         expansionService: TagExpansionService,
     ) : TierListConfig {
-        return this.copy(
-            s = this.s.flatMap { expandTags(expansionService, it) }.toSet(),
-            a = this.a.flatMap { expandTags(expansionService, it) }.toSet(),
-            b = this.b.flatMap { expandTags(expansionService, it) }.toSet(),
-            c = this.c.flatMap { expandTags(expansionService, it) }.toSet(),
-            d = this.d.flatMap { expandTags(expansionService, it) }.toSet(),
-            groups = this.groups.map { expansionService.expandItemTags(it) },
-        )
+        return this
+            .mapTiers { tier, _ ->
+                tier.flatMap { expandTags(expansionService, it) }.toSet()
+            }
+            .copy(
+                groups = this.groups.map { expansionService.expandItemTags(it) }
+            )
     }
 
     fun expandName(
         listName: String,
     ) : TierListConfig {
-        return this.copy(
-            s = this.s.map { it.copy(listName = listName) }.toSet(),
-            a = this.a.map { it.copy(listName = listName) }.toSet(),
-            b = this.b.map { it.copy(listName = listName) }.toSet(),
-            c = this.c.map { it.copy(listName = listName) }.toSet(),
-            d = this.d.map { it.copy(listName = listName) }.toSet(),
-        )
+        return this
+            .mapTiers { tier, label ->
+                tier
+                    .onEach {
+                        it.listName = listName
+                        it.tierLabel = label
+                    }
+                    .toSet()
+            }
     }
 
     private fun expandTags(
