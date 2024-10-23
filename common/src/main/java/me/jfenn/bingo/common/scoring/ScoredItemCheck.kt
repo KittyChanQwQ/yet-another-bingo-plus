@@ -171,7 +171,7 @@ class ScoredItemCheck(
                 }
                 val message = text.string(StringKey.CommandStartWillImmediatelyEnd, cardGoal, cardScore).formatted(Formatting.RED)
                 for (player in playerManager.getPlayers()) {
-                    player.player.sendMessage(message)
+                    player.sendMessage(message)
                 }
 
                 log.error("[ScoredItemCheck] Ending the game because a card was completed immediately")

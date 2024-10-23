@@ -150,7 +150,7 @@ class StatsLobbyController(
         playerHead.setSkullOwner(player)
         armorStand.equipStack(IArmorStandEntity.EquipmentSlot.HEAD, playerHead)
 
-        nameEntity?.value = Text.literal(playerManager.forPlayer(player).name)
+        nameEntity?.value = Text.literal(playerManager.forPlayer(player).playerName)
 
         val favoriteTeam = BingoTeam.TEAM_BLOCKS.values
             .find { it.key == summary.favoriteTeam }

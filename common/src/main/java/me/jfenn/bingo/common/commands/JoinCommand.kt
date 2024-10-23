@@ -73,7 +73,7 @@ class JoinCommand(
             sendFeedback(
                 textProvider.string(
                     StringKey.CommandJoinSuccess,
-                    player.name,
+                    player.playerName,
                     team.getName(textProvider),
                 )
             )

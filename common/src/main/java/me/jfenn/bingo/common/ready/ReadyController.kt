@@ -147,7 +147,7 @@ class ReadyController(
                             !isPlayerReady -> text.string(StringKey.LobbyStartingInRunCommand, packet.remainingDuration.formatHHMMSS())
                             else -> text.string(StringKey.LobbyStartingInReady, packet.remainingDuration.formatHHMMSS(), packet.readyPlayers, packet.totalPlayers)
                         }
-                        player.player.sendMessage(message, true)
+                        player.sendHotbarMessage(message)
                     }
                 }
             }

@@ -34,7 +34,7 @@ class PermissionsIntegrationImpl(
     override fun hasPermission(player: IPlayerHandle, key: PermissionKey): Boolean {
         val fallback = when (key.default) {
             PermissionDefault.ALLOW -> true
-            PermissionDefault.OPERATORS -> player.player.server.isSingleplayer || player.player.hasPermissionLevel(2)
+            PermissionDefault.OPERATORS -> player.player.server.isSingleplayer || player.hasPermissionLevel(2)
             PermissionDefault.DENY -> false
         }
         return try {

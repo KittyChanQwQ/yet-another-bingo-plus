@@ -67,7 +67,7 @@ class TeamService(
 
         teamManager.setPlayerTeam(player.player, createTeam(team))
         team.players.add(playerProfile)
-        player.player.sendMessage(
+        player.sendMessage(
             textProvider.string(StringKey.LobbyTeamChanged, team.getName(textProvider))
                 .formatted(Formatting.YELLOW)
         )

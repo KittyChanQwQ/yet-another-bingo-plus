@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.spawn
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.api.IExecutors
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.IServerWorldFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -10,7 +11,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
@@ -26,9 +26,9 @@ class SpawnPreloadingController(
     private val state: BingoState,
     private val config: BingoConfig,
     private val spawnService: SpawnService,
-    private val server: MinecraftServer,
     private val serverWorldFactory: IServerWorldFactory,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
+    private val playerManager: IPlayerManager,
     private val text: TextProvider,
     private val log: Logger,
 ) : BingoComponent() {
@@ -103,8 +103,8 @@ class SpawnPreloadingController(
                 .append(text.string(StringKey.LobbyLoadingTerrain))
                 .append(" $percentage ($doneCount/${chunkFutureList.size})")
 
-            for (player in server.playerManager.playerList) {
-                player.sendMessage(message, true)
+            for (player in playerManager.getPlayers()) {
+                player.sendHotbarMessage(message)
             }
         }
     }

@@ -44,7 +44,7 @@ class ScoreUpdateService(
             packetManager.scoreMessageV1.send(player.player, packet) -> true
             else -> {
                 if (fallback != null) {
-                    player.player.sendMessage(fallback, false)
+                    player.sendMessage(fallback)
                 }
                 false
             }

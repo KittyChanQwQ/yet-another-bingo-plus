@@ -6,8 +6,8 @@ import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.controller.GameRuleController
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
@@ -17,6 +17,7 @@ fun MenuComponent.registerFeatures(
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     text: TextProvider = koinScope.get(),
     gameRuleController: GameRuleController = koinScope.get(),
+    server: MinecraftServer = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY) {
         pos = position
@@ -42,7 +43,7 @@ fun MenuComponent.registerFeatures(
         toggleProp = propertyRef(options::isKeepInventory),
         permissionGetter = permissionGetter,
     ) {
-        gameRuleController.writeToServer(it.server, options)
+        gameRuleController.writeToServer(server, options)
     }
 
     registerToggleButton(
@@ -65,6 +66,6 @@ fun MenuComponent.registerFeatures(
         toggleProp = propertyRef(options::isPvpEnabled),
         permissionGetter = permissionGetter,
     ) {
-        gameRuleController.writeToServer(it.server, options)
+        gameRuleController.writeToServer(server, options)
     }
 }

@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.team.BingoPlayerProfile
 import net.minecraft.command.CommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.text.Text
 import org.joml.Vector3d
 import java.util.*
 
@@ -35,7 +36,7 @@ interface IPlayerHandle : ILivingEntity {
     val world: ServerWorld
     val isAlive: Boolean
     val isSpectator: Boolean
-    val name: String
+    val playerName: String
     val commandSource: CommandSource
 
     var fireTicks: Int
@@ -45,6 +46,7 @@ interface IPlayerHandle : ILivingEntity {
     var saturationLevel: Float
     val maxSaturationLevel: Float get() = 5f
     var exhaustion: Float
+    val isSneaking: Boolean
 
     /**
      * vaguely determine if the held item will be used or not
@@ -72,6 +74,10 @@ interface IPlayerHandle : ILivingEntity {
 
     fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float)
     fun setSpawnPoint(world: ServerWorld, spawn: BlockPosition, angle: Float, forced: Boolean, sendMessage: Boolean)
+
+    fun hasPermissionLevel(level: Int): Boolean
+    fun sendMessage(message: Text)
+    fun sendHotbarMessage(message: Text)
 }
 
 enum class PlayerSoundEvent {
