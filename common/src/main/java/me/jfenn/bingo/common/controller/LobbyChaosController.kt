@@ -35,7 +35,7 @@ class LobbyChaosController(
         events.onPlayerJoin { player ->
             if (!state.isLobbyMode) return@onPlayerJoin
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
-                player.player.sendMessage(textProvider.string(StringKey.LobbySoundsMuted))
+                player.sendMessage(textProvider.string(StringKey.LobbySoundsMuted))
             }
         }
 
@@ -46,7 +46,7 @@ class LobbyChaosController(
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
                 val blockState = player.player.world.getBlockState(it.hit.blockPos)
                 if (blockState.block in hitBlockSet) {
-                    player.player.sendMessage(textProvider.string(StringKey.LobbySoundsMuted), true)
+                    player.sendHotbarMessage(textProvider.string(StringKey.LobbySoundsMuted))
                 }
             }
 

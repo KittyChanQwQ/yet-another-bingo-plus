@@ -3,6 +3,8 @@ package me.jfenn.bingo.common.commands
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.IScoreboardManager
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
@@ -10,9 +12,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.koin.core.component.inject
@@ -23,18 +23,18 @@ class ChatCommand : BaseCommand() {
 
     companion object {
         fun sendTeamMessage(
-            player: ServerPlayerEntity,
+            player: IPlayerHandle,
             team: BingoTeam,
             message: Text,
-            server: MinecraftServer = player.server,
+            playerManager: IPlayerManager,
         ) {
             val messageText = Text.empty()
-                .append(Text.empty().append("TEAM ").append(player.displayName).formatted(team.formatting))
+                .append(Text.empty().append("TEAM ").append(player.playerName).formatted(team.formatting))
                 .append(Text.literal(": "))
                 .append(message)
 
             // broadcast message to team
-            server.playerManager.playerList
+            playerManager.getPlayers()
                 .filter { team.includesPlayer(it) }
                 .forEach { it.sendMessage(messageText) }
         }
@@ -81,11 +81,12 @@ class ChatCommand : BaseCommand() {
             val scope = BingoKoin.getScope(player.server) ?: return@register true
             val state = scope.get<BingoState>()
             val teamService = scope.get<TeamService>()
+            val playerManager = scope.get<IPlayerManager>()
 
             if (state.state != GameState.PLAYING) return@register true
             val team = teamService.getPlayerTeam(player) ?: return@register true
 
-            sendTeamMessage(player, team, message.content)
+            sendTeamMessage(playerManager.forPlayer(player), team, message.content, playerManager)
 
             false
         }

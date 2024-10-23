@@ -13,7 +13,7 @@ data class BingoPlayerProfile(
         fun fromPlayer(playerEntity: IPlayerHandle): BingoPlayerProfile {
             return BingoPlayerProfile(
                 uuid = playerEntity.uuid,
-                name = playerEntity.name,
+                name = playerEntity.playerName,
             )
         }
     }

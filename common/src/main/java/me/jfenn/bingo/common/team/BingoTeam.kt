@@ -75,7 +75,9 @@ data class BingoTeam(
 
     fun isPlaying() = !isWinner()
 
-    fun includesPlayer(player: IPlayerHandle) = includesPlayer(player.player)
+    fun includesPlayer(player: IPlayerHandle): Boolean {
+        return players.any { it.uuid == player.uuid }
+    }
 
     fun includesPlayer(player: ServerPlayerEntity): Boolean {
         return players.any { it.uuid == player.uuid }

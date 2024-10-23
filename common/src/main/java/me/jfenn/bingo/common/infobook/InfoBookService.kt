@@ -216,7 +216,7 @@ class InfoBookService(
             stack.addCustomTag(NBT_BINGO_KEEP)
 
         stack.title = text.raw(StringKey.FullName)
-        stack.author = player.name
+        stack.author = player.playerName
         updateBookItem(player, stack)
         return stack
     }

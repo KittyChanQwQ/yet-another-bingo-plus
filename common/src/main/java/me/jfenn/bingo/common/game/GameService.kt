@@ -83,7 +83,7 @@ class GameService(
         if (playersWithoutATeam.isNotEmpty() && !allowSpectators) {
             // If there's more than one player, teams need to be set up manually!
             if (playerManager.getPlayers().size > 1) {
-                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeams, playersWithoutATeam.joinToString { it.name }))
+                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeams, playersWithoutATeam.joinToString { it.playerName }))
                 sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeamsHint))
                 notifyPlayersMissingTeams(playersWithoutATeam)
                 return false

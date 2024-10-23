@@ -63,7 +63,7 @@ class BingoLobbyCommand(
                             if (readWarning != null && readWarning > Clock.System.now() - 5.minutes) {
                                 sendMessage(text.string(StringKey.CommandLobbyRestarting))
 
-                                log.info("[BingoLobbyCommand] ${player.name} used '/bingo lobby confirm' and has accepted the warnings.")
+                                log.info("[BingoLobbyCommand] ${player.playerName} used '/bingo lobby confirm' and has accepted the warnings.")
 
                                 val configService = scope.get<ConfigService>()
                                 configService.writeConfig(configService.config.apply {

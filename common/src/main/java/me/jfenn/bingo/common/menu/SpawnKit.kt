@@ -46,7 +46,7 @@ fun MenuComponent.registerSpawnKit(
         text = text.string(StringKey.OptionsSpawnKitEdit),
         permissionGetter = permissionGetter,
     ) { player ->
-        player.openHandledScreen(
+        player.player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
                 { syncId, inv, _ ->
                     InventoryScreenHandler(syncId, options.playerKitItems.flatMap { it.toItemStacks(itemStackFactory) }, inv).apply {
@@ -78,7 +78,7 @@ fun MenuComponent.registerSpawnKit(
         text = text.string(StringKey.OptionsSpawnKitEdit),
         permissionGetter = permissionGetter,
     ) { player ->
-        player.openHandledScreen(
+        player.player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
                 { syncId, inv, _ ->
                     InventoryScreenHandler(syncId, options.teamKitItems.flatMap { it.toItemStacks(itemStackFactory) }, inv).apply {

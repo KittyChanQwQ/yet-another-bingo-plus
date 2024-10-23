@@ -24,6 +24,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.text.Text
 import net.minecraft.util.UseAction
 import net.minecraft.util.hit.HitResult
 import org.joml.Vector3d
@@ -90,7 +91,7 @@ class PlayerHandle(
     override val isSpectator: Boolean
         get() = player.isSpectator
 
-    override val name: String
+    override val playerName: String
         get() = player.entityName
 
     override val commandSource: CommandSource
@@ -106,6 +107,21 @@ class PlayerHandle(
     override var foodLevel: Int by player.hungerManager::foodLevel
     override var saturationLevel: Float by player.hungerManager::saturationLevel
     override var exhaustion: Float by player.hungerManager::exhaustion
+
+    override val isSneaking: Boolean
+        get() = player.isSneaking
+
+    override fun sendMessage(message: Text) {
+        player.sendMessage(message)
+    }
+
+    override fun sendHotbarMessage(message: Text) {
+        player.sendMessage(message, true)
+    }
+
+    override fun hasPermissionLevel(level: Int): Boolean {
+        return player.hasPermissionLevel(level)
+    }
 
     override fun canUseItem(stack: IItemStack): Boolean {
         val itemStack: ItemStack = stack.stack

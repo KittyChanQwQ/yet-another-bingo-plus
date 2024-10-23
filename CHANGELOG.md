@@ -20,6 +20,8 @@
 
 - Fixed respawn anchor using two charges at once ([#110](https://gitlab.com/horrific-tweaks/bingo/-/issues/110))
 
+- Fixed various errors with the 1.21.2 build
+
 ### Translations
 
 - Updates to Spanish and Chinese Simplified translations by SrMaster_ and vvcDaDa!
