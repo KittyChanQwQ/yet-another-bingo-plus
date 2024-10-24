@@ -71,6 +71,9 @@ class VoiceGroupController(
 
     init {
         events.onStateChange {
+            // reset usingCombinedGroup on state change or between rounds
+            usingCombinedGroup = null
+
             val playersToUpdate = when {
                 state.isLobbyMode -> playerManager.getPlayers()
                 else -> playerManager.getPlayers().filter { teamService.isPlaying(it) }
