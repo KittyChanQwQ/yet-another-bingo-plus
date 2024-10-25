@@ -71,6 +71,7 @@ val commonModule = module {
     single { getKoin() }
     single { LoggerFactory.getLogger(MOD_ID) }
     singleOf(::MigrationHandler)
+    singleOf(::MapColors)
 
     singleOf(::ConfigService)
     single { get<ConfigService>().config }
@@ -227,6 +228,7 @@ val commonServerModule = module {
 }
 
 fun Koin.commonInit() {
+    get<MapColors>()
     get<ServerDatapackManager>()
     get<EventManager>()
     get<ScopeManager>()
