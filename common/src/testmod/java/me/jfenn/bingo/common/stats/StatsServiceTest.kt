@@ -297,7 +297,6 @@ class StatsServiceTest : BaseGameTest() {
                 hostId = hostId,
             ),
             emptyList(),
-            isSingleplayer = false,
         )
 
         // The "best time" should be 3 minutes
@@ -321,7 +320,6 @@ class StatsServiceTest : BaseGameTest() {
                 hostId = hostId,
             ),
             emptyList(),
-            isSingleplayer = false,
         )
 
         // The "best time" should now be 2 minutes
@@ -331,10 +329,73 @@ class StatsServiceTest : BaseGameTest() {
     }
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    fun updateBestStats_DoesNotMixSingleplayer(context: TestContext) {
+        val db = connectionFactory.create()
+        val hostId = UUID.fromString("664fb41c-ec4c-4f9a-b8e0-2acb41accc29")
+        val service = createStatsService(db, hostId = hostId)
+
+        val options = BingoOptions()
+
+        // Insert a singleplayer game with duration=3 mins
+        val gameOneId = UUID.fromString("02f05fe4-a12f-4add-bb34-d4ad943059e6")
+        val gameOne = GameInfo(
+            id = gameOneId,
+            bingoOptions = "options1",
+            bingoOptionsHash = options.getShaHash(),
+            startedAt = Instant.DISTANT_PAST,
+            endedAt = Instant.DISTANT_PAST,
+            duration = 3.minutes,
+            playerCount = 1,
+            isDraw = false,
+            isForfeit = false,
+            hostId = hostId,
+        )
+        service.insertGame(gameOne, emptyList(), emptyList())
+        service.updateBestStats(gameOne, emptyList())
+
+        // The "best time" should be 3 minutes
+        assertThat(
+            service.getBestTime(options, false)
+        ).isEqualTo(3.minutes)
+        assertThat(
+            service.getBestTime(options, true)
+        ).isEqualTo(3.minutes)
+
+        // Insert a MULTIPLAYER game with duration=2 mins
+        val gameTwoId = UUID.fromString("a3301200-95be-4207-a784-34beb02f6644")
+        val gameTwo = GameInfo(
+            id = gameTwoId,
+            bingoOptions = "options1",
+            bingoOptionsHash = options.getShaHash(),
+            startedAt = Instant.DISTANT_PAST,
+            endedAt = Instant.DISTANT_PAST,
+            duration = 2.minutes,
+            playerCount = 5,
+            isDraw = false,
+            isForfeit = false,
+            hostId = hostId,
+        )
+        service.insertGame(gameTwo, emptyList(), emptyList())
+        service.updateBestStats(gameTwo, emptyList())
+
+        // The multiplayer "best time" should be 2 minutes
+        assertThat(
+            service.getBestTime(options, false)
+        ).isEqualTo(2.minutes)
+        // However, the singleplayer best time should still be 3 minutes
+        assertThat(
+            service.getBestTime(options, true)
+        ).isEqualTo(3.minutes)
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun updateBestStats_DoesNotMixHosts(context: TestContext) {
         val db = connectionFactory.create()
+        // Create two different stats services, with different hostIds
         val hostId = UUID.fromString("608714c6-8520-4ab1-aba7-20ad5a3f6da7")
+        val hostId2 = UUID.fromString("1f18ec8e-3c5d-4754-9802-3538706b11c0")
         val service = createStatsService(db, hostId = hostId)
+        val service2 = createStatsService(db, hostId = hostId2)
 
         val options = BingoOptions()
 
@@ -354,7 +415,6 @@ class StatsServiceTest : BaseGameTest() {
                 hostId = hostId,
             ),
             emptyList(),
-            isSingleplayer = false,
         )
 
         // The "best time" should be 3 minutes
@@ -363,9 +423,8 @@ class StatsServiceTest : BaseGameTest() {
         ).isEqualTo(3.minutes)
 
         // Insert a game with duration=2 mins, but from a different hostId
-        val hostId2 = UUID.fromString("1f18ec8e-3c5d-4754-9802-3538706b11c0")
         val gameTwoId = UUID.fromString("a3301200-95be-4207-a784-34beb02f6644")
-        service.updateBestStats(
+        service2.updateBestStats(
             GameInfo(
                 id = gameTwoId,
                 bingoOptions = "options1",
@@ -379,13 +438,17 @@ class StatsServiceTest : BaseGameTest() {
                 hostId = hostId2,
             ),
             emptyList(),
-            isSingleplayer = false,
         )
 
         // The "best time" should still be 3 minutes
         assertThat(
             service.getBestTime(options, false)
         ).isEqualTo(3.minutes)
+
+        // The "best time" from service2 should be 2 minutes
+        assertThat(
+            service2.getBestTime(options, false)
+        ).isEqualTo(2.minutes)
     }
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
@@ -412,7 +475,6 @@ class StatsServiceTest : BaseGameTest() {
                 hostId = hostId,
             ),
             emptyList(),
-            isSingleplayer = false,
         )
 
         // The "best time" should be 3 minutes
@@ -436,7 +498,6 @@ class StatsServiceTest : BaseGameTest() {
                 hostId = hostId,
             ),
             emptyList(),
-            isSingleplayer = false,
         )
 
         // The "best time" should still be 3 minutes
