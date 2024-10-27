@@ -46,6 +46,7 @@ class ClientPacketEvents(
     val tooltipV1 = clientNetworking.registerS2C(TooltipPacket.V1)
 
     val readyUpdateV1 = clientNetworking.registerS2C(ReadyUpdatePacket.V1)
+    val readyUpdateV2 = clientNetworking.registerS2C(ReadyUpdatePacket.V2)
     val readySetV1 = clientNetworking.registerC2S(SetReadyPacket.V1)
 
     val sendPlayerSettingsV1 = clientNetworking.registerC2S(PlayerSettings.V1_C2S)

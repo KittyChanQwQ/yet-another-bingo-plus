@@ -269,6 +269,9 @@ class BingoHudController(
         packetEvents.readyUpdateV1.onPacket {
             state.ready = it.packet
         }
+        packetEvents.readyUpdateV2.onPacket {
+            state.ready = it.packet
+        }
 
         packetEvents.tooltipV1.onPacket {
             state.tooltip = it.packet
