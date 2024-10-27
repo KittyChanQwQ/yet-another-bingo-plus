@@ -4,3 +4,4 @@
 - Fixed custom datapack objectives not using display data for `"type": "advancement"`
 - Edited some game menu text to clarify options
 - Small adjustments to the "Challenge" tier list
+- Fixed some vanilla map images rendering weirdly
