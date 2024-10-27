@@ -145,12 +145,17 @@ class AdvancementObjectiveManager(
                     )
                     player.uuid to capture
                 }
+                .let {
+                    when {
+                        objective.data.permanent -> it + objective.playersHolding
+                        else -> it
+                    }
+                }
 
             val players = objectiveService.getPlayers(
                 card = card,
                 playersHolding = playersHolding,
                 players = objective.players,
-                shouldRetainCaptures = false
             )
 
             val teams = objectiveService.getTeams(

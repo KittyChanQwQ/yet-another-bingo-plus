@@ -137,6 +137,12 @@ class StatsObjectiveManager(
                     )
                     player.uuid to capture
                 }
+                .let {
+                    when {
+                        objective.data.permanent -> it + objective.playersHolding
+                        else -> it
+                    }
+                }
 
             val players = objectiveService.getPlayers(
                 card = card,

@@ -74,6 +74,12 @@ class OneOfObjectiveManager(
                 .flatMap { it.playersHolding.entries }
                 .groupBy { it.key }
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
+                .let {
+                    when {
+                        objective.data.permanent -> it + objective.playersHolding
+                        else -> it
+                    }
+                }
 
             val players = objectiveService.getPlayers(
                 card = card,
