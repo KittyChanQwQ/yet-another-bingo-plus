@@ -1,7 +1,10 @@
 {
   "type": "item",
   "display": {
-    "name": "Damaged Wooden Hoe"
+    "name": {
+      "translate": "bingo.objective.challenge.nbt_damaged_wooden_hoe",
+      "fallback": "Damaged Wooden Hoe"
+    }
   },
   "item": "minecraft:wooden_hoe",
   "nbt": "{Damage:58}",

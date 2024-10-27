@@ -1,7 +1,10 @@
 {
   "type": "item",
   "display": {
-    "name": "Damaged Wooden Sword"
+    "name": {
+      "translate": "bingo.objective.challenge.nbt_damaged_wooden_sword",
+      "fallback": "Damaged Wooden Sword"
+    }
   },
   "item": "minecraft:wooden_sword",
   "nbt": "{Damage:58}",

@@ -2,7 +2,10 @@
   "type": "stats",
   "display": {
     "item": "minecraft:red_bed",
-    "name": "Never Sleep in Bed",
+    "name": {
+      "translate": "bingo.objective.challenge.never_sleep_in_bed",
+      "fallback": "Never Sleep in Bed"
+    },
     "decoration": "FORBIDDEN"
   },
   "statType": "minecraft:custom",

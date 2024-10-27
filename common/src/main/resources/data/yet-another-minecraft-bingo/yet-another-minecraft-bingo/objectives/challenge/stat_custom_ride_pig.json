@@ -2,7 +2,11 @@
   "type": "stats",
   "display": {
     "item": "minecraft:carrot_on_a_stick",
-    "name": "Ride a Pig for %min%cm"
+    "name": {
+      "translate": "bingo.objective.challenge.stat_custom_ride_pig",
+      "with": ["%min%"],
+      "fallback": "Ride a Pig for %min%cm"
+    }
   },
   "statType": "minecraft:custom",
   "statName": "minecraft:pig_one_cm",
