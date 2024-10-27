@@ -1,4 +1,6 @@
 ### Bugs Squashed:
 
-- Prevent duplicate score messages in some scenarios involving 'End Game when Complete'
-- Fixed blue/red colors being swapped on the 1.21.2+ vanilla map
+- Fixed a crash caused by recording "best time" stats with a different hostId in config.json
+- Fixed custom datapack objectives not using display data for `"type": "advancement"`
+- Edited some game menu text to clarify options
+- Small adjustments to the "Challenge" tier list
