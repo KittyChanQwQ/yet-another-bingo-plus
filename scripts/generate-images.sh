@@ -62,7 +62,7 @@ function mask_texture {
   # mask the image with ImageMagick, and write to the output dir
   # https://stackoverflow.com/a/22417663
   # convert $1 \( $2 \) -compose CopyOpacity -composite PNG32:$3
-  convert $1 \( $2 \) -compose multiply -channel rgba -composite PNG32:$3
+  convert $1 -alpha on \( $2 \) -compose multiply -channel rgba -composite PNG32:$3
 }
 
 # Apply a color tint to the texture identifier before writing it to the output dir
