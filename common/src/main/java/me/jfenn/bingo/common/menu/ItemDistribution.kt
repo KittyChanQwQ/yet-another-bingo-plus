@@ -25,9 +25,12 @@ fun MenuComponent.registerItemDistribution(
         i: Int,
         tier: TierLabel,
     ) {
+        val tooltip = buildTooltip(tier.string, tier.formatting)
+
         registerButton(
             position = position.add(i*TIER_WIDTH + TIER_OFFSET, -MENU_ITEM_OFFSET, 0.0, Vector3d()),
             text = Text.literal("+"),
+            tooltip = tooltip,
             width = TIER_WIDTH.toFloat(),
             permissionGetter = permissionGetter,
         ) {
@@ -39,6 +42,7 @@ fun MenuComponent.registerItemDistribution(
         registerButton(
             position = position.add(i*TIER_WIDTH + TIER_OFFSET, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0, Vector3d()),
             text = Text.literal("-"),
+            tooltip = tooltip,
             width = TIER_WIDTH.toFloat(),
             permissionGetter = permissionGetter,
         ) {

@@ -15,6 +15,7 @@ fun MenuComponent.registerNumberInput(
     maxValueProp: Property<Int>,
     step: Int = 1,
     format: (Int) -> Text = { Text.literal(it.toString()) },
+    tooltip: List<Text>? = null,
     isVisible: () -> Boolean = { true },
     permissionGetter: (ServerPlayerEntity) -> Boolean,
 ) {
@@ -28,6 +29,7 @@ fun MenuComponent.registerNumberInput(
         textProp = computedProperty {
             Text.literal("+").takeIf { isVisible() } ?: Text.empty()
         },
+        tooltip = tooltip,
         permissionGetter = permissionGetter,
     ) {
         value = (value + step).coerceIn(minValue, maxValue)
@@ -40,6 +42,7 @@ fun MenuComponent.registerNumberInput(
         textProp = computedProperty {
             Text.literal("-").takeIf { isVisible() } ?: Text.empty()
         },
+        tooltip = tooltip,
         permissionGetter = permissionGetter,
     ) {
         value = (value - step).coerceIn(minValue, maxValue)
