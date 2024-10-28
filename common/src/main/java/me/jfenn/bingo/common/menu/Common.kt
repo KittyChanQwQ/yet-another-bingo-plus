@@ -131,11 +131,11 @@ open class MenuComponent(
     }
 }
 
-fun MenuComponent.buildTooltip(title: StringKey): List<Text> {
+fun MenuComponent.buildTooltip(title: StringKey, formatting: Formatting = Formatting.GREEN): List<Text> {
     val text = koinScope.get<TextProvider>()
     val description = StringKey.entries.find { it.key == "${title.key}.tooltip" }!!
     return buildList {
-        add(text.string(title).formatted(Formatting.GREEN))
+        add(text.string(title).formatted(formatting))
         add(text.string(description))
     }
 }

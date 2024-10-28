@@ -1,7 +1,10 @@
 {
   "type": "all_of",
   "display": {
-    "name": "All Wooden Tools",
+    "name": {
+      "translate": "bingo.objective.challenge.all_wooden_tools",
+      "fallback": "All Wooden Tools"
+    },
     "item": "minecraft:wooden_pickaxe"
   },
   "objectives": [

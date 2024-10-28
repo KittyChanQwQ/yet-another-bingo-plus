@@ -1,7 +1,10 @@
 {
   "type": "all_of",
   "display": {
-    "name": "All Dyes",
+    "name": {
+      "translate": "bingo.objective.challenge.all_dyes",
+      "fallback": "All Dyes"
+    },
     "item": "minecraft:red_dye"
   },
   "objectives": [

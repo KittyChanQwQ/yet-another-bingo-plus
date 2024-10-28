@@ -2,7 +2,11 @@
   "type": "stats",
   "display": {
     "item": "minecraft:warped_fungus_on_a_stick",
-    "name": "Ride a Strider for %min%cm"
+    "name": {
+      "translate": "bingo.objective.challenge.stat_custom_ride_strider",
+      "with": ["%min%"],
+      "fallback": "Ride a Strider for %min%cm"
+    }
   },
   "statType": "minecraft:custom",
   "statName": "minecraft:strider_one_cm",

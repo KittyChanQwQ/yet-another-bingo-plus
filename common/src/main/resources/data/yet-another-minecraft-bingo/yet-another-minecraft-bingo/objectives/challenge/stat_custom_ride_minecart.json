@@ -2,7 +2,11 @@
   "type": "stats",
   "display": {
     "item": "minecraft:minecart",
-    "name": "Ride a Minecart for %min%cm"
+    "name": {
+      "translate": "bingo.objective.challenge.stat_custom_ride_minecart",
+      "with": ["%min%"],
+      "fallback": "Ride a Minecart for %min%cm"
+    }
   },
   "statType": "minecraft:custom",
   "statName": "minecraft:minecart_one_cm",

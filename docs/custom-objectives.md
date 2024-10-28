@@ -29,10 +29,10 @@ To achieve this, you can place custom `.json` objectives in a datapack, under
 
 ```json [tierlists / my_cool_new_list.tierlist.json]
 {
-  "S": [...],
-  "A": [...],
-  "B": [...],
-  "C": [...],
+  "S": [],
+  "A": [],
+  "B": [],
+  "C": [],
   "D": [
     "mynamespace:get_three_sticks"
   ]
@@ -69,6 +69,7 @@ Tracks when an item enters the player's inventory.
 - `"nbt": "{}"`: Sets pre-1.20.6 NBT data on the item
 - `"components": {}`: Sets post-1.20.6 JSON-encoded [data components](https://minecraft.wiki/w/Data_component_format#List_of_components) on the item
   - `"minecraft:enchantments": {"levels":{"mending":1}}`
+- `"permanent": false`: Whether the objective is permanently scored once obtained. If true, the objective will remain scored even if Inventory mode is enabled.
 
 ### Advancements
 
@@ -97,6 +98,7 @@ logic written in a datapack.
 - [`"min": <number-source>`](#number-source): The minimum scoreboard value required to earn this objective (default: 1)
 - [`"max": <number-source>`](#number-source): The maximum scoreboard value required to keep this objective (default: unset)
 - `"relative": false`: Measures the increase in this scoreboard since the start of the game, rather than its actual value. (default: false)
+- `"permanent": false`: Whether the objective is permanently scored once obtained.
 
 ::: info
 If your scoreboard represents a statistic/counter, using `"relative": true` means that you can avoid resetting its value when the game starts. The game will track its change in value automatically.
@@ -110,6 +112,7 @@ Tracks if a player obtains any of the listed objectives.
 
 - `"type": "one_of"`
 - `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player may obtain any of these to complete this objective.
+- `"permanent": false`: Whether the objective is permanently scored once obtained. If true, the objective will remain scored even if Inventory mode is enabled.
 
 ### All Of ...
 
@@ -117,6 +120,7 @@ Tracks if a player has obtained _all_ the listed objectives.
 
 - `"type": "all_of"`
 - `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player must obtain all of these to complete this objective.
+- `"permanent": false`: Whether the objective is permanently scored once obtained. If true, the objective will remain scored even if Inventory mode is enabled.
 
 ### Inverse / Never Obtain ...
 
@@ -124,6 +128,7 @@ Tracks if a player has _never_ obtained an objective. For example, this goal wil
 
 - `"type": "inverse"`
 - `"objective": "minecraft:wheat_seeds"`: The objective that should be inverted.
+- `"permanent": true`: Whether the objective is permanently scored once obtained. If false, this objective can be re-gained by dropping the `wheat_seeds`.
 
 ### Opponent Obtains ...
 
@@ -131,6 +136,7 @@ Tracks if any opposing team obtains an objective. For example, when a team obtai
 
 - `"type": "opponent"`
 - `"objective": "minecraft:wheat_seeds"`: The objective that should be tracked.
+- `"permanent": true`: Whether the objective is permanently scored once obtained. If false, this objective would be lost when the opponent drops their `wheat_seeds`.
 
 ## Number Source
 

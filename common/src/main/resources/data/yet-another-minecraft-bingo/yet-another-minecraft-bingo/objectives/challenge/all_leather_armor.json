@@ -1,7 +1,10 @@
 {
   "type": "all_of",
   "display": {
-    "name": "All Leather Armor",
+    "name": {
+      "translate": "bingo.objective.challenge.all_leather_armor",
+      "fallback": "All Leather Armor"
+    },
     "item": "minecraft:leather_chestplate"
   },
   "objectives": [

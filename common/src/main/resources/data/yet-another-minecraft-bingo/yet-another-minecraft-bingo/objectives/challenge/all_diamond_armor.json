@@ -1,7 +1,10 @@
 {
   "type": "all_of",
   "display": {
-    "name": "All Diamond Armor",
+    "name": {
+      "translate": "bingo.objective.challenge.all_diamond_armor",
+      "fallback": "All Diamond Armor"
+    },
     "item": "minecraft:diamond_chestplate"
   },
   "objectives": [

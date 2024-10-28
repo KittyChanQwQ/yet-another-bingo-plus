@@ -1,7 +1,10 @@
 {
   "type": "item",
   "display": {
-    "name": "Damaged Golden Sword"
+    "name": {
+      "translate": "bingo.objective.challenge.nbt_damaged_golden_sword",
+      "fallback": "Damaged Golden Sword"
+    }
   },
   "item": "minecraft:golden_sword",
   "nbt": "{Damage:31}",

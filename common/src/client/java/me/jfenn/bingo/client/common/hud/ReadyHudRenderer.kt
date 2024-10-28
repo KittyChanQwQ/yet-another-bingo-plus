@@ -9,6 +9,7 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
 import net.minecraft.text.Text
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 class ReadyHudRenderer(
     private val state: BingoHudState,
@@ -39,11 +40,11 @@ class ReadyHudRenderer(
         val textRenderer = MinecraftClient.getInstance().textRenderer
         val context = drawService.context
 
-        val titleText = when {
+        val titleText = ready.title ?: when {
             ready.isReady -> text.string(StringKey.LobbyStartingPlayersReady, ready.readyPlayers, ready.totalPlayers)
             else -> text.string(StringKey.LobbyStartingReadyUp, Text.keybind("key.sneak"), Text.keybind(KEYBIND_OPEN_CARD))
         }
-        val bodyText = when {
+        val bodyText = ready.subtitle ?: when {
             ready.state == GameState.PREGAME -> text.string(StringKey.LobbyStartingTimeRemaining, ready.remainingDuration.formatHHMMSS())
             else -> text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
         }
@@ -51,7 +52,7 @@ class ReadyHudRenderer(
         context.drawText(textRenderer, titleText, x + width/2 - textRenderer.getWidth(titleText)/2, y, LOADING_COLOR, true)
         context.drawText(textRenderer, bodyText, x + width/2 - textRenderer.getWidth(bodyText)/2, y + textRenderer.fontHeight + 2, TEXT_COLOR, true)
 
-        val remainingProgress = ready.remainingDuration / ready.totalDuration
+        val remainingProgress = ready.remainingDuration / ready.totalDuration.coerceAtLeast(1.seconds)
         drawProgressBar(drawService, x, y + (textRenderer.fontHeight * 2) + 5, width, 5, 1f - remainingProgress.toFloat().coerceIn(0f, 1f))
 
         val charCount = ready.totalPlayers.coerceAtMost(10)

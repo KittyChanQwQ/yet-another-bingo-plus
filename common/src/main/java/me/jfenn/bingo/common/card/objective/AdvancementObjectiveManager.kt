@@ -63,7 +63,11 @@ class AdvancementObjectiveManager(
             ?.let { return it }
 
         // If the objective is a direct advancement identifier
-        return BingoObjective.AdvancementEntry(id, advancementId = id).takeIf { init(it) }
+        return BingoObjective.AdvancementEntry(
+            id,
+            data = ObjectiveData.Advancement(advancement = id),
+            advancementId = id
+        ).takeIf { init(it) }
     }
 
     private fun init(goal: BingoObjective, isDataObjective: Boolean = false): Boolean {
@@ -95,7 +99,7 @@ class AdvancementObjectiveManager(
             item = advancement.displayIcon?.let { itemStackFactory.forStack(it) },
             decoration = CardTile.Decoration.ADVANCEMENT,
         )
-        goal.display = objectiveDisplayService.resolve(goal.id, null, display)
+        goal.display = objectiveDisplayService.resolve(goal.id, goal.data.display, display)
 
         return true
     }
@@ -141,12 +145,17 @@ class AdvancementObjectiveManager(
                     )
                     player.uuid to capture
                 }
+                .let {
+                    when {
+                        objective.data.permanent -> it + objective.playersHolding
+                        else -> it
+                    }
+                }
 
             val players = objectiveService.getPlayers(
                 card = card,
                 playersHolding = playersHolding,
                 players = objective.players,
-                shouldRetainCaptures = false
             )
 
             val teams = objectiveService.getTeams(

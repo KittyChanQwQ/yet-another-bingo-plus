@@ -168,7 +168,7 @@ sealed class BingoObjective {
     @SerialName("advancement")
     data class AdvancementEntry(
         override val id: String,
-        override val data: ObjectiveData? = null,
+        override val data: ObjectiveData.Advancement,
         val advancementId: String,
     ): BingoObjective() {
 

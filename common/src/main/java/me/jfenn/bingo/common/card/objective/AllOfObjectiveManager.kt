@@ -82,6 +82,12 @@ class AllOfObjectiveManager(
             val playersHolding = capturesByPlayer
                 .filter { it.value.size == objectives.size } // in order to capture, must be holding every objective
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
+                .let {
+                    when {
+                        objective.data.permanent -> it + objective.playersHolding
+                        else -> it
+                    }
+                }
 
             val players = objectiveService.getPlayers(
                 card = card,

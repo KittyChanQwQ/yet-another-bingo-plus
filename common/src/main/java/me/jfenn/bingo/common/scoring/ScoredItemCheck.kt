@@ -55,7 +55,7 @@ class ScoredItemCheck(
 
         val teams = state.getRegisteredTeams()
             // if the team is already a winner, their score should not change
-            .filter { !it.isWinner() && it.cardId == card.id }
+            .filter { it.isPlaying() && it.cardId == card.id }
 
         for (team in teams) {
             // iterate through all updated objectives on the card
@@ -332,12 +332,13 @@ class ScoredItemCheck(
             if (state.state == GameState.PLAYING) {
                 val prevLeadingTeam = ScoreService.getLeading(state)
 
-                val cards = state.getRegisteredTeams()
-                    .mapNotNull { state.getCard(it) }
-                    .distinct()
-
-                for (card in cards) {
-                    tickCard(card)
+                for (card in state.cards) {
+                    val isActive = state.teams.values.any {
+                        it.isPlaying() && it.cardId == card.id
+                    }
+                    if (isActive) {
+                        tickCard(card)
+                    }
                 }
 
                 postTickCards(prevLeadingTeam)

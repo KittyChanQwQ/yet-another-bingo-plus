@@ -1,11 +1,18 @@
 {
   "type": "item",
   "display": {
-    "name": "Mending Book"
+    "name": {
+      "translate": "bingo.objective.challenge.nbt_mending_book",
+      "fallback": "Mending Book"
+    }
   },
   "item": "minecraft:enchanted_book",
   "nbt": "{Enchantments:[{id:mending}]}",
   "components": {
-    "minecraft:enchantments": {"levels":{"mending":1}}
+    "minecraft:enchantments": {
+      "levels": {
+        "mending": 1
+      }
+    }
   }
 }

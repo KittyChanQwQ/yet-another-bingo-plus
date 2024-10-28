@@ -1,7 +1,10 @@
 {
   "type": "all_of",
   "display": {
-    "name": "All Iron Tools",
+    "name": {
+      "translate": "bingo.objective.challenge.all_iron_tools",
+      "fallback": "All Iron Tools"
+    },
     "item": "minecraft:iron_pickaxe"
   },
   "objectives": [

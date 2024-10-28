@@ -150,6 +150,10 @@ class ItemObjectiveManager(
         // first, we need to check that each player still has all their items
         // and remove them from playersHolding if not
         for (objective in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
+            // If the objective is permanent, the objective should remain captured
+            if (objective.data.permanent)
+                continue
+
             for ((_, player, inventory) in playersToItems) {
                 // if the player has no objectives to lose, skip
                 if (!objective.playersHolding.containsKey(player.uuid)) continue
