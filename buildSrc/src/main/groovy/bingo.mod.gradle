@@ -92,11 +92,12 @@ dependencies {
     }
 }
 
+def projectVersion = project.version.toString()
 processResources {
-    inputs.property "version", project.version
+    inputs.property "version", projectVersion
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand "version": projectVersion
     }
 }
 
@@ -133,9 +134,10 @@ if (project.name.toString() == "common") {
     tasks.test.dependsOn tasks.runGametestServer
 }
 
+def archivesBaseName = project.archives_base_name.toString()
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archives_base_name}"}
+        rename { "${it}_${archivesBaseName}"}
     }
 }
 

@@ -8,7 +8,6 @@ import assertk.assertions.isTrue
 import io.mockk.mockk
 import me.jfenn.bingo.api.ITextSerializer
 import me.jfenn.bingo.common.test.BaseGameTest
-import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.impl.ItemStackFactory
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest
 import net.minecraft.component.DataComponentTypes
@@ -24,14 +23,15 @@ class ItemComponentsTest : BaseGameTest() {
 
     private val mockTextSerializer = mockk<ITextSerializer>()
 
-    private val itemStackFactory = ItemStackFactory(
-        LoggerFactory.getLogger(this::class.java),
-    )
-
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun encodesItemComponent(context: TestContext) {
         val stack = ItemStack(Items.RED_BED, 1)
         stack[DataComponentTypes.ITEM_NAME] = Text.literal("Red Bed").formatted(Formatting.RED)
+
+        val itemStackFactory = ItemStackFactory(
+            LoggerFactory.getLogger(this::class.java),
+            context.world.server
+        )
 
         val item = itemStackFactory.forStack(stack)
         val components = item.getComponentsString()
@@ -45,6 +45,11 @@ class ItemComponentsTest : BaseGameTest() {
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun decodesItemComponent(context: TestContext) {
+        val itemStackFactory = ItemStackFactory(
+            LoggerFactory.getLogger(this::class.java),
+            context.world.server
+        )
+
         val item = itemStackFactory.createStack("minecraft:red_bed", 1)
         val isSuccess = item.setComponentsString(
             mapOf(
@@ -60,6 +65,11 @@ class ItemComponentsTest : BaseGameTest() {
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     fun determinesComponentOverlap(context: TestContext) {
+        val itemStackFactory = ItemStackFactory(
+            LoggerFactory.getLogger(this::class.java),
+            context.world.server
+        )
+
         val stack = ItemStack(Items.RED_BED, 1)
         stack[DataComponentTypes.ITEM_NAME] = Text.literal("Red Bed").formatted(Formatting.RED)
 

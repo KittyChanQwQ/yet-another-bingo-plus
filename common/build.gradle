@@ -1,5 +1,5 @@
 import groovy.json.JsonSlurper
-
+import org.gradle.work.DisableCachingByDefault
 import javax.inject.Inject
 import java.nio.file.Files
 
@@ -108,6 +108,7 @@ abstract class CrowdinAction implements WorkAction<CrowdinWorkParams> {
     }
 }
 
+@DisableCachingByDefault
 abstract class CrowdinTask extends DefaultTask {
     @OutputDirectory
     abstract RegularFileProperty getDestFile();
@@ -183,7 +184,7 @@ tasks.register("bingoLangServerTranslations", Sync) {
 tasks.register("bingoLangFiles") {
     mustRunAfter(tasks.crowdin)
 
-    def langDir = "src/main/resources/assets/yet-another-minecraft-bingo/lang"
+    def langDir = file("src/main/resources/assets/yet-another-minecraft-bingo/lang")
     def stringKeyFile = layout.buildDirectory.file("generated/main/java/me/jfenn/bingo/generated/StringKey.kt").get().asFile
     inputs.files(fileTree(langDir))
     outputs.file(stringKeyFile)
@@ -191,7 +192,7 @@ tasks.register("bingoLangFiles") {
         var regex = "\"([\\W\\w]+)\":"
         var nonEnumSafeRegex = "[^a-zA-Z0-9_]"
 
-        var langFile = file("$langDir/en_us.json").text
+        var langFile = new File("$langDir/en_us.json").text
         var enumEntries = langFile.lines()
                 .map {
                     var match = it.find(regex)
@@ -223,11 +224,12 @@ tasks.register("bingoLangFiles") {
 
 tasks.register("bingoConstants") {
     def constantsKtFile = layout.buildDirectory.file("generated/main/java/me/jfenn/bingo/generated/Constants.kt").get().asFile
-    inputs.property("version", project.mod_version)
+    def modVersion = project.mod_version.toString()
+    inputs.property("version", modVersion)
     outputs.file(constantsKtFile)
     doLast {
         var constantsText = "package me.jfenn.bingo.generated\n\n" +
-                "const val BINGO_VERSION = \"${project.mod_version}\"" +
+                "const val BINGO_VERSION = \"${modVersion}\"" +
                 "\n"
 
         Files.createDirectories(constantsKtFile.toPath().parent)
