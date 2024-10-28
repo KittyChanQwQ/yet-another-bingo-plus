@@ -15,6 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
+import org.slf4j.Logger
 
 fun MenuComponent.registerMenuPage(
     position: Vector3d,
@@ -26,6 +27,7 @@ fun MenuComponent.registerMenuPage(
     playerManager: IPlayerManager = koinScope.get(),
     configService: ConfigService = koinScope.get(),
     text: TextProvider = koinScope.get(),
+    log: Logger = koinScope.get(),
 ) {
     var page = 0
 
@@ -36,7 +38,14 @@ fun MenuComponent.registerMenuPage(
         setter = {
             val card = state.getActiveCard()
             card.options.itemDistribution = it
-            cardService.generateCard(card)
+
+            // Attempt to re-roll the card, but log if there is an error
+            kotlin.runCatching {
+                cardService.generateCard(card)
+            }
+                .exceptionOrNull()
+                ?.let { e -> log.error("Error generating card: ${e::class.simpleName} ${e.message}") }
+
             markDirty()
         }
     )
