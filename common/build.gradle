@@ -1,6 +1,3 @@
-import groovy.json.JsonSlurper
-import org.gradle.work.DisableCachingByDefault
-import javax.inject.Inject
 import java.nio.file.Files
 
 plugins {
@@ -67,89 +64,6 @@ dependencies {
     // }
 }
 
-interface CrowdinWorkParams extends WorkParameters {
-    Property<String> getUrl();
-    RegularFileProperty getTempFile();
-    RegularFileProperty getDestFile();
-}
-
-abstract class CrowdinAction implements WorkAction<CrowdinWorkParams> {
-    @Inject
-    abstract ArchiveOperations getArchiveOperations()
-
-    @Override
-    void execute() {
-        def params = getParameters()
-        def tempFile = params.tempFile.get().asFile
-        if (!tempFile.exists()) {
-            tempFile.parentFile.mkdirs()
-            tempFile.createNewFile()
-        }
-
-        new URI(params.url.get()).toURL().withInputStream { i ->
-            tempFile.withOutputStream { out -> out << i }
-        }
-
-        def outFile = params.destFile.get().asFile
-        if (!outFile.exists()) {
-            outFile.createNewFile()
-        }
-
-        outFile.withOutputStream { out ->
-            out << archiveOperations.gzip(tempFile).read()
-        }
-
-        tempFile.delete()
-
-        // If the locale doesn't have any strings, remove the file
-        if (outFile.size() < 4L) {
-            outFile.delete()
-        }
-    }
-}
-
-@DisableCachingByDefault
-abstract class CrowdinTask extends DefaultTask {
-    @OutputDirectory
-    abstract RegularFileProperty getDestFile();
-
-    @OutputDirectory
-    abstract RegularFileProperty getTmpFile();
-
-    @Inject
-    abstract WorkerExecutor getWorkerExecutor()
-
-    @TaskAction
-    void run() {
-        WorkQueue workQueue = getWorkerExecutor().noIsolation()
-
-        // downloads translation files from https://crowdin.com/project/yet-another-bingo
-        def langDir = destFile.get()
-        def crowdinDistributionHash = "471cb8056b1a73b605b6a283g7g"
-
-        def manifestJson = new URI("https://distributions.crowdin.net/$crowdinDistributionHash/manifest.json").toURL().text
-        def manifest = new JsonSlurper().parseText(manifestJson)
-
-        for (lang in manifest.languages) {
-            def file = manifest.content[lang][0]
-            def fileName = new File(file).name.toLowerCase()
-            def tempFile = new File("${tmpFile.get()}/${fileName}.gz")
-            def outFile = new File("$langDir/$fileName")
-
-            workQueue.submit(CrowdinAction.class, parameters -> {
-                parameters.url.set("https://distributions.crowdin.net/$crowdinDistributionHash$file?timestamp=$manifest.timestamp")
-                parameters.tempFile.set(tempFile)
-                parameters.destFile.set(outFile)
-            })
-        }
-    }
-}
-
-tasks.register('crowdin', CrowdinTask) {
-    destFile.set(file("src/main/resources/assets/yet-another-minecraft-bingo/lang"))
-    tmpFile.set(layout.buildDirectory.file("tmp/crowdin"))
-}
-
 tasks.register('bingoDatapack', Zip) {
     from 'datapack'
     include '**/*'
@@ -172,8 +86,6 @@ sourceSets {
 }
 
 tasks.register("bingoLangServerTranslations", Sync) {
-    mustRunAfter(tasks.crowdin)
-
     // copy the lang files from assets to data to support https://github.com/NucleoidMC/Server-Translations
     def langDir = "src/main/resources/assets/yet-another-minecraft-bingo/lang"
     from langDir
@@ -182,8 +94,6 @@ tasks.register("bingoLangServerTranslations", Sync) {
 }
 
 tasks.register("bingoLangFiles") {
-    mustRunAfter(tasks.crowdin)
-
     def langDir = "src/main/resources/assets/yet-another-minecraft-bingo/lang"
     def stringKeyFile = layout.buildDirectory.file("generated/main/java/me/jfenn/bingo/generated/StringKey.kt").get().asFile
     inputs.files(fileTree(langDir))
@@ -237,7 +147,6 @@ tasks.register("bingoConstants") {
 }
 
 tasks.processResources.configure {
-    dependsOn(tasks.crowdin)
     dependsOn(tasks.bingoMigrations)
     dependsOn(tasks.bingoDatapack)
     dependsOn(tasks.bingoImages)
