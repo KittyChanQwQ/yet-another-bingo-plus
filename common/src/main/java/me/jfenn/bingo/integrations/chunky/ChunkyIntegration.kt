@@ -44,9 +44,11 @@ class ChunkyIntegrationImpl(
     override fun startPregen(server: MinecraftServer) {
         try {
             config.integrations.chunkyWorlds.forEach { (world, size) ->
-                commandRunner.runSilentCommand(server, "chunky world $world")
-                commandRunner.runSilentCommand(server, "chunky radius $size")
-                commandRunner.runSilentCommand(server, "chunky start")
+                if (size > 0) {
+                    commandRunner.runSilentCommand(server, "chunky world $world")
+                    commandRunner.runSilentCommand(server, "chunky radius $size")
+                    commandRunner.runSilentCommand(server, "chunky start")
+                }
             }
             commandRunner.runSilentCommand(server, "chunky continue")
         } catch (e: Throwable) {
