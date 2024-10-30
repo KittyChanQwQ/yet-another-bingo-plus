@@ -18,7 +18,8 @@ emi = { module = "dev.emi:emi-fabric", version = "1.1.6+1.20.1" }
 voicechat = { module = "de.maxhenkel.voicechat:voicechat-api", version = "2.5.0" }
 # plasmovoice = { module = "su.plo.voice.api:server", version = "2.1.0-SNAPSHOT" }
 # https://github.com/lucko/fabric-permissions-api
-fabric-permissions-api = { module = "me.lucko:fabric-permissions-api", version = "0.3.20230723" }
+fabric-permissions-api-v2 = { module = "me.lucko:fabric-permissions-api", version = "0.3.20230723" }
+fabric-permissions-api-v3 = { module = "me.lucko:fabric-permissions-api", version = "0.3.3" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }

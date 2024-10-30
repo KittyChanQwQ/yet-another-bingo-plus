@@ -82,13 +82,21 @@ dependencies {
     }
 
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
+
+    def fabricPermissionsApi
+    if (project.name.compareTo("mc1.21.2") < 0) {
+        fabricPermissionsApi = libs.fabric.permissions.api.v2.get()
+    } else {
+        fabricPermissionsApi = libs.fabric.permissions.api.v3.get()
+    }
+
     if (!project.name.equals("common")) {
         include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
 
-        modImplementation "${libs.fabric.permissions.api.get()}"
-        include "${libs.fabric.permissions.api.get()}"
+        modImplementation fabricPermissionsApi
+        include fabricPermissionsApi
     } else {
-        modCompileOnly "${libs.fabric.permissions.api.get()}"
+        modCompileOnly fabricPermissionsApi
     }
 }
 
