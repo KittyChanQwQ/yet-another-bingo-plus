@@ -2,34 +2,28 @@ package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.mixinhandler.PlayerEntityMixinHandler;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(PlayerEntity.class)
+@Mixin(ServerPlayerEntity.class)
 public abstract class PlayerEntityMixin {
 
-    @Shadow
-    public abstract PlayerInventory getInventory();
-
-    @Inject(at = @At(value = "HEAD"), method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;", cancellable = true)
-    public void dropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> ci) {
+    @Inject(at = @At(value = "HEAD"), method = "dropPlayerItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;", cancellable = true)
+    public void dropPlayerItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> ci) {
         if ((Object) this instanceof ServerPlayerEntity player) {
             if (PlayerEntityMixinHandler.INSTANCE.shouldVanishDrop(player, stack)) {
                 if (PlayerEntityMixinHandler.INSTANCE.shouldKeepDrop(player, stack)) {
-                    ItemStack cur = getInventory().getMainHandStack();
+                    ItemStack cur = player.getInventory().getMainHandStack();
                     if (retainOwnership && (cur == null || cur.isEmpty())) {
                         // The complete stack was dropped
-                        getInventory().addPickBlock(stack.copy());
+                        player.getInventory().addPickBlock(stack.copy());
                     } else {
                         // Fallback
-                        getInventory().insertStack(stack.copy());
+                        player.getInventory().insertStack(stack.copy());
                     }
                 }
 
