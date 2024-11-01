@@ -20,7 +20,7 @@ class ReadyHudRenderer(
         private const val LOADING_COLOR = 0xffffffff.toInt()
     }
 
-    var progressInterpolated: Float = 0f
+    private var progressInterpolated: Float = 0f
 
     private fun drawProgressBar(drawService: IDrawService, x: Int, y: Int, width: Int, height: Int, progress: Float) {
         val context = drawService.context
@@ -58,13 +58,30 @@ class ReadyHudRenderer(
         val charCount = ready.totalPlayers.coerceAtMost(10)
         val charReady = "✔"
         val charNot = "•"
-        val charWidth = textRenderer.getWidth(charReady) + 2
-        val charTotalWidth = charWidth * ready.totalPlayers
-        for (i in 0 until charCount) {
-            val isReady = i * ready.totalPlayers < charCount * ready.readyPlayers
-            val char = if (isReady) charReady else charNot
-            val color = if (isReady) TEXT_COLOR else LOADING_COLOR
-            context.drawText(textRenderer, Text.literal(char), x + width/2 - charTotalWidth/2 + (charWidth*i) + 1, y + (textRenderer.fontHeight * 2) + 12, color, true)
+        val chars = buildList(charCount) {
+            for (i in 0 until charCount) {
+                val isReady = i * ready.totalPlayers < charCount * ready.readyPlayers
+                val char = if (isReady) charReady else charNot
+                add(
+                    ReadyChar(
+                        char = char,
+                        color = if (isReady) TEXT_COLOR else LOADING_COLOR,
+                        width = textRenderer.getWidth(char) + 2
+                    )
+                )
+            }
+        }
+        val charTotalWidth = chars.sumOf { it.width }
+        var currentWidth = 0
+        for (char in chars) {
+            context.drawText(textRenderer, Text.literal(char.char), x + width/2 - charTotalWidth/2 + currentWidth + 1, y + (textRenderer.fontHeight * 2) + 12, char.color, true)
+            currentWidth += char.width
         }
     }
+
+    private class ReadyChar(
+        val char: String,
+        val color: Int,
+        val width: Int,
+    )
 }
