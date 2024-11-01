@@ -177,7 +177,7 @@ class ExecutionContextImpl(
             is CommandArgument.Bool -> BoolArgumentType.getBool(ctx, arg.name) as T
             is CommandArgument.Integer -> IntegerArgumentType.getInteger(ctx, arg.name) as T
             is CommandArgument.NumberLong -> LongArgumentType.getLong(ctx, arg.name) as T
-            is CommandArgument.Player -> EntityArgumentType.getPlayer(ctx, arg.name) as T
+            is CommandArgument.Player -> EntityArgumentType.getPlayer(ctx, arg.name)?.let { PlayerHandle(it) } as T
         }
     }
 }
