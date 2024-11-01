@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 sealed class BingoWinCondition {
     @Serializable
     @SerialName("cards")
-    class Cards(val cards: Int): BingoWinCondition()
+    data class Cards(val cards: Int): BingoWinCondition()
     @Serializable
     @SerialName("infinite")
     data object Infinite: BingoWinCondition()
