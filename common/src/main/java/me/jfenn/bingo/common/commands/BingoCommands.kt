@@ -13,11 +13,23 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
-import me.jfenn.bingo.common.utils.sendInfoMessage
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
+import org.koin.core.scope.Scope
 import kotlin.time.Duration.Companion.minutes
 
 class BingoCommands : BaseCommand() {
+
+    private fun Scope.sendInfoMessage(player: ServerPlayerEntity, text: String) {
+        val playerManager = get<IPlayerManager>()
+        playerManager.forPlayer(player).sendMessage(
+            Text.empty()
+                .append(Text.literal("ℹ  ").formatted(Formatting.AQUA))
+                .append(Text.literal(text).formatted(Formatting.AQUA, Formatting.ITALIC)),
+        )
+    }
 
     init {
         LiteralArgumentBuilder.literal<ServerCommandSource>("bingo")
@@ -41,7 +53,7 @@ class BingoCommands : BaseCommand() {
                                 val minutes = IntegerArgumentType.getInteger(ctx, "minutes")
                                 options.timeLimit = minutes.minutes
                                 events.onChangeOptions(Unit)
-                                ctx.source.player?.sendInfoMessage("Time limit: $minutes minutes")
+                                ctx.source.player?.let { sendInfoMessage(it, "Time limit: $minutes minutes") }
                                 1
                             }
                     )
@@ -53,7 +65,7 @@ class BingoCommands : BaseCommand() {
 
                                 options.timeLimit = null
                                 events.onChangeOptions(Unit)
-                                ctx.source.player?.sendInfoMessage("Time limit: Off")
+                                ctx.source.player?.let { sendInfoMessage(it, "Time limit: Off") }
                                 1
                             }
                     )
@@ -75,7 +87,7 @@ class BingoCommands : BaseCommand() {
                                 val teams = IntegerArgumentType.getInteger(ctx, "teams")
                                 teamService.shuffleTeams(teams)
 
-                                ctx.source.player?.sendInfoMessage("Teams have been shuffled!")
+                                ctx.source.player?.let { sendInfoMessage(it, "Teams have been shuffled!") }
                                 1
                             }
                     )
@@ -93,7 +105,7 @@ class BingoCommands : BaseCommand() {
                         state.isForfeit = true
 
                         val player = ctx.source.player?.let { get<IPlayerManager>().forPlayer(it) }
-                        gameService.end(GameEndReason.Command(player?.name ?: "[unknown]"))
+                        gameService.end(GameEndReason.Command(player?.playerName ?: "[unknown]"))
                         1
                     }
             )

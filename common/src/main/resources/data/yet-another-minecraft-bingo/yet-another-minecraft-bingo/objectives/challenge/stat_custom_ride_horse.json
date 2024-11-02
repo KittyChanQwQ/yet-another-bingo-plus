@@ -2,7 +2,11 @@
   "type": "stats",
   "display": {
     "item": "minecraft:saddle",
-    "name": "Ride a Horse for %min%cm"
+    "name": {
+      "translate": "bingo.objective.challenge.stat_custom_ride_horse",
+      "with": ["%min%"],
+      "fallback": "Ride a Horse for %min%cm"
+    }
   },
   "statType": "minecraft:custom",
   "statName": "minecraft:horse_one_cm",

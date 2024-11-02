@@ -10,6 +10,7 @@ import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.team.BingoPlayerProfile
+import net.minecraft.command.CommandSource
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.MobEntity
 import net.minecraft.item.BlockItem
@@ -24,6 +25,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.text.Text
 import net.minecraft.util.UseAction
 import net.minecraft.util.hit.HitResult
 import org.joml.Vector3d
@@ -83,13 +85,19 @@ class PlayerHandle(
         BingoKoin.getScope(player.server)!!.get<IItemStackFactory>()
     }
 
+    override val world: ServerWorld
+        get() = player.serverWorld
+
     override val isAlive: Boolean
         get() = player.isAlive
     override val isSpectator: Boolean
         get() = player.isSpectator
 
-    override val name: String
+    override val playerName: String
         get() = player.nameForScoreboard
+
+    override val commandSource: CommandSource
+        get() = player.commandSource
 
     override var fireTicks: Int by player::fireTicks
     override var isOnFire: Boolean
@@ -101,6 +109,21 @@ class PlayerHandle(
     override var foodLevel: Int by player.hungerManager::foodLevel
     override var saturationLevel: Float by player.hungerManager::saturationLevel
     override var exhaustion: Float by player.hungerManager::exhaustion
+
+    override val isSneaking: Boolean
+        get() = player.isSneaking
+
+    override fun sendMessage(message: Text) {
+        player.sendMessage(message)
+    }
+
+    override fun sendHotbarMessage(message: Text) {
+        player.sendMessage(message, true)
+    }
+
+    override fun hasPermissionLevel(level: Int): Boolean {
+        return player.hasPermissionLevel(level)
+    }
 
     override fun canUseItem(stack: IItemStack): Boolean {
         val itemStack: ItemStack = stack.stack

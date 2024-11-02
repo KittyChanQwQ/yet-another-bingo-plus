@@ -1,7 +1,10 @@
 {
   "type": "item",
   "display": {
-    "name": "Damaged Wooden Shovel"
+    "name": {
+      "translate": "bingo.objective.challenge.nbt_damaged_wooden_shovel",
+      "fallback": "Damaged Wooden Shovel"
+    }
   },
   "item": "minecraft:wooden_shovel",
   "nbt": "{Damage:58}",

@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.ready
 
 import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.autorestart.ResetService
 import me.jfenn.bingo.common.config.BingoConfig
@@ -14,7 +15,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
-import net.minecraft.server.MinecraftServer
+import net.minecraft.text.Text
 import org.slf4j.Logger
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -23,7 +24,6 @@ class ReadyController(
     private val log: Logger,
     private val readyState: ReadyTimerState,
     private val state: BingoState,
-    private val server: MinecraftServer,
     private val config: BingoConfig,
     private val text: TextProvider,
     private val gameService: GameService,
@@ -44,6 +44,25 @@ class ReadyController(
     init {
         events.onStateChange {
             readyState.reset()
+
+            // When the state changes, make sure to send an extra packet to dismiss the ready GUI
+            val packet = ReadyUpdatePacket(
+                isRunning = false,
+                isReady = false,
+                state = state.state,
+                remainingDuration = Duration.ZERO,
+                totalDuration = Duration.ZERO,
+                readyPlayers = 0,
+                totalPlayers = 0,
+                title = null,
+                subtitle = null,
+            )
+            for (player in playerManager.getPlayers()) {
+                when {
+                    packets.readyUpdateV2.send(player, packet) -> {}
+                    packets.readyUpdateV1.send(player, packet) -> {}
+                }
+            }
         }
 
         events.onChangeOptions {
@@ -59,8 +78,16 @@ class ReadyController(
 
         events.onUpdateTick {
             if (!state.isLobbyMode) return@onUpdateTick
-            if (state.state != GameState.PREGAME && state.state != GameState.POSTGAME)
+            // Only send update packets during these gamestates
+            // (note that SpawnPreloadingController also sends ReadyUpdatePacket, so this must avoid conflicts)
+            if (state.state !in arrayOf(GameState.PREGAME, GameState.POSTGAME))
                 return@onUpdateTick
+
+            val isVotingEnabled = when (state.state) {
+                GameState.PREGAME -> config.startWhenReadySeconds != null
+                GameState.POSTGAME -> config.nextRoundWhenReadySeconds != null
+                else -> false
+            }
 
             readyState.updatePlayers(playerManager.getPlayers())
             val remainingTime = readyState.remainingTime()
@@ -113,20 +140,41 @@ class ReadyController(
                 totalDuration = readyState.totalTime() ?: Duration.ZERO,
                 readyPlayers = playerManager.getPlayers().count { readyState.isReady(it.uuid) },
                 totalPlayers = playerManager.getPlayers().size,
+                title = null,
+                subtitle = null,
             )
 
             for (player in playerManager.getPlayers()) {
                 val isPlayerReady = readyState.isReady(player.uuid)
-                val packet = updatePacket.copy(isReady = isPlayerReady)
+                val title = when {
+                    isPlayerReady -> text.string(StringKey.LobbyStartingPlayersReady, updatePacket.readyPlayers, updatePacket.totalPlayers)
+                    else -> text.string(
+                        StringKey.LobbyStartingReadyUp,
+                        Text.keybind("key.sneak"), Text.keybind(KEYBIND_OPEN_CARD)
+                    )
+                }
+                val subtitle = when {
+                    state.state == GameState.PREGAME -> text.string(StringKey.LobbyStartingTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
+                    else -> text.string(StringKey.LobbyNextRoundTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
+                }
+
+                val packet = updatePacket.copy(
+                    isReady = isPlayerReady,
+                    title = title,
+                    subtitle = subtitle,
+                    canSendReady = isVotingEnabled && permissions.hasPermission(player, Permission.COMMAND_READY)
+                )
 
                 when {
+                    packets.readyUpdateV3.send(player, packet) -> {}
+                    packets.readyUpdateV2.send(player, packet) -> {}
                     packets.readyUpdateV1.send(player, packet) -> {}
                     packet.isRunning -> {
                         val message = when {
                             !isPlayerReady -> text.string(StringKey.LobbyStartingInRunCommand, packet.remainingDuration.formatHHMMSS())
                             else -> text.string(StringKey.LobbyStartingInReady, packet.remainingDuration.formatHHMMSS(), packet.readyPlayers, packet.totalPlayers)
                         }
-                        player.player.sendMessage(message, true)
+                        player.sendHotbarMessage(message)
                     }
                 }
             }

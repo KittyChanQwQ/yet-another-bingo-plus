@@ -4,6 +4,6 @@
   "count": {
     "type": "random",
     "min": 4,
-    "max": 32
+    "max": 16
   }
 }

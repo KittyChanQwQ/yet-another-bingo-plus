@@ -23,6 +23,7 @@ val sharedModule = module {
     single { EntityManagerImpl } bind IEntityManager::class
     single { Executors } bind IExecutors::class
     single { ItemStackFactory(get(), null) } bind IItemStackFactory::class
+    singleOf(::MapColorServiceImpl) bind IMapColorService::class
     single { ParticleFactory } bind IParticleFactory::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     singleOf(::ScoreboardManager) bind IScoreboardManager::class

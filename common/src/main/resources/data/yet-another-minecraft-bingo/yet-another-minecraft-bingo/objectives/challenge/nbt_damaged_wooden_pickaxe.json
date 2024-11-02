@@ -1,7 +1,10 @@
 {
   "type": "item",
   "display": {
-    "name": "Damaged Wooden Pickaxe"
+    "name": {
+      "translate": "bingo.objective.challenge.nbt_damaged_wooden_pickaxe",
+      "fallback": "Damaged Wooden Pickaxe"
+    }
   },
   "item": "minecraft:wooden_pickaxe",
   "nbt": "{Damage:58}",

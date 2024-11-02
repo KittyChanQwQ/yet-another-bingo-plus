@@ -23,6 +23,7 @@ fun MenuComponent.registerSpawnDistance(
         maxValueProp = ConstantProperty(MAX_SPAWN_DISTANCE),
         step = 5,
         format = { text.string(StringKey.OptionsSpawnDistanceChunks, it) },
+        tooltip = buildTooltip(StringKey.OptionsSpawnDistance),
         permissionGetter = permissionGetter,
     )
 

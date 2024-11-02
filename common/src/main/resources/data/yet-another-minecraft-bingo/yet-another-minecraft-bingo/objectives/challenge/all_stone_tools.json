@@ -1,7 +1,10 @@
 {
   "type": "all_of",
   "display": {
-    "name": "All Stone Tools",
+    "name": {
+      "translate": "bingo.objective.challenge.all_stone_tools",
+      "fallback": "All Stone Tools"
+    },
     "item": "minecraft:stone_pickaxe"
   },
   "objectives": [

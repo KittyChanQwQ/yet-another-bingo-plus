@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -11,7 +12,6 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.block.Blocks
-import net.minecraft.server.network.ServerPlayerEntity
 
 class LobbyChaosController(
     events: ScopedEvents,
@@ -21,7 +21,7 @@ class LobbyChaosController(
     private val textProvider: TextProvider,
 ) : BingoComponent() {
 
-    private fun shouldPreventLobbyChaos(player: ServerPlayerEntity): Boolean {
+    private fun shouldPreventLobbyChaos(player: IPlayerHandle): Boolean {
         return config.preventLobbyChaos &&
                 state.state == GameState.PREGAME &&
                 !permissions.hasPermission(player, Permission.BYPASS_CHAOS_PREVENTION)
@@ -35,25 +35,25 @@ class LobbyChaosController(
         events.onPlayerJoin { player ->
             if (!state.isLobbyMode) return@onPlayerJoin
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
-                player.player.sendMessage(textProvider.string(StringKey.LobbySoundsMuted))
+                player.sendMessage(textProvider.string(StringKey.LobbySoundsMuted))
             }
         }
 
         events.onUseBlock {
             if (!state.isLobbyMode) return@onUseBlock null
-            val player = it.player as? ServerPlayerEntity ?: return@onUseBlock null
+            val player = it.player
 
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
-                val blockState = player.world.getBlockState(it.hit.blockPos)
+                val blockState = player.player.world.getBlockState(it.hit.blockPos)
                 if (blockState.block in hitBlockSet) {
-                    player.sendMessage(textProvider.string(StringKey.LobbySoundsMuted), true)
+                    player.sendHotbarMessage(textProvider.string(StringKey.LobbySoundsMuted))
                 }
             }
 
             // If preventLobbyChaos=true, prevent players from accessing the brewing stand
             // (levitation potions are annoying...)
             if (shouldPreventLobbyChaos(player)) {
-                val blockState = player.world.getBlockState(it.hit.blockPos)
+                val blockState = player.player.world.getBlockState(it.hit.blockPos)
                 if (blockState.block == Blocks.BREWING_STAND)
                     return@onUseBlock ActionResult.Fail(Unit)
             }

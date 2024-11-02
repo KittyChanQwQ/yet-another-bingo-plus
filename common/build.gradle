@@ -85,7 +85,7 @@ sourceSets {
     }
 }
 
-tasks.register("bingoLangServerTranslations", Copy) {
+tasks.register("bingoLangServerTranslations", Sync) {
     // copy the lang files from assets to data to support https://github.com/NucleoidMC/Server-Translations
     def langDir = "src/main/resources/assets/yet-another-minecraft-bingo/lang"
     from langDir
@@ -94,7 +94,7 @@ tasks.register("bingoLangServerTranslations", Copy) {
 }
 
 tasks.register("bingoLangFiles") {
-    def langDir = "src/main/resources/assets/yet-another-minecraft-bingo/lang"
+    def langDir = file("src/main/resources/assets/yet-another-minecraft-bingo/lang")
     def stringKeyFile = layout.buildDirectory.file("generated/main/java/me/jfenn/bingo/generated/StringKey.kt").get().asFile
     inputs.files(fileTree(langDir))
     outputs.file(stringKeyFile)
@@ -102,7 +102,7 @@ tasks.register("bingoLangFiles") {
         var regex = "\"([\\W\\w]+)\":"
         var nonEnumSafeRegex = "[^a-zA-Z0-9_]"
 
-        var langFile = file("$langDir/en_us.json").text
+        var langFile = new File("$langDir/en_us.json").text
         var enumEntries = langFile.lines()
                 .map {
                     var match = it.find(regex)
@@ -134,11 +134,12 @@ tasks.register("bingoLangFiles") {
 
 tasks.register("bingoConstants") {
     def constantsKtFile = layout.buildDirectory.file("generated/main/java/me/jfenn/bingo/generated/Constants.kt").get().asFile
-    inputs.property("version", project.mod_version)
+    def modVersion = project.mod_version.toString()
+    inputs.property("version", modVersion)
     outputs.file(constantsKtFile)
     doLast {
         var constantsText = "package me.jfenn.bingo.generated\n\n" +
-                "const val BINGO_VERSION = \"${project.mod_version}\"" +
+                "const val BINGO_VERSION = \"${modVersion}\"" +
                 "\n"
 
         Files.createDirectories(constantsKtFile.toPath().parent)

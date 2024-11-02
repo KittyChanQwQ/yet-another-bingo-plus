@@ -2,7 +2,11 @@
   "type": "stats",
   "display": {
     "item": "minecraft:oak_boat",
-    "name": "Row a Boat for %min%cm"
+    "name": {
+      "translate": "bingo.objective.challenge.stat_custom_ride_boat",
+      "with": ["%min%"],
+      "fallback": "Row a Boat for %min%cm"
+    }
   },
   "statType": "minecraft:custom",
   "statName": "minecraft:boat_one_cm",

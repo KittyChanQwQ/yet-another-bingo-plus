@@ -65,7 +65,7 @@ class GameService(
         val message = text.string(StringKey.CommandStartJoinATeamMessage)
 
         for (player in playersWithoutATeam) {
-            if (permissions.hasPermission(player.player, Permission.COMMAND_JOIN)) {
+            if (permissions.hasPermission(player, Permission.COMMAND_JOIN)) {
                 player.player.networkHandler.sendPacket(TitleS2CPacket(title))
                 player.player.networkHandler.sendPacket(SubtitleS2CPacket(message))
             }
@@ -83,7 +83,7 @@ class GameService(
         if (playersWithoutATeam.isNotEmpty() && !allowSpectators) {
             // If there's more than one player, teams need to be set up manually!
             if (playerManager.getPlayers().size > 1) {
-                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeams, playersWithoutATeam.joinToString { it.name }))
+                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeams, playersWithoutATeam.joinToString { it.playerName }))
                 sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeamsHint))
                 notifyPlayersMissingTeams(playersWithoutATeam)
                 return false

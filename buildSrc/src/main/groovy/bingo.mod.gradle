@@ -82,21 +82,30 @@ dependencies {
     }
 
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
+
+    def fabricPermissionsApi
+    if (project.name.compareTo("mc1.21.2") < 0) {
+        fabricPermissionsApi = libs.fabric.permissions.api.v2.get()
+    } else {
+        fabricPermissionsApi = libs.fabric.permissions.api.v3.get()
+    }
+
     if (!project.name.equals("common")) {
         include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
 
-        modImplementation "${libs.fabric.permissions.api.get()}"
-        include "${libs.fabric.permissions.api.get()}"
+        modImplementation fabricPermissionsApi
+        include fabricPermissionsApi
     } else {
-        modCompileOnly "${libs.fabric.permissions.api.get()}"
+        modCompileOnly fabricPermissionsApi
     }
 }
 
+def projectVersion = project.version.toString()
 processResources {
-    inputs.property "version", project.version
+    inputs.property "version", projectVersion
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand "version": projectVersion
     }
 }
 
@@ -133,9 +142,10 @@ if (project.name.toString() == "common") {
     tasks.test.dependsOn tasks.runGametestServer
 }
 
+def archivesBaseName = project.archives_base_name.toString()
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archives_base_name}"}
+        rename { "${it}_${archivesBaseName}"}
     }
 }
 

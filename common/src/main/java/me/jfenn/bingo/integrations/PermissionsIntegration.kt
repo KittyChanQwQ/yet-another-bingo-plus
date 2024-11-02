@@ -5,16 +5,12 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.PermissionDefault
 import me.jfenn.bingo.common.PermissionKey
 import me.lucko.fabric.api.permissions.v0.Permissions
-import net.minecraft.server.network.ServerPlayerEntity
 import org.slf4j.Logger
 import java.util.*
 
 interface PermissionsIntegration {
 
-    fun hasPermission(player: IPlayerHandle, key: PermissionKey) =
-        hasPermission(player.player, key)
-
-    fun hasPermission(player: ServerPlayerEntity, key: PermissionKey): Boolean
+    fun hasPermission(player: IPlayerHandle, key: PermissionKey): Boolean
 
     companion object {
         fun create(log: Logger): PermissionsIntegration {
@@ -35,14 +31,14 @@ class PermissionsIntegrationImpl(
         }
     }
 
-    override fun hasPermission(player: ServerPlayerEntity, key: PermissionKey): Boolean {
+    override fun hasPermission(player: IPlayerHandle, key: PermissionKey): Boolean {
         val fallback = when (key.default) {
             PermissionDefault.ALLOW -> true
-            PermissionDefault.OPERATORS -> player.server.isSingleplayer || player.hasPermissionLevel(2)
+            PermissionDefault.OPERATORS -> player.player.server.isSingleplayer || player.hasPermissionLevel(2)
             PermissionDefault.DENY -> false
         }
         return try {
-            Permissions.check(player, key.permission, fallback)
+            Permissions.check(player.commandSource, key.permission, fallback)
         } catch (e: Throwable) {
             log.error("[PermissionsIntegrationImpl] Permission check failed (${e::class.simpleName}), using fallback")
             fallback

@@ -1,25 +1,25 @@
 package me.jfenn.bingo.common.commands
 
-import com.mojang.brigadier.arguments.StringArgumentType
-import com.mojang.brigadier.builder.LiteralArgumentBuilder
-import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.api.commands.ICommandManager
+import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.formatStringSmall
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 class CoordsCommand(
-    private val scoreboardManager: IScoreboardManager,
-) : BaseCommand() {
+    commandManager: ICommandManager,
+) : BingoComponent() {
 
     @Serializable
     data class CoordinatesEntry(
@@ -38,10 +38,10 @@ class CoordsCommand(
 
     }
 
-    private fun storeCoordinates(player: ServerPlayerEntity, team: BingoTeam, message: String?) {
+    private fun IExecutionContext.storeCoordinates(player: IPlayerHandle, team: BingoTeam, message: String?) {
         val entry = CoordinatesEntry(
-            player = scoreboardManager.getPlayerName(player),
-            pos = BlockPosition.fromBlockPos(player.blockPos),
+            player = player.playerName,
+            pos = player.blockPos,
             dimension = player.world.registryKey.value.path.removePrefix("the_"),
             message = message,
             created = Clock.System.now(),
@@ -51,10 +51,10 @@ class CoordsCommand(
         team.chatCoordinates.add(entry)
 
         // send coordinates to the team
-        ChatCommand.sendTeamMessage(player, team, Text.literal(entry.formatText()))
+        ChatCommand.sendTeamMessage(player, team, Text.literal(entry.formatText()), scope.get<IPlayerManager>())
     }
 
-    private fun listCoordinates(player: ServerPlayerEntity, team: BingoTeam) {
+    private fun listCoordinates(player: IPlayerHandle, team: BingoTeam) {
         val coordMessages = team.chatCoordinates
         if (coordMessages.isEmpty()) {
             player.sendMessage(Text.literal("No coordinates have been saved yet.").formatted(Formatting.GRAY))
@@ -73,42 +73,29 @@ class CoordsCommand(
 
     init {
         // send current player coordinates to other team members
-        LiteralArgumentBuilder.literal<ServerCommandSource?>("coords")
-            .require(
-                requireState(GameState.PLAYING, GameState.POSTGAME),
-                requirePermission(Permission.COMMAND_COORDS),
-                requirePlaying(),
-            )
-            .then(
-                LiteralArgumentBuilder.literal<ServerCommandSource?>("list")
-                    .executes { ctx ->
-                        val player = ctx.source.player ?: return@executes 0
-                        val team = BingoTeam.fromPlayer(player) ?: return@executes 0
-                        listCoordinates(player, team)
-                        1
-                    }
-            )
-            .then(
-                RequiredArgumentBuilder.argument<ServerCommandSource?, String?>(
-                    "message",
-                    StringArgumentType.greedyString()
-                )
-                    .executes { ctx ->
-                        val player = ctx.source.player ?: return@executes 0
-                        val team = BingoTeam.fromPlayer(player) ?: return@executes 0
-                        val message = StringArgumentType.getString(ctx, "message")
-
-                        storeCoordinates(player, team, message)
-                        1
-                    }
-            )
-            .executes { ctx ->
-                val player = ctx.source.player ?: return@executes 0
-                val team = BingoTeam.fromPlayer(player) ?: return@executes 0
-                storeCoordinates(player, team, null)
-                1
+        commandManager.register("coords") {
+            requires {
+                hasState(GameState.PLAYING, GameState.POSTGAME)
+                        && hasPermission(Permission.COMMAND_COORDS)
+                        && scope.get<TeamService>().isPlaying(player!!)
             }
-            .register()
+
+            literal("list") {
+                executes {
+                    listCoordinates(player!!, BingoTeam.fromPlayer(player!!.player)!!)
+                }
+            }
+
+            string("message", null, greedy = true) { message ->
+                executes {
+                    storeCoordinates(player!!, BingoTeam.fromPlayer(player!!.player)!!, getArgument(message))
+                }
+            }
+
+            executes {
+                storeCoordinates(player!!, BingoTeam.fromPlayer(player!!.player)!!, null)
+            }
+        }
     }
 
 }

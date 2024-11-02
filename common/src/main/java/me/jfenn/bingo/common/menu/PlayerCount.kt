@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.api.EntityType
 import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
@@ -22,13 +23,14 @@ fun MenuComponent.registerPlayerCount(
     position: Vector3d,
     server: MinecraftServer = koinScope.get(),
     text: TextProvider = koinScope.get(),
+    state: BingoState = koinScope.get(),
     options: BingoOptions = koinScope.get(),
     stats: StatsService = koinScope.get(),
 ) {
     onTick {
         val playerCount = server.currentPlayerCount
         val optionsHash = options.getShaHash()
-        val hash = "$playerCount:$optionsHash"
+        val hash = "${state.gameId}:$playerCount:$optionsHash"
 
         // if the options change, create a new future
         if (statsHash != hash) {

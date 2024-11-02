@@ -15,7 +15,7 @@ stages:
 
 Test:
   stage: test
-  image: gradle:8.8-jdk21
+  image: gradle:8.10.2-jdk21
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
     - gradle --build-cache build
@@ -47,7 +47,7 @@ minecraft.horrific.dev:
 
 Sync README:
   stage: deploy
-  image: gradle:8.8-jdk21
+  image: gradle:8.10.2-jdk21
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
     - gradle --build-cache modrinthSyncBody
@@ -64,7 +64,7 @@ Sync README:
 
 Build and Deploy:
   stage: deploy
-  image: gradle:8.8-jdk21
+  image: gradle:8.10.2-jdk21
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
     - gradle --build-cache modrinth -x test

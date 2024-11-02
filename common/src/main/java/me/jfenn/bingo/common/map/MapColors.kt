@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.map
 
-import net.minecraft.block.MapColor
+import me.jfenn.bingo.api.IMapColorService
 import kotlin.math.pow
 
 fun rgb(r: Int, g: Int, b: Int): Int {
@@ -216,20 +216,28 @@ fun Int.colorDistanceEuclidian(other: Int): Double {
     return deltaE
 }*/
 
+class MapColors(
+    mapService: IMapColorService,
+) {
+    companion object {
+        var mapColors = mapOf<Byte, Int>()
+        const val BLACK = 116.toByte()
+    }
+
+    init {
+        mapColors = mapService.getMapColors()
+    }
+}
+
 fun Int.closestColorByte(): Byte {
     // colorDistanceCMC1984 fails on comparisons to #000... so we're doing this manually
     if (Color.fromInt(this).let { (r, g, b) -> r == 0 && g == 0 && b == 0 })
-        return (29 * 4).toUByte().toByte()
+        return MapColors.BLACK
 
-    return (4 until 248)
-        .minByOrNull { i ->
-            val mapColorBGR = MapColor.getRenderColor(i)
-            val (b, g, r) = Color.fromInt(mapColorBGR)
-            val mapColor = rgb(r, g, b)
-            // this.colorDistance(mapColor) + 0.5 * this.colorDistanceCMC1984(mapColor)
-            this.colorDistanceEuclidian(mapColor)
+    return MapColors.mapColors.entries
+        .minByOrNull { (_, renderColor) ->
+            this.colorDistanceEuclidian(renderColor)
         }
-        .let { it ?: (29 * 4) }
-        .toUByte()
-        .toByte()
+        ?.key
+        ?: MapColors.BLACK
 }

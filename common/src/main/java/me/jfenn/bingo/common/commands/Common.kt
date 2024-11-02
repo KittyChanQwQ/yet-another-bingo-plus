@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
+import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.api.commands.IExecutionSource
 import me.jfenn.bingo.common.PermissionKey
@@ -35,7 +36,7 @@ fun requireState(vararg requiredState: GameState): CommandRequirement = requireI
 fun requirePermission(key: PermissionKey): CommandRequirement = requireInScope { source ->
     val player = source.player ?: return@requireInScope false
     val permissions = get<PermissionsIntegration>()
-    permissions.hasPermission(player, key)
+    permissions.hasPermission(get<IPlayerManager>().forPlayer(player), key)
 }
 
 fun requirePlaying(): CommandRequirement = requireInScope { source ->
@@ -71,7 +72,7 @@ fun IExecutionSource.hasState(vararg requiredState: GameState): Boolean {
 fun IExecutionSource.hasPermission(key: PermissionKey): Boolean {
     val player = player ?: return false
     val permissions = scope.get<PermissionsIntegration>()
-    return permissions.hasPermission(player.player, key)
+    return permissions.hasPermission(player, key)
 }
 
 fun IExecutionContext.sendInfoFeedback(text: MutableText) {

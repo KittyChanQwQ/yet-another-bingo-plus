@@ -126,7 +126,7 @@ class SpreadPlayers(
         if (isEmptyBlock(world, groundPos, groundState))
             return false
         if (isFluidBlock(groundState) || invalidSpawnBlocks.contains(groundState.block)) {
-            log.debug("Skipping block {} to avoid spawning on {}", groundPos, groundState.block.translationKey)
+            log.debug("Skipping block {} to avoid spawning on {}", groundPos, groundState)
             return false
         }
 
@@ -134,7 +134,7 @@ class SpreadPlayers(
             val blockPos = BlockPos(groundPos.x, groundPos.y + y, groundPos.z)
             val blockState = chunk.getBlockState(blockPos)
             if (!isEmptyBlock(world, blockPos, blockState) || isFluidBlock(blockState)) {
-                log.debug("Skipping block {} to avoid spawning inside {}", groundPos, blockState.block.translationKey)
+                log.debug("Skipping block {} to avoid spawning inside {}", groundPos, blockState)
                 return false
             }
         }

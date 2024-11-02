@@ -9,7 +9,7 @@ data class IntegrationsConfig(
     val vanish: Boolean = true,
     val chunky: Boolean = true,
     val chunkyWorlds: Map<String, Int> = mapOf(
-        "minecraft:overworld" to 8000,
+        "minecraft:overworld" to 0,
         "minecraft:the_nether" to 1000,
     ),
     val voice: VoiceConfig = VoiceConfig(),

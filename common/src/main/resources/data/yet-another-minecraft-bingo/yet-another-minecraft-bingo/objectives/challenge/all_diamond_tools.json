@@ -1,7 +1,10 @@
 {
   "type": "all_of",
   "display": {
-    "name": "All Diamond Tools",
+    "name": {
+      "translate": "bingo.objective.challenge.all_diamond_tools",
+      "fallback": "All Diamond Tools"
+    },
     "item": "minecraft:diamond_pickaxe"
   },
   "objectives": [

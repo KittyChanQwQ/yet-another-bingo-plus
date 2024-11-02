@@ -24,7 +24,7 @@ class StatsCommand(
     ) {
         val summary = statsService.getPlayerSummary(player.uuid)
 
-        sendMessage(text.string(StringKey.CommandStatsPlayer, player.name))
+        sendMessage(text.string(StringKey.CommandStatsPlayer, player.playerName))
 
         // All Time
         sendMessage(Text.literal("★ ").append(text.string(StringKey.StatsAllTime)).formatted(Formatting.BOLD, Formatting.YELLOW))
@@ -64,7 +64,7 @@ class StatsCommand(
     private fun IExecutionContext.clearPlayerStats(playerToReset: IPlayerHandle) {
         statsService.resetPlayerStats(playerToReset.uuid)
 
-        text.string(StringKey.CommandStatsResetPlayer, playerToReset.name)
+        text.string(StringKey.CommandStatsResetPlayer, playerToReset.playerName)
             .formatted(Formatting.YELLOW)
             .also { sendMessage(it) }
     }

@@ -83,8 +83,8 @@ class ScoreboardService(
                 for (otherView in scoreboardViews.values - view) {
                     if (otherView.players.contains(player.uuid)) {
                         val otherObjective = scoreboardManager.createDummyObjective(server, otherView.objectiveName, Text.empty())
-                        otherView.players -= player.uuid
                         scoreboardManager.sendObjectiveDelete(player, otherObjective)
+                        otherView.players -= player.uuid
                     }
                 }
 

@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.stats
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IExecutors
-import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.stats.data.*
@@ -74,17 +73,14 @@ class StatsService(
 
     fun updateBestStats(
         game: GameInfo,
-        players: List<GamePlayerInfo>,
-        isSingleplayer: Boolean
+        players: List<GamePlayerInfo>
     ) {
-        val hostPrefix = if (isSingleplayer) "singleplayer:" else ""
-        val host = hostPrefix + game.hostId.toString()
-
         if (!game.isDraw && !game.isForfeit) {
             kotlin.runCatching {
                 db.bestStatsQueries.updateTime(
                     hash = game.bingoOptionsHash,
-                    host_id = host,
+                    host_id = hostId.toString(),
+                    is_singleplayer = if (game.playerCount == 1) 1L else 0L,
                     game_id = game.id.toString(),
                     duration = game.duration.inWholeMilliseconds
                 )
@@ -98,7 +94,7 @@ class StatsService(
                 db.bestStatsQueries.updateCapturedItems(
                     player_id = player.minecraftId.toString(),
                     hash = game.bingoOptionsHash,
-                    host_id = host,
+                    host_id = hostId.toString(),
                     game_id = game.id.toString(),
                     items = player.capturedItems.toLong(),
                 )
@@ -111,7 +107,7 @@ class StatsService(
                 if (winStreak > 0L) {
                     db.bestStatsQueries.updateWinStreak(
                         player_id = player.minecraftId.toString(),
-                        host_id = host,
+                        host_id = hostId.toString(),
                         streak = winStreak,
                     )
                 }
@@ -193,15 +189,19 @@ class StatsService(
     }
 
     fun getBestTime(options: BingoOptions, isSingleplayer: Boolean): Duration? {
-        val hostPrefix = if (isSingleplayer) "singleplayer:" else ""
-        val host = hostPrefix + hostId.toString()
+        val bestTimeQuery = if (isSingleplayer) {
+            db.bestStatsQueries.bestTimeSingleplayer(
+                bingo_options_hash = options.getShaHash(),
+                host_id = hostId.toString(),
+            )
+        } else {
+            db.bestStatsQueries.bestTimeMultiplayer(
+                bingo_options_hash = options.getShaHash(),
+                host_id = hostId.toString(),
+            )
+        }
 
-        val time = db.bestStatsQueries.bestTime(
-            bingo_options_hash = options.getShaHash(),
-            host_id = host,
-        ).executeAsOneOrNull()?.duration
-
-        return time?.milliseconds
+        return bestTimeQuery.executeAsOneOrNull()?.duration?.milliseconds
     }
 
     fun getBestTimeAsync(options: BingoOptions, isSingleplayer: Boolean): CompletableFuture<Duration?> {
@@ -213,6 +213,7 @@ class StatsService(
         val capturedItems = db.bestStatsQueries.bestCapturedItems(
             player_id = playerId.toString(),
             bingo_options_hash = options.getShaHash(),
+            host_id = hostId.toString(),
         ).executeAsOneOrNull()?.captured_items
 
         return capturedItems?.toInt()
@@ -221,17 +222,24 @@ class StatsService(
     fun getBestWinStreak(playerId: UUID): Long? {
         val winStreak = db.bestStatsQueries.bestWinStreak(
             player_id = playerId.toString(),
+            host_id = hostId.toString(),
         ).executeAsOneOrNull()?.win_streak
 
         return winStreak
     }
 
     fun resetPlayerStats(playerId: UUID) {
-        db.bestStatsQueries.resetByPlayer(playerId.toString())
+        db.bestStatsQueries.resetByPlayer(
+            player_id = playerId.toString(),
+            host_id = hostId.toString(),
+        )
     }
 
     fun resetGameStats(options: BingoOptions) {
-        db.bestStatsQueries.resetByHash(options.getShaHash())
+        db.bestStatsQueries.resetByHash(
+            hash = options.getShaHash(),
+            host_id = hostId.toString(),
+        )
     }
 
     fun resetAllStats() {

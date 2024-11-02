@@ -152,9 +152,23 @@ class MigrationHandler(
                 ?.deleteIfExists()
         }
 
-        migrations[14] = { // 2.2.0-alpha.1
+        migrations[16] = { // 2.2.1
+            loader.configDir.resolve("$MOD_ID_BINGO/all_items.tierlist.json")
+                .takeIfMd5("8af987dce4f22bdd948dab0be442491e", "80db1d320d67b16046eff5d16a3b911a", "7bb179acf2c50992091a50eda4e115b2")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("$MOD_ID_BINGO/simplified.tierlist.json")
+                .takeIfMd5("8e53697667ad30847642932edfd302d7", "704f1e91c43487a4495bb1d7ac51eeb1")
+                ?.deleteIfExists()
+
             loader.configDir.resolve("$MOD_ID_BINGO/challenge.tierlist.json")
-                .takeIfMd5("9c0c3347056b79c6dafef1dcb2316f69", "762fb665525a9a7408e460184f1e5803", "980848e7fc9bdc54030a449a65548997")
+                .takeIfMd5("9c0c3347056b79c6dafef1dcb2316f69", "762fb665525a9a7408e460184f1e5803", "980848e7fc9bdc54030a449a65548997", "3509f527976c42b4f72b5d9f5ae57bac")
+                ?.deleteIfExists()
+        }
+
+        migrations[18] = { // 2.2.5
+            loader.configDir.resolve("$MOD_ID_BINGO/challenge.tierlist.json")
+                .takeIfMd5("3509f527976c42b4f72b5d9f5ae57bac", "efe9f31c33a51e893c4aff44ffb8f51e")
                 ?.deleteIfExists()
         }
     }

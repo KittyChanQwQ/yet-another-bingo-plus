@@ -1,7 +1,10 @@
 {
   "type": "all_of",
   "display": {
-    "name": "All Seeds",
+    "name": {
+      "translate": "bingo.objective.challenge.all_seeds",
+      "fallback": "All Seeds"
+    },
     "item": "minecraft:wheat_seeds"
   },
   "objectives": [

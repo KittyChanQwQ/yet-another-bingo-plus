@@ -1,7 +1,10 @@
 {
   "type": "all_of",
   "display": {
-    "name": "All Golden Tools",
+    "name": {
+      "translate": "bingo.objective.challenge.all_golden_tools",
+      "fallback": "All Golden Tools"
+    },
     "item": "minecraft:golden_pickaxe"
   },
   "objectives": [

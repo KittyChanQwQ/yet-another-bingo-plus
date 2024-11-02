@@ -53,9 +53,9 @@ class StatsLobbyController(
     private val nameEntity: ITextDisplayEntity? get() {
         val lobbyWorld = server.lobbyWorld ?: return null
 
-        nameEntityUuid?.let {
-            return entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity
-        }
+        nameEntityUuid
+            ?.let { entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity }
+            ?.let { return it }
 
         val pos = statsPos ?: return null
 
@@ -79,9 +79,9 @@ class StatsLobbyController(
     private val leftEntity: ITextDisplayEntity? get() {
         val lobbyWorld = server.lobbyWorld ?: return null
 
-        leftEntityUuid?.let {
-            return entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity
-        }
+        leftEntityUuid
+            ?.let { entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity }
+            ?.let { return it }
 
         val pos = statsPos ?: return null
 
@@ -106,9 +106,9 @@ class StatsLobbyController(
     private val rightEntity: ITextDisplayEntity? get() {
         val lobbyWorld = server.lobbyWorld ?: return null
 
-        rightEntityUuid?.let {
-            return entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity
-        }
+        rightEntityUuid
+            ?.let { entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity }
+            ?.let { return it }
 
         val pos = statsPos ?: return null
 
@@ -150,7 +150,7 @@ class StatsLobbyController(
         playerHead.setSkullOwner(player)
         armorStand.equipStack(IArmorStandEntity.EquipmentSlot.HEAD, playerHead)
 
-        nameEntity?.value = Text.literal(playerManager.forPlayer(player).name)
+        nameEntity?.value = Text.literal(playerManager.forPlayer(player).playerName)
 
         val favoriteTeam = BingoTeam.TEAM_BLOCKS.values
             .find { it.key == summary.favoriteTeam }
