@@ -36,6 +36,7 @@ class ItemStackFactory(
     override fun listItems(server: MinecraftServer): List<String> {
         return Registries.ITEM.streamEntries()
             .map { it.registryKey().value.toString() }
+            .filter { isEnabledInWorld(it, server) }
             .toList()
     }
 
