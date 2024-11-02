@@ -71,11 +71,10 @@ class ReadyHudRenderer(
                 )
             }
         }
-        val charTotalWidth = chars.sumOf { it.width }
-        var currentWidth = 0
-        for (char in chars) {
-            context.drawText(textRenderer, Text.literal(char.char), x + width/2 - charTotalWidth/2 + currentWidth + 1, y + (textRenderer.fontHeight * 2) + 12, char.color, true)
-            currentWidth += char.width
+        val charWidth = textRenderer.getWidth(charReady)
+        val charTotalWidth = charWidth * chars.size
+        for ((i, char) in chars.withIndex()) {
+            context.drawText(textRenderer, Text.literal(char.char), x + width/2 - charTotalWidth/2 + (i*charWidth) + (charWidth-char.width)/2, y + (textRenderer.fontHeight * 2) + 12, char.color, true)
         }
     }
 
