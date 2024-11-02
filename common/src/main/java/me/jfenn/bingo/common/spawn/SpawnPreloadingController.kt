@@ -119,10 +119,12 @@ class SpawnPreloadingController(
                 totalPlayers = 0,
                 title = text.string(StringKey.LobbyLoadingTerrain),
                 subtitle = Text.literal("$percentage ($doneCount/$totalCount)"),
+                canSendReady = false,
             )
 
             for (player in playerManager.getPlayers()) {
                 when {
+                    packet.readyUpdateV3.send(player, updatePacket) -> {}
                     packet.readyUpdateV2.send(player, updatePacket) -> {}
                     // readyUpdateV1 is intentionally omitted, as it does not support GameState.PRELOADING or custom titles
                     else -> player.sendHotbarMessage(message)

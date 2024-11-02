@@ -47,6 +47,7 @@ class ServerPacketEvents(
 
     val readyUpdateV1 = serverNetworking.registerS2C(ReadyUpdatePacket.V1)
     val readyUpdateV2 = serverNetworking.registerS2C(ReadyUpdatePacket.V2)
+    val readyUpdateV3 = serverNetworking.registerS2C(ReadyUpdatePacket.V3)
     val readySetV1 = serverNetworking.registerC2S(SetReadyPacket.V1)
 
     val sendPlayerSettingsV1 = serverNetworking.registerC2S(PlayerSettings.V1_C2S)

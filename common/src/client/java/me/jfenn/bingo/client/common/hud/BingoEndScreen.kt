@@ -89,11 +89,25 @@ class BingoEndScreen(
 
     private val scoresWidget = scrollableWidgetFactory.create(BingoEndScoresWidget(koin, gameOver))
 
+    private enum class NextGameButton(val string: StringKey) {
+        NEXT_ROUND(StringKey.WorldNextRound),
+        RESTART(StringKey.WorldRestart),
+        DISCONNECT(StringKey.WorldDisconnect),
+    }
+
+    private fun nextGameButton(): NextGameButton {
+        return when {
+            state.ready?.canSendReady == true && packets.readySetV1.isSupported() -> NextGameButton.NEXT_ROUND
+            gameOver.packet.canSendRestart -> NextGameButton.RESTART
+            else -> NextGameButton.DISCONNECT
+        }
+    }
+
     private fun reopenWorld() {
-        when {
-            packets.readySetV1.isSupported() -> packets.readySetV1.send(SetReadyPacket(true))
-            gameOver.packet.canSendRestart -> worldService.restartServer()
-            else -> worldService.disconnect()
+        when (nextGameButton()) {
+            NextGameButton.NEXT_ROUND -> packets.readySetV1.send(SetReadyPacket(true))
+            NextGameButton.RESTART -> worldService.restartServer()
+            NextGameButton.DISCONNECT -> worldService.disconnect()
         }
     }
 
@@ -113,11 +127,7 @@ class BingoEndScreen(
         addDrawableChild(dismissButton)
 
         val restartButton = restartButton ?: ButtonWidget.builder(
-            when {
-                packets.readySetV1.isSupported() -> text.string(StringKey.WorldNextRound)
-                gameOver.packet.canSendRestart -> text.string(StringKey.WorldRestart)
-                else -> text.string(StringKey.WorldDisconnect)
-            }
+            text.string(nextGameButton().string)
         ) {
             it.active = false
             reopenWorld()
@@ -211,6 +221,8 @@ class BingoEndScreen(
         val ready = state.ready
         if (ready != null && ready.isRunning) {
             restartButton?.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
+        } else {
+            restartButton?.message = text.string(nextGameButton().string)
         }
 
         context.matrices.push()

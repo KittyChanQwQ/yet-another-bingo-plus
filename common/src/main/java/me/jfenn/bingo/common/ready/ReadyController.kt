@@ -15,7 +15,6 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
-import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.slf4j.Logger
 import kotlin.time.Duration
@@ -25,7 +24,6 @@ class ReadyController(
     private val log: Logger,
     private val readyState: ReadyTimerState,
     private val state: BingoState,
-    private val server: MinecraftServer,
     private val config: BingoConfig,
     private val text: TextProvider,
     private val gameService: GameService,
@@ -84,6 +82,12 @@ class ReadyController(
             // (note that SpawnPreloadingController also sends ReadyUpdatePacket, so this must avoid conflicts)
             if (state.state !in arrayOf(GameState.PREGAME, GameState.POSTGAME))
                 return@onUpdateTick
+
+            val isVotingEnabled = when (state.state) {
+                GameState.PREGAME -> config.startWhenReadySeconds != null
+                GameState.POSTGAME -> config.nextRoundWhenReadySeconds != null
+                else -> false
+            }
 
             readyState.updatePlayers(playerManager.getPlayers())
             val remainingTime = readyState.remainingTime()
@@ -154,9 +158,15 @@ class ReadyController(
                     else -> text.string(StringKey.LobbyNextRoundTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
                 }
 
-                val packet = updatePacket.copy(isReady = isPlayerReady, title = title, subtitle = subtitle)
+                val packet = updatePacket.copy(
+                    isReady = isPlayerReady,
+                    title = title,
+                    subtitle = subtitle,
+                    canSendReady = isVotingEnabled && permissions.hasPermission(player, Permission.COMMAND_READY)
+                )
 
                 when {
+                    packets.readyUpdateV3.send(player, packet) -> {}
                     packets.readyUpdateV2.send(player, packet) -> {}
                     packets.readyUpdateV1.send(player, packet) -> {}
                     packet.isRunning -> {

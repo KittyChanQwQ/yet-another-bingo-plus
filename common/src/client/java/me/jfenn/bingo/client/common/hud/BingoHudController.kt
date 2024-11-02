@@ -13,6 +13,7 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
+import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.ready.SetReadyPacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
@@ -231,6 +232,11 @@ class BingoHudController(
         updateGameOverViews()
     }
 
+    private fun onReadyUpdate(clientPacket: ClientPacket<ReadyUpdatePacket>) {
+        val packet = clientPacket.packet
+        state.ready = packet
+    }
+
     init {
         packetEvents.cardDisplayV1.onPacket {
             state.display = it.packet
@@ -266,12 +272,9 @@ class BingoHudController(
         packetEvents.gameOverV5.onPacket(::onGameOver)
         packetEvents.gameOverV6.onPacket(::onGameOver)
 
-        packetEvents.readyUpdateV1.onPacket {
-            state.ready = it.packet
-        }
-        packetEvents.readyUpdateV2.onPacket {
-            state.ready = it.packet
-        }
+        packetEvents.readyUpdateV1.onPacket(::onReadyUpdate)
+        packetEvents.readyUpdateV2.onPacket(::onReadyUpdate)
+        packetEvents.readyUpdateV3.onPacket(::onReadyUpdate)
 
         packetEvents.tooltipV1.onPacket {
             state.tooltip = it.packet
