@@ -28,7 +28,7 @@ class TierListCommand(
         val cardViewService = scope.get<CardViewService>()
         val card = cardViewService.getPlayerCard(player!!)
 
-        if (!tierListState.tierLists.keys.contains(listName)) {
+        if (listName != null && !tierListState.tierLists.keys.contains(listName)) {
             throw IllegalArgumentException("Tier list '${listName}' is not available.")
         }
 

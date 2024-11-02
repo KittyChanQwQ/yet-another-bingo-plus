@@ -39,7 +39,7 @@ fun MenuComponent.registerItemFilters(
     // Update options.tierList/tierListPage to ensure that there is a tier list selected
     options.tierListPage = pages
         .indexOfFirst { page ->
-            page.any { it.value == state.getActiveCard().options.itemFilter }
+            page.any { it.value == options.cards.firstOrNull()?.itemFilter }
         }
         .takeIf { it != -1 }
         ?: 0

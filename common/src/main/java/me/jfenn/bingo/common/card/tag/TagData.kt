@@ -15,4 +15,8 @@ class TagData(
             values = this.values + other.values,
         )
     }
+
+    fun contains(value: String): Boolean {
+        return values.contains(value)
+    }
 }

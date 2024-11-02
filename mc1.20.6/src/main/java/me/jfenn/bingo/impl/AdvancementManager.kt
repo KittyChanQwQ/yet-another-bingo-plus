@@ -12,7 +12,9 @@ import kotlin.jvm.optionals.getOrNull
 
 class AdvancementManager : IAdvancementManager {
     override fun listAdvancements(server: MinecraftServer): List<String> {
-        return server.advancementLoader.advancements.map { it.id.toString() }
+        return server.advancementLoader.advancements
+            .filter { it.value.display.isPresent }
+            .map { it.id.toString() }
     }
 
     override fun getAdvancement(server: MinecraftServer, id: String): IAdvancementHandle? {

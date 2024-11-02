@@ -2,8 +2,11 @@ package me.jfenn.bingo.common.card
 
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.card.filter.ObjectiveFilter
+import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
+import me.jfenn.bingo.common.card.tag.TagData
+import me.jfenn.bingo.common.card.tag.TagState
 import me.jfenn.bingo.common.card.tierlist.*
 import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.config.BingoOptions
@@ -29,6 +32,7 @@ class CardService(
     private val configService: ConfigService,
     private val tierListState: TierListState,
     private val tierListService: TierListService,
+    private val tagState: TagState,
     private val objectiveManager: BingoObjectiveManager,
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
@@ -37,6 +41,8 @@ class CardService(
         validateLists()
         createInitialCards()
     }
+
+    private val supportedObjectiveIds = objectiveManager.list().toSet()
 
     private fun validateLists() {
         tierListState.tierLists.entries
@@ -218,6 +224,66 @@ class CardService(
         state.replaceCard(newCard)
     }
 
+    private fun getFilterTag(filter: ObjectiveFilter): TagData? {
+        return tagState.tags[filter.tag] ?: run {
+            log.error("[CardService] Objective tag '${filter.tag}' does not exist!")
+            null
+        }
+    }
+
+    private fun assembleTierList(
+        tierListName: String?,
+        filterList: ObjectiveFilterList,
+    ): TierListConfig {
+        val includeFilters = filterList
+            .filter { it is ObjectiveFilter.Include || it is ObjectiveFilter.Count }
+            .mapNotNull { getFilterTag(it) }
+        val excludeFilters = filterList
+            .filterIsInstance<ObjectiveFilter.Exclude>()
+            .mapNotNull { getFilterTag(it) }
+        // If the filter list doesn't contain any include (+) filters, then include everything by default
+        val isDefaultIncluded = filterList.none { it is ObjectiveFilter.Include }
+
+        // Collect the selected tier list config
+        val tierList = tierListName?.let { tierListId ->
+            // If a tier list is specified, only use that specific list
+            tierListState.tierLists[tierListId]
+                ?.expandTags(tagExpansionService)
+                ?.expandName(tierListId)
+        } ?: run {
+            // Otherwise, collect all available lists
+            var list = TierListConfig.EMPTY
+            tierListState.tierLists
+                .filter { (name, _) -> isListSupported(name, {}) }
+                .map { (name, otherList) ->
+                    otherList.expandTags(tagExpansionService).expandName(name)
+                }
+                .forEach { list = list.combine(it) }
+
+            list
+        }
+
+        val uncategorizedObjectives = supportedObjectiveIds
+            .plus(tierList.values.map { it.item }.toSet())
+            .filterNot { tierList.isCategorized(it) }
+            .map { TierListEntry(it) }
+            .onEach {
+                it.listName = "uncategorized"
+            }
+
+        return tierList
+            .copy(
+                // include any uncategorized objectives in the list
+                values = uncategorizedObjectives.toSet()
+            )
+            .filter { entry ->
+                // apply the selected item filters to the list contents
+                val isIncluded = isDefaultIncluded || includeFilters.any { it.contains(entry.item) }
+                val isExcluded = excludeFilters.any { it.contains(entry.item) }
+                isIncluded && !isExcluded
+            }
+    }
+
     fun generate(
         id: UUID,
         seed: Long,
@@ -249,32 +315,15 @@ class CardService(
         val state = CardGeneratorState(random)
         log.info("Using random BINGO card seed: $seed")
 
-        // Collect the selected tier list configs by weight
-        val tierList = cardOptions.tierList?.let { tierListId ->
-            // If a tier list is specified, only use that specific list
-            tierListState.tierLists[tierListId]
-                ?.expandTags(tagExpansionService)
-                ?.expandName(tierListId)
-        } ?: run {
-            // Otherwise, collect all available lists
-            var list = TierListConfig.EMPTY
-            tierListState.tierLists
-                .filter { (name, _) -> isListSupported(name, {}) }
-                .map { (name, otherList) ->
-                    otherList.expandTags(tagExpansionService).expandName(name)
-                }
-                .forEach { list = list.combine(it) }
-
-            list
-        }
-
+        val tierList = assembleTierList(cardOptions.tierList, cardOptions.itemFilter)
         val items = mutableListOf<BingoCardEntry>()
         val objectives = mutableMapOf<String, BingoObjective>()
 
         // Track the tags added to the card to enforce filter requirements
         val requiredTagCounts = cardOptions.itemFilter
             .filterIsInstance<ObjectiveFilter.Count>()
-            .map { filter ->
+            .mapNotNull { filter ->
+                val tag = getFilterTag(filter) ?: return@mapNotNull null
                 var remainingCount = filter.count
                 // For each tag filter, distribute its items between the item dist
                 // (this may not exactly add up to the remainingCount)
@@ -287,14 +336,14 @@ class CardService(
                     count
                 }
 
-                filter.tag to filterDist
+                tag to filterDist
             }
 
         // Pick the given number of items from the tier list for each tier
         for ((tierIndex, tier) in TierLabel.entries.withIndex()) {
             var tierCountRemaining = dist[tierIndex]
 
-            fun createObjectivePair(entry: TierListEntry): Pair<String, Map<String, BingoObjective>>? {
+            fun createObjectivePair(entry: TierListEntry): Pair<TierListEntry, Map<String, BingoObjective>>? {
                 val objectiveId = entry.item
                 val objectiveMap = createObjectives(objectiveId, state)
                     ?: return null
@@ -309,17 +358,17 @@ class CardService(
                 // - this prevents "craft a shield" and "never obtain shield" from appearing on the same card
                 excludedObjectives.addAll(objectiveConflicts)
 
-                return Pair(objectiveId, objectiveMap)
+                return Pair(entry, objectiveMap)
             }
 
-            fun addObjectivePairs(pairs: List<Pair<String, Map<String, BingoObjective>>>) {
-                for ((objectiveId, objectiveMap) in pairs) {
+            fun addObjectivePairs(pairs: List<Pair<TierListEntry, Map<String, BingoObjective>>>) {
+                for ((entry, objectiveMap) in pairs) {
                     objectives.putAll(objectiveMap)
                     items.add(
                         BingoCardEntry(
-                            objectiveId = objectiveId,
-                            tier = tier,
-                            source = "unknown", // TODO: track source through TierListConfig entries
+                            objectiveId = entry.item,
+                            tier = entry.tierLabel,
+                            source = entry.listName,
                         )
                     )
                 }
@@ -331,8 +380,8 @@ class CardService(
                 val itemCount = count[tierIndex].coerceAtMost(tierCountRemaining)
 
                 val tierItems = tierList.pick(tier, excludedObjectives, random)
+                    .filter { tag.contains(it.item) }
                     .mapNotNull { createObjectivePair(it) }
-                    .filter { false } // TODO: filter by (tag in it.objective.tags)
                     .take(itemCount)
                     .toList()
 
@@ -341,8 +390,11 @@ class CardService(
 
             // Then, add remaining items that satisfy other filter conditions
             val tierItems = tierList.pick(tier, excludedObjectives, random)
+                // exclude required count tags when picking normal items (otherwise the actual counts may differ)
+                .filter { entry ->
+                    requiredTagCounts.none { (tag, _) -> tag.contains(entry.item) }
+                }
                 .mapNotNull { createObjectivePair(it) }
-                .filter { true } // TODO: filter if tag is allowed & exclude required count tags
                 .take(tierCountRemaining)
                 .toList()
 

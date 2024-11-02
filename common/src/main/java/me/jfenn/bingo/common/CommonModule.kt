@@ -10,6 +10,8 @@ import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryManager
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
 import me.jfenn.bingo.common.card.objective.*
+import me.jfenn.bingo.common.card.tag.TagManager
+import me.jfenn.bingo.common.card.tag.TagState
 import me.jfenn.bingo.common.card.tierlist.TierListCommand
 import me.jfenn.bingo.common.card.tierlist.TierListManager
 import me.jfenn.bingo.common.card.tierlist.TierListService
@@ -116,6 +118,8 @@ val commonModule = module {
 
     singleOf(::ObjectiveRegistryState)
     singleOf(::ObjectiveRegistryManager)
+    singleOf(::TagState)
+    singleOf(::TagManager)
     singleOf(::TierListState)
     singleOf(::TierListManager)
     singleOf(::TagExpansionService)
@@ -263,6 +267,7 @@ fun Koin.commonInit() {
     get<InfoBookCommand>()
 
     get<ObjectiveRegistryManager>()
+    get<TagManager>()
     get<TierListManager>()
 
     get<ConnectionFactory>()

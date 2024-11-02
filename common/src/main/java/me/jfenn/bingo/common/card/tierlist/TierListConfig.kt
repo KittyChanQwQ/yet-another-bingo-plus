@@ -129,9 +129,9 @@ data class TierListConfig(
         }
     }
 
-    fun contains(entry: TierListEntry): Boolean {
-        return values.contains(entry)
-                || s.contains(entry)
+    fun isCategorized(objectiveId: String): Boolean {
+        val entry = TierListEntry(objectiveId)
+        return s.contains(entry)
                 || a.contains(entry)
                 || b.contains(entry)
                 || c.contains(entry)
@@ -161,6 +161,13 @@ data class TierListConfig(
             )
     }
 
+    private fun expandTags(
+        expansionService: TagExpansionService,
+        entry: TierListEntry,
+    ): List<TierListEntry> {
+        return expansionService.expandItemTag(entry.item).map { TierListEntry(it) }
+    }
+
     fun expandName(
         listName: String,
     ) : TierListConfig {
@@ -175,11 +182,10 @@ data class TierListConfig(
             }
     }
 
-    private fun expandTags(
-        expansionService: TagExpansionService,
-        entry: TierListEntry,
-    ): List<TierListEntry> {
-        return expansionService.expandItemTag(entry.item).map { TierListEntry(it) }
+    fun filter(predicate: (TierListEntry) -> Boolean): TierListConfig {
+        return mapTiers { entries, _ ->
+            entries.filter(predicate).toSet()
+        }
     }
 
 }
