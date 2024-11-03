@@ -4,7 +4,7 @@ import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.URL_WIKI
 import me.jfenn.bingo.common.card.tierlist.TierLabel
-import me.jfenn.bingo.common.card.tierlist.TierListService
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -24,9 +24,9 @@ class BingoCommand(
     private val text: TextProvider,
 ) : BingoComponent() {
     private fun IExecutionContext.getOptionsText(): List<Text> = buildList {
+        val config = scope.get<BingoConfig>()
         val state = scope.get<BingoState>()
         val options = scope.get<BingoOptions>()
-        val tierListService = scope.get<TierListService>()
         val cardViewService = scope.get<CardViewService>()
         val team = scope.get<TeamService>().getPlayerTeam(player!!)
         val card = cardViewService.getPlayerCard(player!!)
@@ -106,16 +106,14 @@ class BingoCommand(
             }
             .let { add(it) }
 
-        tierListService.formatTierList(card.options)?.let { tierListName ->
-            text.string(StringKey.OptionsTierList)
-                .append(": ")
-                .append(tierListName.formatted(Formatting.YELLOW))
-                .formatted(Formatting.GRAY)
-                .also {
-                    it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo tierlist"))
-                }
-                .let { add(it) }
-        }
+        text.string(StringKey.OptionsFilter)
+            .append(": ")
+            .append(card.options.formatFilter(config).formatted(Formatting.YELLOW))
+            .formatted(Formatting.GRAY)
+            .also {
+                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo tierlist"))
+            }
+            .let { add(it) }
 
         add(Text.empty())
     }

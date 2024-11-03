@@ -3,8 +3,6 @@ package me.jfenn.bingo.common.card.tierlist
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.card.tag.TagData
-import me.jfenn.bingo.common.card.tag.TagState
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.utils.json
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
@@ -21,7 +19,6 @@ import java.security.MessageDigest
 
 class TierListManager(
     private val tierLists: TierListState,
-    private val tags: TagState,
     private val log: Logger,
 ) {
     private fun readTierList(file: File): TierListConfig? {
@@ -111,18 +108,6 @@ class TierListManager(
         }
 
         tierLists.tierLists = newTierLists
-
-        // For each tier list, create a tag that corresponds to its name
-        for ((key, config) in newTierLists) {
-            val newTags = tags.tags.toMutableMap()
-            newTags[key] = TagData(
-                values = (config.s + config.a + config.b + config.c + config.d + config.values)
-                    .map { it.item }
-                    .toSet()
-            )
-
-            tags.tags = newTags
-        }
     }
 
     init {

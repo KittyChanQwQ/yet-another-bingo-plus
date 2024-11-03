@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.card.objective
 
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
-import me.jfenn.bingo.common.card.tierlist.TierListService
+import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
 import net.minecraft.text.Style
@@ -14,7 +14,6 @@ private val NON_ITALIC_STYLE = Style.EMPTY.withItalic(false)
 
 class BingoObjectiveManager(
     private val providers: List<IObjectiveManager>,
-    private val tierListService: TierListService,
     private val text: TextProvider,
     private val log: Logger,
 ) : IObjectiveManager {
@@ -64,7 +63,7 @@ class BingoObjectiveManager(
 
                 val desc = listOfNotNull(
                     entry.tier?.let { text.string(it.string).formatted(it.formatting) },
-                    entry.source?.let { tierListService.getName(it).formatted(Formatting.BLUE) },
+                    entry.source?.let { ObjectiveFilterList.formatName(it).formatted(Formatting.BLUE) },
                     entry.tileName?.let { Text.literal(it).formatted(Formatting.GRAY) },
                 )
 

@@ -12,7 +12,7 @@ import net.minecraft.util.Identifier
 import org.slf4j.Logger
 
 class TagManager(
-    private val state: TagState,
+    private val state: DataTagProvider,
     private val log: Logger,
 ) {
 

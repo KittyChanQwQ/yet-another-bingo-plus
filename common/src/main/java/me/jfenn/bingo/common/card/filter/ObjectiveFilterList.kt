@@ -1,6 +1,9 @@
 package me.jfenn.bingo.common.card.filter
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.common.utils.formatTitle
+import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 
 @Serializable(with = ObjectiveFilterSerializer::class)
 data class ObjectiveFilterList(
@@ -33,15 +36,10 @@ data class ObjectiveFilterList(
 
     companion object {
         val DEFAULT = mapOf(
-            "everything" to ObjectiveFilterList(
+            ObjectiveFilter.EVERYTHING to ObjectiveFilterList(
                 ObjectiveFilter.Exclude("unobtainable")
             ),
-            "simplified" to ObjectiveFilterList(
-                ObjectiveFilter.Include("simplified"),
-                ObjectiveFilter.Exclude("uncategorized"),
-                ObjectiveFilter.Exclude("unobtainable")
-            ),
-            "overworld-only" to ObjectiveFilterList(
+            ObjectiveFilter.OVERWORLD to ObjectiveFilterList(
                 ObjectiveFilter.Include("overworld"),
                 ObjectiveFilter.Exclude("uncategorized"),
                 ObjectiveFilter.Exclude("unobtainable")
@@ -65,5 +63,7 @@ data class ObjectiveFilterList(
 
             return ObjectiveFilterList(list)
         }
+
+        fun formatName(name: String): MutableText = Text.translatableWithFallback("bingo.list.$name", name.formatTitle())
     }
 }

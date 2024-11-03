@@ -9,12 +9,11 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryManager
 import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.card.filter.ObjectiveFilterCommand
+import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.card.objective.*
-import me.jfenn.bingo.common.card.tag.TagManager
-import me.jfenn.bingo.common.card.tag.TagState
-import me.jfenn.bingo.common.card.tierlist.TierListCommand
+import me.jfenn.bingo.common.card.tag.*
 import me.jfenn.bingo.common.card.tierlist.TierListManager
-import me.jfenn.bingo.common.card.tierlist.TierListService
 import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
@@ -113,12 +112,12 @@ val commonModule = module {
     singleOf(::ReadyCommand)
     singleOf(::RestartCommand)
     singleOf(::StatsCommand)
-    singleOf(::TierListCommand)
+    singleOf(::ObjectiveFilterCommand)
     singleOf(::InfoBookCommand)
 
     singleOf(::ObjectiveRegistryState)
     singleOf(::ObjectiveRegistryManager)
-    singleOf(::TagState)
+    singleOf(::DataTagProvider)
     singleOf(::TagManager)
     singleOf(::TierListState)
     singleOf(::TierListManager)
@@ -136,7 +135,6 @@ val commonModule = module {
         scoped { get<BingoScope>().state }
         scoped { get<BingoState>().options }
 
-        scopedOf(::TierListService)
         scopedOf(::ObjectiveService)
         scopedOf(::ObjectiveDisplayService)
         scopedOf(::AdvancementObjectiveManager)
@@ -161,9 +159,22 @@ val commonModule = module {
                 ),
                 get(),
                 get(),
-                get(),
             )
         }
+
+        scopedOf(::ObjectiveTagProvider)
+        scopedOf(::TierListTagProvider)
+        scoped {
+            TagService(
+                listOf(
+                    get<DataTagProvider>(),
+                    get<ObjectiveTagProvider>(),
+                    get<TierListTagProvider>(),
+                )
+            )
+        }
+        scopedOf(::ObjectiveFilterService)
+        scopedOf(::CardService)
 
         scopedOf(::StatsLobbyController)
         scopedOf(::StatsSyncController)
@@ -183,7 +194,6 @@ val commonModule = module {
         scopedOf(::MapRenderService)
         scopedOf(::CardViewService)
         scopedOf(::CardImageService)
-        scopedOf(::CardService)
         scopedOf(::ScoreboardService)
         scopedOf(::PlayerSettingsService)
 
@@ -263,7 +273,7 @@ fun Koin.commonInit() {
     get<ReadyCommand>()
     get<RestartCommand>()
     get<StatsCommand>()
-    get<TierListCommand>()
+    get<ObjectiveFilterCommand>()
     get<InfoBookCommand>()
 
     get<ObjectiveRegistryManager>()

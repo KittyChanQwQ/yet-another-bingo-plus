@@ -3,17 +3,20 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.api.EntityType
 import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
+import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import org.joml.Matrix4f
 import org.joml.Vector3d
+
+private var itemFilterPage: Int = 0
 
 fun MenuComponent.registerItemFilters(
     position: Vector3d,
@@ -22,6 +25,7 @@ fun MenuComponent.registerItemFilters(
     state: BingoState = koinScope.get(),
     config: BingoConfig = koinScope.get(),
     cardService: CardService = koinScope.get(),
+    objectiveFilterService: ObjectiveFilterService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY) {
@@ -34,38 +38,34 @@ fun MenuComponent.registerItemFilters(
         transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 
-    val pages = config.itemFilters.entries.chunked(4)
+    val pages = objectiveFilterService.getPresetFilters().entries.chunked(4)
 
-    // Update options.tierList/tierListPage to ensure that there is a tier list selected
-    options.tierListPage = pages
+    // Update options.tierList/tierListPage to ensure that any selected item is visible
+    itemFilterPage = pages
         .indexOfFirst { page ->
             page.any { it.value == options.cards.firstOrNull()?.itemFilter }
         }
         .takeIf { it != -1 }
         ?: 0
 
-    val page by computedProperty { options.tierListPage.coerceIn(pages.indices) }
+    val page by computedProperty { itemFilterPage.coerceIn(pages.indices) }
 
     for (i in 0..3) {
-        val toggleProp = DelegatedProperty(
-            getter = { state.getActiveCard().options.itemFilter == pages[page].getOrNull(i)?.value },
-            setter = { isEnabled ->
-                val filter = pages[page].getOrNull(i) ?: return@DelegatedProperty
-                val cardOptions = state.getActiveCard().options
-                cardOptions.itemFilter = filter.value
-            }
-        )
-
-        registerToggleButton(
+        registerButton(
             position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + i*MENU_ITEM_HEIGHT), 0.0),
             text = Text.literal(""),
             textProp = computedProperty {
-                // TODO: translations support
-                pages[page].getOrNull(i)?.let { Text.literal(it.key.formatTitle()) }
+                pages[page].getOrNull(i)?.let { ObjectiveFilterList.formatName(it.key) }
+                    ?: Text.empty()
             },
-            toggleProp = toggleProp,
+            isActiveProp = computedProperty {
+                state.getActiveCard().options.itemFilter == pages[page].getOrNull(i)?.value
+            },
             permissionGetter = permissionGetter,
         ) {
+            val filter = pages[page].getOrNull(i) ?: return@registerButton
+            val cardOptions = state.getActiveCard().options
+            cardOptions.itemFilter = filter.value
             markDirty()
 
             // when changed, update the bingo card
@@ -93,7 +93,7 @@ fun MenuComponent.registerItemFilters(
             isActiveProp = computedProperty { false },
             permissionGetter = permissionGetter,
         ) {
-            options.tierListPage = (options.tierListPage + 1) % pages.size
+            itemFilterPage = (itemFilterPage + 1) % pages.size
             markDirty()
         }
     }

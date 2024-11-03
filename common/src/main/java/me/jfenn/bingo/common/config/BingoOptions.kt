@@ -25,7 +25,6 @@ data class BingoOptions(
     var endGameWhenComplete: Boolean = true,
 
     var timeLimit: Duration? = null,
-    var tierListPage: Int = 0,
 
     // game feature settings
     var isElytra: Boolean = false,
@@ -122,7 +121,6 @@ data class BingoOptions(
                 yield(json.encodeToString(card.goal))
                 yield(json.encodeToString(card.itemDistribution))
                 yield(card.itemFilter.toString())
-                yield(json.encodeToString(card.tierList))
                 // gamemodes
                 yield(card.isLockoutMode.toString())
                 yield(card.isInventoryMode.toString())

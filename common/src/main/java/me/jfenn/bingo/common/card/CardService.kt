@@ -6,8 +6,11 @@ import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.tag.TagData
-import me.jfenn.bingo.common.card.tag.TagState
-import me.jfenn.bingo.common.card.tierlist.*
+import me.jfenn.bingo.common.card.tag.TagService
+import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.card.tierlist.TierListConfig
+import me.jfenn.bingo.common.card.tierlist.TierListEntry
+import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
@@ -31,8 +34,7 @@ class CardService(
     private val options: BingoOptions,
     private val configService: ConfigService,
     private val tierListState: TierListState,
-    private val tierListService: TierListService,
-    private val tagState: TagState,
+    private val tagService: TagService,
     private val objectiveManager: BingoObjectiveManager,
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
@@ -83,21 +85,24 @@ class CardService(
         }
     }
 
-    fun isSupported(err: (Text) -> Unit): Boolean =
-        state.cards
-            .map { it.options.tierList }
+    fun isSupported(err: (Text) -> Unit): Boolean {
+        val supportedLists = state.cards
+            .flatMap { getTierLists(it.options.itemFilter).keys }
             .distinct()
-            .all { tierList ->
-                when {
-                    tierList != null -> isListSupported(tierList, err)
-                    else -> tierListState.tierLists.keys.any { isListSupported(it, err) }
-                }
+            .filter { tierList ->
+                isListSupported(tierList, err)
             }
+
+        // Each card must have at least one supported list
+        return state.cards
+            .map { getTierLists(it.options.itemFilter).keys }
+            .all { lists -> lists.any { supportedLists.contains(it) } }
+    }
 
     private fun isListSupported(name: String, err: (Text) -> Unit): Boolean {
         // If the list is not found, the game should ignore it
         val list = tierListState.tierLists[name] ?: return true
-        val listName by lazy { tierListService.getName(name, list).formatted(Formatting.BLUE) }
+        val listName by lazy { ObjectiveFilterList.formatName(name).formatted(Formatting.BLUE) }
         val reqs by list::requirements
 
         var isSupported = true
@@ -224,36 +229,63 @@ class CardService(
         state.replaceCard(newCard)
     }
 
-    private fun getFilterTag(filter: ObjectiveFilter): TagData? {
-        return tagState.tags[filter.tag] ?: run {
-            log.error("[CardService] Objective tag '${filter.tag}' does not exist!")
+    private fun getFilterTag(tags: Map<String, TagData>, filter: ObjectiveFilter): TagData? {
+        return tags[filter.tag] ?: run {
+            if (!tierListState.tierLists.containsKey(filter.tag)) {
+                log.error("[CardService] Objective tag '${filter.tag}' does not exist!")
+            }
             null
         }
     }
 
+    private fun getTierLists(
+        filterList: ObjectiveFilterList,
+    ): Map<String, TierListConfig> {
+        // If there are included tier lists, only include the referenced lists
+        val hasIncludeList = filterList
+            .filterIsInstance<ObjectiveFilter.Include>()
+            .any { tierListState.tierLists.containsKey(it.tag) }
+
+        val lists = tierListState.tierLists
+            // Only include tier lists that aren't excluded
+            .filterNot { (listName, _) ->
+                filterList.filterIsInstance<ObjectiveFilter.Exclude>()
+                    .any { it.tag == listName }
+            }
+            .filter { (listName, _) ->
+                // If the list is included through either count or include filters, include it
+                !hasIncludeList ||
+                        filterList.filterIsInstance<ObjectiveFilter.Include>()
+                            .any { it.tag == listName } ||
+                        filterList.filterIsInstance<ObjectiveFilter.Count>()
+                            .any { it.tag == listName }
+            }
+
+        return lists
+    }
+
     private fun assembleTierList(
-        tierListName: String?,
+        tags: Map<String, TagData>,
         filterList: ObjectiveFilterList,
     ): TierListConfig {
+        // If there is any included tag, only include the referenced items
+        val hasIncludeTag = filterList.any { it is ObjectiveFilter.Include }
+
         val includeFilters = filterList
+            // If a tag is included through either include or count filters, include it
             .filter { it is ObjectiveFilter.Include || it is ObjectiveFilter.Count }
-            .mapNotNull { getFilterTag(it) }
+            .mapNotNull { getFilterTag(tags, it) }
+            .toMutableList()
         val excludeFilters = filterList
             .filterIsInstance<ObjectiveFilter.Exclude>()
-            .mapNotNull { getFilterTag(it) }
-        // If the filter list doesn't contain any include (+) filters, then include everything by default
-        val isDefaultIncluded = filterList.none { it is ObjectiveFilter.Include }
+            .mapNotNull { getFilterTag(tags, it) }
+            .toMutableList()
 
         // Collect the selected tier list config
-        val tierList = tierListName?.let { tierListId ->
-            // If a tier list is specified, only use that specific list
-            tierListState.tierLists[tierListId]
-                ?.expandTags(tagExpansionService)
-                ?.expandName(tierListId)
-        } ?: run {
+        val tierList = run {
             // Otherwise, collect all available lists
             var list = TierListConfig.EMPTY
-            tierListState.tierLists
+            getTierLists(filterList)
                 .filter { (name, _) -> isListSupported(name, {}) }
                 .map { (name, otherList) ->
                     otherList.expandTags(tagExpansionService).expandName(name)
@@ -268,7 +300,7 @@ class CardService(
             .filterNot { tierList.isCategorized(it) }
             .map { TierListEntry(it) }
             .onEach {
-                it.listName = "uncategorized"
+                it.listName = ObjectiveFilter.UNCATEGORIZED
             }
 
         return tierList
@@ -278,7 +310,7 @@ class CardService(
             )
             .filter { entry ->
                 // apply the selected item filters to the list contents
-                val isIncluded = isDefaultIncluded || includeFilters.any { it.contains(entry.item) }
+                val isIncluded = !hasIncludeTag || includeFilters.any { it.contains(entry.item) }
                 val isExcluded = excludeFilters.any { it.contains(entry.item) }
                 isIncluded && !isExcluded
             }
@@ -315,7 +347,8 @@ class CardService(
         val state = CardGeneratorState(random)
         log.info("Using random BINGO card seed: $seed")
 
-        val tierList = assembleTierList(cardOptions.tierList, cardOptions.itemFilter)
+        val tags = tagService.getTags()
+        val tierList = assembleTierList(tags, cardOptions.itemFilter)
         val items = mutableListOf<BingoCardEntry>()
         val objectives = mutableMapOf<String, BingoObjective>()
 
@@ -323,7 +356,7 @@ class CardService(
         val requiredTagCounts = cardOptions.itemFilter
             .filterIsInstance<ObjectiveFilter.Count>()
             .mapNotNull { filter ->
-                val tag = getFilterTag(filter) ?: return@mapNotNull null
+                val tag = getFilterTag(tags, filter) ?: return@mapNotNull null
                 var remainingCount = filter.count
                 // For each tag filter, distribute its items between the item dist
                 // (this may not exactly add up to the remainingCount)
