@@ -5,7 +5,9 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierListManager
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
+import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
+import java.io.FileOutputStream
 import java.io.IOException
 import java.math.BigInteger
 import java.nio.file.Files
@@ -171,6 +173,20 @@ class MigrationHandler(
                 .takeIfMd5("3509f527976c42b4f72b5d9f5ae57bac", "efe9f31c33a51e893c4aff44ffb8f51e")
                 ?.deleteIfExists()
         }
+
+        migrations[19] = { // 2.3.0
+            loader.configDir.resolve("$MOD_ID_BINGO/all_items.tierlist.json")
+                .takeIfMd5("73eddb865b11831a711b9c58753f2bfb")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("$MOD_ID_BINGO/advancements.tierlist.json")
+                .takeIfMd5("30a50846828cd3e432ff67a5ded29c79")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("$MOD_ID_BINGO/challenge.tierlist.json")
+                .takeIfMd5("79a1242373e76d5bafd9a8843f8130a1")
+                ?.deleteIfExists()
+        }
     }
 
     private fun md5Of(path: Path): String? {
@@ -216,7 +232,13 @@ class MigrationHandler(
 
         // - tierlist files should be re-generated on each launch if removed:
         for (list in TierListManager.BUILTIN_TIER_LISTS) {
-            Config.readStream(list + TierListManager.FILE_SUFFIX).close()
+            val filePath = Config.configDir.resolve("$MOD_ID_BINGO/$list${TierListManager.FILE_SUFFIX}")
+            if (!Files.exists(filePath)) {
+                FileOutputStream(filePath.toFile()).use { output ->
+                    javaClass.getResourceAsStream("/data/$MOD_ID_BINGO/$MOD_ID_BINGO/tierlists/$list${TierListManager.FILE_SUFFIX}")!!
+                        .use { input -> IOUtils.copy(input, output) }
+                }
+            }
         }
 
         if (log.isDebugEnabled) {

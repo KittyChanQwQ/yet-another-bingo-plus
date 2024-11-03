@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.common.card.filter.ObjectiveFilter
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.utils.joinText
@@ -13,8 +14,8 @@ data class BingoCardOptions(
     var goal: BingoGoal = BingoGoal.Lines(3),
     var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
     var itemFilter: ObjectiveFilterList =
-        ConfigService().config.itemFilterPresets["everything"]
-            ?: ObjectiveFilterList.DEFAULT["everything"]!!,
+        ConfigService().config.itemFilterPresets[ObjectiveFilter.EVERYTHING]
+            ?: ObjectiveFilterList.EVERYTHING,
 
     // game mode settings
     var isLockoutMode: Boolean = false,

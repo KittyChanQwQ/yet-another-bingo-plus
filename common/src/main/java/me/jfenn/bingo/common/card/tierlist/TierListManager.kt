@@ -42,7 +42,7 @@ class TierListManager(
 
             val originalHash = MessageDigest.getInstance("MD5")
                 .digest(
-                    javaClass.getResourceAsStream("/$MOD_ID_BINGO/${file.name}")!!
+                    javaClass.getResourceAsStream("/data/$MOD_ID_BINGO/$MOD_ID_BINGO/tierlists/${file.name}")!!
                         .readAllBytes()
                 )
                 .let { BigInteger(1, it).toString(16) }
@@ -123,7 +123,7 @@ class TierListManager(
     }
 
     companion object {
-        val BUILTIN_TIER_LISTS = listOf("advancements", "all_items", "challenge", "simplified")
+        val BUILTIN_TIER_LISTS = listOf("advancement", "challenge", "item", "simplified")
         const val FILE_SUFFIX = ".tierlist.json"
     }
 

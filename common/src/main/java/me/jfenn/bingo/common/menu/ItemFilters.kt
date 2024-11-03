@@ -5,7 +5,6 @@ import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
-import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
@@ -23,14 +22,13 @@ fun MenuComponent.registerItemFilters(
     options: BingoOptions,
     permissionGetter: (ServerPlayerEntity) -> Boolean,
     state: BingoState = koinScope.get(),
-    config: BingoConfig = koinScope.get(),
     cardService: CardService = koinScope.get(),
     objectiveFilterService: ObjectiveFilterService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     registerEntity(EntityType.TEXT_DISPLAY) {
         pos = position
-        this.value = text.string(StringKey.OptionsTierList)
+        this.value = text.string(StringKey.OptionsFilter)
         billboard = ITextDisplayEntity.Billboard.FIXED
         alignment = ITextDisplayEntity.TextAlignment.CENTER
         background = 0

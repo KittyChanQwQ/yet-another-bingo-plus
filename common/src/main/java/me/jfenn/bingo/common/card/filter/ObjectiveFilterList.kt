@@ -12,11 +12,17 @@ data class ObjectiveFilterList(
 
     constructor(vararg filter: ObjectiveFilter) : this(filter.toList())
 
-    operator fun plus(filter: ObjectiveFilter): ObjectiveFilterList {
+    fun withFilter(filter: ObjectiveFilter): ObjectiveFilterList {
         return this.copy(
             list = list.filterNot { it.tag == filter.tag }
                 .plus(filter)
                 .sortedBy { it.tag }
+        )
+    }
+
+    fun withoutFilter(tag: String): ObjectiveFilterList {
+        return this.copy(
+            list = list.filterNot { it.tag == tag }
         )
     }
 
@@ -35,14 +41,17 @@ data class ObjectiveFilterList(
     }
 
     companion object {
-        val DEFAULT = mapOf(
-            ObjectiveFilter.EVERYTHING to ObjectiveFilterList(
-                ObjectiveFilter.Exclude("unobtainable")
-            ),
-            ObjectiveFilter.OVERWORLD to ObjectiveFilterList(
-                ObjectiveFilter.Include("overworld"),
-                ObjectiveFilter.Exclude("uncategorized"),
-                ObjectiveFilter.Exclude("unobtainable")
+        val EVERYTHING = ObjectiveFilterList(
+            ObjectiveFilter.Exclude(ObjectiveFilter.UNOBTAINABLE),
+            ObjectiveFilter.Exclude(ObjectiveFilter.TEDIOUS)
+        )
+
+        val PRESETS = mapOf(
+            ObjectiveFilter.EVERYTHING to EVERYTHING,
+            ObjectiveFilter.IN_OVERWORLD to ObjectiveFilterList(
+                ObjectiveFilter.Include(ObjectiveFilter.IN_OVERWORLD),
+                ObjectiveFilter.Exclude(ObjectiveFilter.UNCATEGORIZED),
+                ObjectiveFilter.Exclude(ObjectiveFilter.UNOBTAINABLE)
             )
         )
 

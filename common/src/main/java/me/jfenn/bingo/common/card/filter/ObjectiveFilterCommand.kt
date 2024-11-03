@@ -43,6 +43,14 @@ class ObjectiveFilterCommand(
         return scope.get<TagService>().getTags().keys.toList()
     }
 
+    private fun IExecutionContext.listActiveTags(): List<String> {
+        return scope.get<CardViewService>()
+            .getPlayerCard(player!!)
+            .options
+            .itemFilter
+            .map { it.tag }
+    }
+
     private fun IExecutionContext.listPresets(): List<String> {
         return scope.get<ObjectiveFilterService>().getPresetFilters().keys.toList()
     }
@@ -72,7 +80,7 @@ class ObjectiveFilterCommand(
                             val tag = getArgument(tagArg)
                             require(tag in listTags()) { "Tag '$tag' does not exist!" }
                             setItemFilters {
-                                it.plus(ObjectiveFilter.Include(tag))
+                                it.withFilter(ObjectiveFilter.Include(tag))
                             }
                         }
                     }
@@ -84,7 +92,7 @@ class ObjectiveFilterCommand(
                             val tag = getArgument(tagArg)
                             require(tag in listTags()) { "Tag '$tag' does not exist!" }
                             setItemFilters {
-                                it.plus(ObjectiveFilter.Exclude(tag))
+                                it.withFilter(ObjectiveFilter.Exclude(tag))
                             }
                         }
                     }
@@ -98,7 +106,7 @@ class ObjectiveFilterCommand(
                                 val count = getArgument(countArg)
                                 require(tag in listTags()) { "Tag '$tag' does not exist!" }
                                 setItemFilters {
-                                    it.plus(ObjectiveFilter.Count(tag, count))
+                                    it.withFilter(ObjectiveFilter.Count(tag, count))
                                 }
                             }
                         }
@@ -106,8 +114,18 @@ class ObjectiveFilterCommand(
                 }
 
                 literal("clear") {
+                    string("tag", { listActiveTags() }) { tagArg ->
+                        executes {
+                            val tag = getArgument(tagArg)
+                            require(tag in listActiveTags()) { "Tag '$tag' does not exist!" }
+                            setItemFilters {
+                                it.withoutFilter(tag)
+                            }
+                        }
+                    }
+
                     executes {
-                        setItemFilters { ObjectiveFilterList() }
+                        setItemFilters { ObjectiveFilterList.EVERYTHING }
                     }
                 }
             }

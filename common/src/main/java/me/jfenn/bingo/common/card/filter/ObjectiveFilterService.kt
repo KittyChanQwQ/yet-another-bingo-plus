@@ -10,9 +10,9 @@ class ObjectiveFilterService(
     fun getPresetFilters(): Map<String, ObjectiveFilterList> {
         return config.itemFilterPresets + tierLists.tierLists.keys.associateWith { tierList ->
             ObjectiveFilterList()
-                .plus(ObjectiveFilter.Include(tierList))
-                .plus(ObjectiveFilter.Exclude(ObjectiveFilter.UNCATEGORIZED))
-                .plus(ObjectiveFilter.Exclude(ObjectiveFilter.UNOBTAINABLE))
+                .withFilter(ObjectiveFilter.Include(tierList))
+                .withFilter(ObjectiveFilter.Exclude(ObjectiveFilter.UNCATEGORIZED))
+                .withFilter(ObjectiveFilter.Exclude(ObjectiveFilter.UNOBTAINABLE))
         }
     }
 }

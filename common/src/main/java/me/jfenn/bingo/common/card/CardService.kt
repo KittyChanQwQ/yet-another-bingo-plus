@@ -231,7 +231,7 @@ class CardService(
 
     private fun getFilterTag(tags: Map<String, TagData>, filter: ObjectiveFilter): TagData? {
         return tags[filter.tag] ?: run {
-            if (!tierListState.tierLists.containsKey(filter.tag)) {
+            if (!tierListState.tierLists.containsKey(filter.tag) && filter.tag != ObjectiveFilter.UNCATEGORIZED) {
                 log.error("[CardService] Objective tag '${filter.tag}' does not exist!")
             }
             null
@@ -265,22 +265,9 @@ class CardService(
     }
 
     private fun assembleTierList(
-        tags: Map<String, TagData>,
+        tags: MutableMap<String, TagData>,
         filterList: ObjectiveFilterList,
     ): TierListConfig {
-        // If there is any included tag, only include the referenced items
-        val hasIncludeTag = filterList.any { it is ObjectiveFilter.Include }
-
-        val includeFilters = filterList
-            // If a tag is included through either include or count filters, include it
-            .filter { it is ObjectiveFilter.Include || it is ObjectiveFilter.Count }
-            .mapNotNull { getFilterTag(tags, it) }
-            .toMutableList()
-        val excludeFilters = filterList
-            .filterIsInstance<ObjectiveFilter.Exclude>()
-            .mapNotNull { getFilterTag(tags, it) }
-            .toMutableList()
-
         // Collect the selected tier list config
         val tierList = run {
             // Otherwise, collect all available lists
@@ -295,6 +282,7 @@ class CardService(
             list
         }
 
+        // Determine the set of uncategorized objectives & add them to the tags for filtering
         val uncategorizedObjectives = supportedObjectiveIds
             .plus(tierList.values.map { it.item }.toSet())
             .filterNot { tierList.isCategorized(it) }
@@ -302,6 +290,23 @@ class CardService(
             .onEach {
                 it.listName = ObjectiveFilter.UNCATEGORIZED
             }
+
+        tags[ObjectiveFilter.UNCATEGORIZED] = TagData(
+            uncategorizedObjectives.map { it.item }.toSet()
+        )
+
+        // If there is any included tag, only include explicitly referenced items
+        val hasIncludeTag = filterList.any { it is ObjectiveFilter.Include }
+
+        val includeFilters = filterList
+            // If a tag is included through either include or count filters, include it
+            .filter { it is ObjectiveFilter.Include || it is ObjectiveFilter.Count }
+            .mapNotNull { getFilterTag(tags, it) }
+            .toMutableList()
+        val excludeFilters = filterList
+            .filterIsInstance<ObjectiveFilter.Exclude>()
+            .mapNotNull { getFilterTag(tags, it) }
+            .toMutableList()
 
         return tierList
             .copy(
@@ -347,7 +352,7 @@ class CardService(
         val state = CardGeneratorState(random)
         log.info("Using random BINGO card seed: $seed")
 
-        val tags = tagService.getTags()
+        val tags = tagService.getTags().toMutableMap()
         val tierList = assembleTierList(tags, cardOptions.itemFilter)
         val items = mutableListOf<BingoCardEntry>()
         val objectives = mutableMapOf<String, BingoObjective>()

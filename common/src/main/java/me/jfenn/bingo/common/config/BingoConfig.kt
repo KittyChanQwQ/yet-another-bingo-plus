@@ -12,7 +12,7 @@ import java.util.*
 data class BingoConfig(
     var version: Int = 0,
 
-    var itemFilterPresets: Map<String, ObjectiveFilterList> = ObjectiveFilterList.DEFAULT,
+    var itemFilterPresets: Map<String, ObjectiveFilterList> = ObjectiveFilterList.PRESETS,
 
     // adds BINGO_IGNORE to spawn kit items, preventing them from being scored
     val preventScoringSpawnKitItems: Boolean = false,
