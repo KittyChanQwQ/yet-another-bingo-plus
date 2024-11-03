@@ -113,6 +113,11 @@
     "minecraft:zombified_piglin_spawn_egg",
     "minecraft:lingering_potion",
     "minecraft:potion",
-    "minecraft:splash_potion"
+    "minecraft:splash_potion",
+    "minecraft:large_fern",
+    "minecraft:tall_grass",
+    "minecraft:tipped_arrow",
+    "minecraft:farmland",
+    "minecraft:frogspawn"
   ]
 }

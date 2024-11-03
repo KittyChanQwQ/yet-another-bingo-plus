@@ -1,4 +1,11 @@
 {
   "type": "inverse",
-  "objective": "yet-another-minecraft-bingo:challenge/stat_killed_by_zombie"
+  "objective": {
+    "type": "stats",
+    "display": {
+      "item": "minecraft:zombie_head"
+    },
+    "statType": "minecraft:killed_by",
+    "statName": "minecraft:zombie"
+  }
 }

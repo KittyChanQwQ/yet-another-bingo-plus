@@ -1,8 +1,0 @@
-{
-  "type": "stats",
-  "display": {
-    "item": "minecraft:skeleton_skull"
-  },
-  "statType": "minecraft:killed_by",
-  "statName": "minecraft:skeleton"
-}

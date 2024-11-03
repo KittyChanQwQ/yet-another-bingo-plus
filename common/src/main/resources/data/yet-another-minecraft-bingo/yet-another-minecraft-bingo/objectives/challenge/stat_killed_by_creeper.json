@@ -1,8 +1,0 @@
-{
-  "type": "stats",
-  "display": {
-    "item": "minecraft:creeper_head"
-  },
-  "statType": "minecraft:killed_by",
-  "statName": "minecraft:creeper"
-}

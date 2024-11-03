@@ -1,4 +1,11 @@
 {
   "type": "inverse",
-  "objective": "yet-another-minecraft-bingo:challenge/stat_killed_by_skeleton"
+  "objective": {
+    "type": "stats",
+    "display": {
+      "item": "minecraft:skeleton_skull"
+    },
+    "statType": "minecraft:killed_by",
+    "statName": "minecraft:skeleton"
+  }
 }

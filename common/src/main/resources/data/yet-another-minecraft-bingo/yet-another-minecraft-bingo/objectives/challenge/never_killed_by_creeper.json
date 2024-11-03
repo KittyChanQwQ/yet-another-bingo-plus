@@ -1,4 +1,11 @@
 {
   "type": "inverse",
-  "objective": "yet-another-minecraft-bingo:challenge/stat_killed_by_creeper"
+  "objective": {
+    "type": "stats",
+    "display": {
+      "item": "minecraft:creeper_head"
+    },
+    "statType": "minecraft:killed_by",
+    "statName": "minecraft:creeper"
+  }
 }
