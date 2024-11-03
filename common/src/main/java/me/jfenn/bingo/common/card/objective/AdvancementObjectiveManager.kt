@@ -27,9 +27,9 @@ class AdvancementObjectiveManager(
     private val objectiveService: ObjectiveService,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
-        val dataKeys = objectiveRegistryState.objectives
-            .filterValues { it is ObjectiveData.Advancement }
-            .keys
+        val dataKeys = objectiveRegistryState.rootObjectives
+            .filter { (_, it) -> it is ObjectiveData.Advancement }
+            .map { it.key }
         return advancementManager.listAdvancements(server) + dataKeys
     }
 
@@ -73,7 +73,9 @@ class AdvancementObjectiveManager(
     private fun init(goal: BingoObjective, isDataObjective: Boolean = false): Boolean {
         if (goal !is BingoObjective.AdvancementEntry) return false
 
-        val advancement = advancementManager.getAdvancement(server, goal.advancementId)
+        val advancement = kotlin.runCatching {
+            advancementManager.getAdvancement(server, goal.advancementId)
+        }.getOrNull()
 
         if (advancement == null) {
             if (isDataObjective) {

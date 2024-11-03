@@ -27,9 +27,9 @@ class ItemObjectiveManager(
     private val objectiveService: ObjectiveService,
 ): IObjectiveManager {
     override fun list(): Iterable<String> {
-        val dataKeys = objectiveRegistry.objectives
-            .filterValues { it is ObjectiveData.Item }
-            .keys
+        val dataKeys = objectiveRegistry.rootObjectives
+            .filter { (_, it) -> it is ObjectiveData.Item }
+            .map { it.key }
         return itemStackFactory.listItems(server) + dataKeys
     }
 

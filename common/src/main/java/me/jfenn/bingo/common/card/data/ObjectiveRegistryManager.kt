@@ -39,6 +39,12 @@ class ObjectiveRegistryManager(
             }
 
             newObjectives[objectiveId] = objectiveData
+
+            objectiveData.innerObjectiveEntries(objectiveId).forEach { (id, reference) ->
+                if (reference is ObjectiveDataReference.Inline) {
+                    newObjectives[id] = reference.data.apply { isRoot = false }
+                }
+            }
         }
 
         state.objectives = newObjectives

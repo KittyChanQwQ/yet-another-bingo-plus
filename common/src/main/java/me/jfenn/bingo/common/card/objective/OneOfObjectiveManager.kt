@@ -20,9 +20,10 @@ class OneOfObjectiveManager(
     private val text: TextProvider,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
-        return objectiveRegistryState.objectives
-            .filterValues { it is ObjectiveData.OneOf }
-            .keys
+        return objectiveRegistryState.rootObjectives
+            .filter { (_, it) -> it is ObjectiveData.OneOf }
+            .map { it.key }
+            .toList()
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
@@ -37,7 +38,9 @@ class OneOfObjectiveManager(
         return BingoObjective.OneOfEntry(
             id = id,
             data = data,
-            oneOfObjectives = tagExpansionService.expandItemTags(data.objectives),
+            oneOfObjectives = data.objectives
+                .map { data.expandReference(id, it) }
+                .let { tagExpansionService.expandItemTags(it) },
         )
     }
 

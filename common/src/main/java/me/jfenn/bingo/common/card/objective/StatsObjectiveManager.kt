@@ -28,9 +28,10 @@ class StatsObjectiveManager(
     private val objectiveService: ObjectiveService,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
-        return objectiveRegistryState.objectives
-            .filterValues { it is ObjectiveData.Stats }
-            .keys
+        return objectiveRegistryState.rootObjectives
+            .filter { (_, it) -> it is ObjectiveData.Stats }
+            .map { it.key }
+            .toList()
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {

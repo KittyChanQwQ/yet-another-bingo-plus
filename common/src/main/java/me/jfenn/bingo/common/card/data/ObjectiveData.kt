@@ -8,9 +8,35 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay
 @Serializable
 sealed class ObjectiveData {
 
+    var isRoot: Boolean = true
     val display: ObjectiveDisplay.Data? = null
     val conflictsWith: Set<String> = emptySet()
     abstract val permanent: Boolean
+
+    open val innerObjectives: List<ObjectiveDataReference> = emptyList()
+    fun innerObjectiveEntries(id: String): Map<String, ObjectiveDataReference> = buildMap {
+        for ((i, reference) in innerObjectives.withIndex()) {
+            when (reference) {
+                is ObjectiveDataReference.Id -> put(reference.id, reference)
+                is ObjectiveDataReference.Inline -> {
+                    val inlineId = "$id->$i"
+                    put(inlineId, reference)
+                    putAll(reference.data.innerObjectiveEntries(inlineId))
+                }
+            }
+        }
+    }
+
+    fun expandReference(id: String, reference: ObjectiveDataReference) : String {
+        return when (reference) {
+            is ObjectiveDataReference.Id -> reference.id
+            is ObjectiveDataReference.Inline -> innerObjectiveEntries(id)
+                .entries
+                .find { it.value == reference }
+                ?.key
+                ?: error("Reference $reference does not exist inside objective '$id'!")
+        }
+    }
 
     @Serializable
     @SerialName("item")
@@ -32,30 +58,42 @@ sealed class ObjectiveData {
     @Serializable
     @SerialName("one_of")
     data class OneOf(
-        val objectives: Set<String>,
+        val objectives: Set<ObjectiveDataReference>,
         override val permanent: Boolean = false,
-    ) : ObjectiveData()
+    ) : ObjectiveData() {
+        override val innerObjectives: List<ObjectiveDataReference>
+            get() = objectives.toList()
+    }
 
     @Serializable
     @SerialName("all_of")
     data class AllOf(
-        val objectives: Set<String>,
+        val objectives: Set<ObjectiveDataReference>,
         override val permanent: Boolean = false,
-    ) : ObjectiveData()
+    ) : ObjectiveData() {
+        override val innerObjectives: List<ObjectiveDataReference>
+            get() = objectives.toList()
+    }
 
     @Serializable
     @SerialName("inverse")
     data class Inverse(
-        val objective: String,
+        val objective: ObjectiveDataReference,
         override val permanent: Boolean = true,
-    ) : ObjectiveData()
+    ) : ObjectiveData() {
+        override val innerObjectives: List<ObjectiveDataReference>
+            get() = listOf(objective)
+    }
 
     @Serializable
     @SerialName("opponent")
     data class Opponent(
-        val objective: String,
+        val objective: ObjectiveDataReference,
         override val permanent: Boolean = true,
-    ) : ObjectiveData()
+    ) : ObjectiveData() {
+        override val innerObjectives: List<ObjectiveDataReference>
+            get() = listOf(objective)
+    }
 
     @Serializable
     @SerialName("stats")

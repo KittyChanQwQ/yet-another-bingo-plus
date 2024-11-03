@@ -212,6 +212,7 @@ sealed class BingoObjective {
     data class InverseEntry(
         override val id: String,
         override val data: ObjectiveData.Inverse,
+        val inverseObjective: String,
     ): BingoObjective() {
         override val dependsOnObjectives: Set<String>
             get() = super.dependsOnObjectives + inverseObjective
@@ -219,7 +220,6 @@ sealed class BingoObjective {
         override val conflictsWithObjectives: Set<String>
             get() = super.conflictsWithObjectives + inverseObjective
 
-        val inverseObjective get() = data.objective
         val permanent get() = data.permanent
 
         val playersOnceAchieved = mutableSetOf<UuidAsString>()
@@ -243,6 +243,7 @@ sealed class BingoObjective {
     data class OpponentEntry(
         override val id: String,
         override val data: ObjectiveData.Opponent,
+        val opponentObjective: String,
     ): BingoObjective() {
         override val dependsOnObjectives: Set<String>
             get() = super.dependsOnObjectives + opponentObjective
@@ -250,8 +251,6 @@ sealed class BingoObjective {
         override val conflictsWithObjectives: Set<String>
             get() = super.conflictsWithObjectives + opponentObjective
 
-
-        val opponentObjective get() = data.objective
         val permanent get() = data.permanent
     }
 

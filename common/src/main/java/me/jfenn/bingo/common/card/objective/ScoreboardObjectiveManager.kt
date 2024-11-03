@@ -28,9 +28,10 @@ class ScoreboardObjectiveManager(
     private val objectiveService: ObjectiveService,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
-        return objectiveRegistryState.objectives
-            .filterValues { it is ObjectiveData.Scoreboard }
-            .keys
+        return objectiveRegistryState.rootObjectives
+            .filter { (_, it) -> it is ObjectiveData.Scoreboard }
+            .map { it.key }
+            .toList()
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {

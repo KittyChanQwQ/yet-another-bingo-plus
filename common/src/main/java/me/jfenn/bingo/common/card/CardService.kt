@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.Build
+import me.jfenn.bingo.common.utils.cacheFor
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
@@ -27,6 +28,7 @@ import java.util.*
 import kotlin.math.ceil
 import kotlin.random.Random
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.time.Duration.Companion.seconds
 
 class CardService(
     private val log: Logger,
@@ -39,12 +41,15 @@ class CardService(
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
 ) {
+
+    private val supportedObjectiveIds = cacheFor(5.seconds) { _: Unit ->
+        objectiveManager.list().toSet()
+    }
+
     init {
         validateLists()
         createInitialCards()
     }
-
-    private val supportedObjectiveIds = objectiveManager.list().toSet()
 
     private fun validateLists() {
         tierListState.tierLists.entries
@@ -283,7 +288,7 @@ class CardService(
         }
 
         // Determine the set of uncategorized objectives & add them to the tags for filtering
-        val uncategorizedObjectives = supportedObjectiveIds
+        val uncategorizedObjectives = supportedObjectiveIds.get(Unit)
             .plus(tierList.values.map { it.item }.toSet())
             .filterNot { tierList.isCategorized(it) }
             .map { TierListEntry(it) }

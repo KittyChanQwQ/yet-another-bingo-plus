@@ -50,6 +50,7 @@ data class ObjectiveFilterList(
             ObjectiveFilter.EVERYTHING to EVERYTHING,
             ObjectiveFilter.IN_OVERWORLD to ObjectiveFilterList(
                 ObjectiveFilter.Include(ObjectiveFilter.IN_OVERWORLD),
+                ObjectiveFilter.Exclude(ObjectiveFilter.TEDIOUS),
                 ObjectiveFilter.Exclude(ObjectiveFilter.UNCATEGORIZED),
                 ObjectiveFilter.Exclude(ObjectiveFilter.UNOBTAINABLE)
             )

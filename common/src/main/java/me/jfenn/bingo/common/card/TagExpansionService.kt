@@ -21,7 +21,7 @@ class TagExpansionService(
         }
     }
 
-    fun expandItemTags(items: Set<String>) : Set<String> {
+    fun expandItemTags(items: Iterable<String>) : Set<String> {
         return items
             .flatMap { expandItemTag(it) }
             .toSet()

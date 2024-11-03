@@ -19,9 +19,10 @@ class InverseObjectiveManager(
     private val text: TextProvider,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
-        return objectiveRegistryState.objectives
-            .filterValues { it is ObjectiveData.Inverse }
-            .keys
+        return objectiveRegistryState.rootObjectives
+            .filter { (_, it) -> it is ObjectiveData.Inverse }
+            .map { it.key }
+            .toList()
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
@@ -31,6 +32,7 @@ class InverseObjectiveManager(
         return BingoObjective.InverseEntry(
             id = id,
             data = data,
+            inverseObjective = data.expandReference(id, data.objective),
         )
     }
 
