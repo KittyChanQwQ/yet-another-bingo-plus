@@ -23,7 +23,6 @@ data class TierListConfig(
     val c: Set<TierListEntry>,
     @SerialName("D")
     val d: Set<TierListEntry>,
-    val name: JsonElement? = null,
     val groups: List<Set<String>> = emptyList(),
     val requirements: Requirements = Requirements(),
 ) {
