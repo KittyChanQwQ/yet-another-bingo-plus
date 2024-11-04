@@ -24,7 +24,24 @@
         "minecraft:husbandry/silk_touch_nest",
         "minecraft:husbandry/allay_deliver_cake_to_note_block",
         "minecraft:husbandry/leash_all_frog_variants",
-        "minecraft:husbandry/whole_pack"
+        "minecraft:husbandry/whole_pack",
+        "minecraft:adventure/arbalistic",
+        "minecraft:adventure/blowback",
+        "minecraft:adventure/overoverkill",
+        "minecraft:adventure/throw_trident",
+        "minecraft:adventure/trim_with_all_exclusive_armor_patterns",
+        "minecraft:adventure/two_birds_one_arrow",
+        "minecraft:adventure/very_very_frightening",
+        "minecraft:end/respawn_dragon",
+        "minecraft:husbandry/balanced_diet",
+        "minecraft:husbandry/bred_all_animals",
+        "minecraft:husbandry/complete_catalogue",
+        "minecraft:husbandry/feed_snifflet",
+        "minecraft:husbandry/froglights",
+        "minecraft:husbandry/kill_axolotl_target",
+        "minecraft:nether/all_effects",
+        "minecraft:nether/all_potions",
+        "minecraft:nether/create_full_beacon"
     ],
     "A": [
         "minecraft:story/shiny_gear",
@@ -53,7 +70,9 @@
         "minecraft:adventure/under_lock_and_key",
         "minecraft:husbandry/tadpole_in_a_bucket",
         "minecraft:husbandry/obtain_sniffer_egg",
-        "minecraft:husbandry/obtain_netherite_hoe"
+        "minecraft:husbandry/obtain_netherite_hoe",
+        "minecraft:adventure/bullseye",
+        "minecraft:husbandry/plant_any_sniffer_seed"
     ],
     "B": [
         "minecraft:story/form_obsidian",
@@ -89,6 +108,7 @@
         "minecraft:adventure/ol_betsy",
         "minecraft:adventure/shoot_arrow",
         "minecraft:adventure/summon_iron_golem",
+        "minecraft:adventure/adventuring_time",
         "minecraft:husbandry/breed_an_animal",
         "minecraft:husbandry/ride_a_boat_with_a_goat",
         "minecraft:husbandry/make_a_sign_glow",

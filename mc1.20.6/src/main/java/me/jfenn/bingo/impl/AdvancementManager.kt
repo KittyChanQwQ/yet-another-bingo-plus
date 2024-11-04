@@ -13,7 +13,7 @@ import kotlin.jvm.optionals.getOrNull
 class AdvancementManager : IAdvancementManager {
     override fun listAdvancements(server: MinecraftServer): List<String> {
         return server.advancementLoader.advancements
-            .filter { it.value.display.isPresent }
+            .filter { !it.id.path.endsWith("/root") && it.value.display.isPresent }
             .map { it.id.toString() }
     }
 

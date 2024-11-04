@@ -13,7 +13,7 @@ import net.minecraft.util.Identifier
 class AdvancementManager : IAdvancementManager {
     override fun listAdvancements(server: MinecraftServer): List<String> {
         return server.advancementLoader.advancements
-            .filter { it.display != null }
+            .filter { !it.id.path.endsWith("/root") && it.display != null }
             .map { it.id.toString() }
     }
 
