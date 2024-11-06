@@ -37,6 +37,16 @@
     "minecraft:dragon_breath",
     "minecraft:dragon_egg",
     "minecraft:dragon_head",
+    "minecraft:story/enter_the_end",
+    "minecraft:end/kill_dragon",
+    "minecraft:end/dragon_egg",
+    "minecraft:end/enter_end_gateway",
+    "minecraft:end/dragon_breath",
+    "minecraft:end/find_end_city",
+    "minecraft:end/elytra",
+    "minecraft:end/levitate",
+    "minecraft:adventure/spyglass_at_dragon",
+    "minecraft:end/respawn_dragon",
     "yet-another-minecraft-bingo:challenge/many_shulker_shells"
   ]
 }
