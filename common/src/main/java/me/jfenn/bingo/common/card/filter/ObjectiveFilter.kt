@@ -12,9 +12,8 @@ sealed class ObjectiveFilter {
         const val TEDIOUS = "tedious"
         const val EVERYTHING = "everything"
         const val IN_OVERWORLD = "in_overworld"
-        const val IN_THE_END = "in_the_end"
-        const val IN_THE_NETHER = "in_the_nether"
-        const val ITEM = "item"
-        const val ADVANCEMENT = "advancement"
+
+        fun from(namespace: String) = "from=$namespace"
+        fun type(type: String) = "type=$type"
     }
 }

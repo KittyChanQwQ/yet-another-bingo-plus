@@ -22,8 +22,8 @@ import net.minecraft.command.argument.EntityArgumentType
 import net.minecraft.command.argument.TextArgumentType
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import org.koin.core.scope.Scope
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
@@ -112,6 +112,7 @@ class CommandManagerImpl(
                 } catch (e: Throwable) {
                     if (e is CommandSyntaxException) throw e
                     log.error("Error in command handler:", e)
+                    ctx.source.sendMessage(Text.literal(e.message).formatted(Formatting.RED))
                     0
                 }
             }
@@ -135,12 +136,18 @@ class CommandManagerImpl(
 class SuggestionProviderImpl(
     private val callback: IExecutionContext.() -> Iterable<String>,
 ) : SuggestionProvider<ServerCommandSource> {
+    private fun String.quoteIfNecessary(): String {
+        return if (contains(Regex("[^A-Za-z\\-_]")))
+            "\"$this\""
+        else this
+    }
+
     override fun getSuggestions(
         context: CommandContext<ServerCommandSource>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
         val ctx = ExecutionContextImpl(context)
-        val suggestions = callback.invoke(ctx)
+        val suggestions = callback.invoke(ctx).map { it.quoteIfNecessary() }
 
         for (suggestion in suggestions) {
             if (CommandSource.shouldSuggest(builder.remaining, suggestion)) {

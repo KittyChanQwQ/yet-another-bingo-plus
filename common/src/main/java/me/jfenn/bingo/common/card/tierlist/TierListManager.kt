@@ -123,7 +123,7 @@ class TierListManager(
     }
 
     companion object {
-        val BUILTIN_TIER_LISTS = listOf("advancement", "challenge", "item", "simplified")
+        val BUILTIN_TIER_LISTS = listOf("advancements", "challenge", "items", "simplified")
         const val FILE_SUFFIX = ".tierlist.json"
     }
 
