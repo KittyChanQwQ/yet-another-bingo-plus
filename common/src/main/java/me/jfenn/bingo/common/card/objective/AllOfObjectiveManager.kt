@@ -4,7 +4,8 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveData
-import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.card.data.rootObjectives
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -13,21 +14,21 @@ import org.slf4j.Logger
 
 class AllOfObjectiveManager(
     private val log: Logger,
-    private val objectiveRegistryState: ObjectiveRegistryState,
+    private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
-        return objectiveRegistryState.rootObjectives
+        return data.objectives.rootObjectives
             .filter { (_, it) -> it is ObjectiveData.AllOf }
             .map { it.key }
             .toList()
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
-        val data = objectiveRegistryState.objectives[id] as? ObjectiveData.AllOf
+        val data = data.objectives[id] as? ObjectiveData.AllOf
             ?: return null
 
         if (data.objectives.isEmpty()) {

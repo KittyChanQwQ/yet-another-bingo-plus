@@ -1,14 +1,14 @@
 package me.jfenn.bingo.common.card.filter
 
-import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.data.ScopedData
 
 class ObjectiveFilterService(
     private val config: BingoConfig,
-    private val tierLists: TierListState,
+    private val data: ScopedData,
 ) {
     fun getPresetFilters(): Map<String, ObjectiveFilterList> {
-        return config.itemFilterPresets + tierLists.tierLists.keys.associateWith { tierList ->
+        return config.itemFilterPresets + data.tierLists.keys.associateWith { tierList ->
             ObjectiveFilterList()
                 .withFilter(ObjectiveFilter.Include(tierList))
                 .withFilter(ObjectiveFilter.Exclude(ObjectiveFilter.UNCATEGORIZED))

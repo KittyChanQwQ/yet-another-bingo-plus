@@ -102,6 +102,10 @@ class EventManager(
                 getEvents(event.server)?.onPlayerChannelRegister?.invoke(event.player)
             }
         }
+
+        serverEvents.onDataReload { event ->
+            getEvents(event.server)?.onDataReload?.invoke(event)
+        }
     }
 
 }

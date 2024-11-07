@@ -1,25 +1,21 @@
-package me.jfenn.bingo.common.card.data
+package me.jfenn.bingo.common.data
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.card.data.ObjectiveData
+import me.jfenn.bingo.common.card.data.ObjectiveDataReference
 import me.jfenn.bingo.common.utils.json
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.resource.ResourceManager
-import net.minecraft.resource.ResourceType
-import net.minecraft.util.Identifier
 import org.slf4j.Logger
 
-class ObjectiveRegistryManager(
-    private val state: ObjectiveRegistryState,
+class ObjectiveLoader(
     private val log: Logger,
 ) {
-
-    private fun reloadObjectives(
+    fun loadObjectives(
         manager: ResourceManager
-    ) {
-        log.info("[ObjectiveRegistryManager] Reloading BINGO objectives...")
+    ): ObjectiveType {
+        log.info("[ObjectiveLoader] Reloading BINGO objectives...")
 
         val newObjectives = mutableMapOf<String, ObjectiveData>()
 
@@ -33,8 +29,8 @@ class ObjectiveRegistryManager(
                     json.decodeFromStream<ObjectiveData>(it)
                 }
             } catch (e: Throwable) {
-                log.error("[ObjectiveRegistryManager] Error reading objective $id: ${e.message}")
-                log.debug("Error reading objective $id", e)
+                log.error("[ObjectiveLoader] Error reading objective $id: ${e.message}")
+                log.debug("Error reading objective {}", id, e)
                 continue
             }
 
@@ -47,19 +43,6 @@ class ObjectiveRegistryManager(
             }
         }
 
-        state.objectives = newObjectives
+        return newObjectives
     }
-
-    init {
-        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(
-            object : SimpleSynchronousResourceReloadListener {
-                override fun reload(manager: ResourceManager) {
-                    reloadObjectives(manager)
-                }
-
-                override fun getFabricId(): Identifier = Identifier.of(MOD_ID_BINGO, "objective_registry_manager")!!
-            }
-        )
-    }
-
 }

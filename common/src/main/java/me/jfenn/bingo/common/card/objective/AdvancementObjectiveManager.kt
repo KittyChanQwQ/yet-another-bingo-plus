@@ -6,7 +6,8 @@ import me.jfenn.bingo.api.item.IItemStackFactory
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
-import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.card.data.rootObjectives
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
@@ -22,12 +23,12 @@ class AdvancementObjectiveManager(
     private val state: BingoState,
     private val advancementManager: IAdvancementManager,
     private val itemStackFactory: IItemStackFactory,
-    private val objectiveRegistryState: ObjectiveRegistryState,
+    private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
-        val dataKeys = objectiveRegistryState.rootObjectives
+        val dataKeys = data.objectives.rootObjectives
             .filter { (_, it) -> it is ObjectiveData.Advancement }
             .map { it.key }
         return advancementManager.listAdvancements(server) + dataKeys
@@ -51,7 +52,7 @@ class AdvancementObjectiveManager(
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective.AdvancementEntry? {
         // If the objective is a data ID
-        (objectiveRegistryState.objectives[id] as? ObjectiveData.Advancement)
+        (data.objectives[id] as? ObjectiveData.Advancement)
             ?.let { data ->
                 BingoObjective.AdvancementEntry(
                     id = id,

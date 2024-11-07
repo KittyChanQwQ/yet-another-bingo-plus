@@ -2,8 +2,10 @@ package me.jfenn.bingo.common.scope
 
 import me.jfenn.bingo.api.IPersistentStateManager
 import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.ReloadEvent
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -56,6 +58,8 @@ class ScopeManager(
 
             val events = scope.get<ScopedEvents>()
             scope.registerCallback(events)
+            events.onDataReload(ReloadEvent(server, server.resourceManager))
+            scope.get<CardService>().createInitialCards()
 
             // re-run state entry listeners
             if (state.state == GameState.UNINITIALIZED) {

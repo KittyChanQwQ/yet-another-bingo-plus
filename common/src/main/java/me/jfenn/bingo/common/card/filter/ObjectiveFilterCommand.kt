@@ -113,7 +113,7 @@ class ObjectiveFilterCommand(
                     }
                 }
 
-                literal("clear") {
+                literal("remove") {
                     string("tag", { listActiveTags() }) { tagArg ->
                         executes {
                             val tag = getArgument(tagArg)

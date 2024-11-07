@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.config
 
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.card.tierlist.TierListManager
+import me.jfenn.bingo.common.data.TierListLoader
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import org.apache.commons.io.IOUtils
@@ -231,11 +231,11 @@ class MigrationHandler(
         configService.playerConfig = configService.playerConfig.copy()
 
         // - tierlist files should be re-generated on each launch if removed:
-        for (list in TierListManager.BUILTIN_TIER_LISTS) {
-            val filePath = Config.configDir.resolve("$MOD_ID_BINGO/$list${TierListManager.FILE_SUFFIX}")
+        for (list in TierListLoader.BUILTIN_TIER_LISTS) {
+            val filePath = Config.configDir.resolve("$MOD_ID_BINGO/$list${TierListLoader.FILE_SUFFIX}")
             if (!Files.exists(filePath)) {
                 FileOutputStream(filePath.toFile()).use { output ->
-                    javaClass.getResourceAsStream("/data/$MOD_ID_BINGO/$MOD_ID_BINGO/tierlists/$list${TierListManager.FILE_SUFFIX}")!!
+                    javaClass.getResourceAsStream("/data/$MOD_ID_BINGO/$MOD_ID_BINGO/tierlists/$list${TierListLoader.FILE_SUFFIX}")!!
                         .use { input -> IOUtils.copy(input, output) }
                 }
             }

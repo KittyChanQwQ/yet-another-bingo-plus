@@ -1,15 +1,12 @@
-package me.jfenn.bingo.common.card.tierlist
+package me.jfenn.bingo.common.data
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.card.tierlist.TierListConfig
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.utils.json
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.resource.ResourceManager
-import net.minecraft.resource.ResourceType
-import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import java.io.File
 import java.io.FileInputStream
@@ -17,8 +14,7 @@ import java.math.BigInteger
 import java.nio.file.Files
 import java.security.MessageDigest
 
-class TierListManager(
-    private val tierLists: TierListState,
+class TierListLoader(
     private val log: Logger,
 ) {
     private fun readTierList(file: File): TierListConfig? {
@@ -73,10 +69,10 @@ class TierListManager(
             .toMap()
     }
 
-    private fun reloadTierLists(
+    fun loadTierLists(
         manager: ResourceManager
-    ) {
-        log.info("[TierListManager] Reloading BINGO tier lists...")
+    ): Map<String, TierListConfig> {
+        log.info("[TierListLoader] Reloading BINGO tier lists...")
 
         val newTierLists = mutableMapOf<String, TierListConfig>()
 
@@ -90,7 +86,7 @@ class TierListManager(
                         json.decodeFromStream<TierListConfig>(it)
                     }
                 } catch (e: Throwable) {
-                    log.error("[TierListManager] Error reading tier list $id: ${e.message}")
+                    log.error("[TierListLoader] Error reading tier list $id: ${e.message}")
                     null
                 }
             }
@@ -107,24 +103,11 @@ class TierListManager(
             newTierLists[name] = otherConfig?.combine(config) ?: config
         }
 
-        tierLists.tierLists = newTierLists
-    }
-
-    init {
-        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(
-            object : SimpleSynchronousResourceReloadListener {
-                override fun reload(manager: ResourceManager) {
-                    reloadTierLists(manager)
-                }
-
-                override fun getFabricId(): Identifier = Identifier.of(MOD_ID_BINGO, "tier_list_manager")!!
-            }
-        )
+        return newTierLists
     }
 
     companion object {
         val BUILTIN_TIER_LISTS = listOf("advancements", "challenge", "items", "simplified")
         const val FILE_SUFFIX = ".tierlist.json"
     }
-
 }

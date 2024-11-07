@@ -1,7 +1,9 @@
 package me.jfenn.bingo.common.card.tag
 
-class DataTagProvider: ITagProvider {
-    var tags: Map<String, TagData> = emptyMap()
+import me.jfenn.bingo.common.data.ScopedData
 
-    override fun listTags(): Map<String, TagData> = tags
+class DataTagProvider(
+    private val data: ScopedData,
+): ITagProvider {
+    override fun listTags(): Map<String, TagData> = data.tags
 }

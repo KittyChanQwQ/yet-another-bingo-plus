@@ -4,7 +4,8 @@ import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
-import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.card.data.rootObjectives
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
@@ -13,20 +14,20 @@ import net.minecraft.text.Text
 
 class InverseObjectiveManager(
     private val state: BingoState,
-    private val objectiveRegistryState: ObjectiveRegistryState,
+    private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
     private val text: TextProvider,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
-        return objectiveRegistryState.rootObjectives
+        return data.objectives.rootObjectives
             .filter { (_, it) -> it is ObjectiveData.Inverse }
             .map { it.key }
             .toList()
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
-        val data = objectiveRegistryState.objectives[id] as? ObjectiveData.Inverse
+        val data = data.objectives[id] as? ObjectiveData.Inverse
             ?: return null
 
         return BingoObjective.InverseEntry(

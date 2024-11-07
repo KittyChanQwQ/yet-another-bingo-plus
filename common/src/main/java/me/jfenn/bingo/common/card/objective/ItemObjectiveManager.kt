@@ -7,9 +7,10 @@ import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
-import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.card.data.rootObjectives
 import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_COUNT
 import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MIN
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
@@ -22,12 +23,12 @@ class ItemObjectiveManager(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val itemStackFactory: IItemStackFactory,
-    private val objectiveRegistry: ObjectiveRegistryState,
+    private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
 ): IObjectiveManager {
     override fun list(): Iterable<String> {
-        val dataKeys = objectiveRegistry.rootObjectives
+        val dataKeys = data.objectives.rootObjectives
             .filter { (_, it) -> it is ObjectiveData.Item }
             .map { it.key }
         return itemStackFactory.listItems(server) + dataKeys
@@ -42,7 +43,7 @@ class ItemObjectiveManager(
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective.ItemEntry? {
         // If the objective is a data ID
-        (objectiveRegistry.objectives[id] as? ObjectiveData.Item)
+        (data.objectives[id] as? ObjectiveData.Item)
             ?.let { data ->
                 BingoObjective.ItemEntry(
                     id = id,

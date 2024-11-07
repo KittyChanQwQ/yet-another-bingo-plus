@@ -10,10 +10,10 @@ import me.jfenn.bingo.common.card.tag.TagService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.card.tierlist.TierListConfig
 import me.jfenn.bingo.common.card.tierlist.TierListEntry
-import me.jfenn.bingo.common.card.tierlist.TierListState
 import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.Build
@@ -35,7 +35,7 @@ class CardService(
     private val state: BingoState,
     private val options: BingoOptions,
     private val configService: ConfigService,
-    private val tierListState: TierListState,
+    private val data: ScopedData,
     private val tagService: TagService,
     private val objectiveManager: BingoObjectiveManager,
     private val tagExpansionService: TagExpansionService,
@@ -48,11 +48,10 @@ class CardService(
 
     init {
         validateLists()
-        createInitialCards()
     }
 
     private fun validateLists() {
-        tierListState.tierLists.entries
+        data.tierLists.entries
             .filter { (_, list) -> Build.isDebug || list.shouldValidate }
             .forEach { (name, list) -> validateList(name, list) }
     }
@@ -106,7 +105,7 @@ class CardService(
 
     private fun isListSupported(name: String, err: (Text) -> Unit): Boolean {
         // If the list is not found, the game should ignore it
-        val list = tierListState.tierLists[name] ?: return true
+        val list = data.tierLists[name] ?: return true
         val listName by lazy { ObjectiveFilterList.formatName(name).formatted(Formatting.BLUE) }
         val reqs by list::requirements
 
@@ -236,7 +235,7 @@ class CardService(
 
     private fun getFilterTag(tags: Map<String, TagData>, filter: ObjectiveFilter): TagData? {
         return tags[filter.tag] ?: run {
-            if (!tierListState.tierLists.containsKey(filter.tag) && filter.tag != ObjectiveFilter.UNCATEGORIZED) {
+            if (!data.tierLists.containsKey(filter.tag) && filter.tag != ObjectiveFilter.UNCATEGORIZED) {
                 log.error("[CardService] Objective tag '${filter.tag}' does not exist!")
             }
             null
@@ -249,9 +248,9 @@ class CardService(
         // If there are included tier lists, only include the referenced lists
         val hasIncludeList = filterList
             .filterIsInstance<ObjectiveFilter.Include>()
-            .any { tierListState.tierLists.containsKey(it.tag) }
+            .any { data.tierLists.containsKey(it.tag) }
 
-        val lists = tierListState.tierLists
+        val lists = data.tierLists
             // Only include tier lists that aren't excluded
             .filterNot { (listName, _) ->
                 filterList.filterIsInstance<ObjectiveFilter.Exclude>()
@@ -278,7 +277,7 @@ class CardService(
             // Otherwise, collect all available lists
             var list = TierListConfig.EMPTY
             getTierLists(filterList)
-                .filter { (name, _) -> isListSupported(name, {}) }
+                .filter { (name, _) -> isListSupported(name) {} }
                 .map { (name, otherList) ->
                     otherList.expandTags(tagExpansionService).expandName(name)
                 }
@@ -298,6 +297,12 @@ class CardService(
 
         tags[ObjectiveFilter.UNCATEGORIZED] = TagData(
             uncategorizedObjectives.map { it.item }.toSet()
+        )
+
+        // Determine the set of unobtainable items
+        tags[ObjectiveFilter.UNOBTAINABLE] = TagData(
+            (tags[ObjectiveFilter.UNOBTAINABLE]?.values ?: emptySet())
+                .plus(data.unobtainableItems)
         )
 
         // If there is any included tag, only include explicitly referenced items
@@ -332,6 +337,10 @@ class CardService(
         cardOptions: BingoCardOptions,
         excludeObjectives: Set<String> = emptySet(),
     ): BingoCard {
+        if (data.tierLists.isEmpty()) {
+            throw IllegalStateException("[CardService] Cannot generate a card - tier lists have not been loaded yet!")
+        }
+
         val dist = cardOptions.itemDistribution
         assert(dist.size == TierLabel.entries.size) { "Item distribution does not match the number of tiers (${TierLabel.entries.size})!" }
         assert(dist.sum() <= 25) { "Item distribution exceeds 25!" }

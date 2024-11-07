@@ -7,9 +7,10 @@ import me.jfenn.bingo.api.IStatManager
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
-import me.jfenn.bingo.common.card.data.ObjectiveRegistryState
+import me.jfenn.bingo.common.card.data.rootObjectives
 import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MAX
 import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MIN
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoPlayerProfile
@@ -23,19 +24,19 @@ class StatsObjectiveManager(
     private val statManager: IStatManager,
     private val state: BingoState,
     private val offlinePlayerCache: OfflinePlayerCache,
-    private val objectiveRegistryState: ObjectiveRegistryState,
+    private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
-        return objectiveRegistryState.rootObjectives
+        return data.objectives.rootObjectives
             .filter { (_, it) -> it is ObjectiveData.Stats }
             .map { it.key }
             .toList()
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
-        val data = objectiveRegistryState.objectives[id] as? ObjectiveData.Stats
+        val data = data.objectives[id] as? ObjectiveData.Stats
             ?: return null
 
         return BingoObjective.StatsEntry(

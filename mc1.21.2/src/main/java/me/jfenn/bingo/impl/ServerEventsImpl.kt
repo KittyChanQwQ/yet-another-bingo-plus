@@ -4,6 +4,7 @@ import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.IServerEvents
 import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.event.model.*
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.utils.EventListener
@@ -12,12 +13,19 @@ import me.jfenn.bingo.common.utils.IReturnEventListener
 import me.jfenn.bingo.common.utils.ReturnEventListener
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.*
 import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
+import net.minecraft.resource.ResourceManager
+import net.minecraft.resource.ResourceType
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Identifier
+import java.lang.ref.WeakReference
 
 object ServerEventsImpl : IServerEvents {
     override val onTickStart: IEventListener<MinecraftServer> = EventListener()
@@ -32,6 +40,9 @@ object ServerEventsImpl : IServerEvents {
     override val onAttackEntity: IReturnEventListener<AttackEntityEvent, ActionResult<Unit>> = ReturnEventListener()
     override val onAttackBlock: IReturnEventListener<AttackBlockEvent, ActionResult<Unit>> = ReturnEventListener()
     override val onPlayerChannelRegister: IEventListener<PlayerEvent> = EventListener()
+    override val onDataReload: IEventListener<ReloadEvent> = EventListener()
+
+    private var serverRef: WeakReference<MinecraftServer>? = null
 
     private fun getPlayerImpl(player: ServerPlayerEntity): IPlayerHandle? {
         val koinApp = BingoKoin.getScope(player.server) ?: return null
@@ -55,6 +66,10 @@ object ServerEventsImpl : IServerEvents {
     }
 
     init {
+        ServerLifecycleEvents.SERVER_STARTING.register { server ->
+            serverRef = WeakReference(server)
+        }
+
         ServerTickEvents.START_SERVER_TICK.register {
             onTickStart(it)
         }
@@ -131,5 +146,17 @@ object ServerEventsImpl : IServerEvents {
             val player = getPlayerImpl(handler.player) ?: return@register
             onPlayerChannelRegister(PlayerEvent(server, player))
         }
+
+        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(
+            object : SimpleSynchronousResourceReloadListener {
+                override fun reload(manager: ResourceManager) {
+                    serverRef?.get()?.let {
+                        onDataReload(ReloadEvent(it, manager))
+                    }
+                }
+
+                override fun getFabricId(): Identifier = Identifier.of(MOD_ID_BINGO, "server_reload")!!
+            }
+        )
     }
 }

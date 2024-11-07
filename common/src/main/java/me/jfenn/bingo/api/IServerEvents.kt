@@ -19,4 +19,5 @@ interface IServerEvents {
     val onAttackEntity: IReturnEventListener<AttackEntityEvent, ActionResult<Unit>>
     val onAttackBlock: IReturnEventListener<AttackBlockEvent, ActionResult<Unit>>
     val onPlayerChannelRegister: IEventListener<PlayerEvent>
+    val onDataReload: IEventListener<ReloadEvent>
 }
