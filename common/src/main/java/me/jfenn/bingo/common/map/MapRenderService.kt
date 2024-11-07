@@ -51,18 +51,29 @@ class MapRenderService(
         fun validateItems() {
             for (item in Registries.ITEM.keys) {
                 try {
-                    readTileImage(item.value.path).close()
+                    readTileImage(item.value.toString())!!.close()
                 } catch (e: Throwable) {
                     val log = LoggerFactory.getLogger(MOD_ID)
-                    log.warn("Missing item image: ${item.value.path}.png")
+                    log.warn("Missing item image: ${item.value.toString().replace(':', '/')}.png")
                 }
             }
         }
 
-        private fun readTileImage(itemPath: String): InputStream {
-            return Config.readStream("images/${itemPath}.png", false) {
-                MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/images/${itemPath}.png")
-                    ?: throw IllegalArgumentException("Cannot find default texture for ${itemPath}.png")
+        private fun readTileImage(itemPath: String): InputStream? {
+            val namespace = itemPath.substringBefore(':')
+            val path = itemPath.substringAfter(':')
+            return try {
+                Config.readStream("images/${path}.png", false) {
+                    MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/images/${path}.png")!!
+                }
+            } catch (e: NullPointerException) {
+                null
+            } ?: try {
+                Config.readStream("images/$namespace/${path}.png", false) {
+                    MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/images/$namespace/${path}.png")!!
+                }
+            } catch (e: NullPointerException) {
+                null
             }
         }
 
@@ -251,6 +262,7 @@ class MapRenderService(
             val imageStream = key.image
                 ?.let { imageService.readCardImageStream(it) }
                 ?: readTileImage(key.name)
+                ?: return null
 
             val image = imageStream.use { ImageIO.read(it) }
             val tileImage = BingoTileImage.fromBufferedImage(image)
