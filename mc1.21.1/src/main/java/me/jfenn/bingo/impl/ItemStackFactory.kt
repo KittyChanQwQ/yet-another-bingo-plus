@@ -124,7 +124,11 @@ class ItemStackFactory(
         override fun removeCustomTag(tag: String) {
             val nbt = stack[DataComponentTypes.CUSTOM_DATA]?.copyNbt() ?: NbtCompound()
             nbt.remove(tag)
-            stack[DataComponentTypes.CUSTOM_DATA] = NbtComponent.of(nbt)
+            if (nbt.isEmpty) {
+                stack.remove(DataComponentTypes.CUSTOM_DATA)
+            } else {
+                stack[DataComponentTypes.CUSTOM_DATA] = NbtComponent.of(nbt)
+            }
         }
 
         override fun hasCustomTag(tag: String): Boolean {
