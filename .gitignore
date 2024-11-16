@@ -41,3 +41,4 @@
 /bingo
 logs/
 /*.sh
+crowdin.json

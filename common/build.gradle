@@ -1,8 +1,16 @@
+import groovy.json.JsonSlurper
+
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.util.zip.ZipInputStream
 
 plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.gradlecrowdin)
     id 'bingo.mod'
 }
 
@@ -82,6 +90,100 @@ sourceSets {
     main {
         java.srcDir "${buildDir}/generated/main/java"
         resources.srcDir "${buildDir}/generated/main/resources"
+    }
+}
+
+tasks.register("bingoUpdateTranslations") {
+    outputs.upToDateWhen { false }
+
+    def crowdinFile = layout.buildDirectory.file("crowdin/download.zip")
+    def baseUrl = "https://api.crowdin.com/api/v2"
+    def langDir = "src/main/resources/assets/yet-another-minecraft-bingo/lang"
+
+    doLast {
+        def config = new JsonSlurper().parse(rootProject.file("crowdin.json"))
+        def client = HttpClient.newHttpClient()
+        def clientBodyHandler = HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
+
+        def projectId = new JsonSlurper().parseText(
+                client.send(
+                        HttpRequest.newBuilder(URI.create("$baseUrl/projects"))
+                                .GET()
+                                .header("Authorization", "Bearer ${config.apiKey}")
+                                .build(),
+                        clientBodyHandler
+                ).body()
+        )
+                .data
+                .find { it.data.identifier == config.project }
+                .data
+                .id
+
+        def buildId = new JsonSlurper().parseText(
+                client.send(
+                        HttpRequest.newBuilder(URI.create("$baseUrl/projects/$projectId/translations/builds"))
+                                .POST(HttpRequest.BodyPublishers.ofString("{\"skipUntranslatedStrings\": true,\"exportApprovedOnly\": false}"))
+                                .header("Authorization", "Bearer ${config.apiKey}")
+                                .header("Content-Type", "application/json")
+                                .build(),
+                        clientBodyHandler
+                ).body()
+        )
+                .data
+                .id
+
+        while (true) {
+            Thread.sleep(100)
+
+            def buildStatus = new JsonSlurper().parseText(
+                    client.send(
+                            HttpRequest.newBuilder(URI.create("$baseUrl/projects/$projectId/translations/builds/$buildId"))
+                                    .GET()
+                                    .header("Authorization", "Bearer ${config.apiKey}")
+                                    .build(),
+                            clientBodyHandler
+                    ).body()
+            )
+
+            println("Crowdin Build: ${buildStatus.data.status}")
+            if (buildStatus.data.status != "created" && buildStatus.data.status != "inProgress")
+                break
+        }
+
+        def downloadUrl = new JsonSlurper().parseText(
+                client.send(
+                        HttpRequest.newBuilder(URI.create("$baseUrl/projects/$projectId/translations/builds/$buildId/download"))
+                                .GET()
+                                .header("Authorization", "Bearer ${config.apiKey}")
+                                .build(),
+                        clientBodyHandler
+                ).body()
+        )
+                .data
+                .url
+
+        crowdinFile.get().asFile.parentFile.mkdirs()
+        URI.create(downloadUrl).toURL().withInputStream { i ->
+            crowdinFile.get().asFile.withOutputStream { it << i }
+        }
+
+        new ZipInputStream(
+                crowdinFile.get().asFile.newInputStream()
+        ).with { zipIn ->
+            while (true) {
+                def entry = zipIn.getNextEntry()
+                if (entry == null) break
+
+                if (entry.isDirectory()) continue
+                if (entry.size <= 3) continue
+
+                def buffer = zipIn.readAllBytes()
+
+                def name = new File(entry.name).name.toLowerCase()
+                def outFile = file("$projectDir/$langDir/$name")
+                outFile.withOutputStream { it << buffer }
+            }
+        }
     }
 }
 
