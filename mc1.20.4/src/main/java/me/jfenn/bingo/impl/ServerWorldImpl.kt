@@ -36,6 +36,12 @@ class ServerWorldImpl(
             seed: Long,
             callback: () -> kotlin.Unit
         ) {
+            // First, ensure the world/data is saved
+            server.saveAll(false, true, true)
+
+            // Remove scoreboard objectives to avoid a crash when data is reloaded in loadWorld()
+            server.scoreboard.objectives.forEach { server.scoreboard.removeObjective(it) }
+
             server.saving = true
             try {
                 server.cancelTasks()
