@@ -37,4 +37,3 @@ assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assert
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.0.10" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
-gradlecrowdin = { id = "org.zaproxy.crowdin", version = "0.5.0" }

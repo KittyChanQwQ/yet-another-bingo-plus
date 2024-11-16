@@ -10,7 +10,6 @@ import java.util.zip.ZipInputStream
 plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.sqldelight)
-    alias(libs.plugins.gradlecrowdin)
     id 'bingo.mod'
 }
 
