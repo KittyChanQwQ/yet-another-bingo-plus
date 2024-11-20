@@ -59,11 +59,10 @@ class ScoreboardController(
         }
 
         events.onUpdateTick {
-            val activeTeams = state.getRegisteredTeams()
-            val isMultipleTeams = state.state == GameState.PREGAME || activeTeams.size > 1
+            val isMultipleTeams = state.state == GameState.PREGAME || state.getRegisteredTeams().size > 1
             val isMultiCardWinCondition = options.winCondition != BingoWinCondition.Cards(1)
 
-            for (team in activeTeams + null) {
+            for (team in state.teams.values + null) {
                 val objective = scoreboardService.getScoreboardObjective(team)
                 val teamCard = team?.let { state.getCard(it) } ?: state.getActiveCard()
 
