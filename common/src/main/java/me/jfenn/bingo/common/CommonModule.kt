@@ -38,6 +38,7 @@ import me.jfenn.bingo.common.menu.tooltips.TooltipController
 import me.jfenn.bingo.common.menu.tooltips.TooltipService
 import me.jfenn.bingo.common.ready.ReadyCommand
 import me.jfenn.bingo.common.ready.ReadyController
+import me.jfenn.bingo.common.ready.ReadyService
 import me.jfenn.bingo.common.ready.ReadyTimerState
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.common.scope.ScopeManager
@@ -191,6 +192,7 @@ val commonModule = module {
         scopedOf(::InfoBookService)
 
         scopedOf(::ResetService)
+        scopedOf(::ReadyService)
         scopedOf(::ReadyController)
 
         scopedOf(::MapItemService)

@@ -4,6 +4,7 @@ import me.jfenn.bingo.mixinhandler.PlayerEntityMixinHandler;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -30,6 +31,21 @@ public abstract class PlayerEntityMixin {
                 ci.setReturnValue(null);
                 ci.cancel();
             }
+        }
+    }
+
+    @Inject(at = @At(value = "HEAD"), method = "getPlayerListName()Lnet/minecraft/text/Text;", cancellable = true)
+    public void getPlayerListName(CallbackInfoReturnable<Text> ci) {
+        ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+        var originalName = player.getDisplayName();
+        var name = PlayerEntityMixinHandler.INSTANCE.getPlayerListName(
+                player.server,
+                player.getUuid(),
+                originalName != null ? originalName : Text.literal(player.getNameForScoreboard())
+        );
+        if (name != null) {
+            ci.setReturnValue(name);
+            ci.cancel();
         }
     }
 

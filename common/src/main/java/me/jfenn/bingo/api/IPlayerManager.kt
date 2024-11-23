@@ -20,6 +20,8 @@ interface IPlayerManager {
 
     fun getOfflinePlayer(profile: BingoPlayerProfile): IPlayerHandle
 
+    fun updatePlayerListName(player: IPlayerHandle)
+
     /**
      * Sends a sound manually to [player], and broadcasts a
      * sound event to surrounding players.

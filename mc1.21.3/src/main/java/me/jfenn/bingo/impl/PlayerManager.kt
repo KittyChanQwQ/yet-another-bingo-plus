@@ -20,6 +20,7 @@ import net.minecraft.item.Items
 import net.minecraft.item.consume.UseAction
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
+import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
@@ -46,6 +47,11 @@ class PlayerManager(
     override fun getPlayers(): List<IPlayerHandle> {
         return server.playerManager.playerList
             .map { PlayerHandle(it) }
+    }
+
+    override fun updatePlayerListName(player: IPlayerHandle) {
+        val packet = PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_DISPLAY_NAME, player.player)
+        server.playerManager.sendToAll(packet)
     }
 
     override fun getOfflinePlayer(profile: BingoPlayerProfile): IPlayerHandle {

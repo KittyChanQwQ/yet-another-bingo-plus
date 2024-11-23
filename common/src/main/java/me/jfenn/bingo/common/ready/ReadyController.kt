@@ -32,6 +32,7 @@ internal class ReadyController(
     private val resetService: ResetService,
     private val packets: ServerPacketEvents,
     private val permissions: PermissionsIntegration,
+    private val readyService: ReadyService,
     events: ScopedEvents,
 ) {
 
@@ -41,9 +42,16 @@ internal class ReadyController(
         return isReady && players.size > 1 && state.options.isValid()
     }
 
+    private fun reset() {
+        readyState.reset()
+        playerManager.getPlayers().forEach { player ->
+            playerManager.updatePlayerListName(player)
+        }
+    }
+
     init {
         events.onStateChange {
-            readyState.reset()
+            reset()
 
             // When the state changes, make sure to send an extra packet to dismiss the ready GUI
             val packet = ReadyUpdatePacket(
@@ -67,13 +75,11 @@ internal class ReadyController(
 
         events.onChangeOptions {
             log.info("[ReadyController] Reset the timer, as the game options have changed")
-            readyState.reset()
+            reset()
         }
 
         events.onPacket(packets.readySetV1) {
-            if (permissions.hasPermission(it.player, Permission.COMMAND_READY)) {
-                readyState.setReady(it.player.uuid, it.packet.isReady)
-            }
+            readyService.setReady(it.player, it.packet.isReady)
         }
 
         events.onUpdateTick {
@@ -105,12 +111,13 @@ internal class ReadyController(
                 // If the game is no longer ready, reset the timer!
                 if (readyState.isRunning && !isPregameReady()) {
                     log.info("[ReadyController] Cancelling the PREGAME timer, as players are not ready")
-                    readyState.reset()
+                    reset()
                 }
 
                 if (isComplete) {
                     log.info("[ReadyController] Reached the end of the PREGAME timer - starting the game!")
-                    gameService.start()
+                    reset()
+                    gameService.start(allowSpectators = true)
                 }
             }
 
