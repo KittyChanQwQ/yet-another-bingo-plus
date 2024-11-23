@@ -4,6 +4,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
+import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.utils.UuidAsString
 import java.util.*
 
@@ -13,6 +14,7 @@ data class BingoConfig(
     var version: Int = 0,
 
     var itemFilterPresets: Map<String, ObjectiveFilterList> = ObjectiveFilterList.PRESETS,
+    var difficultyPresets: Map<String, List<Int>> = TierLabel.DIFFICULTY_PRESETS,
 
     // adds BINGO_IGNORE to spawn kit items, preventing them from being scored
     val preventScoringSpawnKitItems: Boolean = false,

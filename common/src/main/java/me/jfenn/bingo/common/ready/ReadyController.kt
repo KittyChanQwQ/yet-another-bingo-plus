@@ -20,7 +20,7 @@ import org.slf4j.Logger
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class ReadyController(
+internal class ReadyController(
     private val log: Logger,
     private val readyState: ReadyTimerState,
     private val state: BingoState,

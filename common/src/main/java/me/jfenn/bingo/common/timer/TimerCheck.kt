@@ -15,7 +15,7 @@ import kotlin.time.Duration.Companion.seconds
  * Checks when the game time exceeds its time limit, and
  * ends the game when it does.
  */
-class TimerCheck(
+internal class TimerCheck(
     events: ScopedEvents,
     private val state: BingoState,
     private val options: BingoOptions,

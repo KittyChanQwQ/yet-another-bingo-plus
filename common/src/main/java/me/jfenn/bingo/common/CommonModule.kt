@@ -16,6 +16,7 @@ import me.jfenn.bingo.common.card.tag.TierListTagProvider
 import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.MigrationHandler
+import me.jfenn.bingo.common.config.OptionsService
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.data.*
@@ -173,6 +174,8 @@ val commonModule = module {
                 )
             )
         }
+
+        scopedOf(::OptionsService)
         scopedOf(::ObjectiveFilterService)
         scopedOf(::CardService)
 

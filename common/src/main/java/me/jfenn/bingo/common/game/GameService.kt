@@ -5,12 +5,12 @@ import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.config.OptionsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.SpawnService
@@ -21,7 +21,6 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
@@ -31,7 +30,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import kotlin.time.Duration.Companion.seconds
 
-class GameService(
+internal class GameService(
     private val state: BingoState,
     private val options: BingoOptions,
     private val server: MinecraftServer,
@@ -43,6 +42,7 @@ class GameService(
     private val cardService: CardService,
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
+    private val optionsService: OptionsService,
     private val gameOverService: GameOverService,
     private val writeStatsService: WriteStatsService,
     private val text: TextProvider,
@@ -207,36 +207,26 @@ class GameService(
     }
 
     private fun broadcastStart() {
-        val firstCard = state.cards.firstOrNull() ?: BingoCard.EMPTY
+        playerManager.getPlayers()
+            .filter { state.isLobbyMode || teamService.isPlaying(it) }
+            .forEach { player ->
+                sequence {
+                    yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
 
-        sequence {
-            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
+                    Text.literal("  ")
+                        .append(text.string(StringKey.GameStart))
+                        .formatted(Formatting.GREEN)
+                        .also { yield(it) }
 
-            Text.literal("  ")
-                .append(text.string(StringKey.GameStart))
-                .formatted(Formatting.GREEN)
-                .also { yield(it) }
+                    optionsService.getOptionsSummary(player)
+                        .map { Text.literal("  ").append(it) }
+                        .let { yieldAll(it) }
 
-            Text.literal("  ")
-                .append(text.string(StringKey.ScoreboardMode, options.formatGameMode(firstCard).map { text.string(it) }.joinText()))
-                .formatted(Formatting.GRAY)
-                .also { yield(it) }
-
-            Text.literal("  ")
-                .append(text.string(StringKey.ScoreboardFeatures, options.formatFeatures().map { text.string(it) }.joinText()))
-                .formatted(Formatting.GRAY)
-                .also { yield(it) }
-
-            Text.empty()
-                .append("  ")
-                .append(text.string(StringKey.ScoreboardGoal, state.formatCardGoals(null, text)))
-                .formatted(Formatting.GRAY)
-                .also { yield(it) }
-
-            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
-        }.forEach {
-            server.playerManager.broadcast(it, false)
-        }
+                    yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
+                }.forEach {
+                    player.sendMessage(it)
+                }
+            }
     }
 
 }

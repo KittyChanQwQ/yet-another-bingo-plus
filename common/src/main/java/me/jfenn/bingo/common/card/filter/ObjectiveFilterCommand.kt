@@ -7,7 +7,6 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.tag.TagService
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
-import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.GameState
@@ -19,12 +18,12 @@ import net.minecraft.util.Formatting
 class ObjectiveFilterCommand(
     commandManager: ICommandManager,
     private val text: TextProvider,
-    private val config: BingoConfig,
 ) {
     private fun IExecutionContext.setItemFilters(mutate: (ObjectiveFilterList) -> ObjectiveFilterList) {
         val events = scope.get<ScopedEvents>()
         val cardService = scope.get<CardService>()
         val cardViewService = scope.get<CardViewService>()
+        val objectiveFilterService = scope.get<ObjectiveFilterService>()
         val card = cardViewService.getPlayerCard(player!!)
 
         card.options.itemFilter = mutate(card.options.itemFilter)
@@ -34,7 +33,7 @@ class ObjectiveFilterCommand(
         Text.literal("ℹ  ")
             .append(text.string(StringKey.OptionsFilter))
             .append(": ")
-            .append(card.options.formatFilter(config))
+            .append(objectiveFilterService.formatFilter(card.options.itemFilter))
             .formatted(Formatting.AQUA)
             .also { sendFeedback(it) }
     }

@@ -263,6 +263,9 @@ sealed class BingoObjective {
         val valueMax: Int
     ): BingoObjective() {
 
+        override val conflictsWithObjectives: Set<String>
+            get() = super.conflictsWithObjectives + listOfNotNull(data.statName)
+
         val valueRange get() = valueMin..valueMax
 
         /**

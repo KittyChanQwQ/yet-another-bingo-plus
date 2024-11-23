@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -24,6 +25,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class BingoCardCommand(
     commandManager: ICommandManager,
+    private val config: BingoConfig,
     private val text: TextProvider,
 ) : BingoComponent() {
 
@@ -87,11 +89,12 @@ class BingoCardCommand(
         )
     }
 
-    private fun IExecutionContext.setItemDist(itemDist: List<Int>) {
+    private fun IExecutionContext.setItemDist(itemDistInput: List<Int>) {
         val events = scope.get<ScopedEvents>()
         val card = cardViewService.getPlayerCard(player!!)
+        val itemDist = List(5) { itemDistInput.getOrNull(it) ?: 0 }
 
-        if (itemDist.size == 5 && itemDist.sum() > 25) {
+        if (itemDist.sum() > 25) {
             sendWarningMessage(Text.literal("Item distribution must add up to 25!"))
             throw IllegalArgumentException("Item distribution must add up to 25!")
         }
@@ -231,7 +234,7 @@ class BingoCardCommand(
                 }
             }
 
-            literal("itemdist") {
+            literal("difficulty") {
                 requires { hasConfigureGame() }
 
                 var builder = this@literal
@@ -245,6 +248,12 @@ class BingoCardCommand(
 
                 builder.executes {
                     setItemDist(args.map { getArgument(it) })
+                }
+
+                for ((name, difficulty) in config.difficultyPresets) {
+                    literal(name) {
+                        executes { setItemDist(difficulty) }
+                    }
                 }
             }
 

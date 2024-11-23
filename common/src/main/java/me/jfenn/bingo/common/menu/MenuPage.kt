@@ -18,7 +18,7 @@ import net.minecraft.util.Formatting
 import org.joml.Vector3d
 import org.slf4j.Logger
 
-fun MenuComponent.registerMenuPage(
+internal fun MenuComponent.registerMenuPage(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     options: BingoOptions = koinScope.get(),

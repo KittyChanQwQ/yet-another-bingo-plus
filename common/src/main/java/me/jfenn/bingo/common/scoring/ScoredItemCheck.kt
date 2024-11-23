@@ -29,7 +29,7 @@ import kotlin.random.Random
  * Searches for items in each player's inventory that can
  * satisfy a tile on the card, and updates the score if found.
  */
-class ScoredItemCheck(
+internal class ScoredItemCheck(
     private val log: Logger,
     private val options: BingoOptions,
     private val state: BingoState,

@@ -6,13 +6,14 @@ import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 
 @Serializable
 data class BingoCardOptions(
     var goal: BingoGoal = BingoGoal.Lines(3),
-    var itemDistribution: List<Int> = listOf(0, 5, 7, 7, 6),
+    var itemDistribution: List<Int> =
+        ConfigService().config.difficultyPresets[TierLabel.LIST_EASY]
+            ?: TierLabel.DIFFICULTY_EASY,
     var itemFilter: ObjectiveFilterList =
         ConfigService().config.itemFilterPresets[ObjectiveFilter.EVERYTHING]
             ?: ObjectiveFilterList.EVERYTHING,
@@ -47,13 +48,5 @@ data class BingoCardOptions(
                 Text.literal("${itemDistribution[i]}").formatted(label.formatting)
             }
             .joinText(Text.literal(" "))
-    }
-
-    fun formatFilter(config: BingoConfig): MutableText {
-        return config.itemFilterPresets.toList()
-            .find { (_, filter) -> filter == itemFilter }
-            ?.first
-            ?.let { name -> ObjectiveFilterList.formatName(name) }
-            ?: Text.literal(itemFilter.toString())
     }
 }

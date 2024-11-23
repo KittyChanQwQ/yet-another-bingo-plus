@@ -15,4 +15,16 @@ enum class TierLabel(
     D(Formatting.GREEN, StringKey.TierD);
 
     fun text(): Text = Text.literal("$this-tier").formatted(formatting)
+
+    companion object {
+        const val LIST_EASY = "easy"
+        val DIFFICULTY_EASY = listOf(0, 0, 0, 9, 16)
+        val DIFFICULTY_PRESETS = mapOf(
+            LIST_EASY to DIFFICULTY_EASY,
+            "medium" to listOf(0, 0, 3, 10, 12),
+            "hard" to listOf(0, 1, 5, 10, 9),
+            "extreme" to listOf(0, 5, 7, 7, 6),
+            "impossible" to listOf(5, 7, 6, 5, 2),
+        )
+    }
 }
