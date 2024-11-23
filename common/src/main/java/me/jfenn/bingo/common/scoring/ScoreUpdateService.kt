@@ -138,6 +138,7 @@ class ScoreUpdateService(
                 player = scoredPlayer,
                 isViewerOnTeam = isOnTeam,
                 item = item.takeIf { !isItemHidden },
+                image = objective.display.image.takeIf { !isItemHidden },
                 messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
                 message = chatMessage,
             )
