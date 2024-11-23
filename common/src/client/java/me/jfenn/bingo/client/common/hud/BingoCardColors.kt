@@ -35,7 +35,7 @@ data class BingoCardColors(
     class TeamColors(
         val tileAchievedColor: Color = Color.fromInt(0xff55ff55.toInt()),
         val tileFlashingColor: Color = Color.fromInt(0xffb24cd8.toInt()),
-        val tileProgressColor: Color = Color.fromInt(0xff40bf40.toInt()),
+        val tileProgressColor: Color = Color.fromInt(0xff309f30.toInt()),
         val backgroundColor: Color = Color.BLACK,
         val textColor: Color = Color.BLACK,
         val outlineColor: Color = Color.TRANSPARENT,
