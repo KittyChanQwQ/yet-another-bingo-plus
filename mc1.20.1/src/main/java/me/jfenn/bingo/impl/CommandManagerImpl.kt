@@ -52,7 +52,7 @@ class CommandManagerImpl(
                     ).let {
                         when (val suggestions = arg.suggestions) {
                             null -> it
-                            else -> it.suggests(SuggestionProviderImpl(suggestions))
+                            else -> it.suggests(SuggestionProviderImpl(arg.greedy, suggestions))
                         }
                     }
 
@@ -134,10 +134,11 @@ class CommandManagerImpl(
 }
 
 class SuggestionProviderImpl(
+    private val isGreedy: Boolean,
     private val callback: IExecutionContext.() -> Iterable<String>,
 ) : SuggestionProvider<ServerCommandSource> {
     private fun String.quoteIfNecessary(): String {
-        return if (contains(Regex("[^A-Za-z\\-_]")))
+        return if (!isGreedy && contains(Regex("[^A-Za-z0-9\\-_]")))
             "\"$this\""
         else this
     }
