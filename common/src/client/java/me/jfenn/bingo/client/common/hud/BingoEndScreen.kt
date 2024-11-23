@@ -5,6 +5,7 @@ import me.jfenn.bingo.client.api.IScrollableWidgetFactory
 import me.jfenn.bingo.client.api.ITabsWidgetFactory
 import me.jfenn.bingo.client.api.IWorldService
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.ready.SetReadyPacket
@@ -33,6 +34,7 @@ class BingoEndScreen(
     private val text: TextProvider = koin.get(),
     private val packets: ClientPacketEvents = koin.get(),
     private val state: BingoHudState = koin.get(),
+    private val config: BingoConfig = koin.get(),
     scrollableWidgetFactory: IScrollableWidgetFactory = koin.get(),
     tabsWidgetFactory: ITabsWidgetFactory = koin.get(),
 ) : Screen(text.string(StringKey.CardTitle)) {
@@ -105,7 +107,14 @@ class BingoEndScreen(
 
     private fun reopenWorld() {
         when (nextGameButton()) {
-            NextGameButton.NEXT_ROUND -> packets.readySetV1.send(SetReadyPacket(true))
+            NextGameButton.NEXT_ROUND -> {
+                val isInSingleplayer = client?.isInSingleplayer ?: return
+                if (config.nextRoundCompatibilityMode && isInSingleplayer) {
+                    worldService.disconnectAndReopen()
+                } else {
+                    packets.readySetV1.send(SetReadyPacket(true))
+                }
+            }
             NextGameButton.RESTART -> worldService.restartServer()
             NextGameButton.DISCONNECT -> worldService.disconnect()
         }

@@ -36,13 +36,15 @@ data class BingoConfig(
 
     // starts the game after the time limit - reduced when players vote /ready
     val startWhenReadySeconds: Int? = 600,
-    // shuts down after a time limit - reduced when players vote /ready
+    // resets after a time limit - reduced when players vote /ready
     val nextRoundWhenReadySeconds: Int? = 600,
     val nextRoundWhenReadyWaitsForFirstVote: Boolean = true,
 
-    // shuts down the server once all players log out after a game
-    @JsonNames("autoShutDownInPostgame")
-    val shutDownWhenEveryoneDisconnects: Boolean = true,
+    // resets the server once all players log out after a game
+    @JsonNames("autoShutDownInPostgame", "shutDownWhenEveryoneDisconnects")
+    val nextRoundWhenEveryoneDisconnects: Boolean = true,
+    // resets the server by doing a full restart after each game, instead recreating the world in the same instance
+    val nextRoundCompatibilityMode: Boolean = false,
     // shuts down the server faster, at the risk of bugs or data corruption
     val unsafeSkipWorldClose: Boolean = false,
 

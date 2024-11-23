@@ -3,7 +3,6 @@ package me.jfenn.bingo.common
 import me.jfenn.bingo.api.ICloseEvent
 import me.jfenn.bingo.common.autorestart.ResetCommand
 import me.jfenn.bingo.common.autorestart.ResetService
-import me.jfenn.bingo.common.autorestart.RestartCommand
 import me.jfenn.bingo.common.autorestart.RestartOnLeaveController
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TagExpansionService
@@ -110,7 +109,6 @@ val commonModule = module {
     singleOf(::PreviewCardCommand)
     singleOf(::SpectatorCommand)
     singleOf(::ReadyCommand)
-    singleOf(::RestartCommand)
     singleOf(::StatsCommand)
     singleOf(::ObjectiveFilterCommand)
     singleOf(::InfoBookCommand)
@@ -273,7 +271,6 @@ fun Koin.commonInit() {
     get<PreviewCardCommand>()
     get<SpectatorCommand>()
     get<ReadyCommand>()
-    get<RestartCommand>()
     get<StatsCommand>()
     get<ObjectiveFilterCommand>()
     get<InfoBookCommand>()

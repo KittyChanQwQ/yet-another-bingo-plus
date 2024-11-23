@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.autorestart
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.IServerWorldFactory
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
@@ -16,6 +17,7 @@ import kotlin.random.Random
 
 class ResetService(
     private val events: ScopedEvents,
+    private val config: BingoConfig,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     private val spawnService: SpawnService,
@@ -27,7 +29,15 @@ class ResetService(
     private val log: Logger,
 ) {
 
-    fun resetGame() = log.measureTime("Resetting worlds...") {
+    fun resetGame() {
+        if (config.nextRoundCompatibilityMode) {
+            server.stop(false)
+        } else {
+            resetGameWorlds()
+        }
+    }
+
+    private fun resetGameWorlds() = log.measureTime("Resetting worlds...") {
         // Clear scoreboards (otherwise this causes an error when recreated)
         log.info("[Reset] Clearing game data")
         scoreboardService.clearScoreboards()

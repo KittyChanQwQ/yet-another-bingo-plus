@@ -21,10 +21,10 @@ class RestartOnLeaveController(
             val state = scope.get<BingoState>()
 
             // if the last player is disconnecting after a bingo game, shut down the server
-            if (server.isRunning && config.shutDownWhenEveryoneDisconnects && state.isLobbyMode && state.state == GameState.POSTGAME && server.currentPlayerCount <= 1) {
-                log.info("[RestartOnLeaveController] Last player has disconnected and 'shutDownWhenEveryoneDisconnects' is true; Shutting down the server...")
+            if (server.isRunning && config.nextRoundWhenEveryoneDisconnects && state.isLobbyMode && state.state == GameState.POSTGAME && server.currentPlayerCount <= 1) {
+                log.info("[RestartOnLeaveController] Last player has disconnected and 'nextRoundWhenEveryoneDisconnects' is true; Resetting...")
                 server.execute {
-                    server.stop(false)
+                    scope.get<ResetService>().resetGame()
                 }
             }
         }
