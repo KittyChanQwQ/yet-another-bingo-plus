@@ -71,6 +71,8 @@ Tracks when an item enters the player's inventory.
   - `"minecraft:enchantments": {"levels":{"mending":1}}`
 - `"permanent": false`: Whether the objective is permanently scored once obtained. If true, the objective will remain scored even if Inventory mode is enabled.
 
+Name substitutions: `%count%`
+
 ### Advancements
 
 Tracks when a player scores an advancement. This is mainly useful for modifying the objective's `"display"` properties.
@@ -88,6 +90,8 @@ Tracks a player's statistics.
 - [`"min": <number-source>`](#number-source): The minimum statistic value required to earn this objective (default: 1)
 - [`"max": <number-source>`](#number-source): The maximum statistic value required to keep this objective (default: unset)
 
+Name substitutions: `%min%`, `%max%`
+
 ### Scoreboard Objectives
 
 Tracks a particular scoreboard entry for each player. This may be useful for more complicated goals that need their own
@@ -99,6 +103,8 @@ logic written in a datapack.
 - [`"max": <number-source>`](#number-source): The maximum scoreboard value required to keep this objective (default: unset)
 - `"relative": false`: Measures the increase in this scoreboard since the start of the game, rather than its actual value. (default: false)
 - `"permanent": false`: Whether the objective is permanently scored once obtained.
+
+Name substitutions: `%min%`, `%max%`
 
 ::: info
 If your scoreboard represents a statistic/counter, using `"relative": true` means that you can avoid resetting its value when the game starts. The game will track its change in value automatically.
@@ -113,6 +119,18 @@ Tracks if a player obtains any of the listed objectives.
 - `"type": "one_of"`
 - `"objectives": ["minecraft:kelp", "minecraft:dried_kelp"]`: A list of objective IDs. The player may obtain any of these to complete this objective.
 - `"permanent": false`: Whether the objective is permanently scored once obtained. If true, the objective will remain scored even if Inventory mode is enabled.
+
+### Some Of ...
+
+Tracks if a player obtains a particular number of the listed objectives.
+
+- `"type": "some_of"`
+- `"objectives": ["minecraft:kelp", "minecraft:dried_kelp", "minecraft:seagrass", ...]`: A list of objective IDs. The player must obtain between min-max of these to complete this objective.
+- [`"min": <number-source>`](#number-source): The minimum # of objectives required to earn this objective (default: 1)
+- [`"max": <number-source>`](#number-source): The maximum # of objectives required to keep this objective (default: unset)
+- `"permanent": false`: Whether the objective is permanently scored once obtained. If true, the objective will remain scored even if Inventory mode is enabled.
+
+Name substitutions: `%min%`, `%max%`
 
 ### All Of ...
 
