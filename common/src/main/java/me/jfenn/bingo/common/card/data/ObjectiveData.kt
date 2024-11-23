@@ -55,12 +55,32 @@ sealed class ObjectiveData {
         override val permanent: Boolean = false,
     ) : ObjectiveData()
 
+    sealed interface SomeOfBase {
+        val objectives: Set<ObjectiveDataReference>
+        val min: NumberProviderPolymorphic
+        val max: NumberProviderPolymorphic
+    }
+
     @Serializable
     @SerialName("one_of")
     data class OneOf(
-        val objectives: Set<ObjectiveDataReference>,
+        override val objectives: Set<ObjectiveDataReference>,
         override val permanent: Boolean = false,
-    ) : ObjectiveData() {
+    ) : ObjectiveData(), SomeOfBase {
+        override val min get() = NumberProvider.Constant(1)
+        override val max get() = NumberProvider.Constant(Int.MAX_VALUE)
+        override val innerObjectives: List<ObjectiveDataReference>
+            get() = objectives.toList()
+    }
+
+    @Serializable
+    @SerialName("some_of")
+    data class SomeOf(
+        override val objectives: Set<ObjectiveDataReference>,
+        override val min: NumberProviderPolymorphic = NumberProvider.Constant(1),
+        override val max: NumberProviderPolymorphic = NumberProvider.Constant(Int.MAX_VALUE),
+        override val permanent: Boolean = false,
+    ) : ObjectiveData(), SomeOfBase {
         override val innerObjectives: List<ObjectiveDataReference>
             get() = objectives.toList()
     }
@@ -68,9 +88,11 @@ sealed class ObjectiveData {
     @Serializable
     @SerialName("all_of")
     data class AllOf(
-        val objectives: Set<ObjectiveDataReference>,
+        override val objectives: Set<ObjectiveDataReference>,
         override val permanent: Boolean = false,
-    ) : ObjectiveData() {
+    ) : ObjectiveData(), SomeOfBase {
+        override val min get() = NumberProvider.Constant(Int.MAX_VALUE)
+        override val max get() = NumberProvider.Constant(Int.MAX_VALUE)
         override val innerObjectives: List<ObjectiveDataReference>
             get() = objectives.toList()
     }

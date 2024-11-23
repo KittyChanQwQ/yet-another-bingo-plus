@@ -180,31 +180,19 @@ sealed class BingoObjective {
     }
 
     @Serializable
-    @SerialName("one_of")
-    data class OneOfEntry(
+    @SerialName("some_of")
+    data class SomeOfEntry(
         override val id: String,
-        override val data: ObjectiveData.OneOf,
-        val oneOfObjectives: Set<String>,
+        override val data: ObjectiveData,
+        val someOfObjectives: Set<String>,
+        val valueMin: Int,
+        val valueMax: Int,
     ): BingoObjective() {
         override val dependsOnObjectives: Set<String>
-            get() = super.dependsOnObjectives + oneOfObjectives
+            get() = super.dependsOnObjectives + someOfObjectives
 
         override val conflictsWithObjectives: Set<String>
-            get() = super.conflictsWithObjectives + oneOfObjectives
-    }
-
-    @Serializable
-    @SerialName("all_of")
-    data class AllOfEntry(
-        override val id: String,
-        override val data: ObjectiveData.AllOf,
-        val allOfObjectives: Set<String>,
-    ): BingoObjective() {
-        override val dependsOnObjectives: Set<String>
-            get() = super.dependsOnObjectives + allOfObjectives
-
-        override val conflictsWithObjectives: Set<String>
-            get() = super.conflictsWithObjectives + allOfObjectives
+            get() = super.conflictsWithObjectives + someOfObjectives
     }
 
     @Serializable

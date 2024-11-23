@@ -134,6 +134,7 @@
   "bingo.lobby.starting_time_remaining": "Starting in %s",
   "bingo.lobby.team_changed": "➾ You have been moved to %s",
   "bingo.objective.all_of": "All of: %s",
+  "bingo.objective.some_of": "%s of: %s",
   "bingo.objective.challenge.all_diamond_armor": "All Diamond Armor",
   "bingo.objective.challenge.all_diamond_tools": "All Diamond Tools",
   "bingo.objective.challenge.all_dyes": "All Dyes",

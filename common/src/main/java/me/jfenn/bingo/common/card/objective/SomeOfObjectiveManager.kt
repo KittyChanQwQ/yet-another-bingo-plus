@@ -5,6 +5,8 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.rootObjectives
+import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MAX
+import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MIN
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
@@ -12,7 +14,7 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import org.slf4j.Logger
 
-class AllOfObjectiveManager(
+class SomeOfObjectiveManager(
     private val log: Logger,
     private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
@@ -22,47 +24,68 @@ class AllOfObjectiveManager(
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
         return data.objectives.rootObjectives
-            .filter { (_, it) -> it is ObjectiveData.AllOf }
+            .filter { (_, it) -> it is ObjectiveData.SomeOfBase }
             .map { it.key }
             .toList()
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
-        val data = data.objectives[id] as? ObjectiveData.AllOf
-            ?: return null
+        val data = data.objectives[id]
+        if (data !is ObjectiveData.SomeOfBase)
+            return null
 
         if (data.objectives.isEmpty()) {
-            log.error("[AllOfObjectiveManager] $id 'objectives' cannot be empty!")
+            log.error("[SomeOfObjectiveManager] $id 'objectives' cannot be empty!")
             return null
         }
 
-        return BingoObjective.AllOfEntry(
+        val someOfObjectives = data.objectives
+            .map { data.expandReference(id, it) }
+            .let { tagExpansionService.expandItemTags(it) }
+
+        return BingoObjective.SomeOfEntry(
             id = id,
             data = data,
-            allOfObjectives = data.objectives
-                .map { data.expandReference(id, it) }
-                .let { tagExpansionService.expandItemTags(it) },
+            someOfObjectives = someOfObjectives,
+            valueMin = data.min.resolve(state).coerceIn(0, someOfObjectives.size),
+            valueMax = data.max.resolve(state).coerceIn(0, someOfObjectives.size),
         )
     }
 
     override fun init(card: BingoCard) {
-        for (objective in card.objectivesByInstance<BingoObjective.AllOfEntry>()) {
-            val objectives = objective.allOfObjectives.mapNotNull { card.objectives[it] }
+        for (objective in card.objectivesByInstance<BingoObjective.SomeOfEntry>()) {
+            val objectives = objective.someOfObjectives.mapNotNull { card.objectives[it] }
             val displayNames = objectives.mapNotNull { it.display.name }
+
+            val isOneOf = objective.valueMin == 1 && objective.valueMax >= objective.someOfObjectives.size
+            val isAllOf = objective.valueMin == objective.someOfObjectives.size
+            val contentsName = Text.empty().append(displayNames.firstOrNull() ?: Text.empty()).append(", …")
             val display = ObjectiveDisplay.Resolved(
-                name = text.string(StringKey.ObjectiveAllOf, Text.empty().append(displayNames.firstOrNull() ?: Text.empty()).append(", ...")),
+                name = when {
+                    isOneOf -> text.string(StringKey.ObjectiveOneOf, contentsName)
+                    isAllOf -> text.string(StringKey.ObjectiveAllOf, contentsName)
+                    else -> text.string(StringKey.ObjectiveSomeOf, FORMAT_MIN, contentsName)
+                },
                 lore = displayNames,
                 item = objectives.firstNotNullOfOrNull { it.display.item },
                 decoration = CardTile.Decoration.MULTI_ITEM,
             )
 
-            objective.display = objectiveDisplayService.resolve(objective.id, objective.data.display, display)
+            objective.display = objectiveDisplayService.resolve(
+                id = objective.id,
+                data = objective.data.display,
+                fallback = display,
+                substitutions = mapOf(
+                    FORMAT_MIN to objective.valueMin.toString(),
+                    FORMAT_MAX to objective.valueMax.toString(),
+                ),
+            )
         }
     }
 
     override fun tick(card: BingoCard) {
-        for (objective in card.objectivesByInstance<BingoObjective.AllOfEntry>()) {
-            val objectives = objective.allOfObjectives.mapNotNull { card.objectives[it] }
+        for (objective in card.objectivesByInstance<BingoObjective.SomeOfEntry>()) {
+            val objectives = objective.someOfObjectives.mapNotNull { card.objectives[it] }
 
             objectiveService.updateTeamsOnceAchieved(objective)
 
@@ -74,7 +97,7 @@ class AllOfObjectiveManager(
                 .flatMap { it.playersHolding.entries }
                 .groupBy { it.key }
 
-            val progressTotal = objectives.size.coerceAtLeast(1).toFloat()
+            val progressTotal = objective.valueMin.coerceAtLeast(1).toFloat()
 
             val teamsProgress = objectiveService.getPlayersByTeam(card)
                 .mapKeys { it.key.key }
@@ -84,7 +107,7 @@ class AllOfObjectiveManager(
                 }
 
             val playersHolding = capturesByPlayer
-                .filter { it.value.size == objectives.size } // in order to capture, must be holding every objective
+                .filter { it.value.size in objective.valueMin..objective.valueMax } // in order to capture, must be holding every objective
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
                 .let {
                     when {

@@ -140,8 +140,7 @@ val commonModule = module {
         scopedOf(::ObjectiveDisplayService)
         scopedOf(::AdvancementObjectiveManager)
         scopedOf(::ItemObjectiveManager)
-        scopedOf(::AllOfObjectiveManager)
-        scopedOf(::OneOfObjectiveManager)
+        scopedOf(::SomeOfObjectiveManager)
         scopedOf(::InverseObjectiveManager)
         scopedOf(::OpponentObjectiveManager)
         scopedOf(::StatsObjectiveManager)
@@ -151,8 +150,7 @@ val commonModule = module {
                 listOf(
                     get<AdvancementObjectiveManager>(),
                     get<ItemObjectiveManager>(),
-                    get<AllOfObjectiveManager>(),
-                    get<OneOfObjectiveManager>(),
+                    get<SomeOfObjectiveManager>(),
                     get<InverseObjectiveManager>(),
                     get<OpponentObjectiveManager>(),
                     get<StatsObjectiveManager>(),
