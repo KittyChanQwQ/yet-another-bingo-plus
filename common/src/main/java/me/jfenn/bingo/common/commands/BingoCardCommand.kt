@@ -79,7 +79,7 @@ class BingoCardCommand(
 
     private fun IExecutionContext.setCardSeed(seed: Long) {
         val card = cardViewService.getPlayerCard(player!!)
-        val newCard = cardService.generateCard(card, seed)
+        val newCard = cardService.generateCard(card, seed = seed)
         sendInfoFeedback(
             Text.empty()
                 .append("Changed the Bingo Card seed to: ")
@@ -214,8 +214,13 @@ class BingoCardCommand(
                     literal("push") {
                         requires { hasConfigureGame() && hasState(GameState.PREGAME) }
                         executes {
-                            val card = state.getActiveCard()
-                            cardService.newCard(card.options.copy())
+                            val prevCard = state.getActiveCard()
+                            val newCard = cardService.newCard(prevCard.options.copy())
+                                .also { state.pushCard(it) }
+
+                            state.teams.values
+                                .filter { it.cardId == null || it.cardId == prevCard.id }
+                                .forEach { it.cardId = newCard.id }
                         }
                     }
 

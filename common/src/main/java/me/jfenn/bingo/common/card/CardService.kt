@@ -80,9 +80,9 @@ class CardService(
 
         // Note: cardOptionsList is reversed, since newCard adds to the front of the cards
         // (same as /bingo card push)
-        for (cardOptions in cardOptionsList.reversed()) {
+        for (cardOptions in cardOptionsList) {
             try {
-                newCard(cardOptions)
+                newCard(cardOptions).let { state.pushCardTail(it) }
             } catch (e: Throwable) {
                 log.info("[CardService] Cannot create card from config:", e)
             }
@@ -149,15 +149,12 @@ class CardService(
     }
 
     fun newCard(cardOptions: BingoCardOptions): BingoCard {
-        if (!cardOptions.isValid()) throw IllegalArgumentException("Cannot create card; invalid options")
-
         val newCard = generate(
             id = UUID.randomUUID(),
             seed = Random.nextLong(),
             cardOptions = cardOptions,
         )
 
-        state.pushCard(newCard)
         return newCard
     }
 
@@ -172,13 +169,10 @@ class CardService(
 
     fun generateCard(
         card: BingoCard = state.getActiveCard(),
+        options: BingoCardOptions = card.options,
         seed: Long = card.seed
     ): BingoCard {
-        if (!card.options.isValid()) {
-            throw IllegalArgumentException("Cannot generate card; invalid options")
-        }
-
-        val newCard = generate(card.id, seed, card.options)
+        val newCard = generate(card.id, seed, options)
         state.replaceCard(newCard)
         return newCard
     }
@@ -341,9 +335,8 @@ class CardService(
             throw IllegalStateException("[CardService] Cannot generate a card - tier lists have not been loaded yet!")
         }
 
+        cardOptions.assertValid()
         val dist = cardOptions.itemDistribution
-        assert(dist.size == TierLabel.entries.size) { "Item distribution does not match the number of tiers (${TierLabel.entries.size})!" }
-        assert(dist.sum() <= 25) { "Item distribution exceeds 25!" }
 
         // Exclude any items from the card that the player might spawn with
         // (e.g. elytra mode, player/team kits...)

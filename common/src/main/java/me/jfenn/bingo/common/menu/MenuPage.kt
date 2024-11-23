@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameService
@@ -131,7 +132,19 @@ fun MenuComponent.registerMenuPage(
     ) {
         // Reset the menu to the default options
         options.copyFrom(configService.optionsDefault)
-        cardService.generateCard()
+
+        // Reset the active card options to the defaults
+        val cards = options.cards
+            .ifEmpty { listOf(BingoCardOptions()) }
+            .mapIndexed { i, options ->
+                state.cards.getOrNull(i)
+                    ?.let { cardService.generateCard(it, options) }
+                    ?: cardService.newCard(options)
+            }
+
+        // Clear & re-index all cards
+        state.replaceCards(cards)
+
         markDirty()
     }
 

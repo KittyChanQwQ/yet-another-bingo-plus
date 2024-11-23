@@ -6,12 +6,11 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.spawn.SpawnItem
+import me.jfenn.bingo.common.utils.copyMemberProperties
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
 import java.security.MessageDigest
 import java.util.*
-import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.full.memberProperties
 import kotlin.time.Duration
 
 @Serializable
@@ -94,39 +93,15 @@ data class BingoOptions(
         return features.ifEmpty { listOf(StringKey.OptionsFeaturesNone) }
     }
 
-    private inline fun <reified T: Any> copyMemberProperties(
-        from: T,
-        to: T,
-        excluding: Set<KMutableProperty1<T, *>> = emptySet(),
-    ) {
-        for (p in T::class.memberProperties) {
-            @Suppress("UNCHECKED_CAST")
-            val property = p as? KMutableProperty1<T, Any?>
-                ?: continue
-
-            if (property in excluding)
-                continue
-
-            val value = property.getValue(from, property)
-            property.setValue(to, property, value)
-        }
-    }
-
     fun copyFrom(defaultOptions: BingoOptions) {
-        for (i in this.cards.indices) {
-            val thisCard = this.cards[i]
-            val defaultCard = defaultOptions.cards.getOrNull(i)
-                ?: defaultOptions.cards.lastOrNull()
-                ?: break
-
-            copyMemberProperties(from = defaultCard, to = thisCard)
-        }
-
         copyMemberProperties(
             from = defaultOptions,
             to = this,
             excluding = setOf(BingoOptions::cards),
         )
+        // since options are passed by reference, these should be copied from the default config
+        // to avoid mutation
+        cards = defaultOptions.cards.map { it.copy() }
     }
 
     /**

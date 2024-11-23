@@ -23,7 +23,12 @@ data class BingoCardOptions(
     var isHiddenItemsMode: Boolean = false,
 ) {
     fun isValid(): Boolean {
-        return itemDistribution.sum() <= 25
+        return kotlin.runCatching { assertValid() }.isSuccess
+    }
+
+    fun assertValid() {
+        assert(itemDistribution.size == TierLabel.entries.size) { "Item distribution $itemDistribution does not match the number of tiers (${TierLabel.entries.size})!" }
+        assert(itemDistribution.sum() <= 25) { "Item distribution $itemDistribution exceeds 25!" }
     }
 
     fun formatGameMode(): List<StringKey> {

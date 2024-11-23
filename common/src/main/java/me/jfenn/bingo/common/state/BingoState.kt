@@ -52,15 +52,20 @@ data class BingoState(
             ?: throw IllegalArgumentException("No cards in state")
     }
 
+    fun replaceCards(newCards: List<BingoCard>) {
+        cards.clear()
+        newCards.forEach { pushCardTail(it) }
+
+        for (team in teams.values) {
+            if (newCards.none { it.id == team.cardId })
+                team.cardId = newCards.first().id
+        }
+    }
+
     fun pushCard(card: BingoCard) {
         val nextCard = cards.firstOrNull()
         card.nextCardId = nextCard?.id
         cards.add(0, card)
-
-        for (team in teams.values) {
-            if (team.cardId == nextCard?.id)
-                team.cardId = card.id
-        }
     }
 
     fun pushCardTail(card: BingoCard) {
