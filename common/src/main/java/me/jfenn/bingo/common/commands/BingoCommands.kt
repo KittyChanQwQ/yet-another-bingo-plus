@@ -7,9 +7,6 @@ import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.game.GameEndReason
-import me.jfenn.bingo.common.game.GameService
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
@@ -91,23 +88,6 @@ class BingoCommands : BaseCommand() {
                                 1
                             }
                     )
-            )
-            .then(
-                // End the game, if running
-                LiteralArgumentBuilder.literal<ServerCommandSource>("end")
-                    .require(
-                        requireState(GameState.PLAYING),
-                        requirePermission(Permission.CONFIGURE_GAME),
-                    )
-                    .executesInScope { ctx ->
-                        val gameService = get<GameService>()
-                        val state = get<BingoState>()
-                        state.isForfeit = true
-
-                        val player = ctx.source.player?.let { get<IPlayerManager>().forPlayer(it) }
-                        gameService.end(GameEndReason.Command(player?.playerName ?: "[unknown]"))
-                        1
-                    }
             )
             .register()
     }

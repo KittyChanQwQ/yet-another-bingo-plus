@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.scoring
 
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
@@ -9,6 +10,7 @@ import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -20,6 +22,7 @@ import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamWinner
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.integrations.PermissionsIntegration
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
@@ -39,6 +42,7 @@ internal class ScoredItemCheck(
     private val objectiveManager: BingoObjectiveManager,
     private val playerManager: IPlayerManager,
     private val text: TextProvider,
+    private val permission: PermissionsIntegration,
     events: ScopedEvents,
 ) : BingoComponent() {
 
@@ -132,6 +136,16 @@ internal class ScoredItemCheck(
                 // otherwise, skip to the next card when a lockout occurs
                 teams.filter { it.cardId == card.id }
                     .forEach { onCardCompleted(it, card, false) }
+
+                // Notify players that the game is continuing because of endGameWhenStalemate
+                val message = text.string(
+                    StringKey.GameNotEndingStalemateNewCard,
+                    text.string(StringKey.OptionsWinBehaviorEndWhenStalemate)
+                )
+                    .formatted(Formatting.AQUA, Formatting.BOLD)
+                playerManager.getPlayers()
+                    .filter { player -> teams.any { it.includesPlayer(player) } }
+                    .forEach { it.sendMessage(message) }
             }
         }
 
@@ -232,6 +246,27 @@ internal class ScoredItemCheck(
                 log.info("[ScoredItemCheck] Ending the game because all teams have finished")
                 gameService.end(GameEndReason.Bingo)
                 return
+            } else {
+                val finishedTeams = cardCompletedPackets
+                    .mapNotNull { (teamKey, _) -> state.teams[teamKey] }
+                    .filter { it.isWinner() }
+
+                // Notify players that the game is not ending because of endGameWhenComplete
+                val message = text.string(StringKey.GameNotEndingComplete)
+                    .formatted(Formatting.AQUA, Formatting.BOLD)
+                val messageOp = text.string(
+                    StringKey.GameNotEndingCompleteOperator,
+                    text.string(StringKey.OptionsWinBehaviorEndWhenComplete),
+                    GameCommands.END_COMMAND,
+                ).formatted(Formatting.GRAY)
+                playerManager.getPlayers()
+                    .filter { player -> finishedTeams.any { it.includesPlayer(player) } }
+                    .forEach { player ->
+                        player.sendMessage(message)
+                        if (permission.hasPermission(player, Permission.CONFIGURE_GAME)) {
+                            player.sendMessage(messageOp)
+                        }
+                    }
             }
         }
 

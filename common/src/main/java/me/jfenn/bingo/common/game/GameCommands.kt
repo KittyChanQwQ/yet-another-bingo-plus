@@ -6,11 +6,12 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-class BingoStartCommand(
+class GameCommands(
     commandManager: ICommandManager,
 ) : BingoComponent() {
 
@@ -43,10 +44,25 @@ class BingoStartCommand(
                     executes { start(ignoreWarnings = true) }
                 }
             }
+
+            literal("end") {
+                requires {
+                    hasState(GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
+                }
+
+                executes {
+                    val gameService = scope.get<GameService>()
+                    val state = scope.get<BingoState>()
+                    state.isForfeit = true
+
+                    gameService.end(GameEndReason.Command(player?.playerName ?: "[unknown]"))
+                }
+            }
         }
     }
 
     companion object {
         const val IGNORE_WARNINGS_COMMAND = "/bingo start ignore_warnings"
+        const val END_COMMAND = "/bingo end"
     }
 }
