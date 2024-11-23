@@ -94,15 +94,39 @@ data class BingoOptions(
         return features.ifEmpty { listOf(StringKey.OptionsFeaturesNone) }
     }
 
-    fun copyFrom(options: BingoOptions) {
-        for (p in BingoOptions::class.memberProperties) {
+    private inline fun <reified T: Any> copyMemberProperties(
+        from: T,
+        to: T,
+        excluding: Set<KMutableProperty1<T, *>> = emptySet(),
+    ) {
+        for (p in T::class.memberProperties) {
             @Suppress("UNCHECKED_CAST")
-            val property = p as? KMutableProperty1<BingoOptions, Any?>
+            val property = p as? KMutableProperty1<T, Any?>
                 ?: continue
 
-            val value = property.getValue(options, property)
-            property.setValue(this, property, value)
+            if (property in excluding)
+                continue
+
+            val value = property.getValue(from, property)
+            property.setValue(to, property, value)
         }
+    }
+
+    fun copyFrom(defaultOptions: BingoOptions) {
+        for (i in this.cards.indices) {
+            val thisCard = this.cards[i]
+            val defaultCard = defaultOptions.cards.getOrNull(i)
+                ?: defaultOptions.cards.lastOrNull()
+                ?: break
+
+            copyMemberProperties(from = defaultCard, to = thisCard)
+        }
+
+        copyMemberProperties(
+            from = defaultOptions,
+            to = this,
+            excluding = setOf(BingoOptions::cards),
+        )
     }
 
     /**
