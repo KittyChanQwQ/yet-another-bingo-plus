@@ -45,28 +45,28 @@ export default defineConfig({
     sidebar: [
       {
         text: 'Introduction',
-        link: '/what-is-bingo',
         collapsed: false,
         items: [
+          { text: 'What is Bingo?', link: '/what-is-bingo' },
           { text: 'Getting Started', link: '/getting-started' },
           { text: 'Game Options', link: '/game-options' },
           { text: 'Command Cheatsheet', link: '/command-cheatsheet' },
         ],
       },
       {
-        text: 'Server',
+        text: 'How to ...',
         collapsed: false,
         items: [
-          { text: 'Server Setup', link: '/server-setup' },
-          { text: 'Server Optimization', link: '/optimization' },
-          { text: 'Customizing the lobby', link: '/lobby-structure' },
+          { text: 'Set up a server', link: '/server-setup' },
+          { text: 'Optimize the game', link: '/optimization' },
+          { text: 'Add a custom lobby', link: '/lobby-structure' },
         ],
       },
       {
         text: 'Configuration',
-        link: '/config',
         collapsed: false,
         items: [
+          { text: 'Overview', link: '/config' },
           { text: 'config.json', link: '/config-extra' },
           { text: 'Functions', link: '/functions' },
           { text: 'Tier List Editor', link: '/tier-editor' },
@@ -77,6 +77,7 @@ export default defineConfig({
         text: 'Compatible Mods',
         collapsed: true,
         items: [
+          { text: 'JEI/REI/EMI', link: '/mods/items' },
           { text: 'Chunky', link: '/mods/chunky' },
           { text: 'LuckPerms', link: '/mods/luckperms' },
           { text: 'Vanish', link: '/mods/vanish' },

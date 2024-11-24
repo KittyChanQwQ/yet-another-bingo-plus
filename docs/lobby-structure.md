@@ -2,10 +2,9 @@
 description: Configure a custom game lobby in Yet Another Minecraft BINGO, using a world zip file.
 ---
 
-# Lobby World
+# Customizing the lobby
 
-The lobby used as the game's spawn area can also be customized by adding an
-`lobby_world.zip` file to the mod's config folder.
+The lobby used as the game's spawn area can be changed by adding a `lobby_world.zip` file to the mod's config folder.
 
 To start, it is recommended that you download the [default lobby_world.zip](https://gitlab.com/horrific-tweaks/bingo/-/blob/main/common/src/main/resources/yet-another-minecraft-bingo/lobby_world.zip?ref_type=heads)
 and extract it into your Minecraft `saves/` folder. This should make the lobby show up as a creative world

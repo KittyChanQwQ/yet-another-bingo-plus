@@ -5,45 +5,36 @@
 Bingo's modes affect how scored items behave on the card. Multiple modes can be enabled at once; or you can leave them
 all off for the default behavior.
 
-### Lockout
+- #### Lockout
 
-Once an item is collected by any team, that tile is locked and no other teams can collect it.
+	Once an item is collected by any team, that tile is locked and no other teams can collect it.
 
-This works best if "goal" is set to a # of items, rather than lines. If the goal becomes impossible for any team to accomplish, the game will immediately end.
+	This works best if "goal" is set to a # of items, rather than lines. If the goal becomes impossible for any team to accomplish, the game will immediately end.
 
-### Inventory
+- #### Inventory
 
-Items must remain in a team member's inventory to hold a tile. Losing an item un-marks its tile on the card (meaning you need to stay alive with your items in order to win).
+	Items must remain in a team member's inventory to hold a tile. Losing an item un-marks its tile on the card (meaning you need to stay alive with your items in order to win).
 
-::: tip
+	::: tip
 
-The [PlayerTracker](https://modrinth.com/mod/playertracker) mod works well with lockout + inventory to make this
-more of a PvP-focused mode.
+	The [PlayerTracker](https://modrinth.com/mod/playertracker) mod works well with lockout + inventory to make this
+	more of a PvP-focused mode.
 
-:::
+	:::
 
-### Ranked
+- #### Hidden Items
 
-The game does not end when a team wins. Instead, it keeps going until the time limit and lists the winners when it ends.
+	Items are not shown on the bingo card until a player discovers them.
 
-This is intended for competitions/tournaments where you want every team to have a placement, rather than immediately
-ending the game when a single winner is determined.
+	For advancement/challenge goals, the item will be shown as soon as any amount of progress is made.
 
-This mode [is subject to change](https://gitlab.com/horrific-tweaks/bingo/-/issues/73) in a future version.
+	![A preview BINGO card where every tile is hidden and replaced with a question mark.](./game-options-hidden-items.png)
 
-### Hidden Items
+	It's a mystery! Good luck crafting every variant of wooden fence \:)
 
-Items are not shown on the bingo card until a player discovers them.
+## Card Difficulty
 
-For advancement/challenge goals, the item will be shown as soon as any amount of progress is made.
-
-![A preview BINGO card where every tile is hidden and replaced with a question mark.](./game-options-hidden-items.png)
-
-It's a mystery! Good luck crafting every variant of wooden fence \:)
-
-## Item Distribution
-
-The "item distribution" decides how many items will be pulled from each tier to make the card.
+The "card difficulty" decides how many items will be pulled from each tier to make the card.
 These values must add up to 25 or less.
 
 ![An item distribution menu, showing several tiers with numbers underneath them.](./item-distribution.png)
@@ -59,3 +50,19 @@ These are typically organized by the following:
 - **B-tier:** Involves moderate preparation or finding a specific biome/structure to obtain. This includes items from lush caves or particular nether biomes.
 - **A-tier:** Items with high difficulty, but are still usually obtainable within a 1hr time limit. This includes items from Bastions, Ancient Cities, some rare biomes (desert/mangrove), and time-consuming tasks (beekeeping).
 - **S-tier:** For any of these items, you need to literally speedrun the game and then some. Includes outer end items, netherite gear, silk touch blocks, and general endgame items.
+
+## Filters
+
+While the "card difficulty" affects the difficulty of the game, "filters" affect the types of challenges that will be on the card.
+
+The filters menu provides built-in presets to choose from, such as "Everything", "Overworld", "Items", and "Advancements".
+
+These can be customized in more detail with the following commands:
+- `/bingo filter only in_overworld` - Selects only items that are obtainable in the overworld
+- `/bingo filter exclude tedious` - Excludes any items that are in the "tedious" list
+- `/bingo filter count "type=advancement" 5` - Ensures that exactly 5 advancements are on the card (if possible).
+- `/bingo filter remove <filter>` - Undoes a previously-applied filter setting.
+
+These filters apply on top of each other - if you run all of the above commands, you'll end up with a card that contains 5 advancements, overworld items, and no "tedious" objectives (music discs, froglights or potions).
+
+You can see the active filters (and other game settings) by running the `/bingo` command.
