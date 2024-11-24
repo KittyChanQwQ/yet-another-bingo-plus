@@ -22,6 +22,26 @@
       {
         "adapter": "kotlin",
         "value": "me.jfenn.bingo.common.utils.DurationTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.impl.itemstackfactory.ItemStackDataTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.integration.item.ItemStackFactoryTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.integration.item.PlayerCanUseItemTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.integration.EntityManagerTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "me.jfenn.bingo.integration.StatManagerTest"
       }
     ]
   },

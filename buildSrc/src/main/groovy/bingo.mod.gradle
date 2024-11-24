@@ -17,6 +17,11 @@ tasks.withType(AbstractArchiveTask).configureEach {
 
 sourceSets {
     testmod {
+        if (!project.name.equals("common")) {
+            java.srcDirs += [project(":common").sourceSets.testmod.java]
+            resources.srcDirs += [project(":common").sourceSets.testmod.resources]
+        }
+
         compileClasspath += main.compileClasspath
         runtimeClasspath += main.runtimeClasspath
         compileClasspath += main.output
@@ -34,17 +39,19 @@ loom {
         }
     }
 
-    runs {
-        gametestServer {
-            server()
-            source sourceSets.testmod
+    if (!project.name.equals("common")) {
+        runs {
+            gametestServer {
+                server()
+                source sourceSets.testmod
 
-            name "Game Test"
+                name "Game Test"
 
-            // Enable the gametest runner
-            vmArg "-Dfabric-api.gametest"
-            vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get()}/junit.xml"
-            runDir "build/gametest"
+                // Enable the gametest runner
+                vmArg "-Dfabric-api.gametest"
+                vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get()}/junit.xml"
+                runDir "build/gametest"
+            }
         }
     }
 
@@ -138,7 +145,7 @@ java {
     }
 }
 
-if (project.name.toString() == "common") {
+if (!project.name.equals("common")) {
     tasks.test.dependsOn tasks.runGametestServer
 }
 
