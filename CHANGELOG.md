@@ -2,7 +2,7 @@
 
 - **The mod no longer needs to recreate the entire world save** to start a game with new terrain.
 
-  This means that if you're using Essential, players can stay in the same lobby for multiple games! Additionally, dedicated servers no longer need to restart when the game is over.
+  This means that if you're using LAN hosting, players can stay in the same lobby for multiple games! Additionally, dedicated servers no longer need to restart when the game is over.
 
   ** This _may_ break compatibility with a few mods. If you encounter such issues, please let me know! I've added a `nextRoundCompatibilityMode` config to turn it off, if needed. 
 
