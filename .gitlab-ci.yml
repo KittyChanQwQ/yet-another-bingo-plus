@@ -50,7 +50,7 @@ Sync README:
   image: gradle:8.10.2-jdk21
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
-    - gradle --build-cache modrinthSyncBody
+    - gradle --build-cache :modrinthSyncBody
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull-push

@@ -118,8 +118,8 @@ Vanilla entity/challenge goal textures are from [minecraft-heads.com](https://mi
 </table>
 
 
-Chinese translations were contributed by Fishlanding!
-French translations were contributed by Yosh64!
-Polish translations were contributed by Toniemax!
-Portuguese translations were contributed by Lucasofchirst!
-Spanish translations were contributed by ANDY!
+Chinese translations were contributed by Fishlanding!<br>
+French translations were contributed by Yosh64!<br>
+Polish translations were contributed by Toniemax!<br>
+Portuguese translations were contributed by Lucasofchirst!<br>
+Spanish translations were contributed by ANDY!<br>
