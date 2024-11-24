@@ -51,8 +51,6 @@ lines to win the game.
 - **Lockout**: Once an item is collected by any team, that tile is locked and no other teams can collect it.
 - **Inventory**: Items must remain in a team member's inventory to hold a tile. Losing an item un-marks its tile on the
   card (meaning you need to stay alive with your items in order to win).
-- **Ranked**: The game does not end when a team wins. Instead, it keeps going until the time limit and lists the winners
-  when it ends.
 - **Hidden Items**: Items are not shown on the bingo card until a player discovers them.
 
 ### Extra Options:
@@ -119,4 +117,9 @@ Vanilla entity/challenge goal textures are from [minecraft-heads.com](https://mi
 </tbody>
 </table>
 
+
+Chinese translations were contributed by Fishlanding!
+French translations were contributed by Yosh64!
+Polish translations were contributed by Toniemax!
+Portuguese translations were contributed by Lucasofchirst!
 Spanish translations were contributed by ANDY!
