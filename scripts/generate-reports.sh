@@ -1,10 +1,12 @@
 #!/bin/bash
+set -e
 
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")
 TMP_DIR=$(realpath $SCRIPT_DIR/tmp)
 DATA_DIR=$(realpath $SCRIPT_DIR/data)
 DOCS_DIR=$(realpath $SCRIPT_DIR/../docs)
 
+mkdir -p $TMP_DIR
 pushd $TMP_DIR
 
 # Download the Minecraft Server jar

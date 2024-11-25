@@ -51,7 +51,7 @@ function get_texture_file {
 # $2 = output file (.png)
 function copy_texture {
   # copy the texture to the out_dir
-  cp -f $1 $2
+  convert $1 -background none -extent 16x16 $2
 }
 
 # Apply a mask image to the texture identifier before writing to the output dir
@@ -62,7 +62,7 @@ function mask_texture {
   # mask the image with ImageMagick, and write to the output dir
   # https://stackoverflow.com/a/22417663
   # convert $1 \( $2 \) -compose CopyOpacity -composite PNG32:$3
-  convert $1 -alpha on \( $2 \) -compose multiply -channel rgba -composite PNG32:$3
+  convert $1 -background none -alpha on -extent 16x16 \( $2 -background none \) -compose multiply -channel rgba -composite PNG32:$3
 }
 
 # Apply a color tint to the texture identifier before writing it to the output dir
@@ -73,7 +73,7 @@ function color_texture {
   # tint the image with ImageMagick, and write to the output dir
   # https://www.imagemagick.org/discourse-server/viewtopic.php?t=33380
   # convert $texture_file -colorspace gray -fill $2 -tint 100 PNG32:$OUT_DIR/$(echo $3 | xargs).png
-  convert $1 \( xc:$(echo $2 | xargs) -scale 16x16 \) -compose multiply -channel rgb -composite PNG32:$3
+  convert $1 -background none \( xc:$(echo $2 | xargs) -scale 16x16 -background none \) -compose multiply -channel rgb -composite PNG32:$3
 }
 
 # extract jar assets (into ./assets)
@@ -93,7 +93,29 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     continue
   fi
 
-  item_model_file=./assets/minecraft/models/item/"${item_id}.json"
+  item_file=./assets/minecraft/items/"${item_id}.json"
+
+  function resolve_model() {
+    _type=$(echo $1 | jq -r .type)
+    if [ "$_type" == "minecraft:model" ]; then
+      echo $1 | jq -r .model
+    elif [ "$_type" == "minecraft:select" ]; then
+      resolve_model "$(echo $1 | jq -c .cases[0].model)"
+    elif [ "$_type" == "minecraft:special" ]; then
+      echo $1 | jq -r .base
+    elif [ "$_type" == "minecraft:condition" ]; then
+      resolve_model "$(echo $1 | jq -c .on_false)"
+    elif [ "$_type" == "minecraft:range_dispatch" ]; then
+      resolve_model "$(echo $1 | jq -c .entries[0].model)"
+    else
+      >&2 echo "Unknown type: $_type in $item_file"
+      exit 1
+    fi
+  }
+
+  item_model_id=$(resolve_model "$(jq -c .model $item_file)")
+  item_model_file=./assets/minecraft/models${item_model_id/minecraft://}.json
+
   [ -f $item_model_file ] || {
     echo -e "${ANSI_YELLOW}Warning: item model for $item_id not found"
     continue
@@ -103,7 +125,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   cp -f $item_model_file tmp.json
 
   # collect an array of all item models encountered in the hierarchy
-  item_models="[]"
+  item_models="[\"$item_model_id\"]"
 
   # resolve all model parents, up to a generated model
   while item_parent="$(jq -r '.parent' tmp.json)" && [ "$item_parent" != "null" ] && [ "$item_parent" != "block/block" ] && [ "$item_parent" != "builtin/generated" ] && [ "$item_parent" != "builtin/entity" ]; do
@@ -123,6 +145,9 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
       echo -e "${ANSI_YELLOW}Error: could not resolve model parent $item_parent_id from $item_id"
       exit 1
     }
+
+    # ensure that .parent is set from the parent file
+    item_model_json=$(echo $item_model_json | jq ".parent = $(jq .parent $item_parent_file)")
 
     # overwrite tmp.json
     echo "$item_model_json" > tmp.json
@@ -270,6 +295,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   if echo $item_models | jq -e '. | index( "minecraft:item/template_banner" )' >/dev/null; then
     item_color=${item_id%_banner}
     # replace some unsupported item colors with ImageMagick ids
+    [ "$item_color" == "black" ] && item_color="#000000"
     [ "$item_color" == "blue" ] && item_color="#253193"
     [ "$item_color" == "brown" ] && item_color="#56331c"
     [ "$item_color" == "cyan" ] && item_color="#17a2a2"
@@ -344,6 +370,8 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   # - zombified_piglin_head
 done
 
-zip -j $(realpath $SCRIPT_DIR/../common/images.zip) $OUT_DIR/*.png
+mogrify -strip $OUT_DIR/*.png
+touch -d '2000-01-01 01:01:01 UTC' $OUT_DIR/*.png
+zip -j -9 $(realpath $SCRIPT_DIR/../common/images.zip) $OUT_DIR/*.png
 
 popd
