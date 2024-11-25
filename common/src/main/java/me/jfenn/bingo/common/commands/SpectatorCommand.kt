@@ -1,21 +1,22 @@
 package me.jfenn.bingo.common.commands
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.VanishIntegration
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.world.GameMode
-import org.koin.core.component.inject
+import org.slf4j.Logger
 
-class SpectatorCommand : BaseCommand() {
+class SpectatorCommand(
+    commandManager: ICommandManager,
+    private val vanish: VanishIntegration,
+    private val log: Logger,
+) {
 
-    private val vanish by inject<VanishIntegration>()
-
-    private fun toggleSpectator(state: BingoState, player: ServerPlayerEntity) {
+    private fun toggleSpectator(state: BingoState, player: IPlayerHandle) {
         val gameMode = if (player.isSpectator) {
             // This needs to match the game mode logic in [PlayerController]
             when (state.state) {
@@ -30,38 +31,37 @@ class SpectatorCommand : BaseCommand() {
             GameMode.SPECTATOR
         }
 
-        player.changeGameMode(gameMode)
+        player.player.changeGameMode(gameMode)
     }
 
     init {
         // Switch between adventure and spectator modes
-        LiteralArgumentBuilder.literal<ServerCommandSource>("spectator")
-            .require(
-                when {
+        commandManager.register("spectator") {
+            requires {
+                val isGameState = when {
                     // If vanish is installed, allow when spectating a game
-                    vanish.isInstalled() -> requireState(GameState.PLAYING, GameState.POSTGAME)
+                    vanish.isInstalled() -> hasState(GameState.PLAYING, GameState.POSTGAME)
                     // Otherwise, only allow in postgame
-                    else -> requireState(GameState.POSTGAME)
-                },
-                requirePermission(Permission.COMMAND_SPECTATOR),
-                requireInScope { source ->
-                    val player = source.player ?: return@requireInScope false
-                    val state = get<BingoState>()
-                    val teamService = get<TeamService>()
+                    else -> hasState(GameState.POSTGAME)
+                }
+                val isPermission = hasPermission(Permission.COMMAND_SPECTATOR)
 
-                    // only available to players if:
-                    // - the server is in lobby mode
-                    // - AND EITHER:
-                    //   * the player is not on a team (spectating)
-                    //   * the game state is POSTGAME
-                    state.isLobbyMode && (!teamService.isPlaying(player) || state.state == GameState.POSTGAME)
-                },
-            )
-            .executesInScope { ctx ->
-                val player = ctx.source.player ?: return@executesInScope 0
-                toggleSpectator(get(), player)
-                1
+                val state = scope.get<BingoState>()
+                val teamService = scope.get<TeamService>()
+
+                // only available to players if:
+                // - the server is in lobby mode
+                // - AND EITHER:
+                //   * the player is not on a team (spectating)
+                //   * the game state is POSTGAME
+                val isAvailable = state.isLobbyMode && (!teamService.isPlaying(player!!) || state.state == GameState.POSTGAME)
+
+                isGameState && isPermission && isAvailable
             }
-            .register()
+
+            executes {
+                toggleSpectator(scope.get(), player!!)
+            }
+        }
     }
 }

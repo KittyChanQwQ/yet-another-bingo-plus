@@ -37,20 +37,6 @@ class BingoModeCommand(
         )
     }
 
-    private fun IExecutionContext.toggleMode(
-        prop: KMutableProperty1<BingoOptions, Boolean>,
-        value: Boolean? = null,
-    ) {
-        val options = scope.get<BingoOptions>()
-        val newValue = value ?: (!prop.get(options))
-        prop.set(options, newValue)
-
-        val events = scope.get<ScopedEvents>()
-        events.onChangeOptions(Unit)
-
-        sendModeFeedback()
-    }
-
     private fun IExecutionContext.toggleCardMode(
         prop: KMutableProperty1<BingoCardOptions, Boolean>,
         value: Boolean? = null,

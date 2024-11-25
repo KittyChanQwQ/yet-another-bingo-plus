@@ -26,6 +26,8 @@ const val NBT_BINGO_CARD = "bingo_card"
 
 const val URL_WIKI = "https://minecraft.horrific.dev/bingo/"
 const val URL_WIKI_WHAT_IS_BINGO = "https://minecraft.horrific.dev/bingo/what-is-bingo"
+const val URL_WIKI_SERVER_SETUP = "https://minecraft.horrific.dev/bingo/server-setup"
+const val URL_WIKI_GETTING_STARTED = "https://minecraft.horrific.dev/bingo/getting-started"
 
 val BINGO_WORLD_PREFIX = "${Formatting.GREEN}[BINGO]${Formatting.WHITE}"
 

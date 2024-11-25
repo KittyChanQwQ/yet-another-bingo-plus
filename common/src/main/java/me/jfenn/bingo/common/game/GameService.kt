@@ -17,9 +17,7 @@ import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.WriteStatsService
-import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.TeamCompletedCard
-import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.team.*
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
@@ -62,7 +60,7 @@ internal class GameService(
         notifySpamTime = now
 
         val title = text.string(StringKey.CommandStartJoinATeam)
-        val message = text.string(StringKey.CommandStartJoinATeamMessage)
+        val message = text.string(StringKey.CommandStartJoinATeamMessage, JoinCommand.JOIN_COMMAND)
 
         for (player in playersWithoutATeam) {
             if (permissions.hasPermission(player, Permission.COMMAND_JOIN)) {
@@ -84,7 +82,7 @@ internal class GameService(
             // If there's more than one player, teams need to be set up manually!
             if (playerManager.getPlayers().size > 1) {
                 sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeams, playersWithoutATeam.joinToString { it.playerName }))
-                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeamsHint))
+                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeamsHint, ShuffleTeamsCommand.SHUFFLE_TEAMS_COMMAND, GameCommands.IGNORE_WARNINGS_COMMAND))
                 notifyPlayersMissingTeams(playersWithoutATeam)
                 return false
             }

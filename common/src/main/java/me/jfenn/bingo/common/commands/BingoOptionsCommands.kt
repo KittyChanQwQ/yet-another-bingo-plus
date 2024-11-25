@@ -18,7 +18,8 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 class BingoOptionsCommands(
     commandManager: ICommandManager,
@@ -67,11 +68,11 @@ class BingoOptionsCommands(
             }
         }
 
-        Text.literal("ℹ  ")
-            .append(textProvider.string(StringKey.OptionsElytra))
-            .append(": ${options.isElytra}")
-            .formatted(Formatting.AQUA)
-            .also { sendFeedback(it) }
+        sendInfoFeedback(
+            Text.empty()
+                .append(textProvider.string(StringKey.OptionsElytra))
+                .append(": ${options.isElytra}")
+        )
     }
 
     private fun IExecutionContext.toggleNightVision() {
@@ -91,11 +92,20 @@ class BingoOptionsCommands(
             }
         }
 
-        Text.literal("ℹ  ")
-            .append(textProvider.string(StringKey.OptionsNightVis))
-            .append(": ${options.isNightVision}")
-            .formatted(Formatting.AQUA)
-            .also { sendFeedback(it) }
+        sendInfoFeedback(
+            Text.empty()
+                .append(textProvider.string(StringKey.OptionsNightVis))
+                .append(": ${options.isNightVision}")
+        )
+    }
+
+    private fun IExecutionContext.setTimeLimit(minutes: Int?) {
+        val state = scope.get<BingoState>()
+        state.options.timeLimit = minutes?.minutes?.plus(state.ingameDuration() ?: Duration.ZERO)
+
+        sendInfoFeedback(
+            textProvider.string(StringKey.ScoreboardTimeLeft, state.formatTimeRemaining(textProvider))
+        )
     }
 
     init {
@@ -135,6 +145,16 @@ class BingoOptionsCommands(
                 requires { hasConfigureGame() }
                 executes {
                     toggleNightVision()
+                }
+            }
+
+            literal("timelimit") {
+                requires { hasConfigureGame() }
+                integer("minutes", min = 1) { minutesArg ->
+                    executes { setTimeLimit(getArgument(minutesArg)) }
+                }
+                literal("off") {
+                    executes { setTimeLimit(null) }
                 }
             }
         }

@@ -17,7 +17,7 @@ class CommandBuilder(
 
     fun string(
         name: String,
-        suggestions: (IExecutionContext.() -> Iterable<String>)?,
+        suggestions: (IExecutionContext.() -> Iterable<String>)? = null,
         greedy: Boolean = false,
         configure: CommandBuilder.(arg: CommandArgument<String>) -> Unit
     ) {

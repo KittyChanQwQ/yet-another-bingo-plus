@@ -14,6 +14,7 @@ import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.data.ScopedData
+import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.Build
@@ -110,17 +111,17 @@ class CardService(
 
         val teams = state.getRegisteredTeams()
         if (teams.size !in reqs.numTeams) {
-            err(text.string(StringKey.CommandStartTierListRecommendsNumTeams, listName, reqs.numTeams.formatString()))
+            err(text.string(StringKey.CommandStartDataRecommendsNumTeams, listName, reqs.numTeams.formatString(), GameCommands.IGNORE_WARNINGS_COMMAND))
             isSupported = false
         }
 
         if (teams.sumOf { it.players.size } !in reqs.numPlayers) {
-            // TODO: recommends num players error
+            err(text.string(StringKey.CommandStartDataRecommendsNumPlayers, listName, reqs.numPlayersPerTeam.formatString(), GameCommands.IGNORE_WARNINGS_COMMAND))
             isSupported = false
         }
 
         if (teams.any { it.players.size !in reqs.numPlayersPerTeam }) {
-            err(text.string(StringKey.CommandStartTierListRecommendsPlayersPerTeam, listName, reqs.numPlayersPerTeam.formatString()))
+            err(text.string(StringKey.CommandStartDataRecommendsPlayersPerTeam, listName, reqs.numPlayersPerTeam.formatString(), GameCommands.IGNORE_WARNINGS_COMMAND))
             isSupported = false
         }
 

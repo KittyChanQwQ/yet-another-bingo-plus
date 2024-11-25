@@ -1,0 +1,37 @@
+package me.jfenn.bingo.common.team
+
+import me.jfenn.bingo.api.commands.ICommandManager
+import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.commands.hasPermission
+import me.jfenn.bingo.common.commands.hasState
+import me.jfenn.bingo.common.commands.sendInfoFeedback
+import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
+
+class ShuffleTeamsCommand(
+    commandManager: ICommandManager,
+    private val text: TextProvider,
+) {
+
+    init {
+        commandManager.register("bingo") {
+            literal("shuffleteams") {
+                requires {
+                    hasState(GameState.PREGAME) && hasPermission(Permission.CONFIGURE_GAME)
+                }
+
+                integer("teams", min = 1, max = BingoTeam.TEAM_BLOCKS.size) { teamsArg ->
+                    executes {
+                        scope.get<TeamService>().shuffleTeams(getArgument(teamsArg))
+                        sendInfoFeedback(text.string(StringKey.CommandShuffleteamsSuccess))
+                    }
+                }
+            }
+        }
+    }
+
+    companion object {
+        const val SHUFFLE_TEAMS_COMMAND ="/bingo shuffleteams"
+    }
+}

@@ -32,6 +32,9 @@ import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.infobook.InfoBookCommand
 import me.jfenn.bingo.common.infobook.InfoBookController
 import me.jfenn.bingo.common.infobook.InfoBookService
+import me.jfenn.bingo.common.lobby.BingoLobbyCommand
+import me.jfenn.bingo.common.lobby.LobbyModeController
+import me.jfenn.bingo.common.lobby.LobbyModeService
 import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.menu.tooltips.TooltipController
@@ -49,9 +52,7 @@ import me.jfenn.bingo.common.scoring.ScoredItemCheck
 import me.jfenn.bingo.common.spawn.*
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.*
-import me.jfenn.bingo.common.team.OfflinePlayerCache
-import me.jfenn.bingo.common.team.TeamController
-import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.team.*
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.*
 import me.jfenn.bingo.common.utils.Build
@@ -97,7 +98,6 @@ val commonModule = module {
 
     singleOf(::BingoCommand)
     singleOf(::BingoCardCommand)
-    singleOf(::BingoCommands)
     singleOf(::BingoDebugCommand)
     singleOf(::BingoLobbyCommand)
     singleOf(::BingoModeCommand)
@@ -108,6 +108,7 @@ val commonModule = module {
     singleOf(::ChatCommand)
     singleOf(::CoordsCommand)
     singleOf(::JoinCommand)
+    singleOf(::ShuffleTeamsCommand)
     singleOf(::PreviewCardCommand)
     singleOf(::SpectatorCommand)
     singleOf(::ReadyCommand)
@@ -177,6 +178,9 @@ val commonModule = module {
         scopedOf(::OptionsService)
         scopedOf(::ObjectiveFilterService)
         scopedOf(::CardService)
+
+        scopedOf(::LobbyModeService)
+        scopedOf(::LobbyModeController)
 
         scopedOf(::StatsLobbyController)
         scopedOf(::StatsSyncController)
@@ -259,7 +263,6 @@ fun Koin.commonInit() {
 
     get<BingoCommand>()
     get<BingoCardCommand>()
-    get<BingoCommands>()
     if (Build.isDebug)
         get<BingoDebugCommand>()
     get<BingoLobbyCommand>()
@@ -271,6 +274,7 @@ fun Koin.commonInit() {
     get<ChatCommand>()
     get<CoordsCommand>()
     get<JoinCommand>()
+    get<ShuffleTeamsCommand>()
     get<PreviewCardCommand>()
     get<SpectatorCommand>()
     get<ReadyCommand>()
@@ -306,6 +310,8 @@ fun Scope.commonInit() {
     get<InfoBookController>()
 
     get<ScoredItemCheck>()
+
+    get<LobbyModeController>()
 
     get<StatsLobbyController>()
     get<StatsSyncController>()

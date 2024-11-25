@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.commands
+package me.jfenn.bingo.common.team
 
 import me.jfenn.bingo.api.IExecutors
 import me.jfenn.bingo.api.IPlayerHandle
@@ -6,13 +6,13 @@ import me.jfenn.bingo.api.commands.ICommandManager
 import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.api.commands.IExecutionSource
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.commands.hasPermission
+import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.PlayerController
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture
 
 class JoinCommand(
     commandManager: ICommandManager,
-) : BaseCommand() {
+) : BingoComponent() {
 
     private fun IExecutionSource.isNotProcessingTeams(): Boolean {
         val state = scope.get<BingoState>()
@@ -99,5 +99,9 @@ class JoinCommand(
                 }
             }
         }
+    }
+
+    companion object {
+        const val JOIN_COMMAND = "/join"
     }
 }

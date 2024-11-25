@@ -1,25 +1,23 @@
 package me.jfenn.bingo.common.commands
 
-import com.mojang.brigadier.arguments.StringArgumentType
-import com.mojang.brigadier.builder.LiteralArgumentBuilder
-import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.api.commands.ICommandManager
+import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
-import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import org.koin.core.component.inject
 
-class ChatCommand : BaseCommand() {
-
-    private val scoreboardManager: IScoreboardManager by inject()
+class ChatCommand(
+    commandManager: ICommandManager,
+    private val scoreboardManager: IScoreboardManager,
+) {
 
     companion object {
         fun sendTeamMessage(
@@ -40,41 +38,36 @@ class ChatCommand : BaseCommand() {
         }
     }
 
+    private fun IExecutionContext.sendGlobalMessage(messageStr: String) {
+        val player = player!!
+        val teamService = scope.get<TeamService>()
+        val playerManager = scope.get<IPlayerManager>()
+
+        val teamColor = teamService.getPlayerTeam(player)
+            ?.formatting
+            ?: Formatting.RESET
+
+        val message = Text.empty()
+            .append(Text.literal("<"))
+            .append(
+                Text.literal(player.playerName)
+                    .formatted(teamColor)
+            )
+            .append(Text.literal("> $messageStr"))
+
+        playerManager.getPlayers()
+            .forEach { it.sendMessage(message) }
+    }
+
     init {
         // send a message to all teams, outside of the team-local chat
-        listOf("all", "g", "global")
-            .map { LiteralArgumentBuilder.literal<ServerCommandSource?>(it) }
-            .map { it.require(requireBingoInstance()) }
-            .forEach { command ->
-                command.then(
-                    RequiredArgumentBuilder.argument<ServerCommandSource?, String?>(
-                        "message",
-                        StringArgumentType.greedyString()
-                    )
-                        .executesInScope { ctx ->
-                            val player = ctx.source.player ?: return@executesInScope 0
-                            val message = StringArgumentType.getString(ctx, "message")
-
-                            val teamService = get<TeamService>()
-                            val teamColor = teamService.getPlayerTeam(player)
-                                ?.formatting
-                                ?: Formatting.RESET
-
-                            ctx.source.server?.playerManager?.broadcast(
-                                Text.empty()
-                                    .append(Text.literal("<"))
-                                    .append(
-                                        Text.literal(scoreboardManager.getPlayerName(player))
-                                            .formatted(teamColor)
-                                    )
-                                    .append(Text.literal("> $message")),
-                                false,
-                            ) ?: return@executesInScope 0
-                            1
-                        }
-                )
-                    .register()
+        for (cmd in arrayOf("all", "g", "global")) {
+            commandManager.register(cmd) {
+                string("message", greedy = true) { messageArg ->
+                    executes { sendGlobalMessage(getArgument(messageArg)) }
+                }
             }
+        }
 
         // override default chat to only send team-specific messages
         ServerMessageEvents.ALLOW_CHAT_MESSAGE.register { message, player, _ ->

@@ -10,6 +10,7 @@ import net.minecraft.util.Identifier
 @Serializable
 data class PlayerSettings(
     var seenTutorial: Boolean = false,
+    var hideLobbyPrompt: Boolean = false,
     var bossbar: Boolean = false,
     var scoreboard: Boolean = true,
     var scoreboardAutoHide: Boolean = false,

@@ -55,6 +55,7 @@ class BingoPrefsCommand(
                 PlayerSettings::scoreMessages,
                 PlayerSettings::itemMessages,
                 PlayerSettings::nightVision,
+                PlayerSettings::hideLobbyPrompt,
             )
 
             for (field in fields) {
