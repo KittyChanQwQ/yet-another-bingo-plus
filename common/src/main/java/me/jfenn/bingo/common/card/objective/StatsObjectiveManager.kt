@@ -44,7 +44,7 @@ class StatsObjectiveManager(
             data = data,
             valueMin = data.min.resolve(state),
             valueMax = data.max.resolve(state),
-        )
+        ).takeIf { init(it) }
     }
 
     private fun init(objective: BingoObjective): Boolean {

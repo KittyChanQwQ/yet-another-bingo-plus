@@ -40,16 +40,23 @@ class ObjectiveDisplayService(
             val lore = data?.lore?.map {
                 textSerializer.fromJson(jsonUnpretty.encodeToString(it))
             } ?: fallback.lore
-            val item = data?.item?.let {
-                val stack = itemStackFactory.createStack(data.item)
-                stack.setNbtString(data.itemNbt)
-                data.itemComponents?.let {
-                    stack.setComponentsString(it.mapValues { (_, data) ->
-                        jsonUnpretty.encodeToString(data)
-                    })
+            val item = data?.item
+                ?.let {
+                    try {
+                        itemStackFactory.createStack(data.item)
+                    } catch (e: IllegalArgumentException) {
+                        null
+                    }
                 }
-                stack
-            } ?: fallback.item
+                ?.also { stack ->
+                    stack.setNbtString(data.itemNbt)
+                    data.itemComponents?.let {
+                        stack.setComponentsString(it.mapValues { (_, data) ->
+                            jsonUnpretty.encodeToString(data)
+                        })
+                    }
+                }
+                ?: fallback.item
 
             ObjectiveDisplay.Resolved(
                 name = name,

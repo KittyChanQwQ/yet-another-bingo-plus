@@ -1,0 +1,16 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:creaking_heart"
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:creaking",
+  "conflictsWith": [
+    "minecraft:creaking_heart"
+  ],
+  "validate": {
+    "objectives": [
+      "minecraft:resin_clump"
+    ]
+  }
+}

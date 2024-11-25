@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.card.objective
 
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
+import me.jfenn.bingo.common.card.data.ObjectiveRequirements
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
@@ -27,7 +28,17 @@ class BingoObjectiveManager(
         }
     }.asIterable()
 
-    override fun find(id: String, state: CardGeneratorState): BingoObjective? {
+    private fun checkHardRequirements(
+        reqs: ObjectiveRequirements,
+    ): Boolean {
+        val hasAllObjectives = reqs.objectives.all {
+            find(it, CardGeneratorState.DEFAULT) != null
+        }
+
+        return hasAllObjectives
+    }
+
+    private fun findFromProviders(id: String, state: CardGeneratorState): BingoObjective? {
         // remove an "advancement!" or "item!" prefix from the id
         val type = id.substringBefore('!')
         val identifier = id.substringAfter('!')
@@ -49,6 +60,15 @@ class BingoObjectiveManager(
 
         log.debug("[BingoGoalProvider] '$identifier' could not be resolved by any objective provider.")
         return null
+    }
+
+    override fun find(id: String, state: CardGeneratorState): BingoObjective? {
+        return findFromProviders(id, state)
+            ?.takeIf { objective ->
+                objective.data?.validate
+                    ?.let { checkHardRequirements(it) }
+                    ?: true
+            }
     }
 
     override fun init(card: BingoCard) {

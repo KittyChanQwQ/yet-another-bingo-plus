@@ -3,8 +3,6 @@ package me.jfenn.bingo.common.card.tierlist
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
 import me.jfenn.bingo.common.card.TagExpansionService
 import java.util.*
 import kotlin.random.Random
@@ -24,25 +22,10 @@ data class TierListConfig(
     @SerialName("D")
     val d: Set<TierListEntry>,
     val groups: List<Set<String>> = emptyList(),
-    val requirements: Requirements = Requirements(),
 ) {
 
     @Transient
     var shouldValidate = true
-
-    @Serializable
-    class Requirements(
-        val minTeams: Int = 0,
-        val maxTeams: Int = Int.MAX_VALUE,
-        val minPlayersPerTeam: Int = 0,
-        val maxPlayersPerTeam: Int = Int.MAX_VALUE,
-        val objectives: Set<String> = emptySet(),
-        val onlyDefaultTeams: Boolean = false,
-        val options: JsonObject = JsonObject(emptyMap()),
-    ) {
-        val numTeams get() = minTeams..maxTeams
-        val numPlayersPerTeam get() = minPlayersPerTeam..maxPlayersPerTeam
-    }
 
     companion object {
         val EMPTY = TierListConfig(

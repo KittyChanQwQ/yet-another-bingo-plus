@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.card
 
-import kotlinx.serialization.serializer
+import me.jfenn.bingo.common.card.data.ObjectiveRequirements
 import me.jfenn.bingo.common.card.filter.ObjectiveFilter
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.objective.BingoObjective
@@ -19,15 +19,12 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.common.utils.cacheFor
 import me.jfenn.bingo.common.utils.formatString
-import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
 import kotlin.math.ceil
 import kotlin.random.Random
-import kotlin.reflect.full.declaredMemberProperties
 import kotlin.time.Duration.Companion.seconds
 
 class CardService(
@@ -58,9 +55,8 @@ class CardService(
 
     private fun validateList(name: String, list: TierListConfig) {
         log.info("[CardService] Validating list $name.tierlist.json...")
-        val state = CardGeneratorState(Random.Default)
         for (entry in list.expandTags(tagExpansionService).let { it.s + it.a + it.b + it.c + it.d }) {
-            val map = createObjectives(entry.item, state)
+            val map = createObjectives(entry.item, CardGeneratorState.DEFAULT)
             if (map == null) {
                 log.error("[CardService] Could not find '${entry.item}' in tier list $name.tierlist.json")
             }
@@ -90,25 +86,26 @@ class CardService(
     }
 
     fun isSupported(err: (Text) -> Unit): Boolean {
-        val supportedLists = state.cards
-            .flatMap { getTierLists(it.options.itemFilter).keys }
-            .distinct()
-            .filter { tierList ->
-                isListSupported(tierList, err)
-            }
-
-        // Each card must have at least one supported list
+        // Check if every custom objective meets its requirements
         return state.cards
-            .map { getTierLists(it.options.itemFilter).keys }
-            .all { lists -> lists.any { supportedLists.contains(it) } }
+            .flatMap { it.objectives.values }
+            .map { objective ->
+                objective.data
+                    ?.validate
+                    ?.let {
+                        val listName = objective.display.name ?: Text.literal(objective.id)
+                        checkSoftRequirements(listName, it, err)
+                    }
+                    ?: true
+            }
+            .all { it }
     }
 
-    private fun isListSupported(name: String, err: (Text) -> Unit): Boolean {
-        // If the list is not found, the game should ignore it
-        val list = data.tierLists[name] ?: return true
-        val listName by lazy { ObjectiveFilterList.formatName(name).formatted(Formatting.BLUE) }
-        val reqs by list::requirements
-
+    private fun checkSoftRequirements(
+        listName: Text,
+        reqs: ObjectiveRequirements,
+        err: (Text) -> Unit,
+    ): Boolean {
         var isSupported = true
 
         val teams = state.getRegisteredTeams()
@@ -117,32 +114,14 @@ class CardService(
             isSupported = false
         }
 
+        if (teams.sumOf { it.players.size } !in reqs.numPlayers) {
+            // TODO: recommends num players error
+            isSupported = false
+        }
+
         if (teams.any { it.players.size !in reqs.numPlayersPerTeam }) {
             err(text.string(StringKey.CommandStartTierListRecommendsPlayersPerTeam, listName, reqs.numPlayersPerTeam.formatString()))
             isSupported = false
-        }
-
-        val missingObjective = reqs.objectives.firstOrNull {
-            objectiveManager.find(it, CardGeneratorState(Random.Default)) == null
-        }
-        if (missingObjective != null) {
-            err(text.string(StringKey.CommandStartTierListMissingObjective, listName, missingObjective))
-            isSupported = false
-        }
-
-        // TODO: Validate reqs.onlyDefaultTeams if more teams are added
-
-        for (prop in BingoOptions::class.declaredMemberProperties) {
-            val reqProp = reqs.options[prop.name] ?: continue
-            val propSerializer = serializer(prop.returnType)
-
-            val propValue = prop.get(options)
-            val reqPropValue = json.decodeFromJsonElement(propSerializer, reqProp)
-
-            if (propValue != reqPropValue) {
-                err(text.string(StringKey.CommandStartTierListRecommends, listName, "${prop.name}=$reqPropValue"))
-                isSupported = false
-            }
         }
 
         return isSupported
@@ -178,16 +157,14 @@ class CardService(
     }
 
     fun replaceEntry(x: Int, y: Int, objectiveId: String) {
-        val generatorState = CardGeneratorState(random = Random.Default)
         // Make sure that the objective exists
-        val objective = objectiveManager.find(objectiveId, generatorState)
+        val objective = objectiveManager.find(objectiveId, CardGeneratorState.DEFAULT)
             ?: throw IllegalArgumentException("Could not find objective '$objectiveId'")
 
         replaceEntry(x, y, objective)
     }
 
     fun replaceEntry(x: Int, y: Int, objective: BingoObjective) {
-        val generatorState = CardGeneratorState(random = Random.Default)
         val activeCard = state.getActiveCard()
 
         // Overwrite the entry being replaced
@@ -201,7 +178,7 @@ class CardService(
         // Re-build the objectives map (but we don't need to check for conflicts)
         val objectives = mutableMapOf<String, BingoObjective>()
         for (entry in entries) {
-            val objectiveMap = createObjectives(entry.objectiveId, generatorState) ?: continue
+            val objectiveMap = createObjectives(entry.objectiveId, CardGeneratorState.DEFAULT) ?: continue
             objectives.putAll(objectiveMap)
         }
 
@@ -271,7 +248,6 @@ class CardService(
             // Otherwise, collect all available lists
             var list = TierListConfig.EMPTY
             getTierLists(filterList)
-                .filter { (name, _) -> isListSupported(name) {} }
                 .map { (name, otherList) ->
                     otherList.expandTags(tagExpansionService).expandName(name)
                 }
