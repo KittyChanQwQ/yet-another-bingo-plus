@@ -51,7 +51,7 @@ function get_texture_file {
 # $2 = output file (.png)
 function copy_texture {
   # copy the texture to the out_dir
-  convert $1 -background none -extent 16x16 $2
+  convert $1 -background none -extent 16x16 PNG32:$2
 }
 
 # Apply a mask image to the texture identifier before writing to the output dir
@@ -370,7 +370,6 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
   # - zombified_piglin_head
 done
 
-mogrify -strip $OUT_DIR/*.png
 touch -d '2000-01-01 01:01:01 UTC' $OUT_DIR/*.png
 zip -j -9 $(realpath $SCRIPT_DIR/../common/images.zip) $OUT_DIR/*.png
 
