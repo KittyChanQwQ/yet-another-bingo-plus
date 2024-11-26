@@ -47,7 +47,7 @@ class ObjectiveFilterCommand(
             .getPlayerCard(player!!)
             .options
             .itemFilter
-            .map { it.tag }
+            .map { ObjectiveFilterList(it).toString() }
     }
 
     private fun IExecutionContext.listPresets(): List<String> {
@@ -74,7 +74,7 @@ class ObjectiveFilterCommand(
                 }
 
                 literal("only") {
-                    string("tag", { listTags() }) { tagArg ->
+                    string("tag", { listTags() }, greedy = true) { tagArg ->
                         executes {
                             val tag = getArgument(tagArg)
                             require(tag in listTags()) { "Tag '$tag' does not exist!" }
@@ -86,7 +86,7 @@ class ObjectiveFilterCommand(
                 }
 
                 literal("exclude") {
-                    string("tag", { listTags() }) { tagArg ->
+                    string("tag", { listTags() }, greedy = true) { tagArg ->
                         executes {
                             val tag = getArgument(tagArg)
                             require(tag in listTags()) { "Tag '$tag' does not exist!" }
@@ -98,8 +98,8 @@ class ObjectiveFilterCommand(
                 }
 
                 literal("count") {
-                    string("tag", { listTags() }) { tagArg ->
-                        integer("count", min = 1, max = 25) { countArg ->
+                    integer("count", min = 1, max = 25) { countArg ->
+                        string("tag", { listTags() }, greedy = true) { tagArg ->
                             executes {
                                 val tag = getArgument(tagArg)
                                 val count = getArgument(countArg)
@@ -113,12 +113,16 @@ class ObjectiveFilterCommand(
                 }
 
                 literal("remove") {
-                    string("tag", { listActiveTags() }) { tagArg ->
+                    string("tag", { listActiveTags() }, greedy = true) { tagArg ->
                         executes {
-                            val tag = getArgument(tagArg)
-                            require(tag in listActiveTags()) { "Tag '$tag' does not exist!" }
+                            val filterStr = getArgument(tagArg)
+                            require(filterStr in listActiveTags()) { "Tag '$filterStr' does not exist!" }
+                            val filter = filterStr.let { ObjectiveFilterList.fromString(it) }
+                                .firstOrNull()
+                                ?: error("Filter '$filterStr' could not be parsed?")
+
                             setItemFilters {
-                                it.withoutFilter(tag)
+                                it.withoutFilter(filter.tag)
                             }
                         }
                     }

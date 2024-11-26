@@ -60,7 +60,7 @@ The filters menu provides built-in presets to choose from, such as "Everything",
 These can be customized in more detail with the following commands:
 - `/bingo filter only in_overworld` - Selects only items that are obtainable in the overworld
 - `/bingo filter exclude tedious` - Excludes any items that are in the "tedious" list
-- `/bingo filter count "type=advancement" 5` - Ensures that exactly 5 advancements are on the card (if possible).
+- `/bingo filter count 5 type=advancement` - Ensures that exactly 5 advancements are on the card (if possible).
 - `/bingo filter remove <filter>` - Undoes a previously-applied filter setting.
 
 These filters apply on top of each other - if you run all of the above commands, you'll end up with a card that contains 5 advancements, overworld items, and no "tedious" objectives (music discs, froglights or potions).
