@@ -33,6 +33,6 @@ description: A reference page for all of the game commands provided in Yet Anoth
 | `/bingo difficulty # # # # #`        | Changes the [item distribution](./game-options#item-distribution) used to generate the card. |
 | `/bingo filter ...`                  | Edits constraints of the number and types of objectives that are generated on the card.      |
 | `/bingo card <tile> set <objective>` | Manually changes a specific tile on the Bingo Card.                                          |
-| `/bingo seed`                        | Shows the random seed used to generate the current Bingo Card.                               |
-| `/bingo seed #`                      | Sets the Bingo Card seed to a specific value.                                                |
+| `/bingo card seed`                        | Shows the random seed used to generate the current Bingo Card.                               |
+| `/bingo card seed #`                      | Sets the Bingo Card seed to a specific value.                                                |
 | `/join <team> <player>`              | Assigns a player to a different team - will respawn them if in-game.                         |
