@@ -60,31 +60,33 @@ internal class OptionsService(
             }
             .let { yield(it) }
 
-        text.string(
-            StringKey.OptionsEndWhen,
-            options.endGameWhen.string(text).formatted(Formatting.YELLOW)
-        )
-            .formatted(Formatting.GRAY)
-            .also {
-                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, BingoOptionsCommands.END_WHEN))
-            }
-            .let { yield(it) }
+        if (options.endGameWhen !is EndWhen.FirstWin) {
+            text.string(
+                StringKey.OptionsEndWhen,
+                options.endGameWhen.string(text).formatted(Formatting.YELLOW)
+            )
+                .formatted(Formatting.GRAY)
+                .also {
+                    it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, BingoOptionsCommands.END_WHEN))
+                }
+                .let { yield(it) }
+        }
 
-        text.string(StringKey.OptionsTimeLimit)
-            .append(": ")
-            .append(
-                options.timeLimit?.inWholeMinutes
-                    ?.let { minutes ->
+        options.timeLimit?.let { timeLimit ->
+            text.string(StringKey.OptionsTimeLimit)
+                .append(": ")
+                .append(
+                    timeLimit.inWholeMinutes.let { minutes ->
                         String.format(Locale.US, "%dh %02dm", minutes / 60, minutes % 60)
                             .let { Text.literal(it).formatted(Formatting.YELLOW) }
                     }
-                    ?: text.string(StringKey.OptionsTimeLimitOff).formatted(Formatting.YELLOW)
-            )
-            .formatted(Formatting.GRAY)
-            .also {
-                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo timelimit"))
-            }
-            .let { yield(it) }
+                )
+                .formatted(Formatting.GRAY)
+                .also {
+                    it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo timelimit"))
+                }
+                .let { yield(it) }
+        }
 
         text.string(StringKey.OptionsItemDistribution)
             .append(": ")
