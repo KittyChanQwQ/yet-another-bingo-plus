@@ -2,11 +2,11 @@ package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.platform.ClientPacket
 import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.client.platform.IHudCallback
 import me.jfenn.bingo.client.platform.IOptionsAccessor
-import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.KEYBIND_TOGGLE_HUD
 import me.jfenn.bingo.common.config.BingoConfig
@@ -41,6 +41,8 @@ internal class BingoHudController(
     private val renderer: BingoHudRenderer,
     private val itemScoredRenderer: BingoMessageRenderer,
     private val readyHudRenderer: ReadyHudRenderer,
+    private val hudScreenFactory: BingoHudScreen.Factory,
+    private val endScreenFactory: BingoEndScreen.Factory,
     private val state: BingoHudState,
     private val text: TextProvider,
     hud: IHudCallback,
@@ -210,7 +212,7 @@ internal class BingoHudController(
 
         if (!packet.isUpdate) {
             // when the game first ends, open the end screen
-            MinecraftClient.getInstance().setScreen(BingoEndScreen(koin, gameOver, canEscape = false))
+            MinecraftClient.getInstance().setScreen(endScreenFactory.create(gameOver, canEscape = false))
         }
     }
 
@@ -331,8 +333,8 @@ internal class BingoHudController(
                     }
 
                     val hudScreen = state.gameOver
-                        ?.let { BingoEndScreen(koin, it, canEscape = true) }
-                        ?: BingoHudScreen(koin)
+                        ?.let { endScreenFactory.create(it, canEscape = true) }
+                        ?: hudScreenFactory.create()
 
                     client.setScreen(hudScreen)
                 }

@@ -175,6 +175,15 @@ internal class BingoCardsWidget(
                 && mouseY in (y - height/2)..(y + height/2)
     }
 
+    fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
+        if (isInBounds(mouseX.toInt(), mouseY.toInt())) {
+            targetScrollX = (targetScrollX + amount.toFloat() * -0.05f * views.size).coerceIn(0f, 1f)
+            return true
+        } else {
+            return false
+        }
+    }
+
     fun onMouseClicked(mouseX: Double, mouseY: Double): Boolean {
         val hoveredView = getHoveredView(mouseX.toInt(), mouseY.toInt()) ?: return false
 

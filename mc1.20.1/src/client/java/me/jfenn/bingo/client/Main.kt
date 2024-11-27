@@ -1,8 +1,10 @@
 package me.jfenn.bingo.client
 
-import me.jfenn.bingo.client.platform.*
 import me.jfenn.bingo.client.common.commonClientModule
 import me.jfenn.bingo.client.impl.*
+import me.jfenn.bingo.client.impl.screen.ScreenFactory
+import me.jfenn.bingo.client.platform.*
+import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.world.BingoWorldController
 import me.jfenn.bingo.client.world.BingoWorldState
 import me.jfenn.bingo.client.world.WorldServiceImpl
@@ -27,6 +29,8 @@ object Main : ClientModInitializer {
     private val log = LoggerFactory.getLogger(this::class.java)
 
     private val clientModule = module {
+        singleOf(::ScreenFactory) bind IScreenFactory::class
+
         singleOf(::ButtonService) bind IButtonService::class
         singleOf(::ClientNetworkingImpl) bind IClientNetworking::class
         single { DrawService } bind IDrawServiceFactory::class

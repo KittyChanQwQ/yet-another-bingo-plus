@@ -1,23 +1,46 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.integrations.jei.JeiIntegration
+import me.jfenn.bingo.client.platform.screen.IScreen
+import me.jfenn.bingo.client.platform.screen.IScreenFactory
+import me.jfenn.bingo.client.platform.screen.IScreenHelper
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
 import org.koin.core.Koin
 
 internal class BingoHudScreen(
     koin: Koin,
-    text: TextProvider = koin.get(),
-    private val config: BingoConfig = koin.get(),
-) : Screen(text.string(StringKey.CardTitle)) {
+    private val config: BingoConfig,
+    private val state: BingoHudState,
+    private val jei: JeiIntegration,
+    private val helper: IScreenHelper,
+) : IScreen {
 
-    private val state = koin.get<BingoHudState>()
-    private val jei = koin.get<JeiIntegration>()
+    class Factory(
+        private val koin: Koin,
+        private val config: BingoConfig,
+        private val state: BingoHudState,
+        private val jei: JeiIntegration,
+        private val text: TextProvider,
+        private val screenFactory: IScreenFactory,
+    ) {
+        fun create() = screenFactory.build(text.string(StringKey.CardTitle)) { helper ->
+            BingoHudScreen(
+                koin = koin,
+                config = config,
+                state = state,
+                jei = jei,
+                helper = helper,
+            )
+        }
+    }
+
+    val width by helper::width
+    val height by helper::height
 
     private val cardsWidget = BingoCardsWidget(
         koin,
@@ -28,7 +51,7 @@ internal class BingoHudScreen(
         height = BingoHudRenderer.CARD_HEIGHT,
         // If the game is paused, the client cannot receive updates for flashing tiles
         showFlashingTiles = !(MinecraftClient.getInstance().isInSingleplayer && shouldPause()),
-        screen = this,
+        screen = helper.screen,
 
         onTileClick = { tile ->
             val stack = tile.item
@@ -39,21 +62,12 @@ internal class BingoHudScreen(
         },
         onViewClick = { view ->
             state.selectedTeam = view.teamKey
-            this.close()
+            helper.close()
             true
         },
     )
 
-    override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-        if (context == null) return
-        try {
-            renderBackground(context)
-        } catch (e: NoSuchMethodError) {
-            // This doesn't exist on 1.20.2+
-        }
-
-        super.render(context, mouseX, mouseY, delta)
-
+    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         cardsWidget.views = state.display?.display
             ?.mapNotNull { state.views[it] }
             ?: emptyList()
@@ -64,7 +78,11 @@ internal class BingoHudScreen(
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return cardsWidget.onMouseClicked(mouseX, mouseY) || super.mouseClicked(mouseX, mouseY, button)
+        return cardsWidget.onMouseClicked(mouseX, mouseY)
+    }
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
+        return cardsWidget.mouseScrolled(mouseX, mouseY, amount)
     }
 
     override fun shouldPause() = config.client.cardPausesGame

@@ -53,6 +53,8 @@ dependencies {
     modImplementation fabricPermissionsApi
     include fabricPermissionsApi
 
+    api project(path: ":api", configuration: "namedElements")
+    include project(path: ":api")
     api project(path: ":common", configuration: "namedElements")
     include project(path: ":common")
 }

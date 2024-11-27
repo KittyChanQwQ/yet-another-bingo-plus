@@ -1,6 +1,5 @@
 package me.jfenn.bingo.client.common
 
-import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.client.common.hud.*
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.settings.ClientSettingsController
@@ -13,6 +12,7 @@ import me.jfenn.bingo.client.common.world.BingoWorldManager
 import me.jfenn.bingo.client.impl.ClientCloseEvent
 import me.jfenn.bingo.client.integrations.YetAnotherConfigLibIntegration
 import me.jfenn.bingo.client.integrations.jei.JeiIntegration
+import me.jfenn.bingo.platform.ICloseEvent
 import org.koin.core.module.dsl.createdAtStart
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -27,6 +27,8 @@ val commonClientModule = module {
     singleOf(::BingoHudRenderer)
     singleOf(::BingoMessageRenderer)
     singleOf(::ReadyHudRenderer)
+    singleOf(BingoHudScreen::Factory)
+    singleOf(BingoEndScreen::Factory)
     singleOf(::BingoHudController) withOptions { createdAtStart() }
     singleOf(::BingoCardImageController) withOptions { createdAtStart() }
 

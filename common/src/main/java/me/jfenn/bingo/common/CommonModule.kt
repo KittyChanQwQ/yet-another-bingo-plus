@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common
 
-import me.jfenn.bingo.platform.ICloseEvent
+import me.jfenn.bingo.api.BingoApiImpl
+import me.jfenn.bingo.api.IBingoApi
 import me.jfenn.bingo.common.autorestart.ResetCommand
 import me.jfenn.bingo.common.autorestart.ResetService
 import me.jfenn.bingo.common.autorestart.RestartOnLeaveController
@@ -63,6 +64,7 @@ import me.jfenn.bingo.integrations.chunky.ChunkyController
 import me.jfenn.bingo.integrations.chunky.ChunkyIntegration
 import me.jfenn.bingo.integrations.voice.VoiceGroupController
 import me.jfenn.bingo.integrations.voice.VoiceIntegration
+import me.jfenn.bingo.platform.ICloseEvent
 import org.koin.core.Koin
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.scopedOf
@@ -124,6 +126,7 @@ val commonModule = module {
     scope<BingoScope> {
         scopedOf(::ScopedEvents)
         scopedOf(::InteractionEntityEvents)
+        scopedOf(::BingoApiImpl) bind IBingoApi::class
 
         scoped { get<BingoScope>().server }
         scoped { get<BingoScope>().state }

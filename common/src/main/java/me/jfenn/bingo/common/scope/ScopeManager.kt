@@ -1,15 +1,16 @@
 package me.jfenn.bingo.common.scope
 
-import me.jfenn.bingo.platform.IPersistentStateManager
+import me.jfenn.bingo.api.BingoApi
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.platform.event.model.ReloadEvent
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.EventListener
+import me.jfenn.bingo.platform.IPersistentStateManager
+import me.jfenn.bingo.platform.event.model.ReloadEvent
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
 import org.koin.core.Koin
@@ -67,11 +68,14 @@ class ScopeManager(
             } else {
                 events.onStateChange(state.state to state.state)
             }
+
+            BingoApi.set(scope.get())
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
             val scope = getScope(server) ?: return@register
             log.info("[ScopeManager] Closing server scope...")
+            BingoApi.set(null)
             onCleanup(scope)
             scope.close()
         }

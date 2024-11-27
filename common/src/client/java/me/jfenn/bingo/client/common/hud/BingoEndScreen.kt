@@ -1,10 +1,13 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
+import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
 import me.jfenn.bingo.client.platform.IWorldService
-import me.jfenn.bingo.client.common.packet.ClientPacketEvents
+import me.jfenn.bingo.client.platform.screen.IScreen
+import me.jfenn.bingo.client.platform.screen.IScreenFactory
+import me.jfenn.bingo.client.platform.screen.IScreenHelper
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.Color
@@ -16,7 +19,6 @@ import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
@@ -35,17 +37,52 @@ internal class BingoEndScreen(
     private val packets: ClientPacketEvents = koin.get(),
     private val state: BingoHudState = koin.get(),
     private val config: BingoConfig = koin.get(),
+    private val helper: IScreenHelper,
     scrollableWidgetFactory: IScrollableWidgetFactory = koin.get(),
     tabsWidgetFactory: ITabsWidgetFactory = koin.get(),
-) : Screen(text.string(StringKey.CardTitle)) {
+) : IScreen {
 
     private val worldService = koin.get<IWorldService>()
     private val minecraftClient = MinecraftClient.getInstance()
+
+    class Factory(
+        private val koin: Koin,
+        private val text: TextProvider = koin.get(),
+        private val packets: ClientPacketEvents = koin.get(),
+        private val state: BingoHudState = koin.get(),
+        private val config: BingoConfig = koin.get(),
+        private val scrollableWidgetFactory: IScrollableWidgetFactory,
+        private val tabsWidgetFactory: ITabsWidgetFactory,
+        private val screenFactory: IScreenFactory,
+    ) {
+        fun create(
+            gameOver: BingoHudState.GameOver,
+            canEscape: Boolean,
+        ) = screenFactory.build(text.string(StringKey.CardTitle)) { helper ->
+            BingoEndScreen(
+                koin = koin,
+                gameOver = gameOver,
+                canEscape = canEscape,
+                text = text,
+                packets = packets,
+                state = state,
+                config = config,
+                helper = helper,
+                scrollableWidgetFactory = scrollableWidgetFactory,
+                tabsWidgetFactory = tabsWidgetFactory,
+            )
+        }
+    }
 
     companion object {
         private const val BUTTON_WIDTH = 120
         private val NEW_BEST_DURATION = 2.seconds
     }
+
+    private val width by helper::width
+    private val height by helper::height
+    private val client = MinecraftClient.getInstance()
+    private val textRenderer = client.textRenderer
 
     private val cardsWidget = BingoCardsWidget(
         koin,
@@ -56,7 +93,7 @@ internal class BingoEndScreen(
         height = BingoHudRenderer.CARD_HEIGHT,
         // If the game is paused, the client cannot receive updates for flashing tiles
         showFlashingTiles = !(minecraftClient.isInSingleplayer && shouldPause()),
-        screen = this,
+        screen = helper.screen,
 
         onTileClick = { false },
         onViewClick = null,
@@ -119,7 +156,7 @@ internal class BingoEndScreen(
                     packets.readySetV1.send(SetReadyPacket(true))
                     // If the screen is paused, it must be closed so that the server can process the ready packet
                     if (isInSingleplayer && shouldPause()) {
-                        close()
+                        helper.close()
                     }
                 }
             }
@@ -129,9 +166,9 @@ internal class BingoEndScreen(
     }
 
     private fun updateButtons() {
-        clearChildren()
+        helper.clearChildren()
 
-        val dismissButton = dismissButton ?: ButtonWidget.builder(text.string(StringKey.CardClose)) { close() }
+        val dismissButton = dismissButton ?: ButtonWidget.builder(text.string(StringKey.CardClose)) { helper.close() }
             .width(BUTTON_WIDTH)
             .position(0, 0)
             .build()
@@ -141,7 +178,7 @@ internal class BingoEndScreen(
 
         dismissButton.x = (width/2) - 4 - BUTTON_WIDTH
         dismissButton.y = (height/2) + (BingoHudRenderer.CARD_HEIGHT/2) + tabsHeight + 8
-        addDrawableChild(dismissButton)
+        helper.addDrawableChild(dismissButton)
 
         val restartButton = restartButton ?: ButtonWidget.builder(
             text.string(nextGameButton().string)
@@ -158,27 +195,25 @@ internal class BingoEndScreen(
 
         restartButton.x = (width/2) + 4
         restartButton.y = (height/2) + (BingoHudRenderer.CARD_HEIGHT/2) + tabsHeight + 8
-        addDrawableChild(restartButton)
+        helper.addDrawableChild(restartButton)
 
         tabsWidget.width = width
-        if (isShowingTabs) addDrawableChild(tabsWidget.widget)
+        if (isShowingTabs) helper.addDrawableChild(tabsWidget.widget)
 
         if (tab == EndScreenTab.SCORES) {
             scoresWidget.x = (width * 0.1f).toInt()
             scoresWidget.y = (height/2) - (BingoHudRenderer.CARD_HEIGHT/2) + tabsHeight
             scoresWidget.width = (width * 0.8f).toInt()
             scoresWidget.height = BingoHudRenderer.CARD_HEIGHT
-            addDrawableChild(scoresWidget.widget)
+            helper.addDrawableChild(scoresWidget.widget!!)
         }
     }
 
     override fun init() {
-        super.init()
         updateButtons()
     }
 
-    override fun resize(client: MinecraftClient?, width: Int, height: Int) {
-        super.resize(client, width, height)
+    override fun resize(width: Int, height: Int) {
         updateButtons()
     }
 
@@ -313,16 +348,7 @@ internal class BingoEndScreen(
         }
     }
 
-    override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-        if (context == null) return
-        try {
-            renderBackground(context)
-        } catch (e: NoSuchMethodError) {
-            // This doesn't exist on 1.20.2+
-        }
-
-        super.render(context, mouseX, mouseY, delta)
-
+    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val cardTop = (height/2) - (BingoHudRenderer.CARD_HEIGHT/2)
         val titleY = min((cardTop * 0.75f).roundToInt(), cardTop - 11*2) + tabsHeight
 
@@ -362,6 +388,10 @@ internal class BingoEndScreen(
         if (gameOver.packet.isWinner) {
             fireworkRenderer.render(context, textRenderer, width/2, height/2)
         }
+    }
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
+        return cardsWidget.mouseScrolled(mouseX, mouseY, amount) || super.mouseScrolled(mouseX, mouseY, amount)
     }
 
     override fun shouldPause() = config.client.cardPausesGame

@@ -69,6 +69,8 @@ dependencies {
     //     exclude(group: "com.google.guava")
     //     exclude(group: "com.google.code.gson")
     // }
+
+    api project(path: ":api", configuration: "namedElements")
 }
 
 tasks.register('bingoDatapack', Zip) {
@@ -268,4 +270,10 @@ tasks.compileKotlin.configure {
     dependsOn(tasks.bingoLangServerTranslations)
     dependsOn(tasks.bingoLangFiles)
     dependsOn(tasks.bingoConstants)
+}
+
+tasks.compileKotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-opt-in=me.jfenn.bingo.api.annotations.BingoInternalApi")
+    }
 }

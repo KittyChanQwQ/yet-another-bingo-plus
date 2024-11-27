@@ -2,8 +2,9 @@ package me.jfenn.bingo.common.game
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.api.BingoEvents
+import me.jfenn.bingo.api.event.GameEndedEvent
+import me.jfenn.bingo.api.event.GameStartedEvent
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
@@ -22,6 +23,8 @@ import me.jfenn.bingo.common.team.*
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
@@ -165,6 +168,7 @@ internal class GameService(
         }
 
         broadcastStart()
+        BingoEvents.GAME_STARTED.invoke(GameStartedEvent(state.gameId))
 
         return true
     }
@@ -195,6 +199,7 @@ internal class GameService(
 
         // Then, write the game to stats.db
         writeStatsService.writeGame()
+        BingoEvents.GAME_ENDED.invoke(GameEndedEvent(state.gameId))
 
         // Finally, change state to POSTGAME (announces in GameOverController)
         state.changeState(events, GameState.POSTGAME)

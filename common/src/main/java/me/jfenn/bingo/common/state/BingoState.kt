@@ -146,6 +146,12 @@ data class BingoState(
         return duration - timeOffline
     }
 
+    fun remainingDuration(): Duration? {
+        val timeLimit = options.timeLimit ?: return null
+        val duration = ingameDuration() ?: return null
+        return timeLimit - duration
+    }
+
     fun formatTimeElapsed(): MutableText {
         val duration = ingameDuration() ?: return Text.literal("0:00")
         return Text.literal(duration.formatHHMMSS())
@@ -159,10 +165,10 @@ data class BingoState(
         val timeLimit = options.timeLimit
             ?: return textProvider.string(StringKey.TimerNoTimeLimit)
 
-        val duration = ingameDuration() ?: return Text.literal(timeLimit.formatString()).formatted(normalColor)
-        val secondsRemaining = timeLimit - duration
+        if (startedAt == null) return Text.literal(timeLimit.formatString()).formatted(normalColor)
+        val secondsRemaining = remainingDuration() ?: return Text.literal(timeLimit.formatString()).formatted(normalColor)
 
-        if (duration >= timeLimit || state == GameState.POSTGAME)
+        if (secondsRemaining <= Duration.ZERO || state == GameState.POSTGAME)
             return textProvider.string(StringKey.TimerGameOver)
 
         return Text.literal(secondsRemaining.formatString())
