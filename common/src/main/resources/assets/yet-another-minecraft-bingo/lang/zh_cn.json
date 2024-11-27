@@ -227,8 +227,6 @@
   "bingo.options.time_limit_off": "关闭",
   "bingo.options.unlock_recipes": "解锁配方",
   "bingo.options.win_behavior": "获胜行为",
-  "bingo.options.win_behavior.end_when_complete": "当完成目标时结束游戏",
-  "bingo.options.win_behavior.end_when_complete.tooltip": "如果选中此选项，一旦第一个团队完成目标，游戏就会立即结束。否则，它将等待所有团队完成。",
   "bingo.options.win_behavior.end_when_stalemate": "当僵局时结束游戏",
   "bingo.options.win_behavior.end_when_stalemate.tooltip": "如果选中此选项，当目标变得无法达成时，游戏将会结束。否则，游戏将继续进行下一张卡片。",
   "bingo.options.win_behavior.skip_card_when_lost": "当失败时跳过卡片",
