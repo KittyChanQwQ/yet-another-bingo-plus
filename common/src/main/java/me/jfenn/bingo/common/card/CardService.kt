@@ -144,6 +144,7 @@ class CardService(
         // Change the BINGO seed to a new value
         val newSeed = Random.nextLong()
         val newCard = generate(card.id, newSeed, card.options)
+        objectiveManager.init(newCard)
         state.replaceCard(newCard)
     }
 

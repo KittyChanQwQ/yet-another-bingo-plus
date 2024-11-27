@@ -72,6 +72,19 @@ class BingoObjectiveManager(
     }
 
     override fun init(card: BingoCard) {
+        // Initialize objectives
+        if (!card.isInitialized) {
+            // No, this isn't a bug...
+            // init() needs to be called multiple times to populate display info on dependent objectives
+            initInternal(card)
+            initInternal(card)
+            initInternal(card)
+
+            card.isInitialized = true
+        }
+    }
+
+    private fun initInternal(card: BingoCard) {
         for (provider in providers)
             provider.init(card)
 

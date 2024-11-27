@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BingoWinCondition
+import me.jfenn.bingo.common.config.EndWhen
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService
@@ -59,7 +60,7 @@ class GameOverController(
                 .also { yield(it) }
 
             if (
-                (!options.endGameWhenComplete || options.winCondition is BingoWinCondition.Infinite)
+                (options.endGameWhen !is EndWhen.FirstWin || options.winCondition is BingoWinCondition.Infinite)
                 && info.scoreRankings.size > 1
             ) {
                 yield(Text.empty())

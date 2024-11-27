@@ -5,6 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BingoWinCondition
+import me.jfenn.bingo.common.config.EndWhen
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
@@ -72,7 +73,7 @@ class GameOverService(
 
     fun getMessage(info: GameOverInfo): Text {
         return (
-            Text.empty().takeIf { !options.endGameWhenComplete }
+            Text.empty().takeIf { options.endGameWhen !is EndWhen.FirstWin }
                 ?: info.winningTeamKey?.let { state.teams[it] }?.let { winner ->
                     textProvider.string(StringKey.GameEndCompletedCard, winner.getName(textProvider, playerName = true))
                 }

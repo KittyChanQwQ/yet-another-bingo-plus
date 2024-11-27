@@ -3,10 +3,11 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.api.EntityType
 import me.jfenn.bingo.api.ITextDisplayEntity
 import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.config.EndWhen
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Formatting
+import net.minecraft.text.Text
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
@@ -42,11 +43,23 @@ fun MenuComponent.registerWinBehavior(
         permissionGetter = permissionGetter,
     )
 
-    registerToggleButton(
+    val toggleEndWhen = arrayOf(EndWhen.FirstWin, EndWhen.AllWin, EndWhen.Never)
+    registerButton(
         position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0, Vector3d()),
-        text = text.string(StringKey.OptionsWinBehaviorEndWhenComplete),
-        tooltip = buildTooltip(StringKey.OptionsWinBehaviorEndWhenComplete),
-        toggleProp = propertyRef(options::endGameWhenComplete),
+        text = Text.empty(),
+        textProp = computedProperty {
+            text.string(StringKey.OptionsEndWhen, options.endGameWhen.string(text))
+        },
+        tooltip = buildTooltip(StringKey.OptionsWinBehaviorEndWhen),
         permissionGetter = permissionGetter,
-    )
+    ) {
+        val next = toggleEndWhen
+            .indexOfFirst { it::class == options.endGameWhen::class }
+            .plus(1)
+            .mod(toggleEndWhen.size)
+            .coerceIn(toggleEndWhen.indices)
+
+        options.endGameWhen = toggleEndWhen[next]
+        markDirty()
+    }
 }

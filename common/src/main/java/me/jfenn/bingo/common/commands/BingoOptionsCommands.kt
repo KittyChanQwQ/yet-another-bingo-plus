@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BingoWinCondition
+import me.jfenn.bingo.common.config.EndWhen
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -46,9 +47,24 @@ class BingoOptionsCommands(
         val options = scope.get<BingoOptions>()
         options.winCondition = BingoWinCondition.Cards(cards)
 
+        val events = scope.get<ScopedEvents>()
+        events.onChangeOptions(Unit)
+
         // Send a message that the goal was changed
         sendInfoFeedback(
             textProvider.string(StringKey.ScoreboardGoal, textProvider.cardCount(cards))
+        )
+    }
+
+    private fun IExecutionContext.setEndWhen(endWhen: EndWhen) {
+        val options = scope.get<BingoOptions>()
+        options.endGameWhen = endWhen
+
+        val events = scope.get<ScopedEvents>()
+        events.onChangeOptions(Unit)
+
+        sendInfoFeedback(
+            textProvider.string(StringKey.OptionsEndWhen, endWhen.string(textProvider))
         )
     }
 
@@ -103,6 +119,9 @@ class BingoOptionsCommands(
         val state = scope.get<BingoState>()
         state.options.timeLimit = minutes?.minutes?.plus(state.ingameDuration() ?: Duration.ZERO)
 
+        val events = scope.get<ScopedEvents>()
+        events.onChangeOptions(Unit)
+
         sendInfoFeedback(
             textProvider.string(StringKey.ScoreboardTimeLeft, state.formatTimeRemaining(textProvider))
         )
@@ -131,6 +150,24 @@ class BingoOptionsCommands(
                             setGoalCards(count)
                         }
                     }
+                }
+            }
+
+            literal("end_when") {
+                requires { hasConfigureGame() }
+                literal("never") {
+                    executes { setEndWhen(EndWhen.Never) }
+                }
+                literal("first_win") {
+                    executes { setEndWhen(EndWhen.FirstWin) }
+                }
+                literal("teams_win") {
+                    integer("teams", min = 2) { teamsArg ->
+                        executes { setEndWhen(EndWhen.TeamsWin(getArgument(teamsArg))) }
+                    }
+                }
+                literal("all_win") {
+                    executes { setEndWhen(EndWhen.AllWin) }
                 }
             }
 

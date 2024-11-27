@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BingoWinCondition
+import me.jfenn.bingo.common.config.EndWhen
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameEndReason
@@ -159,7 +160,7 @@ internal class ScoredItemCheck(
 
         team.completedCards += TeamCompletedCard(
             // Copy the card in its winning state
-            card = card.copy().also { initCard(it) },
+            card = card.copy().also { objectiveManager.init(it) },
             completedAt = now,
             isWinner = isWinner,
             score = team.score,
@@ -204,10 +205,8 @@ internal class ScoredItemCheck(
             }
         }
 
-        if (!options.endGameWhenComplete || condition != BingoWinCondition.Cards(1)) {
-            // announce that another team has completed their card
-            pendingCardCompletedPackets[team.key] = CardCompletedPacket(isWinner)
-        }
+        // announce that another team has completed their card
+        pendingCardCompletedPackets[team.key] = CardCompletedPacket(isWinner)
     }
 
     private fun tickCard(card: BingoCard) {
@@ -234,41 +233,42 @@ internal class ScoredItemCheck(
 
         val teams = state.getRegisteredTeams()
 
-        // check if any team has won the game
-        if (options.endGameWhenComplete) {
-            if (teams.any { it.isWinner() }) {
-                log.info("[ScoredItemCheck] Ending the game because a team has won")
-                gameService.end(GameEndReason.Bingo)
-                return
-            }
-        } else {
-            if (teams.all { it.isWinner() }) {
-                log.info("[ScoredItemCheck] Ending the game because all teams have finished")
-                gameService.end(GameEndReason.Bingo)
-                return
-            } else {
-                val finishedTeams = cardCompletedPackets
-                    .mapNotNull { (teamKey, _) -> state.teams[teamKey] }
-                    .filter { it.isWinner() }
-
-                // Notify players that the game is not ending because of endGameWhenComplete
-                val message = text.string(StringKey.GameNotEndingComplete)
-                    .formatted(Formatting.AQUA, Formatting.BOLD)
-                val messageOp = text.string(
-                    StringKey.GameNotEndingCompleteOperator,
-                    text.string(StringKey.OptionsWinBehaviorEndWhenComplete),
-                    GameCommands.END_COMMAND,
-                ).formatted(Formatting.GRAY)
-                playerManager.getPlayers()
-                    .filter { player -> finishedTeams.any { it.includesPlayer(player) } }
-                    .forEach { player ->
-                        player.sendMessage(message)
-                        if (permission.hasPermission(player, Permission.CONFIGURE_GAME)) {
-                            player.sendMessage(messageOp)
-                        }
-                    }
-            }
+        // check if the game should end
+        val shouldEnd = when (
+            val endWhen = options.endGameWhen
+        ) {
+            is EndWhen.Never -> false
+            is EndWhen.FirstWin -> teams.any { it.isWinner() }
+            is EndWhen.TeamsWin -> teams.count { it.isWinner() } >= endWhen.teams
+            is EndWhen.AllWin -> teams.all { it.isWinner() }
         }
+
+        if (shouldEnd) {
+            log.info("[ScoredItemCheck] Ending the game because ${options.endGameWhen} was satisfied")
+            gameService.end(GameEndReason.Bingo)
+            return
+        }
+
+        val finishedTeams = cardCompletedPackets
+            .mapNotNull { (teamKey, _) -> state.teams[teamKey] }
+            .filter { it.isWinner() }
+
+        // Notify players that the game is not ending because of endGameWhenComplete
+        val message = text.string(StringKey.GameNotEndingComplete)
+            .formatted(Formatting.AQUA, Formatting.BOLD)
+        val messageOp = text.string(
+            StringKey.GameNotEndingCompleteOperator,
+            options.endGameWhen.string(text),
+            GameCommands.END_COMMAND,
+        ).formatted(Formatting.GRAY)
+        playerManager.getPlayers()
+            .filter { player -> finishedTeams.any { it.includesPlayer(player) } }
+            .forEach { player ->
+                player.sendMessage(message)
+                if (permission.hasPermission(player, Permission.CONFIGURE_GAME)) {
+                    player.sendMessage(messageOp)
+                }
+            }
 
         // otherwise, send any pending card completed packets
         for ((teamKey, packet) in cardCompletedPackets) {
@@ -313,21 +313,8 @@ internal class ScoredItemCheck(
         }
     }
 
-    private fun initCard(card: BingoCard) {
-        // Initialize objectives
-        if (!card.isInitialized) {
-            // No, this isn't a bug...
-            // init() needs to be called multiple times to populate display info on dependent objectives
-            objectiveManager.init(card)
-            objectiveManager.init(card)
-            objectiveManager.init(card)
-
-            card.isInitialized = true
-        }
-    }
-
     private fun onCardAssigned(card: BingoCard, removeTeams: List<BingoTeam>) {
-        initCard(card)
+        objectiveManager.init(card)
 
         for (team in removeTeams) {
             state.cards.forEach { it.removeTeam(team) }
@@ -350,7 +337,7 @@ internal class ScoredItemCheck(
         // Re-initialize completed cards when loading from a saved state
         for (team in state.getRegisteredTeams()) {
             for (completion in team.completedCards) {
-                initCard(completion.card)
+                objectiveManager.init(completion.card)
             }
         }
 
@@ -358,10 +345,10 @@ internal class ScoredItemCheck(
             // Team cards might have their own (copied) instances that don't get initialized right away
             state.getRegisteredTeams()
                 .mapNotNull { state.getCard(it) }
-                .map { initCard(it) }
+                .map { objectiveManager.init(it) }
 
             for (card in state.cards) {
-                initCard(card)
+                objectiveManager.init(card)
             }
 
             if (state.state == GameState.PLAYING) {

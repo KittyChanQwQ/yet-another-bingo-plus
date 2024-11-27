@@ -7,6 +7,7 @@ import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
+import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
@@ -38,6 +39,7 @@ internal class GameService(
     private val teamService: TeamService,
     private val configService: ConfigService,
     private val cardService: CardService,
+    private val objectiveManager: BingoObjectiveManager,
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
     private val optionsService: OptionsService,
@@ -177,7 +179,7 @@ internal class GameService(
             if (card != null) {
                 team.cardId = null
                 team.completedCards += TeamCompletedCard(
-                    card = card.copy(),
+                    card = card.copy().also { objectiveManager.init(it) },
                     completedAt = endedAt,
                     isWinner = false,
                     score = team.score
