@@ -49,26 +49,136 @@ internal class ReadyController(
         }
     }
 
+    private fun update() {
+        if (!state.isLobbyMode) return
+        // Only send update packets during these gamestates
+        // (note that SpawnPreloadingController also sends ReadyUpdatePacket, so this must avoid conflicts)
+        if (state.state !in arrayOf(GameState.PREGAME, GameState.POSTGAME))
+            return
+
+        val isVotingEnabled = when (state.state) {
+            GameState.PREGAME -> config.startWhenReadySeconds != null
+            GameState.POSTGAME -> config.nextRoundWhenReadySeconds != null
+            else -> false
+        }
+
+        readyState.updatePlayers(playerManager.getPlayers())
+        val remainingTime = readyState.remainingTime()
+        val isComplete = remainingTime?.let { it <= Duration.ZERO } ?: false
+
+        if (state.state == GameState.PREGAME) {
+            // If the game can start, begin the timer!
+            if (!readyState.isRunning && isPregameReady()) {
+                config.startWhenReadySeconds?.let {
+                    log.info("[ReadyController] Starting the PREGAME timer for $it seconds")
+                    readyState.startTimer(it.seconds)
+                }
+            }
+
+            // If the game is no longer ready, reset the timer!
+            if (readyState.isRunning && !isPregameReady()) {
+                log.info("[ReadyController] Cancelling the PREGAME timer, as players are not ready")
+                reset()
+            }
+
+            if (isComplete) {
+                log.info("[ReadyController] Reached the end of the PREGAME timer - starting the game!")
+                reset()
+                gameService.start(allowSpectators = true)
+            }
+        }
+
+        if (state.state == GameState.POSTGAME) {
+            val hasAnyoneVoted = playerManager.getPlayers().any { readyState.isReady(it.uuid) }
+            if (
+                !readyState.isRunning &&
+                (hasAnyoneVoted || !config.nextRoundWhenReadyWaitsForFirstVote)
+            ) {
+                config.nextRoundWhenReadySeconds?.let {
+                    log.info("[ReadyController] Starting the POSTGAME timer for $it seconds")
+                    readyState.startTimer(it.seconds)
+                }
+            }
+
+            if (isComplete) {
+                log.info("[ReadyController] Reached the end of the POSTGAME timer - running reset.")
+                resetService.resetGame()
+            }
+        }
+
+        val updatePacket = ReadyUpdatePacket(
+            isRunning = readyState.isRunning && !isComplete,
+            isReady = false,
+            state = state.state,
+            remainingDuration = readyState.remainingTime() ?: Duration.ZERO,
+            totalDuration = readyState.totalTime() ?: Duration.ZERO,
+            readyPlayers = playerManager.getPlayers().count { readyState.isReady(it.uuid) },
+            totalPlayers = playerManager.getPlayers().size,
+            title = null,
+            subtitle = null,
+        )
+
+        for (player in playerManager.getPlayers()) {
+            val isPlayerReady = readyState.isReady(player.uuid)
+            val title = when {
+                isPlayerReady -> text.string(StringKey.LobbyStartingPlayersReady, updatePacket.readyPlayers, updatePacket.totalPlayers)
+                else -> text.string(
+                    StringKey.LobbyStartingReadyUp,
+                    Text.keybind("key.sneak"), Text.keybind(KEYBIND_OPEN_CARD)
+                )
+            }
+            val subtitle = when {
+                state.state == GameState.PREGAME -> text.string(StringKey.LobbyStartingTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
+                else -> text.string(StringKey.LobbyNextRoundTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
+            }
+
+            val packet = updatePacket.copy(
+                isReady = isPlayerReady,
+                title = title,
+                subtitle = subtitle,
+                canSendReady = isVotingEnabled && permissions.hasPermission(player, Permission.COMMAND_READY)
+            )
+
+            when {
+                packets.readyUpdateV3.send(player, packet) -> {}
+                packets.readyUpdateV2.send(player, packet) -> {}
+                packets.readyUpdateV1.send(player, packet) -> {}
+                packet.isRunning -> {
+                    val message = when {
+                        !isPlayerReady -> text.string(StringKey.LobbyStartingInRunCommand, packet.remainingDuration.formatHHMMSS())
+                        else -> text.string(StringKey.LobbyStartingInReady, packet.remainingDuration.formatHHMMSS(), packet.readyPlayers, packet.totalPlayers)
+                    }
+                    player.sendHotbarMessage(message)
+                }
+            }
+        }
+    }
+
     init {
         events.onStateChange {
             reset()
 
-            // When the state changes, make sure to send an extra packet to dismiss the ready GUI
-            val packet = ReadyUpdatePacket(
-                isRunning = false,
-                isReady = false,
-                state = state.state,
-                remainingDuration = Duration.ZERO,
-                totalDuration = Duration.ZERO,
-                readyPlayers = 0,
-                totalPlayers = 0,
-                title = null,
-                subtitle = null,
-            )
-            for (player in playerManager.getPlayers()) {
-                when {
-                    packets.readyUpdateV2.send(player, packet) -> {}
-                    packets.readyUpdateV1.send(player, packet) -> {}
+            // Run an update check immediately
+            update()
+
+            // If the timer is not running, send an extra packet to dismiss the ready GUI
+            if (!readyState.isRunning) {
+                val packet = ReadyUpdatePacket(
+                    isRunning = false,
+                    isReady = false,
+                    state = state.state,
+                    remainingDuration = Duration.ZERO,
+                    totalDuration = Duration.ZERO,
+                    readyPlayers = 0,
+                    totalPlayers = 0,
+                    title = null,
+                    subtitle = null,
+                )
+                for (player in playerManager.getPlayers()) {
+                    when {
+                        packets.readyUpdateV2.send(player, packet) -> {}
+                        packets.readyUpdateV1.send(player, packet) -> {}
+                    }
                 }
             }
         }
@@ -83,108 +193,7 @@ internal class ReadyController(
         }
 
         events.onUpdateTick {
-            if (!state.isLobbyMode) return@onUpdateTick
-            // Only send update packets during these gamestates
-            // (note that SpawnPreloadingController also sends ReadyUpdatePacket, so this must avoid conflicts)
-            if (state.state !in arrayOf(GameState.PREGAME, GameState.POSTGAME))
-                return@onUpdateTick
-
-            val isVotingEnabled = when (state.state) {
-                GameState.PREGAME -> config.startWhenReadySeconds != null
-                GameState.POSTGAME -> config.nextRoundWhenReadySeconds != null
-                else -> false
-            }
-
-            readyState.updatePlayers(playerManager.getPlayers())
-            val remainingTime = readyState.remainingTime()
-            val isComplete = remainingTime?.let { it <= Duration.ZERO } ?: false
-
-            if (state.state == GameState.PREGAME) {
-                // If the game can start, begin the timer!
-                if (!readyState.isRunning && isPregameReady()) {
-                    config.startWhenReadySeconds?.let {
-                        log.info("[ReadyController] Starting the PREGAME timer for $it seconds")
-                        readyState.startTimer(it.seconds)
-                    }
-                }
-
-                // If the game is no longer ready, reset the timer!
-                if (readyState.isRunning && !isPregameReady()) {
-                    log.info("[ReadyController] Cancelling the PREGAME timer, as players are not ready")
-                    reset()
-                }
-
-                if (isComplete) {
-                    log.info("[ReadyController] Reached the end of the PREGAME timer - starting the game!")
-                    reset()
-                    gameService.start(allowSpectators = true)
-                }
-            }
-
-            if (state.state == GameState.POSTGAME) {
-                val hasAnyoneVoted = playerManager.getPlayers().any { readyState.isReady(it.uuid) }
-                if (
-                    !readyState.isRunning &&
-                    (hasAnyoneVoted || !config.nextRoundWhenReadyWaitsForFirstVote)
-                ) {
-                    config.nextRoundWhenReadySeconds?.let {
-                        log.info("[ReadyController] Starting the POSTGAME timer for $it seconds")
-                        readyState.startTimer(it.seconds)
-                    }
-                }
-
-                if (isComplete) {
-                    log.info("[ReadyController] Reached the end of the POSTGAME timer - running reset.")
-                    resetService.resetGame()
-                }
-            }
-
-            val updatePacket = ReadyUpdatePacket(
-                isRunning = readyState.isRunning && !isComplete,
-                isReady = false,
-                state = state.state,
-                remainingDuration = readyState.remainingTime() ?: Duration.ZERO,
-                totalDuration = readyState.totalTime() ?: Duration.ZERO,
-                readyPlayers = playerManager.getPlayers().count { readyState.isReady(it.uuid) },
-                totalPlayers = playerManager.getPlayers().size,
-                title = null,
-                subtitle = null,
-            )
-
-            for (player in playerManager.getPlayers()) {
-                val isPlayerReady = readyState.isReady(player.uuid)
-                val title = when {
-                    isPlayerReady -> text.string(StringKey.LobbyStartingPlayersReady, updatePacket.readyPlayers, updatePacket.totalPlayers)
-                    else -> text.string(
-                        StringKey.LobbyStartingReadyUp,
-                        Text.keybind("key.sneak"), Text.keybind(KEYBIND_OPEN_CARD)
-                    )
-                }
-                val subtitle = when {
-                    state.state == GameState.PREGAME -> text.string(StringKey.LobbyStartingTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
-                    else -> text.string(StringKey.LobbyNextRoundTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
-                }
-
-                val packet = updatePacket.copy(
-                    isReady = isPlayerReady,
-                    title = title,
-                    subtitle = subtitle,
-                    canSendReady = isVotingEnabled && permissions.hasPermission(player, Permission.COMMAND_READY)
-                )
-
-                when {
-                    packets.readyUpdateV3.send(player, packet) -> {}
-                    packets.readyUpdateV2.send(player, packet) -> {}
-                    packets.readyUpdateV1.send(player, packet) -> {}
-                    packet.isRunning -> {
-                        val message = when {
-                            !isPlayerReady -> text.string(StringKey.LobbyStartingInRunCommand, packet.remainingDuration.formatHHMMSS())
-                            else -> text.string(StringKey.LobbyStartingInReady, packet.remainingDuration.formatHHMMSS(), packet.readyPlayers, packet.totalPlayers)
-                        }
-                        player.sendHotbarMessage(message)
-                    }
-                }
-            }
+            update()
         }
     }
 }

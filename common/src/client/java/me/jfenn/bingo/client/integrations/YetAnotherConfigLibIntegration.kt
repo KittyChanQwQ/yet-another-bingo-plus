@@ -279,6 +279,23 @@ class YetAnotherConfigLibIntegrationImpl(
                                     )
                                     .controller { BooleanControllerBuilder.create(it) }
                                     .build(),
+                                Option.createBuilder<Boolean>()
+                                    .name(text.string(StringKey.ConfigCardPausesGame))
+                                    .description(
+                                        OptionDescription.of(
+                                            text.string(StringKey.ConfigCardPausesGameDescription)
+                                        )
+                                    )
+                                    .binding(
+                                        defaultConfig.client.cardPausesGame,
+                                        { config.client.cardPausesGame },
+                                        {
+                                            config.client.cardPausesGame = it
+                                            configService.writeConfig(config)
+                                        }
+                                    )
+                                    .controller { BooleanControllerBuilder.create(it) }
+                                    .build(),
                             ))
                             .build()
                     )

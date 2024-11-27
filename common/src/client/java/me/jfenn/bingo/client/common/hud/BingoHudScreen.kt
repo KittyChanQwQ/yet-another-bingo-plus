@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.integrations.jei.JeiIntegration
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -11,6 +12,7 @@ import org.koin.core.Koin
 class BingoHudScreen(
     koin: Koin,
     text: TextProvider = koin.get(),
+    private val config: BingoConfig = koin.get(),
 ) : Screen(text.string(StringKey.CardTitle)) {
 
     private val state = koin.get<BingoHudState>()
@@ -62,6 +64,6 @@ class BingoHudScreen(
         return cardsWidget.onMouseClicked(mouseX, mouseY) || super.mouseClicked(mouseX, mouseY, button)
     }
 
-    override fun shouldPause() = false
+    override fun shouldPause() = config.client.cardPausesGame
 
 }

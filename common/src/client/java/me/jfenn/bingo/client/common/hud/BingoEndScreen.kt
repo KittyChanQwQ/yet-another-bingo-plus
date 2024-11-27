@@ -98,8 +98,9 @@ class BingoEndScreen(
     }
 
     private fun nextGameButton(): NextGameButton {
+        val canSendReady = state.ready?.canSendReady == true && packets.readySetV1.isSupported()
         return when {
-            state.ready?.canSendReady == true && packets.readySetV1.isSupported() -> NextGameButton.NEXT_ROUND
+            client?.isInSingleplayer == true || canSendReady -> NextGameButton.NEXT_ROUND
             gameOver.packet.canSendRestart -> NextGameButton.RESTART
             else -> NextGameButton.DISCONNECT
         }
@@ -113,6 +114,10 @@ class BingoEndScreen(
                     worldService.disconnectAndReopen()
                 } else {
                     packets.readySetV1.send(SetReadyPacket(true))
+                    // If the screen is paused, it must be closed so that the server can process the ready packet
+                    if (isInSingleplayer && shouldPause()) {
+                        close()
+                    }
                 }
             }
             NextGameButton.RESTART -> worldService.restartServer()
@@ -356,7 +361,7 @@ class BingoEndScreen(
         }
     }
 
-    override fun shouldPause() = false
+    override fun shouldPause() = config.client.cardPausesGame
 
     override fun shouldCloseOnEsc() = canEscape
 

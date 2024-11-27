@@ -7,6 +7,7 @@ import me.jfenn.bingo.generated.StringKey
 data class ClientConfig(
     var enableHud: Boolean = true,
     var showQuickStartButton: Boolean = true,
+    var cardPausesGame: Boolean = true,
     var cardScale: Float = 1f,
     var cardAlignment: CardAlignment = CardAlignment.TOP_LEFT,
     var cardOffsetX: Int = 0,

@@ -55,6 +55,8 @@
   "bingo.config.card_overlap.above": "Above",
   "bingo.config.card_overlap.description": "Controls whether HUD elements can overlap the card, or if the card draws over everything else.",
   "bingo.config.card_overlap.underneath": "Underneath",
+  "bingo.config.card_pauses_game": "Pause when viewing card",
+  "bingo.config.card_pauses_game.description": "Pauses the game while the card is open in single-player.",
   "bingo.config.card_scale": "Card Scale",
   "bingo.config.card_scale.description": "This changes size of the Bingo Card on the screen, relative to other GUI elements.",
   "bingo.config.enable_client_hud": "Enable Bingo Card HUD",
