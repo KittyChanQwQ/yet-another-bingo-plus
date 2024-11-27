@@ -88,47 +88,45 @@ class StatsCommand(
     }
 
     init {
-        commandManager.register("bingo") {
-            literal("stats") {
-                player("player") { playerArg ->
-                    requires {
-                        hasPermission(Permission.STATS_VIEW_PLAYER)
-                    }
-                    executes {
-                        val player = getArgument(playerArg)
-                        getStatsSummary(player)
-                    }
-                }
-
-                literal("reset") {
-                    literal("player") {
-                        requires { hasPermission(Permission.STATS_RESET_SELF) || hasPermission(Permission.STATS_RESET_GLOBAL) }
-                        executes { clearPlayerStats(player!!) }
-
-                        player("player") { playerArg ->
-                            requires { hasPermission(Permission.STATS_RESET_GLOBAL) }
-                            executes { clearPlayerStats(getArgument(playerArg)) }
-                        }
-                    }
-
-                    literal("game") {
-                        requires { hasPermission(Permission.STATS_RESET_GLOBAL) }
-                        executes { clearGameStats() }
-                    }
-
-                    literal("all") {
-                        requires { hasPermission(Permission.STATS_RESET_GLOBAL) }
-                        executes { clearAllStats() }
-                    }
-                }
-
+        commandManager.register("bingostats") {
+            player("player") { playerArg ->
                 requires {
-                    hasPermission(Permission.STATS_VIEW_SELF)
+                    hasPermission(Permission.STATS_VIEW_PLAYER)
                 }
                 executes {
-                    val player = player ?: throw IllegalArgumentException("Must be called on player")
+                    val player = getArgument(playerArg)
                     getStatsSummary(player)
                 }
+            }
+
+            literal("reset") {
+                literal("player") {
+                    requires { hasPermission(Permission.STATS_RESET_SELF) || hasPermission(Permission.STATS_RESET_GLOBAL) }
+                    executes { clearPlayerStats(player!!) }
+
+                    player("player") { playerArg ->
+                        requires { hasPermission(Permission.STATS_RESET_GLOBAL) }
+                        executes { clearPlayerStats(getArgument(playerArg)) }
+                    }
+                }
+
+                literal("game") {
+                    requires { hasPermission(Permission.STATS_RESET_GLOBAL) }
+                    executes { clearGameStats() }
+                }
+
+                literal("all") {
+                    requires { hasPermission(Permission.STATS_RESET_GLOBAL) }
+                    executes { clearAllStats() }
+                }
+            }
+
+            requires {
+                hasPermission(Permission.STATS_VIEW_SELF)
+            }
+            executes {
+                val player = player ?: throw IllegalArgumentException("Must be called on player")
+                getStatsSummary(player)
             }
         }
     }

@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.config
 import me.jfenn.bingo.api.IPlayerHandle
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.commands.BingoOptionsCommands
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamService
@@ -56,6 +57,16 @@ internal class OptionsService(
             .formatted(Formatting.GRAY)
             .also {
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo goal"))
+            }
+            .let { yield(it) }
+
+        text.string(
+            StringKey.OptionsEndWhen,
+            options.endGameWhen.string(text).formatted(Formatting.YELLOW)
+        )
+            .formatted(Formatting.GRAY)
+            .also {
+                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, BingoOptionsCommands.END_WHEN))
             }
             .let { yield(it) }
 

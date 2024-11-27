@@ -49,6 +49,7 @@ fun MenuComponent.registerWinBehavior(
         text = Text.empty(),
         textProp = computedProperty {
             text.string(StringKey.OptionsEndWhen, options.endGameWhen.string(text))
+                .let { Text.literal("⇄ ").append(it) }
         },
         tooltip = buildTooltip(StringKey.OptionsWinBehaviorEndWhen),
         permissionGetter = permissionGetter,

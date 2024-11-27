@@ -153,35 +153,51 @@ class BingoOptionsCommands(
                 }
             }
 
-            literal("end_when") {
-                requires { hasConfigureGame() }
-                literal("never") {
-                    executes { setEndWhen(EndWhen.Never) }
-                }
-                literal("first_win") {
-                    executes { setEndWhen(EndWhen.FirstWin) }
-                }
-                literal("teams_win") {
-                    integer("teams", min = 2) { teamsArg ->
-                        executes { setEndWhen(EndWhen.TeamsWin(getArgument(teamsArg))) }
+            literal("options") {
+                literal("end_when") {
+                    requires { hasConfigureGame() }
+                    literal("never") {
+                        executes { setEndWhen(EndWhen.Never) }
+                    }
+                    literal("first_win") {
+                        executes { setEndWhen(EndWhen.FirstWin) }
+                    }
+                    literal("teams_win") {
+                        integer("teams", min = 2) { teamsArg ->
+                            executes { setEndWhen(EndWhen.TeamsWin(getArgument(teamsArg))) }
+                        }
+                    }
+                    literal("all_win") {
+                        executes { setEndWhen(EndWhen.AllWin) }
                     }
                 }
-                literal("all_win") {
-                    executes { setEndWhen(EndWhen.AllWin) }
-                }
-            }
 
-            literal("elytra") {
-                requires { hasConfigureGame() }
-                executes {
-                    toggleElytra()
+                literal("elytra") {
+                    requires { hasConfigureGame() }
+                    executes { toggleElytra() }
                 }
-            }
 
-            literal("night_vision") {
-                requires { hasConfigureGame() }
-                executes {
-                    toggleNightVision()
+                literal("night_vision") {
+                    requires { hasConfigureGame() }
+                    executes { toggleNightVision() }
+                }
+
+                literal("preview_card") {
+                    requires {
+                        hasPermission(Permission.CONFIGURE_GAME) && hasState(GameState.PREGAME)
+                    }
+                    executes {
+                        val options = scope.get<BingoOptions>()
+                        options.showPreviewCard = !options.showPreviewCard
+
+                        val events = scope.get<ScopedEvents>()
+                        events.onChangeOptions.invoke(Unit)
+
+                        sendInfoFeedback(
+                            textProvider.string(StringKey.OptionsPreviewCard)
+                                .append(": ${options.showPreviewCard}")
+                        )
+                    }
                 }
             }
 
@@ -195,5 +211,9 @@ class BingoOptionsCommands(
                 }
             }
         }
+    }
+
+    companion object {
+        const val END_WHEN = "/bingo options end_when"
     }
 }
