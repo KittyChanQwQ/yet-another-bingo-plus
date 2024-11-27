@@ -40,6 +40,7 @@ class BingoEndScreen(
 ) : Screen(text.string(StringKey.CardTitle)) {
 
     private val worldService = koin.get<IWorldService>()
+    private val minecraftClient = MinecraftClient.getInstance()
 
     companion object {
         private const val BUTTON_WIDTH = 120
@@ -53,6 +54,8 @@ class BingoEndScreen(
         y = height/2,
         width = width * 6/10,
         height = BingoHudRenderer.CARD_HEIGHT,
+        // If the game is paused, the client cannot receive updates for flashing tiles
+        showFlashingTiles = !(minecraftClient.isInSingleplayer && shouldPause()),
         screen = this,
 
         onTileClick = { false },
@@ -100,7 +103,7 @@ class BingoEndScreen(
     private fun nextGameButton(): NextGameButton {
         val canSendReady = state.ready?.canSendReady == true && packets.readySetV1.isSupported()
         return when {
-            client?.isInSingleplayer == true || canSendReady -> NextGameButton.NEXT_ROUND
+            minecraftClient.isInSingleplayer || canSendReady -> NextGameButton.NEXT_ROUND
             gameOver.packet.canSendRestart -> NextGameButton.RESTART
             else -> NextGameButton.DISCONNECT
         }

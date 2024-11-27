@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import org.koin.core.Koin
@@ -25,6 +26,8 @@ class BingoHudScreen(
         y = height/2,
         width = width * 6/10,
         height = BingoHudRenderer.CARD_HEIGHT,
+        // If the game is paused, the client cannot receive updates for flashing tiles
+        showFlashingTiles = !(MinecraftClient.getInstance().isInSingleplayer && shouldPause()),
         screen = this,
 
         onTileClick = { tile ->

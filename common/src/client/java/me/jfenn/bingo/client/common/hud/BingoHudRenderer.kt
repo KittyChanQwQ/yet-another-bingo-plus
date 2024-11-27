@@ -102,6 +102,7 @@ class BingoHudRenderer(
         mouseX: Int = -1,
         mouseY: Int = -1,
         showTeamOutlines: Boolean = true,
+        showFlashingTiles: Boolean = true,
         isFocused: Boolean = false,
         isMouseOver: Boolean = false,
         isGui: Boolean = false,
@@ -144,8 +145,9 @@ class BingoHudRenderer(
             val itemX = 12 + tileX*20
             val itemY = 22 + tileY*20
 
+            val isFlashing = tile.isFlashing && showFlashingTiles
             when {
-                tile.isFlashing -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileFlashingColor.asInt)
+                isFlashing -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileFlashingColor.asInt)
                 tile.isAchieved -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileAchievedColor.asInt)
                 tile.progress >= (1/18f) -> context.fill(
                     itemX, itemY + (18 * (1f - tile.progress)).toInt().coerceIn(0, 18),
@@ -179,7 +181,7 @@ class BingoHudRenderer(
                 }
             }
 
-            if (tile.isAchieved && !tile.isFlashing && mouseX == -1 && mouseY == -1) {
+            if (tile.isAchieved && !isFlashing && mouseX == -1 && mouseY == -1) {
                 context.fill(
                     RenderLayer.getGuiOverlay(),
                     itemX,
