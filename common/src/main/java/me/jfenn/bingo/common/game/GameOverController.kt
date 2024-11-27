@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.game
 
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.config.BingoOptions
@@ -15,6 +14,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
@@ -39,7 +39,9 @@ class GameOverController(
     private fun broadcastGameOver(info: GameOverService.GameOverInfo) {
         sequence {
             yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
-            yield(Text.empty().append("  ").append(gameOverService.getMessage(info)))
+            Text.literal("  ")
+                .append(gameOverService.getMessage(info) ?: gameOverService.getTitle(info))
+                .also { yield(it) }
 
             Text.literal("  ")
                 .append(
@@ -117,7 +119,7 @@ class GameOverController(
 
             val packet = GameOverPacket(
                 title = title,
-                subtitle = message,
+                subtitle = message ?: Text.empty(),
                 winner = info.winningTeamKey,
                 duration = state.ingameDuration() ?: Duration.ZERO,
                 canSendRestart = server.isDedicated && state.isLobbyMode && permissions.hasPermission(

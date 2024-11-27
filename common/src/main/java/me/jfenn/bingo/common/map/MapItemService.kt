@@ -2,9 +2,6 @@ package me.jfenn.bingo.common.map
 
 import kotlinx.datetime.format
 import kotlinx.datetime.format.DateTimeComponents
-import me.jfenn.bingo.platform.IMapService
-import me.jfenn.bingo.platform.item.IItemStack
-import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_CARD
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_KEEP
@@ -16,6 +13,9 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IMapService
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -79,15 +79,15 @@ class MapItemService(
                         else -> StringKey.CardTeamCardMementoLost
                     }
                 ).formatted(team.formatting, Formatting.ITALIC),
-                lore = listOf(
+                lore = listOfNotNull(
                     team.getName(textProvider, playerName = true, symbol = true)
                         .copy()
                         .styled { it.withItalic(false) },
                     Text.empty(),
                     gameOverService.getTitle(gameInfo).copy().formatted(Formatting.WHITE),
                     gameOverService.getMessage(gameInfo),
-                    Text.literal(state.ingameDuration()?.formatString() ?: ""),
-                    Text.literal(state.startedAt?.format(timeFormat) ?: "")
+                    state.ingameDuration()?.formatString()?.let { Text.literal(it) },
+                    state.startedAt?.format(timeFormat)?.let { Text.literal(it) },
                 ),
             )
             setHideFlags(255)

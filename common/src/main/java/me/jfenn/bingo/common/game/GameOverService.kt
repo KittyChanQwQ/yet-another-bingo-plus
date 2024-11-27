@@ -9,12 +9,12 @@ import me.jfenn.bingo.common.config.EndWhen
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
-import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -71,10 +71,10 @@ class GameOverService(
             ?: textProvider.string(StringKey.GameEndGameOver)
     }
 
-    fun getMessage(info: GameOverInfo): Text {
+    fun getMessage(info: GameOverInfo): Text? {
         return (
-            Text.empty().takeIf { options.endGameWhen !is EndWhen.FirstWin }
-                ?: info.winningTeamKey?.let { state.teams[it] }?.let { winner ->
+            info.winningTeamKey?.let { state.teams[it] }
+                ?.let { winner ->
                     textProvider.string(StringKey.GameEndCompletedCard, winner.getName(textProvider, playerName = true))
                 }
                 ?: info.leadingTeamKey?.let { leadingTeamKey ->
@@ -88,8 +88,8 @@ class GameOverService(
                         is LeadingTeam.Items -> textProvider.string(StringKey.GameEndWonWithMoreItems, leader)
                     }
                 }
-                ?: textProvider.string(StringKey.GameEndDraw)
-        ).formatted(Formatting.YELLOW)
+                ?: textProvider.string(StringKey.GameEndDraw).takeIf { options.endGameWhen is EndWhen.FirstWin }
+        )?.formatted(Formatting.YELLOW)
     }
 
     fun getGameInfo(reason: GameEndReason?, endedAt: Instant): GameOverInfo {
