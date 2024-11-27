@@ -1,6 +1,6 @@
 package me.jfenn.bingo.integrations.chunky
 
-import me.jfenn.bingo.api.ICommandRunner
+import me.jfenn.bingo.platform.ICommandRunner
 import me.jfenn.bingo.common.config.BingoConfig
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.MinecraftServer

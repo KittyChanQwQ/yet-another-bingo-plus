@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent

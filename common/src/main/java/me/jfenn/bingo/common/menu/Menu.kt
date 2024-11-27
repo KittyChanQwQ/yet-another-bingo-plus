@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.api.ITextDisplayEntity
+import me.jfenn.bingo.platform.ITextDisplayEntity
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
@@ -31,7 +31,7 @@ fun MenuComponent.registerMenu(
         }
     }
 
-    registerEntity(me.jfenn.bingo.api.EntityType.TEXT_DISPLAY) {
+    registerEntity(me.jfenn.bingo.platform.EntityType.TEXT_DISPLAY) {
         pos = position
         this.value = title
         billboard = ITextDisplayEntity.Billboard.FIXED

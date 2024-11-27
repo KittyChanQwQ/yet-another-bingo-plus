@@ -1,8 +1,9 @@
 package me.jfenn.bingo.common.team
 
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
 import me.jfenn.bingo.common.utils.measureTime
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.player.PlayerProfile
 import org.slf4j.Logger
 
 class OfflinePlayerCache(
@@ -10,9 +11,9 @@ class OfflinePlayerCache(
     private val log: Logger,
 ) {
 
-    private val offlinePlayerCache = mutableMapOf<BingoPlayerProfile, IPlayerHandle>()
+    private val offlinePlayerCache = mutableMapOf<PlayerProfile, IPlayerHandle>()
 
-    fun getOfflinePlayer(profile: BingoPlayerProfile): IPlayerHandle {
+    fun getOfflinePlayer(profile: PlayerProfile): IPlayerHandle {
         // If the player is online, return the current player entity
         val onlinePlayer = playerManager.getPlayer(profile.uuid)
         if (onlinePlayer != null) {

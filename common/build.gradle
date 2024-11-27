@@ -10,7 +10,7 @@ import java.util.zip.ZipInputStream
 plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.sqldelight)
-    id 'bingo.mod'
+    id 'bingo.common'
 }
 
 loom.accessWidenerPath = file("src/main/resources/bingo.accesswidener")

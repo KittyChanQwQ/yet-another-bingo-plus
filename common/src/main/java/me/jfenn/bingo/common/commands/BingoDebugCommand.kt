@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.commands
 
 import kotlinx.serialization.encodeToString
-import me.jfenn.bingo.api.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState

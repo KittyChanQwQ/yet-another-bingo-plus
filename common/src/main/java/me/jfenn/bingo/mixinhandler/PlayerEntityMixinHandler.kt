@@ -1,6 +1,6 @@
 package me.jfenn.bingo.mixinhandler
 
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_KEEP
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.ready.ReadyTimerState

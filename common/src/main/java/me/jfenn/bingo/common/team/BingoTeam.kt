@@ -2,18 +2,16 @@ package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IServerWorld
 import me.jfenn.bingo.common.commands.CoordsCommand
-import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.FormattingSerializer
-import me.jfenn.bingo.common.utils.UuidAsString
-import me.jfenn.bingo.common.utils.joinText
+import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.block.BlockPosition
 import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.HoverEvent
@@ -42,11 +40,11 @@ data class BingoTeam(
     var score: TeamScore = TeamScore.ZERO,
     var winner: TeamWinner? = null,
     val completedCards: MutableList<TeamCompletedCard> = mutableListOf(),
-    var spawnpoint: BlockPosition? = null,
-    var chestSpawnpoint: BlockPosition? = null,
+    var spawnpoint: BlockPositionType? = null,
+    var chestSpawnpoint: BlockPositionType? = null,
     val chatCoordinates: MutableList<CoordsCommand.CoordinatesEntry> = mutableListOf(),
     var map: BingoMap? = null,
-    val players: MutableSet<BingoPlayerProfile> = mutableSetOf(),
+    val players: MutableSet<PlayerProfileType> = mutableSetOf(),
 ) {
 
     @Transient

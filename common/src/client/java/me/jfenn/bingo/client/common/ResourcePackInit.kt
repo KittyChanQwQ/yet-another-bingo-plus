@@ -6,7 +6,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.util.Identifier
 import org.slf4j.Logger
 
-class ResourcePackInit(
+internal class ResourcePackInit(
     log: Logger,
 ) {
     companion object {

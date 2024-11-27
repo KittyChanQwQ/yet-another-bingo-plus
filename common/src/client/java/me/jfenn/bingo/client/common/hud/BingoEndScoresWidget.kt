@@ -1,8 +1,8 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.client.api.IDrawService
-import me.jfenn.bingo.client.api.IScrollableWidget
+import me.jfenn.bingo.client.platform.IDrawService
+import me.jfenn.bingo.client.platform.IScrollableWidget
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
@@ -11,7 +11,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.koin.core.Koin
 
-class BingoEndScoresWidget(
+internal class BingoEndScoresWidget(
     koin: Koin,
     private val gameOver: BingoHudState.GameOver,
     private val text: TextProvider = koin.get(),

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.config.PlayerSettingsService

@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.api.IPacketBuf
+import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.event.packet.PacketConverter
+import me.jfenn.bingo.platform.packet.PacketConverter
 import net.minecraft.util.Identifier
 
 class ScoredItemLostPacket {

@@ -4,7 +4,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
-import me.jfenn.bingo.client.api.IDrawService
+import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
@@ -27,7 +27,7 @@ import org.joml.AxisAngle4f
 import org.joml.Quaternionf
 import kotlin.jvm.optionals.getOrNull
 
-class BingoHudRenderer(
+internal class BingoHudRenderer(
     private val text: TextProvider,
     private val hudState: BingoHudState,
 ) {

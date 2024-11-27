@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.api.IEntity
-import me.jfenn.bingo.api.IEntityManager
+import me.jfenn.bingo.platform.IEntity
+import me.jfenn.bingo.platform.IEntityManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos

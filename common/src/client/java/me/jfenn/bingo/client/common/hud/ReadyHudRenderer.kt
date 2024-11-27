@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.common.hud
 
-import me.jfenn.bingo.client.api.IDrawService
+import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
@@ -11,7 +11,7 @@ import net.minecraft.text.Text
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
-class ReadyHudRenderer(
+internal class ReadyHudRenderer(
     private val state: BingoHudState,
     private val text: TextProvider,
 ) {

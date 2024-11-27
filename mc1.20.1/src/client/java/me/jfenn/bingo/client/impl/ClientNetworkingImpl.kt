@@ -1,11 +1,11 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.client.api.ClientPacket
-import me.jfenn.bingo.client.api.IClientNetworking
-import me.jfenn.bingo.client.api.IClientPacketHandlerC2S
-import me.jfenn.bingo.client.api.IClientPacketHandlerS2C
-import me.jfenn.bingo.common.event.packet.PacketConverter
+import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.client.platform.ClientPacket
+import me.jfenn.bingo.client.platform.IClientNetworking
+import me.jfenn.bingo.client.platform.IClientPacketHandlerC2S
+import me.jfenn.bingo.client.platform.IClientPacketHandlerS2C
+import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.impl.PacketBufImpl
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking

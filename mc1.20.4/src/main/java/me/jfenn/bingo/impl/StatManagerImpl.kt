@@ -1,8 +1,8 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IStatHandle
-import me.jfenn.bingo.api.IStatManager
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IStatHandle
+import me.jfenn.bingo.platform.IStatManager
 import net.minecraft.registry.Registries
 import net.minecraft.stat.StatHandler
 import net.minecraft.stat.StatType

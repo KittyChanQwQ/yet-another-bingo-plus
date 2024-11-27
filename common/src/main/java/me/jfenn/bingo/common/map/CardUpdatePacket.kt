@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.api.IPacketBuf
-import me.jfenn.bingo.common.event.packet.PacketConverter
-import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.packet.PacketConverter
+import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -120,7 +120,7 @@ class CardUpdatePacket(
             val teamName = buf.readText()
             val tiles = MutableList(buf.readInt()) { CardTile.V2.fromPacketBuf(buf) }
             val players = MutableList(buf.readInt()) {
-                BingoPlayerProfile(
+                PlayerProfile(
                     uuid = UUID.fromString(buf.readString()),
                     name = buf.readString(),
                 )
@@ -179,7 +179,7 @@ class CardUpdatePacket(
             val teamName = buf.readText()
             val tiles = MutableList(buf.readInt()) { CardTile.V3.fromPacketBuf(buf) }
             val players = MutableList(buf.readInt()) {
-                BingoPlayerProfile(
+                PlayerProfile(
                     uuid = UUID.fromString(buf.readString()),
                     name = buf.readString(),
                 )
@@ -238,7 +238,7 @@ class CardUpdatePacket(
             val teamName = buf.readText()
             val tiles = MutableList(buf.readInt()) { CardTile.V4.fromPacketBuf(buf) }
             val players = MutableList(buf.readInt()) {
-                BingoPlayerProfile(
+                PlayerProfile(
                     uuid = UUID.fromString(buf.readString()),
                     name = buf.readString(),
                 )

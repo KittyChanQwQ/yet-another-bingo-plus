@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.stats
 
-import me.jfenn.bingo.api.IExecutors
-import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.game
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.api.IPacketBuf
+import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.event.packet.PacketConverter
+import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamScore
 import net.minecraft.text.Text

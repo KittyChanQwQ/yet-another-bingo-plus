@@ -1,10 +1,10 @@
 package me.jfenn.bingo.client.impl
 
 import com.mojang.blaze3d.systems.RenderSystem
-import me.jfenn.bingo.api.item.IItemStack
-import me.jfenn.bingo.client.api.IDrawService
-import me.jfenn.bingo.client.api.IDrawServiceFactory
-import me.jfenn.bingo.client.api.INativeImage
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.client.platform.IDrawService
+import me.jfenn.bingo.client.platform.IDrawServiceFactory
+import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.impl.ItemStackFactory
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext

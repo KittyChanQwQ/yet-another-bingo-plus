@@ -2,11 +2,9 @@ package me.jfenn.bingo.common.state
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.api.IMapService
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BingoWinCondition
-import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameOverService
@@ -14,10 +12,13 @@ import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.BlockPositionType
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IMapService
+import me.jfenn.bingo.platform.block.BlockPosition
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -32,7 +33,7 @@ data class BingoState(
     var startedAt: Instant? = null,
     var updatedAt: Instant? = null,
     var endedAt: Instant? = null,
-    var lobbySpawnPos: BlockPosition = BlockPosition(0, 0, 0),
+    var lobbySpawnPos: BlockPositionType = BlockPosition(0, 0, 0),
     var lobbySpawnYaw: Float = 0f,
     var timeOffline: Duration = Duration.ZERO,
     val options: BingoOptions = ConfigService().options,

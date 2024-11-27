@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.client.api.INativeImage
-import me.jfenn.bingo.client.api.INativeImageFactory
+import me.jfenn.bingo.client.platform.INativeImage
+import me.jfenn.bingo.client.platform.INativeImageFactory
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.RenderLayer

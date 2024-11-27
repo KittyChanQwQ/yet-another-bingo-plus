@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.ready
 
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.autorestart.ResetService

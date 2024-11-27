@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam

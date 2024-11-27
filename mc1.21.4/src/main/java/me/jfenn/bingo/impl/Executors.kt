@@ -1,6 +1,6 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IExecutors
+import me.jfenn.bingo.platform.IExecutors
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.ServerTask
 import net.minecraft.util.Util

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.api.IPacketBuf
+import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.event.packet.PacketConverter
-import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.platform.packet.PacketConverter
+import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamScore
 import net.minecraft.util.Formatting
@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier
 import java.util.*
 
 data class ScoredItemPacket(
-    val player: BingoPlayerProfile?,
+    val player: PlayerProfile?,
     val isViewerOnTeam: Boolean,
     val team: BingoTeamKey,
     val teamColor: Formatting,
@@ -23,7 +23,7 @@ data class ScoredItemPacket(
 
         override fun fromPacketBuf(buf: IPacketBuf): ScoredItemPacket {
             return ScoredItemPacket(
-                player = BingoPlayerProfile(
+                player = PlayerProfile(
                     uuid = UUID.fromString(buf.readString()),
                     name = buf.readString(),
                 ),

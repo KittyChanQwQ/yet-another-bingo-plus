@@ -3,8 +3,8 @@ package me.jfenn.bingo.integration.item
 import assertk.assertThat
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.test.BaseGameTest
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest

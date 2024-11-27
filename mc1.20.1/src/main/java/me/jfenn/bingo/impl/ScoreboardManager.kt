@@ -1,9 +1,9 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IObjectiveHandle
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IScoreboardManager
-import me.jfenn.bingo.common.scoreboard.ScoreChange
+import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
+import me.jfenn.bingo.platform.scoreboard.ScoreChange
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket

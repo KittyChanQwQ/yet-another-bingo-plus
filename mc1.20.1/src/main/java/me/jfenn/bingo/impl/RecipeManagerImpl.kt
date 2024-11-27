@@ -1,8 +1,8 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IRecipe
-import me.jfenn.bingo.api.IRecipeManager
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IRecipe
+import me.jfenn.bingo.platform.IRecipeManager
 import net.minecraft.recipe.Recipe
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity

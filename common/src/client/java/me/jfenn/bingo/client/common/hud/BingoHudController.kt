@@ -2,10 +2,10 @@ package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.client.api.ClientPacket
-import me.jfenn.bingo.client.api.IDrawService
-import me.jfenn.bingo.client.api.IHudCallback
-import me.jfenn.bingo.client.api.IOptionsAccessor
+import me.jfenn.bingo.client.platform.ClientPacket
+import me.jfenn.bingo.client.platform.IDrawService
+import me.jfenn.bingo.client.platform.IHudCallback
+import me.jfenn.bingo.client.platform.IOptionsAccessor
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.KEYBIND_TOGGLE_HUD
@@ -33,7 +33,7 @@ import org.koin.core.Koin
 import org.lwjgl.glfw.GLFW
 import kotlin.time.Duration.Companion.milliseconds
 
-class BingoHudController(
+internal class BingoHudController(
     private val koin: Koin,
     private val optionsAccessor: IOptionsAccessor,
     private val configService: ConfigService,

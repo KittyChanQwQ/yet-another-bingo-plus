@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.api.IObjectiveHandle
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IScoreboardManager
+import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
@@ -13,7 +13,7 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MI
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.utils.formatTitle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
@@ -124,7 +124,7 @@ class ScoreboardObjectiveManager(
                 .associate { (team, player) ->
                     val capture = objective.playersHolding[player.uuid] ?: BingoObjectiveCapture(
                         team = team,
-                        player = BingoPlayerProfile.fromPlayer(player),
+                        player = player.profile,
                         instant = now,
                     )
                     player.uuid to capture

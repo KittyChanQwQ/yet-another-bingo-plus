@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.api.commands.ICommandManager
-import me.jfenn.bingo.api.commands.IExecutionContext
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.common.URL_WIKI
 import me.jfenn.bingo.common.config.OptionsService
 import me.jfenn.bingo.common.scope.BingoComponent

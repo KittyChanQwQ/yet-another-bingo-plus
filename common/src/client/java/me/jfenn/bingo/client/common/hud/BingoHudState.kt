@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.client.api.INativeImage
+import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardDisplayPacket
 import me.jfenn.bingo.common.map.CardView
@@ -11,7 +11,7 @@ import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import java.util.concurrent.ConcurrentHashMap
 
-class BingoHudState(
+internal class BingoHudState(
     var display: CardDisplayPacket? = null,
     val views: MutableMap<BingoTeamKey?, CardView> = mutableMapOf(),
     var selectedTeam: BingoTeamKey? = null,

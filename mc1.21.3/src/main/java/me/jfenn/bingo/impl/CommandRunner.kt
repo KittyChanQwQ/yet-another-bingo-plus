@@ -1,6 +1,6 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.ICommandRunner
+import me.jfenn.bingo.platform.ICommandRunner
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandOutput
 import java.util.*

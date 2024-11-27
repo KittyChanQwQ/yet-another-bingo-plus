@@ -1,9 +1,9 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IMapColorService
+import me.jfenn.bingo.platform.IMapColorService
 import net.minecraft.block.MapColor
 
-class MapColorServiceImpl : IMapColorService {
+class MapColorServiceImpl : me.jfenn.bingo.platform.IMapColorService {
     override fun getMapColors(): Map<Byte, Int> {
         return  (4 until 248)
             .associate { i ->

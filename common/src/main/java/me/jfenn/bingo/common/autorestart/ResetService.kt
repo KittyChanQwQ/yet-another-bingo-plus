@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.autorestart
 
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.IServerWorldFactory
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents

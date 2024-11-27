@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common
 
-import me.jfenn.bingo.api.ICloseEvent
+import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.common.autorestart.ResetCommand
 import me.jfenn.bingo.common.autorestart.ResetService
 import me.jfenn.bingo.common.autorestart.RestartOnLeaveController

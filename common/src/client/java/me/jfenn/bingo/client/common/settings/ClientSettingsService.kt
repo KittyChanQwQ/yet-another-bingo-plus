@@ -1,13 +1,13 @@
 package me.jfenn.bingo.client.common.settings
 
-import me.jfenn.bingo.client.api.ISessionAccessor
+import me.jfenn.bingo.client.platform.ISessionAccessor
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.PlayerSettings
 import org.slf4j.Logger
 import java.util.*
 
-class ClientSettingsService(
+internal class ClientSettingsService(
     private val log: Logger,
     private val configService: ConfigService,
     sessionAccessor: ISessionAccessor,

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.impl.block
 
-import me.jfenn.bingo.api.block.IWallSignBlockState
+import me.jfenn.bingo.platform.block.IWallSignBlockState
 import net.minecraft.block.BlockState
 import net.minecraft.block.WallSignBlock
 import org.joml.Vector3i

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IAdvancementHandle
-import me.jfenn.bingo.api.IAdvancementManager
+import me.jfenn.bingo.platform.IAdvancementHandle
+import me.jfenn.bingo.platform.IAdvancementManager
 import net.minecraft.advancement.AdvancementEntry
 import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer

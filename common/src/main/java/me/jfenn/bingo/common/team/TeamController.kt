@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.team
 
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.ITeamManager
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.ITeamManager
 import net.minecraft.server.MinecraftServer
 
 class TeamController(
@@ -31,7 +31,7 @@ class TeamController(
 
                 // If the player has switched teams, update the player UUID sets...
                 // (this is necessary because teams could be changed without us knowing, using /team join)
-                val playerProfile = BingoPlayerProfile.fromPlayer(player)
+                val playerProfile = player.profile
                 val isTeamLeft = state.teams.values
                     .filter { it.key != playerTeam?.key }
                     .any { team ->

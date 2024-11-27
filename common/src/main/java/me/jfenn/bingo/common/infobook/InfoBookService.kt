@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.infobook
 
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IScoreboardManager
-import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.api.item.IWrittenBook
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
+import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.item.IWrittenBook
 import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.commands.BingoPrefsCommand
 import me.jfenn.bingo.common.config.BingoConfig

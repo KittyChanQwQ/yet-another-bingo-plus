@@ -1,8 +1,8 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IPacketBuf
-import me.jfenn.bingo.api.item.IItemStack
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.Text
 

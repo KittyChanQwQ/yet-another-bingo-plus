@@ -1,94 +1,47 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm"
-    id "fabric-loom"
-}
-
-version = project.mod_version + "+" + project.name
-group = project.maven_group + "-" + project.name
-
-base {
-    archivesName = project.archives_base_name
-}
-
-tasks.withType(AbstractArchiveTask).configureEach {
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
+    id "bingo.common"
 }
 
 sourceSets {
     testmod {
-        if (!project.name.equals("common")) {
-            java.srcDirs += [project(":common").sourceSets.testmod.java]
-            resources.srcDirs += [project(":common").sourceSets.testmod.resources]
-        }
-
-        compileClasspath += main.compileClasspath
-        runtimeClasspath += main.runtimeClasspath
-        compileClasspath += main.output
-        runtimeClasspath += main.output
+        java.srcDirs += [project(":common").sourceSets.testmod.java]
+        resources.srcDirs += [project(":common").sourceSets.testmod.resources]
     }
 }
 
 loom {
-    splitEnvironmentSourceSets()
+    runs {
+        gametestServer {
+            server()
+            source sourceSets.testmod
 
-    mods {
-        "${group}" {
-            sourceSet sourceSets.main
-            sourceSet sourceSets.client
+            name "Game Test"
+
+            // Enable the gametest runner
+            vmArg "-Dfabric-api.gametest"
+            vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get()}/junit.xml"
+            runDir "build/gametest"
         }
     }
-
-    if (!project.name.equals("common")) {
-        runs {
-            gametestServer {
-                server()
-                source sourceSets.testmod
-
-                name "Game Test"
-
-                // Enable the gametest runner
-                vmArg "-Dfabric-api.gametest"
-                vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get()}/junit.xml"
-                runDir "build/gametest"
-            }
-        }
-    }
-
-    log4jConfigs.from file("../buildSrc/src/main/resources/log4j-debug.xml")
 }
 
 dependencies {
-    compileOnly libs.mockk
-    testmodImplementation libs.mockk
-    compileOnly libs.assertk
-    testmodImplementation libs.assertk
+    implementation libs.insert.koin.core
+    include libs.insert.koin.core
+    implementation libs.insert.koin.logger.slf4j
+    include libs.insert.koin.logger.slf4j
 
-    // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    include libs.hikari
+    include libs.flyway.core
+    // jackson-databind is a runtime dependency for flyway
+    include libs.jackson.core
+    include libs.jackson.databind
+    include libs.jackson.annotations
+    include libs.sqldelight.jdbc
+    include libs.sqldelight.runtime
+    include libs.sqlite
 
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    api libs.hikari
-    api libs.flyway.core
-    api libs.sqldelight.jdbc
-    api libs.sqlite
-    if (!project.name.equals("common")) {
-        include libs.hikari
-        include libs.flyway.core
-        // jackson-databind is a runtime dependency for flyway
-        include libs.jackson.core
-        include libs.jackson.databind
-        include libs.jackson.annotations
-        include libs.sqldelight.jdbc
-        include libs.sqldelight.runtime
-        include libs.sqlite
-    }
-
-    modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
+    include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
 
     def fabricPermissionsApi
     if (project.name.compareTo("mc1.21.2") < 0) {
@@ -97,65 +50,17 @@ dependencies {
         fabricPermissionsApi = libs.fabric.permissions.api.v3.get()
     }
 
-    if (!project.name.equals("common")) {
-        include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
+    modImplementation fabricPermissionsApi
+    include fabricPermissionsApi
 
-        modImplementation fabricPermissionsApi
-        include fabricPermissionsApi
-    } else {
-        modCompileOnly fabricPermissionsApi
-    }
+    api project(path: ":common", configuration: "namedElements")
+    include project(path: ":common")
 }
 
-def projectVersion = project.version.toString()
 processResources {
-    inputs.property "version", projectVersion
-
-    filesMatching("fabric.mod.json") {
-        expand "version": projectVersion
+    from("../common/src/main/resources") {
+        include "yet-another-minecraft-bingo/icon.png"
     }
 }
 
-def javaVersion = 17
-if (project.name.toString() == "common" || project.name.toString() == "mc1.20.1" || project.name.toString() == "mc1.20.2" || project.name.toString() == "mc1.20.4") {
-    // Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-    javaVersion = 17
-} else {
-    // Minecraft 1.20.5 upwards uses Java 21
-    javaVersion = 21
-}
-println("Using Java version $javaVersion")
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.release = javaVersion
-}
-
-java {
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-
-    if (javaVersion == 17) {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    } else {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-}
-
-if (!project.name.equals("common")) {
-    tasks.test.dependsOn tasks.runGametestServer
-}
-
-def archivesBaseName = project.archives_base_name.toString()
-jar {
-    from("LICENSE") {
-        rename { "${it}_${archivesBaseName}"}
-    }
-}
-
-kotlin {
-    jvmToolchain(javaVersion)
-}
+tasks.test.dependsOn tasks.runGametestServer

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.impl.block
 
-import me.jfenn.bingo.api.block.IBlockState
+import me.jfenn.bingo.platform.block.IBlockState
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.WallSignBlock

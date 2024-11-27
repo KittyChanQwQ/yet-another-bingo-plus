@@ -1,11 +1,11 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IServerNetworking
-import me.jfenn.bingo.api.IServerPacketHandlerC2S
-import me.jfenn.bingo.api.IServerPacketHandlerS2C
-import me.jfenn.bingo.api.ServerPacket
-import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.event.packet.PacketConverter
+import me.jfenn.bingo.platform.packet.IServerNetworking
+import me.jfenn.bingo.platform.packet.IServerPacketHandlerC2S
+import me.jfenn.bingo.platform.packet.IServerPacketHandlerS2C
+import me.jfenn.bingo.platform.packet.ServerPacket
+import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.common.utils.EventListener
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking

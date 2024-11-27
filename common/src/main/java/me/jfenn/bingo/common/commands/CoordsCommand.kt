@@ -3,17 +3,17 @@ package me.jfenn.bingo.common.commands
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.commands.ICommandManager
-import me.jfenn.bingo.api.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.utils.BlockPositionType
 import me.jfenn.bingo.common.utils.formatStringSmall
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -24,7 +24,7 @@ class CoordsCommand(
     @Serializable
     data class CoordinatesEntry(
         val player: String,
-        val pos: BlockPosition,
+        val pos: BlockPositionType,
         val dimension: String,
         val message: String?,
         val created: Instant,

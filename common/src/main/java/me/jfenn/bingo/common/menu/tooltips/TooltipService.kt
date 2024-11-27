@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.menu.tooltips
 
-import me.jfenn.bingo.api.IEntity
+import me.jfenn.bingo.platform.IEntity
 import net.minecraft.text.Text
 import java.util.*
 

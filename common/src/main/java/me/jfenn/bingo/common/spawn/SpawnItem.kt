@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.spawn
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.api.item.IItemStack
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import org.slf4j.LoggerFactory
 
 @Serializable

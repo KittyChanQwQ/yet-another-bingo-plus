@@ -7,7 +7,7 @@ import mezz.jei.api.runtime.IJeiRuntime
 import net.minecraft.util.Identifier
 
 @JeiPlugin
-object JeiEntrypoint : IModPlugin {
+internal object JeiEntrypoint : IModPlugin {
 
     private val IDENTIFIER = Identifier.of(MOD_ID, "yet-another-minecraft-bingo")!!
 

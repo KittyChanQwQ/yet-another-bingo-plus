@@ -1,14 +1,14 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IServerPacketHandlerC2S
-import me.jfenn.bingo.api.ServerPacket
-import me.jfenn.bingo.api.item.IItemStack
-import me.jfenn.bingo.common.event.model.*
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.common.utils.ReturnEventListener
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.event.model.*
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.packet.IServerPacketHandlerC2S
+import me.jfenn.bingo.platform.packet.ServerPacket
 import net.minecraft.entity.Entity
 import net.minecraft.server.world.ServerWorld
 import org.koin.core.scope.Scope
@@ -29,11 +29,11 @@ class ScopedEvents(
     val onPlayerChannelRegister = EventListener<IPlayerHandle>()
 
     val onEntityLoad = EventListener<Pair<Entity, ServerWorld>>()
-    val onUseBlock = ReturnEventListener<UseBlockEvent, ActionResult<Unit>?>()
-    val onUseEntity = ReturnEventListener<UseEntityEvent, ActionResult<Unit>?>()
-    val onUseItem = ReturnEventListener<UseItemEvent, ActionResult<IItemStack?>?>()
-    val onAttackEntity = ReturnEventListener<AttackEntityEvent, ActionResult<Unit>?>()
-    val onAttackBlock = ReturnEventListener<AttackBlockEvent, ActionResult<Unit>?>()
+    val onUseBlock = ReturnEventListener<UseBlockEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>?>()
+    val onUseEntity = ReturnEventListener<UseEntityEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>?>()
+    val onUseItem = ReturnEventListener<UseItemEvent, me.jfenn.bingo.platform.event.model.ActionResult<IItemStack?>?>()
+    val onAttackEntity = ReturnEventListener<AttackEntityEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>?>()
+    val onAttackBlock = ReturnEventListener<me.jfenn.bingo.platform.event.model.AttackBlockEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>?>()
 
     val onStateChange = EventListener<Pair<GameState, GameState>>()
 
@@ -64,8 +64,8 @@ class ScopedEvents(
     }
 
     fun <T> onPacket(packet: IServerPacketHandlerC2S<T>, callback: (ServerPacket<T>) -> Unit) {
-        packet.onPacket(callback)
-        onClose { packet.onPacket.unregister(callback) }
+        val handle = packet.onPacket(callback)
+        onClose { packet.onPacket.unregister(handle) }
     }
 
     override fun onScopeClose(scope: Scope) {

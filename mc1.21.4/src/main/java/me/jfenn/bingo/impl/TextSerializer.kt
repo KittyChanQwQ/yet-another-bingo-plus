@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import com.mojang.serialization.JsonOps
-import me.jfenn.bingo.api.ITextSerializer
+import me.jfenn.bingo.platform.ITextSerializer
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.text.TextCodecs

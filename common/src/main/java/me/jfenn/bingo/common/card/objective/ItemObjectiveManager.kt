@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.api.item.IItemStack
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
@@ -13,7 +13,7 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MI
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.math.max
@@ -195,7 +195,7 @@ class ItemObjectiveManager(
                 if (!objective.playersHolding.containsKey(player.uuid)) {
                     objective.playersHolding[player.uuid] = BingoObjectiveCapture(
                         team = team.key,
-                        player = BingoPlayerProfile.fromPlayer(player),
+                        player = player.profile,
                         instant = now,
                     )
                 }

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.team
 
-import me.jfenn.bingo.api.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.api.EntityType
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.ITextDisplayEntity
+import me.jfenn.bingo.platform.EntityType
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.ITextDisplayEntity
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.menu.tooltips.TooltipService

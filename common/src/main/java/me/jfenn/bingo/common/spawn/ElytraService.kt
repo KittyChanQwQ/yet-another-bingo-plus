@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_KEEP
 import me.jfenn.bingo.common.NBT_BINGO_VANISH

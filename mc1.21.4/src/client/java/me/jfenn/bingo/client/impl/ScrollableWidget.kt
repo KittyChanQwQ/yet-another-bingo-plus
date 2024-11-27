@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.client.api.IScrollableWidget
-import me.jfenn.bingo.client.api.IScrollableWidgetFactory
+import me.jfenn.bingo.client.platform.IScrollableWidget
+import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.text.Text

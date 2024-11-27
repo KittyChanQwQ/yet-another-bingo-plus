@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.data
 
-import me.jfenn.bingo.api.IExecutors
+import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.utils.measureTime
 import net.minecraft.server.MinecraftServer

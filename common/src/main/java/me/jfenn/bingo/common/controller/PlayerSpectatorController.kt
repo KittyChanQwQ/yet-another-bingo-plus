@@ -2,13 +2,13 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spectator.SpectatorInventoryScreenHandler
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.event.model.ActionResult
 import net.minecraft.block.*
 import net.minecraft.entity.vehicle.ChestBoatEntity
 import net.minecraft.entity.vehicle.ChestMinecartEntity
@@ -89,7 +89,7 @@ class PlayerSpectatorController(
                 )
             }
 
-            ActionResult.Fail(Unit)
+            me.jfenn.bingo.platform.event.model.ActionResult.Fail(Unit)
         }
 
         events.onUseEntity {
@@ -103,9 +103,11 @@ class PlayerSpectatorController(
             // allow them to modify any inventory
 
             // if the interacted entity has an inventory, open it as read-only...
-            val inventory: Inventory? = when (it.entity) {
-                is ChestMinecartEntity -> it.entity
-                is ChestBoatEntity -> it.entity
+            val inventory: Inventory? = when (
+                val entity = it.entity
+            ) {
+                is ChestMinecartEntity -> entity
+                is ChestBoatEntity -> entity
                 else -> null
             }
 
@@ -129,7 +131,7 @@ class PlayerSpectatorController(
                 )
             }
 
-            ActionResult.Fail(Unit)
+            me.jfenn.bingo.platform.event.model.ActionResult.Fail(Unit)
         }
 
         events.onAttackEntity {
@@ -142,7 +144,7 @@ class PlayerSpectatorController(
             // if the player is spectating a game, do not
             // allow them to attack any entity
 
-            ActionResult.Fail(Unit)
+            me.jfenn.bingo.platform.event.model.ActionResult.Fail(Unit)
         }
     }
 

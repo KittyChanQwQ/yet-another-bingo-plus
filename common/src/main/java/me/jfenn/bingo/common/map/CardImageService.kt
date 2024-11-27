@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState

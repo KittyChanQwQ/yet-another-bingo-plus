@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.IExecutors
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IServerWorldFactory
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam

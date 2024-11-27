@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.controller
 
-import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.model.ActionResult
+import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -55,7 +55,7 @@ class LobbyChaosController(
             if (shouldPreventLobbyChaos(player)) {
                 val blockState = player.player.world.getBlockState(it.hit.blockPos)
                 if (blockState.block == Blocks.BREWING_STAND)
-                    return@onUseBlock ActionResult.Fail(Unit)
+                    return@onUseBlock me.jfenn.bingo.platform.event.model.ActionResult.Fail(Unit)
             }
 
             null

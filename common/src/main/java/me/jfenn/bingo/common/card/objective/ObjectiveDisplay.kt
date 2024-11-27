@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.card.objective
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.common.map.CardTile
 import net.minecraft.text.Text
 

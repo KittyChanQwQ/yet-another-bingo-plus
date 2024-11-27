@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.common
 
-import me.jfenn.bingo.api.ICloseEvent
+import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.client.common.hud.*
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.settings.ClientSettingsController

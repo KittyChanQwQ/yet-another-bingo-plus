@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.api.IObjectiveHandle
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IScoreboardManager
-import me.jfenn.bingo.api.ITextSerializer
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
+import me.jfenn.bingo.platform.ITextSerializer
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
@@ -13,6 +13,7 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.scoreboard.ScoreChange
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text

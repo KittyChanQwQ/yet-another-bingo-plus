@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoreboard
 
+import me.jfenn.bingo.platform.scoreboard.ScoreChange
 import net.minecraft.text.Text
 import java.util.*
 

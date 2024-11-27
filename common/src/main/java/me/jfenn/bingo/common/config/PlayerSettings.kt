@@ -2,8 +2,8 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
-import me.jfenn.bingo.api.IPacketBuf
-import me.jfenn.bingo.common.event.packet.PacketConverter
+import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.common.utils.json
 import net.minecraft.util.Identifier
 

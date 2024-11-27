@@ -4,7 +4,7 @@ import com.mojang.brigadier.StringReader
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
-import me.jfenn.bingo.api.IPersistentStateManager
+import me.jfenn.bingo.platform.IPersistentStateManager
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.StringNbtReader
 import net.minecraft.registry.RegistryWrapper

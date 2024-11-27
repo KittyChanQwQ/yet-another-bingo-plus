@@ -1,0 +1,109 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+    id "fabric-loom"
+}
+
+version = project.mod_version + "+" + project.name
+group = project.maven_group + "-" + project.name
+
+base {
+    archivesName = project.archives_base_name
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+sourceSets {
+    testmod {
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.runtimeClasspath
+        compileClasspath += main.output
+        runtimeClasspath += main.output
+    }
+}
+
+loom {
+    splitEnvironmentSourceSets()
+
+    mods {
+        "${group}" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+
+    log4jConfigs.from file("../buildSrc/src/main/resources/log4j-debug.xml")
+}
+
+dependencies {
+    compileOnly libs.mockk
+    testmodImplementation libs.mockk
+    compileOnly libs.assertk
+    testmodImplementation libs.assertk
+
+    // To change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // Fabric API. This is technically optional, but you probably want it anyway.
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    api libs.hikari
+    api libs.flyway.core
+    api libs.sqldelight.jdbc
+    api libs.sqlite
+
+    modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
+
+    if (project.name.equals("common")) {
+        modCompileOnly libs.fabric.permissions.api.v2.get()
+    }
+}
+
+def projectVersion = project.version.toString()
+processResources {
+    inputs.property "version", projectVersion
+
+    filesMatching("fabric.mod.json") {
+        expand "version": projectVersion
+    }
+}
+
+java {
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
+}
+
+int javaVersion = 21
+if (project.properties.containsKey("java_compat")) {
+    javaVersion = project.java_compat as Integer
+}
+println("Using Java version $javaVersion")
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = javaVersion
+}
+
+java {
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
+
+    if (javaVersion == 17) {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    } else {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+}
+
+kotlin {
+    jvmToolchain(javaVersion)
+}

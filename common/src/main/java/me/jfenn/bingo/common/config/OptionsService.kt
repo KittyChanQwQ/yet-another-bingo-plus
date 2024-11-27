@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.config
 
-import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.commands.BingoOptionsCommands

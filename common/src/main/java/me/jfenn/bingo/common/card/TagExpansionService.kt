@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.card
 
-import me.jfenn.bingo.api.ITagAccessor
+import me.jfenn.bingo.platform.ITagAccessor
 import org.slf4j.Logger
 
 class TagExpansionService(

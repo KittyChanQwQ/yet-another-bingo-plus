@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier
 import kotlin.reflect.KProperty1
 
 @Serializable
-data class BingoCardColors(
+internal data class BingoCardColors(
     val default: Team = Team(),
     val teams: Map<String, Team> = emptyMap(),
 ) {

@@ -7,7 +7,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import io.mockk.mockk
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.api.ICloseEvent
+import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.stats.data.GameInfo

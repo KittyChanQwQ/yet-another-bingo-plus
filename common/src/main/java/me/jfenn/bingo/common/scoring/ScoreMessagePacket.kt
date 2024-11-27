@@ -1,16 +1,16 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.api.IPacketBuf
-import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.event.packet.PacketConverter
-import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.platform.packet.PacketConverter
+import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import java.util.*
 
 data class ScoreMessagePacket(
-    val player: BingoPlayerProfile?,
+    val player: PlayerProfile?,
     val isViewerOnTeam: Boolean,
     val item: IItemStack?,
     val image: String? = null,
@@ -52,7 +52,7 @@ data class ScoreMessagePacket(
         override fun fromPacketBuf(buf: IPacketBuf): ScoreMessagePacket {
             return ScoreMessagePacket(
                 player = if (buf.readBoolean()) {
-                    BingoPlayerProfile(
+                    PlayerProfile(
                         uuid = UUID.fromString(buf.readString()),
                         name = buf.readString(),
                     )
@@ -90,7 +90,7 @@ data class ScoreMessagePacket(
         override fun fromPacketBuf(buf: IPacketBuf): ScoreMessagePacket {
             return ScoreMessagePacket(
                 player = buf.readNullable {
-                    BingoPlayerProfile(
+                    PlayerProfile(
                         uuid = UUID.fromString(buf.readString()),
                         name = buf.readString(),
                     )

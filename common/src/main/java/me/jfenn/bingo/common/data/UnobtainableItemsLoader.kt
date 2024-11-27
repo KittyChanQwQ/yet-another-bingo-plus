@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.data
 
-import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager

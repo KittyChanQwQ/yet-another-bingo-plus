@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.api.IServerEvents
-import me.jfenn.bingo.common.event.model.ActionResult
+import me.jfenn.bingo.platform.IServerEvents
+import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
 import net.minecraft.server.MinecraftServer
@@ -66,35 +66,35 @@ class EventManager(
             val results = getEvents(event.server)?.onUseBlock?.invoke(event)
                 ?: emptyList()
 
-            ActionResult.collapse(results) ?: ActionResult.Pass(Unit)
+            me.jfenn.bingo.platform.event.model.ActionResult.collapse(results) ?: me.jfenn.bingo.platform.event.model.ActionResult.Pass(Unit)
         }
 
         serverEvents.onUseEntity { event ->
             val results = getEvents(event.server)?.onUseEntity?.invoke(event)
                 ?: emptyList()
 
-            ActionResult.collapse(results) ?: ActionResult.Pass(Unit)
+            me.jfenn.bingo.platform.event.model.ActionResult.collapse(results) ?: me.jfenn.bingo.platform.event.model.ActionResult.Pass(Unit)
         }
 
         serverEvents.onUseItem { event ->
             val results = getEvents(event.server)?.onUseItem?.invoke(event)
                 ?: emptyList()
 
-            ActionResult.collapse(results) ?: ActionResult.Pass(null)
+            me.jfenn.bingo.platform.event.model.ActionResult.collapse(results) ?: me.jfenn.bingo.platform.event.model.ActionResult.Pass(null)
         }
 
         serverEvents.onAttackEntity { event ->
             val results = getEvents(event.server)?.onAttackEntity?.invoke(event)
                 ?: emptyList()
 
-            ActionResult.collapse(results) ?: ActionResult.Pass(Unit)
+            me.jfenn.bingo.platform.event.model.ActionResult.collapse(results) ?: me.jfenn.bingo.platform.event.model.ActionResult.Pass(Unit)
         }
 
         serverEvents.onAttackBlock { event ->
             val results = getEvents(event.server)?.onAttackBlock?.invoke(event)
                 ?: emptyList()
 
-            ActionResult.collapse(results) ?: ActionResult.Pass(Unit)
+            me.jfenn.bingo.platform.event.model.ActionResult.collapse(results) ?: me.jfenn.bingo.platform.event.model.ActionResult.Pass(Unit)
         }
 
         serverEvents.onPlayerChannelRegister { event ->

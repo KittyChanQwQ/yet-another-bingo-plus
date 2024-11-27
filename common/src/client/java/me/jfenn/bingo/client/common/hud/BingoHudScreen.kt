@@ -10,7 +10,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import org.koin.core.Koin
 
-class BingoHudScreen(
+internal class BingoHudScreen(
     koin: Koin,
     text: TextProvider = koin.get(),
     private val config: BingoConfig = koin.get(),

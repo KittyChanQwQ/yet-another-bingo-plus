@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.api.IMapColorService
+import me.jfenn.bingo.platform.IMapColorService
 import kotlin.math.pow
 
 fun rgb(r: Int, g: Int, b: Int): Int {
@@ -217,7 +217,7 @@ fun Int.colorDistanceEuclidian(other: Int): Double {
 }*/
 
 class MapColors(
-    mapService: IMapColorService,
+    mapService: me.jfenn.bingo.platform.IMapColorService,
 ) {
     companion object {
         var mapColors = mapOf<Byte, Int>()

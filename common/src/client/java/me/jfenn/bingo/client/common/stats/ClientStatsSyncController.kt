@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.common.stats
 
-import me.jfenn.bingo.api.IExecutors
-import me.jfenn.bingo.client.api.ISessionAccessor
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.client.platform.ISessionAccessor
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -15,7 +15,7 @@ import java.net.NetworkInterface
 import java.util.*
 import kotlin.random.Random
 
-class ClientStatsSyncController(
+internal class ClientStatsSyncController(
     private val log: Logger,
     private val config: BingoConfig,
     private val packets: ClientPacketEvents,

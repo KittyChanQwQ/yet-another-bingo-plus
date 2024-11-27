@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.lobby
 
-import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.URL_WIKI_GETTING_STARTED
 import me.jfenn.bingo.common.URL_WIKI_SERVER_SETUP

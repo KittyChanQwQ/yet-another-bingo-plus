@@ -4,7 +4,7 @@ import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents
 import org.slf4j.Logger
 
-class ClientSettingsController(
+internal class ClientSettingsController(
     private val log: Logger,
     private val clientSettings: ClientSettingsService,
     private val packetEvents: ClientPacketEvents,

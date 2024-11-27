@@ -6,13 +6,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.encodeToString
-import me.jfenn.bingo.api.IAdvancementHandle
-import me.jfenn.bingo.api.IObjectiveHandle
-import me.jfenn.bingo.api.IStatHandle
-import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.platform.IAdvancementHandle
+import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
+import me.jfenn.bingo.platform.IStatHandle
+import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.data.ObjectiveData
-import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
@@ -51,7 +51,7 @@ sealed class BingoObjective {
 
     open val conflictsWithObjectives get() = (data?.conflictsWith ?: emptySet()) + id
 
-    open fun hasAchieved(player: BingoPlayerProfile): Boolean = players.containsKey(player.uuid)
+    open fun hasAchieved(player: PlayerProfile): Boolean = players.containsKey(player.uuid)
     open fun hasAchieved(team: BingoTeamKey): Boolean = teamsAchieved.containsKey(team)
 
     open fun hasAnyAchieved() = teamsAchieved.isNotEmpty()
@@ -138,7 +138,7 @@ sealed class BingoObjective {
             )
 
         override fun hasAnyAchieved(): Boolean = true
-        override fun hasAchieved(player: BingoPlayerProfile): Boolean = true
+        override fun hasAchieved(player: PlayerProfile): Boolean = true
         override fun hasAchieved(team: BingoTeamKey): Boolean = true
         override fun isFlashing(team: BingoTeamKey?, duration: Duration): Boolean = false
     }

@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.api.IPacketBuf
+import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.event.packet.PacketConverter
+import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.common.utils.text.TextColor
 import net.minecraft.util.Identifier
 

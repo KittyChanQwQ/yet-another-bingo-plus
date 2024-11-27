@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.stats
 
 import app.cash.sqldelight.driver.jdbc.asJdbcDriver
 import com.zaxxer.hikari.HikariDataSource
-import me.jfenn.bingo.api.ICloseEvent
+import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.utils.measureTime

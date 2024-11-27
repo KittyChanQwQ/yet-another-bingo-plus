@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.common.world
 
-import me.jfenn.bingo.client.api.IButtonService
-import me.jfenn.bingo.client.api.IWorldService
+import me.jfenn.bingo.client.platform.IButtonService
+import me.jfenn.bingo.client.platform.IWorldService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
@@ -14,7 +14,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
-class BingoWorldManager(
+internal class BingoWorldManager(
     private val buttonService: IButtonService,
     private val worldService: IWorldService,
     private val config: BingoConfig,

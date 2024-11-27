@@ -13,7 +13,7 @@ import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 
-class BingoEndFireworkRenderer(
+internal class BingoEndFireworkRenderer(
     private val startedAt: Instant = Clock.System.now(),
     private var range: Int = 500,
 ) {

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.world
 
-import me.jfenn.bingo.client.api.IWorldService
+import me.jfenn.bingo.client.platform.IWorldService
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey

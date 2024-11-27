@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import net.minecraft.block.Blocks

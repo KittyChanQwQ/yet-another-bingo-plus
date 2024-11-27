@@ -3,7 +3,7 @@ package me.jfenn.bingo.integrations.voice
 import de.maxhenkel.voicechat.api.Group
 import de.maxhenkel.voicechat.api.VoicechatServerApi
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.config.BingoConfig
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger

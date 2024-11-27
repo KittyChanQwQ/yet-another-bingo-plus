@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.timer
 
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.team.TeamService

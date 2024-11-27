@@ -2,9 +2,9 @@ package me.jfenn.bingo.common.map
 
 import kotlinx.datetime.format
 import kotlinx.datetime.format.DateTimeComponents
-import me.jfenn.bingo.api.IMapService
-import me.jfenn.bingo.api.item.IItemStack
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.IMapService
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_CARD
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_KEEP

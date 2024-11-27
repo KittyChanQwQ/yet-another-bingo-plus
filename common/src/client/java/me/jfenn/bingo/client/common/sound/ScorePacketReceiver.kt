@@ -1,10 +1,10 @@
 package me.jfenn.bingo.client.common.sound
 
-import me.jfenn.bingo.client.api.ClientPacket
+import me.jfenn.bingo.client.platform.ClientPacket
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.game.GameOverPacket
 
-class ScorePacketReceiver(
+internal class ScorePacketReceiver(
     clientPacketEvents: ClientPacketEvents,
     private val soundService: SoundService,
 ) {

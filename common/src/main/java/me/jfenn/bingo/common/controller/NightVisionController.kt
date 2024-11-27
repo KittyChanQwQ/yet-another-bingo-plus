@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.controller
 
-import me.jfenn.bingo.api.EffectType
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.platform.EffectType
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.ready
 
-import me.jfenn.bingo.api.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.ICommandManager
 
 class ReadyCommand(
     commandManager: ICommandManager,

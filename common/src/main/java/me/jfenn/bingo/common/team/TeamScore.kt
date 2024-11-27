@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.api.IPacketBuf
+import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.event.packet.PacketConverter
+import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
 import net.minecraft.text.Text

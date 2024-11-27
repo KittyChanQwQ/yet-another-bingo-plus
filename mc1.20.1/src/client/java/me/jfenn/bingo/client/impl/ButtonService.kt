@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.client.api.IButtonService
+import me.jfenn.bingo.client.platform.IButtonService
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget

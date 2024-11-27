@@ -1,11 +1,11 @@
 package me.jfenn.bingo.common.scope
 
-import me.jfenn.bingo.api.IPersistentStateManager
+import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.model.ReloadEvent
+import me.jfenn.bingo.platform.event.model.ReloadEvent
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState

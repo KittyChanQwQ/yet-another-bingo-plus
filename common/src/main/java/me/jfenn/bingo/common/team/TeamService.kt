@@ -1,11 +1,11 @@
 package me.jfenn.bingo.common.team
 
-import me.jfenn.bingo.api.*
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.*
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
@@ -60,7 +60,7 @@ class TeamService(
     fun joinTeam(player: IPlayerHandle, teamTemplate: BingoTeam) {
         if (getPlayerTeam(player)?.key == teamTemplate.key) return
         val team = state.registerTeam(teamTemplate)
-        val playerProfile = BingoPlayerProfile.fromPlayer(player)
+        val playerProfile = player.profile
 
         // Remove player from their existing team
         getPlayerTeam(player)?.players?.remove(playerProfile)

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.client.api.ISessionAccessor
+import me.jfenn.bingo.client.platform.ISessionAccessor
 import net.minecraft.client.MinecraftClient
 import java.util.*
 

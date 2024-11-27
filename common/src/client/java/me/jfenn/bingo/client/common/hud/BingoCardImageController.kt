@@ -1,14 +1,14 @@
 package me.jfenn.bingo.client.common.hud
 
-import me.jfenn.bingo.client.api.ClientPacket
-import me.jfenn.bingo.client.api.INativeImageFactory
+import me.jfenn.bingo.client.platform.ClientPacket
+import me.jfenn.bingo.client.platform.INativeImageFactory
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.map.CardImagePacket
 import org.slf4j.Logger
 import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
 
-class BingoCardImageController(
+internal class BingoCardImageController(
     private val log: Logger,
     private val nativeImageFactory: INativeImageFactory,
     private val hudState: BingoHudState,

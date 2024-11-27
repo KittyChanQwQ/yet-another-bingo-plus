@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.serialization.encodeToString
-import me.jfenn.bingo.api.ITextSerializer
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.ITextSerializer
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting

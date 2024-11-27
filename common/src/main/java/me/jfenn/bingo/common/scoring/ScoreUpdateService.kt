@@ -1,16 +1,16 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.PlayerSoundCategory
-import me.jfenn.bingo.api.PlayerSoundEvent
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.PlayerSoundCategory
+import me.jfenn.bingo.platform.PlayerSoundEvent
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.text.TextProvider
@@ -52,7 +52,7 @@ class ScoreUpdateService(
     }
 
     fun sendItemCaptured(
-        scoredPlayer: BingoPlayerProfile?,
+        scoredPlayer: PlayerProfile?,
         team: BingoTeam,
         objective: BingoObjective,
         card: BingoCard,

@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.api.IMapService
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
+import me.jfenn.bingo.platform.IMapService
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry

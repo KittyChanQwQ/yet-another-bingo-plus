@@ -1,9 +1,9 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.client.api.ITabsWidget
-import me.jfenn.bingo.client.api.ITabsWidgetFactory
+import me.jfenn.bingo.client.platform.ITabsWidget
+import me.jfenn.bingo.client.platform.ITabsWidgetFactory
 import me.jfenn.bingo.common.utils.EventListener
-import me.jfenn.bingo.common.utils.IEventListener
+import me.jfenn.bingo.platform.utils.IEventListener
 import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.tab.Tab
 import net.minecraft.client.gui.tab.TabManager

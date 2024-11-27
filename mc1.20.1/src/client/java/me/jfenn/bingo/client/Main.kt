@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client
 
-import me.jfenn.bingo.client.api.*
+import me.jfenn.bingo.client.platform.*
 import me.jfenn.bingo.client.common.commonClientModule
 import me.jfenn.bingo.client.impl.*
 import me.jfenn.bingo.client.world.BingoWorldController

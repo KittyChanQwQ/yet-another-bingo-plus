@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.common.packet
 
-import me.jfenn.bingo.client.api.IClientNetworking
+import me.jfenn.bingo.client.platform.IClientNetworking
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardDisplayPacket
@@ -19,7 +19,7 @@ import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
 import me.jfenn.bingo.common.timer.CountdownPacket
 import me.jfenn.bingo.common.timer.TimerPacket
 
-class ClientPacketEvents(
+internal class ClientPacketEvents(
     clientNetworking: IClientNetworking,
 ) {
 

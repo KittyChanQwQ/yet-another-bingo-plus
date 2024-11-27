@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.IScoreboardManager
-import me.jfenn.bingo.api.commands.ICommandManager
-import me.jfenn.bingo.api.commands.IExecutionContext
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState

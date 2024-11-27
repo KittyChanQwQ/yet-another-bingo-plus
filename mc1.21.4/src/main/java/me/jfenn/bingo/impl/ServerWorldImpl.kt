@@ -1,10 +1,10 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.IServerWorld
-import me.jfenn.bingo.api.IServerWorldFactory
-import me.jfenn.bingo.api.block.IBlockState
+import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.block.IBlockState
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.impl.block.BlockStateImpl
 import me.jfenn.bingo.mixin.LevelPropertiesAccessor
 import me.jfenn.bingo.mixin.ServerChunkLoadingManagerAccessor

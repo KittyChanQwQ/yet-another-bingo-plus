@@ -1,16 +1,11 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.api.*
-import me.jfenn.bingo.api.block.IWallSignBlockState
-import me.jfenn.bingo.api.particle.IParticleFactory
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.common.config.BlockPosition
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
-import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.state.BingoState
@@ -22,6 +17,10 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.*
+import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.block.IWallSignBlockState
+import me.jfenn.bingo.platform.particle.IParticleFactory
 import net.minecraft.block.Blocks
 import net.minecraft.block.PlayerSkullBlock
 import net.minecraft.server.MinecraftServer
@@ -53,8 +52,8 @@ class MenuController(
     private val teamService: TeamService,
     private val text: TextProvider,
     private val playerManager: IPlayerManager,
-    private val levelStorage: ILevelStorage,
-    private val particleFactory: IParticleFactory,
+    private val levelStorage: me.jfenn.bingo.platform.ILevelStorage,
+    private val particleFactory: me.jfenn.bingo.platform.particle.IParticleFactory,
     private val serverWorldFactory: IServerWorldFactory,
 ) : BingoComponent() {
 
@@ -340,8 +339,7 @@ class MenuController(
         interactionEntityEvents.onInteract(interactionListenerEntity) { player ->
             val playerImpl = playerManager.forPlayer(player)
 
-            val color = Color.fromInt(team.formatting.colorValue ?: 0)
-            particleFactory.createDustParticle(color, 1f)
+            particleFactory.createDustParticle(team.formatting.colorValue ?: 0, 1f)
                 .spawn(playerImpl, position, 10, Vector3d(1.0), 0.2)
 
             Sounds.playTeamChanged(playerImpl)

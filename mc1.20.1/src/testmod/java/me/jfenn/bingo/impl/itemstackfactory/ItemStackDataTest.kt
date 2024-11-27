@@ -6,7 +6,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
 import io.mockk.mockk
-import me.jfenn.bingo.api.ITextSerializer
+import me.jfenn.bingo.platform.ITextSerializer
 import me.jfenn.bingo.common.test.BaseGameTest
 import me.jfenn.bingo.impl.ItemStackFactory
 import me.jfenn.bingo.impl.TextSerializer

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.client.api.IScrollableWidgetFactory
-import me.jfenn.bingo.client.api.ITabsWidgetFactory
-import me.jfenn.bingo.client.api.IWorldService
+import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
+import me.jfenn.bingo.client.platform.ITabsWidgetFactory
+import me.jfenn.bingo.client.platform.IWorldService
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.game.GameOverPacket
@@ -27,7 +27,7 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
-class BingoEndScreen(
+internal class BingoEndScreen(
     koin: Koin,
     private val gameOver: BingoHudState.GameOver,
     private val canEscape: Boolean = false,

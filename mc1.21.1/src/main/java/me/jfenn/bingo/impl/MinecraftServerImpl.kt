@@ -1,8 +1,8 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.ILevelStorage
-import me.jfenn.bingo.api.IMapService
-import me.jfenn.bingo.api.ITickManager
+import me.jfenn.bingo.platform.ILevelStorage
+import me.jfenn.bingo.platform.IMapService
+import me.jfenn.bingo.platform.ITickManager
 import net.minecraft.component.type.MapIdComponent
 import net.minecraft.item.map.MapState
 import net.minecraft.server.MinecraftServer
@@ -11,7 +11,7 @@ import java.nio.file.Path
 
 class MinecraftServerImpl(
     private val server: MinecraftServer,
-): IMapService, ITickManager, ILevelStorage {
+): IMapService, ITickManager, me.jfenn.bingo.platform.ILevelStorage {
     override fun getNextMapId(): Int {
         return server.overworld.increaseAndGetMapId().id
     }

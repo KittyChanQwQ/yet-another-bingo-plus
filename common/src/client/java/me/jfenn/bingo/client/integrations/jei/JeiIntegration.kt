@@ -11,7 +11,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.item.ItemStack
 import org.slf4j.Logger
 
-interface JeiIntegration {
+internal interface JeiIntegration {
     fun isInstalled(): Boolean
     fun openJeiRecipe(stack: ItemStack): Boolean
 
@@ -33,12 +33,12 @@ interface JeiIntegration {
     }
 }
 
-class JeiIntegrationDummy : JeiIntegration {
+internal class JeiIntegrationDummy : JeiIntegration {
     override fun isInstalled(): Boolean = false
     override fun openJeiRecipe(stack: ItemStack) = false
 }
 
-class JeiIntegrationImpl(
+internal class JeiIntegrationImpl(
     private val log: Logger,
 ) : JeiIntegration {
 
@@ -63,7 +63,7 @@ class JeiIntegrationImpl(
     }
 }
 
-class ReiIntegrationImpl: JeiIntegration {
+internal class ReiIntegrationImpl: JeiIntegration {
     override fun isInstalled(): Boolean = true
     override fun openJeiRecipe(stack: ItemStack): Boolean {
         return ViewSearchBuilder.builder()
@@ -72,7 +72,7 @@ class ReiIntegrationImpl: JeiIntegration {
     }
 }
 
-class EmiIntegrationImpl: JeiIntegration {
+internal class EmiIntegrationImpl: JeiIntegration {
     override fun isInstalled(): Boolean = true
     override fun openJeiRecipe(stack: ItemStack): Boolean {
         EmiApi.displayRecipes(EmiStack.of(stack))

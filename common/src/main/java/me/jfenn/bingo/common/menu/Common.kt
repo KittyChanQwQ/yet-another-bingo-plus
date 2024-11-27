@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.api.EntityType
-import me.jfenn.bingo.api.IEntity
+import me.jfenn.bingo.platform.EntityType
+import me.jfenn.bingo.platform.IEntity
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.generated.StringKey

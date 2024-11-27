@@ -6,7 +6,7 @@ import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.sound.SoundInstance
 import net.minecraft.sound.SoundCategory
 
-class SoundService(
+internal class SoundService(
     private val config: BingoConfig,
 ) {
 

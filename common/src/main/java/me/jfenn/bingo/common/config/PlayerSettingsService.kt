@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.config
 
-import me.jfenn.bingo.api.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.event.ScopedEvents
 
 class PlayerSettingsService(

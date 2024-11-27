@@ -1,7 +1,7 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.*
-import me.jfenn.bingo.api.item.IItemStack
+import me.jfenn.bingo.platform.*
+import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.utils.toNbt
 import net.minecraft.entity.Entity

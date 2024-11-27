@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.client.api.IOptionsAccessor
+import me.jfenn.bingo.client.platform.IOptionsAccessor
 import net.minecraft.client.MinecraftClient
 
 object OptionsAccessor : IOptionsAccessor {

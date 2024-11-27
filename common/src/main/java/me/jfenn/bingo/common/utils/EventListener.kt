@@ -1,16 +1,8 @@
 package me.jfenn.bingo.common.utils
 
+import me.jfenn.bingo.platform.utils.ICallbackHandle
+import me.jfenn.bingo.platform.utils.IReturnEventListener
 import org.slf4j.LoggerFactory
-
-interface ICallbackHandle
-
-interface IReturnEventListener<T, R> {
-    operator fun invoke(event: T): List<R?>
-    operator fun invoke(callback: (T) -> R): ICallbackHandle
-    fun unregister(callback: ICallbackHandle)
-}
-
-typealias IEventListener<T> = IReturnEventListener<T, Unit>
 
 class ReturnEventListener<T, R> : IReturnEventListener<T, R> {
 
@@ -42,7 +34,7 @@ class ReturnEventListener<T, R> : IReturnEventListener<T, R> {
         }
     }
 
-    fun unregister(callback: (T) -> R) {
+    private fun unregister(callback: (T) -> R) {
         listeners.remove(callback)
     }
 

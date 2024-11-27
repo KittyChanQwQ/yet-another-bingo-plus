@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.common.hud
 
-import me.jfenn.bingo.client.api.IDrawServiceFactory
+import me.jfenn.bingo.client.platform.IDrawServiceFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
@@ -11,7 +11,7 @@ import org.koin.core.Koin
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
-class BingoCardsWidget(
+internal class BingoCardsWidget(
     koin: Koin,
 
     var x: Int,

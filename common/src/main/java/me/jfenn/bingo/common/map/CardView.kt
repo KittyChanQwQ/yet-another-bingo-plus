@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -10,7 +10,7 @@ data class CardView(
     val teamColor: Formatting? = null,
     val teamName: Text = Text.empty(),
     val tiles: MutableList<CardTile>,
-    val players: List<BingoPlayerProfile>
+    val players: List<PlayerProfile>
 ) {
 
     fun tile(x: Int, y: Int): CardTile? {

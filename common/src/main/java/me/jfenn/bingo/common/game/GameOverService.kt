@@ -9,7 +9,7 @@ import me.jfenn.bingo.common.config.EndWhen
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
-import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
@@ -176,7 +176,7 @@ class GameOverService(
         )
     }
 
-    private fun getPlayerInfo(team: BingoTeam, player: BingoPlayerProfile): GameOverPlayerInfo {
+    private fun getPlayerInfo(team: BingoTeam, player: PlayerProfile): GameOverPlayerInfo {
         val isWinner = team.isWinner()
 
         // must align with the logic in WriteStatsService

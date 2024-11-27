@@ -6,7 +6,7 @@ import net.minecraft.registry.Registry
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.Identifier
 
-class ClientSounds {
+internal class ClientSounds {
 
     // this enum must contain the exact file names in resources/assets/yet-another-minecraft-bingo/sounds/*.ogg
     // as well as a translation key under "bingo.sound.*"

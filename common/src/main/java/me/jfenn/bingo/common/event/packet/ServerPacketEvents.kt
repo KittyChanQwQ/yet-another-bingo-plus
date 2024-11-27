@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.event.packet
 
-import me.jfenn.bingo.api.IServerNetworking
+import me.jfenn.bingo.platform.packet.IServerNetworking
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardDisplayPacket

@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.text
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
-import me.jfenn.bingo.api.ITextSerializer
+import me.jfenn.bingo.platform.ITextSerializer
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.MutableText

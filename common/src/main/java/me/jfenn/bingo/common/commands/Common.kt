@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.builder.ArgumentBuilder
-import me.jfenn.bingo.api.commands.IExecutionContext
-import me.jfenn.bingo.api.commands.IExecutionSource
+import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.commands.IExecutionSource
 import me.jfenn.bingo.common.PermissionKey
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState

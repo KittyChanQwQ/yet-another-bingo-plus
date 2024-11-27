@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.api.EntityType
-import me.jfenn.bingo.api.ITextDisplayEntity
+import me.jfenn.bingo.platform.EntityType
+import me.jfenn.bingo.platform.ITextDisplayEntity
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common
 
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.PlayerSoundCategory
-import me.jfenn.bingo.api.PlayerSoundEvent
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.PlayerSoundCategory
+import me.jfenn.bingo.platform.PlayerSoundEvent
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import org.joml.Vector3d

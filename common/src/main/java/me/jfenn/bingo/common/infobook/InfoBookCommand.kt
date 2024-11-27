@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.infobook
 
-import me.jfenn.bingo.api.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.common.scope.BingoComponent
 
 class InfoBookCommand(

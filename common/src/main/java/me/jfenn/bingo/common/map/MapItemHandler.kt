@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.api.item.IItemStackFactory
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.card.CardScreenHandler
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.model.ActionResult
+import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamService
@@ -69,13 +69,13 @@ class MapItemHandler(
                 }).let { itemStackFactory.forStack(it) }
 
                 if (hand == Hand.OFF_HAND && !otherItemStack.isEmpty)
-                    return@onUseItem ActionResult.Pass(itemStack)
+                    return@onUseItem me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
 
                 if (hand == Hand.MAIN_HAND && event.player.canUseItem(otherItemStack))
-                    return@onUseItem ActionResult.Pass(itemStack)
+                    return@onUseItem me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
 
                 usedBingoMap.add(player.uuid)
-                return@onUseItem ActionResult.Success(itemStack)
+                return@onUseItem me.jfenn.bingo.platform.event.model.ActionResult.Success(itemStack)
             }
 
             // if the item *can* be used, and *isn't* a bingo map, it should prevent the bingo map from being used
@@ -84,7 +84,7 @@ class MapItemHandler(
                 usedBingoMap.remove(player.uuid)
             }
 
-            ActionResult.Pass(itemStack)
+            me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
         }
 
         events.onUseBlock { event ->
@@ -104,7 +104,7 @@ class MapItemHandler(
                 usedBingoMap.remove(player.uuid)
             }
 
-            ActionResult.Pass(Unit)
+            me.jfenn.bingo.platform.event.model.ActionResult.Pass(Unit)
         }
 
         events.onUseEntity { event ->
@@ -124,7 +124,7 @@ class MapItemHandler(
                 usedBingoMap.remove(player.uuid)
             }
 
-            ActionResult.Pass(Unit)
+            me.jfenn.bingo.platform.event.model.ActionResult.Pass(Unit)
         }
 
         events.onGameTick {

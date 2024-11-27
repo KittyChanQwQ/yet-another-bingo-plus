@@ -1,7 +1,7 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.EffectType
-import me.jfenn.bingo.api.IStatusEffectHandle
+import me.jfenn.bingo.platform.EffectType
+import me.jfenn.bingo.platform.IStatusEffectHandle
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 

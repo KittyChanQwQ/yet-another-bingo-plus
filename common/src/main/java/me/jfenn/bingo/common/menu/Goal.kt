@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.api.ITextDisplayEntity
+import me.jfenn.bingo.platform.ITextDisplayEntity
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
@@ -67,7 +67,7 @@ fun MenuComponent.registerGoal(
         markDirty()
     }
 
-    registerEntity(me.jfenn.bingo.api.EntityType.TEXT_DISPLAY) {
+    registerEntity(me.jfenn.bingo.platform.EntityType.TEXT_DISPLAY) {
         pos = position
         this.value = text.string(StringKey.OptionsGoal)
         billboard = ITextDisplayEntity.Billboard.FIXED

@@ -12,8 +12,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.suggestion.SuggestionProvider
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.commands.*
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.commands.*
 import me.jfenn.bingo.common.scope.BingoKoin
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.command.CommandRegistryAccess

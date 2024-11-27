@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.spawn
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.api.IExecutors
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.IServerWorldFactory
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.api.IExecutors
-import me.jfenn.bingo.api.IServerWorld
-import me.jfenn.bingo.api.IServerWorldFactory
-import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.block.Blocks

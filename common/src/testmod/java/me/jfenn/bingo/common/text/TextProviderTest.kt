@@ -5,7 +5,7 @@ package me.jfenn.bingo.common.text
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import io.mockk.mockk
-import me.jfenn.bingo.api.ITextSerializer
+import me.jfenn.bingo.platform.ITextSerializer
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.test.BaseGameTest
 import me.jfenn.bingo.generated.StringKey

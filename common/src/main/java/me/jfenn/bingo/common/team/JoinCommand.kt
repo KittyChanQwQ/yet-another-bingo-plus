@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.team
 
-import me.jfenn.bingo.api.IExecutors
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.commands.ICommandManager
-import me.jfenn.bingo.api.commands.IExecutionContext
-import me.jfenn.bingo.api.commands.IExecutionSource
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.commands.IExecutionSource
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.scope.BingoComponent

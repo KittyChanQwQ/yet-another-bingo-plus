@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.controller
 
-import me.jfenn.bingo.api.ICommandRunner
+import me.jfenn.bingo.platform.ICommandRunner
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.scope.BingoComponent

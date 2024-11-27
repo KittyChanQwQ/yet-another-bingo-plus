@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.lobby
 
-import me.jfenn.bingo.api.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.common.config.BingoConfig
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader

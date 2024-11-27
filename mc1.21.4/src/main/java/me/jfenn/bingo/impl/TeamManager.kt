@@ -1,7 +1,7 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.api.ITeamHandle
-import me.jfenn.bingo.api.ITeamManager
+import me.jfenn.bingo.platform.ITeamHandle
+import me.jfenn.bingo.platform.ITeamManager
 import net.minecraft.scoreboard.Team
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity

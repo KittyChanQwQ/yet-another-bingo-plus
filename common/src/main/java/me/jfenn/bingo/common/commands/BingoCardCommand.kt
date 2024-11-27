@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.api.commands.CommandArgument
-import me.jfenn.bingo.api.commands.ICommandManager
-import me.jfenn.bingo.api.commands.IExecutionContext
-import me.jfenn.bingo.api.commands.IExecutionSource
+import me.jfenn.bingo.platform.commands.CommandArgument
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.commands.IExecutionSource
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective

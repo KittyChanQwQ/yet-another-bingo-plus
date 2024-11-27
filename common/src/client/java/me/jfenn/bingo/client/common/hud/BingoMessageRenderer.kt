@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.client.api.IDrawService
+import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-class BingoMessageRenderer(
+internal class BingoMessageRenderer(
     private val state: BingoHudState,
     private val config: BingoConfig,
 ) {

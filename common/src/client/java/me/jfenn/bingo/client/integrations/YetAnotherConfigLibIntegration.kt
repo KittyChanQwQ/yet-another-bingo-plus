@@ -17,7 +17,7 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-interface YetAnotherConfigLibIntegration {
+internal interface YetAnotherConfigLibIntegration {
 
     fun buildConfigScreen(parent: Screen): Screen?
 
@@ -39,11 +39,11 @@ interface YetAnotherConfigLibIntegration {
 
 }
 
-class YetAnotherConfigLibIntegrationDummy : YetAnotherConfigLibIntegration {
+internal class YetAnotherConfigLibIntegrationDummy : YetAnotherConfigLibIntegration {
     override fun buildConfigScreen(parent: Screen): Screen? = null
 }
 
-class YetAnotherConfigLibIntegrationImpl(
+internal class YetAnotherConfigLibIntegrationImpl(
     private val configService: ConfigService,
     private val config: BingoConfig,
     private val clientSettings: ClientSettingsService,

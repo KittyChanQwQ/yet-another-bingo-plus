@@ -1,15 +1,15 @@
 package me.jfenn.bingo.impl
 
 import com.mojang.authlib.GameProfile
-import me.jfenn.bingo.api.IPlayerHandle
-import me.jfenn.bingo.api.IPlayerManager
-import me.jfenn.bingo.api.PlayerSoundCategory
-import me.jfenn.bingo.api.PlayerSoundEvent
-import me.jfenn.bingo.api.item.IItemStack
-import me.jfenn.bingo.api.item.IItemStackFactory
-import me.jfenn.bingo.common.config.BlockPosition
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.PlayerSoundCategory
+import me.jfenn.bingo.platform.PlayerSoundEvent
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.common.scope.BingoKoin
-import me.jfenn.bingo.common.team.BingoPlayerProfile
+import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.command.CommandSource
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.MobEntity
@@ -54,7 +54,7 @@ class PlayerManager(
         server.playerManager.sendToAll(packet)
     }
 
-    override fun getOfflinePlayer(profile: BingoPlayerProfile): IPlayerHandle {
+    override fun getOfflinePlayer(profile: PlayerProfile): IPlayerHandle {
         val player = ServerPlayerEntity(
             server,
             server.overworld,
