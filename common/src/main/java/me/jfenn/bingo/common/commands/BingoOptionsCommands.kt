@@ -1,9 +1,6 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.commands.ICommandManager
-import me.jfenn.bingo.platform.commands.IExecutionContext
-import me.jfenn.bingo.platform.commands.IExecutionSource
+import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
@@ -18,6 +15,11 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.commands.IExecutionSource
 import net.minecraft.text.Text
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -28,6 +30,16 @@ class BingoOptionsCommands(
 ) : BingoComponent() {
 
     private fun IExecutionSource.hasConfigureGame() = hasState(GameState.PREGAME, GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
+
+    private fun IExecutionContext.changeOption(callback: (BingoOptions) -> Unit): BingoOptions {
+        val options = scope.get<BingoOptions>()
+        callback(options)
+
+        val events = scope.get<ScopedEvents>()
+        events.onChangeOptions(Unit)
+
+        return options
+    }
 
     private fun IExecutionContext.setGoal(goal: BingoGoal) {
         val cardViewService = scope.get<CardViewService>()
@@ -57,25 +69,17 @@ class BingoOptionsCommands(
     }
 
     private fun IExecutionContext.setEndWhen(endWhen: EndWhen) {
-        val options = scope.get<BingoOptions>()
-        options.endGameWhen = endWhen
-
-        val events = scope.get<ScopedEvents>()
-        events.onChangeOptions(Unit)
-
+        changeOption { it.endGameWhen = endWhen }
         sendInfoFeedback(
             textProvider.string(StringKey.OptionsEndWhen, endWhen.string(textProvider))
         )
     }
 
     private fun IExecutionContext.toggleElytra() {
-        val options = scope.get<BingoOptions>()
-        val events = scope.get<ScopedEvents>()
         val playerManager = scope.get<IPlayerManager>()
         val elytraService = scope.get<ElytraService>()
 
-        options.isElytra = !options.isElytra
-        events.onChangeOptions(Unit)
+        val options = changeOption { it.isElytra = !it.isElytra }
 
         // if Elytra mode is turned off during a game, remove all players' elytra
         if (!options.isElytra) {
@@ -93,13 +97,10 @@ class BingoOptionsCommands(
 
     private fun IExecutionContext.toggleNightVision() {
         val state = scope.get<BingoState>()
-        val options = scope.get<BingoOptions>()
-        val events = scope.get<ScopedEvents>()
         val playerController = scope.get<PlayerController>()
         val playerManager = scope.get<IPlayerManager>()
 
-        options.isNightVision = !options.isNightVision
-        events.onChangeOptions(Unit)
+        val options = changeOption { it.isNightVision = !it.isNightVision }
 
         // if night vision is changed, update all players
         if (state.state == GameState.PLAYING) {
@@ -117,10 +118,9 @@ class BingoOptionsCommands(
 
     private fun IExecutionContext.setTimeLimit(minutes: Int?) {
         val state = scope.get<BingoState>()
-        state.options.timeLimit = minutes?.minutes?.plus(state.ingameDuration() ?: Duration.ZERO)
-
-        val events = scope.get<ScopedEvents>()
-        events.onChangeOptions(Unit)
+        changeOption {
+            it.timeLimit = minutes?.minutes?.plus(state.ingameDuration() ?: Duration.ZERO)
+        }
 
         sendInfoFeedback(
             textProvider.string(StringKey.ScoreboardTimeLeft, state.formatTimeRemaining(textProvider))
@@ -154,8 +154,8 @@ class BingoOptionsCommands(
             }
 
             literal("options") {
+                requires { hasConfigureGame() }
                 literal("end_when") {
-                    requires { hasConfigureGame() }
                     literal("never") {
                         executes { setEndWhen(EndWhen.Never) }
                     }
@@ -173,18 +173,16 @@ class BingoOptionsCommands(
                 }
 
                 literal("elytra") {
-                    requires { hasConfigureGame() }
                     executes { toggleElytra() }
                 }
 
                 literal("night_vision") {
-                    requires { hasConfigureGame() }
                     executes { toggleNightVision() }
                 }
 
                 literal("preview_card") {
                     requires {
-                        hasPermission(Permission.CONFIGURE_GAME) && hasState(GameState.PREGAME)
+                        hasConfigureGame() && hasState(GameState.PREGAME)
                     }
                     executes {
                         val options = scope.get<BingoOptions>()
@@ -197,6 +195,47 @@ class BingoOptionsCommands(
                             textProvider.string(StringKey.OptionsPreviewCard)
                                 .append(": ${options.showPreviewCard}")
                         )
+                    }
+                }
+
+                literal("spawn_distance") {
+                    requires { hasLobby() && hasConfigureGame() }
+                    integer("chunks", min = 0) { chunksArg ->
+                        executes {
+                            val chunks = getArgument(chunksArg)
+                            changeOption { it.spawnDistance = chunks }
+                            textProvider.string(StringKey.OptionsSpawnDistance)
+                                .append(": $chunks")
+                                .let { sendInfoFeedback(it) }
+                        }
+                    }
+                }
+
+                literal("spawn_dimension") {
+                    requires { hasLobby() && hasConfigureGame() }
+                    string(
+                        name = "dimension",
+                        suggestions = {
+                            scope.get<IServerWorldFactory>()
+                                .listWorlds(server)
+                                .map { it.identifier }
+                                .minus(LOBBY_WORLD_ID.toString())
+                        },
+                        greedy = true,
+                    ) { dimensionArg ->
+                        executes {
+                            val dimension = getArgument(dimensionArg)
+
+                            scope.get<IServerWorldFactory>()
+                                .listWorlds(server)
+                                .find { it.identifier == dimension }
+                                ?: error("Dimension '$dimension' does not exist!")
+
+                            changeOption { it.spawnDimension = dimension }
+                            textProvider.string(StringKey.OptionsSpawnDimension)
+                                .append(": $dimension")
+                                .let { sendInfoFeedback(it) }
+                        }
                     }
                 }
             }

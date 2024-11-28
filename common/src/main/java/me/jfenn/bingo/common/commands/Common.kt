@@ -1,12 +1,12 @@
 package me.jfenn.bingo.common.commands
 
 import com.mojang.brigadier.builder.ArgumentBuilder
-import me.jfenn.bingo.platform.commands.IExecutionContext
-import me.jfenn.bingo.platform.commands.IExecutionSource
 import me.jfenn.bingo.common.PermissionKey
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.commands.IExecutionSource
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -30,6 +30,10 @@ fun IExecutionSource.hasPermission(key: PermissionKey): Boolean {
     val player = player ?: return false
     val permissions = scope.get<PermissionsIntegration>()
     return permissions.hasPermission(player, key)
+}
+
+fun IExecutionSource.hasLobby(): Boolean {
+    return scope.get<BingoState>().isLobbyMode
 }
 
 fun IExecutionContext.sendInfoFeedback(text: MutableText) {
