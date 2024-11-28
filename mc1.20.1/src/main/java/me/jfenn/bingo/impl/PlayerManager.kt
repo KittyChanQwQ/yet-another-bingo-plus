@@ -1,14 +1,14 @@
 package me.jfenn.bingo.impl
 
 import com.mojang.authlib.GameProfile
+import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.PlayerSoundCategory
 import me.jfenn.bingo.platform.PlayerSoundEvent
+import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import me.jfenn.bingo.platform.block.BlockPosition
-import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.command.CommandSource
 import net.minecraft.entity.EquipmentSlot
@@ -33,19 +33,20 @@ import java.util.*
 
 class PlayerManager(
     private val server: MinecraftServer,
+    private val itemStackFactory: IItemStackFactory,
 ) : IPlayerManager {
     override fun forPlayer(player: ServerPlayerEntity): IPlayerHandle {
-        return PlayerHandle(player)
+        return PlayerHandle(player, itemStackFactory)
     }
 
     override fun getPlayer(uuid: UUID): IPlayerHandle? {
         return server.playerManager.getPlayer(uuid)
-            ?.let { PlayerHandle(it) }
+            ?.let { PlayerHandle(it, itemStackFactory) }
     }
 
     override fun getPlayers(): List<IPlayerHandle> {
         return server.playerManager.playerList
-            .map { PlayerHandle(it) }
+            .map { PlayerHandle(it, itemStackFactory) }
     }
 
     override fun updatePlayerListName(player: IPlayerHandle) {
@@ -61,7 +62,7 @@ class PlayerManager(
         )
 
         server.playerManager.loadPlayerData(player)
-        return PlayerHandle(player)
+        return PlayerHandle(player, itemStackFactory)
     }
 
     override fun playToAround(
@@ -82,12 +83,12 @@ class PlayerManager(
 }
 
 class PlayerHandle(
-    override val player: ServerPlayerEntity
+    override val player: ServerPlayerEntity,
+    private val itemStackFactory: IItemStackFactory? = null,
 ) : IPlayerHandle, LivingEntityImpl(player) {
 
-    private val itemStackFactory: IItemStackFactory by lazy {
-        BingoKoin.getScope(player.server)!!.get<IItemStackFactory>()
-    }
+    private fun getItemStackFactory() = itemStackFactory
+        ?: BingoKoin.getScope(player.server)!!.get<IItemStackFactory>()
 
     override val world: ServerWorld
         get() = player.serverWorld
@@ -156,11 +157,12 @@ class PlayerHandle(
             yieldAll(allInventorySlots().map { (_, stack) -> stack })
 
             // yield the current cursor stack
-            yield(itemStackFactory.forStack(player.currentScreenHandler.cursorStack))
+            yield(getItemStackFactory().forStack(player.currentScreenHandler.cursorStack))
         }
     }
 
     override fun allInventorySlots(): Sequence<Pair<Int, IItemStack>> {
+        val itemStackFactory = getItemStackFactory()
         return sequence {
             // yield all items in inventory
             for (i in 0 until player.inventory.size()) {
