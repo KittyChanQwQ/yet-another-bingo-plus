@@ -4,6 +4,7 @@ import me.jfenn.bingo.api.BingoApi
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
@@ -23,6 +24,7 @@ class ScopeManager(
     private val koin: Koin,
     private val log: Logger,
     private val persistentStateManager: IPersistentStateManager,
+    private val configService: ConfigService,
 ) {
 
     private fun getScopeId(server: MinecraftServer): ScopeID =
@@ -75,6 +77,7 @@ class ScopeManager(
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
             val scope = getScope(server) ?: return@register
             log.info("[ScopeManager] Closing server scope...")
+            configService.writeOptions(scope.get())
             BingoApi.set(null)
             onCleanup(scope)
             scope.close()
