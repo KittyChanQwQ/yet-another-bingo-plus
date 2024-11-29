@@ -25,14 +25,14 @@ description: A reference page for all of the game commands provided in Yet Anoth
 | `/bingo end`                         | Immediately ends the current game and displays the winner.                                   |
 | `/bingo reroll`                      | Re-rolls the card for completely new random items.                                           |
 | `/bingo shuffleteams #`              | Randomly shuffles all players onto the given number of teams.                                |
-| `/bingo elytra`                      | Changes whether players have elytra/rockets during the game.                                 |
-| `/bingo night_vision`                | Changes whether players are given the night vision effect during the game.                   |
+| `/bingo options elytra`              | Changes whether players have elytra/rockets during the game.                                 |
+| `/bingo options night_vision`        | Changes whether players are given the night vision effect during the game.                   |
 | `/bingo timelimit #`                 | Sets the time limit of the game, in minutes (or "off" for no timer)                          |
 | `/bingo mode <option>`               | Toggles on/off the different Bingo modes, such as Lockout, Inventory, or Hidden Items.       |
 | `/bingo goal <option>`               | Changes the number of Bingo lines needed for a team to win the game.                         |
 | `/bingo difficulty # # # # #`        | Changes the [item distribution](./game-options#item-distribution) used to generate the card. |
 | `/bingo filter ...`                  | Edits constraints of the number and types of objectives that are generated on the card.      |
 | `/bingo card <tile> set <objective>` | Manually changes a specific tile on the Bingo Card.                                          |
-| `/bingo card seed`                        | Shows the random seed used to generate the current Bingo Card.                               |
-| `/bingo card seed #`                      | Sets the Bingo Card seed to a specific value.                                                |
+| `/bingo card seed`                   | Shows the random seed used to generate the current Bingo Card.                               |
+| `/bingo card seed #`                 | Sets the Bingo Card seed to a specific value.                                                |
 | `/join <team> <player>`              | Assigns a player to a different team - will respawn them if in-game.                         |

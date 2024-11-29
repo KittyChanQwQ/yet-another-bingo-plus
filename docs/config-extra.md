@@ -47,15 +47,30 @@ Controls whether all spectating players are given the night vision effect.
 
 Controls whether all players are given the night vision effect when the game is over.
 
-## `"shutDownWhenEveryoneDisconnects"`
+## `"startWhenReadySeconds"`
+(default: 600)
+
+The timer that counts down to start the game once all players are on a team. Players can vote `/ready` to speed this up, proportionally to the player count. Can be set to `null` to turn off.
+
+## `"nextRoundWhenReadySeconds"`
+(default: 600)
+
+The timer that counts down to restart/reset the server when a game is over. Can be set to `null` to turn off.
+
+## `"nextRoundWhenReadyWaitsForFirstVote"`
 (default: true)
 
-Automatically shuts down / restarts the server if all players disconnect after a game has ended.
+Whether the "Next Round" timer should wait until at least one player has voted `/ready` to start counting down.
 
-## `"shutDownWhenGameOverSeconds"`
-(default: null)
+## `"nextRoundWhenEveryoneDisconnects"`
+(default: true)
 
-Automatically shuts down / restarts the server a set time after the game has ended. This can be cancelled by an operator with the `/restart abort` command.
+Automatically resets the server if all players disconnect after a game has ended.
+
+## `"nextRoundCompatibilityMode"`
+(default: false)
+
+If `true`, the server will perform a full restart after every game, rather than deleting the world while the server is running. This may resolve some rare issues with other mods that don't behave nicely.
 
 ## `"unsafeSkipWorldClose"`
 (default: false)
