@@ -47,6 +47,18 @@ data class BingoTeam(
     val players: MutableSet<PlayerProfileType> = mutableSetOf(),
 ) {
 
+    /**
+     * Creates a copy of the team that does not share any mutable
+     * references with the original
+     */
+    fun newInstance(): BingoTeam {
+        return copy(
+            completedCards = mutableListOf(),
+            chatCoordinates = mutableListOf(),
+            players = mutableSetOf(),
+        )
+    }
+
     @Transient
     var spawnpointFuture: CompletableFuture<BlockPosition>? = null
 

@@ -119,7 +119,11 @@ data class BingoState(
     }
 
     fun registerTeam(team: BingoTeam): BingoTeam {
-        return teams.getOrPut(team.key) { team.copy(cardId = cards.first().id) }
+        return teams.getOrPut(team.key) {
+            team.newInstance().apply {
+                cardId = cards.first().id
+            }
+        }
     }
 
     fun getPreviewMap(mapService: IMapService): BingoMap {

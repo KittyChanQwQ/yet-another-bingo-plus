@@ -158,13 +158,15 @@ internal class ScoredItemCheck(
     private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean) {
         val now = state.updatedAt ?: Instant.DISTANT_PAST
 
-        team.completedCards += TeamCompletedCard(
-            // Copy the card in its winning state
-            card = card.copy().also { objectiveManager.init(it) },
-            completedAt = now,
-            isWinner = isWinner,
-            score = team.score,
-        )
+        if (team.completedCards.none { it.card.id == card.id }) {
+            team.completedCards += TeamCompletedCard(
+                // Copy the card in its winning state
+                card = card.copy().also { objectiveManager.init(it) },
+                completedAt = now,
+                isWinner = isWinner,
+                score = team.score,
+            )
+        }
 
         val condition = options.winCondition
         if (condition is BingoWinCondition.Cards && team.countCards() >= condition.cards) {

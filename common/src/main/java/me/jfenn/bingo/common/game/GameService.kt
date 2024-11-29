@@ -180,7 +180,8 @@ internal class GameService(
         val endedAt = Clock.System.now()
         for (team in state.getRegisteredTeams()) {
             val card = state.cards.find { it.id == team.cardId }
-            if (card != null) {
+            val completedCard = team.completedCards.find { it.card.id == team.cardId }
+            if (card != null && completedCard == null) {
                 team.cardId = null
                 team.completedCards += TeamCompletedCard(
                     card = card.copy().also { objectiveManager.init(it) },

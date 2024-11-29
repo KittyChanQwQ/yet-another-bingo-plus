@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.menu.tooltips
 
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.entity.projectile.ProjectileUtil
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
