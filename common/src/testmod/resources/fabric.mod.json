@@ -37,6 +37,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "me.jfenn.bingo.integration.AdvancementManagerTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "me.jfenn.bingo.integration.EntityManagerTest"
       },
       {
