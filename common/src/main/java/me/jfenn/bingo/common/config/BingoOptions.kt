@@ -49,11 +49,87 @@ data class BingoOptions(
 
     var isPlayerKit: Boolean = false,
     var playerKitItems: List<SpawnItem> = listOf(
-        SpawnItem("minecraft:iron_chestplate"),
-        SpawnItem("minecraft:iron_pickaxe"),
-        SpawnItem("minecraft:iron_axe"),
-        SpawnItem("minecraft:shield"),
+        SpawnItem(
+            id = "minecraft:netherite_helmet",
+            nbt = "{Enchantments:[{lvl:4,id:protection},{lvl:1,id:aqua_affinity},{lvl:3,id:respiration}],Unbreakable:1}",
+            components = mapOf(
+                "minecraft:enchantments" to """{"levels":{"protection":4,"aqua_affinity":1,"respiration":3}}""",
+                "minecraft:unbreakable" to "{}",
+            )
+        ),
+        SpawnItem(
+            id = "minecraft:netherite_chestplate",
+            nbt = "{Enchantments:[{lvl:4,id:protection}],Unbreakable:1}",
+            components = mapOf(
+                "minecraft:enchantments" to """{"levels":{"protection":4}}""",
+                "minecraft:unbreakable" to "{}",
+            )
+        ),
+        SpawnItem(
+            id = "minecraft:netherite_leggings",
+            nbt = "{Enchantments:[{lvl:4,id:protection},{lvl:3,id:swift_sneak}],Unbreakable:1}",
+            components = mapOf(
+                "minecraft:enchantments" to """{"levels":{"protection":4,"swift_sneak":3}}""",
+                "minecraft:unbreakable" to "{}",
+            )
+        ),
+        SpawnItem(
+            id = "minecraft:netherite_boots",
+            nbt = "{Enchantments:[{lvl:4,id:protection},{lvl:4,id:feather_falling},{lvl:3,id:depth_strider}],Unbreakable:1}",
+            components = mapOf(
+                "minecraft:enchantments" to """{"levels":{"protection":4,"feather_falling":4,"depth_strider":3}}""",
+                "minecraft:unbreakable" to "{}",
+            )
+        ),
+        SpawnItem(
+            id = "minecraft:netherite_pickaxe",
+            nbt = "{Enchantments:[{lvl:5,id:efficiency},{lvl:3,id:fortune}],Unbreakable:1}",
+            components = mapOf(
+                "minecraft:enchantments" to """{"levels":{"efficiency":5,"fortune":3}}""",
+                "minecraft:unbreakable" to "{}",
+            )
+        ),
+        SpawnItem(
+            id = "minecraft:netherite_axe",
+            nbt = "{Enchantments:[{lvl:5,id:efficiency},{lvl:5,id:sharpness}],Unbreakable:1}",
+            components = mapOf(
+                "minecraft:enchantments" to """{"levels":{"efficiency":5,"sharpness":5}}""",
+                "minecraft:unbreakable" to "{}",
+            )
+        ),
+        SpawnItem(
+            id = "minecraft:netherite_sword",
+            nbt = "{Enchantments:[{lvl:2,id:knockback},{lvl:3,id:looting},{lvl:5,id:sharpness}],Unbreakable:1}",
+            components = mapOf(
+                "minecraft:enchantments" to """{"levels":{"knockback":2,"looting":3,"sharpness":5}}""",
+                "minecraft:unbreakable" to "{}",
+            )
+        ),
+        SpawnItem(
+            id = "minecraft:netherite_shovel",
+            nbt = "{Enchantments:[{lvl:5,id:efficiency}],Unbreakable:1}",
+            components = mapOf(
+                "minecraft:enchantments" to """{"levels":{"efficiency":5}}""",
+                "minecraft:unbreakable" to "{}",
+            )
+        ),
+        SpawnItem(
+            id = "minecraft:iron_pickaxe",
+            nbt = "{Enchantments:[{lvl:1,id:silk_touch}],Unbreakable:1}",
+            components = mapOf(
+                "minecraft:enchantments" to """{"levels":{"silk_touch":1}}""",
+                "minecraft:unbreakable" to "{}",
+            )
+        ),
+        SpawnItem(
+            id = "minecraft:shield",
+            components = mapOf(
+                "minecraft:unbreakable" to "{}",
+            )
+        ),
         SpawnItem("minecraft:torch", count = 64),
+        SpawnItem("minecraft:golden_carrot", count = 64),
+        SpawnItem("minecraft:oak_log", count = 16),
     ),
 
     var isTeamKit: Boolean = false,
