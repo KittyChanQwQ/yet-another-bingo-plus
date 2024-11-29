@@ -250,7 +250,7 @@ internal class BingoEndScreen(
                 val bestDiff = gameOver.packet.duration - prevBestTime
                 val bestText = text.string(StringKey.StatsBestTimeNew, bestDiff.formatStringSmall())
                 val bestColor = Color.fromInt(BingoHudRenderer.getWinColor(now))
-                    .copy(a = (animProgress * 255).toInt())
+                    .copy(a = (animProgress * 255).toInt().coerceAtLeast(6))
                     .asIntWithAlpha
 
                 context.matrices.scale(bestScale, bestScale, 1f)
@@ -306,7 +306,7 @@ internal class BingoEndScreen(
                 val bestScale = 2f - animProgress
                 val bestText = text.string(StringKey.StatsWinStreakNewMax)
                 val bestColor = Color.fromInt(BingoHudRenderer.getWinColor(now))
-                    .copy(a = (animProgress * 255).toInt())
+                    .copy(a = (animProgress * 255).toInt().coerceAtLeast(6))
                     .asIntWithAlpha
 
                 context.matrices.scale(bestScale, bestScale, 1f)
