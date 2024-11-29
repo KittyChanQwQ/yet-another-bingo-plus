@@ -1,10 +1,9 @@
 package me.jfenn.bingo.platform
 
-import net.minecraft.item.ItemStack
+import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 
 interface IAdvancementManager {
 
@@ -25,5 +24,5 @@ interface IAdvancementManager {
 interface IAdvancementHandle {
     val name: Text?
     val description: Text?
-    val displayIcon: ItemStack?
+    val displayIcon: IItemStack?
 }

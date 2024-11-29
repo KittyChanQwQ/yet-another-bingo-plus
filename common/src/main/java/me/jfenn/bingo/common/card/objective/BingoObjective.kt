@@ -6,18 +6,18 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.encodeToString
-import me.jfenn.bingo.platform.IAdvancementHandle
-import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
-import me.jfenn.bingo.platform.IStatHandle
-import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.data.ObjectiveData
-import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IAdvancementHandle
+import me.jfenn.bingo.platform.IStatHandle
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.player.PlayerProfile
+import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import net.minecraft.text.Text
 import java.util.*
 import kotlin.time.Duration
@@ -173,7 +173,7 @@ sealed class BingoObjective {
     ): BingoObjective() {
 
         override val conflictsWithObjectives: Set<String>
-            get() = super.conflictsWithObjectives + advancementId
+            get() = super.conflictsWithObjectives + advancementId + listOfNotNull(advancement?.displayIcon?.identifier?.toString())
 
         @Transient
         var advancement: IAdvancementHandle? = null

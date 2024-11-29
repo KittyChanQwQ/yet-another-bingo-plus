@@ -9,7 +9,6 @@ import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.platform.IAdvancementManager
-import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -21,7 +20,6 @@ class AdvancementObjectiveManager(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val advancementManager: IAdvancementManager,
-    private val itemStackFactory: IItemStackFactory,
     private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
@@ -98,7 +96,7 @@ class AdvancementObjectiveManager(
                 ?.split("\n")
                 ?.map { Text.literal(it) }
                 ?: emptyList(),
-            item = advancement.displayIcon?.let { itemStackFactory.forStack(it) },
+            item = advancement.displayIcon,
             decoration = CardTile.Decoration.ADVANCEMENT,
         )
         goal.display = objectiveDisplayService.resolve(goal.id, goal.data.display, display)

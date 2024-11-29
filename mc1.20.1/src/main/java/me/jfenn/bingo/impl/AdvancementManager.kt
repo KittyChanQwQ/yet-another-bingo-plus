@@ -2,15 +2,18 @@ package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.platform.IAdvancementHandle
 import me.jfenn.bingo.platform.IAdvancementManager
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.advancement.Advancement
-import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandOutput
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
-class AdvancementManager : IAdvancementManager {
+class AdvancementManager(
+    private val itemStackFactory: IItemStackFactory,
+) : IAdvancementManager {
     override fun listAdvancements(server: MinecraftServer): List<String> {
         return server.advancementLoader.advancements
             .filter { !it.id.path.endsWith("/root") && it.display != null }
@@ -19,7 +22,7 @@ class AdvancementManager : IAdvancementManager {
 
     override fun getAdvancement(server: MinecraftServer, id: String): IAdvancementHandle? {
         return server.advancementLoader.get(Identifier(id))
-            ?.let { AdvancementHandle(it) }
+            ?.let { AdvancementHandle(it, itemStackFactory) }
     }
 
     override fun getProgress(player: ServerPlayerEntity, advancement: IAdvancementHandle): Float {
@@ -45,11 +48,13 @@ class AdvancementManager : IAdvancementManager {
 
 class AdvancementHandle(
     val advancement: Advancement,
+    private val itemStackFactory: IItemStackFactory,
 ) : IAdvancementHandle {
     override val name: Text?
         get() = advancement.display?.title
     override val description: Text?
         get() = advancement.display?.description
-    override val displayIcon: ItemStack?
+    override val displayIcon: IItemStack?
         get() = advancement.display?.icon
+            ?.let { itemStackFactory.forStack(it) }
 }
