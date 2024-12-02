@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.lobby
 
-import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.URL_WIKI_GETTING_STARTED
 import me.jfenn.bingo.common.URL_WIKI_SERVER_SETUP
@@ -14,6 +13,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
@@ -55,7 +55,7 @@ internal class LobbyModeController(
     }
 
     private fun sendLocalSingleplayerHints(player: IPlayerHandle) {
-        player.sendMessage(text.string(StringKey.InstalledLimitedSingleplayerMode, LOBBY_COMMAND, START_COMMAND))
+        player.sendMessage(text.string(StringKey.InstalledLimitedSingleplayerMode, START_COMMAND))
         Text.literal("  \uD83D\uDD17 ")
             .append(
                 text.string(StringKey.InstalledGettingStartedWiki)
