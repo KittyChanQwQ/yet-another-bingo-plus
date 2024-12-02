@@ -9,6 +9,7 @@ import net.minecraft.nbt.*
 import net.minecraft.predicate.NbtPredicate
 import net.minecraft.registry.Registries
 import net.minecraft.resource.featuretoggle.FeatureFlags
+import net.minecraft.resource.featuretoggle.FeatureSet
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
@@ -37,9 +38,16 @@ class ItemStackFactory(
         }
 
         val features = listOf(FeatureFlags.UPDATE_1_21, FeatureFlags.TRADE_REBALANCE, FeatureFlags.BUNDLE)
+        val requiredFeatures = when {
+            // hack: when requesting bundle, pretend that it's behind the BUNDLE feature flag (as it should be)
+            item.equals("minecraft:bundle", ignoreCase = true) -> {
+                itemInstance.requiredFeatures.combine(FeatureSet.of(FeatureFlags.BUNDLE))
+            }
+            else -> itemInstance.requiredFeatures
+        }
         return features.all {
             when {
-                itemInstance.requiredFeatures.contains(it) -> server.overworld.enabledFeatures.contains(it)
+                requiredFeatures.contains(it) -> server.overworld.enabledFeatures.contains(it)
                 else -> true
             }
         }
