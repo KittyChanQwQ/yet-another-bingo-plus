@@ -36,6 +36,9 @@ data class CardTile(
     enum class Decoration {
         FREE_SPACE,
         ADVANCEMENT,
+        ONE_OF,
+        MANY_OF,
+        @Deprecated("Use ONE_OF or MANY_OF instead!")
         MULTI_ITEM,
         FORBIDDEN,
         NONE
@@ -77,7 +80,7 @@ data class CardTile(
                 decoration = when {
                     isFreeSpace -> Decoration.FREE_SPACE
                     isAdvancement -> Decoration.ADVANCEMENT
-                    isMultiItem -> Decoration.MULTI_ITEM
+                    isMultiItem -> @Suppress("Deprecation") Decoration.MULTI_ITEM
                     else -> null
                 },
                 isHidden = isHidden,
@@ -105,7 +108,7 @@ data class CardTile(
 
             dest.writeBoolean(source.decoration == Decoration.FREE_SPACE)
             dest.writeBoolean(source.decoration == Decoration.ADVANCEMENT)
-            dest.writeBoolean(source.decoration == Decoration.MULTI_ITEM)
+            dest.writeBoolean(source.decoration in MULTI_ITEM_ENUMS)
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked || source.decoration == Decoration.FORBIDDEN)
             dest.writeBoolean(source.isFlashing)
@@ -150,7 +153,7 @@ data class CardTile(
 
             dest.writeBoolean(source.decoration == Decoration.FREE_SPACE)
             dest.writeBoolean(source.decoration == Decoration.ADVANCEMENT)
-            dest.writeBoolean(source.decoration == Decoration.MULTI_ITEM)
+            dest.writeBoolean(source.decoration in MULTI_ITEM_ENUMS)
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked || source.decoration == Decoration.FORBIDDEN)
             dest.writeBoolean(source.isFlashing)
@@ -223,7 +226,10 @@ data class CardTile(
                 dest.writeText(text)
             }
 
-            dest.writeString(source.decoration?.name ?: "")
+            dest.writeString(when (source.decoration) {
+                in MULTI_ITEM_ENUMS -> @Suppress("Deprecation") Decoration.MULTI_ITEM
+                else -> source.decoration
+            }?.name ?: "")
 
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked)
@@ -298,7 +304,10 @@ data class CardTile(
                 dest.writeText(text)
             }
 
-            dest.writeString(source.decoration?.name ?: "")
+            dest.writeString(when (source.decoration) {
+                in MULTI_ITEM_ENUMS -> @Suppress("Deprecation") Decoration.MULTI_ITEM
+                else -> source.decoration
+            }?.name ?: "")
 
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked)
@@ -403,5 +412,7 @@ data class CardTile(
             isAchieved = false,
             teamKeys = emptyList(),
         )
+
+        val MULTI_ITEM_ENUMS = arrayOf(Decoration.ONE_OF, Decoration.MANY_OF, @Suppress("Deprecation") Decoration.MULTI_ITEM)
     }
 }

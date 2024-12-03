@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierLabel
@@ -8,6 +7,7 @@ import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.LruHashMap
+import me.jfenn.bingo.platform.IMapService
 import net.minecraft.item.map.MapState
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
@@ -206,7 +206,7 @@ class MapRenderService(
         }
 
         // Draw a "+" if the tile can be captured multiple ways
-        if (tile.decoration == CardTile.Decoration.MULTI_ITEM) {
+        if (tile.decoration in CardTile.MULTI_ITEM_ENUMS) {
             val offset = 6
             for (innerT in offset-2..offset+2) {
                 callback(offset, innerT, COLOR_WHITE.asByte)

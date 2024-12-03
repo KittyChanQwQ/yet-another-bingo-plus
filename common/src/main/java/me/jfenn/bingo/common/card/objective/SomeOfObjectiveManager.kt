@@ -68,7 +68,10 @@ class SomeOfObjectiveManager(
                 },
                 lore = displayNames,
                 item = objectives.firstNotNullOfOrNull { it.display.item },
-                decoration = CardTile.Decoration.MULTI_ITEM,
+                decoration = when {
+                    isOneOf -> CardTile.Decoration.ONE_OF
+                    else -> CardTile.Decoration.MANY_OF
+                },
             )
 
             objective.display = objectiveDisplayService.resolve(

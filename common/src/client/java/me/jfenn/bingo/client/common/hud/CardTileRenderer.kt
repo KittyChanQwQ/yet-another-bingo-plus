@@ -13,6 +13,7 @@ internal class CardTileRenderer(
     private companion object {
         val ADVANCEMENT_FRAME_ID = Identifier.of("minecraft", "bingo/image_frame_advancement")!!
         val FRAME_FREE_SPACE_ID = Identifier.of("minecraft", "bingo/image_frame_free_space")!!
+        val FRAME_MULTI_ID = Identifier.of("minecraft", "bingo/image_frame_multi")!!
         val FRAME_FORBIDDEN_ID = Identifier.of("minecraft", "bingo/image_frame_forbidden")!!
     }
 
@@ -23,7 +24,33 @@ internal class CardTileRenderer(
         itemY: Int,
     ) {
         val context by drawService::context
-        if (tile.imageList.size > 1 && tile.decoration == CardTile.Decoration.MULTI_ITEM) {
+        if (tile.imageList.size > 1 && tile.decoration == CardTile.Decoration.ONE_OF) {
+            context.matrices.push()
+            context.matrices.translate(itemX.toDouble(), itemY.toDouble(), 0.0)
+            val scale = (12f / 16f)
+            val translate = (4.0 / scale) / 2.0
+            context.matrices.scale(scale, scale, 1f)
+
+            for (i in 0..2) {
+                val image = tile.imageList.getOrNull(i)
+                    ?: continue
+
+                context.matrices.push()
+                context.matrices.translate(translate*i, translate*i, 10.0 * (3-i))
+                val tint = 0.5f + (1f - i/2f)*0.5f
+                drawService.setShaderColor(tint, tint, tint, 1f)
+                renderTileImage(
+                    drawService = drawService,
+                    image = image,
+                    itemX = 0,
+                    itemY = 0,
+                )
+                context.matrices.pop()
+            }
+
+            drawService.setShaderColor(1f, 1f, 1f, 1f)
+            context.matrices.pop()
+        } else if (tile.imageList.size > 1 && tile.decoration == CardTile.Decoration.MANY_OF) {
             context.matrices.push()
             context.matrices.translate(itemX.toDouble(), itemY.toDouble(), 0.0)
             val scale = (9f / 16f)
@@ -84,6 +111,16 @@ internal class CardTileRenderer(
             drawService.drawGuiTexture(
                 texture = FRAME_FREE_SPACE_ID,
                 x = itemX - 2, y = itemY - 2, z = 301,
+                u = 0f, v = 0f,
+                width = 20, height = 20,
+                textureWidth = 20, textureHeight = 20,
+            )
+        }
+
+        if (tile.decoration == @Suppress("Deprecation") CardTile.Decoration.MULTI_ITEM) {
+            drawService.drawGuiTexture(
+                texture = FRAME_MULTI_ID,
+                x = itemX - 2, y = itemY - 2, z = 300,
                 u = 0f, v = 0f,
                 width = 20, height = 20,
                 textureWidth = 20, textureHeight = 20,
