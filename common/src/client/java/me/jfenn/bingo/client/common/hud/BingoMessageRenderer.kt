@@ -15,6 +15,7 @@ import kotlin.time.Duration.Companion.seconds
 internal class BingoMessageRenderer(
     private val state: BingoHudState,
     private val config: BingoConfig,
+    private val cardTileRenderer: CardTileRenderer,
 ) {
 
     companion object {
@@ -90,12 +91,10 @@ internal class BingoMessageRenderer(
 
         val itemX = if (isLeftOfCard) -8 - ITEM_HEIGHT else 8
         val itemY = ITEM_HEIGHT/2 - 8
-        val image = message.packet.image?.let { state.images[it] }
-        val itemStack = message.packet.item?.stack
-        if (image != null) {
-            drawService.drawDynamicTexture(image, itemX, itemY, 16, 16)
-        } else if (itemStack != null) {
-            context.drawItem(itemStack, itemX, itemY)
+        val tile = message.packet.tile
+        if (tile != null) {
+            cardTileRenderer.renderTile(drawService, tile, itemX, itemY)
+            cardTileRenderer.renderTileDecorations(drawService, tile, itemX, itemY)
         } else {
             val iconTexture = when (message.packet.messageType) {
                 ScoreMessagePacket.MessageType.LEADING_TEAM -> ICON_LEADING_ID

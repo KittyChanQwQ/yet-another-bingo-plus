@@ -29,7 +29,7 @@ import kotlin.jvm.optionals.getOrNull
 
 internal class BingoHudRenderer(
     private val text: TextProvider,
-    private val hudState: BingoHudState,
+    private val cardTileRenderer: CardTileRenderer,
 ) {
 
     companion object {
@@ -40,11 +40,7 @@ internal class BingoHudRenderer(
         val BLACK_A40 = Color.BLACK.copy(a = 64)
 
         val CARD_COLORS_ID = Identifier.of(MOD_ID_BINGO, "gui/card_colors.json")!!
-        val ADVANCEMENT_FRAME_ID = Identifier.of("minecraft", "bingo/image_frame_advancement")!!
-        val FRAME_FREE_SPACE_ID = Identifier.of("minecraft", "bingo/image_frame_free_space")!!
-        val FRAME_MULTI_ID = Identifier.of("minecraft", "bingo/image_frame_multi")!!
         val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")!!
-        val FRAME_FORBIDDEN_ID = Identifier.of("minecraft", "bingo/image_frame_forbidden")!!
         val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")!!
 
         private val winColors = listOf(
@@ -170,16 +166,7 @@ internal class BingoHudRenderer(
                 )
             }
 
-            val image = tile.image?.let { hudState.images[it] }
-            if (image != null) {
-                service.drawDynamicTexture(image, itemX + 1, itemY + 1, 16, 16)
-            } else {
-                tile.item?.let { stack ->
-                    // always draws centered at z=150... but 3d items can extend past this
-                    // so any overlays should start at z=300 to be safe
-                    service.drawItemStack(stack, itemX + 1, itemY + 1, itemX + itemY * CARD_WIDTH)
-                }
-            }
+            cardTileRenderer.renderTile(service, tile, itemX + 1, itemY + 1)
 
             if (tile.isAchieved && !isFlashing && mouseX == -1 && mouseY == -1) {
                 context.fill(
@@ -192,45 +179,7 @@ internal class BingoHudRenderer(
                 )
             }
 
-            if (tile.decoration == CardTile.Decoration.ADVANCEMENT) {
-                service.drawGuiTexture(
-                    texture = ADVANCEMENT_FRAME_ID,
-                    x = itemX - 1, y = itemY - 1, z = 300,
-                    u = 0f, v = 0f,
-                    width = 20, height = 20,
-                    textureWidth = 20, textureHeight = 20,
-                )
-            }
-
-            if (tile.decoration == CardTile.Decoration.MULTI_ITEM) {
-                service.drawGuiTexture(
-                    texture = FRAME_MULTI_ID,
-                    x = itemX - 1, y = itemY - 1, z = 300,
-                    u = 0f, v = 0f,
-                    width = 20, height = 20,
-                    textureWidth = 20, textureHeight = 20,
-                )
-            }
-
-            if (tile.decoration == CardTile.Decoration.FREE_SPACE) {
-                service.drawGuiTexture(
-                    texture = FRAME_FREE_SPACE_ID,
-                    x = itemX - 1, y = itemY - 1, z = 301,
-                    u = 0f, v = 0f,
-                    width = 20, height = 20,
-                    textureWidth = 20, textureHeight = 20,
-                )
-            }
-
-            if (tile.decoration == CardTile.Decoration.FORBIDDEN) {
-                service.drawGuiTexture(
-                    texture = FRAME_FORBIDDEN_ID,
-                    x = itemX - 1, y = itemY - 1, z = 301,
-                    u = 0f, v = 0f,
-                    width = 20, height = 20,
-                    textureWidth = 20, textureHeight = 20,
-                )
-            }
+            cardTileRenderer.renderTileDecorations(service, tile, itemX + 1, itemY + 1)
 
             if (tile.isLocked) {
                 service.drawGuiTexture(

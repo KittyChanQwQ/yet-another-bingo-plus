@@ -1,8 +1,5 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.platform.IMapService
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
@@ -18,6 +15,9 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.truncate
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.IMapService
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
@@ -93,6 +93,7 @@ class CardViewService(
 
             val updatePacket = CardUpdatePacket(view)
             when {
+                packets.cardUpdateV6.send(player, updatePacket) -> {}
                 packets.cardUpdateV5.send(player, updatePacket) -> {}
                 packets.cardUpdateV4.send(player, updatePacket) -> {}
                 packets.cardUpdateV3.send(player, updatePacket) -> {}
@@ -153,10 +154,32 @@ class CardViewService(
             card.options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key)
         val isAchieved = team != null && objective.hasAchieved(team.key)
 
-        return CardTile(
+        val image = CardTileImage(
             item = if (isHidden) null else entry.display.item,
+            texture = if (isHidden) null else entry.display.image,
+        )
+
+        val imageList = if (!isHidden && objective is BingoObjective.SomeOfEntry) {
+            objective.someOfObjectives
+                .mapNotNull { card.objectives[it] }
+                .sortedBy { innerObjective ->
+                    // prefer displaying objectives that are not yet achieved
+                    val isInnerAchieved = team?.key?.let { innerObjective.hasAchieved(it) } ?: false
+                    if (isInnerAchieved) 1 else 0
+                }
+                .take(4)
+                .map { innerObjective ->
+                    CardTileImage(
+                        item = innerObjective.display.item,
+                        texture = innerObjective.display.image,
+                    )
+                }
+        } else emptyList()
+
+        return CardTile(
+            image = image,
+            imageList = imageList,
             itemTier = entry.tier.takeIf { !card.options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
-            image = if (isHidden) null else entry.display.image,
             name = entry.display.name.takeIf { !isHidden },
             lore = entry.display.lore.takeIf { !isHidden } ?: emptyList(),
             decoration = objective.display.decoration.takeIf { isFreeSpace || !isHidden },

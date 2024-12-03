@@ -277,7 +277,7 @@ class MapRenderService(
             imageMap[key] = tileImage
             return tileImage
         } catch (e: Throwable) {
-            log.error("Error reading item image: ${tile.item?.identifier}", e)
+            log.error("Error reading item image: ${tile.image.item?.identifier}", e)
             imageMap[key] = null
             return BingoTileImage.FALLBACK
         }

@@ -1,20 +1,22 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.PlayerSoundCategory
-import me.jfenn.bingo.platform.PlayerSoundEvent
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.map.CardTile
+import me.jfenn.bingo.common.map.CardTileImage
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.PlayerSoundCategory
+import me.jfenn.bingo.platform.PlayerSoundEvent
+import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
@@ -40,6 +42,7 @@ class ScoreUpdateService(
 
     private fun sendScoreMessage(player: IPlayerHandle, packet: ScoreMessagePacket, fallback: Text?): Boolean {
         return when {
+            packetManager.scoreMessageV3.send(player.player, packet) -> true
             packetManager.scoreMessageV2.send(player.player, packet) -> true
             packetManager.scoreMessageV1.send(player.player, packet) -> true
             else -> {
@@ -137,8 +140,24 @@ class ScoreUpdateService(
             val scoreMessage = ScoreMessagePacket(
                 player = scoredPlayer,
                 isViewerOnTeam = isOnTeam,
-                item = item.takeIf { !isItemHidden },
-                image = objective.display.image.takeIf { !isItemHidden },
+                tile = CardTile(
+                    image = CardTileImage(
+                        item = item.takeIf { !isItemHidden },
+                        texture = objective.display.image.takeIf { !isItemHidden },
+                    ),
+                    imageList = if (!isItemHidden && objective is BingoObjective.SomeOfEntry) {
+                        objective.someOfObjectives
+                            .mapNotNull { card.objectives[it] }
+                            .take(4)
+                            .map { innerObjective ->
+                                CardTileImage(
+                                    item = innerObjective.display.item,
+                                    texture = innerObjective.display.image,
+                                )
+                            }
+                    } else emptyList(),
+                    decoration = objective.display.decoration.takeIf { !isItemHidden },
+                ),
                 messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
                 message = chatMessage,
             )
@@ -174,7 +193,7 @@ class ScoreUpdateService(
         val scoreMessage = ScoreMessagePacket(
             player = null,
             isViewerOnTeam = true,
-            item = null,
+            tile = null,
             messageType = ScoreMessagePacket.MessageType.LINE_SCORED,
             message = message,
         )
@@ -195,7 +214,7 @@ class ScoreUpdateService(
             val scoreMessage = ScoreMessagePacket(
                 player = null,
                 isViewerOnTeam = true,
-                item = null,
+                tile = null,
                 messageType = ScoreMessagePacket.MessageType.CARD_COMPLETED,
                 message = message,
             )
@@ -233,7 +252,7 @@ class ScoreUpdateService(
         val scoreMessage = ScoreMessagePacket(
             player = null,
             isViewerOnTeam = true,
-            item = null,
+            tile = null,
             messageType = ScoreMessagePacket.MessageType.LEADING_TEAM,
             message = message,
         )
@@ -260,7 +279,7 @@ class ScoreUpdateService(
         val scoreMessage = ScoreMessagePacket(
             player = null,
             isViewerOnTeam = true,
-            item = null,
+            tile = null,
             messageType = ScoreMessagePacket.MessageType.LEADING_TEAM,
             message = message,
         )

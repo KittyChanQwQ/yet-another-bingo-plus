@@ -257,6 +257,7 @@ internal class BingoHudController(
         packetEvents.cardUpdateV3.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV4.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV5.onPacket(::onCardUpdate)
+        packetEvents.cardUpdateV6.onPacket(::onCardUpdate)
 
         packetEvents.cardCompletedV1.onPacket {
             if (it.packet.isWinner) {
@@ -266,6 +267,7 @@ internal class BingoHudController(
 
         packetEvents.scoreMessageV1.onPacket(::onScoreMessage)
         packetEvents.scoreMessageV2.onPacket(::onScoreMessage)
+        packetEvents.scoreMessageV3.onPacket(::onScoreMessage)
 
         packetEvents.gameOverV1.onPacket(::onGameOver)
         packetEvents.gameOverV2.onPacket(::onGameOver)

@@ -26,6 +26,7 @@ val commonClientModule = module {
     single { BingoHudState() }
     singleOf(::BingoHudRenderer)
     singleOf(::BingoMessageRenderer)
+    singleOf(::CardTileRenderer)
     singleOf(::ReadyHudRenderer)
     singleOf(BingoHudScreen::Factory)
     singleOf(BingoEndScreen::Factory)

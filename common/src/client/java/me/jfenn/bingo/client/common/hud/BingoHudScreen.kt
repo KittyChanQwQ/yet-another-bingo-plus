@@ -54,11 +54,12 @@ internal class BingoHudScreen(
         screen = helper.screen,
 
         onTileClick = { tile ->
-            val stack = tile.item
+            val stack = tile.image.item
             if ((tile.decoration == null || tile.decoration == CardTile.Decoration.NONE) && stack != null) {
                 jei.openJeiRecipe(stack.stack)
+            } else {
+                false
             }
-            jei.isInstalled()
         },
         onViewClick = { view ->
             state.selectedTeam = view.teamKey

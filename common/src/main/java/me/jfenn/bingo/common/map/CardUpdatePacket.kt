@@ -1,9 +1,10 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.player.PlayerProfile
-import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
@@ -278,6 +279,65 @@ class CardUpdatePacket(
             dest.writeInt(tiles.size)
             for (tile in tiles) {
                 CardTile.V4.toPacketBuf(tile, dest)
+            }
+
+            dest.writeInt(view.players.size)
+            for (player in view.players) {
+                dest.writeString(player.uuid.toString())
+                dest.writeString(player.name)
+            }
+        }
+    }
+
+    object V6 : PacketConverter<CardUpdatePacket> {
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "update_card_v6")!!
+
+        override fun fromPacketBuf(buf: IPacketBuf): CardUpdatePacket {
+            val teamKey = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null
+            val teamColor = if (buf.readBoolean()) Formatting.valueOf(buf.readString()) else null
+            val teamName = buf.readText()
+            val tiles = MutableList(buf.readInt()) { CardTile.V5.fromPacketBuf(buf) }
+            val players = MutableList(buf.readInt()) {
+                PlayerProfile(
+                    uuid = UUID.fromString(buf.readString()),
+                    name = buf.readString(),
+                )
+            }
+            return CardUpdatePacket(
+                CardView(
+                    teamKey = teamKey,
+                    teamColor = teamColor,
+                    teamName = teamName,
+                    tiles = tiles,
+                    players = players,
+                )
+            )
+        }
+
+        override fun toPacketBuf(source: CardUpdatePacket, dest: IPacketBuf) {
+            val view = source.view
+
+            if (view.teamKey != null) {
+                dest.writeBoolean(true)
+                dest.writeString(view.teamKey.id)
+            } else {
+                dest.writeBoolean(false)
+            }
+
+            if (view.teamColor != null) {
+                dest.writeBoolean(true)
+                dest.writeString(view.teamColor.name)
+            } else {
+                dest.writeBoolean(false)
+            }
+
+            dest.writeText(view.teamName)
+
+            // read-only copy of tiles to avoid concurrent modification
+            val tiles = view.tiles.toList()
+            dest.writeInt(tiles.size)
+            for (tile in tiles) {
+                CardTile.V5.toPacketBuf(tile, dest)
             }
 
             dest.writeInt(view.players.size)
