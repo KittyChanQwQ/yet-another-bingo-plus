@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.ready
 
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.autorestart.ResetService
@@ -15,6 +14,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.text.Text
 import org.slf4j.Logger
 import kotlin.time.Duration
@@ -186,6 +186,11 @@ internal class ReadyController(
         events.onChangeOptions {
             log.info("[ReadyController] Reset the timer, as the game options have changed")
             reset()
+        }
+
+        events.onChangeTeam { player ->
+            if (readyState.isReady(player.uuid))
+                playerManager.updatePlayerListName(player)
         }
 
         events.onPacket(packets.readySetV1) {
