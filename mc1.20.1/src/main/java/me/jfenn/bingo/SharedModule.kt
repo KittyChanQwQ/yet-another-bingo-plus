@@ -35,6 +35,7 @@ val sharedModule = module {
 
     scope<BingoScope> {
         scopedOf(::AdvancementManager) bind IAdvancementManager::class
+        scopedOf(::BossBarManager) bind IBossBarManager::class
         scopedOf(::PlayerManager) bind IPlayerManager::class
         scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, me.jfenn.bingo.platform.ILevelStorage::class)
         scopedOf(::RecipeManagerImpl) bind IRecipeManager::class

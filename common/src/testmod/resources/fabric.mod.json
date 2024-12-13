@@ -41,6 +41,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "me.jfenn.bingo.integration.BossBarManagerTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "me.jfenn.bingo.integration.EntityManagerTest"
       },
       {
