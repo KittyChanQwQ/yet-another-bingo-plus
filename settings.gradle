@@ -32,6 +32,7 @@ rootProject.name = "bingo"
 include 'api'
 include 'common'
 include 'mc1.20.1'
+include 'mc1.20.2'
 include 'mc1.20.4'
 include 'mc1.20.6'
 include 'mc1.21.1'

@@ -1,0 +1,7 @@
+plugins {
+    alias(libs.plugins.kotlin.plugin.serialization)
+    id 'bingo.mod'
+    id 'bingo.publish'
+}
+
+loom.accessWidenerPath = file("src/main/resources/bingo-impl.accesswidener")
