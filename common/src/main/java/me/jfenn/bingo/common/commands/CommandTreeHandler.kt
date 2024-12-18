@@ -9,7 +9,7 @@ class CommandTreeHandler(
     events: ScopedEvents,
 ) {
 
-    fun sendCommandTree(playerEntity: ServerPlayerEntity) {
+    private fun sendCommandTree(playerEntity: ServerPlayerEntity) {
         server.playerManager.sendCommandTree(playerEntity)
     }
 

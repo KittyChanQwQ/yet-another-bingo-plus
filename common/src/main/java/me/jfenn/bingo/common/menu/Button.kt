@@ -1,13 +1,10 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.platform.EntityType
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.ITextDisplayEntity
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.menu.tooltips.TooltipService
-import me.jfenn.bingo.common.ready.ReadyTimerState
+import me.jfenn.bingo.platform.*
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -27,7 +24,8 @@ fun MenuComponent.registerButton(
     interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
     playerManager: IPlayerManager = koinScope.get(),
     tooltipService: TooltipService = koinScope.get(),
-    readyTimerState: ReadyTimerState = koinScope.get(),
+    events: ScopedEvents = koinScope.get(),
+    executors: IExecutors = koinScope.get(),
     onClick: (player: IPlayerHandle) -> Unit,
 ) {
     val isActive by isActiveProp
@@ -47,8 +45,11 @@ fun MenuComponent.registerButton(
             if (permissionGetter(player)) {
                 onClick(playerManager.forPlayer(player))
                 Sounds.playButtonSound(playerManager, player, entity.pos, player.serverWorld)
-                // Reset the ready state, assuming an option has been changed
-                readyTimerState.reset()
+                // Schedule an options changed event
+                // (this clears the ready state & redraws the menu)
+                executors.createServerTaskExecutor(player.server).execute {
+                    events.onChangeOptions.invoke(Unit)
+                }
             }
         }
     }

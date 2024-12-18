@@ -1,22 +1,20 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
-import me.jfenn.bingo.platform.commands.ICommandManager
-import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 class ChatCommand(
     commandManager: ICommandManager,
-    private val scoreboardManager: IScoreboardManager,
 ) {
 
     companion object {
