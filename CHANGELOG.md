@@ -10,4 +10,6 @@
 
 ### Translations
 
-- Updated Chinese Simplified translations by Fishlanding!
+- New Russian translations by Ofterkino!
+- New Portuguese translations by Lucasofchirst!
+- New Chinese Simplified translations by tovv3r and Young912!
