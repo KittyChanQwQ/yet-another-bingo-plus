@@ -57,7 +57,7 @@ These are common properties that can be specified on any objective:
     - `"minecraft:enchantments": {"levels":{"mending":1}}`
   - `"image": "mynamespace:myimage"`: References a [custom PNG image](./custom-objective-images) to be used as the objective icon
   - `"decoration": "NONE"`: Applies a decoration to the objective's tile on the card. One of: `ADVANCEMENT`, `MULTI_ITEM`, `FORBIDDEN`, `NONE`.
-- `"conflictsWith: ["minecraft:dried_kelp"]`: A list of conflicting objectives that should never appear on the same card as this one.
+- `"conflictsWith": ["minecraft:dried_kelp"]`: A list of conflicting objectives that should never appear on the same card as this one.
  
 ### Items
 
