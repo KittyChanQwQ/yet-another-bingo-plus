@@ -176,6 +176,7 @@ internal class ReadyController(
                 )
                 for (player in playerManager.getPlayers()) {
                     when {
+                        packets.readyUpdateV3.send(player, packet) -> {}
                         packets.readyUpdateV2.send(player, packet) -> {}
                         packets.readyUpdateV1.send(player, packet) -> {}
                     }
