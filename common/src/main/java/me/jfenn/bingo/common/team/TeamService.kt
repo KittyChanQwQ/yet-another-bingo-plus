@@ -76,7 +76,10 @@ class TeamService(
     }
 
     fun shuffleTeams(numTeams: Int) {
-        val teams = BingoTeam.TEAM_BLOCKS.values.shuffled()
+        val teams = BingoTeam.TEAM_BLOCKS.values
+            .shuffled()
+            // Prefer shuffling onto teams that have the most players
+            .sortedByDescending { state.teams[it.key]?.players?.size ?: 0 }
 
         val players = playerManager.getPlayers()
         val playersPerTeam = ceil(players.size / numTeams.coerceIn(1, teams.size).toDouble()).toInt()
