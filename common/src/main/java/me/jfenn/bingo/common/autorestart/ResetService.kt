@@ -1,16 +1,19 @@
 package me.jfenn.bingo.common.autorestart
 
-import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.menu.MenuController
+import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.measureTime
+import me.jfenn.bingo.platform.IPersistentStateManager
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.put
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.random.Random
@@ -26,6 +29,7 @@ class ResetService(
     private val serverWorldFactory: IServerWorldFactory,
     private val menuController: MenuController,
     private val server: MinecraftServer,
+    private val persistentStateManager: IPersistentStateManager,
     private val log: Logger,
 ) {
 
@@ -48,6 +52,15 @@ class ResetService(
         serverWorldFactory.recreateWorlds(server, Random.Default.nextLong()) {
             menuController.prepareLobbyFiles()
         }
+
+        log.info("[Reset] Transferring game state")
+        // This is important! Otherwise the bingo persistent state does not get copied into the new world data
+        // (ScopeManager does this on initial setup, but it gets lost when the world is replaced)
+        persistentStateManager.put<BingoState>(
+            world = server.overworld,
+            id = ScopeManager.BINGO_STATE_ID,
+            value = state,
+        )
 
         log.info("[Reset] Teleporting players back to lobby")
         state.changeState(events, GameState.PREGAME)

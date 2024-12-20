@@ -3,7 +3,8 @@ package me.jfenn.bingo.platform
 import kotlinx.serialization.json.*
 import net.minecraft.nbt.*
 import net.minecraft.server.world.ServerWorld
-import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 interface IPersistentStateManager {
 
@@ -33,6 +34,14 @@ interface IPersistentStateManager {
         }
     }
 
-    fun <T: Any> getFromWorld(world: ServerWorld, id: String, clazz: KClass<T>, default: () -> T): T
+    fun <T: Any> getFromWorld(world: ServerWorld, id: String, kType: KType, default: () -> T): T
+
+    fun <T: Any> put(world: ServerWorld, id: String, kType: KType, value: T)
 
 }
+
+inline fun <reified T: Any> IPersistentStateManager.getFromWorld(world: ServerWorld, id: String, noinline default: () -> T): T =
+    getFromWorld(world, id, typeOf<T>(), default)
+
+inline fun <reified T: Any> IPersistentStateManager.put(world: ServerWorld, id: String, value: T) =
+    put(world, id, typeOf<T>(), value)

@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.event.model.ReloadEvent
+import me.jfenn.bingo.platform.getFromWorld
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
 import org.koin.core.Koin
@@ -45,10 +46,9 @@ class ScopeManager(
             else log.info("[ScopeManager] $MOD_ID.zip datapack does not exist - starting with isLobbyMode=false")
 
             // obtain the bingo game state from the save file
-            val state: BingoState = persistentStateManager.getFromWorld(
+            val state = persistentStateManager.getFromWorld<BingoState>(
                 world = server.overworld,
-                id = MOD_ID,
-                clazz = BingoState::class,
+                id = BINGO_STATE_ID,
                 default = { BingoState() },
             )
             state.isLobbyMode = isLobbyMode
@@ -86,6 +86,7 @@ class ScopeManager(
 
     companion object {
         val onCleanup = EventListener<Scope>()
+        const val BINGO_STATE_ID = MOD_ID
     }
 
 }
