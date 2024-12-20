@@ -79,6 +79,12 @@ class TierListLoader(
         val lists = manager.findAllResources("$MOD_ID_BINGO/tierlists") { it.path.endsWith(FILE_SUFFIX) }
         for ((id, files) in lists) {
             val name = id.path.substringAfterLast('/').removeSuffix(FILE_SUFFIX)
+            if (id.namespace == MOD_ID_BINGO && name in BUILTIN_TIER_LISTS) {
+                // Default tier lists are written to the config dir as files (in MigrationHandler)
+                // and should only be read from readTierListFiles() to avoid duplication
+                continue
+            }
+
             val configs = files.mapNotNull { file ->
                 try {
                     file.inputStream.use {
@@ -99,7 +105,11 @@ class TierListLoader(
         }
 
         for ((name, config) in readTierListFiles()) {
-            newTierLists[name] = config
+            // Files cannot completely overwrite the resource lists, otherwise this prevents
+            // datapacks from modifying them...
+            // However, the builtin lists should never be pulled from resources (due to the check above)
+            val otherConfig = newTierLists[name]
+            newTierLists[name] = otherConfig?.combine(config) ?: config
         }
 
         return newTierLists
