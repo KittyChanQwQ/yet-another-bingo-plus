@@ -221,7 +221,7 @@
   "bingo.options.score_info": "Informações de pontuação",
   "bingo.options.show_hidden_tiers": "Mostrar nível se oculto",
   "bingo.options.show_hidden_tiers.tooltip": "No modo 'Itens ocultos', o nível de cada item será exibido na carta.",
-  "bingo.options.spawn_dimension": "Gerar dimensão",
+  "bingo.options.spawn_dimension": "Dimensão de geração",
   "bingo.options.spawn_distance": "Distância de equipes",
   "bingo.options.spawn_distance.tooltip": "Isso define a distância mínima que as equipes vão gerar um do outro.",
   "bingo.options.spawn_distance_chunks": "%s chunks",
