@@ -99,8 +99,7 @@ class TierListLoader(
         }
 
         for ((name, config) in readTierListFiles()) {
-            val otherConfig = newTierLists[name]
-            newTierLists[name] = otherConfig?.combine(config) ?: config
+            newTierLists[name] = config
         }
 
         return newTierLists
