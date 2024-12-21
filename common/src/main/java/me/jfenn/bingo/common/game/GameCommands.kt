@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.game
 
-import me.jfenn.bingo.platform.commands.ICommandManager
-import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -55,7 +55,14 @@ class GameCommands(
                     val state = scope.get<BingoState>()
                     state.isForfeit = true
 
-                    gameService.end(GameEndReason.Command(player?.playerName ?: "[unknown]"))
+                    val player = player
+                    val playerName = when {
+                        player != null -> player.playerName
+                        isConsole -> "RCON"
+                        else -> "[unknown]"
+                    }
+
+                    gameService.end(GameEndReason.Command(playerName))
                 }
             }
         }
