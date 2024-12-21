@@ -1,14 +1,14 @@
 package me.jfenn.bingo.common.stats
 
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.commands.ICommandManager
-import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -102,7 +102,7 @@ class StatsCommand(
             literal("reset") {
                 literal("player") {
                     requires { hasPermission(Permission.STATS_RESET_SELF) || hasPermission(Permission.STATS_RESET_GLOBAL) }
-                    executes { clearPlayerStats(player!!) }
+                    executes { clearPlayerStats(playerOrThrow) }
 
                     player("player") { playerArg ->
                         requires { hasPermission(Permission.STATS_RESET_GLOBAL) }
@@ -125,8 +125,7 @@ class StatsCommand(
                 hasPermission(Permission.STATS_VIEW_SELF)
             }
             executes {
-                val player = player ?: throw IllegalArgumentException("Must be called on player")
-                getStatsSummary(player)
+                getStatsSummary(playerOrThrow)
             }
         }
     }

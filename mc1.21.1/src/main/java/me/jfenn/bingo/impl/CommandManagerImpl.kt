@@ -9,6 +9,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.CommandSyntaxException
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionProvider
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
@@ -167,6 +168,10 @@ open class ExecutionSourceImpl(
     override val scope: Scope = BingoKoin.getScope(source.server)
         ?: throw IllegalArgumentException("No scope registered for this server!")
     override val player: IPlayerHandle? = source.player?.let { PlayerHandle(it) }
+    override val isConsole: Boolean = source.entity == null
+    override fun error(text: Text): Nothing {
+        throw SimpleCommandExceptionType(text).create()
+    }
 }
 
 class ExecutionContextImpl(

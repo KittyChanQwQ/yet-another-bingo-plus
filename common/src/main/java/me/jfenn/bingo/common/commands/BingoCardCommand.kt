@@ -71,7 +71,7 @@ class BingoCardCommand(
     }
 
     private fun IExecutionContext.getCardSeed() {
-        val card = cardViewService.getPlayerCard(player!!)
+        val card = cardViewService.getPlayerCard(player)
         sendInfoMessage(
             Text.empty()
                 .append("The current Bingo Card seed is: ")
@@ -80,7 +80,7 @@ class BingoCardCommand(
     }
 
     private fun IExecutionContext.setCardSeed(seed: Long) {
-        val card = cardViewService.getPlayerCard(player!!)
+        val card = cardViewService.getPlayerCard(player)
         val newCard = cardService.generateCard(card, seed = seed)
         sendInfoFeedback(
             Text.empty()
@@ -91,7 +91,7 @@ class BingoCardCommand(
 
     private fun IExecutionContext.setItemDist(itemDistInput: List<Int>) {
         val events = scope.get<ScopedEvents>()
-        val card = cardViewService.getPlayerCard(player!!)
+        val card = cardViewService.getPlayerCard(player)
         val itemDist = List(5) { itemDistInput.getOrNull(it) ?: 0 }
 
         if (itemDist.sum() > 25) {
@@ -106,7 +106,7 @@ class BingoCardCommand(
     }
 
     private fun IExecutionContext.rerollCard() {
-        val card = cardViewService.getPlayerCard(player!!)
+        val card = cardViewService.getPlayerCard(player)
         cardService.shuffleCard(card)
         sendInfoFeedback(Text.literal("Card re-rolled."))
     }

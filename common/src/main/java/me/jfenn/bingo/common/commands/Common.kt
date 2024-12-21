@@ -27,6 +27,7 @@ fun IExecutionSource.hasState(vararg requiredState: GameState): Boolean {
 }
 
 fun IExecutionSource.hasPermission(key: PermissionKey): Boolean {
+    if (isConsole) return true
     val player = player ?: return false
     val permissions = scope.get<PermissionsIntegration>()
     return permissions.hasPermission(player, key)

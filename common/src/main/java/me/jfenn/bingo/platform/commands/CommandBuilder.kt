@@ -129,6 +129,11 @@ interface IExecutionSource {
     val server: MinecraftServer
     val scope: Scope
     val player: IPlayerHandle?
+    val isConsole: Boolean
+    fun error(text: Text): Nothing
+
+    val playerOrThrow
+        get() = player ?: error(Text.translatable("permissions.requires.player"))
 }
 
 interface IExecutionContext : IExecutionSource {

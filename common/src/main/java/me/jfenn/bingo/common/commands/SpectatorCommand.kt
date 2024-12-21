@@ -54,13 +54,13 @@ class SpectatorCommand(
                 // - AND EITHER:
                 //   * the player is not on a team (spectating)
                 //   * the game state is POSTGAME
-                val isAvailable = state.isLobbyMode && (!teamService.isPlaying(player!!) || state.state == GameState.POSTGAME)
+                val isAvailable = state.isLobbyMode && (!teamService.isPlaying(playerOrThrow) || state.state == GameState.POSTGAME)
 
                 isGameState && isPermission && isAvailable
             }
 
             executes {
-                toggleSpectator(scope.get(), player!!)
+                toggleSpectator(scope.get(), playerOrThrow)
             }
         }
     }

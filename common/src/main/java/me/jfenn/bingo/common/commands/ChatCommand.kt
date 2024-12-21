@@ -37,7 +37,7 @@ class ChatCommand(
     }
 
     private fun IExecutionContext.sendGlobalMessage(messageStr: String) {
-        val player = player!!
+        val player = playerOrThrow
         val teamService = scope.get<TeamService>()
         val playerManager = scope.get<IPlayerManager>()
 

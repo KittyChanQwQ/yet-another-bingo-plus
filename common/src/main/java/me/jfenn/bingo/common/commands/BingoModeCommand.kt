@@ -21,7 +21,7 @@ class BingoModeCommand(
     private val text: TextProvider,
 ) {
     private fun IExecutionContext.sendModeFeedback(
-        card: BingoCard = scope.get<CardViewService>().getPlayerCard(player!!)
+        card: BingoCard = scope.get<CardViewService>().getPlayerCard(player)
     ) {
         val options = scope.get<BingoOptions>()
 
@@ -42,7 +42,7 @@ class BingoModeCommand(
         value: Boolean? = null,
     ) {
         val cardViewService = scope.get<CardViewService>()
-        val card = cardViewService.getPlayerCard(player!!)
+        val card = cardViewService.getPlayerCard(player)
 
         val newValue = value ?: (!prop.get(card.options))
         prop.set(card.options, newValue)

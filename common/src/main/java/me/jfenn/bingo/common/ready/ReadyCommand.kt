@@ -8,10 +8,10 @@ class ReadyCommand(
     init {
         commandManager.register("ready") {
             requires {
-                scope.get<ReadyService>().canUseReady(player!!)
+                scope.get<ReadyService>().canUseReady(playerOrThrow)
             }
             executes {
-                scope.get<ReadyService>().toggleReady(player!!)
+                scope.get<ReadyService>().toggleReady(playerOrThrow)
             }
         }
     }

@@ -14,7 +14,7 @@ class ResetCommand(
 ) {
     init {
         commandManager.register("restart") {
-            requires { hasPermission(Permission.COMMAND_RESTART) && hasState(GameState.POSTGAME) }
+            requires { hasPermission(Permission.COMMAND_RESTART) && hasState(GameState.PLAYING, GameState.POSTGAME) }
             executes { scope.get<ResetService>().resetGame() }
 
             literal("abort") {

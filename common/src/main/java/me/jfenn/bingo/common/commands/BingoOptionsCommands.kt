@@ -43,7 +43,7 @@ class BingoOptionsCommands(
 
     private fun IExecutionContext.setGoal(goal: BingoGoal) {
         val cardViewService = scope.get<CardViewService>()
-        val card = cardViewService.getPlayerCard(player!!)
+        val card = cardViewService.getPlayerCard(player)
         card.options.goal = goal
 
         val events = scope.get<ScopedEvents>()

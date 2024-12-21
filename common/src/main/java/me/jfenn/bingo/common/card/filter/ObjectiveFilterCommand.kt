@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.CardViewService
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -24,7 +25,7 @@ class ObjectiveFilterCommand(
         val cardService = scope.get<CardService>()
         val cardViewService = scope.get<CardViewService>()
         val objectiveFilterService = scope.get<ObjectiveFilterService>()
-        val card = cardViewService.getPlayerCard(player!!)
+        val card = cardViewService.getPlayerCard(player)
 
         card.options.itemFilter = mutate(card.options.itemFilter)
 
@@ -44,7 +45,7 @@ class ObjectiveFilterCommand(
 
     private fun IExecutionContext.listActiveTags(): List<String> {
         return scope.get<CardViewService>()
-            .getPlayerCard(player!!)
+            .getPlayerCard(player)
             .options
             .itemFilter
             .map { ObjectiveFilterList(it).toString() }

@@ -14,6 +14,7 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.commands.IExecutionSource
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -71,29 +72,33 @@ class CoordsCommand(
         }
     }
 
+    private val IExecutionSource.teamOrThrow get() = scope.get<TeamService>()
+        .getPlayerTeam(playerOrThrow)
+        ?: error(Text.literal("Player must be on a team!"))
+
     init {
         // send current player coordinates to other team members
         commandManager.register("coords") {
             requires {
                 hasState(GameState.PLAYING, GameState.POSTGAME)
                         && hasPermission(Permission.COMMAND_COORDS)
-                        && scope.get<TeamService>().isPlaying(player!!)
+                        && scope.get<TeamService>().isPlaying(playerOrThrow)
             }
 
             literal("list") {
                 executes {
-                    listCoordinates(player!!, BingoTeam.fromPlayer(player!!.player)!!)
+                    listCoordinates(playerOrThrow, teamOrThrow)
                 }
             }
 
             string("message", null, greedy = true) { message ->
                 executes {
-                    storeCoordinates(player!!, BingoTeam.fromPlayer(player!!.player)!!, getArgument(message))
+                    storeCoordinates(playerOrThrow, teamOrThrow, getArgument(message))
                 }
             }
 
             executes {
-                storeCoordinates(player!!, BingoTeam.fromPlayer(player!!.player)!!, null)
+                storeCoordinates(playerOrThrow, teamOrThrow, null)
             }
         }
     }

@@ -131,8 +131,8 @@ class CardViewService(
                 (team != null && isViewingSpectatorCards(player))
     }
 
-    fun getPlayerCard(player: IPlayerHandle): BingoCard {
-        return teamService.getPlayerTeam(player.player)
+    fun getPlayerCard(player: IPlayerHandle?): BingoCard {
+        return player?.let { teamService.getPlayerTeam(it) }
             ?.let { state.getCard(it) }
             ?: state.getActiveCard()
     }

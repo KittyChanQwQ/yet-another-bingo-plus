@@ -62,12 +62,12 @@ class BingoPrefsCommand(
                 literal(getFieldName(field)) {
                     boolean("value") { newValue ->
                         executes {
-                            changeBooleanSetting(player!!, field, getArgument(newValue))
+                            changeBooleanSetting(playerOrThrow, field, getArgument(newValue))
                         }
                     }
 
                     executes {
-                        toggleBooleanSetting(player!!, field)
+                        toggleBooleanSetting(playerOrThrow, field)
                     }
                 }
             }

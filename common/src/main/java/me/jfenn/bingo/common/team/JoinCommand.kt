@@ -1,10 +1,5 @@
 package me.jfenn.bingo.common.team
 
-import me.jfenn.bingo.platform.IExecutors
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.commands.ICommandManager
-import me.jfenn.bingo.platform.commands.IExecutionContext
-import me.jfenn.bingo.platform.commands.IExecutionSource
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -15,6 +10,11 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.commands.IExecutionSource
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
@@ -86,7 +86,7 @@ class JoinCommand(
                 literal(team.id.removePrefix("bingo_")) {
                     requires { hasPermission(Permission.COMMAND_JOIN) && isNotProcessingTeams() }
                     executes {
-                        joinTeam(player!!, team)
+                        joinTeam(playerOrThrow, team)
                     }
 
                     player("player") { playerArg ->

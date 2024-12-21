@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.config
 
-import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.commands.BingoOptionsCommands
@@ -10,6 +9,7 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -24,8 +24,8 @@ internal class OptionsService(
     private val teamService: TeamService,
     private val text: TextProvider,
 ) {
-    fun getOptionsSummary(player: IPlayerHandle): Sequence<MutableText> = sequence {
-        val team = teamService.getPlayerTeam(player)
+    fun getOptionsSummary(player: IPlayerHandle?): Sequence<MutableText> = sequence {
+        val team = player?.let { teamService.getPlayerTeam(it) }
         val card = cardViewService.getPlayerCard(player)
 
         text.string(

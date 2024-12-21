@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.ClickEvent
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -16,7 +17,7 @@ class BingoCommand(
     commandManager: ICommandManager,
     private val text: TextProvider,
 ) : BingoComponent() {
-    private fun IExecutionContext.getOptionsText(): List<Text> = buildList {
+    private fun IExecutionContext.getOptionsText(): List<MutableText> = buildList {
         add(Text.empty())
 
         text.string(StringKey.FullName)
@@ -28,7 +29,7 @@ class BingoCommand(
 
         add(Text.empty())
 
-        addAll(scope.get<OptionsService>().getOptionsSummary(player!!))
+        addAll(scope.get<OptionsService>().getOptionsSummary(player))
 
         add(Text.empty())
     }
