@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -10,6 +9,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.VanishIntegration
+import me.jfenn.bingo.platform.*
 import net.minecraft.server.MinecraftServer
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
@@ -78,18 +78,16 @@ class PlayerController(
             }
         }
 
-        if (
-            player.player.interactionManager.gameMode != gameMode ||
-            (player.serverWorld == lobbyWorld && state.state != GameState.PREGAME) ||
-            forceReset
-        ) {
-            // This indicates that a player is starting the game, or has logged back on after a game has started
-            // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
-            val shouldRespawnPlayer = state.state == GameState.PREGAME || state.state == GameState.LOADING || isOnActiveTeam
-            if (shouldRespawnPlayer && state.state != GameState.POSTGAME) {
-                respawnPlayer(player)
-            }
+        // This indicates that a player is starting the game, or has logged back on after a game has started
+        // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
+        val preGameStates = arrayOf(GameState.PREGAME, GameState.STARTING, GameState.PRELOADING, GameState.LOADING, GameState.COUNTDOWN)
+        val isRespawnNeeded = (player.player.interactionManager.gameMode != gameMode || forceReset) && (state.state in preGameStates || isOnActiveTeam) && state.state != GameState.POSTGAME
+        val isStuckInLobby = player.serverWorld == lobbyWorld && state.state != GameState.PREGAME
+        if (isRespawnNeeded || isStuckInLobby) {
+            respawnPlayer(player)
+        }
 
+        if (player.player.interactionManager.gameMode != gameMode) {
             player.player.changeGameMode(gameMode)
         }
 
@@ -137,7 +135,7 @@ class PlayerController(
         // reset advancements state
         advancementManager.clearAdvancements(player.player)
 
-        if (state.state == GameState.PREGAME || state.state == GameState.PRELOADING) {
+        if (state.state == GameState.PREGAME || state.state == GameState.STARTING || state.state == GameState.PRELOADING) {
             spawnService.teleportToLobby(player)
         } else {
             // teleport the player to their spawnpoint
