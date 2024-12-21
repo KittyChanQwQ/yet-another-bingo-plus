@@ -151,16 +151,20 @@
     "minecraft:adventure/trim_with_all_exclusive_armor_patterns",
     "minecraft:adventure/two_birds_one_arrow",
     "minecraft:adventure/very_very_frightening",
-    "minecraft:end/respawn_dragon",
     "minecraft:husbandry/balanced_diet",
     "minecraft:husbandry/bred_all_animals",
     "minecraft:husbandry/complete_catalogue",
     "minecraft:husbandry/feed_snifflet",
     "minecraft:husbandry/froglights",
     "minecraft:husbandry/kill_axolotl_target",
+    "minecraft:husbandry/leash_all_frog_variants",
     "minecraft:husbandry/plant_any_sniffer_seed",
+    "minecraft:husbandry/whole_pack",
     "minecraft:nether/all_effects",
     "minecraft:nether/all_potions",
-    "minecraft:nether/create_full_beacon"
+    "minecraft:nether/create_beacon",
+    "minecraft:nether/create_full_beacon",
+    "minecraft:nether/summon_wither",
+    "minecraft:nether/uneasy_alliance"
   ]
 }
