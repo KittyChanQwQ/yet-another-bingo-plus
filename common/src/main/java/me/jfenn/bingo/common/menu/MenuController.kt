@@ -200,18 +200,20 @@ class MenuController(
     }
 
     private fun searchLobbyBlocks() = sequence {
-        for (chunkX in -2..2) for (chunkZ in -2..2) {
+        val chunkIndices = arrayOf(0, 1, -1, 2, -2)
+        val bottomY = server.lobbyWorld?.bottomY ?: 0
+
+        for (chunkX in chunkIndices) for (chunkZ in chunkIndices) {
             val chunk = server.lobbyWorld?.getChunk(chunkX, chunkZ, ChunkStatus.FULL)
                 ?: continue
             val heightmap = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE)
-            val bottomY = server.lobbyWorld?.bottomY ?: 0
 
             for (i in everyChunkIndex()) {
                 val x = i % 16
                 val z = i / 16
                 val height = heightmap.get(x, z) + 3
 
-                for (y in bottomY..height) {
+                for (y in (bottomY..height).reversed()) {
                     val blockPos = chunk.pos.getBlockPos(x, y, z)
                     yield(BlockPosition.fromBlockPos(blockPos))
                 }
