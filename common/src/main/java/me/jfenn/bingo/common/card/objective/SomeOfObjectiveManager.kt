@@ -34,14 +34,14 @@ class SomeOfObjectiveManager(
         if (data !is ObjectiveData.SomeOfBase)
             return null
 
-        if (data.objectives.isEmpty()) {
-            log.error("[SomeOfObjectiveManager] $id 'objectives' cannot be empty!")
-            return null
-        }
-
         val someOfObjectives = data.objectives
             .map { data.expandReference(id, it) }
             .let { tagExpansionService.expandItemTags(it) }
+
+        if (someOfObjectives.isEmpty()) {
+            log.error("[SomeOfObjectiveManager] $id 'objectives' cannot be empty!")
+            return null
+        }
 
         return BingoObjective.SomeOfEntry(
             id = id,
