@@ -58,6 +58,7 @@ These are common properties that can be specified on any objective:
   - `"image": "mynamespace:myimage"`: References a [custom PNG image](./custom-objective-images) to be used as the objective icon
   - `"decoration": "NONE"`: Applies a decoration to the objective's tile on the card. One of: `ADVANCEMENT`, `MULTI_ITEM`, `FORBIDDEN`, `NONE`.
 - `"conflictsWith": ["minecraft:dried_kelp"]`: A list of conflicting objectives that should never appear on the same card as this one.
+- `"validate": {}`: [A set of conditions](#validation) that must pass for the objective to appear on the card.
  
 ### Items
 
@@ -165,3 +166,36 @@ Some of these JSON properties describe a "Number Source", which can be one of th
   - `"type": "random"`
   - `"min": 8`: The lower boundary for the item count (inclusive)
   - `"max": 32`: The upper boundary for the item count (inclusive)
+
+## Validation
+
+Some types of objectives might not work with all the possible game settings, especially when using scoreboards & datapack functions to write your own logic.
+
+For example, opponent-based objectives usually aren't completable if there is only one team.
+
+To solve this, you can use `"validate"` to specify which settings your objective needs. The mod will then either avoid the objective or warn players starting a game when the requirements aren't met.
+
+```json
+  "validate": {
+    // Min/max number of teams needed to start the game
+    "minTeams": 2,
+    "maxTeams": 4,
+    // Min/max number of players needed to start the game
+    "minPlayers": 2,
+    "maxPlayers": 4,
+    // Min/max number of players that must be on each team
+    "minPlayersPerTeam": 1,
+    "maxPlayersPerTeam": 8,
+    // Require that certain objectives are successfully resolved
+    // - by default, the mod ignores any missing objectives (such as modded items or custom advancements)
+    "objectives": ["minecraft:copper_bulb"],
+    // Require that only the default bingo teams are used
+    // (bingo_red, bingo_pink, bingo_blue, ...)
+    // This will prevent players from setting up their own teams when the feature is introduced -> https://gitlab.com/horrific-tweaks/bingo/-/issues/33
+    "onlyDefaultTeams": true
+  }
+```
+
+For example, validation is used in
+[`stat_killed_creaking`](https://gitlab.com/horrific-tweaks/bingo/-/blob/main/common/src/main/resources/data/yet-another-minecraft-bingo/yet-another-minecraft-bingo/objectives/challenge/stat_killed_creaking.json)
+to ensure that it only shows up on 1.21.4+ by checking for `"objectives": ["minecraft:resin_clump"]`. (This is because the "creaking killed" statistic does not work in the 1.21.3 preview)

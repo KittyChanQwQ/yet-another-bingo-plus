@@ -11,8 +11,7 @@ You can copy a tier list directly from the [tier list editor](./tier-editor) int
   "B": [],
   "C": [],
   "D": [],
-  "groups": [],
-  "requirements": {}
+  "groups": []
 }
 ```
 
@@ -48,35 +47,3 @@ Objectives in the same group can be placed on different tiers. It will also pick
 While groups behave similarly to the `"conflictsWith"` property on custom objectives, note that `"conflictsWith"` does _not_ affect the weighting of the list.
 
 :::
-
-## Requirements
-
-Some tier lists might not work with all the possible game settings, especially when using scoreboards & datapack functions to write your own logic.
-
-For example, opponent-based objectives usually aren't completable if there is only one team.
-
-To solve this, you can use `"requirements"` to specify which settings your list needs. The mod will then warn players starting a game when the requirements aren't met.
-
-```json
-  "requirements": {
-    // Min/max number of teams needed to start the game
-    "minTeams": 2,
-    "maxTeams": 4,
-    // Min/max number of players that must be on each team
-    "minPlayersPerTeam": 1,
-    "maxPlayersPerTeam": 8,
-    // Require that certain objectives are successfully resolved
-    // - by default, the mod ignores any missing objectives (such as modded items or custom advancements)
-    "objectives": ["minecraft:copper_bulb"],
-    // Require that only the default bingo teams are used
-    // (bingo_red, bingo_pink, bingo_blue, ...)
-    // This will prevent players from setting up their own teams when the feature is introduced -> https://gitlab.com/horrific-tweaks/bingo/-/issues/33
-    "onlyDefaultTeams": true,
-    // Require specific game options to be set.
-    // Any value from game-options.json can be used here.
-    "options": {
-      "isLockoutMode": false,
-      "isPvpEnabled": true
-    }
-  }
-```
