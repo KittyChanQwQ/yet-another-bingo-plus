@@ -70,7 +70,6 @@ export default defineConfig({
           { text: 'config.json', link: '/config-extra' },
           { text: 'Functions', link: '/functions' },
           { text: 'Tier List Editor', link: '/tier-editor' },
-          { text: 'Item Images', link: '/item-images' },
         ],
       },
       {
@@ -92,6 +91,13 @@ export default defineConfig({
           { text: 'Objectives', link: '/custom-objectives' },
           { text: 'Objective Icons', link: '/custom-objective-images' },
           { text: 'Function Tags', link: '/custom-function-tags' },
+        ],
+      },
+      {
+        text: 'Developer API',
+        collapsed: true,
+        items: [
+          { text: 'Overview', link: '/api/overview' },
         ],
       },
     ],

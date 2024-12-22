@@ -13,7 +13,8 @@ The BINGO mod creates several config files the first time you start it up:
    ├ game-options.json
    ├ game-options-default.json
    ├ player-settings.json
-   └ ... .tierlist.json
+   ├ ... .tierlist.json
+   └ 🗀 commands/
 🗀 mods/
 🗀 world/
 server.properties
@@ -40,7 +41,11 @@ This file supplies the default options for the game menu - used whenever the "Re
 
 ## `*.tierlist.json`
 
-The tier list files are used to generate the BINGO card from a set of [tier lists](./tier-editor). These are randomized for each game according to the configured [item distribution](./game-options#item-distribution).
+The tier list files are used to generate the BINGO card from a set of [tier lists](./tier-editor). These are randomized for each game according to the configured [card difficulty](./game-options#card-difficulty).
 
 Multiple tier lists can be used at once! Any file ending with `.tierlist.json` will be shown as an option in the game.
+
+## `commands/`
+
+The "commands" folder allows you to specify commands to run at different stages of the game. This is useful if you want to change gamerules on each round without setting them manually. See [functions](./functions) for a more detailed explanation.
 
