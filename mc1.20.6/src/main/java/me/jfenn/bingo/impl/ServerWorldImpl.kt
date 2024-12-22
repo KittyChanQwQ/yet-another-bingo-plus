@@ -1,14 +1,15 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.platform.IServerWorld
-import me.jfenn.bingo.platform.IServerWorldFactory
-import me.jfenn.bingo.platform.block.IBlockState
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.impl.block.BlockStateImpl
 import me.jfenn.bingo.mixin.LevelPropertiesAccessor
 import me.jfenn.bingo.mixin.ServerChunkManagerAccessor
 import me.jfenn.bingo.mixin.ThreadedAnvilChunkStorageAccessor
+import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.block.IBlockState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
@@ -17,49 +18,75 @@ import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.chunk.Chunk
 import net.minecraft.world.chunk.ChunkStatus
 import net.minecraft.world.level.LevelProperties
+import org.slf4j.Logger
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-class ServerWorldImpl(
-    override val world: ServerWorld
-): IServerWorld {
-    companion object : IServerWorldFactory {
-        override fun forWorld(world: ServerWorld): IServerWorld = ServerWorldImpl(world)
-        override fun listWorlds(server: MinecraftServer): List<IServerWorld> {
-            return server.worlds.map { forWorld(it) }
+class ServerWorldFactory(
+    private val log: Logger,
+) : IServerWorldFactory {
+    override fun forWorld(world: ServerWorld): IServerWorld = ServerWorldImpl(world)
+    override fun listWorlds(server: MinecraftServer): List<IServerWorld> {
+        return server.worlds.map { forWorld(it) }
+    }
+
+    private fun tickKeepAlive(server: MinecraftServer) {
+        server.networkIo?.tick()
+    }
+
+    override fun recreateWorlds(
+        server: MinecraftServer,
+        seed: Long,
+        callback: () -> kotlin.Unit
+    ) {
+        // First, ensure the world/data is saved
+        log.measureTime("[Reset] Saving...") {
+            server.saveAll(false, true, true)
         }
 
-        override fun recreateWorlds(
-            server: MinecraftServer,
-            seed: Long,
-            callback: () -> kotlin.Unit
-        ) {
-            // First, ensure the world/data is saved
-            server.saveAll(false, true, true)
+        tickKeepAlive(server)
 
-            // Remove scoreboard objectives to avoid a crash when data is reloaded in loadWorld()
-            server.scoreboard.objectives.forEach { server.scoreboard.removeObjective(it) }
+        // Remove scoreboard objectives to avoid a crash when data is reloaded in loadWorld()
+        server.scoreboard.objectives.forEach { server.scoreboard.removeObjective(it) }
 
-            server.saving = true
-            try {
-                server.cancelTasks()
-                for (world in listWorlds(server)) {
+        server.saving = true
+        try {
+            server.cancelTasks()
+            for (world in listWorlds(server)) {
+                log.measureTime("[Reset] Closing ${world.identifier}...") {
                     world.close()
-                    arrayOf("region", "poi", "entities")
-                        .map { world.directory.resolve(it).toFile() }
-                        .filter { it.exists() }
-                        .onEach { it.deleteRecursively() }
                 }
-                callback()
+
+                tickKeepAlive(server)
+
+                arrayOf("region", "poi", "entities")
+                    .map { world.directory.resolve(it).toFile() }
+                    .filter { it.exists() }
+                    .onEach { it.deleteRecursively() }
+
+                tickKeepAlive(server)
+            }
+
+            callback()
+            tickKeepAlive(server)
+
+            log.measureTime("[Reset] Loading new worlds...") {
                 val levelPropertiesAccessor = (server.saveProperties as LevelProperties) as LevelPropertiesAccessor
                 levelPropertiesAccessor.generatorOptions = levelPropertiesAccessor.generatorOptions.withSeed(OptionalLong.of(seed))
                 server.loadWorld()
-            } finally {
-                server.saving = false
             }
+            tickKeepAlive(server)
+        } finally {
+            server.saving = false
         }
+    }
+}
 
+class ServerWorldImpl(
+    override val world: ServerWorld
+): IServerWorld {
+    companion object {
         private val TICKET_HELD = ChunkTicketType.create("$MOD_ID_BINGO-held") { _: Any?, _: Any? -> 0 }
         private val TICKET_ASYNC = ChunkTicketType.create("$MOD_ID_BINGO-async") { _: Any?, _: Any? -> 0 }
     }

@@ -29,7 +29,7 @@ val sharedModule = module {
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     singleOf(::ScoreboardManager) bind IScoreboardManager::class
     single { ServerEventsImpl } bind IServerEvents::class
-    single { ServerWorldImpl } bind IServerWorldFactory::class
+    singleOf(::ServerWorldFactory) bind IServerWorldFactory::class
     singleOf(::StatManagerImpl) bind IStatManager::class
     singleOf(::TagAccessorImpl) bind ITagAccessor::class
     singleOf(::TeamManager) bind ITeamManager::class
@@ -39,7 +39,7 @@ val sharedModule = module {
         scopedOf(::AdvancementManager) bind IAdvancementManager::class
         scopedOf(::BossBarManager) bind IBossBarManager::class
         scopedOf(::PlayerManager) bind IPlayerManager::class
-        scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, me.jfenn.bingo.platform.ILevelStorage::class)
+        scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, ILevelStorage::class)
         scopedOf(::ItemStackFactory) bind IItemStackFactory::class
         scopedOf(::RecipeManagerImpl) bind IRecipeManager::class
         scoped { Executors.createServerTaskExecutor(get()) }

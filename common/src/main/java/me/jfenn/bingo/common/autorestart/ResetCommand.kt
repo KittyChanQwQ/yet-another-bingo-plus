@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.ready.ReadyTimerState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.commands.ICommandManager
 
 class ResetCommand(
@@ -15,7 +16,13 @@ class ResetCommand(
     init {
         commandManager.register("restart") {
             requires { hasPermission(Permission.COMMAND_RESTART) && hasState(GameState.PLAYING, GameState.POSTGAME) }
-            executes { scope.get<ResetService>().resetGame() }
+            executes {
+                val resetService = scope.get<ResetService>()
+                val serverTaskExecutor = scope.get<IExecutors.IServerTaskExecutor>()
+                serverTaskExecutor.execute {
+                    resetService.resetGame()
+                }
+            }
 
             literal("abort") {
                 executes {

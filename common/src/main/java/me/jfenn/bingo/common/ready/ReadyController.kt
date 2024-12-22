@@ -14,6 +14,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.text.Text
 import org.slf4j.Logger
@@ -33,6 +34,7 @@ internal class ReadyController(
     private val packets: ServerPacketEvents,
     private val permissions: PermissionsIntegration,
     private val readyService: ReadyService,
+    private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
     events: ScopedEvents,
 ) {
 
@@ -102,7 +104,9 @@ internal class ReadyController(
 
             if (isComplete) {
                 log.info("[ReadyController] Reached the end of the POSTGAME timer - running reset.")
-                resetService.resetGame()
+                serverTaskExecutor.execute {
+                    resetService.resetGame()
+                }
             }
         }
 
