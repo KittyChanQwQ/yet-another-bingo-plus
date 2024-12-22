@@ -1,4 +1,0 @@
-{
-  "name": "Java 17",
-  "image": "mcr.microsoft.com/devcontainers/java:17-bullseye"
-}
