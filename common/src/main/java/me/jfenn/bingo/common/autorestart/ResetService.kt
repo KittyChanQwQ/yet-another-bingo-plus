@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.autorestart
 
+import me.jfenn.bingo.common.bossbar.BossBarService
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -25,6 +26,7 @@ class ResetService(
     private val playerManager: IPlayerManager,
     private val spawnService: SpawnService,
     private val scoreboardService: ScoreboardService,
+    private val bossBarService: BossBarService,
     private val cardService: CardService,
     private val serverWorldFactory: IServerWorldFactory,
     private val menuController: MenuController,
@@ -45,6 +47,7 @@ class ResetService(
         // Clear scoreboards (otherwise this causes an error when recreated)
         log.info("[Reset] Clearing game data")
         scoreboardService.clearScoreboards()
+        bossBarService.clearBossBars()
         state.reset()
         cardService.createInitialCards()
 

@@ -5,6 +5,8 @@ import me.jfenn.bingo.api.IBingoApi
 import me.jfenn.bingo.common.autorestart.ResetCommand
 import me.jfenn.bingo.common.autorestart.ResetService
 import me.jfenn.bingo.common.autorestart.RestartOnLeaveController
+import me.jfenn.bingo.common.bossbar.BossBarController
+import me.jfenn.bingo.common.bossbar.BossBarService
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterCommand
@@ -210,8 +212,10 @@ val commonModule = module {
         scopedOf(::TooltipController)
         scopedOf(::MenuController)
 
-        scopedOf(::BingoMapController)
+        scopedOf(::BossBarService)
         scopedOf(::BossBarController)
+
+        scopedOf(::BingoMapController)
         scopedOf(::DatapackFunctionService)
         scopedOf(::GameRuleController)
         scopedOf(::LobbyChaosController)
