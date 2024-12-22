@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.lobby
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.lobby.BingoLobbyCommand.Companion.CONFIRM_COMMAND
@@ -10,6 +9,7 @@ import me.jfenn.bingo.common.lobby.BingoLobbyCommand.Companion.LOBBY_COMMAND
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -28,7 +28,7 @@ internal class LobbyModeService(
 
     fun canUseLobbyCommand(player: IPlayerHandle) = server.isDedicated && permissions.hasPermission(player, Permission.CONFIGURE_LOBBY)
 
-    fun sendWarnings(player: IPlayerHandle): Sequence<Text> = sequence {
+    fun sendWarnings(uuid: UUID): Sequence<Text> = sequence {
         yield(Text.empty())
         text.string(StringKey.CommandLobbyWarning1)
             .formatted(Formatting.GOLD)
@@ -45,17 +45,17 @@ internal class LobbyModeService(
             .formatted(Formatting.GRAY)
             .let { yield(it) }
 
-        readWarnings[player.uuid] = Clock.System.now()
+        readWarnings[uuid] = Clock.System.now()
     }
 
-    fun acceptWarnings(player: IPlayerHandle) = sequence {
-        val playerId = player.uuid
+    fun acceptWarnings(uuid: UUID, playerName: String) = sequence {
+        val playerId = uuid
         val readWarning = readWarnings[playerId]
 
         if (readWarning != null && readWarning > Clock.System.now() - 5.minutes) {
             yield(text.string(StringKey.CommandLobbyRestarting))
 
-            log.info("[BingoLobbyCommand] ${player.playerName} used '$CONFIRM_COMMAND' and has accepted the warnings.")
+            log.info("[BingoLobbyCommand] $playerName used '$CONFIRM_COMMAND' and has accepted the warnings.")
 
             configService.writeConfig(configService.config.apply {
                 server.isLobbyMode = true

@@ -5,6 +5,7 @@ import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionSource
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
+import java.util.*
 
 internal class BingoLobbyCommand(
     commandManager: ICommandManager,
@@ -12,23 +13,35 @@ internal class BingoLobbyCommand(
 ) {
     private val IExecutionSource.lobbyModeService get() = scope.get<LobbyModeService>()
 
+    private val emptyUuid = UUID.fromString("00000000-0000-0000-0000-000000000000")
+
+    private val IExecutionSource.executorName get() = when {
+        isConsole -> "RCON"
+        else -> playerOrThrow.playerName
+    }
+
+    private val IExecutionSource.executorUuid get() = when {
+        isConsole -> emptyUuid
+        else -> playerOrThrow.uuid
+    }
+
     init {
         if (FabricLoader.getInstance().environmentType == EnvType.SERVER && !config.server.isLobbyMode) {
             commandManager.register("bingo") {
                 literal("lobby") {
                     requires {
-                        lobbyModeService.canUseLobbyCommand(player!!)
+                        isConsole || lobbyModeService.canUseLobbyCommand(playerOrThrow)
                     }
                     executes {
                         lobbyModeService
-                            .sendWarnings(player!!)
+                            .sendWarnings(executorUuid)
                             .forEach { sendMessage(it) }
                     }
 
                     literal("confirm") {
                         executes {
                             lobbyModeService
-                                .acceptWarnings(player!!)
+                                .acceptWarnings(executorUuid, executorName)
                                 .forEach { sendMessage(it) }
                         }
                     }
