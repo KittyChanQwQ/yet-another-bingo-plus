@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.card.tierlist
 
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -14,7 +15,7 @@ enum class TierLabel(
     C(Formatting.YELLOW, StringKey.TierC),
     D(Formatting.GREEN, StringKey.TierD);
 
-    fun text(): Text = Text.literal("$this-tier").formatted(formatting)
+    fun text(text: TextProvider): Text = text.string(this.string).formatted(formatting)
 
     companion object {
         const val LIST_EASY = "easy"
