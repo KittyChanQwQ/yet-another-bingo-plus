@@ -92,7 +92,6 @@ val commonModule = module {
     singleOf(::ScopeManager)
     singleOf(::ServerPacketEvents)
 
-    singleOf(::RestartOnLeaveController)
     factoryOf(PermissionsIntegration::create)
     factoryOf(VanishIntegration::create)
     factoryOf(ChunkyIntegration::create)
@@ -248,6 +247,8 @@ val commonModule = module {
         scopedOf(::TimerPacketController)
         scopedOf(::WaitUntilLoadedController)
 
+        scopedOf(::RestartOnLeaveController)
+
         scopedOf(::ScoredItemCheck)
         scopedOf(::ScoreUpdateService)
 
@@ -265,7 +266,6 @@ fun Koin.commonInit() {
     get<EventManager>()
     get<ScopeManager>()
     get<ServerPacketEvents>()
-    get<RestartOnLeaveController>()
 
     get<BingoCommand>()
     get<BingoCardCommand>()
@@ -330,6 +330,8 @@ fun Scope.commonInit() {
     get<TimerCheck>()
     get<TimerPacketController>()
     get<WaitUntilLoadedController>()
+
+    get<RestartOnLeaveController>()
 
     get<CommandTreeHandler>()
 

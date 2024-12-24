@@ -6,6 +6,9 @@ import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import net.minecraft.text.Text
@@ -13,22 +16,28 @@ import net.minecraft.util.Formatting
 
 class GameCommands(
     commandManager: ICommandManager,
+    private val text: TextProvider,
 ) : BingoComponent() {
 
     private fun IExecutionContext.start(ignoreWarnings: Boolean) {
         val gameService = scope.get<GameService>()
-        // Start the game!
-        gameService.start(
-            ignoreWarnings = ignoreWarnings,
-            allowSpectators = ignoreWarnings,
-            sendFeedback = { feedback ->
-                sendMessage(
-                    Text.literal("⚠  ")
-                        .append(feedback.copy().formatted(Formatting.ITALIC))
-                        .formatted(Formatting.YELLOW),
-                )
-            }
-        )
+
+        scope.get<IExecutors.IServerTaskExecutor>().execute {
+            // Start the game!
+            gameService.start(
+                ignoreWarnings = ignoreWarnings,
+                allowSpectators = ignoreWarnings,
+                sendFeedback = { feedback ->
+                    sendMessage(
+                        Text.literal("⚠  ")
+                            .append(feedback.copy().formatted(Formatting.ITALIC))
+                            .formatted(Formatting.YELLOW),
+                    )
+                }
+            )
+        }
+
+        sendFeedback(text.string(StringKey.CommandStartSuccess))
     }
 
     init {
@@ -63,6 +72,7 @@ class GameCommands(
                     }
 
                     gameService.end(GameEndReason.Command(playerName))
+                    sendFeedback(text.string(StringKey.CommandEndSuccess))
                 }
             }
         }

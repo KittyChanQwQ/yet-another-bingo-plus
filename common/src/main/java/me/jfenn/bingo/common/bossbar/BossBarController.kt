@@ -6,7 +6,6 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.platform.IBossBarManager
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.util.Formatting
 
@@ -19,7 +18,6 @@ class BossBarController(
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     private val textProvider: TextProvider,
-    private val bossBarManager: IBossBarManager,
     private val bossBarService: BossBarService,
 ) : BingoComponent() {
 

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.lobby
 
+import me.jfenn.bingo.common.commands.runByName
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionSource
@@ -14,11 +15,6 @@ internal class BingoLobbyCommand(
     private val IExecutionSource.lobbyModeService get() = scope.get<LobbyModeService>()
 
     private val emptyUuid = UUID.fromString("00000000-0000-0000-0000-000000000000")
-
-    private val IExecutionSource.executorName get() = when {
-        isConsole -> "RCON"
-        else -> playerOrThrow.playerName
-    }
 
     private val IExecutionSource.executorUuid get() = when {
         isConsole -> emptyUuid
@@ -41,7 +37,7 @@ internal class BingoLobbyCommand(
                     literal("confirm") {
                         executes {
                             lobbyModeService
-                                .acceptWarnings(executorUuid, executorName)
+                                .acceptWarnings(executorUuid, runByName)
                                 .forEach { sendMessage(it) }
                         }
                     }

@@ -66,7 +66,7 @@ class StatsCommand(
 
         text.string(StringKey.CommandStatsResetPlayer, playerToReset.playerName)
             .formatted(Formatting.YELLOW)
-            .also { sendMessage(it) }
+            .also { sendFeedback(it) }
     }
 
     private fun IExecutionContext.clearGameStats() {
@@ -76,7 +76,7 @@ class StatsCommand(
 
         text.string(StringKey.CommandStatsResetGame)
             .formatted(Formatting.YELLOW)
-            .also { sendMessage(it) }
+            .also { sendFeedback(it) }
     }
 
     private fun IExecutionContext.clearAllStats() {
@@ -84,7 +84,7 @@ class StatsCommand(
 
         text.string(StringKey.CommandStatsResetAll)
             .formatted(Formatting.YELLOW)
-            .also { sendMessage(it) }
+            .also { sendFeedback(it) }
     }
 
     init {

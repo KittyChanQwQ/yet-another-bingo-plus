@@ -1,24 +1,18 @@
 package me.jfenn.bingo.common.commands
 
-import com.mojang.brigadier.builder.ArgumentBuilder
 import me.jfenn.bingo.common.PermissionKey
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
-import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-typealias CommandRequirement = (ServerCommandSource) -> Boolean
-
-fun <T: ArgumentBuilder<ServerCommandSource?, T>> T.require(vararg requirements: CommandRequirement): T {
-    return this.requires { source ->
-        if (source == null) return@requires false
-        requirements.all { it(source) }
-    }
+val IExecutionSource.runByName get() = when {
+    isConsole -> "RCON"
+    else -> playerOrThrow.playerName
 }
 
 fun IExecutionSource.hasState(vararg requiredState: GameState): Boolean {
