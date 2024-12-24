@@ -1,17 +1,14 @@
 ### New Features:
 
-- Added a 1.20.2 build ([#127](https://gitlab.com/horrific-tweaks/bingo/-/issues/127))
-- The Shufflificator now prefers to shuffle players onto existing teams instead of choosing new ones ([#125](https://gitlab.com/horrific-tweaks/bingo/-/issues/125))
+- Added ability to run _most_ bingo commands through RCON ([#124](https://gitlab.com/horrific-tweaks/bingo/-/issues/124))
+- Added more items to the default "tedious" list
 
 ### Bugs Squashed:
 
-- Fixed singleplayer worlds no longer saving the bingo card/team data after the first consecutive round
-- Fixed ability to remove items from the default tier lists ([#132](https://gitlab.com/horrific-tweaks/bingo/-/issues/132))
-- Fixed random duplicate bossbars in singleplayer on 1.20.1 ([#123](https://gitlab.com/horrific-tweaks/bingo/-/issues/123))
+- Fixed "Any Flower" objective not working in 1.21.4 due to the removal of `#minecraft:flowers` ([#134](https://gitlab.com/horrific-tweaks/bingo/-/issues/134))
+- Fixed bossbars now duplicating in _multiplayer_ after multiple rounds ([#135](https://gitlab.com/horrific-tweaks/bingo/-/issues/135))
+- Partial fix for players disconnecting while the game is reset ([#136](https://gitlab.com/horrific-tweaks/bingo/-/issues/136))
 
 ### Translations
 
-- New Russian translations by Ofterkino!
-- New Portuguese translations by Lucasofchirst!
-- New Chinese Simplified translations by tovv3r and Young912!
-- New French translations by Yosh64!
+- New Chinese Simplified translations by Young912!
