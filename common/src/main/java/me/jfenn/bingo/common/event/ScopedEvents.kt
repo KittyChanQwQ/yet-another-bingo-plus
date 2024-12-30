@@ -24,7 +24,7 @@ class ScopedEvents(
     val onUpdateTick = EventListener<Unit>()
 
     val onPlayerJoin = EventListener<IPlayerHandle>()
-    val onPlayerLeave = EventListener<IPlayerHandle>()
+    val onPlayerDisconnect = EventListener<IPlayerHandle>()
     val onPlayerRespawn = EventListener<PlayerEvent>()
     val onPlayerChannelRegister = EventListener<IPlayerHandle>()
 

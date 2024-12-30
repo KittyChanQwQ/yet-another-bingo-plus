@@ -22,9 +22,9 @@ class RestartOnLeaveController(
     events: ScopedEvents,
 ) {
     init {
-        events.onPlayerLeave {
+        events.onPlayerDisconnect {
             // This should only ever run on the server env
-            if (FabricLoader.getInstance().environmentType != EnvType.SERVER) return@onPlayerLeave
+            if (FabricLoader.getInstance().environmentType != EnvType.SERVER) return@onPlayerDisconnect
 
             // if the last player is disconnecting after a bingo game, shut down the server
             if (server.isRunning && config.nextRoundWhenEveryoneDisconnects && state.isLobbyMode && state.state == GameState.POSTGAME && playerManager.getPlayers().isEmpty()) {

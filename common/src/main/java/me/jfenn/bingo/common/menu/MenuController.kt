@@ -20,7 +20,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.IWallSignBlockState
-import me.jfenn.bingo.platform.particle.IParticleFactory
 import net.minecraft.block.Blocks
 import net.minecraft.block.PlayerSkullBlock
 import net.minecraft.server.MinecraftServer
@@ -145,7 +144,7 @@ class MenuController(
             menu?.markDirty()
         }
 
-        events.onPlayerLeave {
+        events.onPlayerDisconnect {
             menu?.markDirty()
         }
     }

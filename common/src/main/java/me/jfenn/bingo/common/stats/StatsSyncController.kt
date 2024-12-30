@@ -109,7 +109,7 @@ class StatsSyncController(
             broadcastHash(player)
         }
 
-        events.onPlayerLeave { player ->
+        events.onPlayerDisconnect { player ->
             pendingPlayerIds.remove(player.uuid)
         }
 

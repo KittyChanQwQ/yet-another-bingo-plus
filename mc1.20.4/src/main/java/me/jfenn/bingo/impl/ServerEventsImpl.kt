@@ -35,11 +35,11 @@ object ServerEventsImpl : IServerEvents {
     override val onPlayerDisconnect: IEventListener<PlayerEvent> = EventListener()
     override val onAfterRespawn: IEventListener<PlayerEvent> = EventListener()
     override val onEntityLoad: IEventListener<EntityLoadEvent> = EventListener()
-    override val onUseBlock: IReturnEventListener<UseBlockEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>> = ReturnEventListener()
-    override val onUseEntity: IReturnEventListener<UseEntityEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>> = ReturnEventListener()
-    override val onUseItem: IReturnEventListener<UseItemEvent, me.jfenn.bingo.platform.event.model.ActionResult<IItemStack?>> = ReturnEventListener()
-    override val onAttackEntity: IReturnEventListener<AttackEntityEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>> = ReturnEventListener()
-    override val onAttackBlock: IReturnEventListener<me.jfenn.bingo.platform.event.model.AttackBlockEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>> = ReturnEventListener()
+    override val onUseBlock: IReturnEventListener<UseBlockEvent, ActionResult<Unit>> = ReturnEventListener()
+    override val onUseEntity: IReturnEventListener<UseEntityEvent, ActionResult<Unit>> = ReturnEventListener()
+    override val onUseItem: IReturnEventListener<UseItemEvent, ActionResult<IItemStack?>> = ReturnEventListener()
+    override val onAttackEntity: IReturnEventListener<AttackEntityEvent, ActionResult<Unit>> = ReturnEventListener()
+    override val onAttackBlock: IReturnEventListener<AttackBlockEvent, ActionResult<Unit>> = ReturnEventListener()
     override val onPlayerChannelRegister: IEventListener<PlayerEvent> = EventListener()
 
     override val onDataReload: IEventListener<ReloadEvent> = EventListener()
@@ -52,19 +52,19 @@ object ServerEventsImpl : IServerEvents {
         return playerManager.forPlayer(player)
     }
 
-    private fun me.jfenn.bingo.platform.event.model.ActionResult<Unit>.toActionResult(): net.minecraft.util.ActionResult {
+    private fun ActionResult<Unit>.toActionResult(): net.minecraft.util.ActionResult {
         return when (this) {
-            is me.jfenn.bingo.platform.event.model.ActionResult.Fail -> net.minecraft.util.ActionResult.FAIL
-            is me.jfenn.bingo.platform.event.model.ActionResult.Success -> net.minecraft.util.ActionResult.SUCCESS
-            is me.jfenn.bingo.platform.event.model.ActionResult.Pass -> net.minecraft.util.ActionResult.PASS
+            is ActionResult.Fail -> net.minecraft.util.ActionResult.FAIL
+            is ActionResult.Success -> net.minecraft.util.ActionResult.SUCCESS
+            is ActionResult.Pass -> net.minecraft.util.ActionResult.PASS
         }
     }
 
-    private fun <T> me.jfenn.bingo.platform.event.model.ActionResult<T>.toTypedActionResult(): TypedActionResult<T> {
+    private fun <T> ActionResult<T>.toTypedActionResult(): TypedActionResult<T> {
         return when (this) {
-            is me.jfenn.bingo.platform.event.model.ActionResult.Fail -> TypedActionResult.fail(value)
-            is me.jfenn.bingo.platform.event.model.ActionResult.Success -> TypedActionResult.success(value)
-            is me.jfenn.bingo.platform.event.model.ActionResult.Pass -> TypedActionResult.pass(value)
+            is ActionResult.Fail -> TypedActionResult.fail(value)
+            is ActionResult.Success -> TypedActionResult.success(value)
+            is ActionResult.Pass -> TypedActionResult.pass(value)
         }
     }
 
@@ -104,7 +104,7 @@ object ServerEventsImpl : IServerEvents {
             if (player !is ServerPlayerEntity) return@register net.minecraft.util.ActionResult.PASS
             val playerImpl = getPlayerImpl(player) ?: return@register net.minecraft.util.ActionResult.PASS
             val results = onUseBlock(UseBlockEvent(player.server, playerImpl, world, hand, hit))
-            me.jfenn.bingo.platform.event.model.ActionResult.collapse(results)
+            ActionResult.collapse(results)
                 ?.toActionResult()
                 ?: net.minecraft.util.ActionResult.PASS
         }
@@ -113,7 +113,7 @@ object ServerEventsImpl : IServerEvents {
             if (player !is ServerPlayerEntity) return@register net.minecraft.util.ActionResult.PASS
             val playerImpl = getPlayerImpl(player) ?: return@register net.minecraft.util.ActionResult.PASS
             val results = onUseEntity(UseEntityEvent(player.server, playerImpl, world, hand, entity, hit))
-            me.jfenn.bingo.platform.event.model.ActionResult.collapse(results)
+            ActionResult.collapse(results)
                 ?.toActionResult()
                 ?: net.minecraft.util.ActionResult.PASS
         }
@@ -122,7 +122,7 @@ object ServerEventsImpl : IServerEvents {
             if (player !is ServerPlayerEntity) return@register TypedActionResult.pass(null)
             val playerImpl = getPlayerImpl(player) ?: return@register TypedActionResult.pass(null)
             val results = onUseItem(UseItemEvent(player.server, playerImpl, world, hand))
-            me.jfenn.bingo.platform.event.model.ActionResult.collapse(results)
+            ActionResult.collapse(results)
                 ?.map { it?.stack }
                 ?.toTypedActionResult()
                 ?: TypedActionResult.pass(null)
@@ -132,7 +132,7 @@ object ServerEventsImpl : IServerEvents {
             if (player !is ServerPlayerEntity) return@register net.minecraft.util.ActionResult.PASS
             val playerImpl = getPlayerImpl(player) ?: return@register net.minecraft.util.ActionResult.PASS
             val results = onAttackEntity(AttackEntityEvent(player.server, playerImpl, world, hand, entity, hit))
-            me.jfenn.bingo.platform.event.model.ActionResult.collapse(results)
+            ActionResult.collapse(results)
                 ?.toActionResult()
                 ?: net.minecraft.util.ActionResult.PASS
         }
@@ -141,7 +141,7 @@ object ServerEventsImpl : IServerEvents {
             if (player !is ServerPlayerEntity) return@register net.minecraft.util.ActionResult.PASS
             val playerImpl = getPlayerImpl(player) ?: return@register net.minecraft.util.ActionResult.PASS
             val results = onAttackBlock(
-                me.jfenn.bingo.platform.event.model.AttackBlockEvent(
+                AttackBlockEvent(
                     player.server,
                     playerImpl,
                     world,
@@ -150,7 +150,7 @@ object ServerEventsImpl : IServerEvents {
                     direction
                 )
             )
-            me.jfenn.bingo.platform.event.model.ActionResult.collapse(results)
+            ActionResult.collapse(results)
                 ?.toActionResult()
                 ?: net.minecraft.util.ActionResult.PASS
         }
