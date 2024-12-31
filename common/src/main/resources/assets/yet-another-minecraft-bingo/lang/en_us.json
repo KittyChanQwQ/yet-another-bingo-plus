@@ -357,5 +357,11 @@
   "bingo.world.new_game": "New Game",
   "bingo.world.next_round": "Next Round",
   "bingo.world.preparing": "Preparing a new Bingo world...",
-  "bingo.world.restart": "Restart Server"
+  "bingo.world.restart": "Restart Server",
+  "bingo.card_difficulty.easy": "Easy",
+  "bingo.card_difficulty.medium": "Medium",
+  "bingo.card_difficulty.hard": "Hard",
+  "bingo.card_difficulty.extreme": "Extreme",
+  "bingo.card_difficulty.impossible": "Impossible",
+  "biome.bingo.lobby": "Bingo Lobby"
 }

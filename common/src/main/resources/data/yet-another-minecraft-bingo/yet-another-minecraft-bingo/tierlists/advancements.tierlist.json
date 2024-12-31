@@ -42,7 +42,8 @@
         "minecraft:husbandry/kill_axolotl_target",
         "minecraft:nether/all_effects",
         "minecraft:nether/all_potions",
-        "minecraft:nether/create_full_beacon"
+        "minecraft:nether/create_full_beacon",
+        "minecraft:adventure/adventuring_time"
     ],
     "A": [
         "minecraft:story/shiny_gear",
@@ -72,8 +73,7 @@
         "minecraft:husbandry/obtain_sniffer_egg",
         "minecraft:husbandry/obtain_netherite_hoe",
         "minecraft:adventure/bullseye",
-        "minecraft:husbandry/plant_any_sniffer_seed",
-        "minecraft:adventure/adventuring_time"
+        "minecraft:husbandry/plant_any_sniffer_seed"
     ],
     "B": [
         "minecraft:story/form_obsidian",

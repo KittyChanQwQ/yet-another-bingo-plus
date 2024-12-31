@@ -147,6 +147,23 @@
     "minecraft:resin_bricks",
     "minecraft:resin_clump",
     "minecraft:creaking_heart",
-    "yet-another-minecraft-bingo:challenge/stat_killed_creaking"
+    "minecraft:powder_snow_bucket",
+    "minecraft:tadpole_bucket",
+    "minecraft:sculk",
+    "minecraft:sculk_catalyst",
+    "minecraft:sculk_sensor",
+    "minecraft:sculk_shrieker",
+    "minecraft:sculk_vein",
+    "minecraft:calibrated_sculk_sensor",
+    "minecraft:echo_shard",
+    "minecraft:adventure/play_jukebox_in_meadows",
+    "minecraft:adventure/walk_on_powder_snow_with_leather_boots",
+    "minecraft:adventure/spyglass_at_parrot",
+    "minecraft:adventure/adventuring_time",
+    "minecraft:nether/explore_nether",
+    "minecraft:adventure/kill_mob_near_sculk_catalyst",
+    "minecraft:adventure/avoid_vibration",
+    "yet-another-minecraft-bingo:challenge/stat_killed_creaking",
+    "yet-another-minecraft-bingo:challenge/stat_killed_by_warden"
   ]
 }
