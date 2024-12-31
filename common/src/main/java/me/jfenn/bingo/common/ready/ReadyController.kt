@@ -189,7 +189,9 @@ internal class ReadyController(
         }
 
         events.onChangeOptions {
-            log.info("[ReadyController] Reset the timer, as the game options have changed")
+            if (readyState.isRunning) {
+                log.info("[ReadyController] Reset the timer, as the game options have changed")
+            }
             reset()
         }
 

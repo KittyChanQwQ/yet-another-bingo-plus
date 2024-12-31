@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.card.tierlist
 
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -27,5 +28,7 @@ enum class TierLabel(
             "extreme" to listOf(0, 5, 7, 7, 6),
             "impossible" to listOf(5, 7, 6, 5, 2),
         )
+
+        fun presetText(difficulty: String) = Text.translatableWithFallback("bingo.card_difficulty.$difficulty", difficulty.formatTitle())
     }
 }

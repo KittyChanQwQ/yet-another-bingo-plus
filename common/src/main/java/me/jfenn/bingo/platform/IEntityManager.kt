@@ -18,6 +18,7 @@ interface IEntityManager {
 class EntityType<T: IEntity> {
     companion object {
         val TEXT_DISPLAY = EntityType<ITextDisplayEntity>()
+        val BLOCK_DISPLAY = EntityType<IBlockDisplayEntity>()
         val INTERACTION = EntityType<IInteractionEntity>()
         val ARMOR_STAND = EntityType<IArmorStandEntity>()
         val BAT = EntityType<IBatEntity>()
@@ -62,6 +63,12 @@ interface IInteractionEntity : IEntity {
 
 interface IDisplayEntity : IEntity {
     var transformation: Matrix4f
+    var brightness: Brightness?
+
+    data class Brightness(
+        val block: Int,
+        val sky: Int,
+    )
 }
 
 interface ITextDisplayEntity : IDisplayEntity {
@@ -75,6 +82,10 @@ interface ITextDisplayEntity : IDisplayEntity {
     var alignment: TextAlignment
     var background: Int
     var shadow: Boolean
+}
+
+interface IBlockDisplayEntity : IDisplayEntity {
+    var blockIdentifier: String
 }
 
 interface IArmorStandEntity : IEntity {

@@ -1,15 +1,17 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.platform.EntityType
-import me.jfenn.bingo.platform.ITextDisplayEntity
 import me.jfenn.bingo.common.utils.plus
-import net.minecraft.server.network.ServerPlayerEntity
+import me.jfenn.bingo.platform.EntityType
+import me.jfenn.bingo.platform.IDisplayEntity
+import me.jfenn.bingo.platform.ITextDisplayEntity
 import net.minecraft.text.Text
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
 fun MenuComponent.registerNumberInput(
     position: Vector3d,
+    width: Double = 2.0,
+    height: Double = 0.4,
     valueProp: MutableProperty<Int>,
     minValueProp: Property<Int>,
     maxValueProp: Property<Int>,
@@ -17,40 +19,49 @@ fun MenuComponent.registerNumberInput(
     format: (Int) -> Text = { Text.literal(it.toString()) },
     tooltip: List<Text>? = null,
     isVisible: () -> Boolean = { true },
-    permissionGetter: (ServerPlayerEntity) -> Boolean,
 ) {
     var value by valueProp
     val minValue by minValueProp
     val maxValue by maxValueProp
 
-    registerButton(
-        position = position + Vector3d(0.0, -MENU_ITEM_OFFSET, 0.0),
+    registerTileButton(
+        position = position + Vector3d(width/2 - height/2, 0.0, 0.0),
+        width = height,
+        height = height,
         text = Text.empty(),
         textProp = computedProperty {
             Text.literal("+").takeIf { isVisible() } ?: Text.empty()
         },
+        isActiveProp = ConstantProperty(true),
         tooltip = tooltip,
-        permissionGetter = permissionGetter,
     ) {
-        value = (value + step).coerceIn(minValue, maxValue)
-        markDirty()
+        value = (((value / step) + 1) * step).coerceIn(minValue, maxValue)
     }
 
-    registerButton(
-        position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + 2 * MENU_ITEM_HEIGHT), 0.0),
+    registerTileButton(
+        position = position + Vector3d(-width/2 + height/2, 0.0, 0.0),
+        width = height,
+        height = height,
         text = Text.empty(),
         textProp = computedProperty {
             Text.literal("-").takeIf { isVisible() } ?: Text.empty()
         },
+        isActiveProp = ConstantProperty(true),
         tooltip = tooltip,
-        permissionGetter = permissionGetter,
     ) {
-        value = (value - step).coerceIn(minValue, maxValue)
-        markDirty()
+        value = (((value / step) - 1) * step).coerceIn(minValue, maxValue)
+    }
+
+    val backgroundWidth = width - 2*height - 0.2
+    registerEntity(EntityType.BLOCK_DISPLAY) {
+        pos = position + Vector3d(-backgroundWidth/2, 0.0, -0.051)
+        blockIdentifier = if (isVisible()) MENU_BUTTON_MATERIAL else "minecraft:air"
+        brightness = IDisplayEntity.Brightness(0, 3)
+        transformation = Matrix4f().scale(backgroundWidth.toFloat(), height.toFloat(), 0.05f)
     }
 
     registerEntity(EntityType.TEXT_DISPLAY) {
-        pos = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0)
+        pos = position + Vector3d(0.0, height/2 - 0.1, 0.0)
         this.value = format(value).takeIf { isVisible() } ?: Text.empty()
         billboard = ITextDisplayEntity.Billboard.FIXED
         alignment = ITextDisplayEntity.TextAlignment.CENTER

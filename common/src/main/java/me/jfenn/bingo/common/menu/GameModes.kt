@@ -1,18 +1,19 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.platform.EntityType
-import me.jfenn.bingo.platform.ITextDisplayEntity
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.network.ServerPlayerEntity
-import org.joml.Matrix4f
 import org.joml.Vector3d
+
+private const val TILE_HEIGHT = 0.7
+private const val TILE_WIDTH = 1.2
+private const val TILE_MARGIN = 0.1
+internal const val GAME_MODES_WIDTH = TILE_WIDTH + TILE_MARGIN + TILE_WIDTH
 
 fun MenuComponent.registerGameModes(
     position: Vector3d,
-    permissionGetter: (ServerPlayerEntity) -> Boolean,
     state: BingoState = koinScope.get(),
     cardService: CardService = koinScope.get(),
     text: TextProvider = koinScope.get(),
@@ -22,63 +23,59 @@ fun MenuComponent.registerGameModes(
         setter = {},
     )
 
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        pos = position
-        this.value = text.string(StringKey.OptionsGameMode)
-        billboard = ITextDisplayEntity.Billboard.FIXED
-        alignment = ITextDisplayEntity.TextAlignment.CENTER
-        background = 0
-        shadow = true
-        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
-    }
+    registerTitlePanel(
+        position = position + Vector3d(0.0, -0.5, 0.0),
+        width = GAME_MODES_WIDTH,
+        title = text.string(StringKey.OptionsGameMode),
+    )
 
-    registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0, Vector3d()),
+    val offsetY = 0.6
+    val offsetX = (TILE_WIDTH + TILE_MARGIN)/2.0
+
+    registerIconButton(
+        position = position + Vector3d(-offsetX, -(offsetY + TILE_HEIGHT), 0.0),
+        width = TILE_WIDTH,
+        height = TILE_HEIGHT,
+        icon = "\uD83D\uDD12",
         text = text.string(StringKey.OptionsModeLockout),
         tooltip = buildTooltip(StringKey.OptionsModeLockout),
-        toggleProp = DelegatedProperty(
-            getter = {
-                cardOptions.isLockoutMode
-            },
-            setter = {
-                cardOptions.isLockoutMode = it
-                markDirty()
-            }
-        ),
-        permissionGetter = permissionGetter,
-    )
+        isActiveProp = computedProperty { cardOptions.isLockoutMode },
+    ) {
+        cardOptions.isLockoutMode = !cardOptions.isLockoutMode
+    }
 
-    registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0, Vector3d()),
+    registerIconButton(
+        position = position + Vector3d(offsetX, -(offsetY + TILE_HEIGHT), 0.0),
+        width = TILE_WIDTH,
+        height = TILE_HEIGHT,
+        icon = "\uD83C\uDF92",
         text = text.string(StringKey.OptionsModeInventory),
         tooltip = buildTooltip(StringKey.OptionsModeInventory),
-        toggleProp = DelegatedProperty(
-            getter = {
-                cardOptions.isInventoryMode
-            },
-            setter = {
-                cardOptions.isInventoryMode = it
-                markDirty()
-            }
-        ),
-        permissionGetter = permissionGetter,
-    )
+        isActiveProp = computedProperty { cardOptions.isInventoryMode },
+    ) {
+        cardOptions.isInventoryMode = !cardOptions.isInventoryMode
+    }
 
-    registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0, Vector3d()),
+    registerIconButton(
+        position = position + Vector3d(-offsetX, -(offsetY + 2*TILE_HEIGHT + TILE_MARGIN), 0.0),
+        width = TILE_WIDTH,
+        height = TILE_HEIGHT,
+        icon = "?",
         text = text.string(StringKey.OptionsModeHiddenItems),
         tooltip = buildTooltip(StringKey.OptionsModeHiddenItems),
-        toggleProp = DelegatedProperty(
-            getter = {
-                cardOptions.isHiddenItemsMode
-            },
-            setter = {
-                cardOptions.isHiddenItemsMode = it
-                markDirty()
-            }
-        ),
-        permissionGetter = permissionGetter,
+        isActiveProp = computedProperty { cardOptions.isHiddenItemsMode },
     ) {
+        cardOptions.isHiddenItemsMode = !cardOptions.isHiddenItemsMode
         cardService.generateCard()
+    }
+
+    registerTileButton(
+        position = position + Vector3d(0.0, -(offsetY + 2*TILE_HEIGHT + 2*TILE_MARGIN + 0.4), 0.0),
+        height = 0.4,
+        width = GAME_MODES_WIDTH,
+        text = text.string(StringKey.OptionsFeatures).append("  ⋯"),
+        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
+    ) {
+        // todo
     }
 }

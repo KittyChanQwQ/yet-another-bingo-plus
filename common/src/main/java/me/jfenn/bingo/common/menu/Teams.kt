@@ -29,7 +29,6 @@ fun MenuComponent.registerTeams(
         minValueProp = ConstantProperty(1),
         maxValueProp = ConstantProperty(BingoTeam.TEAM_BLOCKS.size),
         format = { text.string(StringKey.OptionsTeamsCount, it) },
-        permissionGetter = permissionGetter,
     )
 
     registerButton(

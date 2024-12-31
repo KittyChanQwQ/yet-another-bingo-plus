@@ -56,27 +56,22 @@ internal fun MenuComponent.registerMenuPage(
 
     val pages = listOf(
         component(koinScope) {
+            val offsetX = -5.5 + 0.2
+
             registerGameModes(
-                position = position + Vector3d(-3.5, 0.0, 0.0),
-                permissionGetter = permissionGetter,
+                position = position + Vector3d(offsetX + (GAME_MODES_WIDTH/2), 0.0, 0.0),
             )
             registerGoal(
-                position = position + Vector3d(-1.5, 0.0, 0.0),
-                permissionGetter = permissionGetter,
+                position = position + Vector3d(offsetX + GAME_MODES_WIDTH + MENU_LINE_PADDING + (MENU_GOAL_WIDTH/2), 0.0, 0.0),
             )
-            registerWinCondition(
-                position = position + Vector3d(0.3, 0.0, 0.0),
-                permissionGetter = permissionGetter,
+            registerCardDifficulty(
+                position = position + Vector3d(offsetX + GAME_MODES_WIDTH + MENU_LINE_PADDING + MENU_GOAL_WIDTH + MENU_LINE_PADDING + (CARD_DIFFICULTY_WIDTH/2), 0.0, 0.0),
             )
-            registerTimer(
-                timerMinutesProp = propertyRef(options::timeLimit),
-                position = position + Vector3d(1.8, 0.0, 0.0),
-                permissionGetter = permissionGetter,
-            )
-            registerTeams(
-                position = position + Vector3d(3.5, 0.0, 0.0),
-                permissionGetter = permissionGetter,
-            )
+
+//            registerTeams(
+//                position = position + Vector3d(3.5, 0.0, 0.0),
+//                permissionGetter = permissionGetter,
+//            )
         },
         component(koinScope) {
             registerFeatures(

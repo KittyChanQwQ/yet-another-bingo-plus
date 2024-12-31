@@ -24,7 +24,6 @@ fun MenuComponent.registerSpawnDistance(
         step = 5,
         format = { text.string(StringKey.OptionsSpawnDistanceChunks, it) },
         tooltip = buildTooltip(StringKey.OptionsSpawnDistance),
-        permissionGetter = permissionGetter,
     )
 
     registerEntity(EntityType.TEXT_DISPLAY) {
