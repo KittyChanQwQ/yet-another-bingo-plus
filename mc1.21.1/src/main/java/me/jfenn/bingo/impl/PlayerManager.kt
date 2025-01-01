@@ -73,7 +73,7 @@ class PlayerManager(
         world: ServerWorld,
     ) {
         val (x, y, z) = position
-        val soundEntry = Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_LEVER_CLICK)
+        val soundEntry = Registries.SOUND_EVENT.getEntry(sound.toSoundEvent())
         val packet = PlaySoundS2CPacket(soundEntry, category.toSoundCategory(), x, y, z, volume, pitch, server.overworld.seed)
         player?.networkHandler?.sendPacket(packet)
         server.playerManager.sendToAround(player, x, y, z, soundEntry.value().getDistanceToTravel(volume).toDouble(), world.registryKey, packet)
@@ -227,6 +227,8 @@ class PlayerHandle(
 
 private fun PlayerSoundEvent.toSoundEvent() = when (this) {
     PlayerSoundEvent.BLOCK_LEVER_CLICK -> SoundEvents.BLOCK_LEVER_CLICK
+    PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_ON -> SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_ON
+    PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_OFF -> SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_OFF
     PlayerSoundEvent.ENTITY_PLAYER_LEVELUP -> SoundEvents.ENTITY_PLAYER_LEVELUP
     PlayerSoundEvent.ENTITY_SHULKER_AMBIENT -> SoundEvents.ENTITY_SHULKER_AMBIENT
     PlayerSoundEvent.BLOCK_NOTE_BLOCK_BASS -> SoundEvents.BLOCK_NOTE_BLOCK_BASS.value()

@@ -9,14 +9,18 @@ import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.SpawnReason
 import net.minecraft.entity.decoration.ArmorStandEntity
+import net.minecraft.entity.decoration.DisplayEntity
+import net.minecraft.entity.decoration.DisplayEntity.BlockDisplayEntity
 import net.minecraft.entity.decoration.DisplayEntity.TextDisplayEntity
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.passive.BatEntity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.registry.Registries
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 import org.joml.Matrix4f
 import org.joml.Vector3d
 import java.util.*
@@ -27,6 +31,7 @@ object EntityManagerImpl : IEntityManager {
         return when (this) {
             EntityType.INTERACTION -> net.minecraft.entity.EntityType.INTERACTION
             EntityType.TEXT_DISPLAY -> net.minecraft.entity.EntityType.TEXT_DISPLAY
+            EntityType.BLOCK_DISPLAY -> net.minecraft.entity.EntityType.BLOCK_DISPLAY
             EntityType.ARMOR_STAND -> net.minecraft.entity.EntityType.ARMOR_STAND
             EntityType.BAT -> net.minecraft.entity.EntityType.BAT
             else -> error("Entity type not recognized!")
@@ -37,6 +42,7 @@ object EntityManagerImpl : IEntityManager {
         val impl = when (entity) {
             is InteractionEntity -> InteractionEntityImpl(entity)
             is TextDisplayEntity -> TextDisplayEntityImpl(entity)
+            is BlockDisplayEntity -> BlockDisplayEntityImpl(entity)
             is ArmorStandEntity -> ArmorStandEntityImpl(entity)
             is BatEntity -> BatEntityImpl(entity)
             is LivingEntity -> LivingEntityImpl(entity)
@@ -144,13 +150,51 @@ open class EntityImpl(
 class InteractionEntityImpl(
     override val entity: InteractionEntity
 ) : IInteractionEntity, EntityImpl(entity) {
+    override val type: EntityType<IInteractionEntity>
+        get() = EntityType.INTERACTION
     override var width: Float by NbtFloatDelegate("width")
     override var height: Float by NbtFloatDelegate("height")
 }
 
+open class DisplayEntityImpl(
+    override val entity: DisplayEntity
+) : IDisplayEntity, EntityImpl(entity) {
+    override var transformation: Matrix4f
+        get() = Matrix4f()
+        set(value) {
+            patchNbt { put("transformation", value.toNbt()) }
+        }
+
+    override var brightness: IDisplayEntity.Brightness?
+        get() = nbt
+            .takeIf { it.contains("brightness") }
+            ?.getCompound("brightness")
+            ?.let {
+                IDisplayEntity.Brightness(
+                    block = it.getInt("block"),
+                    sky = it.getInt("sky"),
+                )
+            }
+        set(value) {
+            patchNbt {
+                if (value != null) {
+                    put("brightness", NbtCompound().apply {
+                        putInt("block", value.block)
+                        putInt("sky", value.sky)
+                    })
+                } else {
+                    remove("brightness")
+                }
+            }
+        }
+}
+
 class TextDisplayEntityImpl(
     override val entity: TextDisplayEntity
-) : ITextDisplayEntity, EntityImpl(entity) {
+) : ITextDisplayEntity, DisplayEntityImpl(entity) {
+    override val type: EntityType<ITextDisplayEntity>
+        get() = EntityType.TEXT_DISPLAY
+
     private val koin = BingoKoin.getScope(entity.server)!!
     private val textSerializer by koin.inject<ITextSerializer>()
 
@@ -184,11 +228,19 @@ class TextDisplayEntityImpl(
 
     override var background: Int by NbtIntDelegate("background")
     override var shadow: Boolean by NbtBooleanDelegate("shadow")
+}
 
-    override var transformation: Matrix4f
-        get() = Matrix4f()
+class BlockDisplayEntityImpl(
+    override val entity: BlockDisplayEntity,
+) : IBlockDisplayEntity, DisplayEntityImpl(entity) {
+    override val type: EntityType<IBlockDisplayEntity>
+        get() = EntityType.BLOCK_DISPLAY
+
+    override var blockIdentifier: String
+        get() = Registries.BLOCK.getId(entity.blockState.block).toString()
         set(value) {
-            patchNbt { put("transformation", value.toNbt()) }
+            val block = Registries.BLOCK.get(Identifier.of(value))
+            entity.blockState = block.defaultState
         }
 }
 
