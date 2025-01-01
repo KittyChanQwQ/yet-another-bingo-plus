@@ -14,7 +14,7 @@ import org.koin.core.scope.Scope
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class MenuInstance(
+internal class MenuInstance(
     private val log: Logger,
     koinScope: Scope,
     private val world: ServerWorld,

@@ -7,7 +7,7 @@ import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import org.joml.Vector3d
 
-fun MenuComponent.registerWinCondition(
+internal fun MenuComponent.registerWinCondition(
     position: Vector3d,
     width: Double = MENU_GOAL_WIDTH,
     options: BingoOptions = koinScope.get(),

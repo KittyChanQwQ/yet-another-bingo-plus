@@ -13,7 +13,7 @@ import org.joml.Vector3d
 internal const val MENU_SPAWN_KIT_WIDTH = 2.0
 private const val EDIT_HEIGHT = 0.55
 
-fun MenuComponent.registerSpawnKit(
+internal fun MenuComponent.registerSpawnKit(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     cardService: CardService = koinScope.get(),

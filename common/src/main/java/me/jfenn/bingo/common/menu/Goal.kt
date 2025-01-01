@@ -12,9 +12,10 @@ import org.joml.Vector3d
 
 internal const val MENU_GOAL_WIDTH = 2.0
 
-fun MenuComponent.registerGoal(
+internal fun MenuComponent.registerGoal(
     position: Vector3d,
     state: BingoState = koinScope.get(),
+    text: TextProvider = koinScope.get(),
 ) {
     val offset = Vector3d()
 
@@ -32,14 +33,14 @@ fun MenuComponent.registerGoal(
         height = 0.4,
         width = MENU_GOAL_WIDTH,
         icon = "⋯",
-        text = Text.literal("More"),
+        text = text.string(StringKey.OptionsMore),
         blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) {
         state.menu.page = MenuPage.GOAL
     }
 }
 
-fun MenuComponent.registerCardGoal(
+internal fun MenuComponent.registerCardGoal(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     text: TextProvider = koinScope.get(),

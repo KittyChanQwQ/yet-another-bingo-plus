@@ -9,7 +9,7 @@ import org.joml.Vector3d
 internal const val MENU_SCORE_INFO_WIDTH = 2.5
 private const val TILE_HEIGHT = 0.425
 
-fun MenuComponent.registerScoreInfo(
+internal fun MenuComponent.registerScoreInfo(
     position: Vector3d,
     width: Double = MENU_SCORE_INFO_WIDTH,
     options: BingoOptions = koinScope.get(),

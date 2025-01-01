@@ -10,7 +10,7 @@ import org.joml.Vector3d
 
 internal const val MENU_ITEM_FILTERS_WIDTH = 2.0
 
-fun MenuComponent.registerItemFilters(
+internal fun MenuComponent.registerItemFilters(
     position: Vector3d,
     width: Double = MENU_ITEM_FILTERS_WIDTH,
     height: Double,

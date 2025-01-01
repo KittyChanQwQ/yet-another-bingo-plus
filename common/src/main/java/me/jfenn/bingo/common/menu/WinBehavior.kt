@@ -11,7 +11,7 @@ import org.joml.Vector3d
 private const val TILE_HEIGHT = 0.6
 internal const val MENU_WIN_BEHAVIOR_WIDTH = 3.0
 
-fun MenuComponent.registerWinBehavior(
+internal fun MenuComponent.registerWinBehavior(
     position: Vector3d,
     width: Double = MENU_WIN_BEHAVIOR_WIDTH,
     options: BingoOptions = koinScope.get(),

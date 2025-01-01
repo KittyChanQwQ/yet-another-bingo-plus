@@ -25,22 +25,22 @@ internal const val MENU_BUTTON_ALT_MATERIAL = "minecraft:light_gray_concrete"
 internal val MENU_BRIGHTNESS_ON = IDisplayEntity.Brightness(0, 15)
 internal val MENU_BRIGHTNESS_OFF = IDisplayEntity.Brightness(0, 3)
 
-interface Property<T> {
+internal interface Property<T> {
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T
 }
 
-interface MutableProperty<T>: Property<T> {
+internal interface MutableProperty<T>: Property<T> {
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T
     operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T)
 }
 
-class ConstantProperty<T>(val value: T): Property<T> {
+internal class ConstantProperty<T>(val value: T): Property<T> {
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
         return value
     }
 }
 
-class DelegatedProperty<T>(
+internal class DelegatedProperty<T>(
     private var getter: () -> T,
     private var setter: (T) -> Unit,
 ): MutableProperty<T> {
@@ -55,20 +55,20 @@ class DelegatedProperty<T>(
 
 }
 
-data class MenuEntityHandle<T: IEntity>(
+internal data class MenuEntityHandle<T: IEntity>(
     val id: UUID = UUID.randomUUID(),
     val type: EntityType<T>,
     val init: T.() -> Unit = {},
     val onUpdate: EventListener<T> = EventListener(),
 )
 
-fun component(koinScope: Scope, setup: MenuComponent.() -> Unit): MenuComponent {
+internal fun component(koinScope: Scope, setup: MenuComponent.() -> Unit): MenuComponent {
     val component = MenuComponent(koinScope)
     component.setup()
     return component
 }
 
-open class MenuComponent(
+internal open class MenuComponent(
     val koinScope: Scope,
 ) {
 
@@ -136,7 +136,7 @@ open class MenuComponent(
     }
 }
 
-fun MenuComponent.buildTooltip(title: StringKey, formatting: Formatting = Formatting.GREEN): List<Text> {
+internal fun MenuComponent.buildTooltip(title: StringKey, formatting: Formatting = Formatting.GREEN): List<Text> {
     val text = koinScope.get<TextProvider>()
     val description = StringKey.entries.find { it.key == "${title.key}.tooltip" }!!
     return buildList {

@@ -12,7 +12,7 @@ private class RadioMenuState(
     var selectedPage: Int
 )
 
-fun MenuComponent.registerRadioMenu(
+internal fun MenuComponent.registerRadioMenu(
     position: Vector3d,
     width: Double,
     height: Double,

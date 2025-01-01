@@ -13,7 +13,7 @@ import org.joml.Vector3d
 const val MAX_SPAWN_DISTANCE = 500
 internal const val MENU_SPAWN_DISTANCE_WIDTH = 2.0
 
-fun MenuComponent.registerSpawnDistance(
+internal fun MenuComponent.registerSpawnDistance(
     position: Vector3d,
     width: Double = MENU_SPAWN_DISTANCE_WIDTH,
     state: BingoState = koinScope.get(),

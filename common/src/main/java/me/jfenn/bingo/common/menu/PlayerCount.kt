@@ -20,7 +20,7 @@ private var statsFuture: CompletableFuture<Duration?> = CompletableFuture.comple
 
 internal const val MENU_PLAYER_COUNT_HEIGHT = 2*MENU_LINE_HEIGHT + 4*MENU_LINE_PADDING
 
-fun MenuComponent.registerPlayerCount(
+internal fun MenuComponent.registerPlayerCount(
     position: Vector3d,
     width: Double,
     server: MinecraftServer = koinScope.get(),

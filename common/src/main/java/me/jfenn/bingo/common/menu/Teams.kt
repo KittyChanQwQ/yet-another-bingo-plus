@@ -15,7 +15,7 @@ object TeamCountState {
 
 internal const val MENU_TEAMS_WIDTH = 2.0
 
-fun MenuComponent.registerTeams(
+internal fun MenuComponent.registerTeams(
     position: Vector3d,
     teamService: TeamService = koinScope.get(),
     text: TextProvider = koinScope.get(),

@@ -14,7 +14,7 @@ import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
-fun MenuComponent.registerButtonInteraction(
+internal fun MenuComponent.registerButtonInteraction(
     position: Vector3d,
     tooltip: List<Text>? = null,
     width: Float = 1f,
@@ -63,7 +63,7 @@ fun MenuComponent.registerButtonInteraction(
     }
 }
 
-fun MenuComponent.registerTileButton(
+internal fun MenuComponent.registerTileButton(
     position: Vector3d,
     icon: String? = null,
     text: Text? = null,
@@ -145,7 +145,7 @@ fun MenuComponent.registerTileButton(
     }
 }
 
-fun MenuComponent.registerIconButton(
+internal fun MenuComponent.registerIconButton(
     position: Vector3d,
     icon: String,
     text: Text,
@@ -197,7 +197,7 @@ fun MenuComponent.registerIconButton(
     }
 }
 
-fun MenuComponent.registerToggleButton(
+internal fun MenuComponent.registerToggleButton(
     position: Vector3d,
     width: Double = 1.0,
     height: Double = MENU_LINE_HEIGHT,

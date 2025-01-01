@@ -8,7 +8,7 @@ import net.minecraft.text.Text
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
-fun MenuComponent.registerNumberInput(
+internal fun MenuComponent.registerNumberInput(
     position: Vector3d,
     width: Double = 2.0,
     height: Double = MENU_LINE_HEIGHT,

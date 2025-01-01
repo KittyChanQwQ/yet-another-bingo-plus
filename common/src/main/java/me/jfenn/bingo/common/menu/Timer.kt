@@ -11,7 +11,7 @@ import kotlin.time.Duration.Companion.minutes
 
 const val MAX_TIMER_MINUTES: Int = 360
 
-fun MenuComponent.registerTimer(
+internal fun MenuComponent.registerTimer(
     position: Vector3d,
     width: Double,
     text: TextProvider = koinScope.get(),

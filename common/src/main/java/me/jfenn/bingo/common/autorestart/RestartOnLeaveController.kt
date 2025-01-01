@@ -11,7 +11,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 
-class RestartOnLeaveController(
+internal class RestartOnLeaveController(
     private val log: Logger,
     private val config: BingoConfig,
     private val state: BingoState,

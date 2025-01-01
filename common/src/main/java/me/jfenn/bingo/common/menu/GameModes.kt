@@ -12,7 +12,7 @@ private const val TILE_WIDTH = 1.2
 private const val TILE_MARGIN = 0.1
 internal const val GAME_MODES_WIDTH = TILE_WIDTH + TILE_MARGIN + TILE_WIDTH
 
-fun MenuComponent.registerGameModes(
+internal fun MenuComponent.registerGameModes(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     cardService: CardService = koinScope.get(),

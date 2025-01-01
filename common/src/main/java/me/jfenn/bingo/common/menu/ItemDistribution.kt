@@ -18,7 +18,7 @@ private const val TIER_WIDTH = 0.5
 private const val TIER_HEIGHT = 0.425
 internal const val MENU_ITEM_DISTRIBUTION_WIDTH = TIER_WIDTH*5 + TIER_PADDING*4
 
-fun MenuComponent.registerItemDistribution(
+internal fun MenuComponent.registerItemDistribution(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     cardService: CardService = koinScope.get(),

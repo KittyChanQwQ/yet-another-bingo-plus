@@ -12,7 +12,7 @@ import org.joml.Vector3d
 
 internal const val MENU_DIMENSION_WIDTH = 2.0
 
-fun MenuComponent.registerDimensionMenu(
+internal fun MenuComponent.registerDimensionMenu(
     position: Vector3d,
     width: Double = MENU_DIMENSION_WIDTH,
     height: Double,

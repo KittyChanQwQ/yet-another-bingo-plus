@@ -41,7 +41,7 @@ import java.util.*
 import java.util.zip.ZipInputStream
 import kotlin.math.atan2
 
-class MenuController(
+internal class MenuController(
     events: ScopedEvents,
     scopeManager: ScopeManager,
     private val log: Logger,

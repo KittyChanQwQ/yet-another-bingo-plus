@@ -7,12 +7,11 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
 import org.joml.Vector3d
 
-internal val CARD_DIFFICULTY_WIDTH = 1.6
+internal const val CARD_DIFFICULTY_WIDTH = 1.6
 
-fun MenuComponent.registerCardDifficulty(
+internal fun MenuComponent.registerCardDifficulty(
     position: Vector3d,
     config: BingoConfig = koinScope.get(),
     state: BingoState = koinScope.get(),
@@ -51,7 +50,7 @@ fun MenuComponent.registerCardDifficulty(
         height = 0.4,
         width = CARD_DIFFICULTY_WIDTH,
         icon = "⋯",
-        text = Text.literal("Customize"),
+        text = text.string(StringKey.OptionsCustomize),
         blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) {
         state.menu.page = MenuPage.ITEMS

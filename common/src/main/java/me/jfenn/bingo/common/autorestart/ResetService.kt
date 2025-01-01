@@ -19,7 +19,7 @@ import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.random.Random
 
-class ResetService(
+internal class ResetService(
     private val events: ScopedEvents,
     private val config: BingoConfig,
     private val state: BingoState,

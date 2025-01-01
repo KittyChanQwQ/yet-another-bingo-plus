@@ -13,7 +13,7 @@ private const val TILE_WIDTH = 1.2
 private const val TILE_MARGIN = 0.1
 internal const val MENU_FEATURES_WIDTH = TILE_WIDTH + TILE_MARGIN + TILE_WIDTH
 
-fun MenuComponent.registerFeatures(
+internal fun MenuComponent.registerFeatures(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     gameRuleController: GameRuleController = koinScope.get(),

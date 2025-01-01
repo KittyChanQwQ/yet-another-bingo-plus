@@ -14,7 +14,7 @@ import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.Slot
 import org.koin.core.component.KoinComponent
 
-class InventoryScreenHandler(
+internal class InventoryScreenHandler(
     syncId: Int,
     stacks: List<IItemStack>,
     playerInventory: PlayerInventory,
