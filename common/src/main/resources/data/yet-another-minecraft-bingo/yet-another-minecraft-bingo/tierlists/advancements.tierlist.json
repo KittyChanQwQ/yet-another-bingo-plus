@@ -1,5 +1,6 @@
 {
     "S": [
+        "minecraft:story/cure_zombie_villager",
         "minecraft:story/follow_ender_eye",
         "minecraft:story/enter_the_end",
         "minecraft:nether/uneasy_alliance",
@@ -17,14 +18,18 @@
         "minecraft:end/levitate",
         "minecraft:adventure/hero_of_the_village",
         "minecraft:adventure/kill_all_mobs",
+        "minecraft:adventure/minecraft_trials_edition",
+        "minecraft:adventure/revaulting",
+        "minecraft:adventure/spyglass_at_dragon",
         "minecraft:adventure/totem_of_undying",
         "minecraft:adventure/trade_at_world_height",
-        "minecraft:adventure/spyglass_at_dragon",
-        "minecraft:adventure/revaulting",
+        "minecraft:adventure/under_lock_and_key",
+        "minecraft:adventure/who_needs_rockets",
         "minecraft:husbandry/silk_touch_nest",
         "minecraft:husbandry/allay_deliver_cake_to_note_block",
         "minecraft:husbandry/leash_all_frog_variants",
         "minecraft:husbandry/whole_pack",
+        "minecraft:husbandry/plant_any_sniffer_seed",
         "minecraft:adventure/arbalistic",
         "minecraft:adventure/blowback",
         "minecraft:adventure/overoverkill",
@@ -48,7 +53,6 @@
     "A": [
         "minecraft:story/shiny_gear",
         "minecraft:story/enchant_item",
-        "minecraft:story/cure_zombie_villager",
         "minecraft:nether/return_to_sender",
         "minecraft:nether/find_bastion",
         "minecraft:nether/find_fortress",
@@ -67,13 +71,9 @@
         "minecraft:adventure/avoid_vibration",
         "minecraft:adventure/kill_mob_near_sculk_catalyst",
         "minecraft:adventure/sniper_duel",
-        "minecraft:adventure/minecraft_trials_edition",
-        "minecraft:adventure/who_needs_rockets",
-        "minecraft:adventure/under_lock_and_key",
         "minecraft:husbandry/obtain_sniffer_egg",
         "minecraft:husbandry/obtain_netherite_hoe",
-        "minecraft:adventure/bullseye",
-        "minecraft:husbandry/plant_any_sniffer_seed"
+        "minecraft:adventure/bullseye"
     ],
     "B": [
         "minecraft:story/form_obsidian",
