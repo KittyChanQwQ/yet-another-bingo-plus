@@ -31,6 +31,7 @@ import net.minecraft.world.Heightmap
 import net.minecraft.world.chunk.ChunkStatus
 import org.joml.Matrix4f
 import org.joml.Vector3d
+import org.joml.Vector3f
 import org.joml.Vector4f
 import org.slf4j.Logger
 import java.io.IOException
@@ -51,7 +52,7 @@ class MenuController(
     private val teamService: TeamService,
     private val text: TextProvider,
     private val playerManager: IPlayerManager,
-    private val levelStorage: me.jfenn.bingo.platform.ILevelStorage,
+    private val levelStorage: ILevelStorage,
     private val particleFactory: me.jfenn.bingo.platform.particle.IParticleFactory,
     private val serverWorldFactory: IServerWorldFactory,
 ) : BingoComponent() {
@@ -90,7 +91,7 @@ class MenuController(
 
             val menuPos = getMenuPosition(lobbyWorld)
             if (menuPos != null) {
-                log.info("[MenuController] Spawning lobby menu at $menuPos")
+                log.info("[MenuController] Spawning lobby menu at ${menuPos.getTranslation(Vector3f())}")
                 val menuInstance = MenuInstance(
                     log = log,
                     koinScope = koinScope,

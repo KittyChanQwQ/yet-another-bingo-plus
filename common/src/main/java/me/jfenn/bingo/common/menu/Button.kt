@@ -26,6 +26,7 @@ fun MenuComponent.registerButtonInteraction(
     tooltipService: TooltipService = koinScope.get(),
     events: ScopedEvents = koinScope.get(),
     executors: IExecutors = koinScope.get(),
+    clickSound: (() -> PlayerSoundEvent)? = null,
     onClick: (player: IPlayerHandle) -> Unit,
 ) {
     val actualPermissionGetter = permissionGetter ?: {
@@ -45,7 +46,13 @@ fun MenuComponent.registerButtonInteraction(
         interactionEntityEvents.onInteract(entity) { player ->
             if (actualPermissionGetter(player)) {
                 onClick(playerManager.forPlayer(player))
-                Sounds.playButtonSound(playerManager, player, entity.pos, player.serverWorld)
+                Sounds.playButtonSound(
+                    playerManager,
+                    player,
+                    entity.pos,
+                    player.serverWorld,
+                    clickSound?.invoke() ?: PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_ON
+                )
                 // Schedule an options changed event
                 // (this clears the ready state & redraws the menu)
                 executors.createServerTaskExecutor(player.server).execute {
@@ -53,44 +60,6 @@ fun MenuComponent.registerButtonInteraction(
                 }
             }
         }
-    }
-}
-
-@Deprecated("Old code")
-fun MenuComponent.registerButton(
-    position: Vector3d,
-    text: Text,
-    textProp: Property<Text> = computedProperty { text },
-    tooltip: List<Text>? = null,
-    isActiveProp: Property<Boolean> = ConstantProperty(false),
-    width: Float = (text.string.length * 0.15f).coerceIn(MENU_HITBOX_WIDTH, 2f),
-    height: Float = MENU_HITBOX_HEIGHT,
-    permissionGetter: ((ServerPlayerEntity) -> Boolean)? = null,
-    onClick: (player: IPlayerHandle) -> Unit,
-) {
-    val isActive by isActiveProp
-    val buttonText by textProp
-
-    registerButtonInteraction(
-        position = position + Vector3d(0.0, -height/2.0, 0.0),
-        tooltip = tooltip,
-        width = width,
-        height = height,
-        permissionGetter = permissionGetter,
-        onClick = onClick,
-    )
-
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        pos = position
-        pitch = 0f
-        yaw = 0f
-        this.value = Text.empty()
-            .append(buttonText)
-            .formatted(if (isActive) Formatting.BLACK else Formatting.GRAY)
-        billboard = ITextDisplayEntity.Billboard.FIXED
-        alignment = ITextDisplayEntity.TextAlignment.CENTER
-        background = (if (isActive) 0xA0_FFFFFFu else 0x00_000000u).toInt()
-        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
     }
 }
 
@@ -119,13 +88,14 @@ fun MenuComponent.registerTileButton(
         width = width.toFloat(),
         height = height.toFloat(),
         permissionGetter = permissionGetter,
+        clickSound = { if (isActive) PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_ON else PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_OFF },
         onClick = onClick,
     )
 
     registerEntity(EntityType.BLOCK_DISPLAY) {
         pos = position + Vector3d(-width/2, 0.0, -0.051)
         this.blockIdentifier = if (isVisible) blockIdentifier else "minecraft:air"
-        brightness = IDisplayEntity.Brightness(0, if (isActive) 15 else 3)
+        brightness = if (isActive) MENU_BRIGHTNESS_ON else MENU_BRIGHTNESS_OFF
         transformation = Matrix4f().scale(width.toFloat(), height.toFloat(), 0.05f)
     }
 
@@ -170,7 +140,7 @@ fun MenuComponent.registerTileButton(
             alignment = ITextDisplayEntity.TextAlignment.CENTER
             background = 0
             transformation = Matrix4f().scale(textScale)
-            lineWidth = (width * 26f / textScale).toInt()
+            lineWidth = (width * 30f / textScale).toInt()
         }
     }
 }
@@ -229,31 +199,25 @@ fun MenuComponent.registerIconButton(
 
 fun MenuComponent.registerToggleButton(
     position: Vector3d,
-    text: Text,
-    textProp: Property<Text?> = computedProperty { text },
-    tooltip: List<Text>? = null,
+    width: Double = 1.0,
+    height: Double = MENU_LINE_HEIGHT,
+    text: Text? = null,
+    textProp: Property<Text> = computedProperty { text ?: Text.empty() },
     toggleProp: MutableProperty<Boolean>,
-    permissionGetter: (ServerPlayerEntity) -> Boolean,
+    tooltip: List<Text>? = null,
     onClick: (player: IPlayerHandle) -> Unit = {},
 ) {
-    val isActive by toggleProp
-    val buttonText by textProp
+    var toggle by toggleProp
 
-    registerButton(
+    registerTileButton(
         position = position,
+        width = width,
+        height = height,
         text = text,
-        textProp = computedProperty {
-            buttonText?.let {
-                Text.empty()
-                    .append(if (isActive) "✔ " else "✗ ")
-                    .append(it)
-            } ?: Text.empty()
-        },
+        textProp = textProp,
         tooltip = tooltip,
-        isActiveProp = toggleProp,
-        permissionGetter = permissionGetter,
+        isActiveProp = toggleProp
     ) {
-        var toggle by toggleProp
         toggle = !toggle
         onClick(it)
     }

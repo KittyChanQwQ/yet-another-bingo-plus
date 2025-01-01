@@ -1,10 +1,11 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.platform.EntityType
-import me.jfenn.bingo.platform.IEntity
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.EntityType
+import me.jfenn.bingo.platform.IDisplayEntity
+import me.jfenn.bingo.platform.IEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.koin.core.scope.Scope
@@ -12,17 +13,7 @@ import java.util.*
 import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
 
-const val MENU_TEXT_SCALE = 0.7f
-
-@Deprecated("Old code")
-const val MENU_HITBOX_HEIGHT = 0.25f
-@Deprecated("Old code")
-const val MENU_HITBOX_WIDTH = 1f
-
-@Deprecated("Old code")
-const val MENU_ITEM_OFFSET = 0.5
-@Deprecated("Old code")
-const val MENU_ITEM_HEIGHT = 0.25
+internal const val MENU_TEXT_SCALE = 0.7f
 
 internal const val MENU_LINE_HEIGHT = 0.3
 internal const val MENU_LINE_PADDING = 0.1
@@ -30,6 +21,9 @@ internal const val MENU_LINE_PADDING = 0.1
 internal const val MENU_TITLE_MATERIAL = "minecraft:lime_concrete"
 internal const val MENU_BUTTON_MATERIAL = "minecraft:white_concrete"
 internal const val MENU_BUTTON_ALT_MATERIAL = "minecraft:light_gray_concrete"
+
+internal val MENU_BRIGHTNESS_ON = IDisplayEntity.Brightness(0, 15)
+internal val MENU_BRIGHTNESS_OFF = IDisplayEntity.Brightness(0, 3)
 
 interface Property<T> {
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T

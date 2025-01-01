@@ -54,6 +54,6 @@ fun MenuComponent.registerCardDifficulty(
         text = Text.literal("Customize"),
         blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) {
-        // todo
+        state.menu.page = MenuPage.ITEMS
     }
 }

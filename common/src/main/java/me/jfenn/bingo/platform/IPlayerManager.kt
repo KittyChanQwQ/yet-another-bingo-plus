@@ -86,6 +86,8 @@ interface IPlayerHandle : ILivingEntity {
 
 enum class PlayerSoundEvent {
     BLOCK_LEVER_CLICK,
+    BLOCK_WOODEN_BUTTON_CLICK_ON,
+    BLOCK_WOODEN_BUTTON_CLICK_OFF,
     ENTITY_PLAYER_LEVELUP,
     ENTITY_SHULKER_AMBIENT,
     BLOCK_NOTE_BLOCK_BASS,

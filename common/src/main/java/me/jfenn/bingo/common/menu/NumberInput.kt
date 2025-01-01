@@ -26,13 +26,14 @@ fun MenuComponent.registerNumberInput(
     val minValue by minValueProp
     val maxValue by maxValueProp
 
+    val increaseText = Text.literal(increaseLabel)
     registerTileButton(
         position = position + Vector3d(width/2 - height/2, 0.0, 0.0),
         width = height,
         height = height,
         text = Text.empty(),
         textProp = computedProperty {
-            Text.literal(increaseLabel).takeIf { isVisible() } ?: Text.empty()
+            increaseText.takeIf { isVisible() } ?: Text.empty()
         },
         isActiveProp = ConstantProperty(true),
         tooltip = tooltip,
@@ -40,13 +41,14 @@ fun MenuComponent.registerNumberInput(
         value = (((value / step) + 1) * step).coerceIn(minValue, maxValue)
     }
 
+    val decreaseText = Text.literal(decreaseLabel)
     registerTileButton(
         position = position + Vector3d(-width/2 + height/2, 0.0, 0.0),
         width = height,
         height = height,
         text = Text.empty(),
         textProp = computedProperty {
-            Text.literal(decreaseLabel).takeIf { isVisible() } ?: Text.empty()
+            decreaseText.takeIf { isVisible() } ?: Text.empty()
         },
         isActiveProp = ConstantProperty(true),
         tooltip = tooltip,
@@ -58,7 +60,7 @@ fun MenuComponent.registerNumberInput(
     registerEntity(EntityType.BLOCK_DISPLAY) {
         pos = position + Vector3d(-backgroundWidth/2, 0.0, -0.051)
         blockIdentifier = if (isVisible()) MENU_BUTTON_MATERIAL else "minecraft:air"
-        brightness = IDisplayEntity.Brightness(0, 3)
+        brightness = MENU_BRIGHTNESS_OFF
         transformation = Matrix4f().scale(backgroundWidth.toFloat(), height.toFloat(), 0.05f)
     }
 

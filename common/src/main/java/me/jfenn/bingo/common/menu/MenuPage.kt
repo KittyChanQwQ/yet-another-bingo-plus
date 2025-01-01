@@ -91,7 +91,6 @@ private fun createRootPage(
         width = startWidth,
         height = 2.4 - MENU_PLAYER_COUNT_HEIGHT + 2*MENU_LINE_PADDING,
         text = text.string(StringKey.OptionsStart),
-        textScale = 1.5f,
         blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) { player ->
         // Start the game!
@@ -169,8 +168,41 @@ private fun createGoalPage(
 
     registerWinCondition(
         position = pos + Vector3d(MENU_GOAL_WIDTH/2, -MENU_LINE_PADDING, 0.0),
+        width = MENU_GOAL_WIDTH,
     )
     pos.add(MENU_GOAL_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerWinBehavior(
+        position = pos + Vector3d(MENU_WIN_BEHAVIOR_WIDTH/2, -MENU_LINE_PADDING, 0.0),
+    )
+    pos.add(MENU_WIN_BEHAVIOR_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerScoreInfo(
+        position = pos + Vector3d(MENU_SCORE_INFO_WIDTH/2, -MENU_LINE_PADDING, 0.0),
+    )
+    pos.add(MENU_SCORE_INFO_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+}
+
+private fun createItemsPage(
+    koinScope: Scope,
+    position: Vector3d,
+) = component(koinScope) {
+    val pos = position + Vector3d(-5.5 + MENU_LINE_PADDING*2, 0.0, 0.0)
+    registerBackButton(
+        position = pos + Vector3d(MENU_BACK_WIDTH/2, 0.0, 0.0),
+    )
+    pos.add(MENU_BACK_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerItemFilters(
+        position = pos + Vector3d(MENU_ITEM_FILTERS_WIDTH/2, 0.0, 0.0),
+        height = 2.6,
+    )
+    pos.add(MENU_ITEM_FILTERS_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerItemDistribution(
+        position = pos + Vector3d(0.0, -MENU_LINE_PADDING, 0.0),
+    )
+    pos.add(MENU_ITEM_DISTRIBUTION_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
 }
 
 internal fun MenuComponent.registerMenuPage(
@@ -184,6 +216,7 @@ internal fun MenuComponent.registerMenuPage(
             MenuPage.ROOT -> createRootPage(koinScope, position)
             MenuPage.FEATURES -> createFeaturesPage(koinScope, position)
             MenuPage.GOAL -> createGoalPage(koinScope, position)
+            MenuPage.ITEMS -> createItemsPage(koinScope, position)
         }
     }
 

@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.map.BingoMap
+import me.jfenn.bingo.common.menu.MenuPage
 import me.jfenn.bingo.common.menu.MenuState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -214,6 +215,7 @@ data class BingoState(
         cards.clear()
         gameOverInfo = null
         isForfeit = false
+        menu.page = MenuPage.ROOT
     }
 
 }

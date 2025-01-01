@@ -12,4 +12,5 @@ enum class MenuPage {
     ROOT,
     FEATURES,
     GOAL,
+    ITEMS,
 }
