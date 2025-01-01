@@ -51,7 +51,7 @@ internal class ClientStatsSyncController(
 
             // sleep to avoid overloading the connection
             try {
-                Thread.sleep(Random.nextLong(20L, 100L))
+                Thread.sleep(Random.nextLong(50L, 200L))
             } catch (e: InterruptedException) {
                 log.warn("[ClientStatsSyncController] broadcastKnownIds interrupted!")
                 break
@@ -83,7 +83,7 @@ internal class ClientStatsSyncController(
 
             // sleep to avoid overloading the connection
             try {
-                Thread.sleep(Random.nextLong(20L, 100L))
+                Thread.sleep(Random.nextLong(50L, 200L))
             } catch (e: InterruptedException) {
                 log.warn("[ClientStatsSyncController] sendRequestedIds interrupted!")
                 break

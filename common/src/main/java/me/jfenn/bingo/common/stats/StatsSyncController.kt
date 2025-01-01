@@ -49,7 +49,7 @@ class StatsSyncController(
 
             // sleep to avoid overloading the connection
             try {
-                Thread.sleep(Random.nextLong(20L, 100L))
+                Thread.sleep(Random.nextLong(50L, 200L))
             } catch (e: InterruptedException) {
                 log.warn("[StatsSyncController] broadcastKnownIds interrupted!")
                 break
@@ -81,7 +81,7 @@ class StatsSyncController(
 
             // sleep to avoid overloading the connection
             try {
-                Thread.sleep(Random.nextLong(20L, 100L))
+                Thread.sleep(Random.nextLong(50L, 200L))
             } catch (e: InterruptedException) {
                 log.warn("[StatsSyncController] sendRequestedIds interrupted!")
                 break
