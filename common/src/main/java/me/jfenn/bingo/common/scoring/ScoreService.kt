@@ -30,7 +30,7 @@ object ScoreService {
         if (cardGoal.isFullCard())
             return false
 
-        val leadingTeam = getLeadingByLines(state, allowTies = false)
+        val leadingTeam = getLeadingByLines(state)
         val leadingTeamLines = leadingTeam?.score?.lines
             ?: state.getRegisteredTeams().maxOfOrNull { it.score.lines }
             ?: 0
@@ -70,13 +70,13 @@ object ScoreService {
         return isLockout || isGoalImpossible
     }
 
-    fun getLeading(state: BingoState, allowTies: Boolean = false): BingoTeam? {
-        return getLeadingByCards(state, allowTies)
-                ?: getLeadingByLines(state, allowTies)
-                    ?: getLeadingByItems(state, allowTies)
+    fun getLeading(state: BingoState): BingoTeam? {
+        return getLeadingByCards(state)
+                ?: getLeadingByLines(state)
+                    ?: getLeadingByItems(state)
     }
 
-    fun getLeadingByCards(state: BingoState, allowTies: Boolean = false): BingoTeam? {
+    fun getLeadingByCards(state: BingoState): BingoTeam? {
         var max: BingoTeam? = null
         var maxCards = 0
         for (team in state.getRegisteredTeams()) {
@@ -85,7 +85,7 @@ object ScoreService {
             if (teamCards > maxCards) {
                 max = team
                 maxCards = teamCards
-            } else if (teamCards == maxCards && !allowTies) {
+            } else if (teamCards == maxCards) {
                 max = null
             }
         }
@@ -93,7 +93,7 @@ object ScoreService {
         return max
     }
 
-    fun getLeadingByLines(state: BingoState, allowTies: Boolean = false): BingoTeam? {
+    fun getLeadingByLines(state: BingoState): BingoTeam? {
         val teams = state.getRegisteredTeams()
         val maxCards = teams.maxOfOrNull { it.countCards() } ?: 0
         val leadingTeams = teams.filter { it.countCards() >= maxCards }
@@ -113,7 +113,7 @@ object ScoreService {
             if (teamLines > maxLines) {
                 max = team
                 maxLines = teamLines
-            } else if (teamLines == maxLines && !allowTies) {
+            } else if (teamLines == maxLines) {
                 max = null
             }
         }
@@ -121,10 +121,21 @@ object ScoreService {
         return max
     }
 
-    fun getLeadingByItems(state: BingoState, allowTies: Boolean = false): BingoTeam? {
+    fun getLeadingByItems(state: BingoState): BingoTeam? {
         val teams = state.getRegisteredTeams()
         val maxCards = teams.maxOfOrNull { it.countCards() } ?: 0
-        val leadingTeams = teams.filter { it.countCards() >= maxCards }
+        val leadingTeamsByCards = teams.filter { it.countCards() >= maxCards }
+
+        val isLinesGoal = leadingTeamsByCards
+            .mapNotNull { team -> state.cards.find { it.id == team.cardId } }
+            .all { it.options.goal is BingoGoal.Lines }
+
+        // If the goal is lines, further restrict leading teams to include teams that are tied by max lines
+        val maxLines = leadingTeamsByCards.maxOf { it.score.lines }
+        val leadingTeams = when {
+            isLinesGoal -> leadingTeamsByCards.filter { it.score.lines == maxLines }
+            else -> leadingTeamsByCards
+        }
 
         var max: BingoTeam? = null
         var maxItems = 0
@@ -134,7 +145,7 @@ object ScoreService {
             if (teamItems > maxItems) {
                 max = team
                 maxItems = teamItems
-            } else if (teamItems == maxItems && !allowTies) {
+            } else if (teamItems == maxItems) {
                 max = null
             }
         }
