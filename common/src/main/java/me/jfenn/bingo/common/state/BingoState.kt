@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.map.BingoMap
+import me.jfenn.bingo.common.menu.MenuState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
@@ -30,6 +31,7 @@ data class BingoState(
     var isLobbyMode: Boolean = false,
     var gameId: UuidAsString = UUID.randomUUID(),
     var state: GameState = GameState.UNINITIALIZED,
+    val menu: MenuState = MenuState(),
     var startedAt: Instant? = null,
     var updatedAt: Instant? = null,
     var endedAt: Instant? = null,

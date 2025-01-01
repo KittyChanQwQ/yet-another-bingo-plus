@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.menu
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend.Prop
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
@@ -97,13 +96,15 @@ fun MenuComponent.registerButton(
 
 fun MenuComponent.registerTileButton(
     position: Vector3d,
+    icon: String? = null,
     text: Text? = null,
     textProp: Property<Text> = computedProperty { text ?: Text.empty() },
+    textScale: Float = MENU_TEXT_SCALE,
     tooltip: List<Text>? = null,
     isActiveProp: Property<Boolean> = ConstantProperty(false),
     blockIdentifier: String = MENU_BUTTON_MATERIAL,
     width: Double = 1.0,
-    height: Double = 1.0,
+    height: Double = MENU_LINE_HEIGHT,
     permissionGetter: ((ServerPlayerEntity) -> Boolean)? = null,
     onClick: (player: IPlayerHandle) -> Unit,
 ) {
@@ -128,18 +129,23 @@ fun MenuComponent.registerTileButton(
         transformation = Matrix4f().scale(width.toFloat(), height.toFloat(), 0.05f)
     }
 
-    if (isActiveProp !is ConstantProperty) {
+    if (icon != null || isActiveProp !is ConstantProperty) {
         registerEntity(EntityType.TEXT_DISPLAY) {
             pos = position + Vector3d(-width/2 + 0.15, height/2 - 0.1, 0.005)
             pitch = 0f
             yaw = 0f
-            this.value = Text.literal("◇").formatted(buttonTextColor)
+            this.value = when {
+                isVisible -> Text.literal(icon ?: "◇").formatted(buttonTextColor)
+                else -> Text.empty()
+            }
             billboard = ITextDisplayEntity.Billboard.FIXED
             alignment = ITextDisplayEntity.TextAlignment.CENTER
             background = 0
             transformation = Matrix4f().scale(MENU_TEXT_SCALE)
         }
+    }
 
+    if (icon == null && isActiveProp !is ConstantProperty) {
         registerEntity(EntityType.TEXT_DISPLAY) {
             pos = position + Vector3d(-width/2 + 0.15, height/2 - 0.1, 0.0)
             pitch = 0f
@@ -156,14 +162,15 @@ fun MenuComponent.registerTileButton(
 
     if (text != null) {
         registerEntity(EntityType.TEXT_DISPLAY) {
-            pos = position + Vector3d(0.0, height/2 - 0.1, 0.0)
+            pos = position + Vector3d(0.0, height/2.0 - textScale/7.0, 0.0)
             pitch = 0f
             yaw = 0f
             this.value = Text.empty().append(buttonText).formatted(buttonTextColor)
             billboard = ITextDisplayEntity.Billboard.FIXED
             alignment = ITextDisplayEntity.TextAlignment.CENTER
             background = 0
-            transformation = Matrix4f().scale(MENU_TEXT_SCALE)
+            transformation = Matrix4f().scale(textScale)
+            lineWidth = (width * 26f / textScale).toInt()
         }
     }
 }
@@ -216,7 +223,7 @@ fun MenuComponent.registerIconButton(
         alignment = ITextDisplayEntity.TextAlignment.CENTER
         background = 0
         transformation = Matrix4f().scale(0.4f)
-        lineWidth = 70
+        lineWidth = (width * 65).toInt()
     }
 }
 

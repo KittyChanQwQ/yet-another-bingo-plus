@@ -11,7 +11,7 @@ import org.joml.Vector3d
 fun MenuComponent.registerNumberInput(
     position: Vector3d,
     width: Double = 2.0,
-    height: Double = 0.4,
+    height: Double = MENU_LINE_HEIGHT,
     valueProp: MutableProperty<Int>,
     minValueProp: Property<Int>,
     maxValueProp: Property<Int>,
@@ -19,6 +19,8 @@ fun MenuComponent.registerNumberInput(
     format: (Int) -> Text = { Text.literal(it.toString()) },
     tooltip: List<Text>? = null,
     isVisible: () -> Boolean = { true },
+    decreaseLabel: String = "-",
+    increaseLabel: String = "+",
 ) {
     var value by valueProp
     val minValue by minValueProp
@@ -30,7 +32,7 @@ fun MenuComponent.registerNumberInput(
         height = height,
         text = Text.empty(),
         textProp = computedProperty {
-            Text.literal("+").takeIf { isVisible() } ?: Text.empty()
+            Text.literal(increaseLabel).takeIf { isVisible() } ?: Text.empty()
         },
         isActiveProp = ConstantProperty(true),
         tooltip = tooltip,
@@ -44,7 +46,7 @@ fun MenuComponent.registerNumberInput(
         height = height,
         text = Text.empty(),
         textProp = computedProperty {
-            Text.literal("-").takeIf { isVisible() } ?: Text.empty()
+            Text.literal(decreaseLabel).takeIf { isVisible() } ?: Text.empty()
         },
         isActiveProp = ConstantProperty(true),
         tooltip = tooltip,

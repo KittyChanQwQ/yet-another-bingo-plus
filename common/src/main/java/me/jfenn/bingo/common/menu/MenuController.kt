@@ -248,7 +248,7 @@ class MenuController(
                 val yaw = atan2(directionVec.x.toFloat(), directionVec.z.toFloat())
 
                 val matrix4f = Matrix4f()
-                matrix4f.translate(pos.x.toFloat() + 0.5f, pos.y.toFloat() + 1.0f, pos.z.toFloat() - 0.4f)
+                matrix4f.translate(pos.x.toFloat() + 0.5f, pos.y.toFloat() + 1.0f, pos.z.toFloat() - 0.5f)
                 matrix4f.rotateY(yaw)
                 return@measureTime matrix4f
             }

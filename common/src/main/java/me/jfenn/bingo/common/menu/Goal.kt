@@ -14,33 +14,28 @@ internal const val MENU_GOAL_WIDTH = 2.0
 
 fun MenuComponent.registerGoal(
     position: Vector3d,
-    text: TextProvider = koinScope.get(),
+    state: BingoState = koinScope.get(),
 ) {
-    registerTitlePanel(
-        position = position + Vector3d(0.0, -0.5, 0.0),
-        width = MENU_GOAL_WIDTH,
-        title = text.string(StringKey.OptionsGoal),
-    )
-
-    val offsetY = 0.6
+    val offset = Vector3d()
 
     registerCardGoal(
-        position = position + Vector3d(0.0, -(offsetY + 1*MENU_LINE_HEIGHT), 0.0),
+        position = position + offset.sub(0.0, MENU_LINE_PADDING, 0.0),
     )
 
     registerTimer(
-        position = position + Vector3d(0.0, -(offsetY + 4*MENU_LINE_HEIGHT + 3*MENU_LINE_PADDING), 0.0),
+        position = position + offset.sub(0.0, 5*MENU_LINE_HEIGHT + 5*MENU_LINE_PADDING, 0.0),
         width = MENU_GOAL_WIDTH,
     )
 
     registerTileButton(
-        position = position + Vector3d(0.0, -(offsetY + 4*MENU_LINE_HEIGHT + 4*MENU_LINE_PADDING + 0.4), 0.0),
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + 0.4, 0.0),
         height = 0.4,
         width = MENU_GOAL_WIDTH,
-        text = Text.literal("More  ⋯"),
+        icon = "⋯",
+        text = Text.literal("More"),
         blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) {
-        // todo
+        state.menu.page = MenuPage.GOAL
     }
 }
 
@@ -49,6 +44,14 @@ fun MenuComponent.registerCardGoal(
     state: BingoState = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
+    val offset = Vector3d()
+
+    registerTitlePanel(
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
+        width = MENU_GOAL_WIDTH,
+        title = text.string(StringKey.OptionsGoal),
+    )
+
     val cardOptions by DelegatedProperty(
         getter = { state.getActiveCard().options },
         setter = {},
@@ -70,7 +73,7 @@ fun MenuComponent.registerCardGoal(
     )
 
     registerNumberInput(
-        position = position,
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
         width = MENU_GOAL_WIDTH,
         height = MENU_LINE_HEIGHT,
         valueProp = countProp,
@@ -85,11 +88,12 @@ fun MenuComponent.registerCardGoal(
     )
 
     registerTileButton(
-        position = position + Vector3d(0.0, -(MENU_LINE_HEIGHT + MENU_LINE_PADDING), 0.0),
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
         width = MENU_GOAL_WIDTH,
         height = MENU_LINE_HEIGHT,
+        icon = "⇄",
         text = Text.empty(),
-        textProp = computedProperty { Text.literal("⇄ ").append(text.string(cardOptions.goal.string())) },
+        textProp = computedProperty { text.string(cardOptions.goal.string()) },
     ) {
         when (val goal = cardOptions.goal) {
             is BingoGoal.Items -> {
@@ -107,6 +111,14 @@ fun MenuComponent.registerWinCondition(
     options: BingoOptions = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
+    val offset = Vector3d()
+
+    registerTitlePanel(
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
+        width = MENU_GOAL_WIDTH,
+        title = text.string(StringKey.OptionsWinCondition),
+    )
+
     val countProp = DelegatedProperty(
         getter = {
             when (val goal = options.winCondition) {
@@ -123,7 +135,7 @@ fun MenuComponent.registerWinCondition(
     )
 
     registerNumberInput(
-        position = position,
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
         width = MENU_GOAL_WIDTH,
         height = MENU_LINE_HEIGHT,
         valueProp = countProp,
@@ -134,7 +146,7 @@ fun MenuComponent.registerWinCondition(
     )
 
     registerTileButton(
-        position = position + Vector3d(0.0, -(MENU_LINE_HEIGHT + MENU_LINE_PADDING), 0.0),
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
         width = MENU_GOAL_WIDTH,
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsWinConditionInfinite),

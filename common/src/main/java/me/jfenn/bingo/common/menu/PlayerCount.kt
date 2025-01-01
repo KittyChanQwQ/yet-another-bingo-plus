@@ -1,17 +1,16 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.platform.EntityType
-import me.jfenn.bingo.platform.ITextDisplayEntity
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import org.joml.Matrix4f
 import org.joml.Vector3d
 import java.util.concurrent.CompletableFuture
 import kotlin.time.Duration
@@ -19,8 +18,11 @@ import kotlin.time.Duration
 private var statsHash: String = ""
 private var statsFuture: CompletableFuture<Duration?> = CompletableFuture.completedFuture(null)
 
+internal const val MENU_PLAYER_COUNT_HEIGHT = 2*MENU_LINE_HEIGHT + 4*MENU_LINE_PADDING
+
 fun MenuComponent.registerPlayerCount(
     position: Vector3d,
+    width: Double,
     server: MinecraftServer = koinScope.get(),
     text: TextProvider = koinScope.get(),
     state: BingoState = koinScope.get(),
@@ -44,34 +46,31 @@ fun MenuComponent.registerPlayerCount(
         }
     }
 
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        pos = position
+    val offsetY = 2*MENU_LINE_PADDING
 
-        val playerCount = text.string(
-            StringKey.OptionsPlayerCount,
-            Text.literal("${server.currentPlayerCount} / ${server.maxPlayerCount}")
-                .formatted(Formatting.GREEN)
-        )
+    registerTitlePanel(
+        position = position + Vector3d(0.0, -offsetY - MENU_LINE_HEIGHT, 0.0),
+        width = width,
+        titleProp = computedProperty {
+            text.string(
+                StringKey.StatsBestTime,
+                statsFuture.getNow(null)
+                    ?.formatHHMMSS()
+                    ?.let { Text.literal(it).formatted(Formatting.GREEN) }
+                    ?: text.string(StringKey.StatsBestTimeNotSet).formatted(Formatting.GRAY)
+            )
+        },
+    )
 
-        val bestTime = text.string(
-            StringKey.StatsBestTime,
-            statsFuture.getNow(null)
-                ?.formatString()
-                ?.let { Text.literal(it).formatted(Formatting.GREEN) }
-                ?: text.string(StringKey.StatsBestTimeNotSet).formatted(Formatting.GRAY)
-        )
-
-        this.value = Text.empty().let {
-            if (server.currentPlayerCount > 1)
-                it.append(playerCount).append("   ")
-            it.append(bestTime)
-        }
-
-        lineWidth = 1000
-        billboard = ITextDisplayEntity.Billboard.FIXED
-        alignment = ITextDisplayEntity.TextAlignment.CENTER
-        background = 0
-        shadow = true
-        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
-    }
+    registerTitlePanel(
+        position = position + Vector3d(0.0, -offsetY - MENU_LINE_PADDING - 2*MENU_LINE_HEIGHT, 0.0),
+        width = width,
+        titleProp = computedProperty {
+            text.string(
+                StringKey.OptionsPlayerCount,
+                Text.literal("${server.currentPlayerCount} / ${server.maxPlayerCount}")
+                    .formatted(Formatting.GREEN)
+            )
+        },
+    )
 }

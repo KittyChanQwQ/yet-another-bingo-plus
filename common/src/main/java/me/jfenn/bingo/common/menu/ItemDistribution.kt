@@ -80,7 +80,7 @@ fun MenuComponent.registerItemDistribution(
 
     registerEntity(EntityType.TEXT_DISPLAY) {
         pos = position
-        this.value = text.string(StringKey.OptionsItemDistribution)
+        this.value = text.string(StringKey.OptionsCardDifficulty)
         billboard = ITextDisplayEntity.Billboard.FIXED
         alignment = ITextDisplayEntity.TextAlignment.CENTER
         background = 0

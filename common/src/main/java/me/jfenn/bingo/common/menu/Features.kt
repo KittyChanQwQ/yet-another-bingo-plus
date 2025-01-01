@@ -1,71 +1,102 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.platform.EntityType
-import me.jfenn.bingo.platform.ITextDisplayEntity
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.controller.GameRuleController
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import org.joml.Matrix4f
 import org.joml.Vector3d
+
+private const val TILE_HEIGHT = 0.6
+private const val TILE_WIDTH = 1.2
+private const val TILE_MARGIN = 0.1
+internal const val MENU_FEATURES_WIDTH = TILE_WIDTH + TILE_MARGIN + TILE_WIDTH
 
 fun MenuComponent.registerFeatures(
     position: Vector3d,
-    options: BingoOptions,
-    permissionGetter: (ServerPlayerEntity) -> Boolean,
-    text: TextProvider = koinScope.get(),
+    state: BingoState = koinScope.get(),
     gameRuleController: GameRuleController = koinScope.get(),
     server: MinecraftServer = koinScope.get(),
+    text: TextProvider = koinScope.get(),
 ) {
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        pos = position
-        this.value = text.string(StringKey.OptionsFeatures)
-        billboard = ITextDisplayEntity.Billboard.FIXED
-        alignment = ITextDisplayEntity.TextAlignment.CENTER
-        background = 0
-        shadow = true
-        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
-    }
+    val options by state::options
 
-    registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET), 0.0, Vector3d()),
+    registerTitlePanel(
+        position = position + Vector3d(0.0, -0.5, 0.0),
+        width = MENU_FEATURES_WIDTH,
+        title = text.string(StringKey.OptionsFeatures),
+    )
+
+    val offsetY = 0.6
+    val offsetX = (TILE_WIDTH + TILE_MARGIN)/2.0
+
+    registerIconButton(
+        position = position + Vector3d(-offsetX, -(offsetY + TILE_HEIGHT), 0.0),
+        width = TILE_WIDTH,
+        height = TILE_HEIGHT,
+        icon = "᎒᎒᎒",
         text = text.string(StringKey.OptionsPreviewCard),
         tooltip = buildTooltip(StringKey.OptionsPreviewCard),
-        toggleProp = propertyRef(options::showPreviewCard),
-        permissionGetter = permissionGetter,
-    )
+        isActiveProp = computedProperty { options.showPreviewCard },
+    ) {
+        options.showPreviewCard = !options.showPreviewCard
+    }
 
-    registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0, Vector3d()),
+    registerIconButton(
+        position = position + Vector3d(offsetX, -(offsetY + TILE_HEIGHT), 0.0),
+        width = TILE_WIDTH,
+        height = TILE_HEIGHT,
+        icon = "\uD83C\uDF92",
         text = text.string(StringKey.OptionsKeepInventory),
-        toggleProp = propertyRef(options::isKeepInventory),
-        permissionGetter = permissionGetter,
+        isActiveProp = computedProperty { options.isKeepInventory },
     ) {
+        options.isKeepInventory = !options.isKeepInventory
         gameRuleController.writeToServer(server, options)
     }
 
-    registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 2*MENU_ITEM_HEIGHT), 0.0, Vector3d()),
+    registerIconButton(
+        position = position + Vector3d(-offsetX, -(offsetY + 2*TILE_HEIGHT + TILE_MARGIN), 0.0),
+        width = TILE_WIDTH,
+        height = TILE_HEIGHT,
+        icon = "\uD83E\uDD87",
         text = text.string(StringKey.OptionsElytra),
-        toggleProp = propertyRef(options::isElytra),
-        permissionGetter = permissionGetter,
-    )
-
-    registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 3*MENU_ITEM_HEIGHT), 0.0, Vector3d()),
-        text = text.string(StringKey.OptionsNightVis),
-        toggleProp = propertyRef(options::isNightVision),
-        permissionGetter = permissionGetter,
-    )
-
-    registerToggleButton(
-        position = position.add(0.0, -(MENU_ITEM_OFFSET + 4*MENU_ITEM_HEIGHT), 0.0, Vector3d()),
-        text = text.string(StringKey.OptionsAllowPvp),
-        toggleProp = propertyRef(options::isPvpEnabled),
-        permissionGetter = permissionGetter,
+        isActiveProp = computedProperty { options.isElytra },
     ) {
+        options.isElytra = !options.isElytra
+    }
+
+    registerIconButton(
+        position = position + Vector3d(offsetX, -(offsetY + 2*TILE_HEIGHT + TILE_MARGIN), 0.0),
+        width = TILE_WIDTH,
+        height = TILE_HEIGHT,
+        icon = "\uD83D\uDC41",
+        text = text.string(StringKey.OptionsNightVis),
+        isActiveProp = computedProperty { options.isNightVision },
+    ) {
+        options.isNightVision = !options.isNightVision
+    }
+
+    registerIconButton(
+        position = position + Vector3d(-offsetX, -(offsetY + 3*TILE_HEIGHT + 2*TILE_MARGIN), 0.0),
+        width = TILE_WIDTH,
+        height = TILE_HEIGHT,
+        icon = "\uD83D\uDDE1",
+        text = text.string(StringKey.OptionsAllowPvp),
+        isActiveProp = computedProperty { options.isPvpEnabled },
+    ) {
+        options.isPvpEnabled = !options.isPvpEnabled
         gameRuleController.writeToServer(server, options)
     }
+
+//    registerIconButton(
+//        position = position + Vector3d(offsetX, -(offsetY + 3*TILE_HEIGHT + 2*TILE_MARGIN), 0.0),
+//        width = TILE_WIDTH,
+//        height = TILE_HEIGHT,
+//        icon = "❓",
+//        text = text.string(StringKey.OptionsElytra),
+//        isActiveProp = computedProperty { options.isElytra },
+//    ) {
+//        options.isElytra = !options.isElytra
+//    }
 }

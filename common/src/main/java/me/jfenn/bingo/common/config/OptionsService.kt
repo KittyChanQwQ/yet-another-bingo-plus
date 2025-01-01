@@ -88,7 +88,7 @@ internal class OptionsService(
                 .let { yield(it) }
         }
 
-        text.string(StringKey.OptionsItemDistribution)
+        text.string(StringKey.OptionsCardDifficulty)
             .append(": ")
             .append(
                 TierLabel.entries

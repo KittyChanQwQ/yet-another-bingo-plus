@@ -1,50 +1,52 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.platform.EntityType
-import me.jfenn.bingo.platform.ITextDisplayEntity
-import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.spawn.SpawnItem
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.network.ServerPlayerEntity
-import org.joml.Matrix4f
 import org.joml.Vector3d
+
+internal const val MENU_SPAWN_KIT_WIDTH = 2.0
+private const val EDIT_HEIGHT = 0.55
 
 fun MenuComponent.registerSpawnKit(
     position: Vector3d,
-    options: BingoOptions,
-    permissionGetter: (ServerPlayerEntity) -> Boolean,
+    state: BingoState = koinScope.get(),
     cardService: CardService = koinScope.get(),
     text: TextProvider = koinScope.get(),
     itemStackFactory: IItemStackFactory = koinScope.get(),
 ) {
-    registerEntity(EntityType.TEXT_DISPLAY) {
-        pos = position
-        this.value = text.string(StringKey.OptionsSpawnKit)
-        billboard = ITextDisplayEntity.Billboard.FIXED
-        alignment = ITextDisplayEntity.TextAlignment.CENTER
-        background = 0
-        shadow = true
-        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
-    }
+    val options by state::options
+    val offset = Vector3d()
 
-    registerToggleButton(
-        position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET), 0.0),
+    registerTitlePanel(
+        position = position + offset.sub(0.0, 2*MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
+        width = MENU_SPAWN_KIT_WIDTH,
+        title = text.string(StringKey.OptionsSpawnKit),
+    )
+
+    registerTileButton(
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
+        width = MENU_SPAWN_KIT_WIDTH,
+        height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsSpawnKitPlayer),
-        toggleProp = propertyRef(options::isPlayerKit),
-        permissionGetter = permissionGetter,
+        isActiveProp = computedProperty { options.isPlayerKit },
     ) {
+        options.isPlayerKit = !options.isPlayerKit
         cardService.generateCard()
     }
 
-    registerButton(
-        position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT), 0.0),
+    registerTileButton(
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + EDIT_HEIGHT, 0.0),
+        width = MENU_SPAWN_KIT_WIDTH,
+        height = EDIT_HEIGHT,
+        icon = "\uD83C\uDF71",
         text = text.string(StringKey.OptionsSpawnKitEdit),
-        permissionGetter = permissionGetter,
+        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) { player ->
         player.player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
@@ -64,19 +66,24 @@ fun MenuComponent.registerSpawnKit(
         )
     }
 
-    registerToggleButton(
-        position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 3), 0.0),
+    registerTileButton(
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
+        width = MENU_SPAWN_KIT_WIDTH,
+        height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsSpawnKitTeam),
-        toggleProp = propertyRef(options::isTeamKit),
-        permissionGetter = permissionGetter,
+        isActiveProp = computedProperty { options.isTeamKit },
     ) {
+        options.isTeamKit = !options.isTeamKit
         cardService.generateCard()
     }
 
-    registerButton(
-        position = position + Vector3d(0.0, -(MENU_ITEM_OFFSET + MENU_ITEM_HEIGHT * 4), 0.0),
+    registerTileButton(
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + EDIT_HEIGHT, 0.0),
+        width = MENU_SPAWN_KIT_WIDTH,
+        height = EDIT_HEIGHT,
+        icon = "\uD83C\uDF71",
         text = text.string(StringKey.OptionsSpawnKitEdit),
-        permissionGetter = permissionGetter,
+        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) { player ->
         player.player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(

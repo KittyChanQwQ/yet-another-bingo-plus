@@ -10,7 +10,7 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import org.joml.Vector3d
 
-internal val CARD_DIFFICULTY_WIDTH = 2.0
+internal val CARD_DIFFICULTY_WIDTH = 1.6
 
 fun MenuComponent.registerCardDifficulty(
     position: Vector3d,
@@ -22,7 +22,7 @@ fun MenuComponent.registerCardDifficulty(
     registerTitlePanel(
         position = position + Vector3d(0.0, -0.5, 0.0),
         width = CARD_DIFFICULTY_WIDTH,
-        title = text.string(StringKey.OptionsItemDistribution),
+        title = text.string(StringKey.OptionsCardDifficulty),
     )
 
     val difficultyPresets = config.difficultyPresets.entries.take(4)
@@ -50,7 +50,8 @@ fun MenuComponent.registerCardDifficulty(
         position = position + Vector3d(0.0, -(0.6 + 4*MENU_LINE_HEIGHT + 4*MENU_LINE_PADDING + 0.4), 0.0),
         height = 0.4,
         width = CARD_DIFFICULTY_WIDTH,
-        text = Text.literal("Customize  ⋯"),
+        icon = "⋯",
+        text = Text.literal("Customize"),
         blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) {
         // todo

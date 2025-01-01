@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoCardOptions
 import me.jfenn.bingo.common.config.BingoOptions
@@ -11,119 +9,58 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.PermissionsIntegration
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
-import org.slf4j.Logger
+import org.koin.core.scope.Scope
 
-internal fun MenuComponent.registerMenuPage(
+private fun createRootPage(
+    koinScope: Scope,
     position: Vector3d,
     state: BingoState = koinScope.get(),
     options: BingoOptions = koinScope.get(),
     gameService: GameService = koinScope.get(),
     cardService: CardService = koinScope.get(),
-    permissionsIntegration: PermissionsIntegration = koinScope.get(),
-    playerManager: IPlayerManager = koinScope.get(),
     configService: ConfigService = koinScope.get(),
     text: TextProvider = koinScope.get(),
-    log: Logger = koinScope.get(),
-) {
-    var page = 0
-
-    val itemDistributionProp = DelegatedProperty(
-        getter = {
-            state.getActiveCard().options.itemDistribution
-        },
-        setter = {
-            val card = state.getActiveCard()
-            card.options.itemDistribution = it
-
-            // Attempt to re-roll the card, but log if there is an error
-            kotlin.runCatching {
-                cardService.generateCard(card)
-            }
-                .exceptionOrNull()
-                ?.let { e -> log.error("Error generating card: ${e::class.simpleName} ${e.message}") }
-
-            markDirty()
-        }
+) = component(koinScope) {
+    val pos = position + Vector3d(-5.5 + MENU_LINE_PADDING*2, 0.0, 0.0)
+    registerGameModes(
+        position = pos + Vector3d(GAME_MODES_WIDTH/2, 0.0, 0.0),
     )
-    val permissionGetter = { player: ServerPlayerEntity ->
-        permissionsIntegration.hasPermission(playerManager.forPlayer(player), Permission.CONFIGURE_GAME)
+    pos.add(GAME_MODES_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerGoal(
+        position = pos + Vector3d(MENU_GOAL_WIDTH/2, 0.0, 0.0),
+    )
+    pos.add(MENU_GOAL_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerCardDifficulty(
+        position = pos + Vector3d(CARD_DIFFICULTY_WIDTH/2, 0.0, 0.0),
+    )
+    pos.add(CARD_DIFFICULTY_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerTeams(
+        position = pos + Vector3d(MENU_TEAMS_WIDTH/2, 0.0, 0.0),
+    )
+    registerTileButton(
+        position = pos + Vector3d(MENU_TEAMS_WIDTH/2, -0.5 - 2*MENU_LINE_HEIGHT - 3*MENU_LINE_PADDING - 0.55, 0.0),
+        width = MENU_TEAMS_WIDTH,
+        height = 0.55,
+        icon = "⚄",
+        text = text.string(StringKey.OptionsRerollCard),
+        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
+    ) {
+        // Shuffle the current card + seed
+        cardService.shuffleCard(state.getActiveCard())
     }
-
-    val pages = listOf(
-        component(koinScope) {
-            val offsetX = -5.5 + 0.2
-
-            registerGameModes(
-                position = position + Vector3d(offsetX + (GAME_MODES_WIDTH/2), 0.0, 0.0),
-            )
-            registerGoal(
-                position = position + Vector3d(offsetX + GAME_MODES_WIDTH + MENU_LINE_PADDING + (MENU_GOAL_WIDTH/2), 0.0, 0.0),
-            )
-            registerCardDifficulty(
-                position = position + Vector3d(offsetX + GAME_MODES_WIDTH + MENU_LINE_PADDING + MENU_GOAL_WIDTH + MENU_LINE_PADDING + (CARD_DIFFICULTY_WIDTH/2), 0.0, 0.0),
-            )
-
-//            registerTeams(
-//                position = position + Vector3d(3.5, 0.0, 0.0),
-//                permissionGetter = permissionGetter,
-//            )
-        },
-        component(koinScope) {
-            registerFeatures(
-                position = position + Vector3d(-3.5, 0.0, 0.0),
-                options = options,
-                permissionGetter = permissionGetter,
-            )
-            registerSpawnKit(
-                position = position + Vector3d(-1.5, 0.0, 0.0),
-                options = options,
-                permissionGetter = permissionGetter,
-            )
-            registerItemFilters(
-                position = position + Vector3d(0.6, 0.0, 0.0),
-                options = options,
-                permissionGetter = permissionGetter,
-            )
-            registerItemDistribution(
-                position = position + Vector3d(3.0, 0.0, 0.0),
-                itemDistributionProp = itemDistributionProp,
-                permissionGetter = permissionGetter,
-            )
-        },
-        component(koinScope) {
-            registerScoreInfo(
-                position = position + Vector3d(-3.5, 0.0, 0.0),
-                options = options,
-                permissionGetter = permissionGetter,
-            )
-            registerWinBehavior(
-                position = position + Vector3d(-0.9, 0.0, 0.0),
-                permissionGetter = permissionGetter,
-            )
-            registerDimensionMenu(
-                position = position + Vector3d(1.4, 0.0, 0.0),
-                dimensionProperty = propertyRef(options::spawnDimension),
-                permissionGetter = permissionGetter,
-            )
-            registerSpawnDistance(
-                position = position + Vector3d(3.5, 0.0, 0.0),
-                spawnDistanceProp = propertyRef(options::spawnDistance),
-                permissionGetter = permissionGetter,
-            )
-        },
-    )
-
-    registerButton(
-        position = position + Vector3d(-3.7, 0.5, 0.0),
-        text = Text.literal("⟳ ")
-            .append(text.string(StringKey.OptionsResetDefaults)),
-        isActiveProp = computedProperty { false },
-        permissionGetter = permissionGetter,
+    registerTileButton(
+        position = pos + Vector3d(MENU_TEAMS_WIDTH/2, -0.5 - 2*MENU_LINE_HEIGHT - 3*MENU_LINE_PADDING - 1.2, 0.0),
+        width = MENU_TEAMS_WIDTH,
+        height = 0.55,
+        icon = "⟳",
+        text = text.string(StringKey.OptionsResetDefaults),
+        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) {
         // Reset the menu to the default options
         options.copyFrom(configService.optionsDefault)
@@ -139,39 +76,23 @@ internal fun MenuComponent.registerMenuPage(
 
         // Clear & re-index all cards
         state.replaceCards(cards)
-
-        markDirty()
     }
+    pos.add(MENU_TEAMS_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
 
-    registerButton(
-        position = position + Vector3d(3.7, 0.5, 0.0),
-        text = Text.literal("⚄ ")
-            .append(text.string(StringKey.OptionsRerollCard)),
-        isActiveProp = computedProperty { false },
-        permissionGetter = permissionGetter,
-    ) {
-        // Shuffle the current card + seed
-        cardService.shuffleCard(state.getActiveCard())
-        markDirty()
-    }
+    val startWidth = (position.x + 5.5 - MENU_LINE_PADDING*2) - pos.x
 
-    for (i in pages.indices) {
-        registerButton(
-            position = position + Vector3d(-((pages.size-1) * 0.6) + (i*1.2), 0.5, 0.0),
-            text = text.string(StringKey.OptionsPage, i+1),
-            isActiveProp = computedProperty { page == i },
-            permissionGetter = permissionGetter,
-        ) {
-            page = i
-            markDirty()
-        }
-    }
+    registerPlayerCount(
+        position = pos + Vector3d(startWidth/2, 0.0, 0.0),
+        width = startWidth,
+    )
 
-    registerButton(
-        position = position + Vector3d(5.0, -MENU_ITEM_OFFSET, 0.0),
-        text = Text.literal("✔ ").append(text.string(StringKey.OptionsStart)),
-        isActiveProp = computedProperty { options.isValid() },
-        permissionGetter = permissionGetter,
+    registerTileButton(
+        position = pos + Vector3d(startWidth/2, -2.4 - 2*MENU_LINE_PADDING, 0.0),
+        width = startWidth,
+        height = 2.4 - MENU_PLAYER_COUNT_HEIGHT + 2*MENU_LINE_PADDING,
+        text = text.string(StringKey.OptionsStart),
+        textScale = 1.5f,
+        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) { player ->
         // Start the game!
         gameService.start(
@@ -184,26 +105,102 @@ internal fun MenuComponent.registerMenuPage(
             allowSpectators = player.isSneaking,
         )
     }
+}
+
+private const val MENU_BACK_WIDTH = 0.8
+
+private fun MenuComponent.registerBackButton(
+    position: Vector3d,
+    state: BingoState = koinScope.get(),
+) {
+    registerTileButton(
+        position = position + Vector3d(0.0, -2.4 - 2*MENU_LINE_PADDING, 0.0),
+        width = MENU_BACK_WIDTH,
+        height = 2.4,
+        text = Text.literal("⬅"),
+        textScale = 3.5f,
+        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
+    ) {
+        state.menu.page = MenuPage.ROOT
+    }
+}
+
+private fun createFeaturesPage(
+    koinScope: Scope,
+    position: Vector3d,
+) = component(koinScope) {
+    val pos = position + Vector3d(-5.5 + MENU_LINE_PADDING*2, 0.0, 0.0)
+    registerBackButton(
+        position = pos + Vector3d(MENU_BACK_WIDTH/2, 0.0, 0.0),
+    )
+    pos.add(MENU_BACK_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerFeatures(
+        position = pos + Vector3d(MENU_FEATURES_WIDTH/2, 0.0, 0.0),
+    )
+    pos.add(MENU_FEATURES_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerSpawnKit(
+        position = pos + Vector3d(MENU_SPAWN_KIT_WIDTH/2, 0.0, 0.0),
+    )
+    pos.add(MENU_SPAWN_KIT_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerDimensionMenu(
+        position = pos + Vector3d(MENU_DIMENSION_WIDTH/2, 0.0, 0.0),
+        height = 2.6,
+    )
+    pos.add(MENU_DIMENSION_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerSpawnDistance(
+        position = pos + Vector3d(MENU_SPAWN_DISTANCE_WIDTH/2, 0.0, 0.0),
+    )
+    pos.add(MENU_SPAWN_DISTANCE_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+}
+
+private fun createGoalPage(
+    koinScope: Scope,
+    position: Vector3d,
+) = component(koinScope) {
+    val pos = position + Vector3d(-5.5 + MENU_LINE_PADDING*2, 0.0, 0.0)
+    registerBackButton(
+        position = pos + Vector3d(MENU_BACK_WIDTH/2, 0.0, 0.0),
+    )
+    pos.add(MENU_BACK_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerWinCondition(
+        position = pos + Vector3d(MENU_GOAL_WIDTH/2, -MENU_LINE_PADDING, 0.0),
+    )
+    pos.add(MENU_GOAL_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+}
+
+internal fun MenuComponent.registerMenuPage(
+    position: Vector3d,
+    state: BingoState = koinScope.get(),
+) {
+    val menuState by state::menu
+
+    val pages = MenuPage.entries.associateWith {
+        when (it) {
+            MenuPage.ROOT -> createRootPage(koinScope, position)
+            MenuPage.FEATURES -> createFeaturesPage(koinScope, position)
+            MenuPage.GOAL -> createGoalPage(koinScope, position)
+        }
+    }
 
     onTick { instance ->
-        for (i in pages.indices) {
-            if (page == i) {
-                pages[i].tick(instance)
-            }
-        }
+        pages[menuState.page]?.tick(instance)
     }
 
     onUpdate { instance ->
-        for (i in pages.indices) {
-            if (page == i) {
-                pages[i].spawn(instance)
-            } else {
-                pages[i].despawn()
+        for ((page, component) in pages.entries) {
+            if (menuState.page != page) {
+                component.despawn()
             }
         }
+        pages[menuState.page]?.spawn(instance)
     }
 
     onDespawn {
-        pages.forEach { it.despawn() }
+        pages.values.forEach { it.despawn() }
     }
 }

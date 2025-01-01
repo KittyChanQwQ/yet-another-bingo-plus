@@ -60,7 +60,7 @@ fun MenuComponent.registerGameModes(
         position = position + Vector3d(-offsetX, -(offsetY + 2*TILE_HEIGHT + TILE_MARGIN), 0.0),
         width = TILE_WIDTH,
         height = TILE_HEIGHT,
-        icon = "?",
+        icon = "❓",
         text = text.string(StringKey.OptionsModeHiddenItems),
         tooltip = buildTooltip(StringKey.OptionsModeHiddenItems),
         isActiveProp = computedProperty { cardOptions.isHiddenItemsMode },
@@ -73,9 +73,10 @@ fun MenuComponent.registerGameModes(
         position = position + Vector3d(0.0, -(offsetY + 2*TILE_HEIGHT + 2*TILE_MARGIN + 0.4), 0.0),
         height = 0.4,
         width = GAME_MODES_WIDTH,
-        text = text.string(StringKey.OptionsFeatures).append("  ⋯"),
+        icon = "⋯",
+        text = text.string(StringKey.OptionsFeatures),
         blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) {
-        // todo
+        state.menu.page = MenuPage.FEATURES
     }
 }
