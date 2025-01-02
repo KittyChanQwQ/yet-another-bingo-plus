@@ -123,5 +123,5 @@ French translations were contributed by Yosh64!<br>
 Polish translations were contributed by Toniemax!<br>
 Portuguese translations were contributed by Lucasofchirst!<br>
 Russian translations were contributed by Milleol, XakVit, Ofterkino, Mrpavel, Май, Lucky Wayч, and yukkovna!<br>
-Spanish translations were contributed by ANDY!
+Spanish translations were contributed by ANDY!<br>
 Swedish translations were contributed by Vica50 Rosvall!<br>
