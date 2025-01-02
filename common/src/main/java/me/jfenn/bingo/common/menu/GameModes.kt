@@ -12,6 +12,11 @@ private const val TILE_WIDTH = 1.2
 private const val TILE_MARGIN = 0.1
 internal const val GAME_MODES_WIDTH = TILE_WIDTH + TILE_MARGIN + TILE_WIDTH
 
+internal const val ICON_LOCKOUT = "\uD83D\uDD12"
+internal const val ICON_INVENTORY = "\uD83C\uDF92"
+internal const val ICON_HIDDEN = "❓"
+internal const val ICON_CONSUME = "⬚"
+
 internal fun MenuComponent.registerGameModes(
     position: Vector3d,
     state: BingoState = koinScope.get(),
@@ -36,7 +41,7 @@ internal fun MenuComponent.registerGameModes(
         position = position + Vector3d(-offsetX, -(offsetY + TILE_HEIGHT), 0.0),
         width = TILE_WIDTH,
         height = TILE_HEIGHT,
-        icon = "\uD83D\uDD12",
+        icon = ICON_LOCKOUT,
         text = text.string(StringKey.OptionsModeLockout),
         tooltip = buildTooltip(StringKey.OptionsModeLockout),
         isActiveProp = computedProperty { cardOptions.isLockoutMode },
@@ -48,25 +53,39 @@ internal fun MenuComponent.registerGameModes(
         position = position + Vector3d(offsetX, -(offsetY + TILE_HEIGHT), 0.0),
         width = TILE_WIDTH,
         height = TILE_HEIGHT,
-        icon = "\uD83C\uDF92",
+        icon = ICON_INVENTORY,
         text = text.string(StringKey.OptionsModeInventory),
         tooltip = buildTooltip(StringKey.OptionsModeInventory),
         isActiveProp = computedProperty { cardOptions.isInventoryMode },
     ) {
         cardOptions.isInventoryMode = !cardOptions.isInventoryMode
+        cardOptions.isConsumeItemsMode = false
     }
 
     registerIconButton(
         position = position + Vector3d(-offsetX, -(offsetY + 2*TILE_HEIGHT + TILE_MARGIN), 0.0),
         width = TILE_WIDTH,
         height = TILE_HEIGHT,
-        icon = "❓",
+        icon = ICON_HIDDEN,
         text = text.string(StringKey.OptionsModeHiddenItems),
         tooltip = buildTooltip(StringKey.OptionsModeHiddenItems),
         isActiveProp = computedProperty { cardOptions.isHiddenItemsMode },
     ) {
         cardOptions.isHiddenItemsMode = !cardOptions.isHiddenItemsMode
         cardService.generateCard()
+    }
+
+    registerIconButton(
+        position = position + Vector3d(offsetX, -(offsetY + 2*TILE_HEIGHT + TILE_MARGIN), 0.0),
+        width = TILE_WIDTH,
+        height = TILE_HEIGHT,
+        icon = ICON_CONSUME,
+        text = text.string(StringKey.OptionsModeConsumeItems),
+        tooltip = buildTooltip(StringKey.OptionsModeConsumeItems),
+        isActiveProp = computedProperty { cardOptions.isConsumeItemsMode },
+    ) {
+        cardOptions.isInventoryMode = false
+        cardOptions.isConsumeItemsMode = !cardOptions.isConsumeItemsMode
     }
 
     registerTileButton(

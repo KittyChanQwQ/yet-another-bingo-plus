@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.platform.commands.ICommandManager
-import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.config.BingoCardOptions
@@ -13,6 +11,8 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
 import net.minecraft.text.Text
 import kotlin.reflect.KMutableProperty1
 
@@ -47,6 +47,14 @@ class BingoModeCommand(
         val newValue = value ?: (!prop.get(card.options))
         prop.set(card.options, newValue)
 
+        // inventory mode & consume items mode are not compatible
+        if (prop == BingoCardOptions::isConsumeItemsMode) {
+            card.options.isInventoryMode = false
+        }
+        if (prop == BingoCardOptions::isInventoryMode) {
+            card.options.isConsumeItemsMode = false
+        }
+
         val events = scope.get<ScopedEvents>()
         events.onChangeOptions(Unit)
 
@@ -75,6 +83,9 @@ class BingoModeCommand(
                 }
                 literal("hidden_items") {
                     executes { toggleCardMode(BingoCardOptions::isHiddenItemsMode) }
+                }
+                literal("consume_items") {
+                    executes { toggleCardMode(BingoCardOptions::isConsumeItemsMode) }
                 }
                 literal("infinite") {
                     executes { toggleInfiniteMode() }

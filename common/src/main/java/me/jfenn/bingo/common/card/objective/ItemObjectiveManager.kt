@@ -1,8 +1,6 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.item.IItemStack
-import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
@@ -13,7 +11,9 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MI
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.platform.player.PlayerProfile
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.math.max
@@ -131,6 +131,30 @@ class ItemObjectiveManager(
 
         return count
     }
+
+    fun confiscateScoredItem(
+        player: IPlayerHandle,
+        objective: BingoObjective.ItemEntry,
+    ) {
+        val itemStacks = player.allHeldStacks()
+            .filter { canSatisfyPartial(it, objective) }
+
+        // Confiscate item stacks until the objective requirements are met
+        var countRemaining = objective.itemCount
+        for (stack in itemStacks) {
+            val newCount = stack.count - countRemaining
+            if (newCount < 0) {
+                // the entire stack is consumed, and there are remaining items to confiscate
+                countRemaining -= stack.count
+                stack.count = 0
+            } else {
+                // there are no remaining items to confiscate
+                stack.count = newCount
+                break
+            }
+        }
+    }
+
 
     override fun tick(card: BingoCard) {
         val now = state.updatedAt ?: Instant.DISTANT_PAST

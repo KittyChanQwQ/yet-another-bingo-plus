@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.config.PlayerSettingsService
@@ -15,6 +14,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -67,15 +67,15 @@ class ScoreboardController(
                 val teamCard = team?.let { state.getCard(it) } ?: state.getActiveCard()
 
                 val scoreboardText = buildList<Text?> {
-                    options.formatGameMode(teamCard)
-                        .map { textProvider.string(it) }
-                        .wrapText(2)
-                        .forEachIndexed { index, t ->
-                            add(when {
-                                index == 0 -> textProvider.string(StringKey.ScoreboardMode, t.formatted(Formatting.YELLOW))
-                                else -> Text.literal("  ").append(t).formatted(Formatting.YELLOW)
-                            })
+                    options.formatGameModeIcons(teamCard)
+                        .joinToString(" ")
+                        .let {
+                            when {
+                                it.isEmpty() -> textProvider.string(StringKey.OptionsModeStandard)
+                                else -> Text.literal(it)
+                            }
                         }
+                        .let { add(textProvider.string(StringKey.ScoreboardMode, it.formatted(Formatting.YELLOW))) }
 
                     options.formatFeatures()
                         .map { textProvider.string(it) }

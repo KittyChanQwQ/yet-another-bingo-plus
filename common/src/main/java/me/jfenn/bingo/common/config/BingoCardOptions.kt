@@ -22,6 +22,7 @@ data class BingoCardOptions(
     var isLockoutMode: Boolean = false,
     var isInventoryMode: Boolean = false,
     var isHiddenItemsMode: Boolean = false,
+    var isConsumeItemsMode: Boolean = false,
 ) {
     fun isValid(): Boolean {
         return kotlin.runCatching { assertValid() }.isSuccess
@@ -37,6 +38,7 @@ data class BingoCardOptions(
             if (isLockoutMode) add(StringKey.OptionsModeLockout)
             if (isInventoryMode) add(StringKey.OptionsModeInventory)
             if (isHiddenItemsMode) add(StringKey.OptionsModeHiddenItems)
+            if (isConsumeItemsMode) add(StringKey.OptionsModeConsumeItems)
         }
 
         return gameMode.ifEmpty { listOf(StringKey.OptionsModeStandard) }

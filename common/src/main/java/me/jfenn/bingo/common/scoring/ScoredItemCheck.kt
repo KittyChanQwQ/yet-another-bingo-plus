@@ -1,11 +1,12 @@
 package me.jfenn.bingo.common.scoring
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
+import me.jfenn.bingo.common.card.objective.ItemObjectiveManager
 import me.jfenn.bingo.common.config.BingoGoal
 import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.BingoWinCondition
@@ -24,6 +25,8 @@ import me.jfenn.bingo.common.team.TeamWinner
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
@@ -41,6 +44,7 @@ internal class ScoredItemCheck(
     private val cardService: CardService,
     private val scoreUpdateService: ScoreUpdateService,
     private val objectiveManager: BingoObjectiveManager,
+    private val itemObjectiveManager: ItemObjectiveManager,
     private val playerManager: IPlayerManager,
     private val text: TextProvider,
     private val permission: PermissionsIntegration,
@@ -79,6 +83,15 @@ internal class ScoredItemCheck(
                             ?.first
 
                         log.info("[ScoredItemCheck] ${player?.name ?: team.id} got ${objective.id}")
+
+                        // If consume items is enabled, attempt to remove the scored item from the player
+                        // (incompatible if inventory mode is enabled)
+                        if (card.options.isConsumeItemsMode && !card.options.isInventoryMode) {
+                            player?.uuid
+                                ?.let { playerManager.getPlayer(it) }
+                                ?.let { confiscateScoredItem(it, card, objective) }
+                                ?: log.error("[ScoredItemCheck] Could not find the player that captured {} ({})", objective.id, player?.name)
+                        }
 
                         scoreUpdateService.sendItemCaptured(
                             scoredPlayer = player,
@@ -153,6 +166,46 @@ internal class ScoredItemCheck(
         // we want ticks to stop at Int.MAX_VALUE so that it does not overflow into a negative
         if (card.ticks < Int.MAX_VALUE)
             card.ticks++
+    }
+
+    /**
+     * Find the innermost objective that was captured (descending into opponent, inverse, some_of, or all_of objective types)
+     */
+    private fun getInnerCapturedObjective(
+        player: IPlayerHandle,
+        card: BingoCard,
+        objective: BingoObjective,
+        recursionLimit: Int = 10,
+    ): BingoObjective {
+        if (recursionLimit <= 0)
+            return objective
+
+        val capturedObjective = when (objective) {
+            is BingoObjective.SomeOfEntry -> objective.someOfObjectives
+                .mapNotNull { card.objectives[it] }
+                .maxByOrNull { it.players[player.uuid]?.instant ?: Instant.DISTANT_PAST }
+            is BingoObjective.InverseEntry -> card.objectives[objective.inverseObjective]
+            is BingoObjective.OpponentEntry -> card.objectives[objective.opponentObjective]
+            else -> objective
+        }
+
+        return when (capturedObjective) {
+            is BingoObjective.SomeOfEntry,
+            is BingoObjective.InverseEntry,
+            is BingoObjective.OpponentEntry -> getInnerCapturedObjective(player, card, capturedObjective, recursionLimit-1)
+            else -> capturedObjective ?: objective
+        }
+    }
+
+    private fun confiscateScoredItem(
+        player: IPlayerHandle,
+        card: BingoCard,
+        objective: BingoObjective,
+    ) {
+        val itemObjective = getInnerCapturedObjective(player, card, objective) as? BingoObjective.ItemEntry
+            ?: return
+
+        itemObjectiveManager.confiscateScoredItem(player, itemObjective)
     }
 
     private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean) {

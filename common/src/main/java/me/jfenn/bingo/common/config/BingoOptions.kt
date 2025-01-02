@@ -5,6 +5,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.card.BingoCard
+import me.jfenn.bingo.common.menu.ICON_CONSUME
+import me.jfenn.bingo.common.menu.ICON_HIDDEN
+import me.jfenn.bingo.common.menu.ICON_INVENTORY
+import me.jfenn.bingo.common.menu.ICON_LOCKOUT
 import me.jfenn.bingo.common.spawn.SpawnItem
 import me.jfenn.bingo.common.utils.copyMemberProperties
 import me.jfenn.bingo.common.utils.json
@@ -152,10 +156,23 @@ data class BingoOptions(
             if (card.options.isLockoutMode) add(StringKey.OptionsModeLockout)
             if (card.options.isInventoryMode) add(StringKey.OptionsModeInventory)
             if (card.options.isHiddenItemsMode) add(StringKey.OptionsModeHiddenItems)
+            if (card.options.isConsumeItemsMode) add(StringKey.OptionsModeConsumeItems)
             if (winCondition is BingoWinCondition.Infinite) add(StringKey.OptionsWinConditionInfinite)
         }
 
         return gameMode.ifEmpty { listOf(StringKey.OptionsModeStandard) }
+    }
+
+    fun formatGameModeIcons(card: BingoCard): List<String> {
+        val gameMode = buildList {
+            if (card.options.isLockoutMode) add(ICON_LOCKOUT)
+            if (card.options.isInventoryMode) add(ICON_INVENTORY)
+            if (card.options.isHiddenItemsMode) add(ICON_HIDDEN)
+            if (card.options.isConsumeItemsMode) add(ICON_CONSUME)
+            if (winCondition is BingoWinCondition.Infinite) add("∞")
+        }
+
+        return gameMode
     }
 
     fun formatFeatures(): List<StringKey> {

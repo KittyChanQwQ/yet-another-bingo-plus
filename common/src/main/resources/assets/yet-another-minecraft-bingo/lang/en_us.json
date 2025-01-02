@@ -204,6 +204,8 @@
   "bingo.options.leading_team.tooltip": "Shows the name of the leading team in the scoreboard.",
   "bingo.options.mode_hidden_items": "Hidden Items",
   "bingo.options.mode_hidden_items.tooltip": "Items are not shown on the bingo card until a player discovers them.",
+  "bingo.options.mode_consume_items": "Consume Items",
+  "bingo.options.mode_consume_items.tooltip": "When an item is captured, it will vanish from your inventory.",
   "bingo.options.mode_inventory": "Inventory",
   "bingo.options.mode_inventory.tooltip": "Items must remain in a team member's inventory to hold a tile.",
   "bingo.options.mode_lockout": "Lockout",
