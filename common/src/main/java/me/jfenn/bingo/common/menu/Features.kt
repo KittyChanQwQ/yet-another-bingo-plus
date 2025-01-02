@@ -89,14 +89,14 @@ internal fun MenuComponent.registerFeatures(
         gameRuleController.writeToServer(server, options)
     }
 
-//    registerIconButton(
-//        position = position + Vector3d(offsetX, -(offsetY + 3*TILE_HEIGHT + 2*TILE_MARGIN), 0.0),
-//        width = TILE_WIDTH,
-//        height = TILE_HEIGHT,
-//        icon = "❓",
-//        text = text.string(StringKey.OptionsElytra),
-//        isActiveProp = computedProperty { options.isElytra },
-//    ) {
-//        options.isElytra = !options.isElytra
-//    }
+    registerIconButton(
+        position = position + Vector3d(offsetX, -(offsetY + 3*TILE_HEIGHT + 2*TILE_MARGIN), 0.0),
+        width = TILE_WIDTH,
+        height = TILE_HEIGHT,
+        icon = "\uD83D\uDD6E",
+        text = text.string(StringKey.OptionsUnlockRecipes),
+        isActiveProp = computedProperty { options.isUnlockRecipes },
+    ) {
+        options.isUnlockRecipes = !options.isUnlockRecipes
+    }
 }
