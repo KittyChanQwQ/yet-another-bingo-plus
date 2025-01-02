@@ -1,8 +1,6 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.config.BingoGoal
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
