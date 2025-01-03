@@ -12,6 +12,8 @@
     "PlayerManagerMixin",
     "ServerChunkLoadingManagerAccessor",
     "ServerChunkManagerAccessor",
+    "ServerChunkManagerMixin",
+    "ServerEntityManagerMixin",
     "ServerPlayNetworkHandlerMixin"
   ],
   "client": [

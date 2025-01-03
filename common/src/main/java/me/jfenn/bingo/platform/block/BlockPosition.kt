@@ -2,6 +2,7 @@ package me.jfenn.bingo.platform.block
 
 import net.minecraft.util.math.BlockPos
 import org.joml.Vector3d
+import org.joml.Vector3f
 
 data class BlockPosition(
     val x: Int,
@@ -27,6 +28,8 @@ data class BlockPosition(
     fun toChunkPos() = Pair(x / 16, y / 16)
 
     fun toVector3d() = Vector3d(x.toDouble(), y.toDouble(), z.toDouble())
+
+    fun toVector3f() = Vector3f(x.toFloat(), y.toFloat(), z.toFloat())
 
     override fun toString(): String {
         return "[$x, $y, $z]"

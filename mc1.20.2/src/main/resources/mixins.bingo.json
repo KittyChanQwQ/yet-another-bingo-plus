@@ -11,6 +11,8 @@
     "PlayerEntityMixin",
     "PlayerManagerMixin",
     "ServerChunkManagerAccessor",
+    "ServerChunkManagerMixin",
+    "ServerEntityManagerMixin",
     "ServerPlayNetworkHandlerMixin",
     "ThreadedAnvilChunkStorageAccessor"
   ],

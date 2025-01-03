@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.menu
 
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.config.Config
@@ -40,6 +41,7 @@ import java.nio.file.StandardCopyOption
 import java.util.*
 import java.util.zip.ZipInputStream
 import kotlin.math.atan2
+import kotlin.math.roundToInt
 
 internal class MenuController(
     events: ScopedEvents,
@@ -55,12 +57,25 @@ internal class MenuController(
     private val levelStorage: ILevelStorage,
     private val particleFactory: me.jfenn.bingo.platform.particle.IParticleFactory,
     private val serverWorldFactory: IServerWorldFactory,
+    private val taskExecutor: IExecutors.IServerTaskExecutor,
 ) : BingoComponent() {
 
     private var menu: MenuInstance? = null
     private val koinScope = scopeManager.getScope(server)!!
 
     private val instanceTag = "bingo-${UUID.randomUUID()}"
+
+    companion object {
+        private const val LOBBY_WORLD_ZIP = "lobby_world.zip"
+        private val MENU_OFFSET = Vector3f(0.5f, 1.0f, -0.5f)
+    }
+
+    private object Cache {
+        var lobbyWorldModified: Instant = Instant.DISTANT_PAST
+        var spawnPosition: Pair<BlockPosition, Float>? = null
+        var menuPosition: Matrix4f? = null
+        var teamPositions: Map<BingoTeamKey, BlockPosition>? = null
+    }
 
     init {
         if (state.isLobbyMode) {
@@ -157,7 +172,16 @@ internal class MenuController(
                 return@measureTime
             }
 
-        Config.readStream("lobby_world.zip", shouldWriteDefault = false).use { stream ->
+        // If the lobby has been modified, clear cached positions
+        val lobbyWorldModified = Config.readLastModified(LOBBY_WORLD_ZIP)
+        if (lobbyWorldModified != Cache.lobbyWorldModified) {
+            Cache.spawnPosition = null
+            Cache.menuPosition = null
+            Cache.teamPositions = null
+            Cache.lobbyWorldModified = lobbyWorldModified
+        }
+
+        Config.readStream(LOBBY_WORLD_ZIP, shouldWriteDefault = false).use { stream ->
             ZipInputStream(stream).use { zipStream ->
                 while (true) {
                     val entry = zipStream.nextEntry ?: break
@@ -221,80 +245,121 @@ internal class MenuController(
         }
     }
 
-    private fun getMenuPosition(lobbyWorld: ServerWorld): Matrix4f? = log.measureTime("[MenuController] Locating menu position...") {
-        val lobbyWorldImpl = serverWorldFactory.forWorld(lobbyWorld)
+    private fun getMenuPosition(lobbyWorld: ServerWorld): Matrix4f? = run {
+        Cache.menuPosition?.let { return@run it }
 
-        // Find a column of three vertical wall_sign blocks for the menu position
-        for (pos in searchLobbyBlocks()) {
-            val blocks = listOf(
-                pos.move(y = 1).toBlockPos(),
-                pos.toBlockPos(),
-                pos.move(y = -1).toBlockPos()
-            ).associateWith {
-                lobbyWorldImpl.getBlockState(BlockPosition.fromBlockPos(it))
-                    as? IWallSignBlockState
-            }
+        log.measureTime("[MenuController] Locating menu position...") {
+            val lobbyWorldImpl = serverWorldFactory.forWorld(lobbyWorld)
 
-            val isMenuPos = blocks.values.all {
-                it?.block == Blocks.OAK_WALL_SIGN
-            }
-            val centerState = blocks.values.first()
-
-            if (isMenuPos && centerState != null) {
-                for ((blockPos) in blocks) {
-                    lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
+            // Find a column of three vertical wall_sign blocks for the menu position
+            for (pos in searchLobbyBlocks()) {
+                val blocks = listOf(
+                    pos.move(y = 1).toBlockPos(),
+                    pos.toBlockPos(),
+                    pos.move(y = -1).toBlockPos()
+                ).associateWith {
+                    lobbyWorldImpl.getBlockState(BlockPosition.fromBlockPos(it))
+                            as? IWallSignBlockState
                 }
 
-                val directionVec = centerState.facing
-                val yaw = atan2(directionVec.x.toFloat(), directionVec.z.toFloat())
+                val isMenuPos = blocks.values.all {
+                    it?.block == Blocks.OAK_WALL_SIGN
+                }
+                val centerState = blocks.values.first()
 
-                val matrix4f = Matrix4f()
-                matrix4f.translate(pos.x.toFloat() + 0.5f, pos.y.toFloat() + 1.0f, pos.z.toFloat() - 0.5f)
-                matrix4f.rotateY(yaw)
-                return@measureTime matrix4f
+                if (isMenuPos && centerState != null) {
+                    val directionVec = centerState.facing
+                    val yaw = atan2(directionVec.x.toFloat(), directionVec.z.toFloat())
+
+                    val matrix4f = Matrix4f()
+                    matrix4f.translate(pos.toVector3f())
+                    matrix4f.rotateY(yaw)
+                    return@measureTime matrix4f
+                }
+            }
+
+            null
+        }
+    }.also { menuPosition ->
+        Cache.menuPosition = menuPosition
+        log.info("Set menu position to ${menuPosition?.transform(Vector4f())}")
+
+        if (menuPosition != null) {
+            val blockPos = Vector4f()
+                .also { menuPosition.transform(it) }
+                .let { BlockPosition(it.x.roundToInt(), it.y.roundToInt(), it.z.roundToInt()) }
+
+            taskExecutor.execute {
+                // schedule the blockstate change, as the chunk might not be loaded yet
+                for (y in blockPos.y-1..blockPos.y+1) {
+                    log.info("Set ${blockPos.copy(y = y)} to AIR")
+                    lobbyWorld.setBlockState(
+                        blockPos.copy(y = y).toBlockPos(),
+                        Blocks.AIR.defaultState,
+                    )
+                }
             }
         }
+    }
 
-        null
-    }.also { log.info("Set menu position to ${it?.transform(Vector4f())}") }
+    private fun getLobbySpawnPosition(lobbyWorld: ServerWorld): Pair<BlockPosition, Float> = run {
+        Cache.spawnPosition?.let { return@run it }
 
-    private fun getLobbySpawnPosition(lobbyWorld: ServerWorld): Pair<BlockPosition, Float> = log.measureTime("[MenuController] Locating spawn position...") {
-        // If a player head is in the lobby structure, use it as the player spawn
-        for (pos in searchLobbyBlocks()) {
-            val blockPos = pos.toBlockPos()
-            val blockState = lobbyWorld.getBlockState(blockPos)
-            val isPlayerHead = blockState.block == Blocks.PLAYER_HEAD
-            if (isPlayerHead) {
-                val rotation = blockState.get(PlayerSkullBlock.ROTATION)
-                val yaw = (rotation - 8).toFloat() * 360f / 16f
-                lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
-                return@measureTime Pair(pos, yaw)
+        log.measureTime("[MenuController] Locating spawn position...") {
+            // If a player head is in the lobby structure, use it as the player spawn
+            for (pos in searchLobbyBlocks()) {
+                val blockState = lobbyWorld.getBlockState(pos.toBlockPos())
+                val isPlayerHead = blockState.block == Blocks.PLAYER_HEAD
+                if (isPlayerHead) {
+                    val rotation = blockState.get(PlayerSkullBlock.ROTATION)
+                    val yaw = (rotation - 8).toFloat() * 360f / 16f
+                    return@measureTime Pair(pos, yaw)
+                }
             }
+
+            // otherwise, find the highest block at 0,0
+            val chunk = lobbyWorld.getChunk(0, 0, ChunkStatus.FULL)
+            val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING)
+            val spawnY = heightmap.get(0, 0)
+
+            BlockPosition(0, spawnY, 0) to 180f
+        }
+    }.also {
+        Cache.spawnPosition = it
+        log.info("Set lobby spawnpoint to $it")
+
+        taskExecutor.execute {
+            // schedule the blockstate change, as the chunk might not be loaded yet
+            lobbyWorld.setBlockState(it.first.toBlockPos(), Blocks.AIR.defaultState)
+        }
+    }
+
+    private fun spawnTeamEntities(lobbyWorld: ServerWorld) {
+        val teamPositions = Cache.teamPositions ?: log.measureTime("[MenuController] Locating team entities...") {
+            val ret = mutableMapOf<BingoTeamKey, BlockPosition>()
+            // Search for team join entities
+            for ((x, y, z) in searchLobbyBlocks()) {
+                val isLodestone = lobbyWorld.getBlockState(BlockPos(x, y-1, z)).block == Blocks.LODESTONE
+                if (!isLodestone) continue
+
+                val blockPos = BlockPos(x, y, z)
+                val blockState = lobbyWorld.getBlockState(blockPos)
+
+                val team = BingoTeam.TEAM_BLOCKS[blockState.block] ?: continue
+                ret[team.key] = BlockPosition.fromBlockPos(blockPos)
+            }
+
+            ret
         }
 
-        // otherwise, find the highest block at 0,0
-        val chunk = lobbyWorld.getChunk(0, 0, ChunkStatus.FULL)
-        val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING)
-        val spawnY = heightmap.get(0, 0)
-
-        BlockPosition(0, spawnY, 0) to 180f
-    }.also { log.info("Set lobby spawnpoint to $it") }
-
-    private val teamPositions = mutableMapOf<BingoTeamKey, BlockPos>()
-
-    private fun spawnTeamEntities(lobbyWorld: ServerWorld) = log.measureTime("[MenuController] Locating team entities...") {
-        // Search for team join entities
-       for ((x, y, z) in searchLobbyBlocks()) {
-            val isLodestone = lobbyWorld.getBlockState(BlockPos(x, y-1, z)).block == Blocks.LODESTONE
-            if (!isLodestone) continue
-
-            val blockPos = BlockPos(x, y, z)
-            val blockState = lobbyWorld.getBlockState(blockPos)
-
-            val team = BingoTeam.TEAM_BLOCKS[blockState.block] ?: continue
-            teamPositions[team.key] = blockPos
+        for ((teamKey, blockPos) in teamPositions) {
+            val team = BingoTeam.TEAM_BLOCKS.values.find { it.key == teamKey } ?: continue
             spawnTeamEntity(lobbyWorld, Vector3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team, instanceTag)
-            lobbyWorld.setBlockState(blockPos, Blocks.AIR.defaultState)
+
+            taskExecutor.execute {
+                // schedule the blockstate change, as the chunk might not be loaded yet
+                lobbyWorld.setBlockState(blockPos.toBlockPos(), Blocks.AIR.defaultState)
+            }
         }
     }
 

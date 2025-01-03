@@ -12,8 +12,18 @@ git diff -p $1 > $TMPDIR/file.patch
 
 for impl in ./mc*; do
   implFile="$impl/${1#*/}"
+
+  # If the file is the input, skip patching
+  if [[ $implFile -ef $1 ]]; then continue; fi
+
+  # If the file/dir doesn't exist, create it
+  implDir=$(dirname $implFile)
+  if [ ! -f $implDir ]; then mkdir -p $implDir; fi
+  if [ ! -f $implFile ]; then touch $implFile; fi
+
+  # Apply the patch
   echo "$implFile"
-  patch -f $implFile $TMPDIR/file.patch || true
+  patch --posix --no-backup-if-mismatch --merge -r - -f $implFile $TMPDIR/file.patch || true
 done
 
 rm -rf $TMPDIR

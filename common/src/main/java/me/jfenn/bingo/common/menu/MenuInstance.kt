@@ -29,7 +29,7 @@ internal class MenuInstance(
     }
 
     private val menuComponent = component(koinScope) {
-        registerMenuPage(Vector3d(0.0, 1.0, 0.55))
+        registerMenuPage(Vector3d(0.5, 2.0, 0.05))
     }
 
     fun tick() {

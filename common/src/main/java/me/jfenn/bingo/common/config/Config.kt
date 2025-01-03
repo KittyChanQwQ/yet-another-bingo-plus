@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.config
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
@@ -43,6 +44,19 @@ object Config {
             Files.createFile(filePath)
         }
         Files.write(filePath, json.encodeToString(clazz.serializer(), config).toByteArray())
+    }
+
+    /**
+     * Returns the last modified timestamp if the file exists on disk
+     * Otherwise, returns DISTANT_PAST
+     */
+    fun readLastModified(fileName: String): Instant {
+        val file = configDir.resolve("$MOD_ID_BINGO/$fileName").toFile()
+        return if (file.exists()) {
+            Instant.fromEpochMilliseconds(file.lastModified())
+        } else {
+            Instant.DISTANT_PAST
+        }
     }
 
     /**

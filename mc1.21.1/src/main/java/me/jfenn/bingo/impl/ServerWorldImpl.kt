@@ -3,9 +3,8 @@ package me.jfenn.bingo.impl
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.impl.block.BlockStateImpl
-import me.jfenn.bingo.mixin.LevelPropertiesAccessor
-import me.jfenn.bingo.mixin.ServerChunkLoadingManagerAccessor
-import me.jfenn.bingo.mixin.ServerChunkManagerAccessor
+import me.jfenn.bingo.mixin.*
+import me.jfenn.bingo.mixinhelper.ServerChunkManagerMixinHelper
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.block.BlockPosition
@@ -40,11 +39,6 @@ class ServerWorldFactory(
         seed: Long,
         callback: () -> kotlin.Unit
     ) {
-        // First, ensure the world/data is saved
-        log.measureTime("[Reset] Saving...") {
-            server.saveAll(false, true, true)
-        }
-
         tickKeepAlive(server)
 
         // Remove scoreboard objectives to avoid a crash when data is reloaded in loadWorld()
@@ -52,10 +46,29 @@ class ServerWorldFactory(
 
         server.saving = true
         try {
+            // First, ensure the world/data is saved
+            log.measureTime("[Reset] Saving...") {
+                // MinecraftServer::saveAll
+                server.playerManager.saveAllPlayerData()
+
+                for (world in listWorlds(server)) {
+                    // ServerWorld::save -> ServerWorld::saveLevel
+                    val serverWorld: ServerWorld = world.world
+                    serverWorld.persistentStateManager.save()
+                }
+            }
+
+            tickKeepAlive(server)
+
             server.cancelTasks()
             for (world in listWorlds(server)) {
                 log.measureTime("[Reset] Closing ${world.identifier}...") {
-                    world.close()
+                    try {
+                        ServerChunkManagerMixinHelper.shouldCancelSaving = true
+                        world.close()
+                    } finally {
+                        ServerChunkManagerMixinHelper.shouldCancelSaving = false
+                    }
                 }
 
                 tickKeepAlive(server)
