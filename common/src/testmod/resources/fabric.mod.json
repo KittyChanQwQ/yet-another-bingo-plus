@@ -9,10 +9,6 @@
     "fabric-gametest": [
       {
         "adapter": "kotlin",
-        "value": "me.jfenn.bingo.common.commands.ChatCommandTest"
-      },
-      {
-        "adapter": "kotlin",
         "value": "me.jfenn.bingo.common.stats.StatsServiceTest"
       },
       {

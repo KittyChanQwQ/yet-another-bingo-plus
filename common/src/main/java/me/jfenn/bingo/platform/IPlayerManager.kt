@@ -1,6 +1,7 @@
 package me.jfenn.bingo.platform
 
 import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.commands.ISignedMessage
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.command.CommandSource
@@ -30,6 +31,8 @@ interface IPlayerManager {
      * only [player] hearing the sound.
      */
     fun playToAround(player: ServerPlayerEntity?, sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float, position: Triple<Double, Double, Double>, world: ServerWorld)
+
+    fun broadcastChatMessage(message: ISignedMessage, sender: IPlayerHandle)
 
 }
 
@@ -82,6 +85,9 @@ interface IPlayerHandle : ILivingEntity {
     fun hasPermissionLevel(level: Int): Boolean
     fun sendMessage(message: Text)
     fun sendHotbarMessage(message: Text)
+    fun sendChatMessage(message: ISignedMessage, sender: IPlayerHandle)
+    fun sendTeamMessage(message: ISignedMessage, sender: IPlayerHandle, teamName: Text)
+    fun sendTeamMessage(message: Text, sender: IPlayerHandle, teamName: Text)
 }
 
 enum class PlayerSoundEvent {

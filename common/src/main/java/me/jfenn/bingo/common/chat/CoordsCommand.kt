@@ -1,9 +1,11 @@
-package me.jfenn.bingo.common.commands
+package me.jfenn.bingo.common.chat
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.commands.hasPermission
+import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -11,10 +13,10 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.BlockPositionType
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
+import me.jfenn.bingo.platform.commands.ISignedMessage
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -39,12 +41,16 @@ class CoordsCommand(
 
     }
 
-    private fun IExecutionContext.storeCoordinates(player: IPlayerHandle, team: BingoTeam, message: String?) {
+    private fun IExecutionContext.storeCoordinates(
+        player: IPlayerHandle,
+        team: BingoTeam,
+        message: ISignedMessage?
+    ) {
         val entry = CoordinatesEntry(
             player = player.playerName,
             pos = player.blockPos,
             dimension = player.world.registryKey.value.path.removePrefix("the_"),
-            message = message,
+            message = message?.raw,
             created = Clock.System.now(),
         )
 
@@ -52,7 +58,13 @@ class CoordsCommand(
         team.chatCoordinates.add(entry)
 
         // send coordinates to the team
-        ChatCommand.sendTeamMessage(player, team, Text.literal(entry.formatText()), scope.get<IPlayerManager>())
+        val chatMessageService = scope.get<ChatMessageService>()
+        if (message != null) {
+            val signedMessage = message.withUnsignedContent(Text.literal(entry.formatText()))
+            chatMessageService.sendTeamMessage(signedMessage, player)
+        } else {
+            chatMessageService.sendTeamMessage(Text.literal(entry.formatText()), player)
+        }
     }
 
     private fun listCoordinates(player: IPlayerHandle, team: BingoTeam) {
@@ -91,9 +103,13 @@ class CoordsCommand(
                 }
             }
 
-            string("message", null, greedy = true) { message ->
+            signedMessage("message") { message ->
                 executes {
-                    storeCoordinates(playerOrThrow, teamOrThrow, getArgument(message))
+                    val player = playerOrThrow
+                    val team = teamOrThrow
+                    getArgument(message).thenAccept {
+                        storeCoordinates(player, team, it)
+                    }
                 }
             }
 

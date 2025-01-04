@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.jfenn.bingo.common.commands.CoordsCommand
+import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.text.TextProvider

@@ -50,6 +50,8 @@ data class BingoConfig(
     // shuts down the server faster, at the risk of bugs or data corruption
     val unsafeSkipWorldClose: Boolean = false,
 
+    val chat: ChatConfig = ChatConfig(),
+
     val integrations: IntegrationsConfig = IntegrationsConfig(),
 
     val databaseUrl: String? = null,

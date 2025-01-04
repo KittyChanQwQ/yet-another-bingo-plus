@@ -1,0 +1,11 @@
+package me.jfenn.bingo.common.config
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+class ChatConfig(
+    val isEnabled: Boolean = true,
+    val defaultToTeamChat: Boolean = true,
+    val globalCommandAliases: List<String> = listOf("g", "global", "all"),
+    val teamCommandAliases: List<String> = emptyList(),
+)

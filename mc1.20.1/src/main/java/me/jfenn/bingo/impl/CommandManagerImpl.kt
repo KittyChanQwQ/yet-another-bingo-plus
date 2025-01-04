@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.command.CommandRegistryAccess
 import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.EntityArgumentType
+import net.minecraft.command.argument.MessageArgumentType
 import net.minecraft.command.argument.TextArgumentType
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
@@ -56,6 +57,11 @@ class CommandManagerImpl(
                             else -> it.suggests(SuggestionProviderImpl(arg.greedy, suggestions))
                         }
                     }
+
+                    is CommandArgument.SignedMessage -> RequiredArgumentBuilder.argument(
+                        arg.name,
+                        MessageArgumentType.message()
+                    )
 
                     is CommandArgument.Text -> RequiredArgumentBuilder.argument(
                         arg.name,
@@ -187,6 +193,13 @@ class ExecutionContextImpl(
         @Suppress("UNCHECKED_CAST")
         return when (arg) {
             is CommandArgument.String -> StringArgumentType.getString(ctx, arg.name) as T
+            is CommandArgument.SignedMessage -> {
+                val future = CompletableFuture<ISignedMessage>()
+                MessageArgumentType.getSignedMessage(ctx, arg.name) { message ->
+                    future.complete(SignedMessageImpl(message))
+                }
+                future as T
+            }
             is CommandArgument.Text -> TextArgumentType.getTextArgument(ctx, arg.name) as T
             is CommandArgument.Bool -> BoolArgumentType.getBool(ctx, arg.name) as T
             is CommandArgument.Integer -> IntegerArgumentType.getInteger(ctx, arg.name) as T

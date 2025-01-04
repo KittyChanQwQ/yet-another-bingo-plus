@@ -1,21 +1,22 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.common.utils.EventListener
+import me.jfenn.bingo.common.utils.ReturnEventListener
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.IServerEvents
-import me.jfenn.bingo.platform.item.IItemStack
-import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.platform.event.model.*
-import me.jfenn.bingo.common.scope.BingoKoin
-import me.jfenn.bingo.common.utils.EventListener
+import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.utils.IEventListener
 import me.jfenn.bingo.platform.utils.IReturnEventListener
-import me.jfenn.bingo.common.utils.ReturnEventListener
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.*
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
@@ -43,6 +44,7 @@ object ServerEventsImpl : IServerEvents {
     override val onPlayerChannelRegister: IEventListener<PlayerEvent> = EventListener()
 
     override val onDataReload: IEventListener<ReloadEvent> = EventListener()
+    override val onAllowChatMessage: IReturnEventListener<AllowChatMessageEvent, Boolean> = ReturnEventListener()
 
     private var serverRef: WeakReference<MinecraftServer>? = null
 
@@ -171,5 +173,16 @@ object ServerEventsImpl : IServerEvents {
                 override fun getFabricId(): Identifier = Identifier.of(MOD_ID_BINGO, "server_reload")!!
             }
         )
+
+        ServerMessageEvents.ALLOW_CHAT_MESSAGE.register { message, player, _ ->
+            val event = AllowChatMessageEvent(
+                message = SignedMessageImpl(message),
+                player = getPlayerImpl(player) ?: return@register true,
+            )
+            val isAllowed = onAllowChatMessage.invoke(event)
+                .all { it == true }
+
+            isAllowed
+        }
     }
 }

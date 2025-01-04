@@ -7,6 +7,7 @@ import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.PlayerSoundCategory
 import me.jfenn.bingo.platform.PlayerSoundEvent
 import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.commands.ISignedMessage
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.PlayerProfile
@@ -18,6 +19,8 @@ import net.minecraft.item.BoatItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.item.consume.UseAction
+import net.minecraft.network.message.MessageType
+import net.minecraft.network.message.SentMessage
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket
@@ -82,6 +85,14 @@ class PlayerManager(
         player?.networkHandler?.sendPacket(packet)
         server.playerManager.sendToAround(player, x, y, z, soundEntry.value().getDistanceToTravel(volume).toDouble(), world.registryKey, packet)
     }
+
+    override fun broadcastChatMessage(message: ISignedMessage, sender: IPlayerHandle) {
+        require(message is SignedMessageImpl)
+        require(sender is PlayerHandle)
+
+        val parameters: MessageType.Parameters = MessageType.params(MessageType.CHAT, sender.player)
+        server.playerManager.broadcast(message.message, sender.player, parameters)
+    }
 }
 
 class PlayerHandle(
@@ -126,6 +137,37 @@ class PlayerHandle(
 
     override fun sendHotbarMessage(message: Text) {
         player.sendMessage(message, true)
+    }
+
+    override fun sendChatMessage(message: ISignedMessage, sender: IPlayerHandle) {
+        require(message is SignedMessageImpl)
+        require(sender is PlayerHandle)
+
+        val parameters: MessageType.Parameters = MessageType.params(MessageType.CHAT, sender.player)
+        player.sendChatMessage(SentMessage.of(message.message), false, parameters)
+    }
+
+    override fun sendTeamMessage(message: ISignedMessage, sender: IPlayerHandle, teamName: Text) {
+        require(message is SignedMessageImpl)
+        require(sender is PlayerHandle)
+
+        val parameters: MessageType.Parameters = MessageType.params(
+            if (sender.uuid == this.uuid) MessageType.TEAM_MSG_COMMAND_OUTGOING else MessageType.TEAM_MSG_COMMAND_INCOMING,
+            sender.player
+        ).withTargetName(teamName)
+        player.sendChatMessage(SentMessage.of(message.message), false, parameters)
+    }
+
+    override fun sendTeamMessage(message: Text, sender: IPlayerHandle, teamName: Text) {
+        require(sender is PlayerHandle)
+
+        val parameters: MessageType.Parameters = MessageType.params(
+            if (sender.uuid == this.uuid) MessageType.TEAM_MSG_COMMAND_OUTGOING else MessageType.TEAM_MSG_COMMAND_INCOMING,
+            sender.player
+        ).withTargetName(teamName)
+        val decoratedMessage = parameters.type.value().chat.apply(message, parameters)
+
+        sendMessage(decoratedMessage)
     }
 
     override fun hasPermissionLevel(level: Int): Boolean {

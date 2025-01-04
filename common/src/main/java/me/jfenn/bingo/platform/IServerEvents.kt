@@ -13,11 +13,12 @@ interface IServerEvents {
     val onPlayerDisconnect: IEventListener<PlayerEvent>
     val onAfterRespawn: IEventListener<PlayerEvent>
     val onEntityLoad: IEventListener<EntityLoadEvent>
-    val onUseBlock: IReturnEventListener<UseBlockEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>>
-    val onUseEntity: IReturnEventListener<UseEntityEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>>
-    val onUseItem: IReturnEventListener<UseItemEvent, me.jfenn.bingo.platform.event.model.ActionResult<IItemStack?>>
-    val onAttackEntity: IReturnEventListener<AttackEntityEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>>
-    val onAttackBlock: IReturnEventListener<me.jfenn.bingo.platform.event.model.AttackBlockEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>>
+    val onUseBlock: IReturnEventListener<UseBlockEvent, ActionResult<Unit>>
+    val onUseEntity: IReturnEventListener<UseEntityEvent, ActionResult<Unit>>
+    val onUseItem: IReturnEventListener<UseItemEvent, ActionResult<IItemStack?>>
+    val onAttackEntity: IReturnEventListener<AttackEntityEvent, ActionResult<Unit>>
+    val onAttackBlock: IReturnEventListener<AttackBlockEvent, ActionResult<Unit>>
     val onPlayerChannelRegister: IEventListener<PlayerEvent>
     val onDataReload: IEventListener<ReloadEvent>
+    val onAllowChatMessage: IReturnEventListener<AllowChatMessageEvent, Boolean>
 }

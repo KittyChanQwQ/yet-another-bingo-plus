@@ -16,6 +16,9 @@ import me.jfenn.bingo.common.card.tag.DataTagProvider
 import me.jfenn.bingo.common.card.tag.ObjectiveTagProvider
 import me.jfenn.bingo.common.card.tag.TagService
 import me.jfenn.bingo.common.card.tag.TierListTagProvider
+import me.jfenn.bingo.common.chat.ChatCommand
+import me.jfenn.bingo.common.chat.ChatMessageService
+import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.MigrationHandler
@@ -199,6 +202,8 @@ val commonModule = module {
         scopedOf(::ResetService)
         scopedOf(::ReadyService)
         scopedOf(::ReadyController)
+
+        scopedOf(::ChatMessageService)
 
         scopedOf(::MapItemService)
         scopedOf(::MapRenderService)

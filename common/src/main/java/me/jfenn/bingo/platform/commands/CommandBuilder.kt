@@ -4,6 +4,8 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.koin.core.scope.Scope
+import java.util.*
+import java.util.concurrent.CompletableFuture
 
 class CommandBuilder(
     private val parent: CommandNode
@@ -22,6 +24,16 @@ class CommandBuilder(
         configure: CommandBuilder.(arg: CommandArgument<String>) -> Unit
     ) {
         val arg = CommandArgument.String(name, suggestions, greedy)
+        val node = CommandNode.RequiredArgument(arg)
+        CommandBuilder(node).configure(arg)
+        parent.children += node
+    }
+
+    fun signedMessage(
+        name: String,
+        configure: CommandBuilder.(arg: CommandArgument<CompletableFuture<ISignedMessage>>) -> Unit
+    ) {
+        val arg = CommandArgument.SignedMessage(name)
         val node = CommandNode.RequiredArgument(arg)
         CommandBuilder(node).configure(arg)
         parent.children += node
@@ -100,6 +112,10 @@ sealed class CommandArgument<T> {
         val greedy: Boolean,
     ) : CommandArgument<kotlin.String>()
 
+    class SignedMessage(
+        override val name: kotlin.String,
+    ) : CommandArgument<CompletableFuture<ISignedMessage>>()
+
     class Text(
         override val name: kotlin.String,
     ) : CommandArgument<net.minecraft.text.Text>()
@@ -134,6 +150,13 @@ interface IExecutionSource {
 
     val playerOrThrow
         get() = player ?: error(Text.translatable("permissions.requires.player"))
+}
+
+interface ISignedMessage {
+    val sender: UUID
+    val text: Text
+    val raw: String
+    fun withUnsignedContent(text: Text): ISignedMessage
 }
 
 interface IExecutionContext : IExecutionSource {
