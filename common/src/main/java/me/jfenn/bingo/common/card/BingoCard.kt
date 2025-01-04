@@ -5,7 +5,7 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import me.jfenn.bingo.common.card.objective.BingoObjective
-import me.jfenn.bingo.common.config.BingoCardOptions
+import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.utils.UuidAsString

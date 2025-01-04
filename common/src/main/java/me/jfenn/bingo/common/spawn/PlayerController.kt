@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.CardViewService

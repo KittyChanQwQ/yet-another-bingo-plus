@@ -1,12 +1,13 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.EntityType
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.ITextDisplayEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -21,17 +22,12 @@ internal const val MENU_ITEM_DISTRIBUTION_WIDTH = TIER_WIDTH*5 + TIER_PADDING*4
 internal fun MenuComponent.registerItemDistribution(
     position: Vector3d,
     state: BingoState = koinScope.get(),
-    cardService: CardService = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     var itemDistribution by DelegatedProperty(
         getter = { state.getActiveCard().options.itemDistribution },
-        setter = {
-            val card = state.getActiveCard()
-            card.options.itemDistribution = it
-            if (card.options.isValid())
-                cardService.generateCard(card)
-        },
+        setter = {},
     )
 
     registerTitlePanel(
@@ -39,6 +35,15 @@ internal fun MenuComponent.registerItemDistribution(
         width = MENU_ITEM_DISTRIBUTION_WIDTH,
         title = text.string(StringKey.OptionsCardDifficulty)
     )
+
+    fun setItemDistribution(player: IPlayerHandle, dist: List<Int>) {
+        optionsService.setCardDifficulty(
+            ctx = OptionsService.Context(player),
+            card = state.getActiveCard(),
+            itemDistInput = dist,
+            allowInvalid = true,
+        )
+    }
 
     fun createTier(
         i: Int,
@@ -54,9 +59,11 @@ internal fun MenuComponent.registerItemDistribution(
             text = Text.literal("+"),
             tooltip = tooltip,
             isActiveProp = ConstantProperty(true),
-        ) {
+        ) { player ->
             itemDistribution = itemDistribution.toMutableList().apply {
                 set(i, (itemDistribution[i] + 1).coerceAtMost(25))
+            }.also {
+                setItemDistribution(player, it)
             }
         }
 
@@ -98,9 +105,11 @@ internal fun MenuComponent.registerItemDistribution(
             text = Text.literal("-"),
             tooltip = tooltip,
             isActiveProp = ConstantProperty(true),
-        ) {
+        ) { player ->
             itemDistribution = itemDistribution.toMutableList().apply {
                 set(i, (itemDistribution[i] - 1).coerceAtLeast(0))
+            }.also {
+                setItemDistribution(player, it)
             }
         }
     }

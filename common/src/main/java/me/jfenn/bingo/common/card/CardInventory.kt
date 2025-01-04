@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.card
 
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam

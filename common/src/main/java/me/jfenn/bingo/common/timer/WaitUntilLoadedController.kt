@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.timer
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState

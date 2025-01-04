@@ -1,10 +1,11 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.config.BingoCardOptions
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameService
+import me.jfenn.bingo.common.options.BingoCardOptions
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
@@ -19,6 +20,7 @@ private fun createRootPage(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     options: BingoOptions = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
     gameService: GameService = koinScope.get(),
     cardService: CardService = koinScope.get(),
     configService: ConfigService = koinScope.get(),
@@ -53,6 +55,7 @@ private fun createRootPage(
     ) {
         // Shuffle the current card + seed
         cardService.shuffleCard(state.getActiveCard())
+        optionsService.broadcastHotbarMessage(it, text.string(StringKey.OptionsRerollCardSuccess))
     }
     registerTileButton(
         position = pos + Vector3d(MENU_TEAMS_WIDTH/2, -0.5 - 2*MENU_LINE_HEIGHT - 3*MENU_LINE_PADDING - 1.2, 0.0),
@@ -76,6 +79,8 @@ private fun createRootPage(
 
         // Clear & re-index all cards
         state.replaceCards(cards)
+
+        optionsService.broadcastHotbarMessage(it, text.string(StringKey.OptionsResetDefaults))
     }
     pos.add(MENU_TEAMS_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
 

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.controller
 
-import me.jfenn.bingo.common.config.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -21,12 +21,12 @@ class GameRuleController(
     private val datapackFunctionService: DatapackFunctionService,
 ) : BingoComponent() {
 
-    fun readFromServer(server: MinecraftServer, options: BingoOptions) {
+    fun readFromServer() {
         options.isPvpEnabled = server.isPvpEnabled
         options.isKeepInventory = server.gameRules.get(GameRules.KEEP_INVENTORY).get()
     }
 
-    fun writeToServer(server: MinecraftServer, options: BingoOptions) {
+    fun writeToServer() {
         if (!state.isLobbyMode) return
         server.isPvpEnabled = options.isPvpEnabled
         server.gameRules.get(GameRules.KEEP_INVENTORY).set(options.isKeepInventory, server)
@@ -47,7 +47,7 @@ class GameRuleController(
         server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(false, server)
 
         // set up server with the initial config game rules
-        writeToServer(server, options)
+        writeToServer()
     }
 
     private fun setCountdownRules() {
@@ -87,7 +87,7 @@ class GameRuleController(
         events.onUpdateTick {
             if (state.state == GameState.PLAYING) {
                 // update config with the current game rules (in case /gamerule is used mid-game)
-                readFromServer(server, options)
+                readFromServer()
             }
         }
     }

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.config.BingoGoal
+import me.jfenn.bingo.common.options.BingoGoal
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 

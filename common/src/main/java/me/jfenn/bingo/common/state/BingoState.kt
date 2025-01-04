@@ -3,8 +3,8 @@ package me.jfenn.bingo.common.state
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.BingoWinCondition
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameOverService

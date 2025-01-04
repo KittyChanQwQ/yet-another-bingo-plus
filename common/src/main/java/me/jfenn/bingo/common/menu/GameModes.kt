@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.options.BingoCardOptions
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
@@ -20,7 +21,7 @@ internal const val ICON_CONSUME = "⬚"
 internal fun MenuComponent.registerGameModes(
     position: Vector3d,
     state: BingoState = koinScope.get(),
-    cardService: CardService = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     val cardOptions by DelegatedProperty(
@@ -46,7 +47,11 @@ internal fun MenuComponent.registerGameModes(
         tooltip = buildTooltip(StringKey.OptionsModeLockout),
         isActiveProp = computedProperty { cardOptions.isLockoutMode },
     ) {
-        cardOptions.isLockoutMode = !cardOptions.isLockoutMode
+        optionsService.toggleCardMode(
+            ctx = OptionsService.Context(it),
+            card = state.getActiveCard(),
+            prop = BingoCardOptions::isLockoutMode,
+        )
     }
 
     registerIconButton(
@@ -58,8 +63,11 @@ internal fun MenuComponent.registerGameModes(
         tooltip = buildTooltip(StringKey.OptionsModeInventory),
         isActiveProp = computedProperty { cardOptions.isInventoryMode },
     ) {
-        cardOptions.isInventoryMode = !cardOptions.isInventoryMode
-        cardOptions.isConsumeItemsMode = false
+        optionsService.toggleCardMode(
+            ctx = OptionsService.Context(it),
+            card = state.getActiveCard(),
+            prop = BingoCardOptions::isInventoryMode,
+        )
     }
 
     registerIconButton(
@@ -71,8 +79,11 @@ internal fun MenuComponent.registerGameModes(
         tooltip = buildTooltip(StringKey.OptionsModeHiddenItems),
         isActiveProp = computedProperty { cardOptions.isHiddenItemsMode },
     ) {
-        cardOptions.isHiddenItemsMode = !cardOptions.isHiddenItemsMode
-        cardService.generateCard()
+        optionsService.toggleCardMode(
+            ctx = OptionsService.Context(it),
+            card = state.getActiveCard(),
+            prop = BingoCardOptions::isHiddenItemsMode,
+        )
     }
 
     registerIconButton(
@@ -84,8 +95,11 @@ internal fun MenuComponent.registerGameModes(
         tooltip = buildTooltip(StringKey.OptionsModeConsumeItems),
         isActiveProp = computedProperty { cardOptions.isConsumeItemsMode },
     ) {
-        cardOptions.isInventoryMode = false
-        cardOptions.isConsumeItemsMode = !cardOptions.isConsumeItemsMode
+        optionsService.toggleCardMode(
+            ctx = OptionsService.Context(it),
+            card = state.getActiveCard(),
+            prop = BingoCardOptions::isConsumeItemsMode,
+        )
     }
 
     registerTileButton(

@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.BingoWinCondition
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.BingoWinCondition
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
@@ -11,6 +12,7 @@ internal fun MenuComponent.registerWinCondition(
     position: Vector3d,
     width: Double = MENU_GOAL_WIDTH,
     options: BingoOptions = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     val offset = Vector3d()
@@ -55,6 +57,6 @@ internal fun MenuComponent.registerWinCondition(
         tooltip = buildTooltip(StringKey.OptionsWinConditionInfinite),
         isActiveProp = computedProperty { options.winCondition is BingoWinCondition.Infinite }
     ) {
-        options.winCondition = if (options.winCondition is BingoWinCondition.Infinite) BingoWinCondition.Cards(1) else BingoWinCondition.Infinite
+        optionsService.toggleInfiniteMode(OptionsService.Context(it))
     }
 }

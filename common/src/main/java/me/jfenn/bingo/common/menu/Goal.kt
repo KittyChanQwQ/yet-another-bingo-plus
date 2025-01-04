@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.config.BingoGoal
+import me.jfenn.bingo.common.options.BingoGoal
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
@@ -41,6 +42,7 @@ internal fun MenuComponent.registerGoal(
 internal fun MenuComponent.registerCardGoal(
     position: Vector3d,
     state: BingoState = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     val offset = Vector3d()
@@ -63,12 +65,7 @@ internal fun MenuComponent.registerCardGoal(
                 is BingoGoal.Lines -> goal.lines
             }
         },
-        setter = { count ->
-            cardOptions.goal = when (cardOptions.goal) {
-                is BingoGoal.Items -> BingoGoal.Items(count)
-                is BingoGoal.Lines -> BingoGoal.Lines(count)
-            }
-        }
+        setter = {}
     )
 
     registerNumberInput(
@@ -84,7 +81,17 @@ internal fun MenuComponent.registerCardGoal(
             }
         },
         format = { cardOptions.goal.format(text) },
-    )
+    ) { player, count ->
+        val newGoal = when (cardOptions.goal) {
+            is BingoGoal.Items -> BingoGoal.Items(count)
+            is BingoGoal.Lines -> BingoGoal.Lines(count)
+        }
+        optionsService.setGoal(
+            ctx = OptionsService.Context(player),
+            card = state.getActiveCard(),
+            goal = newGoal,
+        )
+    }
 
     registerTileButton(
         position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
@@ -94,13 +101,14 @@ internal fun MenuComponent.registerCardGoal(
         text = Text.empty(),
         textProp = computedProperty { text.string(cardOptions.goal.string()) },
     ) {
-        when (val goal = cardOptions.goal) {
-            is BingoGoal.Items -> {
-                cardOptions.goal = BingoGoal.Lines(goal.items.coerceAtMost(BingoGoal.MAX_LINES))
-            }
-            is BingoGoal.Lines -> {
-                cardOptions.goal = BingoGoal.Items(goal.lines)
-            }
+        val newGoal = when (val goal = cardOptions.goal) {
+            is BingoGoal.Items -> BingoGoal.Lines(goal.items.coerceAtMost(BingoGoal.MAX_LINES))
+            is BingoGoal.Lines -> BingoGoal.Items(goal.lines)
         }
+        optionsService.setGoal(
+            ctx = OptionsService.Context(it),
+            card = state.getActiveCard(),
+            goal = newGoal,
+        )
     }
 }

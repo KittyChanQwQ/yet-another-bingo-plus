@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.platform.EntityType
-import me.jfenn.bingo.platform.IDisplayEntity
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.ITextDisplayEntity
 import net.minecraft.text.Text
 import org.joml.Matrix4f
@@ -21,6 +21,7 @@ internal fun MenuComponent.registerNumberInput(
     isVisible: () -> Boolean = { true },
     decreaseLabel: String = "-",
     increaseLabel: String = "+",
+    onChange: (IPlayerHandle, Int) -> Unit = { _, _ -> },
 ) {
     var value by valueProp
     val minValue by minValueProp
@@ -37,8 +38,10 @@ internal fun MenuComponent.registerNumberInput(
         },
         isActiveProp = ConstantProperty(true),
         tooltip = tooltip,
-    ) {
-        value = (((value / step) + 1) * step).coerceIn(minValue, maxValue)
+    ) { player ->
+        value = (((value / step) + 1) * step)
+            .coerceIn(minValue, maxValue)
+            .also { onChange(player, it) }
     }
 
     val decreaseText = Text.literal(decreaseLabel)
@@ -52,8 +55,10 @@ internal fun MenuComponent.registerNumberInput(
         },
         isActiveProp = ConstantProperty(true),
         tooltip = tooltip,
-    ) {
-        value = (((value / step) - 1) * step).coerceIn(minValue, maxValue)
+    ) { player ->
+        value = (((value / step) - 1) * step)
+            .coerceIn(minValue, maxValue)
+            .also { onChange(player, it) }
     }
 
     val backgroundWidth = width - 2*height - 0.2

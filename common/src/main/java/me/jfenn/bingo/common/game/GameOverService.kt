@@ -3,9 +3,9 @@ package me.jfenn.bingo.common.game
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.BingoWinCondition
-import me.jfenn.bingo.common.config.EndWhen
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.BingoWinCondition
+import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService

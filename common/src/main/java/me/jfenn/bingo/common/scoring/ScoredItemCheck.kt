@@ -7,10 +7,10 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.objective.ItemObjectiveManager
-import me.jfenn.bingo.common.config.BingoGoal
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.BingoWinCondition
-import me.jfenn.bingo.common.config.EndWhen
+import me.jfenn.bingo.common.options.BingoGoal
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.BingoWinCondition
+import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameEndReason

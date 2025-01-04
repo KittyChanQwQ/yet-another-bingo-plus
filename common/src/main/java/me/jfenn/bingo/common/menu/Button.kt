@@ -13,6 +13,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
+import org.slf4j.Logger
 
 internal fun MenuComponent.registerButtonInteraction(
     position: Vector3d,
@@ -26,6 +27,7 @@ internal fun MenuComponent.registerButtonInteraction(
     tooltipService: TooltipService = koinScope.get(),
     events: ScopedEvents = koinScope.get(),
     executors: IExecutors = koinScope.get(),
+    log: Logger = koinScope.get(),
     clickSound: (() -> PlayerSoundEvent)? = null,
     onClick: (player: IPlayerHandle) -> Unit,
 ) {
@@ -45,7 +47,12 @@ internal fun MenuComponent.registerButtonInteraction(
 
         interactionEntityEvents.onInteract(entity) { player ->
             if (actualPermissionGetter(player)) {
-                onClick(playerManager.forPlayer(player))
+                try {
+                    onClick(playerManager.forPlayer(player))
+                } catch (e: Throwable) {
+                    log.error("Exception during interaction onClick:", e)
+                }
+
                 Sounds.playButtonSound(
                     playerManager,
                     player,

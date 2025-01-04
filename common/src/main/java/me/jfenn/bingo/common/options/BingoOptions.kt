@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.config
+package me.jfenn.bingo.common.options
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -14,7 +14,7 @@ import me.jfenn.bingo.common.utils.copyMemberProperties
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
 import java.security.MessageDigest
-import java.util.*
+import java.util.HexFormat
 import kotlin.time.Duration
 
 @Serializable

@@ -4,8 +4,8 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.impl.block.BlockStateImpl
 import me.jfenn.bingo.mixin.LevelPropertiesAccessor
+import me.jfenn.bingo.mixin.ServerChunkLoadingManagerAccessor
 import me.jfenn.bingo.mixin.ServerChunkManagerAccessor
-import me.jfenn.bingo.mixin.ThreadedAnvilChunkStorageAccessor
 import me.jfenn.bingo.mixinhelper.ServerChunkManagerMixinHelper
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.IServerWorldFactory

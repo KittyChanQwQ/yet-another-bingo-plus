@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
@@ -19,6 +20,7 @@ internal fun MenuComponent.registerDimensionMenu(
     state: BingoState = koinScope.get(),
     server: MinecraftServer = koinScope.get(),
     serverWorldFactory: IServerWorldFactory = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     val dimensions = serverWorldFactory.listWorlds(server)
@@ -32,12 +34,19 @@ internal fun MenuComponent.registerDimensionMenu(
         setter = { dimension = dimensions[it] },
     )
 
+    val dimensionLabels = dimensions.map { Text.literal(it.substringAfterLast(':').formatTitle()) }
+
     registerRadioMenu(
         position = position,
         width = width,
         height = height,
         title = text.string(StringKey.OptionsSpawnDimension),
-        options = dimensions.map { Text.literal(it.substringAfterLast(':').formatTitle()) },
+        options = dimensionLabels,
         selectedIndexProp = indexProp,
-    )
+    ) { player, index ->
+        optionsService.setSpawnDimension(
+            OptionsService.Context(player),
+            dimensions[index]
+        )
+    }
 }

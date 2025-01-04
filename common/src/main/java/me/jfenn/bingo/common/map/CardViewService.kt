@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState

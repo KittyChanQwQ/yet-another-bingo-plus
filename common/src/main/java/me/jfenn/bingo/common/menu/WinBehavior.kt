@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.EndWhen
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey

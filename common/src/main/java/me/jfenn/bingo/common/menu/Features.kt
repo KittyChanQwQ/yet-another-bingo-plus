@@ -1,11 +1,10 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.controller.GameRuleController
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.MinecraftServer
 import org.joml.Vector3d
 
 private const val TILE_HEIGHT = 0.6
@@ -16,8 +15,7 @@ internal const val MENU_FEATURES_WIDTH = TILE_WIDTH + TILE_MARGIN + TILE_WIDTH
 internal fun MenuComponent.registerFeatures(
     position: Vector3d,
     state: BingoState = koinScope.get(),
-    gameRuleController: GameRuleController = koinScope.get(),
-    server: MinecraftServer = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     val options by state::options
@@ -40,7 +38,7 @@ internal fun MenuComponent.registerFeatures(
         tooltip = buildTooltip(StringKey.OptionsPreviewCard),
         isActiveProp = computedProperty { options.showPreviewCard },
     ) {
-        options.showPreviewCard = !options.showPreviewCard
+        optionsService.togglePreviewCard(OptionsService.Context(it))
     }
 
     registerIconButton(
@@ -51,8 +49,7 @@ internal fun MenuComponent.registerFeatures(
         text = text.string(StringKey.OptionsKeepInventory),
         isActiveProp = computedProperty { options.isKeepInventory },
     ) {
-        options.isKeepInventory = !options.isKeepInventory
-        gameRuleController.writeToServer(server, options)
+        optionsService.toggleKeepInventory(OptionsService.Context(it))
     }
 
     registerIconButton(
@@ -63,7 +60,7 @@ internal fun MenuComponent.registerFeatures(
         text = text.string(StringKey.OptionsElytra),
         isActiveProp = computedProperty { options.isElytra },
     ) {
-        options.isElytra = !options.isElytra
+        optionsService.toggleElytra(OptionsService.Context(it))
     }
 
     registerIconButton(
@@ -74,7 +71,7 @@ internal fun MenuComponent.registerFeatures(
         text = text.string(StringKey.OptionsNightVis),
         isActiveProp = computedProperty { options.isNightVision },
     ) {
-        options.isNightVision = !options.isNightVision
+        optionsService.toggleNightVision(OptionsService.Context(it))
     }
 
     registerIconButton(
@@ -85,8 +82,7 @@ internal fun MenuComponent.registerFeatures(
         text = text.string(StringKey.OptionsAllowPvp),
         isActiveProp = computedProperty { options.isPvpEnabled },
     ) {
-        options.isPvpEnabled = !options.isPvpEnabled
-        gameRuleController.writeToServer(server, options)
+        optionsService.togglePvp(OptionsService.Context(it))
     }
 
     registerIconButton(
@@ -97,6 +93,6 @@ internal fun MenuComponent.registerFeatures(
         text = text.string(StringKey.OptionsUnlockRecipes),
         isActiveProp = computedProperty { options.isUnlockRecipes },
     ) {
-        options.isUnlockRecipes = !options.isUnlockRecipes
+        optionsService.toggleUnlockRecipes(OptionsService.Context(it))
     }
 }

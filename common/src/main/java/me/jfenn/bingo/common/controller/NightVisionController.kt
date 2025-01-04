@@ -4,7 +4,7 @@ import me.jfenn.bingo.platform.EffectType
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent

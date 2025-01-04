@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.timer
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.game.GameService

@@ -2,11 +2,12 @@ package me.jfenn.bingo.common.text
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
-import me.jfenn.bingo.platform.ITextSerializer
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.ITextSerializer
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
 
@@ -54,10 +55,26 @@ class TextProvider(
             str.key
         }
 
-        return Text.translatableWithFallback(str.key, fallback, *args)
+        val mappedArgs = args
+            .map {
+                when {
+                    it is StringKey -> string(it)
+                    else -> it
+                }
+            }
+            .toTypedArray()
+
+        return Text.translatableWithFallback(str.key, fallback, *mappedArgs)
     }
 
     fun serialized(text: Text) = textSerializer.toJson(text)
+
+    fun boolean(value: Boolean): MutableText {
+        return when (value) {
+            true -> string(StringKey.OptionsValueOn).formatted(Formatting.GREEN)
+            false -> string(StringKey.OptionsValueOff).formatted(Formatting.RED)
+        }
+    }
 
     fun itemCount(number: Int): MutableText {
         return when (number) {

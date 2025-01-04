@@ -1,9 +1,10 @@
-package me.jfenn.bingo.common.config
+package me.jfenn.bingo.common.options
 
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.card.filter.ObjectiveFilter
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text

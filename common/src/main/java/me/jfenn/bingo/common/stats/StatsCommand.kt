@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.stats
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey

@@ -1,13 +1,10 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.platform.EntityType
-import me.jfenn.bingo.platform.ITextDisplayEntity
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.network.ServerPlayerEntity
-import org.joml.Matrix4f
 import org.joml.Vector3d
 
 const val MAX_SPAWN_DISTANCE = 500
@@ -17,6 +14,7 @@ internal fun MenuComponent.registerSpawnDistance(
     position: Vector3d,
     width: Double = MENU_SPAWN_DISTANCE_WIDTH,
     state: BingoState = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     val offset = Vector3d()
@@ -36,5 +34,7 @@ internal fun MenuComponent.registerSpawnDistance(
         step = 5,
         format = { text.string(StringKey.OptionsSpawnDistanceChunks, it) },
         tooltip = buildTooltip(StringKey.OptionsSpawnDistance),
-    )
+    ) { player, distance ->
+        optionsService.setSpawnDistance(OptionsService.Context(player), distance)
+    }
 }

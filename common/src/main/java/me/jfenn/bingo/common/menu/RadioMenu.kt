@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.common.utils.plus
+import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -20,6 +21,7 @@ internal fun MenuComponent.registerRadioMenu(
     options: List<Text>,
     optionsPerPage: Int = (height / (MENU_LINE_HEIGHT + MENU_LINE_PADDING)).toInt() - 2,
     selectedIndexProp: MutableProperty<Int>,
+    onChange: (IPlayerHandle, Int) -> Unit = { _, _ -> },
 ) {
     val offset = Vector3d()
 
@@ -50,8 +52,8 @@ internal fun MenuComponent.registerRadioMenu(
                 itemIndex?.let { options[it] } ?: Text.empty()
             },
             isActiveProp = computedProperty { selectedIndex == itemIndex },
-        ) {
-            itemIndex?.let { selectedIndex = it }
+        ) { player ->
+            itemIndex?.also { selectedIndex = it }?.also { onChange(player, it) }
         }
     }
 

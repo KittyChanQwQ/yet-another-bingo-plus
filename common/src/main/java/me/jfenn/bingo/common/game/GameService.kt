@@ -9,10 +9,10 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
-import me.jfenn.bingo.common.config.BingoGoal
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoGoal
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.config.OptionsService
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.SpawnService

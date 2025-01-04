@@ -10,8 +10,8 @@ import me.jfenn.bingo.common.card.tag.TagService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.card.tierlist.TierListConfig
 import me.jfenn.bingo.common.card.tierlist.TierListEntry
-import me.jfenn.bingo.common.config.BingoCardOptions
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoCardOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.game.GameCommands

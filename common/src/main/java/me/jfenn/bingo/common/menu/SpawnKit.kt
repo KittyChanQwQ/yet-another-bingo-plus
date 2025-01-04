@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.spawn.SpawnItem
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
@@ -19,6 +20,7 @@ internal fun MenuComponent.registerSpawnKit(
     cardService: CardService = koinScope.get(),
     text: TextProvider = koinScope.get(),
     itemStackFactory: IItemStackFactory = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
 ) {
     val options by state::options
     val offset = Vector3d()
@@ -38,6 +40,14 @@ internal fun MenuComponent.registerSpawnKit(
     ) {
         options.isPlayerKit = !options.isPlayerKit
         cardService.generateCard()
+        optionsService.broadcastHotbarMessage(
+            it,
+            text.string(
+                StringKey.OptionsNotifyChanged,
+                StringKey.OptionsSpawnKitPlayer,
+                text.boolean(options.isPlayerKit)
+            )
+        )
     }
 
     registerTileButton(
@@ -75,6 +85,14 @@ internal fun MenuComponent.registerSpawnKit(
     ) {
         options.isTeamKit = !options.isTeamKit
         cardService.generateCard()
+        optionsService.broadcastHotbarMessage(
+            it,
+            text.string(
+                StringKey.OptionsNotifyChanged,
+                StringKey.OptionsSpawnKitTeam,
+                text.boolean(options.isTeamKit)
+            )
+        )
     }
 
     registerTileButton(

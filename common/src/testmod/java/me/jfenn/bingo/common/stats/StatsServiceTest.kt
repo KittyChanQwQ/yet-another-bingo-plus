@@ -9,7 +9,7 @@ import io.mockk.mockk
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.stats.data.GameInfo
 import me.jfenn.bingo.common.stats.data.GamePlayerInfo
 import me.jfenn.bingo.common.stats.data.GameTeamInfo

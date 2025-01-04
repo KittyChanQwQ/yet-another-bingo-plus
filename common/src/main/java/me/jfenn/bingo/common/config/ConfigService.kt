@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.config
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.options.BingoOptions
 import java.util.*
 
 class ConfigService {

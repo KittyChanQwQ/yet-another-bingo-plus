@@ -1,9 +1,5 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.platform.commands.CommandArgument
-import me.jfenn.bingo.platform.commands.ICommandManager
-import me.jfenn.bingo.platform.commands.IExecutionContext
-import me.jfenn.bingo.platform.commands.IExecutionSource
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
@@ -12,12 +8,19 @@ import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.CardViewService
+import me.jfenn.bingo.common.options.OptionsService
+import me.jfenn.bingo.common.options.optionsContext
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.cacheFor
 import me.jfenn.bingo.common.utils.joinText
+import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.commands.CommandArgument
+import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.commands.IExecutionSource
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
@@ -90,25 +93,17 @@ class BingoCardCommand(
     }
 
     private fun IExecutionContext.setItemDist(itemDistInput: List<Int>) {
-        val events = scope.get<ScopedEvents>()
-        val card = cardViewService.getPlayerCard(player)
-        val itemDist = List(5) { itemDistInput.getOrNull(it) ?: 0 }
-
-        if (itemDist.sum() > 25) {
-            sendWarningMessage(Text.literal("Item distribution must add up to 25!"))
-            throw IllegalArgumentException("Item distribution must add up to 25!")
-        }
-
-        card.options.itemDistribution = itemDist
-        events.onChangeOptions(Unit)
-        cardService.generateCard(card)
-        sendInfoFeedback(Text.literal("Item distribution changed: $itemDist"))
+        scope.get<OptionsService>().setCardDifficulty(
+            ctx = optionsContext,
+            itemDistInput = itemDistInput,
+        )
+        scope.get<ScopedEvents>().onChangeOptions(Unit)
     }
 
     private fun IExecutionContext.rerollCard() {
         val card = cardViewService.getPlayerCard(player)
         cardService.shuffleCard(card)
-        sendInfoFeedback(Text.literal("Card re-rolled."))
+        sendInfoFeedback(text.string(StringKey.OptionsRerollCardSuccess))
     }
 
     private fun IExecutionContext.getCardTags() = buildMap {

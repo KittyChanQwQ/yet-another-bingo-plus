@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
@@ -15,7 +15,7 @@ internal fun MenuComponent.registerCardDifficulty(
     position: Vector3d,
     config: BingoConfig = koinScope.get(),
     state: BingoState = koinScope.get(),
-    cardService: CardService = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     registerTitlePanel(
@@ -37,11 +37,11 @@ internal fun MenuComponent.registerCardDifficulty(
                 state.getActiveCard().options.itemDistribution == preset
             },
         ) {
-            val cardOptions = state.getActiveCard().options
-            cardOptions.itemDistribution = preset
-
-            // when changed, update the bingo card
-            cardService.generateCard()
+            optionsService.setCardDifficulty(
+                ctx = OptionsService.Context(it),
+                card = state.getActiveCard(),
+                itemDistInput = preset,
+            )
         }
     }
 

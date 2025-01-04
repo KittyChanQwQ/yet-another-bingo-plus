@@ -1,11 +1,10 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.config.BingoOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
-import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer

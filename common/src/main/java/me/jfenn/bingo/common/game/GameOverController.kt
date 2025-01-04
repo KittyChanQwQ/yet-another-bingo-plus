@@ -2,9 +2,9 @@ package me.jfenn.bingo.common.game
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.BingoWinCondition
-import me.jfenn.bingo.common.config.EndWhen
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.BingoWinCondition
+import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService

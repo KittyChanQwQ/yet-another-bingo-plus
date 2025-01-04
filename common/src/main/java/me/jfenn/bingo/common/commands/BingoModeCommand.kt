@@ -1,72 +1,33 @@
 package me.jfenn.bingo.common.commands
 
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.config.BingoCardOptions
-import me.jfenn.bingo.common.config.BingoOptions
-import me.jfenn.bingo.common.config.BingoWinCondition
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.map.CardViewService
+import me.jfenn.bingo.common.options.BingoCardOptions
+import me.jfenn.bingo.common.options.OptionsService
+import me.jfenn.bingo.common.options.optionsContext
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.joinText
-import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
-import net.minecraft.text.Text
 import kotlin.reflect.KMutableProperty1
 
 class BingoModeCommand(
     commandManager: ICommandManager,
-    private val text: TextProvider,
 ) {
-    private fun IExecutionContext.sendModeFeedback(
-        card: BingoCard = scope.get<CardViewService>().getPlayerCard(player)
-    ) {
-        val options = scope.get<BingoOptions>()
-
-        sendInfoFeedback(
-            Text.empty()
-                .append(text.string(StringKey.OptionsGameMode))
-                .append(": ")
-                .append(
-                    options.formatGameMode(card)
-                        .map { text.string(it) }
-                        .joinText()
-                )
-        )
-    }
-
     private fun IExecutionContext.toggleCardMode(
         prop: KMutableProperty1<BingoCardOptions, Boolean>,
         value: Boolean? = null,
     ) {
-        val cardViewService = scope.get<CardViewService>()
-        val card = cardViewService.getPlayerCard(player)
-
-        val newValue = value ?: (!prop.get(card.options))
-        prop.set(card.options, newValue)
-
-        // inventory mode & consume items mode are not compatible
-        if (prop == BingoCardOptions::isConsumeItemsMode) {
-            card.options.isInventoryMode = false
-        }
-        if (prop == BingoCardOptions::isInventoryMode) {
-            card.options.isConsumeItemsMode = false
-        }
-
-        val events = scope.get<ScopedEvents>()
-        events.onChangeOptions(Unit)
-
-        sendModeFeedback(card)
+        scope.get<OptionsService>().toggleCardMode(
+            ctx = optionsContext,
+            prop = prop,
+            value = value,
+        )
+        scope.get<ScopedEvents>().onChangeOptions(Unit)
     }
 
     private fun IExecutionContext.toggleInfiniteMode() {
-        val options = scope.get<BingoOptions>()
-        options.winCondition = when (options.winCondition) {
-            is BingoWinCondition.Cards -> BingoWinCondition.Infinite
-            is BingoWinCondition.Infinite -> BingoWinCondition.Cards(1)
-        }
+        scope.get<OptionsService>().toggleInfiniteMode(optionsContext)
+        scope.get<ScopedEvents>().onChangeOptions(Unit)
     }
 
     init {

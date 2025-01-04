@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -15,8 +16,8 @@ internal fun MenuComponent.registerItemFilters(
     width: Double = MENU_ITEM_FILTERS_WIDTH,
     height: Double,
     state: BingoState = koinScope.get(),
-    cardService: CardService = koinScope.get(),
     objectiveFilterService: ObjectiveFilterService = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     val presets = objectiveFilterService.getPresetFilters()
@@ -27,15 +28,7 @@ internal fun MenuComponent.registerItemFilters(
                 state.getActiveCard().options.itemFilter == itemFilter
             }
         },
-        setter = { index ->
-            val preset = presets.values.elementAtOrNull(index)
-            if (preset != null) {
-                state.getActiveCard().options.itemFilter = preset
-
-                // when changed, update the bingo card
-                cardService.generateCard()
-            }
-        }
+        setter = {}
     )
 
     registerRadioMenu(
@@ -47,5 +40,12 @@ internal fun MenuComponent.registerItemFilters(
             ObjectiveFilterList.formatName(it)
         },
         selectedIndexProp = selectedIndexProp,
-    )
+    ) { player, index ->
+        val preset = presets.values.elementAtOrNull(index) ?: return@registerRadioMenu
+        optionsService.setCardFilter(
+            ctx = OptionsService.Context(player),
+            card = state.getActiveCard(),
+            filter = preset,
+        )
+    }
 }

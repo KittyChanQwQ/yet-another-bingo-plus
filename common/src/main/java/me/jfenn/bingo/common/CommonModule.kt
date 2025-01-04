@@ -22,7 +22,7 @@ import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.MigrationHandler
-import me.jfenn.bingo.common.config.OptionsService
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.data.*
