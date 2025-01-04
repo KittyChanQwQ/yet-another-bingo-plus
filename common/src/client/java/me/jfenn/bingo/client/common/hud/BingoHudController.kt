@@ -107,6 +107,12 @@ internal class BingoHudController(
             )
         }
 
+        val client = MinecraftClient.getInstance()
+        val mouse = client.mouse
+        val scaleFactor = client.window.scaleFactor
+        val mouseX = (mouse.x / scaleFactor).toInt()
+        val mouseY = (mouse.y / scaleFactor).toInt()
+        val isMouseOver = client.currentScreen is ChatScreen
         renderer.drawCard(
             context,
             drawService,
@@ -120,6 +126,9 @@ internal class BingoHudController(
             showTeamOutlines = config.client.cardTeamOutlines && (
                 !config.client.showMultipleCards || state.display?.display?.size?.let { it <= 1 } == true
             ),
+            isMouseOver = isMouseOver,
+            mouseX = mouseX,
+            mouseY = mouseY,
         )
 
         itemScoredRenderer.drawMessages(
@@ -151,7 +160,10 @@ internal class BingoHudController(
                     y = y.toInt(),
                     z = config.client.cardOverlap.z,
                     cardScale =  cardScale,
-                    showTeamOutlines = false
+                    showTeamOutlines = false,
+                    isMouseOver = isMouseOver,
+                    mouseX = mouseX,
+                    mouseY = mouseY,
                 )
             }
         }
@@ -297,6 +309,16 @@ internal class BingoHudController(
                 return@onRender
             if (!config.client.enableHud)
                 return@onRender
+
+            // Do not draw the HUD if the card screen is open
+            if (
+                MinecraftClient.getInstance().currentScreen
+                    ?.javaClass?.packageName
+                    ?.startsWith("me.jfenn.bingo")
+                    == true
+            ) {
+                return@onRender
+            }
 
             drawHud(it.drawService)
         }
