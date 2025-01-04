@@ -79,6 +79,7 @@ interface IPlayerHandle : ILivingEntity {
     val serverWorld: ServerWorld
     val blockPos: BlockPosition
 
+    fun respawn(): IPlayerHandle
     fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float)
     fun setSpawnPoint(world: ServerWorld, spawn: BlockPosition, angle: Float, forced: Boolean, sendMessage: Boolean)
 

@@ -292,7 +292,6 @@ internal class MenuController(
             taskExecutor.execute {
                 // schedule the blockstate change, as the chunk might not be loaded yet
                 for (y in blockPos.y-1..blockPos.y+1) {
-                    log.info("Set ${blockPos.copy(y = y)} to AIR")
                     lobbyWorld.setBlockState(
                         blockPos.copy(y = y).toBlockPos(),
                         Blocks.AIR.defaultState,

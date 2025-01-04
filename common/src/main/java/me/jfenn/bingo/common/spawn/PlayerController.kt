@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.CardViewService
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -41,6 +41,7 @@ class PlayerController(
     private val recipeManager: IRecipeManager,
     private val vanishIntegration: VanishIntegration,
     private val playerManager: IPlayerManager,
+    private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
 ) : BingoComponent() {
 
     fun updateGameMode(
@@ -55,7 +56,7 @@ class PlayerController(
 
         val team = teamService.getPlayerTeam(player.player)
         val isOnActiveTeam = team?.isPlaying() == true
-        log.debug("updateGameMode({}}, forceReset=$forceReset)", player.uuid)
+        log.debug("updateGameMode({}, forceReset={})", player.playerName, forceReset)
 
         val gameMode = when (state.state) {
             GameState.UNINITIALIZED,
@@ -83,7 +84,15 @@ class PlayerController(
         val preGameStates = arrayOf(GameState.PREGAME, GameState.STARTING, GameState.PRELOADING, GameState.LOADING, GameState.COUNTDOWN)
         val isRespawnNeeded = (player.player.interactionManager.gameMode != gameMode || forceReset) && (state.state in preGameStates || isOnActiveTeam) && state.state != GameState.POSTGAME
         val isStuckInLobby = player.serverWorld == lobbyWorld && state.state != GameState.PREGAME
-        if (isRespawnNeeded || isStuckInLobby) {
+        val isStuckInWorld = player.serverWorld != lobbyWorld && state.state == GameState.PREGAME
+        if (isRespawnNeeded || isStuckInLobby || isStuckInWorld) {
+            if (!player.isAlive) {
+                log.debug("[PlayerController] respawnPlayer({})", player.playerName)
+                val newPlayer = player.respawn()
+                serverTaskExecutor.execute { updateGameMode(newPlayer, true) }
+                return
+            }
+
             respawnPlayer(player)
         }
 
@@ -123,7 +132,8 @@ class PlayerController(
     }
 
     private fun respawnPlayer(player: IPlayerHandle) {
-        log.debug("respawnPlayer({})", player.uuid)
+        log.debug("respawnPlayer({})", player.playerName)
+
         // reset player info
         resetPlayerHealth(player)
         player.player.inventory.clear()
@@ -189,7 +199,7 @@ class PlayerController(
             if (prevState == GameState.LOADING) return@onEnter
 
             for (player in playerManager.getPlayers()) {
-                updateGameMode(player, forceReset = true)
+                if (state.isLobbyMode) updateGameMode(player, forceReset = true)
             }
         }
 
@@ -198,16 +208,16 @@ class PlayerController(
             if (prevState == GameState.PLAYING) return@onEnter
 
             for (player in playerManager.getPlayers()) {
-                updateGameMode(player, forceReset = true)
+                if (state.isLobbyMode) updateGameMode(player, forceReset = true)
             }
         }
 
         // Transition from PLAYING -> POSTGAME
         events.onEnter(GameState.POSTGAME) {
             for (player in playerManager.getPlayers()) {
-                updateGameMode(player)
-
-                if (!state.isLobbyMode) {
+                if (state.isLobbyMode) {
+                    updateGameMode(player)
+                } else {
                     // if running with isLobbyMode=false, take the elytra back after a game
                     elytraService.takeElytra(player)
                 }
@@ -220,7 +230,7 @@ class PlayerController(
                 val playerUuid = player.uuid
                 if (playerUuid in state.playersJoinedIds) {
                     state.playersJoinedIds.remove(playerUuid)
-                    updateGameMode(player)
+                    if (state.isLobbyMode) updateGameMode(player)
                 }
 
                 // ensure that players don't run out of hunger in the lobby

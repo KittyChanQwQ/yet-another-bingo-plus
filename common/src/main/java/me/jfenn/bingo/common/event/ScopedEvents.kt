@@ -29,11 +29,11 @@ class ScopedEvents(
     val onPlayerChannelRegister = EventListener<IPlayerHandle>()
 
     val onEntityLoad = EventListener<Pair<Entity, ServerWorld>>()
-    val onUseBlock = ReturnEventListener<UseBlockEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>?>()
-    val onUseEntity = ReturnEventListener<UseEntityEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>?>()
-    val onUseItem = ReturnEventListener<UseItemEvent, me.jfenn.bingo.platform.event.model.ActionResult<IItemStack?>?>()
-    val onAttackEntity = ReturnEventListener<AttackEntityEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>?>()
-    val onAttackBlock = ReturnEventListener<me.jfenn.bingo.platform.event.model.AttackBlockEvent, me.jfenn.bingo.platform.event.model.ActionResult<Unit>?>()
+    val onUseBlock = ReturnEventListener<UseBlockEvent, ActionResult<Unit>?>()
+    val onUseEntity = ReturnEventListener<UseEntityEvent, ActionResult<Unit>?>()
+    val onUseItem = ReturnEventListener<UseItemEvent, ActionResult<IItemStack?>?>()
+    val onAttackEntity = ReturnEventListener<AttackEntityEvent, ActionResult<Unit>?>()
+    val onAttackBlock = ReturnEventListener<AttackBlockEvent, ActionResult<Unit>?>()
 
     val onStateChange = EventListener<Pair<GameState, GameState>>()
 

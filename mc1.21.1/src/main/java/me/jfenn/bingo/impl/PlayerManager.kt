@@ -12,11 +12,13 @@ import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.command.CommandSource
+import net.minecraft.entity.Entity
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.item.*
 import net.minecraft.network.message.MessageType
 import net.minecraft.network.message.SentMessage
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions
+import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket
 import net.minecraft.registry.Registries
@@ -251,6 +253,12 @@ class PlayerHandle(
 
     override val blockPos: BlockPosition
         get() = BlockPosition(player.blockX, player.blockY, player.blockZ)
+
+    override fun respawn(): IPlayerHandle {
+        val networkHandler = player.networkHandler
+        networkHandler.onClientStatus(ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.PERFORM_RESPAWN))
+        return PlayerHandle(networkHandler.player, itemStackFactory)
+    }
 
     override fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float) {
         player.teleport(world, pos.x, pos.y, pos.z, yaw, pitch)

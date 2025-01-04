@@ -67,9 +67,9 @@ internal fun MenuComponent.registerItemDistribution(
             }
         }
 
-        val labelPosition = position + offset.sub(0.0, MENU_LINE_PADDING + TIER_HEIGHT, 0.0) +
-                Vector3d(0.0, TIER_HEIGHT/2.0 - 1.0/7.0, 0.0)
-        val labelText = Text.literal(tier.name).formatted(tier.formatting, Formatting.BOLD)
+        val labelPosition = position + offset.sub(0.0, MENU_LINE_PADDING + TIER_HEIGHT + 0.05, 0.0) +
+                Vector3d(0.0, TIER_HEIGHT/2.0 - 0.15, 0.0)
+        val labelText = text.string(tier.shortString).formatted(tier.formatting, Formatting.BOLD)
         registerEntity(EntityType.TEXT_DISPLAY) {
             pos = labelPosition
             this.value = labelText
@@ -80,7 +80,7 @@ internal fun MenuComponent.registerItemDistribution(
         }
 
         val valuePosition = position + offset.sub(0.0, MENU_LINE_PADDING + TIER_HEIGHT, 0.0) +
-                Vector3d(0.0, TIER_HEIGHT/2.0 - 1.0/7.0, 0.0)
+                Vector3d(0.0, TIER_HEIGHT/2.0 + 0.05, 0.0)
         registerEntity(EntityType.TEXT_DISPLAY) {
             pos = valuePosition
 

@@ -9,12 +9,13 @@ import net.minecraft.util.Formatting
 enum class TierLabel(
     val formatting: Formatting,
     val string: StringKey,
+    val shortString: StringKey,
 ) {
-    S(Formatting.DARK_RED, StringKey.TierS),
-    A(Formatting.RED, StringKey.TierA),
-    B(Formatting.GOLD, StringKey.TierB),
-    C(Formatting.YELLOW, StringKey.TierC),
-    D(Formatting.GREEN, StringKey.TierD);
+    S(Formatting.DARK_RED, StringKey.TierS, StringKey.TierSShort),
+    A(Formatting.RED, StringKey.TierA, StringKey.TierAShort),
+    B(Formatting.GOLD, StringKey.TierB, StringKey.TierBShort),
+    C(Formatting.YELLOW, StringKey.TierC, StringKey.TierCShort),
+    D(Formatting.GREEN, StringKey.TierD, StringKey.TierDShort);
 
     fun text(text: TextProvider): Text = text.string(this.string).formatted(formatting)
 
