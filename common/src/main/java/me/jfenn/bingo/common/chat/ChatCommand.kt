@@ -16,48 +16,46 @@ class ChatCommand(
     }
 
     init {
-        if (config.chat.isEnabled) {
-            // send a message to all teams, outside of the team-local chat
-            for (cmd in config.chat.globalCommandAliases) {
-                commandManager.register(cmd) {
-                    signedMessage("message") { messageArg ->
-                        executes {
-                            val sender = playerOrThrow
-                            getArgument(messageArg).thenAccept {
-                                scope.get<ChatMessageService>().sendGlobalMessage(it, sender)
-                            }
+        // send a message to all teams, outside of the team-local chat
+        for (cmd in config.chat.globalCommandAliases) {
+            commandManager.register(cmd) {
+                signedMessage("message") { messageArg ->
+                    executes {
+                        val sender = playerOrThrow
+                        getArgument(messageArg).thenAccept {
+                            scope.get<ChatMessageService>().sendGlobalMessage(it, sender)
                         }
                     }
                 }
             }
+        }
 
-            // send a message to the team-local chat
-            for (cmd in config.chat.teamCommandAliases) {
-                commandManager.register(cmd) {
-                    signedMessage("message") { messageArg ->
-                        executes {
-                            val sender = playerOrThrow
-                            getArgument(messageArg).thenAccept {
-                                scope.get<ChatMessageService>().sendTeamMessage(it, sender)
-                            }
+        // send a message to the team-local chat
+        for (cmd in config.chat.teamCommandAliases) {
+            commandManager.register(cmd) {
+                signedMessage("message") { messageArg ->
+                    executes {
+                        val sender = playerOrThrow
+                        getArgument(messageArg).thenAccept {
+                            scope.get<ChatMessageService>().sendTeamMessage(it, sender)
                         }
                     }
                 }
             }
+        }
 
-            // override default chat to only send team-specific messages
-            serverEvents.onAllowChatMessage { (message, player) ->
-                if (bypassAllowMessageCheck) return@onAllowChatMessage true
-                val scope = BingoKoin.getScope(player.player.server) ?: return@onAllowChatMessage true
-                val state = scope.get<BingoState>()
+        // override default chat to only send team-specific messages
+        serverEvents.onAllowChatMessage { (message, player) ->
+            if (bypassAllowMessageCheck) return@onAllowChatMessage true
+            val scope = BingoKoin.getScope(player.player.server) ?: return@onAllowChatMessage true
+            val state = scope.get<BingoState>()
 
-                if (state.state.isPlayingOrCountdown && config.chat.defaultToTeamChat) {
-                    val sent = scope.get<ChatMessageService>()
-                        .sendTeamMessage(message, player)
-                    !sent
-                } else {
-                    true
-                }
+            if (state.state.isPlayingOrCountdown && config.chat.defaultToTeamChat) {
+                val sent = scope.get<ChatMessageService>()
+                    .sendTeamMessage(message, player)
+                !sent
+            } else {
+                true
             }
         }
     }
