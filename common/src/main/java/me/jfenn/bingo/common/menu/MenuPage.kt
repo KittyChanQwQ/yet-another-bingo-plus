@@ -99,6 +99,7 @@ private fun createRootPage(
         blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) { player ->
         // Start the game!
+        optionsService.broadcastHotbarMessage(player, text.string(StringKey.CommandStartSuccess))
         gameService.start(
             sendFeedback = { feedback ->
                 Text.literal("⚠  ")
