@@ -4,11 +4,18 @@
 
 - **Added a "Consume Items" mode**, which takes items from your inventory when scored ([#137](https://gitlab.com/horrific-tweaks/bingo/-/issues/137))
 
+- **Improved the team chat behavior**, which now:
+    * Uses the server-configured [chat type](https://minecraft.wiki/w/Chat_type) formatting
+    * Has a few config properties in `config.json`, such as `defaultToTeamChat`
+    * Properly implements chat verification
+
 ### Bugs Squashed:
 
 - Fixed "leading team" being incorrectly displayed in a certain tie scenario ([#138](https://gitlab.com/horrific-tweaks/bingo/-/issues/138))
 
 - Updated the default list to move some advancements to S-tier (trial chambers, zombie doctor)
+
+- Significantly improved reset performance to avoid timeouts ([#136](https://gitlab.com/horrific-tweaks/bingo/-/issues/136))
 
 ### Translations
 
