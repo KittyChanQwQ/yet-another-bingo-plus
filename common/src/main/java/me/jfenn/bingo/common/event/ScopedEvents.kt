@@ -23,6 +23,10 @@ class ScopedEvents(
     val onGameTickEnd = EventListener<Unit>()
     val onUpdateTick = EventListener<Unit>()
 
+    /**
+     * Note: this event is NOT called on the server thread!
+     */
+    val onPlayerInit = EventListener<IPlayerHandle>()
     val onPlayerJoin = EventListener<IPlayerHandle>()
     val onPlayerDisconnect = EventListener<IPlayerHandle>()
     val onPlayerRespawn = EventListener<PlayerEvent>()

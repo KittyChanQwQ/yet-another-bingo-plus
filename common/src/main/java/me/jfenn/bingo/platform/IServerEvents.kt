@@ -9,6 +9,10 @@ import net.minecraft.server.MinecraftServer
 interface IServerEvents {
     val onTickStart: IEventListener<MinecraftServer>
     val onTickEnd: IEventListener<MinecraftServer>
+    /**
+     * Note: this event is NOT called on the server thread!
+     */
+    val onPlayerInit: IEventListener<PlayerEvent>
     val onPlayerJoin: IEventListener<PlayerEvent>
     val onPlayerDisconnect: IEventListener<PlayerEvent>
     val onAfterRespawn: IEventListener<PlayerEvent>

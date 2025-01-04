@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.platform.IServerEvents
-import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scope.ScopeManager
+import me.jfenn.bingo.platform.IServerEvents
+import me.jfenn.bingo.platform.event.model.ActionResult
 import net.minecraft.server.MinecraftServer
 
 /**
@@ -36,6 +36,12 @@ class EventManager(
             getEvents(server)
                 ?.onGameTickEnd
                 ?.invoke(Unit)
+        }
+
+        serverEvents.onPlayerInit { event ->
+            getEvents(event.server)
+                ?.onPlayerInit
+                ?.invoke(event.player)
         }
 
         serverEvents.onPlayerJoin { event ->

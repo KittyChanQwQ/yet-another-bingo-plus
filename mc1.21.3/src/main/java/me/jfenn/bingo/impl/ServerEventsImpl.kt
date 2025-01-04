@@ -31,6 +31,7 @@ import java.lang.ref.WeakReference
 object ServerEventsImpl : IServerEvents {
     override val onTickStart: IEventListener<MinecraftServer> = EventListener()
     override val onTickEnd: IEventListener<MinecraftServer> = EventListener()
+    override val onPlayerInit: IEventListener<PlayerEvent> = EventListener()
     override val onPlayerJoin: IEventListener<PlayerEvent> = EventListener()
     override val onPlayerDisconnect: IEventListener<PlayerEvent> = EventListener()
     override val onAfterRespawn: IEventListener<PlayerEvent> = EventListener()
@@ -78,6 +79,11 @@ object ServerEventsImpl : IServerEvents {
 
         ServerTickEvents.END_SERVER_TICK.register {
             onTickEnd(it)
+        }
+
+        ServerPlayConnectionEvents.INIT.register { handler, server ->
+            val player = getPlayerImpl(handler.player) ?: return@register
+            onPlayerInit(PlayerEvent(server, player))
         }
 
         ServerPlayConnectionEvents.JOIN.register { handler, _, server ->

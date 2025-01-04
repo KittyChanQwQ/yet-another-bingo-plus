@@ -27,7 +27,7 @@ import org.slf4j.Logger
  * Needs to additionally ensure that the state is re-applied on
  * login, as players could miss game state transitions by logging out.
  */
-class PlayerController(
+internal class PlayerController(
     events: ScopedEvents,
     private val log: Logger,
     private val server: MinecraftServer,
@@ -43,6 +43,18 @@ class PlayerController(
     private val playerManager: IPlayerManager,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
 ) : BingoComponent() {
+
+    private fun updateVanishStatus(
+        player: IPlayerHandle
+    ): Boolean {
+        val team = teamService.getPlayerTeam(player.player)
+        val isOnActiveTeam = team?.isPlaying() == true
+
+        // if the player is not on a team, they should be vanished
+        val isVanished = !isOnActiveTeam && (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN || state.state == GameState.PLAYING)
+        vanishIntegration.setVanish(player.player, isVanished)
+        return isVanished
+    }
 
     fun updateGameMode(
         player: IPlayerHandle,
@@ -100,10 +112,7 @@ class PlayerController(
             player.player.changeGameMode(gameMode)
         }
 
-        // if the player is not on a team, they should be vanished
-        val isVanished = !isOnActiveTeam && (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN || state.state == GameState.PLAYING)
-        vanishIntegration.setVanish(player.player, isVanished)
-
+        val isVanished = updateVanishStatus(player)
         // allow players in adventure mode to fly
         if (isVanished && vanishIntegration.isInstalled()) {
             player.player.abilities.allowFlying = true
@@ -159,6 +168,11 @@ class PlayerController(
     }
 
     init {
+        events.onPlayerInit { player ->
+            // update vanish status on init, so that players are hidden before the login message
+            updateVanishStatus(player)
+        }
+
         events.onPlayerJoin { player ->
             val lobbyWorld = server.lobbyWorld ?: return@onPlayerJoin
 
