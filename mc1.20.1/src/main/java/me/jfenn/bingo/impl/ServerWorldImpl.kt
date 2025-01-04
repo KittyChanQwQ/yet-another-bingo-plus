@@ -3,7 +3,9 @@ package me.jfenn.bingo.impl
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.impl.block.BlockStateImpl
-import me.jfenn.bingo.mixin.*
+import me.jfenn.bingo.mixin.LevelPropertiesAccessor
+import me.jfenn.bingo.mixin.ServerChunkManagerAccessor
+import me.jfenn.bingo.mixin.ThreadedAnvilChunkStorageAccessor
 import me.jfenn.bingo.mixinhelper.ServerChunkManagerMixinHelper
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.IServerWorldFactory
@@ -62,14 +64,14 @@ class ServerWorldFactory(
             tickKeepAlive(server)
 
             server.cancelTasks()
+
+            // Use mixins to skip save() calls within world.close(), so that it
+            // *only* closes resources without waiting to write to disk
+            ServerChunkManagerMixinHelper.shouldCancelSaving = true
+
             for (world in listWorlds(server)) {
                 log.measureTime("[Reset] Closing ${world.identifier}...") {
-                    try {
-                        ServerChunkManagerMixinHelper.shouldCancelSaving = true
-                        world.close()
-                    } finally {
-                        ServerChunkManagerMixinHelper.shouldCancelSaving = false
-                    }
+                    world.close()
                 }
 
                 tickKeepAlive(server)
@@ -93,6 +95,7 @@ class ServerWorldFactory(
             tickKeepAlive(server)
         } finally {
             server.saving = false
+            ServerChunkManagerMixinHelper.shouldCancelSaving = false
         }
     }
 }
