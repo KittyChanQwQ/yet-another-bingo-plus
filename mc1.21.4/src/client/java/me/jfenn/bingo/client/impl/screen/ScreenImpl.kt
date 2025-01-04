@@ -71,4 +71,9 @@ class ScreenImpl(title: Text) : Screen(title) {
     override fun shouldCloseOnEsc(): Boolean {
         return impl?.shouldCloseOnEsc() ?: true
     }
+
+    override fun close() {
+        impl?.onClose()
+        super.close()
+    }
 }

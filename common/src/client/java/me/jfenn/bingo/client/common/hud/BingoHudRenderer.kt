@@ -6,7 +6,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -91,8 +90,8 @@ internal class BingoHudRenderer(
         context: DrawContext,
         service: IDrawService,
         view: CardView,
-        x: Int,
-        y: Int,
+        x: Float,
+        y: Float,
         z: Int = 0,
         cardScale: Float,
         mouseX: Int = -1,
@@ -108,7 +107,7 @@ internal class BingoHudRenderer(
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.matrices.push()
-        context.matrices.translate(x.toFloat(), y.toFloat(), z.toFloat())
+        context.matrices.translate(x, y, z.toFloat())
         context.matrices.scale(cardScale, cardScale, 1f)
 
         // Draw a translucent background behind all card items
@@ -249,8 +248,8 @@ internal class BingoHudRenderer(
         // Render the team's player list if the title is hovered over
         if (
             isMouseOver &&
-            mouseX in x..(x + CARD_WIDTH*0.7*cardScale).toInt() &&
-            mouseY in y..(y+20*cardScale).toInt() &&
+            mouseX in x.toInt()..(x + CARD_WIDTH*0.7*cardScale).toInt() &&
+            mouseY in y.toInt()..(y+20*cardScale).toInt() &&
             view.players.isNotEmpty()
         ) {
             context.matrices.push()
@@ -261,7 +260,7 @@ internal class BingoHudRenderer(
 
         if (isMouseOver) {
             // Render the hover tooltips last, without the matrix translate/transform
-            val (tileX, tileY) = getItem(x, y, cardScale, mouseX, mouseY) ?: return
+            val (tileX, tileY) = getItem(x.toInt(), y.toInt(), cardScale, mouseX, mouseY) ?: return
             val tile = view.tile(tileX, tileY) ?: return
 
             val tooltip = buildList {

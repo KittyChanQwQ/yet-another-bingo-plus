@@ -10,4 +10,5 @@ interface IScreen {
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean = false
     fun shouldPause(): Boolean = false
     fun shouldCloseOnEsc(): Boolean = true
+    fun onClose(): Unit = Unit
 }

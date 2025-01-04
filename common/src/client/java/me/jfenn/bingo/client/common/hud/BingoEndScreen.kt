@@ -87,8 +87,8 @@ internal class BingoEndScreen(
     private val cardsWidget = BingoCardsWidget(
         koin,
 
-        x = width/2,
-        y = height/2,
+        x = width/2f,
+        y = height/2f,
         width = width * 6/10,
         height = BingoHudRenderer.CARD_HEIGHT,
         // If the game is paused, the client cannot receive updates for flashing tiles
@@ -379,8 +379,8 @@ internal class BingoEndScreen(
         if (tab == EndScreenTab.CARDS) {
             cardsWidget.views = gameOver.views
             cardsWidget.winner = gameOver.packet.winner
-            cardsWidget.x = width/2
-            cardsWidget.y = height/2 + tabsHeight
+            cardsWidget.x = width/2f
+            cardsWidget.y = height/2f + tabsHeight
             cardsWidget.width = width * 6/10
             cardsWidget.render(context, mouseX, mouseY, delta)
         }

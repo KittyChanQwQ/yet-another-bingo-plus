@@ -3,6 +3,7 @@ package me.jfenn.bingo.client.common.hud
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
+import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.ClientPacket
 import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.client.platform.IHudCallback
@@ -69,6 +70,55 @@ internal class BingoHudController(
 
     private var fireworkRenderer: BingoEndFireworkRenderer? = null
 
+    private val interpolateCardX = Interpolate(0f, 0f)
+    private val interpolateCardY = Interpolate(0f, 0f)
+    private val interpolateCardScale = Interpolate(0f, 0f)
+
+    private fun onCardHudClosed() {
+        val client = MinecraftClient.getInstance()
+        val now = Clock.System.now()
+
+        // if there's >1 card view, this will not be a clean transition
+        if (state.display?.display?.size?.let { it > 1 } == true)
+            return
+
+        interpolateCardX.apply {
+            from = client.window.scaledWidth/2f - BingoHudRenderer.CARD_WIDTH/2f
+            duration = 250.milliseconds
+            startedAt = now
+        }
+        interpolateCardY.apply {
+            from = client.window.scaledHeight/2f - BingoHudRenderer.CARD_HEIGHT/2f
+            duration = 250.milliseconds
+            startedAt = now
+        }
+        interpolateCardScale.apply {
+            from = 1f
+            duration = 250.milliseconds
+            startedAt = now
+        }
+    }
+
+    private fun getCardPos(): Pair<Float, Float> {
+        val client = MinecraftClient.getInstance()
+
+        val cardScale = interpolateCardScale.get(Interpolate.Easing.IN_OUT)
+        val cardAlignment = config.client.cardAlignment
+
+        val offsetX = config.client.cardOffsetX * (if (cardAlignment.x > 0) -1 else 1)
+        val offsetY = config.client.cardOffsetY * (if (cardAlignment.y > 0) -1 else 1)
+
+        val x = cardAlignment.x * (client.window.scaledWidth - (BingoHudRenderer.CARD_WIDTH * cardScale)) + offsetX
+        val y = cardAlignment.y * (client.window.scaledHeight - (BingoHudRenderer.CARD_HEIGHT * cardScale)) + offsetY
+        interpolateCardX.to = x
+        interpolateCardY.to = y
+
+        return Pair(
+            interpolateCardX.get(Interpolate.Easing.IN_OUT),
+            interpolateCardY.get(Interpolate.Easing.IN_OUT),
+        )
+    }
+
     private fun drawHud(drawService: IDrawService) {
         val teamKeys = state.display?.display
         if (teamKeys.isNullOrEmpty()) return
@@ -87,14 +137,12 @@ internal class BingoHudController(
         // Ensure that `selectedTeam` is set to the displayed card, in case they don't match
         state.selectedTeam = view.teamKey
 
-        val cardScale = config.client.cardScale
+        val cardScale = interpolateCardScale
+            .apply { to = config.client.cardScale }
+            .get(Interpolate.Easing.IN_OUT)
+
         val cardAlignment = config.client.cardAlignment
-
-        val offsetX = config.client.cardOffsetX * (if (cardAlignment.x > 0) -1 else 1)
-        val offsetY = config.client.cardOffsetY * (if (cardAlignment.y > 0) -1 else 1)
-
-        val x = cardAlignment.x * (context.scaledWindowWidth - (BingoHudRenderer.CARD_WIDTH * cardScale)) + offsetX
-        val y = cardAlignment.y * (context.scaledWindowHeight - (BingoHudRenderer.CARD_HEIGHT * cardScale)) + offsetY
+        val (x, y) = getCardPos()
 
         if (fireworkRenderer?.isDone() == true) {
             fireworkRenderer = null
@@ -117,8 +165,8 @@ internal class BingoHudController(
             context,
             drawService,
             view,
-            x = x.toInt(),
-            y = y.toInt(),
+            x = x,
+            y = y,
             z = config.client.cardOverlap.z,
             cardScale = cardScale,
             // if the client can only see one card, enable team outlines
@@ -156,8 +204,8 @@ internal class BingoHudController(
                     context,
                     drawService,
                     remainingView,
-                    x = cardX.toInt(),
-                    y = y.toInt(),
+                    x = cardX,
+                    y = y,
                     z = config.client.cardOverlap.z,
                     cardScale =  cardScale,
                     showTeamOutlines = false,
@@ -358,7 +406,7 @@ internal class BingoHudController(
 
                     val hudScreen = state.gameOver
                         ?.let { endScreenFactory.create(it, canEscape = true) }
-                        ?: hudScreenFactory.create()
+                        ?: hudScreenFactory.create(getCardPos(), ::onCardHudClosed)
 
                     client.setScreen(hudScreen)
                 }

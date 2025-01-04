@@ -14,10 +14,11 @@ import kotlin.math.roundToInt
 internal class BingoCardsWidget(
     koin: Koin,
 
-    var x: Int,
-    var y: Int,
+    var x: Float,
+    var y: Float,
     var width: Int,
     var height: Int,
+    var cardScale: Float = 1f,
 
     val showFlashingTiles: Boolean,
     var views: List<CardView> = emptyList(),
@@ -40,7 +41,7 @@ internal class BingoCardsWidget(
     private val cardsTotalWidth get() =  views.size * BingoHudRenderer.CARD_WIDTH
 
     private fun viewsWithPositions(
-        callback: (view: CardView, x: Int, y: Int, z: Int, xDelta: Float) -> Unit
+        callback: (view: CardView, x: Float, y: Float, z: Int) -> Unit
     ) {
         if (views.isEmpty()) return
 
@@ -78,19 +79,17 @@ internal class BingoCardsWidget(
                 else -> x
             }
 
-            val xFloored = xCoerced.toInt()
-
-            callback(view, xFloored, y, z, xCoerced - xFloored)
+            callback(view, xCoerced, y, z)
         }
     }
 
     private fun getHoveredView(mouseX: Int, mouseY: Int): CardView? {
         var hoveredView: CardView? = null
         var hoveredZ = 0
-        viewsWithPositions { view, x, y, z, _ ->
+        viewsWithPositions { view, x, y, z ->
             if (
-                mouseX in x..(x + BingoHudRenderer.CARD_WIDTH) &&
-                mouseY in y..(y + BingoHudRenderer.CARD_HEIGHT) &&
+                mouseX in x.toInt()..(x.toInt() + BingoHudRenderer.CARD_WIDTH) &&
+                mouseY in y.toInt()..(y.toInt() + BingoHudRenderer.CARD_HEIGHT) &&
                 z > hoveredZ
             ) {
                 hoveredView = view
@@ -102,7 +101,7 @@ internal class BingoCardsWidget(
     }
 
     fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        if (isInBounds(x, mouseY)) {
+        if (isInBounds(x.toInt(), mouseY)) {
             val boundaryMin = x - width*.5f
             val boundaryMax = x + width*.5f
             val baseVelocity = 0.01f / (1 + views.size)
@@ -125,10 +124,7 @@ internal class BingoCardsWidget(
 
         val hoveredView = getHoveredView(mouseX, mouseY)
 
-        viewsWithPositions { view, x, y, z, xDelta ->
-            context.matrices.push()
-            context.matrices.translate(xDelta, 0f, 0f)
-
+        viewsWithPositions { view, x, y, z ->
             val isHovered = hoveredView != null && hoveredView.teamKey == view.teamKey
             val isSingleView = views.size <= 1
             renderer.drawCard(
@@ -138,7 +134,7 @@ internal class BingoCardsWidget(
                 x = x,
                 y = y,
                 z = z,
-                cardScale = 1f,
+                cardScale = cardScale,
                 mouseX = mouseX,
                 mouseY = mouseY,
                 showTeamOutlines = isSingleView && config.client.cardTeamOutlines,
@@ -148,13 +144,11 @@ internal class BingoCardsWidget(
                 isGui = true, // uses an alternative card texture with a shadow to reduce clutter when overlapped
                 isWinner = winner != null && winner == view.teamKey,
             )
-
-            context.matrices.pop()
         }
 
         if (cardsTotalWidth > cardsAreaWidth) {
-            val barX = x - (width/2)
-            val barY = y + (height/2) + 3
+            val barX = x.toInt() - (width/2)
+            val barY = y.toInt() + (height/2) + 3
 
             val barHeight = 2
             val barFilledWidth = width * cardsAreaWidth / cardsTotalWidth.coerceAtLeast(1)
@@ -171,8 +165,8 @@ internal class BingoCardsWidget(
     }
 
     private fun isInBounds(mouseX: Int, mouseY: Int): Boolean {
-        return mouseX in (x - width/2)..(x + width/2)
-                && mouseY in (y - height/2)..(y + height/2)
+        return mouseX in (x - width/2).toInt()..(x + width/2).toInt()
+                && mouseY in (y - height/2).toInt()..(y + height/2).toInt()
     }
 
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
@@ -189,9 +183,9 @@ internal class BingoCardsWidget(
 
         var isHandled = false
 
-        viewsWithPositions { view, x, y, _, _ ->
+        viewsWithPositions { view, x, y, _ ->
             if (hoveredView.teamKey != view.teamKey) return@viewsWithPositions
-            val (tileX, tileY) = renderer.getItem(x, y, 1f, mouseX.toInt(), mouseY.toInt()) ?: return@viewsWithPositions
+            val (tileX, tileY) = renderer.getItem(x.toInt(), y.toInt(), 1f, mouseX.toInt(), mouseY.toInt()) ?: return@viewsWithPositions
             val tile = view.tile(tileX, tileY) ?: return@viewsWithPositions
 
             isHandled = onTileClick(tile)
