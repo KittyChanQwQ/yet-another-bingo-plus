@@ -21,6 +21,11 @@ class PlayerSettingsController(
     private fun receivePlayerSettings(player: IPlayerHandle, settings: PlayerSettings) {
         if (permissions.hasPermission(player, Permission.CONFIGURE_PLAYER)) {
             log.debug("[PlayerSettingsController] Server - processing settings change from {}", player)
+
+            // Don't let clients sync hideLobbyPrompt to a server, as it should be install-specific
+            val existingSettings = playerSettingsService.getPlayer(player)
+            settings.hideLobbyPrompt = existingSettings.hideLobbyPrompt
+
             playerSettingsService.setPlayer(player, settings)
         } else {
             log.debug(
