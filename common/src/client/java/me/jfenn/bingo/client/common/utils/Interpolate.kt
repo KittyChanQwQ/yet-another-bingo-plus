@@ -29,6 +29,8 @@ class Interpolate(
         }
     }
 
+    fun isDone() = progress() > 0.99f
+
     fun get(
         easing: Easing = Easing.LINEAR,
         now: Instant = Clock.System.now(),

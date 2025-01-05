@@ -177,14 +177,16 @@ internal class BingoHudController(
             mouseY = mouseY,
         )
 
-        itemScoredRenderer.drawMessages(
-            drawService,
-            x = x.toInt(),
-            y = y.toInt() + (BingoHudRenderer.CARD_HEIGHT * cardScale * (1 - config.client.cardAlignment.y)).toInt(),
-            z = config.client.cardOverlap.z,
-            messageScale = config.client.messageScale,
-            cardAlignment = config.client.cardAlignment,
-        )
+        if (interpolateCardX.isDone()) {
+            itemScoredRenderer.drawMessages(
+                drawService,
+                x = x.toInt(),
+                y = y.toInt() + (BingoHudRenderer.CARD_HEIGHT * cardScale * (1 - config.client.cardAlignment.y)).toInt(),
+                z = config.client.cardOverlap.z,
+                messageScale = config.client.messageScale,
+                cardAlignment = config.client.cardAlignment,
+            )
+        }
 
         // Attempt to draw additional cards if showMultipleCards=true
         val xDirection = if (cardAlignment.x > 0) -1 else 1

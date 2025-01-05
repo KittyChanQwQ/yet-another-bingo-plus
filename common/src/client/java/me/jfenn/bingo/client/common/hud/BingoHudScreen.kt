@@ -112,7 +112,7 @@ internal class BingoHudScreen(
         cardsWidget.y = interpolate(y)
         cardsWidget.cardScale = interpolate(scale)
         // only enable tooltips once interpolation is over
-        cardsWidget.isMouseOver = cardsWidget.views.size > 1 || x.progress(Interpolate.Easing.IN_OUT) > 0.99f
+        cardsWidget.isMouseOver = cardsWidget.views.size > 1 || x.isDone()
         cardsWidget.width = width * 6/10
         cardsWidget.render(context, mouseX, mouseY, delta)
     }
