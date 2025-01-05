@@ -101,7 +101,9 @@ class TeamService(
                 symbol = null,
                 textColor = extraTeamColors.find { color ->
                     teams.none { it.textColor == color }
-                } ?: Formatting.WHITE,
+                } ?: run {
+                    (BingoTeam.TEAM_BLOCKS.values.map { it.textColor } + extraTeamColors).random()
+                },
                 isTemporary = true,
             )
             teams.add(temporaryTeam)
