@@ -52,7 +52,7 @@ internal class BingoHudScreen(
     val width by helper::width
     val height by helper::height
 
-    private val interpolateDuration = 250.milliseconds
+    private val interpolateDuration = 150.milliseconds
     private val x = Interpolate(
         from = originalCardPos.first + BingoHudRenderer.CARD_WIDTH/2,
         to = width/2f,
@@ -111,6 +111,8 @@ internal class BingoHudScreen(
         cardsWidget.x = interpolate(x)
         cardsWidget.y = interpolate(y)
         cardsWidget.cardScale = interpolate(scale)
+        // only enable tooltips once interpolation is over
+        cardsWidget.isMouseOver = cardsWidget.views.size > 1 || x.progress(Interpolate.Easing.IN_OUT) > 0.99f
         cardsWidget.width = width * 6/10
         cardsWidget.render(context, mouseX, mouseY, delta)
     }

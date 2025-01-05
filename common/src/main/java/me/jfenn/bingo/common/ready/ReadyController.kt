@@ -15,6 +15,7 @@ import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.text.Text
 import org.slf4j.Logger
@@ -51,7 +52,9 @@ internal class ReadyController(
         }
     }
 
-    private fun update() {
+    private fun update(
+        playersToUpdate: List<IPlayerHandle> = playerManager.getPlayers(),
+    ) {
         if (!state.isLobbyMode) return
         // Only send update packets during these gamestates
         // (note that SpawnPreloadingController also sends ReadyUpdatePacket, so this must avoid conflicts)
@@ -122,7 +125,7 @@ internal class ReadyController(
             subtitle = null,
         )
 
-        for (player in playerManager.getPlayers()) {
+        for (player in playersToUpdate) {
             val isPlayerReady = readyState.isReady(player.uuid)
             val title = when {
                 isPlayerReady -> text.string(StringKey.LobbyStartingPlayersReady, updatePacket.readyPlayers, updatePacket.totalPlayers)
@@ -202,6 +205,10 @@ internal class ReadyController(
 
         events.onPacket(packets.readySetV1) {
             readyService.setReady(it.player, it.packet.isReady)
+        }
+
+        events.onPlayerChannelRegister {
+            update(listOf(it))
         }
 
         events.onUpdateTick {

@@ -1,11 +1,11 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
 
 /**
@@ -46,6 +46,10 @@ class BingoMapController(
 
         events.onPlayerJoin { player ->
             cardImageService.clearPlayerState(player.uuid)
+        }
+
+        events.onPlayerChannelRegister { player ->
+            cardViewService.sendUpdatePackets(player)
         }
 
         events.onEnter(GameState.PREGAME) {

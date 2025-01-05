@@ -19,6 +19,7 @@ internal class BingoCardsWidget(
     var width: Int,
     var height: Int,
     var cardScale: Float = 1f,
+    var isMouseOver: Boolean = true,
 
     val showFlashingTiles: Boolean,
     var views: List<CardView> = emptyList(),
@@ -140,7 +141,7 @@ internal class BingoCardsWidget(
                 showTeamOutlines = isSingleView && config.client.cardTeamOutlines,
                 showFlashingTiles = showFlashingTiles,
                 isFocused = isHovered && !isSingleView && onViewClick != null,
-                isMouseOver = isHovered,
+                isMouseOver = isMouseOver && isHovered,
                 isGui = true, // uses an alternative card texture with a shadow to reduce clutter when overlapped
                 isWinner = winner != null && winner == view.teamKey,
             )

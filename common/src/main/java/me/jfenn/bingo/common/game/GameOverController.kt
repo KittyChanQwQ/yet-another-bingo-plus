@@ -2,12 +2,12 @@ package me.jfenn.bingo.common.game
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.options.BingoWinCondition
-import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.BingoWinCondition
+import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
@@ -179,6 +179,12 @@ class GameOverController(
         events.onUpdateTick {
             // If the game is currently over, keep sending the result to players
             // (this prevents state loss if relogging / switching dimensions)
+            state.gameOverInfo?.let {
+                sendGameOverPacket(it, isUpdate = true)
+            }
+        }
+
+        events.onPlayerChannelRegister {
             state.gameOverInfo?.let {
                 sendGameOverPacket(it, isUpdate = true)
             }
