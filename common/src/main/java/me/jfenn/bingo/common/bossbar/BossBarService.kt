@@ -50,10 +50,14 @@ class BossBarService(
 
     fun clearBossBars() {
         for (bossBar in bossBars.values) {
-            bossBar.clearPlayers()
             bossBarManager.remove(bossBar)
         }
         bossBars.clear()
+
+        // Clear any remaining bingo bossbars (broken state) and server bossbars (dragon/wither/raid)
+        bossBarManager.list()
+            .filter { it.id?.startsWith("$MOD_ID_BINGO:") == true || it.id == null }
+            .forEach { bossBarManager.remove(it) }
     }
 
 }

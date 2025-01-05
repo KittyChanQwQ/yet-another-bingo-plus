@@ -5,13 +5,22 @@ import me.jfenn.bingo.platform.IBossBarManager
 import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.entity.boss.CommandBossBar
+import net.minecraft.entity.boss.ServerBossBar
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import java.lang.ref.WeakReference
+import java.util.*
 
 internal class BossBarManager(
     private val server: MinecraftServer,
 ) : IBossBarManager {
+    companion object {
+        internal val serverBossBars = Collections.synchronizedList(
+            mutableListOf<WeakReference<ServerBossBar>>()
+        )
+    }
+
     override fun get(id: String): IBossBar? {
         return server.bossBarManager.get(Identifier.of(id))
             ?.let { BossBarImpl(it) }
@@ -19,7 +28,9 @@ internal class BossBarManager(
 
     override fun remove(bossBar: IBossBar) {
         require(bossBar is BossBarImpl)
-        server.bossBarManager.remove(bossBar.bossBar)
+        bossBar.clearPlayers()
+        (bossBar.bossBar as? CommandBossBar)
+            ?.let { server.bossBarManager.remove(it) }
     }
 
     override fun add(id: String, title: Text): IBossBar {
@@ -30,14 +41,22 @@ internal class BossBarManager(
     override fun list(): List<IBossBar> {
         return server.bossBarManager.all
             .map { BossBarImpl(it) }
+            .plus(
+                serverBossBars
+                    .mapNotNull { it.get() }
+                    .map { BossBarImpl(it) }
+            )
     }
 }
 
 internal class BossBarImpl(
-    internal val bossBar: CommandBossBar,
+    internal val bossBar: BossBar,
 ): IBossBar {
-    override val id: String
-        get() = bossBar.id.toString()
+    private val commandBossBar: CommandBossBar? = bossBar as? CommandBossBar
+    private val serverBossBar: ServerBossBar? = bossBar as? ServerBossBar
+
+    override val id: String?
+        get() = commandBossBar?.id?.toString()
 
     override var name: Text by bossBar::name
     override var color: IBossBar.Color
@@ -56,20 +75,33 @@ internal class BossBarImpl(
             }
         }
 
-    override var value: Int by bossBar::value
-    override var maxValue: Int by bossBar::maxValue
+    override var value: Int
+        get() = commandBossBar?.value ?: (bossBar.percent * 100).toInt()
+        set(value) {
+            commandBossBar?.setValue(value)
+                ?: bossBar.setPercent(value / 100f)
+        }
+    override var maxValue: Int
+        get() = commandBossBar?.maxValue ?: 100
+        set(value) {
+            commandBossBar?.setMaxValue(value)
+                ?: throw UnsupportedOperationException("Cannot set max value on a non-command bossbar")
+        }
 
     override fun addPlayer(player: IPlayerHandle) {
         require(player is PlayerHandle)
-        bossBar.addPlayer(player.player)
+        commandBossBar?.addPlayer(player.player)
+        serverBossBar?.addPlayer(player.player)
     }
 
     override fun removePlayer(player: IPlayerHandle) {
         require(player is PlayerHandle)
-        bossBar.removePlayer(player.player)
+        commandBossBar?.removePlayer(player.player)
+        serverBossBar?.removePlayer(player.player)
     }
 
     override fun clearPlayers() {
-        bossBar.clearPlayers()
+        commandBossBar?.clearPlayers()
+        serverBossBar?.clearPlayers()
     }
 }

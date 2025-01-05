@@ -10,6 +10,7 @@
     "MinecraftServerUnsafeSkipCloseMixin",
     "PlayerEntityMixin",
     "PlayerManagerMixin",
+    "ServerBossBarMixin",
     "ServerChunkManagerAccessor",
     "ServerChunkManagerMixin",
     "ServerEntityManagerMixin",

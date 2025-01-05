@@ -17,7 +17,7 @@ interface IBossBar {
         PROGRESS
     }
 
-    val id: String
+    val id: String?
     var name: Text
     var color: Color
     var style: Style
