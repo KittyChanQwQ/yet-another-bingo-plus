@@ -196,9 +196,17 @@ class MigrationHandler(
                 ?.deleteIfExists()
         }
 
-        migrations[24] = { // 2.4.0
+        migrations[25] = { // 2.4.0
             loader.configDir.resolve("$MOD_ID_BINGO/advancements.tierlist.json")
                 .takeIfMd5("155c3c0f1e1133b507b4fe157d6fd83a", "e01cc90047e633d0a5258850735bed13")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("$MOD_ID_BINGO/items.tierlist.json")
+                .takeIfMd5("1c8c6b3108fba4c289342b472f7442a5")
+                ?.deleteIfExists()
+
+            loader.configDir.resolve("$MOD_ID_BINGO/challenge.tierlist.json")
+                .takeIfMd5("a2a51e6e8a965ac98b7551ddcb1a8e1")
                 ?.deleteIfExists()
         }
     }

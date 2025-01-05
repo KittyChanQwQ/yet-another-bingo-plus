@@ -31,6 +31,7 @@
         "yet-another-minecraft-bingo:challenge/stat_killed_wither_skeleton"
     ],
     "B": [
+        "yet-another-minecraft-bingo:challenge/all_filled_buckets",
         "yet-another-minecraft-bingo:challenge/all_golden_armor",
         "yet-another-minecraft-bingo:challenge/all_golden_tools",
         "yet-another-minecraft-bingo:challenge/all_iron_armor",
@@ -55,7 +56,6 @@
         "yet-another-minecraft-bingo:challenge/stat_killed_zombified_piglin"
     ],
     "C": [
-        "yet-another-minecraft-bingo:challenge/all_filled_buckets",
         "yet-another-minecraft-bingo:challenge/many_bones",
         "yet-another-minecraft-bingo:challenge/many_carrot",
         "yet-another-minecraft-bingo:challenge/many_cod",
