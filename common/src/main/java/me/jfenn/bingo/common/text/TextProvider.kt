@@ -1,8 +1,11 @@
 package me.jfenn.bingo.common.text
 
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.ITextSerializer
 import net.minecraft.text.MutableText
@@ -67,7 +70,9 @@ class TextProvider(
         return Text.translatableWithFallback(str.key, fallback, *mappedArgs)
     }
 
-    fun serialized(text: Text) = textSerializer.toJson(text)
+    fun serialized(text: Text): JsonElement = jsonUnpretty.decodeFromString(textSerializer.toJson(text))
+
+    fun deserialized(text: JsonElement) = textSerializer.fromJson(jsonUnpretty.encodeToString(text)).copy()
 
     fun boolean(value: Boolean): MutableText {
         return when (value) {

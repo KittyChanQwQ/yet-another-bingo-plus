@@ -75,7 +75,7 @@ class WriteStatsService(
             val insertTeam = GameTeamInfo(
                 id = team.key,
                 gameId = insertGame.id,
-                name = team.name.key,
+                name = team.name?.key.orEmpty(),
                 isWinner = team.isWinner()
             ).also { insertTeams.add(it) }
 

@@ -3,29 +3,64 @@ package me.jfenn.bingo.common.team
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.ITeamManager
-import net.minecraft.server.MinecraftServer
+import org.slf4j.Logger
 
 class TeamController(
     private val teamService: TeamService,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     private val teamManager: ITeamManager,
-    private val server: MinecraftServer,
+    private val text: TextProvider,
     private val events: ScopedEvents,
+    private val log: Logger,
 ) {
     init {
         events.onEnter(GameState.PREGAME) {
             // clear the team of all online players when entering PREGAME
             // (so that they must rejoin a team for the next game)
-            for (team in BingoTeam.TEAM_BLOCKS.values) {
-                teamManager.deleteTeam(server, team.key.id)
-            }
-            state.teams.clear()
+            teamService.clearTeams()
         }
 
         events.onGameTick {
+            // If a team is created/changed/removed, ensure that state.teams
+            // stays up to date
+            val teamIds = teamManager.listTeams()
+                .plus(state.teams.values.map { it.id })
+                .distinct()
+
+            for (teamId in teamIds) {
+                val mcTeam = teamManager.getTeam(teamId)
+                val bingoTeam = state.teams.values
+                    .find { it.id == teamId }
+
+                if (mcTeam != null && bingoTeam != null) {
+                    if (bingoTeam.players.isEmpty() && bingoTeam.isTemporary) {
+                        log.info("[TeamController] Removing team '$teamId' because it no longer contains any players.")
+                        continue
+                    }
+
+                    bingoTeam.nameText = text.serialized(mcTeam.displayName)
+                    bingoTeam.textColor = mcTeam.color
+                } else if (mcTeam != null && state.isLobbyMode) {
+                    log.info("[TeamController] Creating a bingo team for '$teamId'")
+                    val newTeam = BingoTeam(
+                        id = mcTeam.name,
+                        name = null,
+                        nameText = text.serialized(mcTeam.displayName),
+                        symbol = null,
+                        textColor = mcTeam.color,
+                    )
+                    state.registerTeam(newTeam)
+                } else if (mcTeam == null && bingoTeam != null) {
+                    // The team no longer exists; delete it
+                    log.info("[TeamController] Removing bingo team for '$teamId'")
+                    state.teams.remove(bingoTeam.key)
+                }
+            }
+
             for (player in playerManager.getPlayers()) {
                 val playerTeam = teamService.getPlayerTeam(player.player)
 
@@ -41,6 +76,7 @@ class TeamController(
                 val isTeamJoined = playerTeam?.players?.add(playerProfile) ?: false
 
                 if (isTeamLeft || isTeamJoined) {
+                    log.info("[TeamController] Manually updated teams for '${player.playerName}'")
                     events.onChangeTeam(player)
                     state.playersJoinedIds.add(player.uuid)
                 }

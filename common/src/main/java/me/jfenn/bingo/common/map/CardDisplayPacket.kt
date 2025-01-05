@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
-import me.jfenn.bingo.common.utils.text.TextColor
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 
 data class CardDisplayPacket(
-    val teamInfo: Map<BingoTeamKey, TextColor>,
+    val teamInfo: Map<BingoTeamKey, Formatting>,
     val display: List<BingoTeamKey?>,
 ) {
 
@@ -34,7 +34,11 @@ data class CardDisplayPacket(
 
         override fun fromPacketBuf(buf: IPacketBuf): CardDisplayPacket {
             val teamInfo = List(buf.readInt()) {
-                BingoTeamKey(buf.readString()) to TextColor.valueOf(buf.readString())
+                BingoTeamKey(buf.readString()) to try {
+                    Formatting.valueOf(buf.readString())
+                } catch (e: IllegalArgumentException) {
+                    Formatting.WHITE
+                }
             }.toMap()
 
             val display = List(buf.readInt()) {

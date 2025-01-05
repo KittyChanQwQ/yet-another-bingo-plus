@@ -30,12 +30,10 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
-import org.koin.core.Koin
 import org.lwjgl.glfw.GLFW
 import kotlin.time.Duration.Companion.milliseconds
 
 internal class BingoHudController(
-    private val koin: Koin,
     private val optionsAccessor: IOptionsAccessor,
     private val configService: ConfigService,
     private val config: BingoConfig,
@@ -131,7 +129,7 @@ internal class BingoHudController(
         val view = when {
             selectedTeam in teamKeys -> state.views[selectedTeam]
             // otherwise, find a different card to display
-            else -> teamKeys.firstOrNull()?.let { state.views[it] }
+            else -> teamKeys.firstOrNull().let { state.views[it] }
         } ?: return
 
         // Ensure that `selectedTeam` is set to the displayed card, in case they don't match

@@ -66,7 +66,7 @@ class ScoreUpdateService(
             player = scoredPlayer,
             isViewerOnTeam = true,
             team = team.key,
-            teamColor = team.formatting,
+            teamColor = team.textColor,
             score = team.score.copy(items = team.score.items + 1),
             itemId = item?.identifier?.toString(),
         )
@@ -131,7 +131,7 @@ class ScoreUpdateService(
                 when {
                     packet.player != null ->
                         Text.literal("${team.symbol} ${packet.player.name}")
-                            .formatted(team.formatting)
+                            .formatted(team.textColor)
                     else -> team.getName(textProvider, playerName = true, bracketed = false)
                 },
                 itemText,

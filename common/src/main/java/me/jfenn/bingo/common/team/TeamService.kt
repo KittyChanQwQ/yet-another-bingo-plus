@@ -6,7 +6,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
@@ -14,7 +13,6 @@ import kotlin.math.ceil
 
 class TeamService(
     private val log: Logger,
-    private val server: MinecraftServer,
     private val events: ScopedEvents,
     private val state: BingoState,
     private val teamManager: ITeamManager,
@@ -50,10 +48,9 @@ class TeamService(
 
     private fun createTeam(team: BingoTeam): ITeamHandle {
         return teamManager.createTeam(
-            server,
             teamName = team.id,
-            displayName = textProvider.string(team.name),
-            color = team.formatting,
+            displayName = team.getSimpleName(textProvider),
+            color = team.textColor,
         )
     }
 
@@ -75,11 +72,40 @@ class TeamService(
         events.onChangeTeam(player)
     }
 
+    private val extraTeamColors = arrayOf(
+        Formatting.DARK_AQUA,
+        Formatting.DARK_BLUE,
+        Formatting.DARK_RED,
+        Formatting.DARK_GREEN,
+        Formatting.DARK_PURPLE,
+    )
+
     fun shuffleTeams(numTeams: Int) {
+        // Since teams are being shuffled, all existing teams should be cleared
+        state.teams.clear()
+
         val teams = BingoTeam.TEAM_BLOCKS.values
             .shuffled()
             // Prefer shuffling onto teams that have the most players
             .sortedByDescending { state.teams[it.key]?.players?.size ?: 0 }
+            .toMutableList()
+
+        // If numTeams is more than the default team list, create temporary teams until full
+        for (i in teams.size..numTeams) {
+            val temporaryTeam = BingoTeam(
+                id = "temp_bingo_$i",
+                name = null,
+                nameText = textProvider.serialized(
+                    textProvider.string(StringKey.TeamName, "$i")
+                ),
+                symbol = null,
+                textColor = extraTeamColors.find { color ->
+                    teams.none { it.textColor == color }
+                } ?: Formatting.WHITE,
+                isTemporary = true,
+            )
+            teams.add(temporaryTeam)
+        }
 
         val players = playerManager.getPlayers()
         val playersPerTeam = ceil(players.size / numTeams.coerceIn(1, teams.size).toDouble()).toInt()
@@ -88,9 +114,17 @@ class TeamService(
             .chunked(playersPerTeam)
             .forEachIndexed { i, teamPlayers ->
                 val teamTemplate = teams[i % teams.size]
+
                 for (teamPlayer in teamPlayers)
                     joinTeam(teamPlayer, teamTemplate)
             }
+    }
+
+    fun clearTeams() {
+        for (team in BingoTeam.TEAM_BLOCKS.values + state.teams.values) {
+            teamManager.deleteTeam(team.key.id)
+        }
+        state.teams.clear()
     }
 
 }

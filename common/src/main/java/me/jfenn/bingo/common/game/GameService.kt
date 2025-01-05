@@ -144,7 +144,7 @@ internal class GameService(
             val team = teamService.getPlayerTeam(player)
             player.networkHandler.sendPacket(
                 TitleS2CPacket(
-                    text.string(StringKey.GameAnnounceBingo).formatted(team?.formatting ?: Formatting.WHITE)
+                    text.string(StringKey.GameAnnounceBingo).formatted(team?.textColor ?: Formatting.WHITE)
                 )
             )
             player.networkHandler.sendPacket(SubtitleS2CPacket(text.string(StringKey.GameAnnounceStarting)))

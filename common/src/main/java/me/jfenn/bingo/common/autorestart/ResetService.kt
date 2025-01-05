@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.IPlayerManager
@@ -25,6 +26,7 @@ internal class ResetService(
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     private val spawnService: SpawnService,
+    private val teamService: TeamService,
     private val scoreboardService: ScoreboardService,
     private val bossBarService: BossBarService,
     private val cardService: CardService,
@@ -46,6 +48,7 @@ internal class ResetService(
     private fun resetGameWorlds() = log.measureTime("Resetting worlds...") {
         // Clear scoreboards (otherwise this causes an error when recreated)
         log.info("[Reset] Clearing game data")
+        teamService.clearTeams()
         scoreboardService.clearScoreboards()
         bossBarService.clearBossBars()
         state.reset()

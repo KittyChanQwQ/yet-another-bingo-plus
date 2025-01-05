@@ -106,12 +106,12 @@ class ScoreboardController(
                             textProvider.string(StringKey.ScoreboardTeam, teamName)
                                 .also { add(it) }
                         }
-                        textProvider.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}").formatted(team.formatting))
+                        textProvider.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}").formatted(team.textColor))
                             .also { add(it) }
-                        textProvider.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}").formatted(team.formatting))
+                        textProvider.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}").formatted(team.textColor))
                             .also { add(it) }
                         if (isMultiCardWinCondition) {
-                            textProvider.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}").formatted(team.formatting))
+                            textProvider.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}").formatted(team.textColor))
                                 .also { add(it) }
                         }
                         add(null)
@@ -130,7 +130,7 @@ class ScoreboardController(
                         // if the leading team should be hidden, don't use its formatting
                         !options.showLeadingTeam -> Formatting.WHITE
                         // otherwise, default to WHITE if the team is tied
-                        else -> leadingTeam?.formatting ?: Formatting.WHITE
+                        else -> leadingTeam?.textColor ?: Formatting.WHITE
                     }
 
                     val leadingTeamScore = when {

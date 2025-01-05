@@ -27,7 +27,7 @@ class CountdownService(
 
         if (packet.secondsRemaining == 0) {
             val team = teamService.getPlayerTeam(player)
-            player.networkHandler.sendPacket(TitleS2CPacket(textProvider.string(StringKey.GameAnnounceBingo).formatted(team?.formatting ?: Formatting.WHITE)))
+            player.networkHandler.sendPacket(TitleS2CPacket(textProvider.string(StringKey.GameAnnounceBingo).formatted(team?.textColor ?: Formatting.WHITE)))
             player.networkHandler.sendPacket(SubtitleS2CPacket(textProvider.string(StringKey.GameAnnounceStarted)))
         }
 

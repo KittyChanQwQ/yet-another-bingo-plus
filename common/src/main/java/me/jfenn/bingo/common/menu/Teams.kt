@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
+import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
@@ -18,6 +19,7 @@ internal const val MENU_TEAMS_WIDTH = 2.0
 internal fun MenuComponent.registerTeams(
     position: Vector3d,
     teamService: TeamService = koinScope.get(),
+    server: MinecraftServer = koinScope.get(),
     text: TextProvider = koinScope.get(),
 ) {
     val offsetY = MENU_LINE_PADDING*2 + MENU_LINE_HEIGHT
@@ -33,7 +35,7 @@ internal fun MenuComponent.registerTeams(
         height = MENU_LINE_HEIGHT,
         valueProp = propertyRef(TeamCountState::teamCount),
         minValueProp = ConstantProperty(1),
-        maxValueProp = ConstantProperty(BingoTeam.TEAM_BLOCKS.size),
+        maxValueProp = ConstantProperty(server.maxPlayerCount.coerceAtMost(50)),
         format = { text.string(StringKey.OptionsTeamsCount, it) },
     )
 

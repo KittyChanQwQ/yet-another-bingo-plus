@@ -71,14 +71,14 @@ class MapItemService(
 
         val item = itemStackFactory.createFilledMap().apply {
             mapId = teamMap.mapId
-            mapColor = team.formatting.colorValue
+            mapColor = team.textColor.colorValue
             setDisplay(
                 name = textProvider.string(
                     when {
                         team.winner != null -> StringKey.CardTeamCardMementoWon
                         else -> StringKey.CardTeamCardMementoLost
                     }
-                ).formatted(team.formatting, Formatting.ITALIC),
+                ).formatted(team.textColor, Formatting.ITALIC),
                 lore = listOfNotNull(
                     team.getName(textProvider, playerName = true, symbol = true)
                         .copy()
@@ -102,10 +102,10 @@ class MapItemService(
 
         val item = itemStackFactory.createFilledMap().apply {
             mapId = teamMap.mapId
-            mapColor = team.formatting.colorValue
+            mapColor = team.textColor.colorValue
             setDisplay(
-                name = textProvider.string(StringKey.CardTeamCard, textProvider.string(team.name))
-                    .formatted(team.formatting, Formatting.ITALIC),
+                name = textProvider.string(StringKey.CardTeamCard, team.getSimpleName(textProvider))
+                    .formatted(team.textColor, Formatting.ITALIC),
                 lore = null,
             )
             setHideFlags(255)

@@ -150,7 +150,7 @@ class BingoCardCommand(
 
     private fun IExecutionContext.assignTeamCard(teamLabel: String, cardTag: String) {
         val team = state.teams.values
-            .find { it.key.label == teamLabel }
+            .find { it.key.id == teamLabel || it.key.label == teamLabel }
             ?: throw IllegalArgumentException("Could not find team '$teamLabel'")
 
         val card = getCardTags()[cardTag]
@@ -195,7 +195,10 @@ class BingoCardCommand(
                 }
 
                 literal("assign") {
-                    string("team", { state.teams.keys.map { it.label } }) { teamArg ->
+                    string(
+                        "team",
+                        { state.teams.keys.map { it.id } + state.teams.keys.map { it.label } }
+                    ) { teamArg ->
                         string("card", { getCardTags().keys }, greedy = true) { cardArg ->
                             executes {
                                 val teamLabel = getArgument(teamArg)

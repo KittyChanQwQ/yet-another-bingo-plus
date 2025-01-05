@@ -31,7 +31,7 @@ internal class ChatMessageService(
     ): Boolean {
         val team = teamService.getPlayerTeam(sender) ?: return false
 
-        val teamName = Texts.bracketed(text.string(team.name)).formatted(team.formatting)
+        val teamName = Texts.bracketed(team.getSimpleName(text)).formatted(team.textColor)
 
         playerManager.getPlayers()
             .filter { team.includesPlayer(it) }
@@ -46,7 +46,7 @@ internal class ChatMessageService(
     ): Boolean {
         val team = teamService.getPlayerTeam(sender) ?: return false
 
-        val teamName = Texts.bracketed(text.string(team.name)).formatted(team.formatting)
+        val teamName = Texts.bracketed(team.getSimpleName(text)).formatted(team.textColor)
 
         playerManager.getPlayers()
             .filter { team.includesPlayer(it) }

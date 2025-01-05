@@ -8,19 +8,30 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-class TeamManager : ITeamManager {
+class TeamManager(
+    private val server: MinecraftServer,
+) : ITeamManager {
 
-    override fun createTeam(server: MinecraftServer, teamName: String, displayName: Text, color: Formatting): ITeamHandle {
-        return TeamHandle(
-            server.scoreboard.getTeam(teamName)
-                ?: server.scoreboard.addTeam(teamName).also {
-                    it.displayName = displayName
-                    it.color = color
-                }
-        )
+    override fun listTeams(): List<String> {
+        return server.scoreboard.teamNames.toList()
     }
 
-    override fun deleteTeam(server: MinecraftServer, teamName: String) {
+    override fun getTeam(id: String): ITeamHandle? {
+        return server.scoreboard.getTeam(id)
+            ?.let { TeamHandle(it) }
+    }
+
+    override fun createTeam(teamName: String, displayName: Text, color: Formatting): ITeamHandle {
+        return TeamHandle(
+            server.scoreboard.getTeam(teamName)
+                ?: server.scoreboard.addTeam(teamName)
+        ).also {
+            it.displayName = displayName
+            it.color = color
+        }
+    }
+
+    override fun deleteTeam(teamName: String) {
         val team = server.scoreboard.getTeam(teamName)
         if (team != null) server.scoreboard.removeTeam(team)
     }
@@ -49,6 +60,6 @@ class TeamHandle(
     override val name: String
         get() = team.name
 
-    override val playerList: List<String>
-        get() = team.playerList.toList()
+    override var displayName: Text by team::displayName
+    override var color: Formatting by team::color
 }

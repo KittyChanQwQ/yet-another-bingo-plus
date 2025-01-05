@@ -301,9 +301,9 @@ class MapRenderService(
         mapState: MapState,
         team: BingoTeam?,
     ) {
-        val borderLight = (getMapColor(team?.formatting)*4 + 2).toUByte().toByte()
-        val borderMid = (getMapColor(team?.formatting)*4 + 1).toUByte().toByte()
-        val borderDark = (getMapColor(team?.formatting)*4 + 3).toUByte().toByte()
+        val borderLight = (getMapColor(team?.textColor)*4 + 2).toUByte().toByte()
+        val borderMid = (getMapColor(team?.textColor)*4 + 1).toUByte().toByte()
+        val borderDark = (getMapColor(team?.textColor)*4 + 3).toUByte().toByte()
 
         // Outer edge borders
         for (x in 0 until MAP_SIZE) {

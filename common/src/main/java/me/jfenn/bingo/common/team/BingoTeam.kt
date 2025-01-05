@@ -2,12 +2,12 @@ package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonElement
 import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.scope.BingoKoin
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.*
-import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
@@ -31,11 +31,12 @@ value class BingoTeamKey(
 @Serializable
 data class BingoTeam(
     val id: String,
-    val name: StringKey,
-    val symbol: String,
+    val name: StringKey?,
+    var nameText: JsonElement? = null,
+    val symbol: String?,
     @Serializable(with = FormattingSerializer::class)
-    val mapColor: Formatting,
-    val textColor: TextColor,
+    var textColor: Formatting,
+    val isTemporary: Boolean = false,
     var cardId: UuidAsString? = null,
     var score: TeamScore = TeamScore.ZERO,
     var winner: TeamWinner? = null,
@@ -67,7 +68,11 @@ data class BingoTeam(
 
     val key get() = BingoTeamKey(id)
 
-    val formatting get() = Formatting.valueOf(textColor.name)
+    val mapColor get() = when (textColor) {
+        // gray is indistinguishable from the preview card map item
+        Formatting.GRAY -> Formatting.DARK_GRAY
+        else -> textColor
+    }
 
     val singlePlayer get() = players.takeIf { it.size == 1 }?.first()
 
@@ -93,6 +98,11 @@ data class BingoTeam(
         return players.any { it.uuid == player.uuid }
     }
 
+    fun getSimpleName(textProvider: TextProvider) =
+        name?.let { textProvider.string(name) }
+            ?: nameText?.let { textProvider.deserialized(it) }
+            ?: Text.empty()
+
     fun getName(
         textProvider: TextProvider,
         playerName: Boolean = false,
@@ -101,13 +111,14 @@ data class BingoTeam(
         teamNameKey: StringKey? = StringKey.TeamName,
     ): Text {
         val teamName = (if (playerName) singlePlayer?.let { Text.literal(it.name) } else null)
-            ?: textProvider.string(name).let {
+            ?: name?.let { textProvider.string(name) }?.let {
                 if (teamNameKey != null) textProvider.string(teamNameKey, it) else it
             }
+            ?: getSimpleName(textProvider)
 
         return teamName
-            .let { if (symbol) Text.empty().append("${this.symbol} ").append(it) else it }
-            .formatted(formatting)
+            .let { if (symbol && this.symbol != null) Text.empty().append("${this.symbol} ").append(it) else it }
+            .formatted(this.textColor)
             .let { if (bracketed) Texts.bracketed(it) else it }
             .also { t ->
                 t.style = t.style.withHoverEvent(
@@ -123,14 +134,14 @@ data class BingoTeam(
 
     companion object {
 
-        val BLUE get() = BingoTeam("bingo_blue", StringKey.TeamBlue, "\uD83C\uDF0A", Formatting.BLUE, TextColor.BLUE)
-        val RED get() = BingoTeam("bingo_red", StringKey.TeamRed, "\uD83D\uDD25", Formatting.RED, TextColor.RED)
-        val GREEN get() = BingoTeam("bingo_green", StringKey.TeamGreen, "\uD83C\uDF42", Formatting.GREEN, TextColor.GREEN)
-        val YELLOW get() = BingoTeam("bingo_yellow", StringKey.TeamYellow, "\uD83D\uDC1D", Formatting.YELLOW, TextColor.YELLOW)
-        val PINK get() = BingoTeam("bingo_pink", StringKey.TeamPink, "\uD83C\uDF3A", Formatting.LIGHT_PURPLE, TextColor.LIGHT_PURPLE)
-        val AQUA get() = BingoTeam("bingo_aqua", StringKey.TeamAqua, "\uD83C\uDF44", Formatting.AQUA, TextColor.AQUA)
-        val ORANGE get() = BingoTeam("bingo_orange", StringKey.TeamOrange, "\uD83C\uDFF0", Formatting.GOLD, TextColor.GOLD)
-        val GRAY get() = BingoTeam("bingo_gray", StringKey.TeamGray, "\uD83E\uDEA8", Formatting.DARK_GRAY, TextColor.GRAY)
+        val BLUE get() = BingoTeam("bingo_blue", StringKey.TeamBlue, null, "\uD83C\uDF0A", Formatting.BLUE)
+        val RED get() = BingoTeam("bingo_red", StringKey.TeamRed, null, "\uD83D\uDD25", Formatting.RED)
+        val GREEN get() = BingoTeam("bingo_green", StringKey.TeamGreen, null, "\uD83C\uDF42", Formatting.GREEN)
+        val YELLOW get() = BingoTeam("bingo_yellow", StringKey.TeamYellow, null, "\uD83D\uDC1D", Formatting.YELLOW)
+        val PINK get() = BingoTeam("bingo_pink", StringKey.TeamPink, null, "\uD83C\uDF3A", Formatting.LIGHT_PURPLE)
+        val AQUA get() = BingoTeam("bingo_aqua", StringKey.TeamAqua, null, "\uD83C\uDF44", Formatting.AQUA)
+        val ORANGE get() = BingoTeam("bingo_orange", StringKey.TeamOrange, null, "\uD83C\uDFF0", Formatting.GOLD)
+        val GRAY get() = BingoTeam("bingo_gray", StringKey.TeamGray, null, "\uD83E\uDEA8", Formatting.GRAY)
 
         val TEAM_BLOCKS get() = mapOf(
             Blocks.BLUE_CARPET to BLUE,

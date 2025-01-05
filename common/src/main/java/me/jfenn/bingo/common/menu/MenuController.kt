@@ -371,10 +371,10 @@ internal class MenuController(
         entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
                 pos = position + Vector3d(0.0, 1.5, 0.0)
-                value = Text.literal("${team.symbol} ")
-                    .append(text.string(StringKey.TeamName, text.string(team.name)))
-                    .formatted(team.formatting)
-                    .let { Texts.bracketed(it) }
+                value = team.getName(
+                    textProvider = text,
+                    symbol = true,
+                )
                 billboard = ITextDisplayEntity.Billboard.VERTICAL
                 alignment = ITextDisplayEntity.TextAlignment.CENTER
                 background = 0
@@ -405,7 +405,7 @@ internal class MenuController(
         interactionEntityEvents.onInteract(interactionListenerEntity) { player ->
             val playerImpl = playerManager.forPlayer(player)
 
-            particleFactory.createDustParticle(team.formatting.colorValue ?: 0, 1f)
+            particleFactory.createDustParticle(team.textColor.colorValue ?: 0, 1f)
                 .spawn(playerImpl, position, 10, Vector3d(1.0), 0.2)
 
             Sounds.playTeamChanged(playerImpl)

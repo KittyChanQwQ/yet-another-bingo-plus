@@ -157,9 +157,12 @@ class StatsLobbyController(
             ?.let { team ->
                 Text.empty()
                     .append(
-                        Text.literal(team.symbol + " ")
-                            .append(textProvider.string(team.name))
-                            .formatted(team.formatting)
+                        team.getName(
+                            textProvider = textProvider,
+                            symbol = true,
+                            bracketed = false,
+                            teamNameKey = null,
+                        )
                     )
                     .append(" (${(summary.favoriteTeamPercentage * 100f).toInt()}%)")
             }

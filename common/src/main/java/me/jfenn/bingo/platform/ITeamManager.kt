@@ -7,9 +7,13 @@ import net.minecraft.util.Formatting
 
 interface ITeamManager {
 
-    fun createTeam(server: MinecraftServer, teamName: String, displayName: Text, color: Formatting): ITeamHandle
+    fun listTeams(): List<String>
 
-    fun deleteTeam(server: MinecraftServer, teamName: String)
+    fun getTeam(id: String): ITeamHandle?
+
+    fun createTeam(teamName: String, displayName: Text, color: Formatting): ITeamHandle
+
+    fun deleteTeam(teamName: String)
 
     fun getPlayerTeam(player: ServerPlayerEntity): ITeamHandle?
 
@@ -19,5 +23,6 @@ interface ITeamManager {
 
 interface ITeamHandle {
     val name: String
-    val playerList: List<String>
+    var displayName: Text
+    var color: Formatting
 }

@@ -30,13 +30,13 @@ val sharedModule = module {
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
     singleOf(::StatManagerImpl) bind IStatManager::class
     singleOf(::TagAccessorImpl) bind ITagAccessor::class
-    singleOf(::TeamManager) bind ITeamManager::class
     singleOf(::TextSerializer) bind ITextSerializer::class
 
     scope<BingoScope> {
         scopedOf(::AdvancementManager) bind IAdvancementManager::class
         scopedOf(::BossBarManager) bind IBossBarManager::class
         scopedOf(::PlayerManager) bind IPlayerManager::class
+        scopedOf(::TeamManager) bind ITeamManager::class
         scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, ILevelStorage::class)
         scopedOf(::RecipeManagerImpl) bind IRecipeManager::class
         scoped { Executors.createServerTaskExecutor(get()) }
