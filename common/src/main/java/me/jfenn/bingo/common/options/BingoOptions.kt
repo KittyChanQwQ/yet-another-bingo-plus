@@ -5,16 +5,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.menu.ICON_CONSUME
-import me.jfenn.bingo.common.menu.ICON_HIDDEN
-import me.jfenn.bingo.common.menu.ICON_INVENTORY
-import me.jfenn.bingo.common.menu.ICON_LOCKOUT
+import me.jfenn.bingo.common.menu.*
 import me.jfenn.bingo.common.spawn.SpawnItem
 import me.jfenn.bingo.common.utils.copyMemberProperties
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
 import java.security.MessageDigest
-import java.util.HexFormat
+import java.util.*
 import kotlin.time.Duration
 
 @Serializable
@@ -184,6 +181,17 @@ data class BingoOptions(
         }
 
         return features.ifEmpty { listOf(StringKey.OptionsFeaturesNone) }
+    }
+
+    fun formatFeaturesIcons(): List<String> {
+        val features = buildList {
+            if (isElytra) add(ICON_ELYTRA)
+            if (isNightVision) add(ICON_NIGHTVIS)
+            if (isKeepInventory) add(ICON_KEEP_INVENTORY)
+            if (isPvpEnabled) add(ICON_PVP)
+        }
+
+        return features
     }
 
     fun copyFrom(defaultOptions: BingoOptions) {

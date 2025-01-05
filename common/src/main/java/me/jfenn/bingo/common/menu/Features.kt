@@ -12,6 +12,11 @@ private const val TILE_WIDTH = 1.2
 private const val TILE_MARGIN = 0.1
 internal const val MENU_FEATURES_WIDTH = TILE_WIDTH + TILE_MARGIN + TILE_WIDTH
 
+internal const val ICON_KEEP_INVENTORY = "\uD83C\uDF92"
+internal const val ICON_ELYTRA = "\uD83E\uDD87"
+internal const val ICON_NIGHTVIS = "\uD83D\uDC41"
+internal const val ICON_PVP = "\uD83D\uDDE1"
+
 internal fun MenuComponent.registerFeatures(
     position: Vector3d,
     state: BingoState = koinScope.get(),
@@ -45,7 +50,7 @@ internal fun MenuComponent.registerFeatures(
         position = position + Vector3d(offsetX, -(offsetY + TILE_HEIGHT), 0.0),
         width = TILE_WIDTH,
         height = TILE_HEIGHT,
-        icon = "\uD83C\uDF92",
+        icon = ICON_KEEP_INVENTORY,
         text = text.string(StringKey.OptionsKeepInventory),
         isActiveProp = computedProperty { options.isKeepInventory },
     ) {
@@ -56,7 +61,7 @@ internal fun MenuComponent.registerFeatures(
         position = position + Vector3d(-offsetX, -(offsetY + 2*TILE_HEIGHT + TILE_MARGIN), 0.0),
         width = TILE_WIDTH,
         height = TILE_HEIGHT,
-        icon = "\uD83E\uDD87",
+        icon = ICON_ELYTRA,
         text = text.string(StringKey.OptionsElytra),
         isActiveProp = computedProperty { options.isElytra },
     ) {
@@ -67,7 +72,7 @@ internal fun MenuComponent.registerFeatures(
         position = position + Vector3d(offsetX, -(offsetY + 2*TILE_HEIGHT + TILE_MARGIN), 0.0),
         width = TILE_WIDTH,
         height = TILE_HEIGHT,
-        icon = "\uD83D\uDC41",
+        icon = ICON_NIGHTVIS,
         text = text.string(StringKey.OptionsNightVis),
         isActiveProp = computedProperty { options.isNightVision },
     ) {
@@ -78,7 +83,7 @@ internal fun MenuComponent.registerFeatures(
         position = position + Vector3d(-offsetX, -(offsetY + 3*TILE_HEIGHT + 2*TILE_MARGIN), 0.0),
         width = TILE_WIDTH,
         height = TILE_HEIGHT,
-        icon = "\uD83D\uDDE1",
+        icon = ICON_PVP,
         text = text.string(StringKey.OptionsAllowPvp),
         isActiveProp = computedProperty { options.isPvpEnabled },
     ) {

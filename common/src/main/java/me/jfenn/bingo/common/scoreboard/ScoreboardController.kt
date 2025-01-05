@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
@@ -12,10 +12,8 @@ import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
-import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerManager
-import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import kotlin.time.Duration
@@ -31,26 +29,8 @@ class ScoreboardController(
     private val scoreboardService: ScoreboardService,
     private val playerManager: IPlayerManager,
     private val playerSettingsService: PlayerSettingsService,
-    private val textProvider: TextProvider,
+    private val text: TextProvider,
 ) : BingoComponent() {
-
-    private fun List<Text>.wrapText(maxItems: Int) : List<MutableText> {
-        val ret = mutableListOf<MutableText>()
-        val page = mutableListOf<Text>()
-        for (text in this) {
-            page.add(text)
-            if (page.size == maxItems) {
-                ret.add(page.joinText())
-                page.clear()
-            }
-        }
-
-        if (page.isNotEmpty()) {
-            ret.add(page.joinText())
-        }
-
-        return ret
-    }
 
     init {
         events.onEnter(GameState.PREGAME) {
@@ -71,30 +51,30 @@ class ScoreboardController(
                         .joinToString(" ")
                         .let {
                             when {
-                                it.isEmpty() -> textProvider.string(StringKey.OptionsModeStandard)
+                                it.isEmpty() -> text.string(StringKey.OptionsModeStandard)
                                 else -> Text.literal(it)
                             }
                         }
-                        .let { add(textProvider.string(StringKey.ScoreboardMode, it.formatted(Formatting.YELLOW))) }
+                        .let { add(text.string(StringKey.ScoreboardMode, it.formatted(Formatting.YELLOW))) }
 
-                    options.formatFeatures()
-                        .map { textProvider.string(it) }
-                        .wrapText(2)
-                        .forEachIndexed { index, t ->
-                            add(when {
-                                index == 0 -> textProvider.string(StringKey.ScoreboardFeatures, t.formatted(Formatting.YELLOW))
-                                else -> Text.literal("  ").append(t).formatted(Formatting.YELLOW)
-                            })
+                    options.formatFeaturesIcons()
+                        .joinToString(" ")
+                        .let {
+                            when {
+                                it.isEmpty() -> text.string(StringKey.OptionsFeaturesNone)
+                                else -> Text.literal(it)
+                            }
                         }
+                        .let { add(text.string(StringKey.ScoreboardFeatures, it.formatted(Formatting.YELLOW))) }
 
-                    textProvider.string(StringKey.ScoreboardGoal, state.formatCardGoals(team, textProvider).formatted(Formatting.YELLOW))
+                    text.string(StringKey.ScoreboardGoal, state.formatCardGoals(team, text).formatted(Formatting.YELLOW))
                         .also { add(it) }
                     if (options.showRemainingTime && options.timeLimit != null) {
-                        textProvider.string(StringKey.ScoreboardTimeLeft, state.formatTimeRemaining(textProvider, normalColor = Formatting.YELLOW))
+                        text.string(StringKey.ScoreboardTimeLeft, state.formatTimeRemaining(text, normalColor = Formatting.YELLOW))
                             .also { add(it) }
                     } else if (options.timeLimit == null) {
                         val duration = (state.ingameDuration() ?: Duration.ZERO).formatString()
-                        textProvider.string(StringKey.ScoreboardTime, Text.literal(duration).formatted(Formatting.YELLOW))
+                        text.string(StringKey.ScoreboardTime, Text.literal(duration).formatted(Formatting.YELLOW))
                             .also { add(it) }
                     }
                     add(null)
@@ -102,16 +82,16 @@ class ScoreboardController(
                         val score = team.score
 
                         if (isMultipleTeams) {
-                            val teamName = team.getName(textProvider, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
-                            textProvider.string(StringKey.ScoreboardTeam, teamName)
+                            val teamName = team.getName(text, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
+                            text.string(StringKey.ScoreboardTeam, teamName)
                                 .also { add(it) }
                         }
-                        textProvider.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}").formatted(team.textColor))
+                        text.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}").formatted(team.textColor))
                             .also { add(it) }
-                        textProvider.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}").formatted(team.textColor))
+                        text.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}").formatted(team.textColor))
                             .also { add(it) }
                         if (isMultiCardWinCondition) {
-                            textProvider.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}").formatted(team.textColor))
+                            text.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}").formatted(team.textColor))
                                 .also { add(it) }
                         }
                         add(null)
@@ -119,10 +99,10 @@ class ScoreboardController(
 
                     val leadingTeam = ScoreService.getLeading(state)
                     if (options.showLeadingTeam && isMultipleTeams) {
-                        val teamName = leadingTeam?.getName(textProvider, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
-                            ?: textProvider.string(StringKey.ScoreboardLeadingTeamTie).formatted(Formatting.WHITE)
+                        val teamName = leadingTeam?.getName(text, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
+                            ?: text.string(StringKey.ScoreboardLeadingTeamTie).formatted(Formatting.WHITE)
 
-                        textProvider.string(StringKey.ScoreboardLeadingTeam, teamName)
+                        text.string(StringKey.ScoreboardLeadingTeam, teamName)
                             .also { add(it) }
                     }
 
@@ -145,15 +125,15 @@ class ScoreboardController(
 
                     if ((options.showCompletedItems || options.showCompletedLines) && isMultipleTeams && team != leadingTeam) {
                         if (isMultiCardWinCondition && leadingTeamScore.cards != team?.score?.cards) {
-                            textProvider.string(StringKey.ScoreboardCardsScored, Text.literal("${leadingTeamScore.cards}").formatted(formatting))
+                            text.string(StringKey.ScoreboardCardsScored, Text.literal("${leadingTeamScore.cards}").formatted(formatting))
                                 .also { add(it) }
                         } else {
                             if (options.showCompletedItems) {
-                                textProvider.string(StringKey.ScoreboardItemsScored, Text.literal("${leadingTeamScore.items}").formatted(formatting))
+                                text.string(StringKey.ScoreboardItemsScored, Text.literal("${leadingTeamScore.items}").formatted(formatting))
                                     .also { add(it) }
                             }
                             if (options.showCompletedLines) {
-                                textProvider.string(StringKey.ScoreboardLinesScored, Text.literal("${leadingTeamScore.lines}").formatted(formatting))
+                                text.string(StringKey.ScoreboardLinesScored, Text.literal("${leadingTeamScore.lines}").formatted(formatting))
                                     .also { add(it) }
                             }
                         }
