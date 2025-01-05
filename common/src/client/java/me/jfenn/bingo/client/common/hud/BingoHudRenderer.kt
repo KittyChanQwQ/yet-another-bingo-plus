@@ -28,6 +28,7 @@ import kotlin.jvm.optionals.getOrNull
 
 internal class BingoHudRenderer(
     private val text: TextProvider,
+    private val state: BingoHudState,
     private val cardTileRenderer: CardTileRenderer,
 ) {
 
@@ -103,7 +104,7 @@ internal class BingoHudRenderer(
         isGui: Boolean = false,
         isWinner: Boolean = false,
     ) {
-        val colors = cardColors.teamColors[view.teamKey ?: BingoTeamKey("preview")] ?: BingoCardColors.DEFAULTS
+        val colors = cardColors.getTeamColors(view.teamKey ?: BingoTeamKey("preview"), view.teamColor)
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.matrices.push()
@@ -191,7 +192,8 @@ internal class BingoHudRenderer(
             }
 
             if (showTeamOutlines) for ((i, team) in tile.teamKeys.withIndex()) {
-                val color = cardColors.teamColors[team]?.outlineColor ?: Color.TRANSPARENT
+                val teamInfo = state.display?.teamInfo?.get(team)
+                val color = cardColors.getTeamColors(team, teamInfo).outlineColor
                 val colorValue = color.asInt
                 val colorValueDark = color.mix(BLACK_A40).asInt
 

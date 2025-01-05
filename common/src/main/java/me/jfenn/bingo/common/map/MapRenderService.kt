@@ -16,6 +16,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.InputStream
+import java.text.Normalizer.Form
 import javax.imageio.ImageIO
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTime
@@ -285,14 +286,21 @@ class MapRenderService(
 
     private fun getMapColor(color: Formatting?): Byte {
         return when (color) {
-            Formatting.BLUE -> 12
-            Formatting.RED -> 4
-            Formatting.GREEN -> 33
-            Formatting.YELLOW -> 30
-            Formatting.LIGHT_PURPLE -> 20
             Formatting.AQUA -> 31
+            Formatting.BLACK -> 29
+            Formatting.BLUE -> 12
+            Formatting.DARK_AQUA -> 23
+            Formatting.DARK_BLUE -> 25
+            Formatting.DARK_GRAY, Formatting.GRAY -> 21
+            Formatting.DARK_GREEN -> 7
+            Formatting.DARK_PURPLE -> 24
+            Formatting.DARK_RED -> 28
             Formatting.GOLD -> 15
-            Formatting.GRAY -> 21
+            Formatting.GREEN -> 33
+            Formatting.LIGHT_PURPLE -> 20
+            Formatting.RED -> 4
+            Formatting.WHITE -> 14
+            Formatting.YELLOW -> 30
             else -> 22
         }
     }

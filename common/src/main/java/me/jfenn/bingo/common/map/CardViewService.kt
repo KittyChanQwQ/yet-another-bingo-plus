@@ -5,13 +5,14 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.common.utils.truncate
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration

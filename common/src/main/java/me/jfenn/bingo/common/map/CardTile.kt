@@ -345,13 +345,7 @@ data class CardTile(
             val isAchieved = buf.readBoolean()
             val progress = buf.readFloat()
             val teamKeys = List(buf.readInt()) {
-                val color = buf.readString().lowercase()
-                when (color) {
-                    "light_purple" -> "pink"
-                    "gold" -> "orange"
-                    "dark_gray" -> "gray"
-                    else -> color.removePrefix("bingo_")
-                }.let { BingoTeamKey("bingo_$it") }
+                BingoTeamKey(buf.readString())
             }
             return CardTile(
                 image = image,

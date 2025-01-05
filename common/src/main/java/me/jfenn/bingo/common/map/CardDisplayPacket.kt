@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
 import net.minecraft.util.Formatting
@@ -18,7 +19,14 @@ data class CardDisplayPacket(
             dest.writeInt(source.teamInfo.size)
             for ((key, value) in source.teamInfo) {
                 dest.writeString(key.id)
-                dest.writeString(value.name)
+                dest.writeString(
+                    try {
+                        // Previous versions use TextColor instead of Formatting, and crash if invalid values are received
+                        TextColor.valueOf(value.name).name
+                    } catch (e: IllegalArgumentException) {
+                        TextColor.WHITE.name
+                    }
+                )
             }
 
             dest.writeInt(source.display.size)

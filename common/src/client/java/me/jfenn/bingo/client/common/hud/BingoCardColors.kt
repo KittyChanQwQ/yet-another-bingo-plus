@@ -1,10 +1,9 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.map.Color
-import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import kotlin.reflect.KProperty1
 
@@ -15,7 +14,6 @@ internal data class BingoCardColors(
 ) {
 
     companion object {
-        private val TEAM_KEYS = BingoTeam.TEAM_BLOCKS.values.map { it.key } + BingoTeamKey("preview")
         val DEFAULTS = TeamColors()
     }
 
@@ -44,9 +42,6 @@ internal data class BingoCardColors(
         val cardTextureOutline: Identifier = Identifier.of("minecraft", "bingo/card_outline")!!,
     )
 
-    @Transient
-    private val teamsByKey = TEAM_KEYS.associateWith { teams[it.label] ?: default }
-
     private fun <V> getValue(team: Team?, property: KProperty1<Team, V>): V =
         team?.let { property.get(it) }
             ?: property.get(default)
@@ -54,35 +49,42 @@ internal data class BingoCardColors(
     private fun String.parseIdentifier(): Identifier =
         Identifier.of(substringBefore(':'), substringAfter(':'))!!
 
-    @Transient
-    val teamColors = teamsByKey.mapValues { (teamKey, team) ->
-        TeamColors(
-            tileAchievedColor = getValue(team, Team::tileAchievedColor)
+    fun getTeamColors(
+        teamKey: BingoTeamKey,
+        formatting: Formatting?,
+    ): TeamColors {
+        val colors = teams[teamKey.label]
+            ?: formatting?.name?.lowercase()?.let { teams[it] }
+            ?: default
+
+        return TeamColors(
+            tileAchievedColor = getValue(colors, Team::tileAchievedColor)
                 ?.let { Color.fromString(it) }
                 ?: DEFAULTS.tileAchievedColor,
-            tileFlashingColor = getValue(team, Team::tileFlashingColor)
+            tileFlashingColor = getValue(colors, Team::tileFlashingColor)
                 ?.let { Color.fromString(it) }
                 ?: DEFAULTS.tileFlashingColor,
-            tileProgressColor = getValue(team, Team::tileProgressColor)
+            tileProgressColor = getValue(colors, Team::tileProgressColor)
                 ?.let { Color.fromString(it) }
                 ?: DEFAULTS.tileProgressColor,
-            backgroundColor = getValue(team, Team::backgroundColor)
+            backgroundColor = getValue(colors, Team::backgroundColor)
                 ?.let { Color.fromString(it) }
                 ?: DEFAULTS.backgroundColor,
-            textColor = getValue(team, Team::textColor)
+            textColor = getValue(colors, Team::textColor)
                 ?.let { Color.fromString(it) }
                 ?: DEFAULTS.textColor,
-            outlineColor = getValue(team, Team::outlineColor)
+            outlineColor = getValue(colors, Team::outlineColor)
                 ?.let { Color.fromString(it) }
+                ?: formatting?.colorValue?.let { Color.fromInt(it) }?.copy(a = 255)
                 ?: DEFAULTS.outlineColor,
-            cardTexture = getValue(team, Team::cardTexture)
+            cardTexture = getValue(colors, Team::cardTexture)
                 ?.parseIdentifier()
-                ?: Identifier.of("minecraft", "bingo/card_${teamKey.label}")!!,
-            cardTextureGui = getValue(team, Team::cardTextureGui)
+                ?: DEFAULTS.cardTexture,
+            cardTextureGui = getValue(colors, Team::cardTextureGui)
                 ?.parseIdentifier()
-                ?: getValue(team, Team::cardTexture)?.parseIdentifier()
-                ?: Identifier.of("minecraft", "bingo/card_${teamKey.label}")!!,
-            cardTextureOutline = getValue(team, Team::cardTextureOutline)
+                ?: getValue(colors, Team::cardTexture)?.parseIdentifier()
+                ?: DEFAULTS.cardTextureGui,
+            cardTextureOutline = getValue(colors, Team::cardTextureOutline)
                 ?.parseIdentifier()
                 ?: DEFAULTS.cardTextureOutline,
         )

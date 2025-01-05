@@ -130,7 +130,7 @@ class ScoreUpdateService(
                 StringKey.GameMessageCapturedItem,
                 when {
                     packet.player != null ->
-                        Text.literal("${team.symbol} ${packet.player.name}")
+                        Text.literal(team.symbol?.plus(" ").orEmpty() + packet.player.name)
                             .formatted(team.textColor)
                     else -> team.getName(textProvider, playerName = true, bracketed = false)
                 },
