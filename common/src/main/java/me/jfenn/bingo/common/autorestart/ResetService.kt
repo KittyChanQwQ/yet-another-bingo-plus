@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.autorestart
 
 import me.jfenn.bingo.common.bossbar.BossBarService
-import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.menu.MenuController
@@ -29,7 +28,6 @@ internal class ResetService(
     private val teamService: TeamService,
     private val scoreboardService: ScoreboardService,
     private val bossBarService: BossBarService,
-    private val cardService: CardService,
     private val serverWorldFactory: IServerWorldFactory,
     private val menuController: MenuController,
     private val server: MinecraftServer,
@@ -52,7 +50,6 @@ internal class ResetService(
         scoreboardService.clearScoreboards()
         bossBarService.clearBossBars()
         state.reset()
-        cardService.createInitialCards()
 
         log.info("[Reset] Recreating worlds")
         serverWorldFactory.recreateWorlds(server, Random.Default.nextLong()) {
@@ -69,7 +66,7 @@ internal class ResetService(
         )
 
         log.info("[Reset] Teleporting players back to lobby")
-        state.changeState(events, GameState.PREGAME)
+        state.changeState(events, GameState.PREGAME) // invokes createInitialCards in ScoredItemCheck
 
         // if any player is still in the world, teleport to the lobby
         for (player in playerManager.getPlayers()) {

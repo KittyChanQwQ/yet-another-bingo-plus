@@ -10,11 +10,11 @@ import me.jfenn.bingo.common.card.tag.TagService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.card.tierlist.TierListConfig
 import me.jfenn.bingo.common.card.tierlist.TierListEntry
-import me.jfenn.bingo.common.options.BingoCardOptions
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.game.GameCommands
+import me.jfenn.bingo.common.options.BingoCardOptions
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.Build
@@ -65,9 +65,10 @@ class CardService(
     }
 
     fun createInitialCards() {
-        if (state.cards.isNotEmpty()) return
+        log.info("[CardService] Generating initial cards from game-options.json")
 
-        log.info("[CardService] Generating initial cards from config.json")
+        // Clear any cards that already exist (avoids disconnected options ref)
+        state.cards.clear()
 
         val cardOptionsList = options.cards
             .takeIf { it.isNotEmpty() && options.isValid() }
@@ -84,6 +85,9 @@ class CardService(
                 log.info("[CardService] Cannot create card from config:", e)
             }
         }
+
+        // Update team card assignments (if any exist), because these cards will have new ids
+        state.resetTeamCards()
     }
 
     fun isSupported(err: (Text) -> Unit): Boolean {

@@ -56,13 +56,12 @@ data class BingoState(
             ?: throw IllegalArgumentException("No cards in state")
     }
 
-    fun replaceCards(newCards: List<BingoCard>) {
-        cards.clear()
-        newCards.forEach { pushCardTail(it) }
-
+    /**
+     * Replace any assigned team cards with the default behavior (first card)
+     */
+    fun resetTeamCards() {
         for (team in teams.values) {
-            if (newCards.none { it.id == team.cardId })
-                team.cardId = newCards.first().id
+            team.cardId = cards.first().id
         }
     }
 

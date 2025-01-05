@@ -423,7 +423,7 @@ internal class ScoredItemCheck(
         }
 
         events.onEnter(GameState.PREGAME) {
-            // When entering PREGAME, generate initial cards from the config if they weren't already created
+            // When entering PREGAME, regenerate initial cards from the config
             cardService.createInitialCards()
         }
 

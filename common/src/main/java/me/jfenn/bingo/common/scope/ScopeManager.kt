@@ -62,7 +62,6 @@ class ScopeManager(
             val events = scope.get<ScopedEvents>()
             scope.registerCallback(events)
             events.onDataReload(ReloadEvent(server, server.resourceManager))
-            scope.get<CardService>().createInitialCards()
 
             // re-run state entry listeners
             if (state.state == GameState.UNINITIALIZED) {

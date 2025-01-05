@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameService
-import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
@@ -69,16 +68,7 @@ private fun createRootPage(
         options.copyFrom(configService.optionsDefault)
 
         // Reset the active card options to the defaults
-        val cards = options.cards
-            .ifEmpty { listOf(BingoCardOptions()) }
-            .mapIndexed { i, options ->
-                state.cards.getOrNull(i)
-                    ?.let { cardService.generateCard(it, options) }
-                    ?: cardService.newCard(options)
-            }
-
-        // Clear & re-index all cards
-        state.replaceCards(cards)
+        cardService.createInitialCards()
 
         optionsService.broadcastHotbarMessage(it, text.string(StringKey.OptionsResetDefaults))
     }

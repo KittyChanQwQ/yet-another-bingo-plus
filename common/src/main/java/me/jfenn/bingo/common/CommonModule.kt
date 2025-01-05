@@ -212,6 +212,9 @@ val commonModule = module {
         scopedOf(::ScoreboardService)
         scopedOf(::PlayerSettingsService)
 
+        scopedOf(::ScoredItemCheck)
+        scopedOf(::ScoreUpdateService)
+
         scopedOf(::TooltipService)
         scopedOf(::TooltipController)
         scopedOf(::MenuController)
@@ -253,9 +256,6 @@ val commonModule = module {
         scopedOf(::WaitUntilLoadedController)
 
         scopedOf(::RestartOnLeaveController)
-
-        scopedOf(::ScoredItemCheck)
-        scopedOf(::ScoreUpdateService)
 
         scopedOf(::CommandTreeHandler)
     }
@@ -299,8 +299,11 @@ fun Koin.commonInit() {
 fun Scope.commonInit() {
     get<DataLoaderManager>()
 
+    get<ScoredItemCheck>() // must be registered before MenuController
+
     get<TooltipController>()
     get<MenuController>()
+    get<InfoBookController>()
 
     get<BingoMapController>()
     get<BossBarController>()
@@ -316,10 +319,6 @@ fun Scope.commonInit() {
     get<ScoreboardController>()
 
     get<GameOverController>()
-
-    get<InfoBookController>()
-
-    get<ScoredItemCheck>()
 
     get<LobbyModeController>()
 
