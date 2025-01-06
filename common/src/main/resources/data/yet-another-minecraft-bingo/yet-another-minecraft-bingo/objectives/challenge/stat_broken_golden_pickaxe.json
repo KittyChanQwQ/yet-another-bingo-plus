@@ -8,7 +8,7 @@
     },
     "name": {
       "translate": "bingo.objective.challenge.nbt_damaged_golden_pickaxe",
-      "fallback": "Damaged Golden Pickaxe"
+      "fallback": "Broken Golden Pickaxe"
     }
   },
   "statType": "minecraft:broken",

@@ -8,7 +8,7 @@
     },
     "name": {
       "translate": "bingo.objective.challenge.nbt_damaged_wooden_hoe",
-      "fallback": "Damaged Wooden Hoe"
+      "fallback": "Broken Wooden Hoe"
     }
   },
   "statType": "minecraft:broken",
