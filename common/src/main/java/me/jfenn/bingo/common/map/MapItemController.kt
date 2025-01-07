@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
 
 class MapItemController(
     private val state: BingoState,
@@ -76,6 +76,8 @@ class MapItemController(
         if (cardViewService.supportsCardHud(player)) return
 
         state.getRegisteredTeams()
+            // don't give a player more map items than they can hold
+            .take(9*4)
             .forEachIndexed { i, team ->
                 val hasMap = player.allHeldStacks()
                     .any { mapItemService.isMapTeamItem(it, team) }
