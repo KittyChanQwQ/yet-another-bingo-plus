@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.scope
 
 import me.jfenn.bingo.api.BingoApi
 import me.jfenn.bingo.common.MOD_ID
-import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
