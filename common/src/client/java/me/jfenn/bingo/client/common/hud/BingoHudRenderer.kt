@@ -255,7 +255,7 @@ internal class BingoHudRenderer(
             view.players.isNotEmpty()
         ) {
             context.matrices.push()
-            context.matrices.translate(0f, 0f, 2000f)
+            context.matrices.translate(0f, 0f, z + 2000f)
             context.drawTooltip(textRenderer, view.players.map { Text.literal(it.name) }, mouseX, mouseY)
             context.matrices.pop()
         }
@@ -278,7 +278,7 @@ internal class BingoHudRenderer(
 
             if (tooltip.isNotEmpty()) {
                 context.matrices.push()
-                context.matrices.translate(0f, 0f, 2000f)
+                context.matrices.translate(0f, 0f, z + 2000f)
                 context.drawTooltip(textRenderer, tooltip, mouseX, mouseY)
                 context.matrices.pop()
             }

@@ -96,7 +96,7 @@ internal class BingoCardsWidget(
             val y = screenY
 
             val zIndex = zOrder.indexOf(i)
-            val z = 201 * (views.size - zIndex)
+            val z = 302 * (views.size - zIndex)
 
             val xCoerced = when {
                 x < xMin -> x.coerceAtLeast(xMin - 4f * (views.size - i - 1))
@@ -208,7 +208,7 @@ internal class BingoCardsWidget(
 
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
         if (isInBounds(mouseX.toInt(), mouseY.toInt())) {
-            targetScrollX = (targetScrollX + amount.toFloat() * -0.05f * views.size).coerceIn(0f, 1f)
+            targetScrollX = (targetScrollX + amount.toFloat() * -0.5f / views.size.coerceAtLeast(1)).coerceIn(0f, 1f)
             return true
         } else {
             return false
