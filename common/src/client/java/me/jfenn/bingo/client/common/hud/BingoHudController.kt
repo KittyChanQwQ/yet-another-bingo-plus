@@ -14,10 +14,12 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardUpdatePacket
+import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.ready.SetReadyPacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.wrap
 import me.jfenn.bingo.generated.StringKey
@@ -72,21 +74,19 @@ internal class BingoHudController(
     private val interpolateCardY = Interpolate(0f, 0f)
     private val interpolateCardScale = Interpolate(0f, 0f)
 
-    private fun onCardHudClosed() {
-        val client = MinecraftClient.getInstance()
+    private fun onCardHudClosed(
+        cardPositions: Map<BingoTeamKey?, Pair<Float, Float>>,
+    ) {
         val now = Clock.System.now()
-
-        // if there's >1 card view, this will not be a clean transition
-        if (state.display?.display?.size?.let { it > 1 } == true)
-            return
+        val lastPosition = cardPositions[getSelectedCard()?.teamKey] ?: return
 
         interpolateCardX.apply {
-            from = client.window.scaledWidth/2f - BingoHudRenderer.CARD_WIDTH/2f
+            from = lastPosition.first
             duration = 250.milliseconds
             startedAt = now
         }
         interpolateCardY.apply {
-            from = client.window.scaledHeight/2f - BingoHudRenderer.CARD_HEIGHT/2f
+            from = lastPosition.second
             duration = 250.milliseconds
             startedAt = now
         }
@@ -117,21 +117,25 @@ internal class BingoHudController(
         )
     }
 
-    private fun drawHud(drawService: IDrawService) {
+    private fun getSelectedCard(): CardView? {
         val teamKeys = state.display?.display
-        if (teamKeys.isNullOrEmpty()) return
+        if (teamKeys.isNullOrEmpty()) return null
 
+        val selectedTeam = state.selectedTeam
+        return when {
+            // If the selected team is one of the displayed cards, try to find its view state...
+            selectedTeam in teamKeys -> state.views[selectedTeam]
+            // otherwise, find a different card to display
+            else -> teamKeys.firstOrNull().let { state.views[it] } // firstOrNull() falls back to preview card
+        }
+    }
+
+    private fun drawHud(drawService: IDrawService) {
         val context = drawService.context
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         // If the selected team is one of the displayed cards, try to find its view state...
-        val selectedTeam = state.selectedTeam
-        val view = when {
-            selectedTeam in teamKeys -> state.views[selectedTeam]
-            // otherwise, find a different card to display
-            else -> teamKeys.firstOrNull().let { state.views[it] }
-        } ?: return
-
+        val view = getSelectedCard() ?: return
         // Ensure that `selectedTeam` is set to the displayed card, in case they don't match
         state.selectedTeam = view.teamKey
 
@@ -191,7 +195,7 @@ internal class BingoHudController(
         // Attempt to draw additional cards if showMultipleCards=true
         val xDirection = if (cardAlignment.x > 0) -1 else 1
         if (config.client.showMultipleCards) {
-            val remainingViews = (teamKeys - selectedTeam)
+            val remainingViews = (state.display?.display.orEmpty() - view.teamKey)
                 .mapNotNull { state.views[it] }
 
             for ((i, remainingView) in remainingViews.withIndex()) {
@@ -272,7 +276,15 @@ internal class BingoHudController(
 
         if (!packet.isUpdate) {
             // when the game first ends, open the end screen
-            MinecraftClient.getInstance().setScreen(endScreenFactory.create(gameOver, canEscape = false))
+            MinecraftClient.getInstance().setScreen(
+                endScreenFactory.create(
+                    gameOver,
+                    originalCardKey = getSelectedCard()?.teamKey,
+                    originalCardPos = getCardPos(),
+                    canEscape = false,
+                    onClose = { onCardHudClosed(it.getCardPositions()) },
+                )
+            )
         }
     }
 
@@ -404,9 +416,22 @@ internal class BingoHudController(
                         return@register
                     }
 
-                    val hudScreen = state.gameOver
-                        ?.let { endScreenFactory.create(it, canEscape = true) }
-                        ?: hudScreenFactory.create(getCardPos(), ::onCardHudClosed)
+                    val gameOver = state.gameOver
+                    val hudScreen = if (gameOver != null) {
+                        endScreenFactory.create(
+                            gameOver = gameOver,
+                            originalCardKey = getSelectedCard()?.teamKey,
+                            originalCardPos = getCardPos(),
+                            canEscape = true,
+                            onClose = { onCardHudClosed(it.getCardPositions()) }
+                        )
+                    } else {
+                        hudScreenFactory.create(
+                            originalCardKey = getSelectedCard()?.teamKey,
+                            originalCardPos = getCardPos(),
+                            onClose = { onCardHudClosed(it.getCardPositions()) }
+                        )
+                    }
 
                     client.setScreen(hudScreen)
                 }

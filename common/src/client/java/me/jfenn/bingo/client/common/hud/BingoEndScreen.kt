@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.ready.SetReadyPacket
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
@@ -27,6 +28,7 @@ import kotlin.math.PI
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 internal class BingoEndScreen(
@@ -38,8 +40,12 @@ internal class BingoEndScreen(
     private val state: BingoHudState = koin.get(),
     private val config: BingoConfig = koin.get(),
     private val helper: IScreenHelper,
+    originalCardKey: BingoTeamKey?,
+    originalCardPos: Pair<Float, Float>,
+    originalCardScale: Float = config.client.cardScale,
     scrollableWidgetFactory: IScrollableWidgetFactory = koin.get(),
     tabsWidgetFactory: ITabsWidgetFactory = koin.get(),
+    private val onCloseCallback: (BingoEndScreen) -> Unit,
 ) : IScreen {
 
     private val worldService = koin.get<IWorldService>()
@@ -57,7 +63,10 @@ internal class BingoEndScreen(
     ) {
         fun create(
             gameOver: BingoHudState.GameOver,
+            originalCardKey: BingoTeamKey?,
+            originalCardPos: Pair<Float, Float>,
             canEscape: Boolean,
+            onClose: (BingoEndScreen) -> Unit,
         ) = screenFactory.build(text.string(StringKey.CardTitle)) { helper ->
             BingoEndScreen(
                 koin = koin,
@@ -68,8 +77,11 @@ internal class BingoEndScreen(
                 state = state,
                 config = config,
                 helper = helper,
+                originalCardKey = originalCardKey,
+                originalCardPos = originalCardPos,
                 scrollableWidgetFactory = scrollableWidgetFactory,
                 tabsWidgetFactory = tabsWidgetFactory,
+                onCloseCallback = onClose,
             )
         }
     }
@@ -95,9 +107,21 @@ internal class BingoEndScreen(
         showFlashingTiles = !(minecraftClient.isInSingleplayer && shouldPause()),
         screen = helper.screen,
 
+        interpolateKey = originalCardKey,
+        interpolateFromX = originalCardPos.first,
+        interpolateFromY = originalCardPos.second,
+        interpolateFromScale = originalCardScale,
+        interpolateDuration = 150.milliseconds,
+
         onTileClick = { false },
         onViewClick = null,
     )
+
+    fun getCardPositions() = buildMap {
+        cardsWidget.viewsWithPositions { view, x, y, z ->
+            put(view.teamKey, Pair(x, y))
+        }
+    }
 
     private val fireworkRenderer = BingoEndFireworkRenderer()
 
@@ -397,5 +421,9 @@ internal class BingoEndScreen(
     override fun shouldPause() = config.client.cardPausesGame
 
     override fun shouldCloseOnEsc() = canEscape
+
+    override fun onClose() {
+        onCloseCallback.invoke(this)
+    }
 
 }

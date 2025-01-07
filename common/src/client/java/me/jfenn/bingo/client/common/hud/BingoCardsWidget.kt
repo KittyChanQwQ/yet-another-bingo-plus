@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.common.hud
 
+import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.IDrawServiceFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
@@ -10,6 +11,7 @@ import net.minecraft.client.gui.screen.Screen
 import org.koin.core.Koin
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
+import kotlin.time.Duration
 
 internal class BingoCardsWidget(
     koin: Koin,
@@ -18,8 +20,12 @@ internal class BingoCardsWidget(
     var y: Float,
     var width: Int,
     var height: Int,
-    var cardScale: Float = 1f,
-    var isMouseOver: Boolean = true,
+
+    var interpolateKey: BingoTeamKey?,
+    interpolateFromX: Float = 0f,
+    interpolateFromY: Float = 0f,
+    interpolateFromScale: Float = 1f,
+    interpolateDuration: Duration = Duration.ZERO,
 
     val showFlashingTiles: Boolean,
     var views: List<CardView> = emptyList(),
@@ -34,6 +40,24 @@ internal class BingoCardsWidget(
     private val config: BingoConfig = koin.get()
 ) {
 
+    val interpolateX = Interpolate(
+        from = interpolateFromX,
+        to = 0f,
+        duration = interpolateDuration,
+    )
+
+    val interpolateY = Interpolate(
+        from = interpolateFromY,
+        to = 0f,
+        duration = interpolateDuration,
+    )
+
+    val interpolateScale = Interpolate(
+        from = interpolateFromScale,
+        to = 1f,
+        duration = interpolateDuration,
+    )
+
     private var targetScrollX: Float = 0f
     private var scrollX: Float = 0f // 0-1
 
@@ -41,7 +65,7 @@ internal class BingoCardsWidget(
     private val cardsAreaWidth get() = screen.width - cardsAreaMargin*2
     private val cardsTotalWidth get() =  views.size * BingoHudRenderer.CARD_WIDTH
 
-    private fun viewsWithPositions(
+    fun viewsWithPositions(
         callback: (view: CardView, x: Float, y: Float, z: Int) -> Unit
     ) {
         if (views.isEmpty()) return
@@ -80,7 +104,19 @@ internal class BingoCardsWidget(
                 else -> x
             }
 
-            callback(view, xCoerced, y, z)
+            val (currentX, currentY) = when {
+                view.teamKey == interpolateKey -> {
+                    interpolateX.to = xCoerced
+                    interpolateY.to = y
+                    Pair(
+                        interpolateX.get(Interpolate.Easing.IN_OUT),
+                        interpolateY.get(Interpolate.Easing.IN_OUT)
+                    )
+                }
+                else -> Pair(xCoerced, y)
+            }
+
+            callback(view, currentX, currentY, z)
         }
     }
 
@@ -135,13 +171,13 @@ internal class BingoCardsWidget(
                 x = x,
                 y = y,
                 z = z,
-                cardScale = cardScale,
+                cardScale = interpolateScale.get(Interpolate.Easing.IN_OUT),
                 mouseX = mouseX,
                 mouseY = mouseY,
                 showTeamOutlines = isSingleView && config.client.cardTeamOutlines,
                 showFlashingTiles = showFlashingTiles,
                 isFocused = isHovered && !isSingleView && onViewClick != null,
-                isMouseOver = isMouseOver && isHovered,
+                isMouseOver = interpolateX.isDone() && isHovered,
                 isGui = true, // uses an alternative card texture with a shadow to reduce clutter when overlapped
                 isWinner = winner != null && winner == view.teamKey,
             )
@@ -186,7 +222,13 @@ internal class BingoCardsWidget(
 
         viewsWithPositions { view, x, y, _ ->
             if (hoveredView.teamKey != view.teamKey) return@viewsWithPositions
-            val (tileX, tileY) = renderer.getItem(x.toInt(), y.toInt(), 1f, mouseX.toInt(), mouseY.toInt()) ?: return@viewsWithPositions
+            val (tileX, tileY) = renderer.getItem(
+                x = x.toInt(),
+                y = y.toInt(),
+                cardScale = interpolateScale.get(Interpolate.Easing.IN_OUT),
+                mouseX = mouseX.toInt(),
+                mouseY = mouseY.toInt(),
+            ) ?: return@viewsWithPositions
             val tile = view.tile(tileX, tileY) ?: return@viewsWithPositions
 
             isHandled = onTileClick(tile)
