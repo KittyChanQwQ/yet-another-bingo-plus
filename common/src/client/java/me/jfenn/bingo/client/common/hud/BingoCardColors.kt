@@ -23,6 +23,8 @@ internal data class BingoCardColors(
         val tileFlashingColor: String? = null,
         val tileProgressColor: String? = null,
         val backgroundColor: String? = null,
+        val textX: Int? = null,
+        val textY: Int? = null,
         val textColor: String? = null,
         val outlineColor: String? = null,
         val cardTexture: String? = null,
@@ -35,6 +37,8 @@ internal data class BingoCardColors(
         val tileFlashingColor: Color = Color.fromInt(0xffb24cd8.toInt()),
         val tileProgressColor: Color = Color.fromInt(0xff309f30.toInt()),
         val backgroundColor: Color = Color.BLACK,
+        val textX: Int = 12,
+        val textY: Int = 10,
         val textColor: Color = Color.BLACK,
         val outlineColor: Color = Color.TRANSPARENT,
         val cardTexture: Identifier = Identifier.of("minecraft", "bingo/card_preview")!!,
@@ -70,6 +74,8 @@ internal data class BingoCardColors(
             backgroundColor = getValue(colors, Team::backgroundColor)
                 ?.let { Color.fromString(it) }
                 ?: DEFAULTS.backgroundColor,
+            textX = getValue(colors, Team::textX) ?: DEFAULTS.textX,
+            textY = getValue(colors, Team::textY) ?: DEFAULTS.textY,
             textColor = getValue(colors, Team::textColor)
                 ?.let { Color.fromString(it) }
                 ?: DEFAULTS.textColor,

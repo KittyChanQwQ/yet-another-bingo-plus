@@ -124,7 +124,7 @@ internal class BingoHudRenderer(
             textureHeight = CARD_HEIGHT,
         )
 
-        context.drawText(textRenderer, view.teamName, 12, 10, colors.textColor.asIntWithAlpha, false)
+        context.drawText(textRenderer, view.teamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
 
         if (isWinner) {
             context.matrices.push()

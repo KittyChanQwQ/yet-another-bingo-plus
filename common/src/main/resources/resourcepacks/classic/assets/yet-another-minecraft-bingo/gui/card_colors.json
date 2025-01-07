@@ -1,38 +1,51 @@
 {
   "default": {
     "backgroundColor": "#80505050",
+    "textX": 13,
+    "textY": 8,
     "textColor": "#a8000000"
   },
   "teams": {
     "preview": {
-      "outlineColor": "#00000000"
+      "outlineColor": "#00000000",
+      "cardTexture": "minecraft:bingo/card_preview"
     },
     "orange": {
-      "outlineColor": "#ffffaa00"
+      "textColor": "#a8ffffff",
+      "outlineColor": "#ffffaa00",
+      "cardTexture": "minecraft:bingo/card_orange"
     },
     "gray": {
       "textColor": "#a8ffffff",
-      "outlineColor": "#ff555555"
+      "outlineColor": "#ff555555",
+      "cardTexture": "minecraft:bingo/card_gray"
     },
     "blue": {
       "textColor": "#a8ffffff",
-      "outlineColor": "#ff5555ff"
+      "outlineColor": "#ff5555ff",
+      "cardTexture": "minecraft:bingo/card_blue"
     },
     "green": {
-      "outlineColor": "#ff1d901d"
+      "textColor": "#a8ffffff",
+      "outlineColor": "#ff1d901d",
+      "cardTexture": "minecraft:bingo/card_green"
     },
     "aqua": {
-      "outlineColor": "#ff55ffff"
+      "outlineColor": "#ff55ffff",
+      "cardTexture": "minecraft:bingo/card_aqua"
     },
     "red": {
       "textColor": "#a8ffffff",
-      "outlineColor": "#ffff5555"
+      "outlineColor": "#ffff5555",
+      "cardTexture": "minecraft:bingo/card_red"
     },
     "pink": {
-      "outlineColor": "#ffff7cff"
+      "outlineColor": "#ffff7cff",
+      "cardTexture": "minecraft:bingo/card_pink"
     },
     "yellow": {
-      "outlineColor": "#ffffff55"
+      "outlineColor": "#ffffff55",
+      "cardTexture": "minecraft:bingo/card_yellow"
     }
   }
 }
