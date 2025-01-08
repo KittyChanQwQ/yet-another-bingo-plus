@@ -72,6 +72,7 @@
         "minecraft:adventure/kill_mob_near_sculk_catalyst",
         "minecraft:adventure/sniper_duel",
         "minecraft:husbandry/obtain_sniffer_egg",
+        "minecraft:husbandry/break_diamond_hoe",
         "minecraft:husbandry/obtain_netherite_hoe",
         "minecraft:adventure/bullseye"
     ],
