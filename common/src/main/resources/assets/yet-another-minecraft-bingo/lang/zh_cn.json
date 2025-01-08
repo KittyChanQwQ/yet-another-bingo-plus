@@ -66,7 +66,7 @@
   "bingo.config.gui.hud_settings": "HUD 设置",
   "bingo.config.gui.tooltip": "Bingo 棋盘界面与其他视觉效果的设置。",
   "bingo.config.hide_on_chat": "聊天界面中隐藏",
-  "bingo.config.hide_on_chat.description": "聊天界面打开时隐藏 Bingo 卡片叠加层。",
+  "bingo.config.hide_on_chat.description": "当聊天界面打开时，隐藏 Bingo 棋盘界面。",
   "bingo.config.hide_on_f3": "F3 /调试界面中隐藏",
   "bingo.config.hide_on_f3.description": "当 F3 /调试界面打开时，隐藏 Bingo 棋盘界面。",
   "bingo.config.needs_restart": "你需要重启 Minecraft 才能使此设置生效。",
