@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.team
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonElement
@@ -47,6 +48,9 @@ data class BingoTeam(
     var map: BingoMap? = null,
     val players: MutableSet<PlayerProfileType> = mutableSetOf(),
 ) {
+
+    @Transient
+    var scoreUpdatedAt: Instant = Instant.DISTANT_PAST
 
     /**
      * Creates a copy of the team that does not share any mutable

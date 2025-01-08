@@ -70,6 +70,25 @@ object ScoreService {
         return isLockout || isGoalImpossible
     }
 
+    fun getComparator(state: BingoState): Comparator<BingoTeam> {
+        val teams = state.getRegisteredTeams()
+        val maxCards = teams.maxOfOrNull { it.countCards() } ?: 0
+        val leadingTeamsByCards = teams.filter { it.countCards() >= maxCards }
+
+        val isLinesGoal = leadingTeamsByCards
+            .mapNotNull { team -> state.cards.find { it.id == team.cardId } }
+            .all { it.options.goal is BingoGoal.Lines }
+
+        return if (isLinesGoal) {
+            compareBy<BingoTeam> { it.score.cards }
+                .thenBy { it.score.lines }
+                .thenBy { it.score.items }
+        } else {
+            compareBy<BingoTeam> { it.score.cards }
+                .thenBy { it.score.items }
+        }
+    }
+
     fun getLeading(state: BingoState, allowTies: Boolean = false): BingoTeam? {
         return getLeadingByCards(state, allowTies)
                 ?: getLeadingByLines(state, allowTies)

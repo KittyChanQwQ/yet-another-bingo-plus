@@ -7,14 +7,14 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.objective.ItemObjectiveManager
-import me.jfenn.bingo.common.options.BingoGoal
-import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.options.BingoWinCondition
-import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.game.GameService
+import me.jfenn.bingo.common.options.BingoGoal
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.BingoWinCondition
+import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -110,6 +110,7 @@ internal class ScoredItemCheck(
 
             if (scoreAfter != scoreBefore) {
                 team.score = scoreAfter
+                team.scoreUpdatedAt = tickStart
                 log.info("[ScoredItemCheck] Updated score for team {}: {}", team.id, scoreAfter)
             }
 
@@ -338,10 +339,12 @@ internal class ScoredItemCheck(
             if (leadingTeam != null) {
                 scoreUpdateService.sendTeamLeading(leadingTeam)
             } else {
+                // Find the tied team that was most recently updated
                 val tiedTeam = ScoreService.getLeading(state, allowTies = true)
-                tiedTeam?.let {
-                    scoreUpdateService.sendTeamTied(it)
-                }
+                val comparator = ScoreService.getComparator(state)
+                teams.filter { comparator.compare(it, tiedTeam) == 0 }
+                    .maxByOrNull { it.scoreUpdatedAt }
+                    ?.let { scoreUpdateService.sendTeamTied(it) }
             }
         }
 
