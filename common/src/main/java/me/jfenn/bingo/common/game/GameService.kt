@@ -9,11 +9,11 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
+import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.options.BingoGoal
 import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.options.OptionsService
-import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
@@ -25,8 +25,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
-import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
-import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -69,8 +67,7 @@ internal class GameService(
 
         for (player in playersWithoutATeam) {
             if (permissions.hasPermission(player, Permission.COMMAND_JOIN)) {
-                player.player.networkHandler.sendPacket(TitleS2CPacket(title))
-                player.player.networkHandler.sendPacket(SubtitleS2CPacket(message))
+                player.sendTitle(title, message)
             }
         }
     }
@@ -140,14 +137,12 @@ internal class GameService(
         // save the current config, if overwrite option is set
         configService.writeOptions(options)
 
-        for (player in server.playerManager.playerList) {
+        for (player in playerManager.getPlayers()) {
             val team = teamService.getPlayerTeam(player)
-            player.networkHandler.sendPacket(
-                TitleS2CPacket(
-                    text.string(StringKey.GameAnnounceBingo).formatted(team?.textColor ?: Formatting.WHITE)
-                )
+            player.sendTitle(
+                title = text.string(StringKey.GameAnnounceBingo).formatted(team?.textColor ?: Formatting.WHITE),
+                subtitle = text.string(StringKey.GameAnnounceStarting),
             )
-            player.networkHandler.sendPacket(SubtitleS2CPacket(text.string(StringKey.GameAnnounceStarting)))
         }
 
         // change to the starting state (ensures that start cannot be used again, if this is async)

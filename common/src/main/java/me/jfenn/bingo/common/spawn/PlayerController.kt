@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.spawn
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.CardViewService
+import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -36,6 +37,7 @@ internal class PlayerController(
     private val spawnService: SpawnService,
     private val teamService: TeamService,
     private val cardViewService: CardViewService,
+    private val mapItemService: MapItemService,
     private val elytraService: ElytraService,
     private val advancementManager: IAdvancementManager,
     private val recipeManager: IRecipeManager,
@@ -145,7 +147,20 @@ internal class PlayerController(
 
         // reset player info
         resetPlayerHealth(player)
-        player.player.inventory.clear()
+
+        // Clear all items, unless the player should keep them (bingo card maps)
+        val team = teamService.getPlayerTeam(player)
+        val isViewingCard = cardViewService.isViewingCard(player, team)
+        player.allHeldStacks()
+            .filterNot { (_, stack) ->
+                isViewingCard && when (team) {
+                    null -> mapItemService.isPreviewMapItem(stack)
+                    else -> mapItemService.isMapTeamItem(stack, team)
+                }
+            }
+            .forEach { (_, stack) ->
+                stack.count = 0
+            }
 
         // unlock all crafting recipes, if set
         if (state.state == GameState.PLAYING && options.isUnlockRecipes)

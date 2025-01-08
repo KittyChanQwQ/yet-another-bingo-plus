@@ -17,6 +17,7 @@ class ElytraService(
      */
     fun giveElytra(player: IPlayerHandle) {
         val hasElytra = player.allHeldStacks()
+            .map { it.second }
             .any { it.item == Items.ELYTRA && it.hasCustomTag(NBT_BINGO_VANISH) }
 
         if (!hasElytra) {
@@ -33,9 +34,11 @@ class ElytraService(
         }
 
         // also give rocket
-        val rocketStack = player.allHeldStacks().find { it.item == Items.FIREWORK_ROCKET && it.hasCustomTag(
-            NBT_BINGO_VANISH
-        ) }
+        val rocketStack = player.allHeldStacks()
+            .map { it.second }
+            .find {
+                it.item == Items.FIREWORK_ROCKET && it.hasCustomTag(NBT_BINGO_VANISH)
+            }
 
         if (rocketStack != null && rocketStack.count < 2) {
             rocketStack.count = 2
@@ -55,6 +58,7 @@ class ElytraService(
 
     fun takeElytra(player: IPlayerHandle) {
         player.allHeldStacks()
+            .map { it.second }
             .filter { it.item == Items.ELYTRA || it.item == Items.FIREWORK_ROCKET }
             .filter { it.hasCustomTag(NBT_BINGO_VANISH) }
             .forEach {

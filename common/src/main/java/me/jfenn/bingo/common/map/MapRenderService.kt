@@ -16,7 +16,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.InputStream
-import java.text.Normalizer.Form
 import javax.imageio.ImageIO
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTime

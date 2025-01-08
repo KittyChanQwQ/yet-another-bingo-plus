@@ -209,7 +209,7 @@ data class BingoState(
         endedAt = null
         timeOffline = Duration.ZERO
         teams.clear()
-        // previewMap we don't clear, as it can be reused...
+        previewMap = null
         // [ScoredItemCheck] calls createInitialCards when entering PREGAME, so this card should be immediately replaced
         cards.clear()
         gameOverInfo = null

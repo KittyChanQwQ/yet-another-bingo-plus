@@ -15,8 +15,6 @@ import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.platform.IPlayerManager
-import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
-import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
@@ -161,8 +159,7 @@ class GameOverController(
                 }
                 else -> {
                     // if the player does not have the mod, send the vanilla title message
-                    player.player.networkHandler.sendPacket(TitleS2CPacket(title))
-                    player.player.networkHandler.sendPacket(SubtitleS2CPacket(message))
+                    player.sendTitle(title, message)
                     Sounds.playGameOver(player)
                 }
             }

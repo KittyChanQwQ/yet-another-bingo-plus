@@ -2,12 +2,13 @@ package me.jfenn.bingo.common.timer
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.mixinhandler.ServerPlayNetworkHandlerMixinHandler
+import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.time.Duration.Companion.milliseconds
@@ -23,6 +24,7 @@ class WaitUntilLoadedController(
     private val countdownService: CountdownService,
     private val teamService: TeamService,
     private val server: MinecraftServer,
+    private val playerManager: IPlayerManager,
     private val log: Logger,
 ) {
 
@@ -57,7 +59,7 @@ class WaitUntilLoadedController(
                 state.changeState(events, GameState.PLAYING)
 
                 val packet = CountdownPacket(0)
-                for (player in server.playerManager.playerList) {
+                for (player in playerManager.getPlayers()) {
                     countdownService.sendCountdownPacket(player, packet)
                 }
             }

@@ -23,6 +23,8 @@ import net.minecraft.network.message.SentMessage
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket
+import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
+import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
@@ -169,6 +171,11 @@ class PlayerHandle(
         sendMessage(decoratedMessage)
     }
 
+    override fun sendTitle(title: Text, subtitle: Text?) {
+        player.networkHandler.sendPacket(TitleS2CPacket(title))
+        player.networkHandler.sendPacket(SubtitleS2CPacket(subtitle ?: Text.empty()))
+    }
+
     override fun hasPermissionLevel(level: Int): Boolean {
         return player.hasPermissionLevel(level)
     }
@@ -194,13 +201,13 @@ class PlayerHandle(
         }
     }
 
-    override fun allHeldStacks(): Sequence<IItemStack> {
+    override fun allHeldStacks(): Sequence<Pair<Int?, IItemStack>> {
         return sequence {
             // yield all items in inventory
-            yieldAll(allInventorySlots().map { (_, stack) -> stack })
+            yieldAll(allInventorySlots())
 
             // yield the current cursor stack
-            yield(getItemStackFactory().forStack(player.currentScreenHandler.cursorStack))
+            yield(null to getItemStackFactory().forStack(player.currentScreenHandler.cursorStack))
         }
     }
 
@@ -238,7 +245,11 @@ class PlayerHandle(
     }
 
     override fun setStack(slot: Int, stack: IItemStack) {
-        player.getStackReference(slot).set(stack.stack)
+        if (slot in 0 until player.inventory.main.size) {
+            player.getStackReference(slot).set(stack.stack)
+        } else {
+            player.inventory.setStack(slot, stack.stack)
+        }
     }
 
     override fun playSound(sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float) {

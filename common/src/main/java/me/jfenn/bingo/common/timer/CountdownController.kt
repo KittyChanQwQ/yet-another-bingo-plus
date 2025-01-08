@@ -2,9 +2,8 @@ package me.jfenn.bingo.common.timer
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.*
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
@@ -12,6 +11,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.plus
+import me.jfenn.bingo.platform.*
 import net.minecraft.server.MinecraftServer
 import org.joml.Vector3d
 import kotlin.time.Duration.Companion.seconds
@@ -131,7 +131,7 @@ class CountdownController(
                 prevSeconds = seconds
 
                 val packet = CountdownPacket(seconds.coerceAtLeast(0))
-                for (player in server.playerManager.playerList) {
+                for (player in playerManager.getPlayers()) {
                     countdownService.sendCountdownPacket(player, packet)
                 }
 

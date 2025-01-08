@@ -61,7 +61,7 @@ interface IPlayerHandle : ILivingEntity {
      */
     fun canUseItem(stack: IItemStack): Boolean
 
-    fun allHeldStacks(): Sequence<IItemStack>
+    fun allHeldStacks(): Sequence<Pair<Int?, IItemStack>>
     fun allInventorySlots(): Sequence<Pair<Int, IItemStack>>
 
     /**
@@ -89,6 +89,8 @@ interface IPlayerHandle : ILivingEntity {
     fun sendChatMessage(message: ISignedMessage, sender: IPlayerHandle)
     fun sendTeamMessage(message: ISignedMessage, sender: IPlayerHandle, teamName: Text)
     fun sendTeamMessage(message: Text, sender: IPlayerHandle, teamName: Text)
+
+    fun sendTitle(title: Text, subtitle: Text?)
 }
 
 enum class PlayerSoundEvent {

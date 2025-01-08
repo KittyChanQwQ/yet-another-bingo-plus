@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
@@ -18,17 +19,6 @@ class MapItemController(
     private val teamService: TeamService,
     events: ScopedEvents,
 ) : BingoComponent() {
-    private fun givePreviewCardItem(player: IPlayerHandle) {
-        if (cardViewService.supportsCardHud(player)) return
-
-        val hasMap = player.allHeldStacks()
-            .any { mapItemService.isMapItem(it) }
-
-        if (!hasMap) {
-            val mapItem = mapItemService.createPreviewMapItem()
-            player.giveItemStack(mapItem)
-        }
-    }
 
     private fun removePreviewCardItem(player: IPlayerHandle) {
         for ((slot, item) in player.allInventorySlots()) {
@@ -41,29 +31,36 @@ class MapItemController(
      * Ensure that the player has their team's bingo map card.
      * Has no effect if the player already has a card
      */
-    private fun giveMapCardItem(player: IPlayerHandle) {
+    private fun giveMapCardItem(player: IPlayerHandle, team: BingoTeam?) {
         if (cardViewService.supportsCardHud(player)) return
 
-        val team = teamService.getPlayerTeam(player) ?: return
+        var previousSlot: Int? = null
         val hasMap = player.allHeldStacks()
-            .filter { mapItemService.isMapItem(it) }
-            .mapNotNull {
-                if (mapItemService.isMapTeamItem(it, team)) {
-                    it.count = 1
-                    it
+            .filter { mapItemService.isMapItem(it.second) }
+            .count { (slot, stack) ->
+                val isItemValid = when (team) {
+                    null -> mapItemService.isPreviewMapItem(stack)
+                    else -> mapItemService.isMapTeamItem(stack, team)
+                }
+                if (isItemValid) {
+                    stack.count = 1
+                    true
                 } else {
                     // if the player has another team's map item, remove it!
-                    it.count = 0
-                    null
+                    stack.count = 0
+                    previousSlot = slot
+                    false
                 }
-            }
-            .toList()
-            .isNotEmpty()
+            } > 0
 
         if (!hasMap) {
             // give the player a new map item
-            val mapItem = mapItemService.createMapItem(team)
-            player.giveItemStack(mapItem)
+            val mapItem = when (team) {
+                null -> mapItemService.createPreviewMapItem()
+                else -> mapItemService.createMapItem(team)
+            }
+            previousSlot?.let { player.setStack(it, mapItem) }
+                ?: player.giveItemStack(mapItem)
         }
     }
 
@@ -80,7 +77,7 @@ class MapItemController(
             .take(9*4)
             .forEachIndexed { i, team ->
                 val hasMap = player.allHeldStacks()
-                    .any { mapItemService.isMapTeamItem(it, team) }
+                    .any { mapItemService.isMapTeamItem(it.second, team) }
 
                 if (!hasMap) {
                     val stack = mapItemService.createMapItem(team)
@@ -100,8 +97,8 @@ class MapItemController(
      */
     private fun removeAllMapItems(player: IPlayerHandle) {
         player.allHeldStacks()
-            .filter { mapItemService.isMapItem(it) }
-            .forEach { it.count = 0 }
+            .filter { mapItemService.isMapItem(it.second) }
+            .forEach { it.second.count = 0 }
     }
 
     init {
@@ -131,20 +128,20 @@ class MapItemController(
                 val playerTeam = teamService.getPlayerTeam(player)
                 val canHaveCards = player.isAlive && !player.isSpectator
 
-                if (canHaveCards && cardViewService.isViewingPreviewCard(player)) {
-                    givePreviewCardItem(player)
-                } else {
-                    removePreviewCardItem(player)
-                }
-
                 if (canHaveCards) {
                     if (cardViewService.isViewingSpectatorCards(player)) {
                         if (state.isLobbyMode)
                             giveSpectatorMapItems(player)
                     } else if (playerTeam != null && cardViewService.isViewingTeamCard(player, playerTeam)) {
                         // give player a new map, if they don't have one?
-                        giveMapCardItem(player)
+                        giveMapCardItem(player, playerTeam)
                     }
+                }
+
+                if (canHaveCards && cardViewService.isViewingPreviewCard(player)) {
+                    giveMapCardItem(player, null)
+                } else {
+                    removePreviewCardItem(player)
                 }
 
                 // If the player is using the client-side hud, make sure they don't have any map items

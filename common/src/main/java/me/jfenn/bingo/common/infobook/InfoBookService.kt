@@ -241,14 +241,14 @@ class InfoBookService(
 
     fun updateBookItem(player: IPlayerHandle) {
         player.allHeldStacks()
-            .mapNotNull { it.asWrittenBook() }
+            .mapNotNull { it.second.asWrittenBook() }
             .filter { isBookItem(it) }
             .forEach { updateBookItem(player, it) }
     }
 
     fun giveBookItem(player: IPlayerHandle) {
         var bookCount = 0
-        for (stack in player.allHeldStacks().mapNotNull { it.asWrittenBook() }) {
+        for (stack in player.allHeldStacks().mapNotNull { it.second.asWrittenBook() }) {
             if (isBookItem(stack)) {
                 // prevent players from taking someone else's book...
                 if (stack.author != scoreboardManager.getPlayerName(player.player))

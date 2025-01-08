@@ -12,7 +12,6 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.text.TextColor
 import me.jfenn.bingo.common.utils.truncate
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
@@ -110,7 +109,7 @@ class CardViewService(
         )
 
     fun isViewingTeamCard(player: IPlayerHandle, team: BingoTeam) =
-        (state.state == GameState.PLAYING || options.showPreviewCard) && team.includesPlayer(player)
+        (state.state == GameState.PLAYING || (options.showPreviewCard && state.state != GameState.POSTGAME)) && team.includesPlayer(player)
 
     fun isViewingSpectatorCards(player: IPlayerHandle): Boolean {
         val team = teamService.getPlayerTeam(player)

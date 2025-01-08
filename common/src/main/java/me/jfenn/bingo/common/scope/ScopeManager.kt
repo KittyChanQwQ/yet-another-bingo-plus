@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.scope
 
 import me.jfenn.bingo.api.BingoApi
 import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -67,6 +68,12 @@ class ScopeManager(
                 state.changeState(events, GameState.PREGAME)
             } else {
                 events.onStateChange(state.state to state.state)
+            }
+
+            // If the state somehow does not have any cards (save error), fix that
+            if (state.cards.isEmpty()) {
+                log.error("[ScopeManager] There were no bingo cards in the save! Your game might not have shut down correctly, or your save data was corrupted.")
+                scope.get<CardService>().createInitialCards()
             }
 
             BingoApi.set(scope.get())
