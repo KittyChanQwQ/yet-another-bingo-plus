@@ -118,6 +118,8 @@ internal class BingoEndScreen(
     )
 
     fun getCardPositions() = buildMap {
+        // if the tab is not showing CARDS, don't interpolate the card positions
+        if (tab != EndScreenTab.CARDS) return@buildMap
         cardsWidget.viewsWithPositions { view, x, y, z ->
             put(view.teamKey, Pair(x, y))
         }
