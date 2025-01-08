@@ -37,7 +37,7 @@ class ItemObjectiveManager(
     override fun listExcludedIds(): Iterable<String> {
         return objectiveService.getAllTeamPlayers()
             .flatMap { (_, player) -> player.allHeldStacks() }
-            .map { it.identifier.toString() }
+            .map { it.second.identifier.toString() }
             .asIterable()
     }
 
@@ -124,8 +124,9 @@ class ItemObjectiveManager(
                 stack.isDataOverlapping(nbt = objective.itemNbt, components = objective.itemComponents)
     }
 
-    private fun countSatisfied(stacks: List<IItemStack>, objective: BingoObjective.ItemEntry) : Int {
+    private fun countSatisfied(stacks: List<Pair<Int?, IItemStack>>, objective: BingoObjective.ItemEntry) : Int {
         val count = stacks
+            .map { it.second }
             .filter { canSatisfyPartial(it, objective) }
             .sumOf { it.count }
 
@@ -137,6 +138,7 @@ class ItemObjectiveManager(
         objective: BingoObjective.ItemEntry,
     ) {
         val itemStacks = player.allHeldStacks()
+            .map { it.second }
             .filter { canSatisfyPartial(it, objective) }
 
         // Confiscate item stacks until the objective requirements are met
@@ -195,6 +197,7 @@ class ItemObjectiveManager(
         for ((team, player, inventory) in playersToItems) {
             // check inventory for new collected items
             val objectives = inventory.asSequence()
+                .map { it.second }
                 .map { it.identifier.toString() }
                 .distinct()
                 .flatMap { card.itemObjectives[it] ?: emptyList() }

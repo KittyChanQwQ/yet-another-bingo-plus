@@ -38,11 +38,7 @@ class BingoObjectiveManager(
         return hasAllObjectives
     }
 
-    private fun findFromProviders(id: String, state: CardGeneratorState): BingoObjective? {
-        // remove an "advancement!" or "item!" prefix from the id
-        val type = id.substringBefore('!')
-        val identifier = id.substringAfter('!')
-
+    private fun findFromProviders(type: String?, identifier: String, state: CardGeneratorState): BingoObjective? {
         if (type == "advancement") {
             return providers.find { it is AdvancementObjectiveManager }
                 ?.find(identifier, state)
@@ -63,7 +59,11 @@ class BingoObjectiveManager(
     }
 
     override fun find(id: String, state: CardGeneratorState): BingoObjective? {
-        return findFromProviders(id, state)
+        // remove an "advancement!" or "item!" prefix from the id
+        val type = id.substringBefore('!')
+        val identifier = id.substringAfter('!')
+
+        return findFromProviders(type, identifier, state)
             ?.takeIf { objective ->
                 objective.data?.validate
                     ?.let { checkHardRequirements(it) }

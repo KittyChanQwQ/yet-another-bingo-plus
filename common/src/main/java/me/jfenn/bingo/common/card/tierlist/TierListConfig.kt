@@ -40,13 +40,20 @@ data class TierListConfig(
 
     fun combine(other: TierListConfig): TierListConfig {
         return this.copy(
+            values = emptySet(),
             s = s + other.s,
             a = a + other.a,
             b = b + other.b,
             c = c + other.c,
             d = d + other.d,
             groups = groups + other.groups,
-        )
+        ).let { list ->
+            list.copy(
+                values = (values + other.values)
+                    .filterNot { list.isCategorized(it.item) }
+                    .toSet()
+            )
+        }
     }
 
     fun getTier(tier: TierLabel) = when (tier) {
@@ -112,7 +119,7 @@ data class TierListConfig(
     }
 
     fun isCategorized(objectiveId: String): Boolean {
-        val entry = TierListEntry(objectiveId)
+        val entry = TierListEntry(null, objectiveId)
         return s.contains(entry)
                 || a.contains(entry)
                 || b.contains(entry)
@@ -147,7 +154,8 @@ data class TierListConfig(
         expansionService: TagExpansionService,
         entry: TierListEntry,
     ): List<TierListEntry> {
-        return expansionService.expandItemTag(entry.item).map { TierListEntry(it) }
+        return expansionService.expandItemTag(entry.item)
+            .map { TierListEntry(null, it) }
     }
 
     fun expandName(

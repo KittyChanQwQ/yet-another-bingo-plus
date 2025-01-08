@@ -57,7 +57,7 @@ class CardService(
     private fun validateList(name: String, list: TierListConfig) {
         log.info("[CardService] Validating list $name.tierlist.json...")
         for (entry in list.expandTags(tagExpansionService).let { it.s + it.a + it.b + it.c + it.d }) {
-            val map = createObjectives(entry.item, CardGeneratorState.DEFAULT)
+            val map = createObjectives(null, entry.item, CardGeneratorState.DEFAULT)
             if (map == null) {
                 log.error("[CardService] Could not find '${entry.item}' in tier list $name.tierlist.json")
             }
@@ -184,7 +184,7 @@ class CardService(
         // Re-build the objectives map (but we don't need to check for conflicts)
         val objectives = mutableMapOf<String, BingoObjective>()
         for (entry in entries) {
-            val objectiveMap = createObjectives(entry.objectiveId, CardGeneratorState.DEFAULT) ?: continue
+            val objectiveMap = createObjectives(null, entry.objectiveId, CardGeneratorState.DEFAULT) ?: continue
             objectives.putAll(objectiveMap)
         }
 
@@ -266,7 +266,7 @@ class CardService(
         val uncategorizedObjectives = supportedObjectiveIds.get(Unit)
             .plus(tierList.values.map { it.item }.toSet())
             .filterNot { tierList.isCategorized(it) }
-            .map { TierListEntry(it) }
+            .map { TierListEntry(null, it) }
             .onEach {
                 it.listName = ObjectiveFilter.UNCATEGORIZED
             }
@@ -371,13 +371,12 @@ class CardService(
             var tierCountRemaining = dist[tierIndex]
 
             fun createObjectivePair(entry: TierListEntry): Pair<TierListEntry, Map<String, BingoObjective>>? {
-                val objectiveId = entry.item
-                val objectiveMap = createObjectives(objectiveId, state)
+                val objectiveMap = createObjectives(entry.type, entry.item, state)
                     ?: return null
 
                 val objectiveConflicts = objectiveMap.values
                     .flatMap { it.conflictsWithObjectives }
-                    .filter { it != objectiveId } // any direct objectiveId conflicts are handled by list.pick()
+                    .filter { it != entry.item } // any direct objectiveId conflicts are handled by list.pick()
                 if (objectiveConflicts.any { excludedObjectives.contains(it) })
                     return null
 
@@ -467,16 +466,18 @@ class CardService(
     }
 
     private fun createObjectives(
+        objectiveType: String?,
         objectiveId: String,
         state: CardGeneratorState,
         objectives: MutableMap<String, BingoObjective> = mutableMapOf(),
     ): Map<String, BingoObjective>? {
-        val objective = objectiveManager.find(objectiveId, state) ?: return null
+        val id = objectiveType?.let { "$it!$objectiveId" } ?: objectiveId
+        val objective = objectiveManager.find(id, state) ?: return null
 
         objectives[objectiveId] = objective
 
         val isResolved = objective.dependsOnObjectives.all {
-            objectives.containsKey(it) || createObjectives(it, state, objectives) != null
+            objectives.containsKey(it) || createObjectives(null, it, state, objectives) != null
         }
 
         // if any dependencies fail to resolve, return null

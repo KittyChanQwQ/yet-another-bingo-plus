@@ -15,12 +15,21 @@ import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = TierListEntry.Serializer::class)
-data class TierListEntry(
+class TierListEntry(
+    val type: String?,
     val item: String,
 ) {
 
     var listName: String = "[unknown]"
     var tierLabel: TierLabel? = null
+
+    override fun hashCode(): Int {
+        return item.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is TierListEntry && other.item == item
+    }
 
     @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
     companion object Serializer : KSerializer<TierListEntry> {
@@ -32,8 +41,15 @@ data class TierListEntry(
         override fun deserialize(decoder: Decoder): TierListEntry {
             val element = (decoder as JsonDecoder).decodeJsonElement()
             return when {
-                element is JsonArray -> TierListEntry("")
-                else -> TierListEntry(element.jsonPrimitive.content)
+                element is JsonArray -> TierListEntry(null, "")
+                else -> {
+                    val content = element.jsonPrimitive.content
+                    TierListEntry(
+                        type = content.substringBefore('!', missingDelimiterValue = "")
+                            .takeIf { it.isNotEmpty() },
+                        item = content.substringAfterLast('!')
+                    )
+                }
             }
         }
 
