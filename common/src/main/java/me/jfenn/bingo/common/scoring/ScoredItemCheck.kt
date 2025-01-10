@@ -85,8 +85,8 @@ internal class ScoredItemCheck(
                         log.info("[ScoredItemCheck] ${player?.name ?: team.id} got ${objective.id}")
 
                         // If consume items is enabled, attempt to remove the scored item from the player
-                        // (incompatible if inventory mode is enabled)
-                        if (card.options.isConsumeItemsMode && !card.options.isInventoryMode) {
+                        // (incompatible if inventory mode is enabled or if lobby mode is _not_ enabled)
+                        if (card.options.isConsumeItemsMode && !card.options.isInventoryMode && state.isLobbyMode) {
                             player?.uuid
                                 ?.let { playerManager.getPlayer(it) }
                                 ?.let { confiscateScoredItem(it, card, objective) }
@@ -172,29 +172,39 @@ internal class ScoredItemCheck(
     /**
      * Find the innermost objective that was captured (descending into opponent, inverse, some_of, or all_of objective types)
      */
-    private fun getInnerCapturedObjective(
+    private fun getInnerCapturedObjectives(
         player: IPlayerHandle,
         card: BingoCard,
         objective: BingoObjective,
         recursionLimit: Int = 10,
-    ): BingoObjective {
-        if (recursionLimit <= 0)
-            return objective
-
-        val capturedObjective = when (objective) {
-            is BingoObjective.SomeOfEntry -> objective.someOfObjectives
-                .mapNotNull { card.objectives[it] }
-                .maxByOrNull { it.players[player.uuid]?.instant ?: Instant.DISTANT_PAST }
-            is BingoObjective.InverseEntry -> card.objectives[objective.inverseObjective]
-            is BingoObjective.OpponentEntry -> card.objectives[objective.opponentObjective]
-            else -> objective
+    ): Sequence<BingoObjective> = sequence {
+        if (recursionLimit <= 0) {
+            yield(objective)
+            return@sequence
         }
 
-        return when (capturedObjective) {
-            is BingoObjective.SomeOfEntry,
-            is BingoObjective.InverseEntry,
-            is BingoObjective.OpponentEntry -> getInnerCapturedObjective(player, card, capturedObjective, recursionLimit-1)
-            else -> capturedObjective ?: objective
+        val capturedObjectives: Sequence<BingoObjective> = when (objective) {
+            is BingoObjective.SomeOfEntry -> objective.someOfObjectives
+                .asSequence()
+                .mapNotNull { card.objectives[it] }
+                .filter { it.playersHolding.containsKey(player.uuid) }
+                .sortedByDescending { it.playersHolding[player.uuid]?.instant ?: Instant.DISTANT_PAST }
+                // take only the most recently captured objectives that count towards the goal
+                .take(objective.valueMin.coerceAtLeast(1))
+            is BingoObjective.InverseEntry -> sequenceOf(card.objectives[objective.inverseObjective]).filterNotNull()
+            is BingoObjective.OpponentEntry -> sequenceOf(card.objectives[objective.opponentObjective]).filterNotNull()
+            else -> sequenceOf(objective)
+        }
+
+        for (capturedObjective in capturedObjectives) {
+            when (capturedObjective) {
+                is BingoObjective.SomeOfEntry,
+                is BingoObjective.InverseEntry,
+                is BingoObjective.OpponentEntry -> {
+                    yieldAll(getInnerCapturedObjectives(player, card, capturedObjective, recursionLimit-1))
+                }
+                else -> yield(capturedObjective)
+            }
         }
     }
 
@@ -203,10 +213,9 @@ internal class ScoredItemCheck(
         card: BingoCard,
         objective: BingoObjective,
     ) {
-        val itemObjective = getInnerCapturedObjective(player, card, objective) as? BingoObjective.ItemEntry
-            ?: return
-
-        itemObjectiveManager.confiscateScoredItem(player, itemObjective)
+        getInnerCapturedObjectives(player, card, objective)
+            .filterIsInstance<BingoObjective.ItemEntry>()
+            .forEach { itemObjectiveManager.confiscateScoredItem(player, it) }
     }
 
     private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean) {

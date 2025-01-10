@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.options.optionsContext
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
@@ -46,6 +47,11 @@ class BingoModeCommand(
                     executes { toggleCardMode(BingoCardOptions::isHiddenItemsMode) }
                 }
                 literal("consume_items") {
+                    requires {
+                        hasState(GameState.PREGAME, GameState.PLAYING)
+                                && hasPermission(Permission.CONFIGURE_GAME)
+                                && scope.get<BingoState>().isLobbyMode
+                    }
                     executes { toggleCardMode(BingoCardOptions::isConsumeItemsMode) }
                 }
                 literal("infinite") {
