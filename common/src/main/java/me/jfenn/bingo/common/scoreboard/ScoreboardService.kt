@@ -11,14 +11,13 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.ITextSerializer
-import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.PlayerGameMode
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import me.jfenn.bingo.platform.scoreboard.ScoreChange
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.world.GameMode
 
 class ScoreboardService(
     private val state: BingoState,
@@ -27,7 +26,6 @@ class ScoreboardService(
     private val playerSettingsService: PlayerSettingsService,
     private val cardViewService: CardViewService,
     private val mapItemService: MapItemService,
-    private val itemStackFactory: IItemStackFactory,
     private val textProvider: TextProvider,
     private val textSerializer: ITextSerializer,
     private val teamService: TeamService,
@@ -54,9 +52,9 @@ class ScoreboardService(
         if (cardViewService.supportsCardHud(player)) return true
 
         // if the player is holding the map item, show the scoreboard; otherwise, hide it
-        val isHoldingMapItem = player.player.interactionManager.gameMode != GameMode.SURVIVAL
-                || mapItemService.isMapItem(itemStackFactory.forStack(player.player.mainHandStack))
-                || mapItemService.isMapItem(itemStackFactory.forStack(player.player.offHandStack))
+        val isHoldingMapItem = player.gameMode != PlayerGameMode.SURVIVAL
+                || mapItemService.isMapItem(player.mainHandStack)
+                || mapItemService.isMapItem(player.offHandStack)
 
         return isHoldingMapItem
     }

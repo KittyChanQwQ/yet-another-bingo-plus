@@ -2,10 +2,7 @@ package me.jfenn.bingo.impl
 
 import com.mojang.authlib.GameProfile
 import me.jfenn.bingo.common.scope.BingoKoin
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.PlayerSoundCategory
-import me.jfenn.bingo.platform.PlayerSoundEvent
+import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
 import me.jfenn.bingo.platform.item.IItemStack
@@ -34,6 +31,7 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.minecraft.util.UseAction
 import net.minecraft.util.hit.HitResult
+import net.minecraft.world.GameMode
 import org.joml.Vector3d
 import java.util.*
 
@@ -201,6 +199,18 @@ class PlayerHandle(
         }
     }
 
+    override var gameMode: PlayerGameMode
+        get() = player.interactionManager.gameMode.toGameMode()
+        set(value) {
+            player.changeGameMode(value.toGameMode())
+        }
+
+    override val mainHandStack: IItemStack
+        get() = getItemStackFactory().forStack(player.mainHandStack)
+
+    override val offHandStack: IItemStack
+        get() = getItemStackFactory().forStack(player.offHandStack)
+
     override fun allHeldStacks(): Sequence<Pair<Int?, IItemStack>> {
         return sequence {
             // yield all items in inventory
@@ -303,4 +313,18 @@ private fun PlayerSoundCategory.toSoundCategory() = when (this) {
     PlayerSoundCategory.MAIN -> SoundCategory.MASTER
     PlayerSoundCategory.RECORDS -> SoundCategory.RECORDS
     PlayerSoundCategory.BLOCKS -> SoundCategory.BLOCKS
+}
+
+private fun GameMode.toGameMode() = when (this) {
+    GameMode.SURVIVAL -> PlayerGameMode.SURVIVAL
+    GameMode.CREATIVE -> PlayerGameMode.CREATIVE
+    GameMode.ADVENTURE -> PlayerGameMode.ADVENTURE
+    GameMode.SPECTATOR -> PlayerGameMode.SPECTATOR
+}
+
+private fun PlayerGameMode.toGameMode() = when (this) {
+    PlayerGameMode.SURVIVAL -> GameMode.SURVIVAL
+    PlayerGameMode.CREATIVE -> GameMode.CREATIVE
+    PlayerGameMode.ADVENTURE -> GameMode.ADVENTURE
+    PlayerGameMode.SPECTATOR -> GameMode.SPECTATOR
 }

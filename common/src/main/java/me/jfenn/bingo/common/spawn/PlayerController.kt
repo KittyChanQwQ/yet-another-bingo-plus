@@ -76,27 +76,27 @@ internal class PlayerController(
             GameState.UNINITIALIZED,
             GameState.PREGAME,
             GameState.STARTING,
-            GameState.PRELOADING -> GameMode.ADVENTURE
+            GameState.PRELOADING -> PlayerGameMode.ADVENTURE
             GameState.LOADING,
             GameState.COUNTDOWN,
             GameState.PLAYING -> when {
                 isOnActiveTeam -> when (state.state) {
-                    GameState.PLAYING -> GameMode.SURVIVAL
-                    else -> GameMode.ADVENTURE
+                    GameState.PLAYING -> PlayerGameMode.SURVIVAL
+                    else -> PlayerGameMode.ADVENTURE
                 }
-                !cardViewService.supportsCardHud(player) && vanishIntegration.isInstalled() -> GameMode.ADVENTURE
-                else -> GameMode.SPECTATOR
+                !cardViewService.supportsCardHud(player) && vanishIntegration.isInstalled() -> PlayerGameMode.ADVENTURE
+                else -> PlayerGameMode.SPECTATOR
             }
             GameState.POSTGAME -> when {
-                cardViewService.supportsCardHud(player) -> GameMode.SPECTATOR
-                else -> GameMode.CREATIVE
+                cardViewService.supportsCardHud(player) -> PlayerGameMode.SPECTATOR
+                else -> PlayerGameMode.CREATIVE
             }
         }
 
         // This indicates that a player is starting the game, or has logged back on after a game has started
         // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
         val preGameStates = arrayOf(GameState.PREGAME, GameState.STARTING, GameState.PRELOADING, GameState.LOADING, GameState.COUNTDOWN)
-        val isRespawnNeeded = (player.player.interactionManager.gameMode != gameMode || forceReset) && (state.state in preGameStates || isOnActiveTeam) && state.state != GameState.POSTGAME
+        val isRespawnNeeded = (player.gameMode != gameMode || forceReset) && (state.state in preGameStates || isOnActiveTeam) && state.state != GameState.POSTGAME
         val isStuckInLobby = player.serverWorld == lobbyWorld && state.state != GameState.PREGAME
         val isStuckInWorld = player.serverWorld != lobbyWorld && state.state == GameState.PREGAME
         if (isRespawnNeeded || isStuckInLobby || isStuckInWorld) {
@@ -110,8 +110,8 @@ internal class PlayerController(
             respawnPlayer(player)
         }
 
-        if (player.player.interactionManager.gameMode != gameMode) {
-            player.player.changeGameMode(gameMode)
+        if (player.gameMode != gameMode) {
+            player.gameMode = gameMode
         }
 
         val isVanished = updateVanishStatus(player)

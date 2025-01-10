@@ -61,6 +61,9 @@ interface IPlayerHandle : ILivingEntity {
      */
     fun canUseItem(stack: IItemStack): Boolean
 
+    var gameMode: PlayerGameMode
+    val mainHandStack: IItemStack
+    val offHandStack: IItemStack
     fun allHeldStacks(): Sequence<Pair<Int?, IItemStack>>
     fun allInventorySlots(): Sequence<Pair<Int, IItemStack>>
 
@@ -109,4 +112,11 @@ enum class PlayerSoundCategory {
     MAIN,
     RECORDS,
     BLOCKS,
+}
+
+enum class PlayerGameMode {
+    SURVIVAL,
+    CREATIVE,
+    ADVENTURE,
+    SPECTATOR
 }
