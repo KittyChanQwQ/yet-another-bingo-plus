@@ -15,6 +15,8 @@
 
 - Moved around a few items/challenges in the default lists
 
+- Improved error logs when something goes wrong with custom tier lists / objectives in a datapack
+
 - (Client) Added an unnecessary HUD transition when viewing the card.
 
 ### Bugs Squashed:
@@ -27,12 +29,24 @@
 
 - Fixed the mod not persisting some game options for the first round after the server is started
 
+- Fixed entity bossbars (wither/raid/dragon) not being removed from players when the server is reset
+
+- Fixed the vanilla preview map showing items from the previous game
+
+- The vanilla map item no longer moves to different slots when switching teams or starting the game
+  
 - When using [Vanish](https://modrinth.com/mod/vanish), spectators no longer create extra join/leave messages when logging in
 
+- Fixed datapacks breaking after "Next round" is used because `#minecraft:load` is never run
+
 - (Client) Card HUD and hint tooltips no longer overlap each other in the lobby ([#140](https://gitlab.com/horrific-tweaks/bingo/-/issues/140))
+
+- (Client) Fixed items overlapping with tooltips when many cards are displayed
 
 ### Translations
 
 - New Chinese Simplified translations by Young912!
+- New French translations by Yosh64!
+- New Portuguese translations by Lucasofchirst!
 - New Russian translations by Ofterkino, Mrpavel, Май, Lucky Wayч, and yukkovna!
 - New Swedish translations by Vica50 Rosvall!
