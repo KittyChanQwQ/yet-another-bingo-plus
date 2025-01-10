@@ -54,7 +54,6 @@ class BingoObjectiveManager(
             return goal
         }
 
-        log.debug("[BingoGoalProvider] '$identifier' could not be resolved by any objective provider.")
         return null
     }
 
@@ -89,7 +88,12 @@ class BingoObjectiveManager(
             provider.init(card)
 
         for (entry in card.entries) {
-            val objective = card.objectives[entry.objectiveId] ?: continue
+            val objective = card.objectives[entry.objectiveId]
+
+            if (objective == null) {
+                log.error("[BingoObjectiveManager] Objective data for '${entry.objectiveId}' is missing!")
+                continue
+            }
 
             val lore = buildList {
                 objective.display.lore?.let { addAll(it) }

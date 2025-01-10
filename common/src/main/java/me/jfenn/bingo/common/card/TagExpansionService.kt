@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.card
 
+import me.jfenn.bingo.common.card.objective.objectiveError
 import me.jfenn.bingo.platform.ITagAccessor
 import org.slf4j.Logger
 
@@ -13,7 +14,7 @@ class TagExpansionService(
             tagAccessor.getItemTag(item.substring(1))
                 ?.toSet()
                 ?: run {
-                    log.error("[TagExpansionService] Could not find item tag '$item'")
+                    log.objectiveError(null, "Item tag '$item' is missing!")
                     emptySet()
                 }
         } else {

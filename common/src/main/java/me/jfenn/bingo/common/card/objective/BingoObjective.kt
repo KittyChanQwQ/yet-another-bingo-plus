@@ -49,6 +49,10 @@ sealed class BingoObjective {
 
     open val dependsOnObjectives get() = emptySet<String>()
 
+    open fun satisfiesDependencies(
+        resolved: Set<String>
+    ): Boolean = resolved.containsAll(dependsOnObjectives)
+
     open val conflictsWithObjectives get() = (data?.conflictsWith ?: emptySet()) + id
 
     open fun hasAchieved(player: PlayerProfile): Boolean = players.containsKey(player.uuid)
@@ -193,6 +197,11 @@ sealed class BingoObjective {
 
         override val conflictsWithObjectives: Set<String>
             get() = super.conflictsWithObjectives + someOfObjectives
+
+        override fun satisfiesDependencies(resolved: Set<String>): Boolean {
+            // SomeOfEntry will use the amount of resolved dependencies as the min value
+            return dependsOnObjectives.any { resolved.contains(it) }
+        }
     }
 
     @Serializable

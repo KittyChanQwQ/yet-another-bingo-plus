@@ -33,3 +33,7 @@ val BINGO_WORLD_PREFIX = "${Formatting.GREEN}[BINGO]${Formatting.WHITE}"
 
 val KEYBIND_OPEN_CARD = StringKey.KeybindOpenCard.key
 val KEYBIND_TOGGLE_HUD = StringKey.KeybindToggleHud.key
+
+const val MDC_DEBUG = "$MOD_ID_BINGO:debug"
+const val MDC_FILENAME = "$MOD_ID_BINGO:filename"
+const val MDC_OBJECTIVE = "$MOD_ID_BINGO:objective"

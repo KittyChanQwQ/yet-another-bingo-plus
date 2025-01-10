@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.serialization.encodeToString
+import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.platform.ITextSerializer
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import me.jfenn.bingo.common.utils.jsonUnpretty
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
@@ -45,6 +45,7 @@ class ObjectiveDisplayService(
                     try {
                         itemStackFactory.createStack(data.item)
                     } catch (e: IllegalArgumentException) {
+                        log.objectiveError(id, "Unable to find display item ${data.item}")
                         null
                     }
                 }
@@ -66,7 +67,7 @@ class ObjectiveDisplayService(
                 image = data?.image ?: fallback.image,
             )
         } catch (e: Throwable) {
-            log.error("Unable to resolve objective display for '$id'", e)
+            log.objectiveError(id, "Unable to resolve display:", e)
             fallback
         }
     }.let { display ->

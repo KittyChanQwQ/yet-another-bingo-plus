@@ -1,10 +1,15 @@
 package me.jfenn.bingo.common.card
 
+import me.jfenn.bingo.common.MDC_DEBUG
+import me.jfenn.bingo.common.MDC_FILENAME
+import me.jfenn.bingo.common.MDC_OBJECTIVE
 import me.jfenn.bingo.common.card.data.ObjectiveRequirements
 import me.jfenn.bingo.common.card.filter.ObjectiveFilter
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
+import me.jfenn.bingo.common.card.objective.objectiveError
+import me.jfenn.bingo.common.card.objective.withMdc
 import me.jfenn.bingo.common.card.tag.TagData
 import me.jfenn.bingo.common.card.tag.TagService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
@@ -44,22 +49,32 @@ class CardService(
         objectiveManager.list().toSet()
     }
 
-    init {
-        validateLists()
-    }
-
-    private fun validateLists() {
+    fun validateLists() {
         data.tierLists.entries
             .filter { (_, list) -> Build.isDebug || list.shouldValidate }
             .forEach { (name, list) -> validateList(name, list) }
     }
 
-    private fun validateList(name: String, list: TierListConfig) {
+    private fun validateList(name: String, list: TierListConfig) = withMdc(
+        MDC_FILENAME to "$name.tierlist.json",
+        MDC_DEBUG to "true",
+    ) {
         log.info("[CardService] Validating list $name.tierlist.json...")
-        for (entry in list.expandTags(tagExpansionService).let { it.s + it.a + it.b + it.c + it.d }) {
-            val map = createObjectives(null, entry.item, CardGeneratorState.DEFAULT)
+
+        val listEntries = list.expandTags(tagExpansionService)
+            .let {
+                it.values
+                    .plus(it.s + it.a + it.b + it.c + it.d)
+                    .plus(it.groups.flatten().map { item -> TierListEntry(null, item) })
+            }
+        for (entry in listEntries) {
+            val map = createObjectives(
+                objectiveType = entry.type,
+                objectiveId = entry.item,
+                state = CardGeneratorState.DEFAULT
+            )
             if (map == null) {
-                log.error("[CardService] Could not find '${entry.item}' in tier list $name.tierlist.json")
+                log.objectiveError(entry.item, "Not found")
             }
         }
     }
@@ -472,20 +487,29 @@ class CardService(
         objectives: MutableMap<String, BingoObjective> = mutableMapOf(),
     ): Map<String, BingoObjective>? {
         val id = objectiveType?.let { "$it!$objectiveId" } ?: objectiveId
-        val objective = objectiveManager.find(id, state) ?: return null
+        return withMdc(MDC_OBJECTIVE to id) {
+            val objective = objectiveManager.find(id, state) ?: return null
 
-        objectives[objectiveId] = objective
+            objectives[objectiveId] = objective
 
-        val isResolved = objective.dependsOnObjectives.all {
-            objectives.containsKey(it) || createObjectives(null, it, state, objectives) != null
+            val resolvedObjectives = objective.dependsOnObjectives
+                .mapNotNull {
+                    objectives[it] ?: createObjectives(null, it, state, objectives)?.get(it)
+                }
+                .map { it.id }
+                .toSet()
+
+            // if any dependencies fail to resolve, return null
+            if (!objective.satisfiesDependencies(resolvedObjectives)) {
+                log.objectiveError(objectiveId, "Could not resolve dependencies")
+                return null
+            }
+
+            if (resolvedObjectives.size < objective.dependsOnObjectives.size) {
+                log.objectiveError(objectiveId, "Only ${resolvedObjectives.size} of ${objective.dependsOnObjectives.size} dependencies could be resolved")
+            }
+
+            objectives
         }
-
-        // if any dependencies fail to resolve, return null
-        if (!isResolved) {
-            log.warn("[CardService] Could not resolve all dependencies for objective '$objectiveId'")
-            return null
-        }
-
-        return objectives
     }
 }

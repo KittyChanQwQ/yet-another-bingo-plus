@@ -100,7 +100,7 @@ class SomeOfObjectiveManager(
                 .flatMap { it.playersHolding.entries }
                 .groupBy { it.key }
 
-            val progressTotal = objective.valueMin.coerceAtLeast(1).toFloat()
+            val progressTotal = objective.valueMin.coerceIn(1, objectives.size).toFloat()
 
             val teamsProgress = objectiveService.getPlayersByTeam(card)
                 .mapKeys { it.key.key }
@@ -109,8 +109,10 @@ class SomeOfObjectiveManager(
                     progress / progressTotal
                 }
 
+            // ensure that the minimum value is at most the # of successfully loaded objectives
+            val valueMin = objective.valueMin.coerceIn(0, objectives.size)
             val playersHolding = capturesByPlayer
-                .filter { it.value.size in objective.valueMin..objective.valueMax } // in order to capture, must be holding every objective
+                .filter { it.value.size in valueMin..objective.valueMax } // in order to capture, must be holding every objective
                 .mapValues { (_, captures) -> captures.map { it.value }.maxBy { it.instant } }
                 .let {
                     when {

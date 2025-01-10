@@ -77,7 +77,7 @@ class AdvancementObjectiveManager(
 
         if (advancement == null) {
             if (isDataObjective) {
-                log.error("[AdvancementObjectiveManager] ${goal.id}: Advancement ${goal.advancementId} could not be found.")
+                log.objectiveError(goal.id, "Advancement ${goal.advancementId} could not be found.")
             }
             return false
         }
@@ -106,9 +106,7 @@ class AdvancementObjectiveManager(
 
     override fun init(card: BingoCard) {
         for (goal in card.objectivesByInstance<BingoObjective.AdvancementEntry>()) {
-            if (!init(goal)) {
-                log.error("[AdvancementObjectiveManager] Unable to find advancement '${goal.advancementId}'")
-            }
+            init(goal)
         }
     }
 

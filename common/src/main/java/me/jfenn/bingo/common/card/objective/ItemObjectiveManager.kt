@@ -71,7 +71,7 @@ class ItemObjectiveManager(
             itemStackFactory.createStack(objective.itemId, count = objective.itemCount)
         } catch (e: Throwable) {
             if (isDataObjective) {
-                log.error("[ItemObjectiveManager] ${objective.id}: Item ${objective.itemId} could not be found.")
+                log.objectiveError(objective.id, "Item ${objective.itemId} could not be found.")
             }
             return false
         }
@@ -80,7 +80,7 @@ class ItemObjectiveManager(
         val isComponentsSuccessful = objective.itemComponents?.let { stack.setComponentsString(it) } ?: true
 
         if (!isNbtSuccessful || !isComponentsSuccessful) {
-            log.error("[ItemObjectiveManager] Item ${objective.itemId} NBT is not in a valid format")
+            log.objectiveError(objective.id, "Item ${objective.itemId} NBT failed to parse")
             return false
         }
 
@@ -112,7 +112,7 @@ class ItemObjectiveManager(
     override fun init(card: BingoCard) {
         for (goal in card.objectivesByInstance<BingoObjective.ItemEntry>()) {
             if (!init(goal)) {
-                log.error("[ItemGoalManager] Unable to find item '${goal.itemId}'")
+                log.objectiveError(goal.id, "Unable to find item '${goal.itemId}'")
             }
         }
     }

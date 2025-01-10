@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.data
 
+import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.utils.measureTime
 import org.slf4j.Logger
@@ -12,6 +13,7 @@ class DataLoaderManager(
     private val tierListLoader: TierListLoader,
     private val tagLoader: TagLoader,
     private val unobtainableItemsLoader: UnobtainableItemsLoader,
+    private val cardService: CardService,
 ) {
     init {
         events.onDataReload { (_, manager) ->
@@ -29,6 +31,8 @@ class DataLoaderManager(
                     manager
                 )
             }
+
+            cardService.validateLists()
         }
     }
 }

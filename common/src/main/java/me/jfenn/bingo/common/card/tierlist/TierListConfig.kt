@@ -12,15 +12,15 @@ data class TierListConfig(
     // Contains uncategorized entries
     val values: Set<TierListEntry> = emptySet(),
     @SerialName("S")
-    val s: Set<TierListEntry>,
+    val s: Set<TierListEntry> = emptySet(),
     @SerialName("A")
-    val a: Set<TierListEntry>,
+    val a: Set<TierListEntry> = emptySet(),
     @SerialName("B")
-    val b: Set<TierListEntry>,
+    val b: Set<TierListEntry> = emptySet(),
     @SerialName("C")
-    val c: Set<TierListEntry>,
+    val c: Set<TierListEntry> = emptySet(),
     @SerialName("D")
-    val d: Set<TierListEntry>,
+    val d: Set<TierListEntry> = emptySet(),
     val groups: List<Set<String>> = emptyList(),
 ) {
 

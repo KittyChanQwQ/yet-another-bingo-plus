@@ -1,9 +1,6 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
@@ -13,8 +10,10 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MI
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.utils.formatTitle
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
+import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import org.slf4j.Logger
@@ -44,14 +43,18 @@ class ScoreboardObjectiveManager(
             data = data,
             valueMin = data.min.resolve(state),
             valueMax = data.max.resolve(state),
-        )
+        ).takeIf { init(it) }
     }
 
     private fun init(objective: BingoObjective): Boolean {
         if (objective !is BingoObjective.ScoreboardEntry) return false
 
         val scoreboard = scoreboardManager.getByName(server, objective.data.scoreboardName)
-            ?: return false
+
+        if (scoreboard == null) {
+            log.objectiveError(objective.id, "Could not find scoreboard ${objective.data.scoreboardName} - is it not created yet?")
+            return false
+        }
 
         objective.scoreboard = scoreboard
 
@@ -75,9 +78,7 @@ class ScoreboardObjectiveManager(
 
     override fun init(card: BingoCard) {
         for (goal in card.objectivesByInstance<BingoObjective.ScoreboardEntry>()) {
-            if (!init(goal)) {
-                log.error("[StatsObjectiveManager] Unable to find scoreboard ${goal.data.scoreboardName} for ${goal.id}")
-            }
+            init(goal)
         }
     }
 
