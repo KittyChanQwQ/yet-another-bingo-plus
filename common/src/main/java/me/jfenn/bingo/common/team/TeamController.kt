@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.team
 
+import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -44,7 +45,7 @@ class TeamController(
 
                     bingoTeam.nameText = text.serialized(mcTeam.displayName)
                     bingoTeam.textColor = mcTeam.color
-                } else if (mcTeam != null && state.isLobbyMode) {
+                } else if (mcTeam != null && state.isLobbyMode && !teamId.startsWith(BINGO_TEAM_PREFIX)) {
                     log.info("[TeamController] Creating a bingo team for '$teamId'")
                     val newTeam = BingoTeam(
                         id = mcTeam.name,

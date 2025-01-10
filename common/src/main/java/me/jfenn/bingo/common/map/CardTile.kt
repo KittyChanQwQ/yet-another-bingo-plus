@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -67,8 +68,8 @@ data class CardTile(
                     "light_purple" -> "pink"
                     "gold" -> "orange"
                     "dark_gray" -> "gray"
-                    else -> color.removePrefix("bingo_")
-                }.let { BingoTeamKey("bingo_$it") }
+                    else -> color.removePrefix(BINGO_TEAM_PREFIX)
+                }.let { BingoTeamKey(BINGO_TEAM_PREFIX + it) }
             }
 
             return CardTile(
@@ -198,8 +199,8 @@ data class CardTile(
                         "light_purple" -> "pink"
                         "gold" -> "orange"
                         "dark_gray" -> "gray"
-                        else -> color.removePrefix("bingo_")
-                    }.let { BingoTeamKey("bingo_$it") }
+                        else -> color.removePrefix(BINGO_TEAM_PREFIX)
+                    }.let { BingoTeamKey(BINGO_TEAM_PREFIX + it) }
                 },
             )
         }
@@ -272,8 +273,8 @@ data class CardTile(
                     "light_purple" -> "pink"
                     "gold" -> "orange"
                     "dark_gray" -> "gray"
-                    else -> color.removePrefix("bingo_")
-                }.let { BingoTeamKey("bingo_$it") }
+                    else -> color.removePrefix(BINGO_TEAM_PREFIX)
+                }.let { BingoTeamKey(BINGO_TEAM_PREFIX + it) }
             }
             return CardTile(
                 image = CardTileImage(
