@@ -14,6 +14,7 @@ import me.jfenn.bingo.platform.block.IBlockState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.util.Identifier
 import net.minecraft.util.Unit
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.chunk.Chunk
@@ -92,6 +93,12 @@ class ServerWorldFactory(
                 server.loadWorld()
             }
             tickKeepAlive(server)
+
+            // invoke "#minecraft:load" again, as scoreboards will be reset
+            with(server.commandFunctionManager) {
+                getTag(Identifier("minecraft:load"))
+                    .forEach { execute(it, scheduledCommandSource) }
+            }
         } finally {
             server.saving = false
             ServerChunkManagerMixinHelper.shouldCancelSaving = false
