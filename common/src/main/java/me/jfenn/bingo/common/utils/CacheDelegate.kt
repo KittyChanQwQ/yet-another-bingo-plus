@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.utils
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import java.lang.ref.SoftReference
 import kotlin.time.Duration
 
 class CacheDelegateArg<T, A>(
@@ -9,20 +10,19 @@ class CacheDelegateArg<T, A>(
     private val getter: (A) -> T,
 ) {
     private var lastExecution: Instant? = null
-    private var lastValue: T? = null
+    private var lastValue: SoftReference<T>? = null
 
     fun get(arg: A): T {
         val now = Clock.System.now()
-        return if (lastExecution?.let { it + timeout > now } == true) {
+        if (lastExecution?.let { it + timeout > now } == true) {
             lastExecution = now
-            // lastValue should never be null here (unless T is nullable and getter returned null)
-            (@Suppress("UNCHECKED_CAST") (lastValue as T))
-        } else {
-            val value = getter(arg)
-            lastExecution = now
-            lastValue = value
-            value
+            lastValue?.get()?.let { return it }
         }
+
+        val value = getter(arg)
+        lastExecution = now
+        lastValue = SoftReference(value)
+        return value
     }
 }
 
