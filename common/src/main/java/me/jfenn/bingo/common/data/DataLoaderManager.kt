@@ -9,6 +9,7 @@ class DataLoaderManager(
     events: ScopedEvents,
     private val log: Logger,
     private val scopedData: ScopedData,
+    private val filterPresetsLoader: FilterPresetsLoader,
     private val objectiveLoader: ObjectiveLoader,
     private val tierListLoader: TierListLoader,
     private val tagLoader: TagLoader,
@@ -18,6 +19,7 @@ class DataLoaderManager(
     init {
         events.onDataReload { (_, manager) ->
             log.measureTime("[DataLoader] Reloading bingo data...") {
+                scopedData.filterPresets = filterPresetsLoader.loadFilterPresets(manager)
                 scopedData.objectives = objectiveLoader.loadObjectives(manager)
                 scopedData.tierLists = tierListLoader.loadTierLists(manager)
                 scopedData.tags = tagLoader.loadTags(manager)

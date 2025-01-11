@@ -12,20 +12,6 @@ data class ObjectiveFilterList(
 
     constructor(vararg filter: ObjectiveFilter) : this(filter.toList())
 
-    fun withFilter(filter: ObjectiveFilter): ObjectiveFilterList {
-        return this.copy(
-            list = list.filterNot { it.tag == filter.tag }
-                .plus(filter)
-                .sortedBy { it.tag }
-        )
-    }
-
-    fun withoutFilter(tag: String): ObjectiveFilterList {
-        return this.copy(
-            list = list.filterNot { it.tag == tag }
-        )
-    }
-
     override fun iterator(): Iterator<ObjectiveFilter> {
         return list.iterator()
     }
@@ -47,13 +33,7 @@ data class ObjectiveFilterList(
         )
 
         val PRESETS = mapOf(
-            ObjectiveFilter.EVERYTHING to EVERYTHING,
-            ObjectiveFilter.IN_OVERWORLD to ObjectiveFilterList(
-                ObjectiveFilter.Include(ObjectiveFilter.IN_OVERWORLD),
-                ObjectiveFilter.Exclude(ObjectiveFilter.TEDIOUS),
-                ObjectiveFilter.Exclude(ObjectiveFilter.UNCATEGORIZED),
-                ObjectiveFilter.Exclude(ObjectiveFilter.UNOBTAINABLE)
-            )
+            ObjectiveFilter.EVERYTHING to EVERYTHING
         )
 
         fun fromString(str: String): ObjectiveFilterList {
@@ -70,6 +50,7 @@ data class ObjectiveFilterList(
                         else -> null
                     }
                 }
+                .sortedBy { it.tag }
 
             return ObjectiveFilterList(list)
         }

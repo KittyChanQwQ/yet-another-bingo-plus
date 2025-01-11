@@ -114,6 +114,7 @@ internal class OptionsService(
         ctx: Context,
         card: BingoCard = cardViewService.getPlayerCard(ctx.player),
         filter: ObjectiveFilterList,
+        includePresetDetails: Boolean = false
     ) {
         card.options.itemFilter = filter
         // when changed, update the bingo card
@@ -121,7 +122,7 @@ internal class OptionsService(
             cardService.generateCard(card)
         }
         ctx.sendFeedback(
-            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsFilter, objectiveFilterService.formatFilter(filter).formatted(Formatting.WHITE))
+            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsFilter, objectiveFilterService.formatFilter(filter, includePresetDetails).formatted(Formatting.WHITE))
         )
     }
 
@@ -399,7 +400,7 @@ internal class OptionsService(
 
         text.string(StringKey.OptionsFilter)
             .append(": ")
-            .append(objectiveFilterService.formatFilter(card.options.itemFilter).formatted(Formatting.YELLOW))
+            .append(objectiveFilterService.formatFilter(card.options.itemFilter, false).formatted(Formatting.YELLOW))
             .formatted(Formatting.GRAY)
             .also {
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo filter"))

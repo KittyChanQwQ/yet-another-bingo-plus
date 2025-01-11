@@ -22,7 +22,6 @@ import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.MigrationHandler
-import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.data.*
@@ -45,6 +44,7 @@ import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.menu.tooltips.TooltipController
 import me.jfenn.bingo.common.menu.tooltips.TooltipService
+import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.ready.ReadyCommand
 import me.jfenn.bingo.common.ready.ReadyController
 import me.jfenn.bingo.common.ready.ReadyService
@@ -136,6 +136,7 @@ val commonModule = module {
         scoped { get<BingoScope>().state }
         scoped { get<BingoState>().options }
 
+        scopedOf(::FilterPresetsLoader)
         scopedOf(::ObjectiveLoader)
         scopedOf(::TierListLoader)
         scopedOf(::TagLoader)

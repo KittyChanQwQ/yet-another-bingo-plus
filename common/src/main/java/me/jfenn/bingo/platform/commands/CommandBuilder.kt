@@ -19,7 +19,7 @@ class CommandBuilder(
 
     fun string(
         name: String,
-        suggestions: (IExecutionContext.() -> Iterable<String>)? = null,
+        suggestions: (IExecutionContext.(String) -> Iterable<String>)? = null,
         greedy: Boolean = false,
         configure: CommandBuilder.(arg: CommandArgument<String>) -> Unit
     ) {
@@ -108,7 +108,7 @@ sealed class CommandArgument<T> {
 
     class String(
         override val name: kotlin.String,
-        val suggestions: (IExecutionContext.() -> Iterable<kotlin.String>)?,
+        val suggestions: (IExecutionContext.(kotlin.String) -> Iterable<kotlin.String>)?,
         val greedy: Boolean,
     ) : CommandArgument<kotlin.String>()
 

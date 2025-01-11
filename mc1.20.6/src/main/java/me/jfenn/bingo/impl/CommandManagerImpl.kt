@@ -142,7 +142,7 @@ class CommandManagerImpl(
 
 class SuggestionProviderImpl(
     private val isGreedy: Boolean,
-    private val callback: IExecutionContext.() -> Iterable<String>,
+    private val callback: IExecutionContext.(String) -> Iterable<String>,
 ) : SuggestionProvider<ServerCommandSource> {
     private fun String.quoteIfNecessary(): String {
         return if (!isGreedy && contains(Regex("[^A-Za-z0-9\\-_]")))
@@ -155,14 +155,8 @@ class SuggestionProviderImpl(
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
         val ctx = ExecutionContextImpl(context)
-        val suggestions = callback.invoke(ctx).map { it.quoteIfNecessary() }
-
-        for (suggestion in suggestions) {
-            if (CommandSource.shouldSuggest(builder.remaining, suggestion)) {
-                builder.suggest(suggestion)
-            }
-        }
-
+        val suggestions = callback.invoke(ctx, builder.remaining).map { it.quoteIfNecessary() }
+        CommandSource.suggestMatching(suggestions, builder)
         return builder.buildFuture()
     }
 }
