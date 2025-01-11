@@ -118,6 +118,11 @@ data class TierListConfig(
         }
     }
 
+    fun contains(objectiveId: String): Boolean {
+        val entry = TierListEntry(null, objectiveId)
+        return isCategorized(objectiveId) || values.contains(entry)
+    }
+
     fun isCategorized(objectiveId: String): Boolean {
         val entry = TierListEntry(null, objectiveId)
         return s.contains(entry)

@@ -279,8 +279,7 @@ class CardService(
 
         // Determine the set of uncategorized objectives & add them to the tags for filtering
         val uncategorizedObjectives = supportedObjectiveIds.get(Unit)
-            .plus(tierList.values.map { it.item }.toSet())
-            .filterNot { tierList.isCategorized(it) }
+            .filterNot { tierList.contains(it) }
             .map { TierListEntry(null, it) }
             .onEach {
                 it.listName = ObjectiveFilter.UNCATEGORIZED
@@ -312,7 +311,7 @@ class CardService(
         return tierList
             .copy(
                 // include any uncategorized objectives in the list
-                values = uncategorizedObjectives.toSet()
+                values = tierList.values + uncategorizedObjectives.toSet()
             )
             .filter { entry ->
                 // apply the selected item filters to the list contents
