@@ -11,8 +11,13 @@ sealed class ObjectiveData {
     var isRoot: Boolean = true
     val display: ObjectiveDisplay.Data? = null
     val conflictsWith: Set<String> = emptySet()
-    val validate: ObjectiveRequirements? = null
+
     abstract val permanent: Boolean
+
+    @SerialName("validate")
+    private val validateRequirements: ObjectiveRequirements? = null
+    protected open fun defaultValidate(): ObjectiveRequirements? = null
+    val validate by lazy { validateRequirements ?: defaultValidate() }
 
     open val innerObjectives: List<ObjectiveDataReference> = emptyList()
     fun innerObjectiveEntries(id: String): Map<String, ObjectiveDataReference> = buildMap {
@@ -114,6 +119,8 @@ sealed class ObjectiveData {
         val objective: ObjectiveDataReference,
         override val permanent: Boolean = true,
     ) : ObjectiveData() {
+        override fun defaultValidate() = ObjectiveRequirements(minTeams = 2)
+
         override val innerObjectives: List<ObjectiveDataReference>
             get() = listOf(objective)
     }

@@ -1,5 +1,6 @@
 {
   "filters": {
+    "items": "+type=item -tedious -uncategorized -unobtainable",
     "in_overworld": "+in_overworld -tedious -uncategorized -unobtainable",
     "advancements": "+type=advancement -tedious -unobtainable",
     "simplified": "+simplified -tedious -unobtainable"
