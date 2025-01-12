@@ -59,6 +59,7 @@ lines to win the game.
 - **Unlock Recipes**: Gives players all crafting recipes at the start of the game.
 - **Keep Inventory**: Sets the `keepInventory` gamerule. (players keep their items on respawn)
 - **Elytra**: Gives all players an elytra and infinite rockets throughout the game.
+- **Night Vision**: Gives all players the night vision effect. (can be toggled individually with `/bingoprefs`)
 - **Allow PvP**: Toggles whether players can attack each other.
 - **Spawn Kit**: Give teams or players a configurable set of starting gear.
 
