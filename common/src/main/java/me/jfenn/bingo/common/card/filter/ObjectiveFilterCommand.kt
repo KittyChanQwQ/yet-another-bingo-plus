@@ -8,12 +8,17 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.options.optionsContext
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
+import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 
 class ObjectiveFilterCommand(
     commandManager: ICommandManager,
+    private val text: TextProvider,
 ) {
     private fun IExecutionContext.listTags(): List<String> {
         return scope.get<TagService>().getTags().keys.toList()
@@ -37,14 +42,20 @@ class ObjectiveFilterCommand(
         val substr = partial.substringBeforeLast(' ', "")
             .takeIf { it.isNotEmpty() }
 
+        val lastPart = parts.lastOrNull().orEmpty()
+
         return listTags()
             .minus(existingTags)
             .flatMap {
                 buildList {
                     add("+$it")
                     add("-$it")
-                    for (i in 1..25) {
-                        add("$it#$i")
+                    if (lastPart.isNotEmpty() && (it.startsWith(lastPart) || lastPart.startsWith(it))) {
+                        for (i in 1..25) {
+                            add("$it#$i")
+                        }
+                    } else {
+                        add(it)
                     }
                 }
             }
@@ -79,9 +90,30 @@ class ObjectiveFilterCommand(
                             includePresetDetails = true,
                         )
                         scope.get<ScopedEvents>().onChangeOptions(Unit)
+
+                        if (!list.contains(ObjectiveFilter.Exclude(ObjectiveFilter.UNOBTAINABLE))) {
+                            sendMessage(text.string(StringKey.CommandFilterIncludesUnobtainable).formatted(Formatting.YELLOW))
+
+                            val listWithUnobtainable = ObjectiveFilterList.fromString("-${ObjectiveFilter.UNOBTAINABLE} $list")
+                            val command = filter(listWithUnobtainable.toString())
+                            Text.literal("  ")
+                                .append(Text.literal(command).formatted(Formatting.UNDERLINE))
+                                .also {
+                                    it.style = it.style.withClickEvent(
+                                        ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)
+                                    )
+                                }
+                                .let { sendMessage(it) }
+                        }
                     }
                 }
             }
+        }
+    }
+
+    companion object {
+        fun filter(filter: String): String {
+            return "/bingo filter $filter"
         }
     }
 }

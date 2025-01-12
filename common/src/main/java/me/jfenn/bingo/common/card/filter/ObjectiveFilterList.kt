@@ -50,6 +50,7 @@ data class ObjectiveFilterList(
                         else -> null
                     }
                 }
+                .distinctBy { it.tag }
                 .sortedBy { it.asString() }
 
             return ObjectiveFilterList(list)

@@ -16,6 +16,7 @@
   "bingo.installed.getting_started_wiki": "Wiki: Getting Started",
   "bingo.installed.never_show_again": "Never show this again",
   "bingo.command.end.success": "Stopped the game!",
+  "bingo.command.filter.includes_unobtainable": "This filter could include unobtainable items! You might want this instead:",
   "bingo.command.join.success": "Moved player %s onto team %s!",
   "bingo.command.shuffleteams.success": "Teams have been shuffled!",
   "bingo.command.lobby.must_run": "Error: You must run '%s' before this command.",
