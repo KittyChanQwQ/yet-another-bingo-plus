@@ -387,7 +387,7 @@ internal class OptionsService(
             .append(
                 TierLabel.entries
                     .mapIndexed { index, label ->
-                        Text.literal(card.options.itemDistribution[index].toString())
+                        Text.literal(card.options.itemDistribution.getOrNull(index).toString())
                             .formatted(label.formatting)
                     }
                     .joinText(Text.literal(" "))

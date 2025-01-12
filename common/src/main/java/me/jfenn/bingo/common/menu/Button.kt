@@ -18,6 +18,7 @@ import org.slf4j.Logger
 internal fun MenuComponent.registerButtonInteraction(
     position: Vector3d,
     tooltip: List<Text>? = null,
+    tooltipProp: Property<List<Text>?> = ConstantProperty(tooltip),
     width: Float = 1f,
     height: Float = 1f,
     playerManager: IPlayerManager = koinScope.get(),
@@ -36,13 +37,15 @@ internal fun MenuComponent.registerButtonInteraction(
     }
 
     val offset = -width / 2.0
+    val tooltipList by tooltipProp
+
     registerEntity(EntityType.INTERACTION) {
         pos = position.add(0.0, 0.0, offset, Vector3d())
         this.width = width
         this.height = height
     }.onUpdate { entity ->
-        if (tooltip != null) {
-            tooltipService[entity] = tooltip
+        tooltipList?.let {
+            tooltipService[entity] = it
         }
 
         interactionEntityEvents.onInteract(entity) { player ->
@@ -74,9 +77,10 @@ internal fun MenuComponent.registerTileButton(
     position: Vector3d,
     icon: String? = null,
     text: Text? = null,
-    textProp: Property<Text> = computedProperty { text ?: Text.empty() },
+    textProp: Property<Text> = ConstantProperty(text ?: Text.empty()),
     textScale: Float = MENU_TEXT_SCALE,
     tooltip: List<Text>? = null,
+    tooltipProp: Property<List<Text>?> = ConstantProperty(tooltip),
     isActiveProp: Property<Boolean> = ConstantProperty(false),
     blockIdentifier: String = MENU_BUTTON_MATERIAL,
     width: Double = 1.0,
@@ -91,7 +95,7 @@ internal fun MenuComponent.registerTileButton(
 
     registerButtonInteraction(
         position = position,
-        tooltip = tooltip,
+        tooltipProp = tooltipProp,
         width = width.toFloat(),
         height = height.toFloat(),
         permissionGetter = permissionGetter,

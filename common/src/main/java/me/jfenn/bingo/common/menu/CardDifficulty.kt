@@ -5,8 +5,11 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import org.joml.Vector3d
 
 internal const val CARD_DIFFICULTY_WIDTH = 1.6
@@ -33,6 +36,23 @@ internal fun MenuComponent.registerCardDifficulty(
             width = CARD_DIFFICULTY_WIDTH,
             height = MENU_LINE_HEIGHT,
             text = TierLabel.presetText(name),
+            tooltip = buildList {
+                add(
+                    text.string(StringKey.OptionsCardDifficulty)
+                        .append(": ")
+                        .append(TierLabel.presetText(name))
+                        .formatted(Formatting.GREEN)
+                )
+                add(text.string(StringKey.OptionsCardDifficultyTooltip))
+                add(
+                    TierLabel.entries
+                        .mapIndexed { index, label ->
+                            Text.literal(preset.getOrNull(index).toString())
+                                .formatted(label.formatting)
+                        }
+                        .joinText(Text.literal(" "))
+                )
+            },
             isActiveProp = computedProperty {
                 state.getActiveCard().options.itemDistribution == preset
             },

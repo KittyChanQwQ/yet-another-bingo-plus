@@ -1,15 +1,16 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import org.joml.Vector3d
 
-internal const val MENU_ITEM_FILTERS_WIDTH = 2.0
+internal const val MENU_ITEM_FILTERS_WIDTH = 2.5
 
 internal fun MenuComponent.registerItemFilters(
     position: Vector3d,
@@ -38,6 +39,18 @@ internal fun MenuComponent.registerItemFilters(
         title = text.string(StringKey.OptionsFilter),
         options = presets.keys.map {
             ObjectiveFilterList.formatName(it)
+        },
+        tooltips = presets.map { (key, value) ->
+            buildList {
+                add(
+                    text.string(StringKey.OptionsFilter)
+                        .append(": ")
+                        .append(ObjectiveFilterList.formatName(key))
+                        .formatted(Formatting.GREEN)
+                )
+                add(text.string(StringKey.OptionsFilterTooltip))
+                add(Text.literal(value.toString()).formatted(Formatting.GRAY))
+            }
         },
         selectedIndexProp = selectedIndexProp,
     ) { player, index ->

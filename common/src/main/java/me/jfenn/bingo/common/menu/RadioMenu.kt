@@ -19,6 +19,7 @@ internal fun MenuComponent.registerRadioMenu(
     height: Double,
     title: MutableText,
     options: List<Text>,
+    tooltips: List<List<Text>> = emptyList(),
     optionsPerPage: Int = (height / (MENU_LINE_HEIGHT + MENU_LINE_PADDING)).toInt() - 2,
     selectedIndexProp: MutableProperty<Int>,
     onChange: (IPlayerHandle, Int) -> Unit = { _, _ -> },
@@ -49,7 +50,10 @@ internal fun MenuComponent.registerRadioMenu(
             height = optionHeight,
             text = Text.empty(),
             textProp = computedProperty {
-                itemIndex?.let { options[it] } ?: Text.empty()
+                itemIndex?.let { options.getOrNull(it) } ?: Text.empty()
+            },
+            tooltipProp = computedProperty {
+                itemIndex?.let { tooltips.getOrNull(it) }
             },
             isActiveProp = computedProperty { selectedIndex == itemIndex },
         ) { player ->
