@@ -1,7 +1,5 @@
 package me.jfenn.bingo.integrations.voice
 
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
@@ -10,6 +8,8 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.formatTitle
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
 
 class VoiceGroupController(
     events: ScopedEvents,
@@ -28,15 +28,20 @@ class VoiceGroupController(
         return isSingleplayerTeams
     }
 
-    private val combinedGroup: IGroupHandle? by lazy {
-        val settings = config.integrations.voice.combinedGroup ?: return@lazy null
-        voiceIntegration.createGroup(settings)
-    }
+    private var combinedGroup: IGroupHandle? = null
+        get() = field ?: run {
+            val settings = config.integrations.voice.combinedGroup ?: return@run null
+            field = voiceIntegration.createGroup(settings)
+            field
+        }
 
-    private val spectatorsGroup: IGroupHandle? by lazy {
-        val settings = config.integrations.voice.spectatorGroup ?: return@lazy null
-        voiceIntegration.createGroup(settings)
-    }
+
+    private var spectatorsGroup: IGroupHandle? = null
+        get() = field ?: run {
+            val settings = config.integrations.voice.spectatorGroup ?: return@run null
+            field = voiceIntegration.createGroup(settings)
+            field
+        }
 
     private val teamGroups = mutableMapOf<BingoTeamKey, IGroupHandle?>()
     private fun createTeamGroup(team: BingoTeam): IGroupHandle? {
@@ -79,6 +84,16 @@ class VoiceGroupController(
                 else -> playerManager.getPlayers().filter { teamService.isPlaying(it) }
             }
             updateGroups(playersToUpdate)
+        }
+
+        events.onEnter(GameState.PREGAME) {
+            usingCombinedGroup = null
+            combinedGroup?.close()
+            combinedGroup = null
+            spectatorsGroup?.close()
+            spectatorsGroup = null
+            teamGroups.values.forEach { it?.close() }
+            teamGroups.clear()
         }
 
         events.onEnter(GameState.POSTGAME) {
