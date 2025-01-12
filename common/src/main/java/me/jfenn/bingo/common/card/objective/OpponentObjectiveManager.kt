@@ -56,8 +56,21 @@ class OpponentObjectiveManager(
 
             objective.teamsSeen = opponent.teamsSeen
 
+            val opponentCaptures = opponent.playersHolding.values
+                // oldest capture first
+                .sortedBy { it.instant }
+                // distinctBy keeps the first of each team; i.e. the oldest capture from each team
+                .distinctBy { it.team }
+                .let { captures ->
+                    when {
+                        // if in lockout mode, only the oldest capture is used
+                        card.options.isLockoutMode -> captures.take(1)
+                        else -> captures
+                    }
+                }
+
             val teams = objectiveService.getAllTeams()
-                .filter { team -> opponent.playersHolding.values.any { it.team != team.key } }
+                .filter { team -> opponentCaptures.any { it.team != team.key } }
                 .map { it.key }
                 .toSet()
                 .let {
