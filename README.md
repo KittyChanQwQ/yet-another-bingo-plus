@@ -52,6 +52,7 @@ lines to win the game.
 - **Inventory**: Items must remain in a team member's inventory to hold a tile. Losing an item un-marks its tile on the
   card (meaning you need to stay alive with your items in order to win).
 - **Hidden Items**: Items are not shown on the bingo card until a player discovers them.
+- **Consume Items**: Items are taken from the player whenever they are captured on a card.
 
 ### Extra Options:
 

@@ -13,6 +13,8 @@
 
   Beyond 13 teams you'll run out of distinct team colors and might have performance issues. Use at your own risk.
 
+- Redesigned card textures in the "Classic" resource pack!
+
 - Moved around a few items/challenges in the default lists
 
 - Improved error logs when something goes wrong with custom tier lists / objectives in a datapack
@@ -38,6 +40,8 @@
 - When using [Vanish](https://modrinth.com/mod/vanish), spectators no longer create extra join/leave messages when logging in
 
 - Fixed datapacks breaking after "Next round" is used because `#minecraft:load` is never run
+
+- Removes combined voice chat groups when resetting the game
 
 - (Client) Card HUD and hint tooltips no longer overlap each other in the lobby ([#140](https://gitlab.com/horrific-tweaks/bingo/-/issues/140))
 
