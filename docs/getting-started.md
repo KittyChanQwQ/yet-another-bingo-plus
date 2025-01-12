@@ -28,6 +28,9 @@ Next, you'll need to download the following mod files and place them in the Mine
 
 - [Fabric API](https://modrinth.com/mod/fabric-api)
 - [Yet Another Minecraft BINGO](https://modrinth.com/mod/yet-another-minecraft-bingo)
+- [Mod Menu](https://modrinth.com/mod/modmenu) (optional, needed for the config screen)
+- [YetAnotherConfigLib](https://modrinth.com/mod/yacl) (optional, needed for the config screen)
+- [Scoreboard Overhaul](https://modrinth.com/mod/scoreboard-overhaul) (optional)
 
 ::: warning
 Make sure that the versions you download match your Minecraft version!

@@ -32,6 +32,12 @@ all off for the default behavior.
 
 	It's a mystery! Good luck crafting every variant of wooden fence \:)
 
+- #### Consume Items
+
+    Items are taken from the player when they are captured on a card.
+
+    This means that similar objectives (e.g. bucket of water and bucket of milk) cannot be completed with the same item; you would need to craft a new bucket for each. 
+
 ## Card Difficulty
 
 The "card difficulty" decides how many items will be pulled from each tier to make the card.
@@ -57,12 +63,14 @@ While the "card difficulty" affects the difficulty of the game, "filters" affect
 
 The filters menu provides built-in presets to choose from, such as "Everything", "Overworld", "Items", and "Advancements".
 
-These can be customized in more detail with the following commands:
-- `/bingo filter only in_overworld` - Selects only items that are obtainable in the overworld
-- `/bingo filter exclude tedious` - Excludes any items that are in the "tedious" list
-- `/bingo filter count 5 type=advancement` - Ensures that exactly 5 advancements are on the card (if possible).
-- `/bingo filter remove <filter>` - Undoes a previously-applied filter setting.
+These can be customized in more detail with the `/bingo filter <filter> [filter ...]` command, which supports three types of filters:
+- **Include:** `/bingo filter +in_overworld` - Selects only items that are obtainable in the overworld
+- **Exclude:** `/bingo filter -tedious` - Excludes any items that are in the "tedious" list
+- **Count:** `/bingo filter type=advancement#5` - Ensures that exactly 5 advancements are on the card (if possible).
 
-These filters apply on top of each other - if you run all of the above commands, you'll end up with a card that contains 5 advancements, overworld items, and no "tedious" objectives (music discs, froglights or potions).
+If no include filters are present, by default any objective that exists in the game can be chosen.
+
+For a more complex example, the following generates a card with only the "items" and "advancements" lists, 5 nether objectives, and no biome-specific, tedious, or unobtainable items:<br>
+`/bingo filter +items +advancements in_the_nether#5 -biome_specific -tedious -unobtainable`
 
 You can see the active filters (and other game settings) by running the `/bingo` command.
