@@ -46,7 +46,15 @@ class ServerWorldFactory(
         tickKeepAlive(server)
 
         // Remove scoreboard objectives to avoid a crash when data is reloaded in loadWorld()
-        server.scoreboard.objectives.forEach { server.scoreboard.removeObjective(it) }
+        server.scoreboard.objectives
+            .toList()
+            .forEach {
+                try {
+                    server.scoreboard.removeObjective(it)
+                } catch (e: Throwable) {
+                    log.error("[Reset] Error removing objective:", e)
+                }
+            }
 
         server.saving = true
         try {
