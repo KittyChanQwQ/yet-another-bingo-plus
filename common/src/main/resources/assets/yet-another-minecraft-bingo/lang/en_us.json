@@ -286,7 +286,7 @@
   "bingo.scoreboard.features": "Features: %s",
   "bingo.scoreboard.goal": "Goal: %s",
   "bingo.scoreboard.items_scored": "Items scored: %s",
-  "bingo.scoreboard.leading_team": "Leading team: %s",
+  "bingo.scoreboard.leading_team": "Leading: %s",
   "bingo.scoreboard.leading_team_tie": "Tie",
   "bingo.scoreboard.lines_scored": "Lines scored: %s",
   "bingo.scoreboard.mode": "Mode: %s",

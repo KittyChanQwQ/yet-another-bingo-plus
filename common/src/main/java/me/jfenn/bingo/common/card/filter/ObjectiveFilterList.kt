@@ -17,13 +17,7 @@ data class ObjectiveFilterList(
     }
 
     override fun toString(): String {
-        return list.joinToString(" ") {
-            when (it) {
-                is ObjectiveFilter.Include -> "+${it.tag}"
-                is ObjectiveFilter.Exclude -> "-${it.tag}"
-                is ObjectiveFilter.Count -> "${it.tag}#${it.count}"
-            }
-        }
+        return list.joinToString(" ") { it.asString() }
     }
 
     companion object {
@@ -35,6 +29,12 @@ data class ObjectiveFilterList(
         val PRESETS = mapOf(
             ObjectiveFilter.EVERYTHING to EVERYTHING
         )
+
+        private fun ObjectiveFilter.asString() = when (this) {
+            is ObjectiveFilter.Include -> "+$tag"
+            is ObjectiveFilter.Exclude -> "-$tag"
+            is ObjectiveFilter.Count -> "$tag#$count"
+        }
 
         fun fromString(str: String): ObjectiveFilterList {
             val list = str.split(" ")
@@ -50,7 +50,7 @@ data class ObjectiveFilterList(
                         else -> null
                     }
                 }
-                .sortedBy { it.tag }
+                .sortedBy { it.asString() }
 
             return ObjectiveFilterList(list)
         }
