@@ -9,12 +9,7 @@
 # https://gradle.org/
 # https://github.com/gradle/gradle
 
-stages:
-  - test
-  - deploy
-
 Test:
-  stage: test
   image: gradle:8.11.1-jdk21
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
@@ -37,7 +32,6 @@ Test:
       - mc*/build/libs/*.jar
 
 minecraft.horrific.dev:
-  stage: test
   trigger: horrific-tweaks/minecraft.horrific.dev
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -46,7 +40,6 @@ minecraft.horrific.dev:
       allow_failure: true
 
 Sync README:
-  stage: deploy
   image: gradle:8.11.1-jdk21
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
@@ -63,7 +56,6 @@ Sync README:
         - README.md
 
 Build and Deploy:
-  stage: deploy
   image: gradle:8.11.1-jdk21
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
