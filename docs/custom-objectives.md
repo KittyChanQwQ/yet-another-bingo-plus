@@ -51,6 +51,7 @@ These are common properties that can be specified on any objective:
 - `"type": "..."`: The type of objective: `item`, `one_of`, `all_of`, `inverse`, or `opponent`.
 - `"display": {}`: Alters what name or item the objective shows when displayed on the card
   - `"name": {"text": "Kelp!"}`: Uses [raw JSON text format](https://minecraft.wiki/w/Raw_JSON_text_format) to specify the objective name
+  - `"lore": [{"text": "Pick up a piece of Kelp"}]`: Uses an array of [raw JSON text format](https://minecraft.wiki/w/Raw_JSON_text_format) for the hover tooltip. Each array item is one line of text.
   - `"item": "minecraft:kelp"`: Changes the visual item for the objective
   - `"itemNbt": "{}"`: Sets pre-1.20.6 NBT data on the item
   - `"itemComponents": {}`: Sets post-1.20.6 JSON-encoded [data components](https://minecraft.wiki/w/Data_component_format#List_of_components) on the item
