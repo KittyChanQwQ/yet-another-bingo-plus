@@ -5,6 +5,7 @@
     "item": "minecraft:poppy"
   },
   "objectives": [
+    "#c:flowers",
     "#minecraft:flowers",
     "#minecraft:small_flowers",
     "#minecraft:bee_food",
