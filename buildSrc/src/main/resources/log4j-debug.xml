@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="DEBUG" packages="me.jfenn.bingo">
+<Configuration status="DEBUG">
     <Loggers>
         <Logger name="bingo" level="debug" additivity="false">
             <AppenderRef ref="SysOut"/>
