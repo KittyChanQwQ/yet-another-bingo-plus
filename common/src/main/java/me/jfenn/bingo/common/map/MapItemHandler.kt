@@ -1,12 +1,11 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.card.CardScreenHandler
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
@@ -14,7 +13,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import java.util.*
 
-class MapItemHandler(
+internal class MapItemHandler(
     events: ScopedEvents,
     private val server: MinecraftServer,
     private val mapItemService: MapItemService,
@@ -30,19 +29,20 @@ class MapItemHandler(
 
     private val itemCooldown = mutableMapOf<UUID, Int>()
 
-    fun showInventory(player: ServerPlayerEntity) {
+    private fun showInventory(player: ServerPlayerEntity) {
         val team = teamService.getPlayerTeam(player)
-        val card = team?.let { state.getCard(it) } ?: state.getActiveCard()
+        val view = when {
+            team == null -> state.previewMap?.view
+            else -> team.map?.view
+        } ?: return
 
         player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
             { syncId, inv, _ ->
                 CardScreenHandler(
                     syncId = syncId,
-                    options = state.options,
-                    state = state,
-                    team = teamService.getPlayerTeam(player),
-                    card = card,
+                    view = view,
+                    itemStackFactory = itemStackFactory,
                     playerInventory = inv,
                 )
             },

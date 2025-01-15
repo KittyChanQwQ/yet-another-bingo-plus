@@ -40,6 +40,7 @@ class ObjectiveDisplayService(
             val lore = data?.lore?.map {
                 textSerializer.fromJson(jsonUnpretty.encodeToString(it))
             } ?: fallback.lore
+
             val item = data?.item
                 ?.let {
                     try {

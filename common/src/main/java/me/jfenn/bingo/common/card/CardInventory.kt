@@ -1,18 +1,14 @@
 package me.jfenn.bingo.common.card
 
-import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.map.CardView
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 
 class CardInventory(
-    val options: BingoOptions,
-    val state: BingoState,
-    val team: BingoTeam?,
-    val card: BingoCard,
+    val view: CardView,
+    val itemStackFactory: IItemStackFactory,
 ) : Inventory {
     override fun clear() {
     }
@@ -29,27 +25,36 @@ class CardInventory(
         val slotX = (slot % 9) - 2
         val slotY = slot / 9
 
-        if (slotX in 0 until 5 && slotY in 0 until 5) {
-            val (entry, objective) = card.objective(slotX, slotY)
-                ?: return@List ItemStack.EMPTY
+        if (slotX !in 0 until 5 || slotY !in 0 until 5)
+            return@List ItemStack.EMPTY
 
-            // If the items are hidden, don't show them in the card inventory!
-            val isVisible = !card.options.isHiddenItemsMode ||
-                    // if the team isn't null and has seen the item
-                    (team != null && objective.hasSeen(team.key)) ||
-                    // if the team is null and the game is playing (i.e. the player is spectating)
-                    (team == null && state.state == GameState.PLAYING) ||
-                    // if the game is ended
-                    state.state == GameState.POSTGAME
+        val tile = view.tiles.getOrNull(slotX + slotY * 5)
+            ?: return@List ItemStack.EMPTY
 
-            if (isVisible) {
-                entry.display.item?.let {
-                    return@List it.stack
-                }
+        if (tile.isHidden) {
+            return@List ItemStack.EMPTY
+        }
+
+        val tileItem = tile.image.item
+        val stack = when {
+            tile.isLocked -> kotlin.runCatching { itemStackFactory.createStack("minecraft:barrier") }
+                .getOrNull()
+                ?.apply {
+                    setDisplay(tile.name, tile.lore)
+                    setHideFlags(255)
+                } ?: tileItem
+            tileItem != null -> tileItem
+            else -> {
+                kotlin.runCatching { itemStackFactory.createStack("minecraft:knowledge_book") }
+                    .getOrNull()
+                    ?.apply {
+                        setDisplay(tile.name, tile.lore)
+                        setHideFlags(255)
+                    }
             }
         }
 
-        ItemStack.EMPTY
+        stack?.stack ?: ItemStack.EMPTY
     }
 
     override fun getStack(slot: Int): ItemStack {
