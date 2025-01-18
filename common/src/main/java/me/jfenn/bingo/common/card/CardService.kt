@@ -228,6 +228,7 @@ class CardService(
 
     fun replaceEntries(
         card: BingoCard,
+        seed: Long = card.seed + 1L,
         replaceEntries: List<BingoCardEntry>,
         excludeObjectives: Set<String> = emptySet(),
     ) {
@@ -241,7 +242,7 @@ class CardService(
             .map { tier -> replaceEntries.count { (it.tier ?: maxTier) == tier } }
 
         val replacements = generateObjectives(
-            seed = card.seed,
+            seed = seed,
             cardOptions = card.options,
             excludeObjectives = excludeObjectives + card.objectives.keys,
             dist = dist,
@@ -274,7 +275,7 @@ class CardService(
         // Set the card
         val newCard = BingoCard(
             id = card.id,
-            seed = card.seed,
+            seed = seed,
             entries = entries,
             objectives = objectives,
             options = card.options
@@ -454,33 +455,41 @@ class CardService(
                 tag to filterDist
             }
 
+        fun createObjectivePair(entry: TierListEntry): GeneratedObjective? {
+            val objectiveMap = createObjectives(entry.type, entry.item, state)
+                ?: return null
+
+            val objectiveConflicts = objectiveMap.values
+                .flatMap { it.conflictsWithObjectives }
+                .filter { it != entry.item } // any direct objectiveId conflicts are handled by list.pick()
+            if (objectiveConflicts.any { excludedObjectives.contains(it) })
+                return null
+
+            return GeneratedObjective(
+                entry = BingoCardEntry(
+                    objectiveId = entry.item,
+                    tier = entry.tierLabel,
+                    source = entry.listName,
+                ),
+                objectives = objectiveMap,
+            )
+        }
+
+        fun addToExcluded(objective: GeneratedObjective) {
+            // if the chosen item is in any item groups, exclude all of those groups
+            excludedObjectives.add(objective.entry.objectiveId)
+            for (group in tierList.groups.filter { group -> group.contains(objective.entry.objectiveId) }) {
+                excludedObjectives.addAll(group)
+            }
+
+            // add any dependencies to the excluded list to prevent conflicting goals
+            // - this prevents "craft a shield" and "never obtain shield" from appearing on the same card
+            excludedObjectives.addAll(objective.objectives.values.flatMap { it.conflictsWithObjectives })
+        }
+
         // Pick the given number of items from the tier list for each tier
         for ((tierIndex, tier) in TierLabel.entries.withIndex()) {
             var tierCountRemaining = dist[tierIndex]
-
-            fun createObjectivePair(entry: TierListEntry): GeneratedObjective? {
-                val objectiveMap = createObjectives(entry.type, entry.item, state)
-                    ?: return null
-
-                val objectiveConflicts = objectiveMap.values
-                    .flatMap { it.conflictsWithObjectives }
-                    .filter { it != entry.item } // any direct objectiveId conflicts are handled by list.pick()
-                if (objectiveConflicts.any { excludedObjectives.contains(it) })
-                    return null
-
-                // add this objective and any dependencies to the excluded list to prevent conflicting goals
-                // - this prevents "craft a shield" and "never obtain shield" from appearing on the same card
-                excludedObjectives.addAll(objectiveConflicts)
-
-                return GeneratedObjective(
-                    entry = BingoCardEntry(
-                        objectiveId = entry.item,
-                        tier = entry.tierLabel,
-                        source = entry.listName,
-                    ),
-                    objectives = objectiveMap,
-                )
-            }
 
             // First, attempt to add items that satisfy the required filter counts
             for ((tag, count) in requiredTagCounts.shuffled(random)) {
@@ -490,6 +499,7 @@ class CardService(
                     .filter { tag.contains(it.item) }
                     .mapNotNull { createObjectivePair(it) }
                     .take(itemCount)
+                    .onEach { addToExcluded(it) }
                     .toList()
                     .let {
                         items.addAll(it)
@@ -505,6 +515,7 @@ class CardService(
                 }
                 .mapNotNull { createObjectivePair(it) }
                 .take(tierCountRemaining)
+                .onEach { addToExcluded(it) }
                 .toList()
                 .let {
                     items.addAll(it)

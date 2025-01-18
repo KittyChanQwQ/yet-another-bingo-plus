@@ -127,26 +127,48 @@ internal class ScoredItemCheck(
             // Collect any entries to replace
             val entriesToReplace = mutableSetOf<BingoCardEntry>()
             for (team in teams) {
+                val scoredLines = card.lines()
+                    .filter { line ->
+                        // Select lines where the team has achieved every item
+                        line.map { card.objectives[it.objectiveId] }
+                            .all { it != null && it.hasAchieved(team.key) }
+                    }
+                    .toList()
+
                 val scoredEntries = when (card.options.goal) {
-                    is BingoGoal.Lines -> card.lines()
-                        .filter { line ->
-                            // Select lines where the team has achieved every item
-                            line.map { card.objectives[it.objectiveId] }
-                                .all { it != null && it.hasAchieved(team.key) }
-                        }
+                    // If the goal is lines, replace items from a scored line all at once
+                    is BingoGoal.Lines -> scoredLines
                         .flatten()
                         .toList()
+                    // If the goal is items, replace individual items as soon as they're scored
                     is BingoGoal.Items -> card.entries
                         .filter {
                             val objective = card.objectives[it.objectiveId]
                             objective != null && objective.hasAchieved(team.key)
                         }
+                }.filterNot { entry ->
+                    // Don't replace free spaces or inverse objectives
+                    // TODO: these could be nested in one_of/opponent which would create odd behavior
+                    val objective = card.objectives[entry.objectiveId]
+                    objective is BingoObjective.FreeSpace || objective is BingoObjective.InverseEntry
                 }
 
                 entriesToReplace.addAll(scoredEntries)
+
+                if (scoredEntries.isNotEmpty()) {
+                    val addItems = scoredEntries.size
+                    val addLines = scoredLines.count { line -> line.any { scoredEntries.contains(it) } }
+                    val addScore = TeamScore.ZERO.copy(items = addItems, lines = addLines)
+
+                    // Increment the persistent team score & reset currentScore to ZERO
+                    team.persistentScore += addScore
+                    team.currentScore = TeamScore.ZERO
+                }
             }
 
             if (entriesToReplace.isNotEmpty()) {
+                log.info("[ScoredItemCheck] Replacing {} entries on the card", entriesToReplace.size)
+
                 // Recreate the card, replacing the scored entries
                 cardService.replaceEntries(
                     card = card,
@@ -154,13 +176,9 @@ internal class ScoredItemCheck(
                     excludeObjectives = objectiveManager.listExcludedIds().toSet(),
                 )
 
-                // Increment the persistent team score & reset currentScore to ZERO
+                // Re-count current scores
                 for (team in teams) {
-                    team.persistentScore += when (card.options.goal) {
-                        is BingoGoal.Lines -> TeamScore.ZERO.copy(lines = team.currentScore.lines)
-                        is BingoGoal.Items -> TeamScore.ZERO.copy(items = team.currentScore.items)
-                    }
-                    team.currentScore = TeamScore.ZERO
+                    team.currentScore = card.getTeamScore(team)
                 }
             }
         }

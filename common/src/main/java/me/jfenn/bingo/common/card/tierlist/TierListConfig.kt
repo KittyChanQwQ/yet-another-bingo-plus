@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.common.card.TagExpansionService
 import java.util.*
+import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 @Serializable
@@ -78,7 +79,7 @@ data class TierListConfig(
         return ret
     }
 
-    fun pick(tier: TierLabel, excluding: MutableSet<String>, random: Random) = sequence {
+    private fun pickFromTier(tier: TierLabel, excluding: Set<String>, random: Random) = sequence {
         val items = getTier(tier)
         val itemWeights = getWeightedSet(items)
 
@@ -107,14 +108,17 @@ data class TierListConfig(
             // skip excluded items
             if (excluding.contains(item.item)) continue
 
-            // if the chosen item is in any item groups, exclude all of those groups
-            excluding.add(item.item)
-            for (group in groups.filter { group -> group.contains(item.item) }) {
-                excluding.addAll(group)
-            }
-
             // add the item to the list
             yield(item)
+        }
+    }
+
+    fun pick(tier: TierLabel, excluding: Set<String>, random: Random) = sequence {
+        // Sort tiers by distance from the selected tier
+        // (i.e. pick tier first, and then any items from available adjacent tiers)
+        val sortedTiers = TierLabel.entries.sortedBy { (it.ordinal - tier.ordinal).absoluteValue }
+        for (sortedTier in sortedTiers) {
+            yieldAll(pickFromTier(sortedTier, excluding, random))
         }
     }
 
