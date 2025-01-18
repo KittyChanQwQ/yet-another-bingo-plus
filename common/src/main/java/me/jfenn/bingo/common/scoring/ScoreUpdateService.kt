@@ -2,13 +2,14 @@ package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardTileImage
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -205,9 +206,10 @@ class ScoreUpdateService(
             }
     }
 
-    fun sendCardCompleted(team: BingoTeam, isWinner: Boolean) {
-        if (isWinner) {
-            val message = textProvider.string(StringKey.GameMessageCompletedCard, team.getName(textProvider, playerName = true))
+    fun sendCardCompleted(team: BingoTeam, completedCard: TeamCompletedCard) {
+        if (completedCard.isWinner) {
+            val string = if (completedCard.isAutoWin) StringKey.GameMessageCompletedCardByStalemate else StringKey.GameMessageCompletedCard
+            val message = textProvider.string(string, team.getName(textProvider, playerName = true))
                 .formatted(Formatting.YELLOW)
                 .let { formatWithTime(it) }
 
@@ -225,7 +227,7 @@ class ScoreUpdateService(
                 }
         }
 
-        val completedPacket = CardCompletedPacket(isWinner = isWinner)
+        val completedPacket = CardCompletedPacket(isWinner = completedCard.isWinner)
 
         playerManager.getPlayers()
             .filter { team.includesPlayer(it) }

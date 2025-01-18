@@ -1,19 +1,29 @@
 package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.common.card.BingoCard
+import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.options.BingoGoal
+import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamScore
 
-object ScoreService {
+internal sealed interface StalemateReason {
+    class WinByStalemate(val team: BingoTeam) : StalemateReason
+    data object Stalemate : StalemateReason
+    data object Lockout : StalemateReason
+    data object ImpossibleGoal: StalemateReason
+}
 
-    fun isLockout(state: BingoState, card: BingoCard): Boolean {
-        if (!card.options.isLockoutMode) return false
-        // if we're in inventory mode, then teams can lose tiles...
-        // so it shouldn't be possible to get into a stalemate
-        if (card.options.isInventoryMode) return false
-        // if there's only one team, then the game shouldn't end by lockout...
-        if (state.getRegisteredTeams().size <= 1) return false
+internal object ScoreService {
+
+    fun isStalemate(state: BingoState, card: BingoCard): StalemateReason? {
+        // select only teams on the card
+        val teams = state.getRegisteredTeams()
+            .filter { it.isPlaying() && it.cardId == card.id }
+
+        // if there are no teams, then I have no idea what's going on
+        if (teams.isEmpty()) return null
 
         if (
             card.entries
@@ -21,53 +31,95 @@ object ScoreService {
                 .all { it.hasAnyAchieved() }
         ) {
             // if the entire card is full, then it is a lockout (regardless of the goal)
-            return true
+            return StalemateReason.Lockout
         }
 
-        // if the goal is "full card", disregard any stalemate conditions
-        // (otherwise the game would end instantly)
         val cardGoal = card.options.goal
-        if (cardGoal.isFullCard())
-            return false
+        val comparator = when (cardGoal) {
+            is BingoGoal.Items -> compareBy { it.items }
+            is BingoGoal.Lines -> compareBy<TeamScore> { it.lines }.thenBy { it.items }
+        }
 
-        val leadingTeam = getLeadingByLines(state)
-        val leadingTeamLines = leadingTeam?.score?.lines
-            ?: state.getRegisteredTeams().maxOfOrNull { it.score.lines }
-            ?: 0
+        val leadingTeamOrTie = teams.maxWithOrNull { a, b -> comparator.compare(a.score, b.score) }
+
+        // TODO: isPossible only checks the top-level objective at the moment
+        // - for max stat values, permanent one_of objectives, etc. this needs data from the objective manager
+        // - could be stored in objective.canAchieveTeams on each tick
+        // - also needs objective.canLose
+        fun isPossible(team: BingoTeam, objective: BingoObjective): Boolean {
+            if (objective.hasAchieved(team.key)) return true
+
+            if (objective is BingoObjective.InverseEntry && objective.permanent)
+                return false
+
+            val canLoseTile = card.options.isInventoryMode
+            val isPermanentlyLocked = card.options.isLockoutMode && !canLoseTile && objective.hasAnyAchieved()
+            return !isPermanentlyLocked
+        }
 
         // if noone can beat or tie with the leading team, then it is a lockout (the leading team has won)
-        val isLockout = when (cardGoal) {
-            // this is only applicable if the goal type is Lines
-            is BingoGoal.Items -> false
-            is BingoGoal.Lines -> {
-                state.getRegisteredTeams()
-                    .filter { it.key != leadingTeam?.key }
-                    .none { team ->
-                        val possibleLines = card.countLines { objective -> objective.hasAchieved(team.key) || objective.hasNoneAchieved() }
-                        // if a team can capture more lines, and it would either tie or beat the current team
-                        possibleLines > team.score.lines && possibleLines >= leadingTeamLines
-                    }
-            }
-        }
+        val isStalemate = leadingTeamOrTie != null && teams
+            // for teams that are _not_ tied with the leading team...
+            .filter { comparator.compare(it.score, leadingTeamOrTie.score) < 0 }
+            .takeIf { it.isNotEmpty() }
+            // at least one team can tie or beat the leading score
+            ?.none { team ->
+                val possibleLines = card.countLines { objective -> isPossible(team, objective) }
+                val possibleItems = card.countItems { objective -> isPossible(team, objective) }
+                val possibleScore = TeamScore(
+                    cards = 0,
+                    lines = possibleLines,
+                    items = possibleItems,
+                )
+                // if a team can capture more tiles, and it would either tie or beat the current team
+                comparator.compare(possibleScore, team.score) > 0 && comparator.compare(
+                    possibleScore,
+                    leadingTeamOrTie.score
+                ) >= 0
+            } == true
 
-        val isGoalImpossible = when (cardGoal) {
-            is BingoGoal.Items -> {
-                state.getRegisteredTeams().none { team ->
-                    val possibleItems = card.countItems { entry -> entry.hasAchieved(team.key) || entry.hasNoneAchieved() }
-                    // if no team can capture the amount of items needed for the win condition
+        fun isGoalPossible(team: BingoTeam): Boolean {
+            return when (cardGoal) {
+                is BingoGoal.Items -> {
+                    val possibleItems = card.countItems { entry -> isPossible(team, entry) }
                     possibleItems >= cardGoal.items
                 }
-            }
-            is BingoGoal.Lines -> {
-                state.getRegisteredTeams().none { team ->
-                    val possibleLines = card.countLines { entry -> entry.hasAchieved(team.key) || entry.hasNoneAchieved() }
+                is BingoGoal.Lines -> {
+                    val possibleLines = card.countLines { entry -> isPossible(team, entry) }
                     // if no team can capture the amount of lines needed for the win condition
                     possibleLines >= cardGoal.lines
                 }
             }
         }
 
-        return isLockout || isGoalImpossible
+        val endWhen = state.options.endGameWhen
+        val isGoalImpossible = when {
+            // if the goal is "full card" when isLockoutMode=true, disregard any unreachable goals
+            // (otherwise the game would end instantly)
+            cardGoal.isFullCard() && card.options.isLockoutMode && teams.size > 1 -> false
+            // if no team can capture the amount of items/lines needed for the win condition
+            else -> {
+                // figure out the number of teams that are required to complete the game
+                val requiredTeams = when (endWhen) {
+                    is EndWhen.Never,
+                    is EndWhen.FirstWin -> 1
+                    is EndWhen.TeamsWin -> endWhen.teams
+                    is EndWhen.AllWin -> teams.size
+                }
+
+                teams.count { isGoalPossible(it) } < requiredTeams
+            }
+        }
+
+        val leadingTeam = getLeading(state)?.takeIf { it.cardId == card.id }
+
+        return when {
+            // If there is a leading team when a stalemate is triggered, that team should win the card
+            isStalemate && !isGoalImpossible && leadingTeam != null -> StalemateReason.WinByStalemate(leadingTeam)
+            isGoalImpossible -> StalemateReason.ImpossibleGoal
+            isStalemate -> StalemateReason.Stalemate
+            else -> null
+        }
     }
 
     fun getComparator(state: BingoState): Comparator<BingoTeam> {

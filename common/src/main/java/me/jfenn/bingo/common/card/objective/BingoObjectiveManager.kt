@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.card.objective
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveRequirements
-import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
+import me.jfenn.bingo.common.card.filter.ObjectiveFilterPreset
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
 import net.minecraft.text.Style
@@ -100,7 +100,7 @@ class BingoObjectiveManager(
 
                 val desc = listOfNotNull(
                     entry.tier?.let { text.string(it.string).formatted(it.formatting) },
-                    entry.source?.let { ObjectiveFilterList.formatName(it).formatted(Formatting.BLUE) },
+                    entry.source?.let { ObjectiveFilterPreset.formatName(it).formatted(Formatting.BLUE) },
                     entry.tileName?.let { Text.literal(it).formatted(Formatting.GRAY) },
                 )
 

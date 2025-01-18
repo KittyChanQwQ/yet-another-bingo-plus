@@ -53,7 +53,7 @@ internal class ScoredItemCheck(
 
     // Card completed packets should only be sent if the game continues and does not end
     // - these are stored in a map temporarily and are sent/cleared at the end of each tick
-    private val pendingCardCompletedPackets = mutableMapOf<BingoTeamKey, CardCompletedPacket>()
+    private val pendingCardCompletedPackets = mutableMapOf<BingoTeamKey, TeamCompletedCard>()
 
     private fun updateScores(
         card: BingoCard,
@@ -140,28 +140,49 @@ internal class ScoredItemCheck(
             }
         }
 
-        // skip the card if it is in a stalemate
-        if (ScoreService.isLockout(state, card)) {
-            if (options.endGameWhenStalemate) {
-                log.info("[ScoredItemCheck] Ending the game because the card has reached a stalemate")
-                // if there's only one card, end the game when there's a lockout
-                gameService.end(GameEndReason.Lockout)
-            } else {
-                log.info("[ScoredItemCheck] Skipping the current card because it has reached a stalemate")
-                // otherwise, skip to the next card when a lockout occurs
-                teams.filter { it.cardId == card.id }
-                    .forEach { onCardCompleted(it, card, false) }
+        // If the game has just ended, don't check for stalemates
+        if (state.endedAt != null)
+            return
 
-                // Notify players that the game is continuing because of endGameWhenStalemate
-                val message = text.string(
-                    StringKey.GameNotEndingStalemateNewCard,
-                    text.string(StringKey.OptionsWinBehaviorEndWhenStalemate)
-                )
-                    .formatted(Formatting.AQUA, Formatting.BOLD)
-                playerManager.getPlayers()
-                    .filter { player -> teams.any { it.includesPlayer(player) } }
-                    .forEach { it.sendMessage(message) }
+        // skip the card if it is in a stalemate
+        val stalemate = ScoreService.isStalemate(state, card)
+            .takeIf { state.state == GameState.PLAYING }
+        when (stalemate) {
+            is StalemateReason.WinByStalemate -> {
+                log.info("[ScoredItemCheck] Completing the current card because {} has won by stalemate", stalemate.team.key)
+                onCardCompleted(stalemate.team, card, isWinner = true, isAutoWin = true)
             }
+            is StalemateReason.Stalemate,
+            is StalemateReason.Lockout,
+            is StalemateReason.ImpossibleGoal -> {
+                if (options.endGameWhenStalemate) {
+                    log.info("[ScoredItemCheck] Ending the game because the card has reached a stalemate (${stalemate})")
+                    // if there's only one card, end the game when there's a lockout
+                    gameService.end(
+                        when (stalemate) {
+                            StalemateReason.Lockout -> GameEndReason.Lockout
+                            StalemateReason.ImpossibleGoal -> GameEndReason.ImpossibleGoal
+                            else -> GameEndReason.Stalemate
+                        }
+                    )
+                } else {
+                    log.info("[ScoredItemCheck] Skipping the current card because it has reached a stalemate (${stalemate})")
+                    // otherwise, skip to the next card when a lockout occurs
+                    teams.filter { it.cardId == card.id }
+                        .forEach { onCardCompleted(it, card, false) }
+
+                    // Notify players that the game is continuing because of endGameWhenStalemate
+                    val message = text.string(
+                        StringKey.GameNotEndingStalemateNewCard,
+                        text.string(StringKey.OptionsWinBehaviorEndWhenStalemate)
+                    )
+                        .formatted(Formatting.AQUA, Formatting.BOLD)
+                    playerManager.getPlayers()
+                        .filter { player -> teams.any { it.includesPlayer(player) } }
+                        .forEach { it.sendMessage(message) }
+                }
+            }
+            null -> {}
         }
 
         // we want ticks to stop at Int.MAX_VALUE so that it does not overflow into a negative
@@ -192,7 +213,7 @@ internal class ScoredItemCheck(
                 // take only the most recently captured objectives that count towards the goal
                 .take(objective.valueMin.coerceAtLeast(1))
             is BingoObjective.InverseEntry -> sequenceOf(card.objectives[objective.inverseObjective]).filterNotNull()
-            is BingoObjective.OpponentEntry -> sequenceOf(card.objectives[objective.opponentObjective]).filterNotNull()
+            is BingoObjective.OpponentEntry -> emptySequence()
             else -> sequenceOf(objective)
         }
 
@@ -218,17 +239,20 @@ internal class ScoredItemCheck(
             .forEach { itemObjectiveManager.confiscateScoredItem(player, it) }
     }
 
-    private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean) {
+    private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean, isAutoWin: Boolean = false) {
         val now = state.updatedAt ?: Instant.DISTANT_PAST
 
-        if (team.completedCards.none { it.card.id == card.id }) {
-            team.completedCards += TeamCompletedCard(
+        val completedCard = team.completedCards.find { it.card.id == card.id } ?: run {
+            TeamCompletedCard(
                 // Copy the card in its winning state
                 card = card.copy().also { objectiveManager.init(it) },
                 completedAt = now,
                 isWinner = isWinner,
+                isAutoWin = isAutoWin,
                 score = team.score,
-            )
+            ).also {
+                team.completedCards += it
+            }
         }
 
         val condition = options.winCondition
@@ -271,7 +295,7 @@ internal class ScoredItemCheck(
         }
 
         // announce that another team has completed their card
-        pendingCardCompletedPackets[team.key] = CardCompletedPacket(isWinner)
+        pendingCardCompletedPackets[team.key] = completedCard
     }
 
     private fun tickCard(card: BingoCard) {
@@ -336,9 +360,9 @@ internal class ScoredItemCheck(
             }
 
         // otherwise, send any pending card completed packets
-        for ((teamKey, packet) in cardCompletedPackets) {
+        for ((teamKey, completedCard) in cardCompletedPackets) {
             val team = state.teams[teamKey] ?: continue
-            scoreUpdateService.sendCardCompleted(team, packet.isWinner)
+            scoreUpdateService.sendCardCompleted(team, completedCard)
         }
 
         // check if the leading team has changed, and announce the leader

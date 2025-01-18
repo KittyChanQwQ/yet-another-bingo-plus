@@ -182,6 +182,7 @@ internal class GameService(
                     card = card.copy().also { objectiveManager.init(it) },
                     completedAt = endedAt,
                     isWinner = false,
+                    isAutoWin = false,
                     score = team.score
                 )
             }

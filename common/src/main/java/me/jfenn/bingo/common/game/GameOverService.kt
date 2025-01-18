@@ -75,7 +75,9 @@ class GameOverService(
         return (
             info.winningTeamKey?.let { state.teams[it] }
                 ?.let { winner ->
-                    textProvider.string(StringKey.GameEndCompletedCard, winner.getName(textProvider, playerName = true))
+                    val isAutoWin = winner.completedCards.lastOrNull()?.isAutoWin == true
+                    val string = if (isAutoWin) StringKey.GameEndCompletedCardByStalemate else StringKey.GameEndCompletedCard
+                    textProvider.string(string, winner.getName(textProvider, playerName = true))
                 }
                 ?: info.leadingTeamKey?.let { leadingTeamKey ->
                     val leader = state.teams[leadingTeamKey.leader]

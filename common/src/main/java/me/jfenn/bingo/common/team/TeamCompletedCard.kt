@@ -9,5 +9,9 @@ data class TeamCompletedCard(
     val card: BingoCard,
     val completedAt: Instant,
     val isWinner: Boolean,
+    /**
+     * True if the team won the card automatically because of a stalemate
+     */
+    val isAutoWin: Boolean,
     val score: TeamScore,
 )
