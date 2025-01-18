@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
@@ -26,7 +25,7 @@ internal fun MenuComponent.registerItemFilters(
     val selectedIndexProp = DelegatedProperty(
         getter = {
             presets.values.indexOfFirst { itemFilter ->
-                state.getActiveCard().options.itemFilter == itemFilter
+                state.getActiveCard().options.itemFilter == itemFilter.value
             }
         },
         setter = {}
@@ -37,19 +36,19 @@ internal fun MenuComponent.registerItemFilters(
         width = width,
         height = height,
         title = text.string(StringKey.OptionsFilter),
-        options = presets.keys.map {
-            ObjectiveFilterList.formatName(it)
+        options = presets.values.map {
+            it.name(text)
         },
-        tooltips = presets.map { (key, value) ->
+        tooltips = presets.values.map { value ->
             buildList {
                 add(
                     text.string(StringKey.OptionsFilter)
                         .append(": ")
-                        .append(ObjectiveFilterList.formatName(key))
+                        .append(value.name(text))
                         .formatted(Formatting.GREEN)
                 )
                 add(text.string(StringKey.OptionsFilterTooltip))
-                add(Text.literal(value.toString()).formatted(Formatting.GRAY))
+                add(Text.literal(value.value.toString()).formatted(Formatting.GRAY))
             }
         },
         selectedIndexProp = selectedIndexProp,
@@ -58,7 +57,7 @@ internal fun MenuComponent.registerItemFilters(
         optionsService.setCardFilter(
             ctx = OptionsService.Context(player),
             card = state.getActiveCard(),
-            filter = preset,
+            filter = preset.value,
         )
     }
 }

@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.data
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
+import me.jfenn.bingo.common.card.filter.ObjectiveFilterPreset
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterPresets
 import me.jfenn.bingo.common.utils.json
 import net.minecraft.resource.ResourceManager
@@ -15,7 +15,7 @@ class FilterPresetsLoader(
     fun loadFilterPresets(
         manager: ResourceManager
     ): ObjectiveFilterPresets {
-        val newPresets = mutableMapOf<String, ObjectiveFilterList>()
+        val newPresets = mutableListOf<ObjectiveFilterPreset>()
         val presets = manager.findAllResources(MOD_ID_BINGO) {
             it.path.substringAfter('/') == "filters.json"
         }

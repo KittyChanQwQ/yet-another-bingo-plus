@@ -1,9 +1,6 @@
 package me.jfenn.bingo.common.card.filter
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.common.utils.formatTitle
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 
 @Serializable(with = ObjectiveFilterSerializer::class)
 data class ObjectiveFilterList(
@@ -55,7 +52,5 @@ data class ObjectiveFilterList(
 
             return ObjectiveFilterList(list)
         }
-
-        fun formatName(name: String): MutableText = Text.translatableWithFallback("bingo.list.$name", name.formatTitle())
     }
 }

@@ -75,7 +75,7 @@ class ObjectiveFilterCommand(
                     executes {
                         val filterStr = getArgument(filterArg)
                         val presets = scope.get<ObjectiveFilterService>().getPresetFilters()
-                        val list = presets[filterStr] ?: ObjectiveFilterList.fromString(filterStr)
+                        val list = presets[filterStr]?.value ?: ObjectiveFilterList.fromString(filterStr)
 
                         val tags = listTags().toSet()
                         for (tag in list) {
