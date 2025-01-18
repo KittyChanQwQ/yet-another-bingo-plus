@@ -68,7 +68,7 @@ class ScoreUpdateService(
             isViewerOnTeam = true,
             team = team.key,
             teamColor = team.textColor,
-            score = team.currentScore.copy(items = team.score.items + 1),
+            score = team.currentScore.copy(items = team.currentScore.items + 1),
             itemId = item?.identifier?.toString(),
         )
 
@@ -94,7 +94,7 @@ class ScoreUpdateService(
                 else -> {
                     // play the doink sound
                     if (isOnTeam) {
-                        val score = team.score.items
+                        val score = team.currentScore.items
                         player.playSound(
                             PlayerSoundEvent.ENTITY_PLAYER_LEVELUP,
                             PlayerSoundCategory.RECORDS,
@@ -167,9 +167,9 @@ class ScoreUpdateService(
         }
     }
 
-    fun sendItemLost(team: BingoTeam) {
-        val playerList = team.players.mapNotNull { playerManager.getPlayer(it.uuid) }
-        for (player in playerList) {
+    fun sendItemLost(team: BingoTeam, objective: BingoObjective, card: BingoCard) {
+        val teamPlayers = team.players.mapNotNull { playerManager.getPlayer(it.uuid) }
+        for (player in teamPlayers) {
             when {
                 packetManager.scoredItemLostV1.send(player.player, ScoredItemLostPacket()) -> {}
                 else -> {
@@ -180,6 +180,62 @@ class ScoreUpdateService(
                     )
                 }
             }
+        }
+
+        // decide if all players should get notified when a different team completes an item
+        val playerList = when {
+            options.showCompletedItems -> playerManager.getPlayers()
+            else -> team.players.mapNotNull { playerManager.getPlayer(it.uuid) }
+        }
+
+        // Send players a message that the item was lost
+        for (player in playerList) {
+            // if the player has item messages turned off, skip them...
+            if (!playerSettingsService.getPlayer(player).itemMessages)
+                continue
+
+            val isOnTeam = team.includesPlayer(player.player)
+            // if playing in hidden items mode, don't reveal the item to the other teams!
+            val isItemHidden = card.options.isHiddenItemsMode && !isOnTeam
+            val itemText = Texts.bracketed(
+                when {
+                    isItemHidden -> Text.literal("*****").formatted(Formatting.OBFUSCATED)
+                    else -> objective.display.name ?: Text.literal("[unknown]")
+                }
+            )
+
+            val chatMessage = textProvider.string(
+                StringKey.GameMessageLostItem,
+                team.getName(textProvider, playerName = true, bracketed = false),
+                itemText,
+            ).let { formatWithTime(it) }
+
+            val scoreMessage = ScoreMessagePacket(
+                player = null,
+                isViewerOnTeam = isOnTeam,
+                tile = CardTile(
+                    image = CardTileImage(
+                        item = objective.display.item.takeIf { !isItemHidden },
+                        texture = objective.display.image.takeIf { !isItemHidden },
+                    ),
+                    imageList = if (!isItemHidden && objective is BingoObjective.SomeOfEntry) {
+                        objective.someOfObjectives
+                            .mapNotNull { card.objectives[it] }
+                            .take(4)
+                            .map { innerObjective ->
+                                CardTileImage(
+                                    item = innerObjective.display.item,
+                                    texture = innerObjective.display.image,
+                                )
+                            }
+                    } else emptyList(),
+                    decoration = objective.display.decoration.takeIf { !isItemHidden },
+                ),
+                messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
+                message = chatMessage,
+            )
+
+            sendScoreMessage(player, scoreMessage, chatMessage)
         }
     }
 

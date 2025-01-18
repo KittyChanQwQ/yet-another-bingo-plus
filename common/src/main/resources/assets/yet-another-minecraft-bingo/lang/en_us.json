@@ -112,6 +112,7 @@
   "bingo.game.line_count": "%s lines",
   "bingo.game.line_single": "1 line",
   "bingo.game.message.captured_item": "%s got %s",
+  "bingo.game.message.lost_item": "%s lost %s",
   "bingo.game.message.completed_card": "%s has completed their card!",
   "bingo.game.message.completed_card_by_stalemate": "%s won the card by stalemate.",
   "bingo.game.message.leading": "%s is in the lead!",

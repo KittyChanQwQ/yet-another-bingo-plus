@@ -231,11 +231,20 @@ class CardService(
         replaceEntries: List<BingoCardEntry>,
         excludeObjectives: Set<String> = emptySet(),
     ) {
+        val maxTier = TierLabel.entries
+            .withIndex()
+            .shuffled()
+            .maxBy { (i, _) -> card.options.itemDistribution.getOrNull(i) ?: 0 }
+            .value
+
+        val dist = TierLabel.entries
+            .map { tier -> replaceEntries.count { (it.tier ?: maxTier) == tier } }
+
         val replacements = generateObjectives(
             seed = card.seed,
             cardOptions = card.options,
             excludeObjectives = excludeObjectives + card.objectives.keys,
-            generateCount = replaceEntries.size,
+            dist = dist,
         )
 
         val entries = card.entries.toMutableList()
@@ -397,19 +406,10 @@ class CardService(
     private fun generateObjectives(
         seed: Long,
         cardOptions: BingoCardOptions,
-        excludeObjectives: Set<String> = emptySet(),
-        generateCount: Int = 25,
+        excludeObjectives: Set<String>,
+        dist: List<Int>,
     ): List<GeneratedObjective> {
         val items = mutableListOf<GeneratedObjective>()
-
-        // Create an approximate item distribution that adds up to generateCount
-        // (if count = 25, this should be exactly the same)
-        val distFloat = cardOptions.itemDistribution.map { it * generateCount.toDouble() / 25.0 }
-        val dist = distFloat.map { it.toInt() }.toMutableList()
-        while (dist.sum() < generateCount) {
-            val index = dist.indices.maxBy { distFloat[it] - dist[it] }
-            dist[index]++
-        }
 
         // Exclude any items from the card that the player might spawn with
         // (e.g. elytra mode, player/team kits...)
@@ -430,7 +430,6 @@ class CardService(
         val random = Random(seed)
         val state = CardGeneratorState(random)
         log.info("[CardService] Using random BINGO card seed: $seed")
-        log.info("[CardService] Using scaled item distribution $dist")
 
         val tags = tagService.getTags().toMutableMap()
         val tierList = assembleTierList(tags, cardOptions.itemFilter)
@@ -519,7 +518,7 @@ class CardService(
         }
 
         // if the card has less than 25 entries, add free spaces until it is full
-        while (items.size < generateCount) {
+        while (items.size < dist.sum()) {
             items.add(GeneratedObjective.freeSpace())
         }
 
@@ -539,6 +538,7 @@ class CardService(
             seed = seed,
             cardOptions = cardOptions,
             excludeObjectives = excludeObjectives,
+            dist = cardOptions.itemDistribution,
         )
 
         return BingoCard(

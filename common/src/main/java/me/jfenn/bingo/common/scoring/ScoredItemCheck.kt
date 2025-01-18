@@ -98,7 +98,11 @@ internal class ScoredItemCheck(
                             card = card,
                         )
                     } else {
-                        scoreUpdateService.sendItemLost(team)
+                        scoreUpdateService.sendItemLost(
+                            team = team,
+                            objective = objective,
+                            card = card,
+                        )
                     }
                 }
 
