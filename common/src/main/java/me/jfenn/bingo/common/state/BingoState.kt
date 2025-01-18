@@ -183,13 +183,14 @@ data class BingoState(
 
     fun formatCardGoals(team: BingoTeam?, text: TextProvider): MutableText {
         val card = cards.find { it.id == team?.cardId } ?: cards.first()
+        val supportsFullCard = options.winCondition !is BingoWinCondition.ReplaceGoals
         val remainingCards = (options.winCondition as? BingoWinCondition.Cards)
             ?.cards
             ?.minus(1)
             ?.minus(team?.countCards() ?: 0)
             ?.takeIf { it > 0 }
 
-        return card.options.goal.format(text)
+        return card.options.goal.format(text, supportsFullCard)
             .also {
                 if (remainingCards != null)
                     it.append(Text.literal(" +$remainingCards").formatted(Formatting.BOLD))
