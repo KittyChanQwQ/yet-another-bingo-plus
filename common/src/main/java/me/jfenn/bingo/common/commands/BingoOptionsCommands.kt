@@ -54,16 +54,16 @@ class BingoOptionsCommands(
         commandManager.register("bingo") {
             literal("goal") {
                 requires { hasConfigureGame() }
-                integer("count", min = 1, max = 25) { countArg ->
+                integer("count", min = 1) { countArg ->
                     literal("items") {
                         executes {
-                            val count = getArgument(countArg).coerceIn(1, BingoGoal.MAX_ITEMS)
+                            val count = getArgument(countArg)
                             setGoal(BingoGoal.Items(count))
                         }
                     }
                     literal("lines") {
                         executes {
-                            val count = getArgument(countArg).coerceIn(1, BingoGoal.MAX_LINES)
+                            val count = getArgument(countArg)
                             setGoal(BingoGoal.Lines(count))
                         }
                     }

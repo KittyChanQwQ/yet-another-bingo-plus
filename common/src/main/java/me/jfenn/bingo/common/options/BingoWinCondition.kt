@@ -4,11 +4,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class BingoWinCondition {
+sealed interface BingoWinCondition {
     @Serializable
     @SerialName("cards")
-    data class Cards(val cards: Int): BingoWinCondition()
+    data class Cards(val cards: Int): BingoWinCondition
     @Serializable
     @SerialName("infinite")
-    data object Infinite: BingoWinCondition()
+    data object Infinite: BingoWinCondition
+    @Serializable
+    @SerialName("replace_goals")
+    data object ReplaceGoals: BingoWinCondition
 }

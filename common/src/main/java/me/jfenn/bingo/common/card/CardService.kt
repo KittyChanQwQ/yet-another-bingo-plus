@@ -25,6 +25,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.common.utils.cacheFor
 import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.common.utils.toMap
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import org.slf4j.Logger
@@ -225,6 +226,53 @@ class CardService(
         state.replaceCard(newCard)
     }
 
+    fun replaceEntries(
+        card: BingoCard,
+        replaceEntries: List<BingoCardEntry>,
+        excludeObjectives: Set<String> = emptySet(),
+    ) {
+        val replacements = generateObjectives(
+            seed = card.seed,
+            cardOptions = card.options,
+            excludeObjectives = excludeObjectives + card.objectives.keys,
+            generateCount = replaceEntries.size,
+        )
+
+        val entries = card.entries.toMutableList()
+        for ((entry, replacement) in replaceEntries.zip(replacements)) {
+            val index = entries.indexOf(entry)
+            if (index == -1) continue
+            entries[index] = replacement.entry
+        }
+
+        // Re-build the objectives map (but we don't need to check for conflicts)
+        val objectives = mutableMapOf<String, BingoObjective>()
+        for (entry in entries) {
+            val objectiveMap = replacements.find { it.entry == entry }
+                ?.objectives
+                ?: createObjectives(null, entry.objectiveId, CardGeneratorState.DEFAULT)
+                    ?.mapValues { (key, value) ->
+                        // If any objectives already exist on the card, use them instead of the new instance
+                        // (so that partial completion/state doesn't get lost)
+                        card.objectives[key] ?: value
+                    }
+                ?: continue
+
+            objectives.putAll(objectiveMap)
+        }
+
+        assignTileNames(entries)
+        // Set the card
+        val newCard = BingoCard(
+            id = card.id,
+            seed = card.seed,
+            entries = entries,
+            objectives = objectives,
+            options = card.options
+        )
+        state.replaceCard(newCard)
+    }
+
     private fun getFilterTag(tags: Map<String, TagData>, filter: ObjectiveFilter): TagData? {
         return tags[filter.tag] ?: run {
             if (!data.tierLists.containsKey(filter.tag) && filter.tag != ObjectiveFilter.UNCATEGORIZED) {
@@ -237,6 +285,10 @@ class CardService(
     private fun getTierLists(
         filterList: ObjectiveFilterList,
     ): Map<String, TierListConfig> {
+        if (data.tierLists.isEmpty()) {
+            throw IllegalStateException("[CardService] Cannot generate a card - tier lists have not been loaded yet!")
+        }
+
         // If there are included tier lists, only include the referenced lists
         val hasIncludeList = filterList
             .filterIsInstance<ObjectiveFilter.Include>()
@@ -321,25 +373,48 @@ class CardService(
             }
     }
 
-    fun generate(
-        id: UUID,
+    data class GeneratedObjective(
+        val entry: BingoCardEntry,
+        val objectives: Map<String, BingoObjective>,
+    ) {
+        companion object {
+            fun freeSpace() = run {
+                val freeSpace = BingoObjective.FreeSpace()
+                GeneratedObjective(
+                    entry = BingoCardEntry(
+                        objectiveId = freeSpace.id,
+                        tier = null,
+                        source = null,
+                    ),
+                    objectives = mapOf(
+                        freeSpace.id to freeSpace,
+                    )
+                )
+            }
+        }
+    }
+
+    private fun generateObjectives(
         seed: Long,
         cardOptions: BingoCardOptions,
         excludeObjectives: Set<String> = emptySet(),
-    ): BingoCard {
-        if (data.tierLists.isEmpty()) {
-            throw IllegalStateException("[CardService] Cannot generate a card - tier lists have not been loaded yet!")
-        }
+        generateCount: Int = 25,
+    ): List<GeneratedObjective> {
+        val items = mutableListOf<GeneratedObjective>()
 
-        cardOptions.assertValid()
-        val dist = cardOptions.itemDistribution
+        // Create an approximate item distribution that adds up to generateCount
+        // (if count = 25, this should be exactly the same)
+        val distFloat = cardOptions.itemDistribution.map { it * generateCount.toDouble() / 25.0 }
+        val dist = distFloat.map { it.toInt() }.toMutableList()
+        while (dist.sum() < generateCount) {
+            val index = dist.indices.maxBy { distFloat[it] - dist[it] }
+            dist[index]++
+        }
 
         // Exclude any items from the card that the player might spawn with
         // (e.g. elytra mode, player/team kits...)
         val excludedObjectives = if (configService.config.excludeSpawnKitItemsFromCards) {
             buildSet {
-                addAll(excludeObjectives)
-
                 if (options.isPlayerKit)
                     addAll(options.playerKitItems.map { it.id })
                 if (options.isTeamKit)
@@ -350,15 +425,15 @@ class CardService(
                 }
             }.toMutableSet()
         } else mutableSetOf()
+        excludedObjectives.addAll(excludeObjectives)
 
         val random = Random(seed)
         val state = CardGeneratorState(random)
-        log.info("Using random BINGO card seed: $seed")
+        log.info("[CardService] Using random BINGO card seed: $seed")
+        log.info("[CardService] Using scaled item distribution $dist")
 
         val tags = tagService.getTags().toMutableMap()
         val tierList = assembleTierList(tags, cardOptions.itemFilter)
-        val items = mutableListOf<BingoCardEntry>()
-        val objectives = mutableMapOf<String, BingoObjective>()
 
         // Track the tags added to the card to enforce filter requirements
         val requiredTagCounts = cardOptions.itemFilter
@@ -384,7 +459,7 @@ class CardService(
         for ((tierIndex, tier) in TierLabel.entries.withIndex()) {
             var tierCountRemaining = dist[tierIndex]
 
-            fun createObjectivePair(entry: TierListEntry): Pair<TierListEntry, Map<String, BingoObjective>>? {
+            fun createObjectivePair(entry: TierListEntry): GeneratedObjective? {
                 val objectiveMap = createObjectives(entry.type, entry.item, state)
                     ?: return null
 
@@ -398,38 +473,33 @@ class CardService(
                 // - this prevents "craft a shield" and "never obtain shield" from appearing on the same card
                 excludedObjectives.addAll(objectiveConflicts)
 
-                return Pair(entry, objectiveMap)
-            }
-
-            fun addObjectivePairs(pairs: List<Pair<TierListEntry, Map<String, BingoObjective>>>) {
-                for ((entry, objectiveMap) in pairs) {
-                    objectives.putAll(objectiveMap)
-                    items.add(
-                        BingoCardEntry(
-                            objectiveId = entry.item,
-                            tier = entry.tierLabel,
-                            source = entry.listName,
-                        )
-                    )
-                }
-                tierCountRemaining -= pairs.size
+                return GeneratedObjective(
+                    entry = BingoCardEntry(
+                        objectiveId = entry.item,
+                        tier = entry.tierLabel,
+                        source = entry.listName,
+                    ),
+                    objectives = objectiveMap,
+                )
             }
 
             // First, attempt to add items that satisfy the required filter counts
             for ((tag, count) in requiredTagCounts.shuffled(random)) {
                 val itemCount = count[tierIndex].coerceAtMost(tierCountRemaining)
 
-                val tierItems = tierList.pick(tier, excludedObjectives, random)
+                tierList.pick(tier, excludedObjectives, random)
                     .filter { tag.contains(it.item) }
                     .mapNotNull { createObjectivePair(it) }
                     .take(itemCount)
                     .toList()
-
-                addObjectivePairs(tierItems)
+                    .let {
+                        items.addAll(it)
+                        tierCountRemaining -= it.size
+                    }
             }
 
             // Then, add remaining items that satisfy other filter conditions
-            val tierItems = tierList.pick(tier, excludedObjectives, random)
+            tierList.pick(tier, excludedObjectives, random)
                 // exclude required count tags when picking normal items (otherwise the actual counts may differ)
                 .filter { entry ->
                     requiredTagCounts.none { (tag, _) -> tag.contains(entry.item) }
@@ -437,8 +507,10 @@ class CardService(
                 .mapNotNull { createObjectivePair(it) }
                 .take(tierCountRemaining)
                 .toList()
-
-            addObjectivePairs(tierItems)
+                .let {
+                    items.addAll(it)
+                    tierCountRemaining -= it.size
+                }
         }
 
         if (items.size < dist.sum()) {
@@ -447,24 +519,37 @@ class CardService(
         }
 
         // if the card has less than 25 entries, add free spaces until it is full
-        val freeSpace = BingoObjective.FreeSpace()
-        while (items.size < 25) {
-            objectives[freeSpace.id] = freeSpace
-            items.add(BingoCardEntry(
-                objectiveId = freeSpace.id,
-                tier = null,
-                source = null,
-            ))
+        while (items.size < generateCount) {
+            items.add(GeneratedObjective.freeSpace())
         }
 
         items.shuffle(random)
-        assignTileNames(items)
+        return items
+    }
+
+    fun generate(
+        id: UUID,
+        seed: Long,
+        cardOptions: BingoCardOptions,
+        excludeObjectives: Set<String> = emptySet(),
+    ): BingoCard {
+        cardOptions.assertValid()
+
+        val generatedObjectives = generateObjectives(
+            seed = seed,
+            cardOptions = cardOptions,
+            excludeObjectives = excludeObjectives,
+        )
 
         return BingoCard(
             id = id,
             seed = seed,
-            entries = items,
-            objectives = objectives,
+            entries = generatedObjectives
+                .map { it.entry }
+                .also { assignTileNames(it) },
+            objectives = generatedObjectives
+                .flatMap { it.objectives.entries }
+                .toMap(),
             options = cardOptions
         )
     }

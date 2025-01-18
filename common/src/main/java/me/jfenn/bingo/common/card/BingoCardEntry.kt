@@ -6,7 +6,7 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 
 @Serializable
-data class BingoCardEntry(
+class BingoCardEntry(
     val objectiveId: String,
     val tier: TierLabel?,
     /** The tier list ID that this entry was created from */

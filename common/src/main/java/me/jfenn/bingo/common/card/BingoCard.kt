@@ -58,46 +58,28 @@ class BingoCard(
         return objectives[entry.objectiveId]?.let { Pair(entry, it) }
     }
 
+    fun lines(): Sequence<List<BingoCardEntry>> = sequence {
+        for (row in 0..4) {
+            yield((0..4).map { entry(row, it) })
+        }
+
+        for (col in 0..4) {
+            yield((0..4).map { entry(it, col) })
+        }
+
+        yield((0..4).map { entry(it, it) })
+        yield((0..4).map { entry(it, 4 - it) })
+    }
+
     /**
      * Counts every horizontal, vertical, and diagonal line on the card
      * satisfied by the [predicate], and returns the sum.
      */
     fun countLines(predicate: (BingoObjective) -> Boolean): Int {
-        var lines = 0
-
-        for (row in 0..4) {
-            val isLine = (0..4)
-                .map { entry(row, it) }
-                .map { objectives[it.objectiveId] }
+        return lines().count { line ->
+            line.map { objectives[it.objectiveId] }
                 .all { it != null && predicate(it) }
-
-            if (isLine) lines++
         }
-
-        for (col in 0..4) {
-            val isLine = (0..4)
-                .map { entry(it, col) }
-                .map { objectives[it.objectiveId] }
-                .all { it != null && predicate(it) }
-
-            if (isLine) lines++
-        }
-
-        val isD1 = (0..4)
-            .map { entry(it, it) }
-            .map { objectives[it.objectiveId] }
-            .all { it != null && predicate(it) }
-
-        if (isD1) lines++
-
-        val isD2 = (0..4)
-            .map { entry(it, 4 - it) }
-            .map { objectives[it.objectiveId] }
-            .all { it != null && predicate(it) }
-
-        if (isD2) lines++
-
-        return lines
     }
 
     /**

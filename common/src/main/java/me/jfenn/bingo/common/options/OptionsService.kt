@@ -81,10 +81,23 @@ internal class OptionsService(
         card: BingoCard = cardViewService.getPlayerCard(ctx.player),
         goal: BingoGoal,
     ) {
-        card.options.goal = goal
+        // If ReplaceGoals is enabled, we don't need to limit max items/lines...
+        val supportsFullCard = options.winCondition !is BingoWinCondition.ReplaceGoals
+        val coercedGoal = if (supportsFullCard) {
+            when (goal) {
+                is BingoGoal.Lines -> BingoGoal.Lines(goal.lines.coerceAtMost(BingoGoal.MAX_LINES))
+                is BingoGoal.Items -> BingoGoal.Items(goal.items.coerceAtMost(BingoGoal.MAX_ITEMS))
+            }
+        } else goal
+
+        card.options.goal = coercedGoal
         // Send a message that the goal was changed
+        val goalName = coercedGoal.format(
+            textProvider = text,
+            supportsFullCard = supportsFullCard,
+        )
         ctx.sendFeedback(
-            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsGoal, goal.format(text).formatted(Formatting.WHITE))
+            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsGoal, goalName.formatted(Formatting.WHITE))
         )
     }
 
@@ -165,6 +178,7 @@ internal class OptionsService(
         val describe = when (winCondition) {
             is BingoWinCondition.Cards -> text.cardCount(winCondition.cards)
             is BingoWinCondition.Infinite -> text.string(StringKey.OptionsWinConditionInfinite)
+            is BingoWinCondition.ReplaceGoals -> text.string(StringKey.OptionsWinConditionReplaceGoals)
         }
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsWinCondition, describe.formatted(Formatting.WHITE))
@@ -175,8 +189,21 @@ internal class OptionsService(
         ctx: Context,
     ) {
         val newWinCondition = when (options.winCondition) {
+            is BingoWinCondition.ReplaceGoals -> BingoWinCondition.Infinite
             is BingoWinCondition.Cards -> BingoWinCondition.Infinite
             is BingoWinCondition.Infinite -> BingoWinCondition.Cards(1)
+        }
+
+        setWinCondition(ctx, newWinCondition)
+    }
+
+    fun toggleReplaceGoals(
+        ctx: Context,
+    ) {
+        val newWinCondition = when (options.winCondition) {
+            is BingoWinCondition.Cards -> BingoWinCondition.ReplaceGoals
+            is BingoWinCondition.Infinite -> BingoWinCondition.ReplaceGoals
+            is BingoWinCondition.ReplaceGoals -> BingoWinCondition.Cards(1)
         }
 
         setWinCondition(ctx, newWinCondition)

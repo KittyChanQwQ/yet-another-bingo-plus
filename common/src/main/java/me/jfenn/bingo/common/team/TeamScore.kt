@@ -1,11 +1,11 @@
 package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.joinText
+import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.packet.PacketConverter
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
@@ -28,6 +28,12 @@ data class TeamScore(
             if (isEmpty()) add(Text.literal("0"))
         }.joinText()
     }
+
+    operator fun plus(other: TeamScore) = TeamScore(
+        items = items + other.items,
+        lines = lines + other.lines,
+        cards = cards + other.cards,
+    )
 
     object V1 : PacketConverter<TeamScore> {
         override val id: Identifier = Identifier.of(MOD_ID_BINGO, "team_score")!!

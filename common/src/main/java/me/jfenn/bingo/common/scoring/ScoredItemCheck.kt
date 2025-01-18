@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.scoring
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
+import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
@@ -18,10 +19,7 @@ import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.team.TeamCompletedCard
-import me.jfenn.bingo.common.team.TeamWinner
+import me.jfenn.bingo.common.team.*
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
@@ -105,18 +103,61 @@ internal class ScoredItemCheck(
                 }
 
             // update the score for each modified team
-            val scoreBefore = team.score
+            val scoreBefore = team.currentScore
             val scoreAfter = card.getTeamScore(team)
 
             if (scoreAfter != scoreBefore) {
-                team.score = scoreAfter
+                team.currentScore = scoreAfter
                 team.scoreUpdatedAt = tickStart
                 log.info("[ScoredItemCheck] Updated score for team {}: {}", team.id, scoreAfter)
             }
 
             // if the team has scored a line, post a message
-            if (scoreAfter.lines > scoreBefore.lines && sendUpdates) {
+            if (scoreAfter.lines > scoreBefore.lines && sendUpdates && card.options.goal is BingoGoal.Lines) {
                 scoreUpdateService.sendLineCaptured(team)
+            }
+        }
+
+        // if ReplaceGoals is enabled, replace any newly-captured items/lines
+        if (options.winCondition is BingoWinCondition.ReplaceGoals) {
+            // Collect any entries to replace
+            val entriesToReplace = mutableSetOf<BingoCardEntry>()
+            for (team in teams) {
+                val scoredEntries = when (card.options.goal) {
+                    is BingoGoal.Lines -> card.lines()
+                        .filter { line ->
+                            // Select lines where the team has achieved every item
+                            line.map { card.objectives[it.objectiveId] }
+                                .all { it != null && it.hasAchieved(team.key) }
+                        }
+                        .flatten()
+                        .toList()
+                    is BingoGoal.Items -> card.entries
+                        .filter {
+                            val objective = card.objectives[it.objectiveId]
+                            objective != null && objective.hasAchieved(team.key)
+                        }
+                }
+
+                entriesToReplace.addAll(scoredEntries)
+            }
+
+            if (entriesToReplace.isNotEmpty()) {
+                // Recreate the card, replacing the scored entries
+                cardService.replaceEntries(
+                    card = card,
+                    replaceEntries = entriesToReplace.toList(),
+                    excludeObjectives = objectiveManager.listExcludedIds().toSet(),
+                )
+
+                // Increment the persistent team score & reset currentScore to ZERO
+                for (team in teams) {
+                    team.persistentScore += when (card.options.goal) {
+                        is BingoGoal.Lines -> TeamScore.ZERO.copy(lines = team.currentScore.lines)
+                        is BingoGoal.Items -> TeamScore.ZERO.copy(items = team.currentScore.items)
+                    }
+                    team.currentScore = TeamScore.ZERO
+                }
             }
         }
 
@@ -255,8 +296,14 @@ internal class ScoredItemCheck(
             }
         }
 
-        val condition = options.winCondition
-        if (condition is BingoWinCondition.Cards && team.countCards() >= condition.cards) {
+        val requiredCards = when (
+            val condition = options.winCondition
+        ) {
+            is BingoWinCondition.Cards -> condition.cards
+            is BingoWinCondition.Infinite -> null
+            is BingoWinCondition.ReplaceGoals -> 1
+        }
+        if (requiredCards != null && team.countCards() >= requiredCards) {
             // the team has won the game
             team.winner = TeamWinner(now)
             team.cardId = null

@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.options.BingoGoal
+import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
@@ -47,6 +48,10 @@ internal fun MenuComponent.registerCardGoal(
 ) {
     val offset = Vector3d()
 
+    val supportsFullCard by computedProperty {
+        state.options.winCondition !is BingoWinCondition.ReplaceGoals
+    }
+
     registerTitlePanel(
         position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
         width = MENU_GOAL_WIDTH,
@@ -75,12 +80,13 @@ internal fun MenuComponent.registerCardGoal(
         valueProp = countProp,
         minValueProp = ConstantProperty(1),
         maxValueProp = computedProperty {
+            if (!supportsFullCard) return@computedProperty 100
             when (cardOptions.goal) {
                 is BingoGoal.Items -> BingoGoal.MAX_ITEMS
                 is BingoGoal.Lines -> BingoGoal.MAX_LINES
             }
         },
-        format = { cardOptions.goal.format(text) },
+        format = { cardOptions.goal.format(text, supportsFullCard) },
     ) { player, count ->
         val newGoal = when (cardOptions.goal) {
             is BingoGoal.Items -> BingoGoal.Items(count)
@@ -102,7 +108,9 @@ internal fun MenuComponent.registerCardGoal(
         textProp = computedProperty { text.string(cardOptions.goal.string()) },
     ) {
         val newGoal = when (val goal = cardOptions.goal) {
-            is BingoGoal.Items -> BingoGoal.Lines(goal.items.coerceAtMost(BingoGoal.MAX_LINES))
+            is BingoGoal.Items -> BingoGoal.Lines(
+                if (supportsFullCard) goal.items.coerceAtMost(BingoGoal.MAX_LINES) else goal.items
+            )
             is BingoGoal.Lines -> BingoGoal.Items(goal.lines)
         }
         optionsService.setGoal(

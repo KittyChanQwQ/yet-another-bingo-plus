@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.scoring
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.options.BingoGoal
+import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -25,8 +26,14 @@ internal object ScoreService {
         // if there are no teams, then I have no idea what's going on
         if (teams.isEmpty()) return null
 
+        // if the win condition is "ReplaceGoals", then any impossible goals could get replaced by another team
+        // (and since the score is accumulated, this probably isn't a soft-lock anyway)
+        // TODO: there probably _are_ stalemate conditions in ReplaceGoals, but they'll be much more specific
+        if (state.options.winCondition is BingoWinCondition.ReplaceGoals)
+            return null
+
         if (
-            card.entries
+            card.options.isLockoutMode && card.entries
                 .mapNotNull { card.objectives[it.objectiveId] }
                 .all { it.hasAnyAchieved() }
         ) {
@@ -60,7 +67,7 @@ internal object ScoreService {
         // if noone can beat or tie with the leading team, then it is a lockout (the leading team has won)
         val isStalemate = leadingTeamOrTie != null && teams
             // for teams that are _not_ tied with the leading team...
-            .filter { comparator.compare(it.score, leadingTeamOrTie.score) < 0 }
+            .filter { comparator.compare(it.currentScore, leadingTeamOrTie.currentScore) < 0 }
             .takeIf { it.isNotEmpty() }
             // at least one team can tie or beat the leading score
             ?.none { team ->
@@ -72,9 +79,9 @@ internal object ScoreService {
                     items = possibleItems,
                 )
                 // if a team can capture more tiles, and it would either tie or beat the current team
-                comparator.compare(possibleScore, team.score) > 0 && comparator.compare(
+                comparator.compare(possibleScore, team.currentScore) > 0 && comparator.compare(
                     possibleScore,
-                    leadingTeamOrTie.score
+                    leadingTeamOrTie.currentScore
                 ) >= 0
             } == true
 

@@ -40,7 +40,13 @@ class ScoreboardController(
 
         events.onUpdateTick {
             val isMultipleTeams = state.state == GameState.PREGAME || state.getRegisteredTeams().size > 1
-            val isMultiCardWinCondition = options.winCondition != BingoWinCondition.Cards(1)
+            val isMultiCardWinCondition = when (
+                val winCondition = options.winCondition
+            ) {
+                is BingoWinCondition.Cards -> winCondition.cards > 1
+                is BingoWinCondition.Infinite -> true
+                is BingoWinCondition.ReplaceGoals -> false
+            }
 
             for (team in state.teams.values + null) {
                 val objective = scoreboardService.getScoreboardObjective(team)

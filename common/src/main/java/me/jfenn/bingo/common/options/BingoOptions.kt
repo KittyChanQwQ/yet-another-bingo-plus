@@ -155,6 +155,7 @@ data class BingoOptions(
             if (card.options.isHiddenItemsMode) add(StringKey.OptionsModeHiddenItems)
             if (card.options.isConsumeItemsMode) add(StringKey.OptionsModeConsumeItems)
             if (winCondition is BingoWinCondition.Infinite) add(StringKey.OptionsWinConditionInfinite)
+            if (winCondition is BingoWinCondition.ReplaceGoals) add(StringKey.OptionsWinConditionReplaceGoals)
         }
 
         return gameMode.ifEmpty { listOf(StringKey.OptionsModeStandard) }
@@ -166,7 +167,7 @@ data class BingoOptions(
             if (card.options.isInventoryMode) add(ICON_INVENTORY)
             if (card.options.isHiddenItemsMode) add(ICON_HIDDEN)
             if (card.options.isConsumeItemsMode) add(ICON_CONSUME)
-            if (winCondition is BingoWinCondition.Infinite) add("∞")
+            if (winCondition is BingoWinCondition.ReplaceGoals) add("☒")
         }
 
         return gameMode

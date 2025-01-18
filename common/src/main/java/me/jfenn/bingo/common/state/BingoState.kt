@@ -3,14 +3,14 @@ package me.jfenn.bingo.common.state
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.menu.MenuPage
 import me.jfenn.bingo.common.menu.MenuState
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
@@ -193,6 +193,8 @@ data class BingoState(
             .also {
                 if (remainingCards != null)
                     it.append(Text.literal(" +$remainingCards").formatted(Formatting.BOLD))
+                if (options.winCondition is BingoWinCondition.Infinite)
+                    it.append(Text.literal(" + ∞"))
             }
     }
 

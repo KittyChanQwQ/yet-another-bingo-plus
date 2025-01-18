@@ -27,13 +27,13 @@ internal fun MenuComponent.registerWinCondition(
         getter = {
             when (val goal = options.winCondition) {
                 is BingoWinCondition.Cards -> goal.cards
-                is BingoWinCondition.Infinite -> 0
+                else -> 0
             }
         },
         setter = { count ->
             options.winCondition = when (options.winCondition) {
                 is BingoWinCondition.Cards -> BingoWinCondition.Cards(count)
-                is BingoWinCondition.Infinite -> BingoWinCondition.Infinite
+                else -> options.winCondition
             }
         }
     )
@@ -53,10 +53,31 @@ internal fun MenuComponent.registerWinCondition(
         position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
         width = width,
         height = MENU_LINE_HEIGHT,
+        text = text.string(StringKey.OptionsWinConditionNumCards),
+        isActiveProp = computedProperty { options.winCondition is BingoWinCondition.Cards }
+    ) {
+        optionsService.setWinCondition(OptionsService.Context(it), BingoWinCondition.Cards(1))
+    }
+
+    registerTileButton(
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
+        width = width,
+        height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsWinConditionInfinite),
         tooltip = buildTooltip(StringKey.OptionsWinConditionInfinite),
         isActiveProp = computedProperty { options.winCondition is BingoWinCondition.Infinite }
     ) {
-        optionsService.toggleInfiniteMode(OptionsService.Context(it))
+        optionsService.setWinCondition(OptionsService.Context(it), BingoWinCondition.Infinite)
+    }
+
+    registerTileButton(
+        position = position + offset.sub(0.0, MENU_LINE_PADDING + MENU_LINE_HEIGHT, 0.0),
+        width = width,
+        height = MENU_LINE_HEIGHT,
+        text = text.string(StringKey.OptionsWinConditionReplaceGoals),
+        tooltip = buildTooltip(StringKey.OptionsWinConditionReplaceGoals),
+        isActiveProp = computedProperty { options.winCondition is BingoWinCondition.ReplaceGoals }
+    ) {
+        optionsService.setWinCondition(OptionsService.Context(it), BingoWinCondition.ReplaceGoals)
     }
 }

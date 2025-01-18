@@ -34,9 +34,9 @@ sealed class BingoGoal {
         }
     }
 
-    fun format(textProvider: TextProvider): MutableText {
+    fun format(textProvider: TextProvider, supportsFullCard: Boolean = true): MutableText {
         return when {
-            this.isFullCard() -> textProvider.string(StringKey.GoalFullCard)
+            supportsFullCard && this.isFullCard() -> textProvider.string(StringKey.GoalFullCard)
             else -> when (this) {
                 is Items -> textProvider.itemCount(this.items)
                 is Lines -> textProvider.lineCount(this.lines)

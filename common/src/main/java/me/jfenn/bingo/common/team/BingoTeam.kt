@@ -39,7 +39,11 @@ data class BingoTeam(
     var textColor: Formatting,
     val isTemporary: Boolean = false,
     var cardId: UuidAsString? = null,
-    var score: TeamScore = TeamScore.ZERO,
+    var currentScore: TeamScore = TeamScore.ZERO,
+    /**
+     * Used when winCondition=ReplaceItems to track scored lines/items that no longer exist on the card
+     */
+    var persistentScore: TeamScore = TeamScore.ZERO,
     var winner: TeamWinner? = null,
     val completedCards: MutableList<TeamCompletedCard> = mutableListOf(),
     var spawnpoint: BlockPositionType? = null,
@@ -79,6 +83,8 @@ data class BingoTeam(
     }
 
     val singlePlayer get() = players.takeIf { it.size == 1 }?.first()
+
+    val score get() = currentScore + persistentScore
 
     val totalScore: TeamScore get() {
         val containsScore = completedCards.any { it.card.id == cardId }

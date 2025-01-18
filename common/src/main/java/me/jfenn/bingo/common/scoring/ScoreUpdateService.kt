@@ -68,7 +68,7 @@ class ScoreUpdateService(
             isViewerOnTeam = true,
             team = team.key,
             teamColor = team.textColor,
-            score = team.score.copy(items = team.score.items + 1),
+            score = team.currentScore.copy(items = team.score.items + 1),
             itemId = item?.identifier?.toString(),
         )
 
