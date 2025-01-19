@@ -341,14 +341,14 @@ internal class BingoHudRenderer(
                     else -> tooltipPosition.y() + tooltipHeight + 6
                 }
 
-                service.drawGuiTexture(
+                service.drawNinePatch(
                     texture = CARD_TOOLTIP_ID,
                     x = x, y = y,
-                    u = 0f, v = 0f,
+                    sliceSize = 7,
                     width = componentWidth,
                     height = componentHeight,
-                    textureWidth = componentWidth,
-                    textureHeight = componentHeight,
+                    textureWidth = 34,
+                    textureHeight = 34,
                 )
 
                 tile.imageList.forEachIndexed { index, cardTileImage ->

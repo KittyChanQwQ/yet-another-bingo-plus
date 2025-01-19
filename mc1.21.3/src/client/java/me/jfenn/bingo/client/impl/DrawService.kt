@@ -67,11 +67,13 @@ class DrawService(
         context.matrices.push()
         context.matrices.translate(0.0, 0.0, z.toDouble())
         try {
-            context.drawGuiTexture(
+            context.drawTexture(
                 RenderLayer::getGuiTextured,
-                texture,
+                texture.let { Identifier.of(it.namespace, "textures/gui/sprites/${it.path}.png")!! },
                 x, y,
+                u, v,
                 width, height,
+                textureWidth, textureHeight,
             )
         } finally {
             context.matrices.pop()
