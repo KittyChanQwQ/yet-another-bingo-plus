@@ -1,19 +1,21 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.client.platform.IDrawServiceFactory
 import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.impl.ItemStackFactory
+import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
-import org.joml.Matrix4f
 
 class DrawService(
     override val context: DrawContext,
 ) : IDrawService {
+
+    override val textRenderer: TextRenderer = MinecraftClient.getInstance().textRenderer
 
     companion object : IDrawServiceFactory {
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)

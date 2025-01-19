@@ -205,7 +205,6 @@ class CardViewService(
                     val isInnerAchieved = team?.key?.let { innerObjective.hasAchieved(it) } ?: false
                     if (isInnerAchieved) 1 else 0
                 }
-                .take(4)
                 .map { innerObjective ->
                     CardTileImage(
                         item = innerObjective.display.item,

@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.platform
 
 import me.jfenn.bingo.platform.item.IItemStack
+import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
 import kotlin.math.ceil
@@ -9,6 +10,7 @@ import kotlin.math.roundToInt
 
 interface IDrawService {
     val context: DrawContext
+    val textRenderer: TextRenderer
 
     fun setShaderColor(r: Float, g: Float, b: Float, a: Float)
 

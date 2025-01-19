@@ -15,8 +15,8 @@ import me.jfenn.bingo.common.utils.wrap
 import me.jfenn.bingo.generated.StringKey
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceType
@@ -25,6 +25,7 @@ import net.minecraft.util.Identifier
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
 import kotlin.jvm.optionals.getOrNull
+import kotlin.math.ceil
 import kotlin.time.Duration.Companion.seconds
 
 internal class BingoHudRenderer(
@@ -43,6 +44,7 @@ internal class BingoHudRenderer(
         val CARD_COLORS_ID = Identifier.of(MOD_ID_BINGO, "gui/card_colors.json")!!
         val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")!!
         val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")!!
+        val CARD_TOOLTIP_ID = Identifier.of("minecraft", "bingo/card_tooltip")!!
 
         private val winColors = listOf(
             0xFF_F5C0A3.toInt(),
@@ -120,7 +122,6 @@ internal class BingoHudRenderer(
         isWinner: Boolean = false,
     ) {
         val colors = cardColors.getTeamColors(view.teamKey ?: BingoTeamKey("preview"), view.display.teamColor)
-        val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.matrices.push()
         context.matrices.translate(x, y, z.toFloat())
@@ -139,14 +140,14 @@ internal class BingoHudRenderer(
             textureHeight = CARD_HEIGHT,
         )
 
-        context.drawText(textRenderer, view.display.teamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
+        context.drawText(service.textRenderer, view.display.teamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
 
         if (isWinner) {
             context.matrices.push()
             context.matrices.translate(90.0, -4.0, 1000.0)
             context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
 
-            context.drawText(textRenderer, text.string(StringKey.CardWinner), 0, 0, getWinColor(state.now), true)
+            context.drawText(service.textRenderer, text.string(StringKey.CardWinner), 0, 0, getWinColor(state.now), true)
 
             context.matrices.pop()
         }
@@ -273,7 +274,7 @@ internal class BingoHudRenderer(
         ) {
             context.matrices.push()
             context.matrices.translate(0f, 0f, z + 2000f)
-            context.drawTooltip(textRenderer, view.display.players.map { Text.literal(it.name) }, mouseX, mouseY)
+            context.drawTooltip(service.textRenderer, view.display.players.map { Text.literal(it.name) }, mouseX, mouseY)
             context.matrices.pop()
         }
 
@@ -282,23 +283,88 @@ internal class BingoHudRenderer(
             val (tileX, tileY) = getItem(x.toInt(), y.toInt(), cardScale, mouseX, mouseY) ?: return
             val tile = view.tile(tileX, tileY) ?: return
 
-            val tooltip = buildList {
-                tile.name?.let { add(it) }
-                addAll(
-                    tile.lore.flatMapIndexed { i, lore ->
-                        val isLast = i >= tile.lore.size - 1 // the last item (tile info) should never be wrapped
-                        if (isLast) listOf(lore)
-                        else lore.wrap(TOOLTIP_MAX_LENGTH)
-                    }
+            drawTooltip(service, tile, mouseX, mouseY, z)
+        }
+    }
+
+    private fun drawTooltip(
+        service: IDrawService,
+        tile: CardTile,
+        mouseX: Int,
+        mouseY: Int,
+        z: Int,
+    ) {
+        val context by service::context
+        val tooltip = buildList {
+            tile.name?.let { add(it) }
+            addAll(
+                tile.lore.flatMapIndexed { i, lore ->
+                    val isLast = i >= tile.lore.size - 1 // the last item (tile info) should never be wrapped
+                    if (isLast) listOf(lore)
+                    else lore.wrap(TOOLTIP_MAX_LENGTH)
+                }
+            )
+        }
+
+        val rows = when (tile.imageList.size) {
+            0 -> 0
+            in 1..5 -> 1
+            in 6..12 -> 2
+            in 13..21 -> 3
+            in 22..28 -> 4
+            else -> 5
+        }
+        val columns = ceil(tile.imageList.size / rows.toFloat()).toInt()
+
+        if (tooltip.isNotEmpty()) {
+            context.matrices.push()
+            context.matrices.translate(0f, 0f, z + 2000f)
+
+            if (tile.imageList.isNotEmpty()) {
+                val tooltipWidth = tooltip.maxOf { service.textRenderer.getWidth(it) }
+                val tooltipHeight = 10 * tooltip.size // hardcoded in OrderedTextTooltipComponent
+                val componentHeight = 14 + 20 * rows
+                val componentWidth = 14 + 20 * columns
+
+                val tooltipPosition = HoveredTooltipPositioner.INSTANCE.getPosition(
+                    context.scaledWindowWidth,
+                    context.scaledWindowHeight,
+                    mouseX,
+                    mouseY,
+                    tooltipWidth,
+                    tooltipHeight,
                 )
+
+                val x = tooltipPosition.x() - 4
+                val y = when {
+                    tooltipPosition.y() - componentHeight - 6 > 0 -> tooltipPosition.y() - componentHeight - 6
+                    else -> tooltipPosition.y() + tooltipHeight + 6
+                }
+
+                service.drawGuiTexture(
+                    texture = CARD_TOOLTIP_ID,
+                    x = x, y = y,
+                    u = 0f, v = 0f,
+                    width = componentWidth,
+                    height = componentHeight,
+                    textureWidth = componentWidth,
+                    textureHeight = componentHeight,
+                )
+
+                tile.imageList.forEachIndexed { index, cardTileImage ->
+                    val row = index / columns
+                    val col = index % columns
+                    cardTileRenderer.renderTileImage(
+                        drawService = service,
+                        image = cardTileImage,
+                        itemX = x + 9 + 20 * col,
+                        itemY = y + 9 + 20 * row,
+                    )
+                }
             }
 
-            if (tooltip.isNotEmpty()) {
-                context.matrices.push()
-                context.matrices.translate(0f, 0f, z + 2000f)
-                context.drawTooltip(textRenderer, tooltip, mouseX, mouseY)
-                context.matrices.pop()
-            }
+            context.drawTooltip(service.textRenderer, tooltip, mouseX, mouseY)
+            context.matrices.pop()
         }
     }
 

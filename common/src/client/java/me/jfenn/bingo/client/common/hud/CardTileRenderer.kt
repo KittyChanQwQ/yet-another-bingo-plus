@@ -74,7 +74,7 @@ internal class CardTileRenderer(
         }
     }
 
-    private fun renderTileImage(
+    fun renderTileImage(
         drawService: IDrawService,
         image: CardTileImage,
         itemX: Int,

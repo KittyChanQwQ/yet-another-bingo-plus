@@ -55,18 +55,16 @@ class SomeOfObjectiveManager(
     override fun init(card: BingoCard) {
         for (objective in card.objectivesByInstance<BingoObjective.SomeOfEntry>()) {
             val objectives = objective.someOfObjectives.mapNotNull { card.objectives[it] }
-            val displayNames = objectives.mapNotNull { it.display.name }
 
             val isOneOf = objective.valueMin == 1 && objective.valueMax >= objective.someOfObjectives.size
             val isAllOf = objective.valueMin == objective.someOfObjectives.size
-            val contentsName = Text.empty().append(displayNames.firstOrNull() ?: Text.empty()).append(", …")
+            val contentsName = Text.empty().append(objectives.firstOrNull()?.display?.name ?: Text.empty()).append(", …")
             val display = ObjectiveDisplay.Resolved(
                 name = when {
                     isOneOf -> text.string(StringKey.ObjectiveOneOf, contentsName)
                     isAllOf -> text.string(StringKey.ObjectiveAllOf, contentsName)
                     else -> text.string(StringKey.ObjectiveSomeOf, FORMAT_MIN, contentsName)
                 },
-                lore = displayNames,
                 item = objectives.firstNotNullOfOrNull { it.display.item },
                 decoration = when {
                     isOneOf -> CardTile.Decoration.ONE_OF

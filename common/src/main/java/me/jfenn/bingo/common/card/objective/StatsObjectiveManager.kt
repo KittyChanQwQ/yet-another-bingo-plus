@@ -1,9 +1,6 @@
 package me.jfenn.bingo.common.card.objective
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IStatHandle
-import me.jfenn.bingo.platform.IStatManager
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
@@ -13,9 +10,11 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MI
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.OfflinePlayerCache
 import me.jfenn.bingo.common.utils.formatTitle
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IStatHandle
+import me.jfenn.bingo.platform.IStatManager
 import net.minecraft.text.Text
 import org.slf4j.Logger
 
