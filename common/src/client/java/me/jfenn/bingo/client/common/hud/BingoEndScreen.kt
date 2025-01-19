@@ -125,20 +125,27 @@ internal class BingoEndScreen(
     }
 
     private val fireworkRenderer = BingoEndFireworkRenderer()
+        .takeIf { gameOver.isFirstOpen }
+        ?.also { gameOver.isFirstOpen = false }
 
     private var dismissButton: ButtonWidget? = null
     private var restartButton: ButtonWidget? = null
 
     private val tabsWidget = tabsWidgetFactory.create(EndScreenTab.entries.map { text.string(it.title) })
         .apply {
-            currentTab = EndScreenTab.entries.indexOf(gameOver.packet.defaultTab)
-            onTabChanged { updateButtons() }
+            currentTab = EndScreenTab.entries.indexOf(gameOver.tab)
+            onTabChanged { this@BingoEndScreen.onTabChanged() }
         }
 
     // If multiple teams have a duration (i.e. have completed the game), show the score list by default
     private val tab get() = EndScreenTab.entries.getOrNull(tabsWidget.currentTab)
-    private val isShowingTabs get() = gameOver.packet.scores.size > 1 || tab != EndScreenTab.CARDS
+    private val isShowingTabs get() = gameOver.packet.scores.size > 1 || tab != EndScreenTab.CARDS || gameOver.packet.defaultTab != EndScreenTab.CARDS
     private val tabsHeight get() = tabsWidget.height / 2
+
+    private fun onTabChanged() {
+        updateButtons()
+        tab?.let { gameOver.tab = it }
+    }
 
     private val scoresWidget = scrollableWidgetFactory.create(BingoEndScoresWidget(koin, gameOver))
 
@@ -397,7 +404,7 @@ internal class BingoEndScreen(
         }
 
         if (gameOver.packet.isWinner) {
-            fireworkRenderer.render(context, textRenderer, width/2, height/2, state.now)
+            fireworkRenderer?.render(context, textRenderer, width/2, height/2, state.now)
         }
     }
 

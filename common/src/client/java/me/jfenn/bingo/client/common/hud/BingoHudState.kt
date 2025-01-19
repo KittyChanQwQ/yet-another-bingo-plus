@@ -44,6 +44,8 @@ internal class BingoHudState(
     class GameOver(
         var packet: GameOverPacket,
         var views: List<CardView>,
+        var tab: GameOverPacket.EndScreenTab = packet.defaultTab,
+        var isFirstOpen: Boolean = true,
     )
 
     class ScoreMessage(
