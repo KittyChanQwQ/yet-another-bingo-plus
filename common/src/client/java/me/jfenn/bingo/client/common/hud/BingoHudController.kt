@@ -152,7 +152,8 @@ internal class BingoHudController(
                 context = context,
                 textRenderer = textRenderer,
                 centerX = x.toInt() + (BingoHudRenderer.CARD_WIDTH/2),
-                centerY = y.toInt() + (BingoHudRenderer.CARD_HEIGHT/2)
+                centerY = y.toInt() + (BingoHudRenderer.CARD_HEIGHT/2),
+                now = state.now,
             )
         }
 
@@ -225,7 +226,7 @@ internal class BingoHudController(
             width = 100
         )
 
-        val now = Clock.System.now()
+        val now = state.now
         val tooltipPacket = state.tooltip
         val tooltipText = tooltipPacket?.text
         val tooltipStartedAt = state.tooltipStartedAt ?: Instant.DISTANT_PAST
@@ -294,6 +295,7 @@ internal class BingoHudController(
         state.messages.add(scoreMessage)
     }
 
+    @Suppress("Deprecation")
     private fun onCardUpdate(clientPacket: ClientPacket<CardUpdatePacket>) {
         val packet = clientPacket.packet
         state.views += packet.view.teamKey to packet.view
@@ -352,7 +354,17 @@ internal class BingoHudController(
         val packet = clientPacket.packet
         val view = state.views[packet.teamKey] ?: CardView(packet.teamKey, CardDisplay(), mutableListOf())
         val tiles = MutableList(25) {
-            packet.tiles[it] ?: view.tiles.getOrNull(it) ?: CardTile.EMPTY
+            val existingTile = view.tiles.getOrNull(it)
+            val newTile = packet.tiles[it] ?: existingTile ?: CardTile.EMPTY
+
+            newTile.updatedAt = when {
+                // edge case - if almost the entire card is re-rolled, don't show updates
+                packet.tiles.size > 20 -> null
+                newTile.id != existingTile?.id -> state.now
+                else -> existingTile?.updatedAt
+            }
+
+            newTile
         }
 
         state.views += (packet.teamKey to view.copy(tiles = tiles))
@@ -401,6 +413,8 @@ internal class BingoHudController(
         }
 
         hud.onRender {
+            state.now = Clock.System.now()
+
             // Do not draw the HUD if the F3 or chat overlay is shown
             if (optionsAccessor.isHudHidden())
                 return@onRender

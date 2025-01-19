@@ -19,7 +19,7 @@ class CardTilesPacket(
                 ?.let { BingoTeamKey(it) }
             val tiles = buf.readList {
                 val index = buf.readInt()
-                val tile = CardTile.V5.fromPacketBuf(buf)
+                val tile = CardTile.V6.fromPacketBuf(buf)
                 index to tile
             }.toMap()
             return CardTilesPacket(teamKey, tiles)
@@ -29,7 +29,7 @@ class CardTilesPacket(
             dest.writeNullable(source.teamKey?.id, dest::writeString)
             dest.writeList(source.tiles.entries) {
                 dest.writeInt(it.key)
-                CardTile.V5.toPacketBuf(it.value, dest)
+                CardTile.V6.toPacketBuf(it.value, dest)
             }
         }
     }

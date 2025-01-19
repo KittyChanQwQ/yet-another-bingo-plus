@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import java.util.concurrent.ConcurrentHashMap
 
 internal class BingoHudState(
+    var now: Instant = Instant.DISTANT_PAST,
     var views: Map<BingoTeamKey?, CardView> = emptyMap(),
     var selectedTeam: BingoTeamKey? = null,
     var gameOver: GameOver? = null,

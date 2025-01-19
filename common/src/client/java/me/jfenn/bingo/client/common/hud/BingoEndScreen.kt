@@ -269,7 +269,7 @@ internal class BingoEndScreen(
 
             if (gameOver.packet.isBestTime) {
                 // Animate in a "New best time!" message
-                val now = Clock.System.now()
+                val now = state.now
                 val animTimeSince = now - gameOver.packet.endedAt
                 val animProgress = (animTimeSince / NEW_BEST_DURATION).toFloat().coerceIn(0f, 1f).pow(2)
                 val bestScale = 2f - animProgress
@@ -294,7 +294,7 @@ internal class BingoEndScreen(
 
     private fun renderWinStreak(context: DrawContext, titleY: Int) {
         val winStreak = gameOver.packet.winStreak ?: return
-        val now = Clock.System.now()
+        val now = state.now
 
         val ready = state.ready
         if (ready != null && ready.isRunning) {
@@ -412,7 +412,7 @@ internal class BingoEndScreen(
         }
 
         if (gameOver.packet.isWinner) {
-            fireworkRenderer.render(context, textRenderer, width/2, height/2)
+            fireworkRenderer.render(context, textRenderer, width/2, height/2, state.now)
         }
     }
 

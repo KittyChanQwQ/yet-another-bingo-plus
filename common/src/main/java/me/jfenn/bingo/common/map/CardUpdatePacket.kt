@@ -1,3 +1,5 @@
+@file:Suppress("Deprecation")
+
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
@@ -10,6 +12,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import java.util.*
 
+@Deprecated("For backwards compatibility only. New versions use CardTilesPacket instead.")
 class CardUpdatePacket(
     val view: CardView,
 ) {

@@ -1,11 +1,11 @@
 package me.jfenn.bingo.client.common.hud
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -25,6 +25,7 @@ import net.minecraft.util.Identifier
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
 import kotlin.jvm.optionals.getOrNull
+import kotlin.time.Duration.Companion.seconds
 
 internal class BingoHudRenderer(
     private val text: TextProvider,
@@ -52,7 +53,7 @@ internal class BingoHudRenderer(
             0xFF_F5A3D6.toInt(),
         )
 
-        fun getWinColor(now: Instant = Clock.System.now()): Int {
+        fun getWinColor(now: Instant): Int {
             val winIndex = now.epochSeconds % winColors.size
             return winColors[winIndex.toInt()]
         }
@@ -85,6 +86,20 @@ internal class BingoHudRenderer(
             ?: return null
 
         return Pair(tileX, tileY)
+    }
+
+    private fun shouldRenderReplacing(tile: CardTile): Boolean {
+        val updatedAt = tile.updatedAt ?: return false
+        val timeSinceUpdated = state.now - updatedAt
+        // "== false" asserts that the tile was sent from card_tile_v6 which does not send isFlashing timed with server ticks
+        return tile.isFlashing == false &&
+                timeSinceUpdated < 4.seconds &&
+                (timeSinceUpdated.inWholeMilliseconds / 500L) % 2L == 0L
+    }
+
+    private fun shouldRenderFlashing(tile: CardTile): Boolean {
+        val isFlashRender = (state.now.toEpochMilliseconds() / 500L) % 2L == 0L
+        return tile.isFlashing?.let { isFlashRender && it } ?: tile.isFlashingOnMap
     }
 
     fun drawCard(
@@ -131,7 +146,7 @@ internal class BingoHudRenderer(
             context.matrices.translate(90.0, -4.0, 1000.0)
             context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
 
-            context.drawText(textRenderer, text.string(StringKey.CardWinner), 0, 0, getWinColor(), true)
+            context.drawText(textRenderer, text.string(StringKey.CardWinner), 0, 0, getWinColor(state.now), true)
 
             context.matrices.pop()
         }
@@ -141,7 +156,7 @@ internal class BingoHudRenderer(
             val itemX = 12 + tileX*20
             val itemY = 22 + tileY*20
 
-            val isFlashing = tile.isFlashing && showFlashingTiles
+            val isFlashing = showFlashingTiles && shouldRenderFlashing(tile)
             when {
                 isFlashing -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileFlashingColor.asInt)
                 tile.isAchieved -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileAchievedColor.asInt)
@@ -165,6 +180,9 @@ internal class BingoHudRenderer(
                     textureWidth = 16, textureHeight = 16,
                 )
             }
+
+            val isReplacing = showFlashingTiles && shouldRenderReplacing(tile)
+            if (isReplacing) continue
 
             cardTileRenderer.renderTile(service, tile, itemX + 1, itemY + 1)
 

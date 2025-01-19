@@ -177,7 +177,9 @@ internal class ScoredItemCheck(
                     card = card,
                     replaceEntries = entriesToReplace.toList(),
                     excludeObjectives = objectiveManager.listExcludedIds().toSet(),
-                )
+                ).also {
+                    objectiveManager.init(it)
+                }
 
                 // Re-count current scores
                 for (team in teams) {

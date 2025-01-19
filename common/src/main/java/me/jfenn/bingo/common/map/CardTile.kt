@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.map
 
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierLabel
@@ -10,6 +11,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 data class CardTile(
+    val id: String? = null,
     val image: CardTileImage,
     val imageList: List<CardTileImage> = emptyList(),
     val itemTier: TierLabel? = null,
@@ -18,11 +20,21 @@ data class CardTile(
     val decoration: Decoration?,
     val isHidden: Boolean = false,
     val isLocked: Boolean = false,
-    val isFlashing: Boolean = false,
+    /**
+     * True if the tile should be rendered as flashing in the current tick
+     */
+    val isFlashingOnMap: Boolean = false,
+    /**
+     * True if the tile has been recently scored
+     */
+    val isFlashing: Boolean? = null,
     val isAchieved: Boolean = false,
     val progress: Float = 0f,
     val teamKeys: List<BingoTeamKey> = emptyList(),
 ) {
+
+    @Transient
+    var updatedAt: Instant? = null
 
     @Transient
     val mapRenderKey = image.item?.let { item ->
@@ -86,7 +98,7 @@ data class CardTile(
                 },
                 isHidden = isHidden,
                 isLocked = isLocked,
-                isFlashing = isFlashing,
+                isFlashingOnMap = isFlashing,
                 isAchieved = isAchieved,
                 teamKeys = teamKeys,
             )
@@ -112,7 +124,7 @@ data class CardTile(
             dest.writeBoolean(source.decoration in MULTI_ITEM_ENUMS)
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked || source.decoration == Decoration.FORBIDDEN)
-            dest.writeBoolean(source.isFlashing)
+            dest.writeBoolean(source.isFlashingOnMap)
             dest.writeBoolean(source.isAchieved)
 
             dest.writeInt(source.teamKeys.size)
@@ -157,7 +169,7 @@ data class CardTile(
             dest.writeBoolean(source.decoration in MULTI_ITEM_ENUMS)
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked || source.decoration == Decoration.FORBIDDEN)
-            dest.writeBoolean(source.isFlashing)
+            dest.writeBoolean(source.isFlashingOnMap)
             dest.writeBoolean(source.isAchieved)
 
             dest.writeInt(source.teamKeys.size)
@@ -190,7 +202,7 @@ data class CardTile(
                 },
                 isHidden = buf.readBoolean(),
                 isLocked = buf.readBoolean(),
-                isFlashing = buf.readBoolean(),
+                isFlashingOnMap = buf.readBoolean(),
                 isAchieved = buf.readBoolean(),
                 progress = buf.readFloat(),
                 teamKeys = List(buf.readInt()) {
@@ -234,7 +246,7 @@ data class CardTile(
 
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked)
-            dest.writeBoolean(source.isFlashing)
+            dest.writeBoolean(source.isFlashingOnMap)
             dest.writeBoolean(source.isAchieved)
 
             dest.writeFloat(source.progress)
@@ -287,7 +299,7 @@ data class CardTile(
                 decoration = decoration,
                 isHidden = isHidden,
                 isLocked = isLocked,
-                isFlashing = isFlashing,
+                isFlashingOnMap = isFlashing,
                 isAchieved = isAchieved,
                 progress = progress,
                 teamKeys = teamKeys,
@@ -312,7 +324,7 @@ data class CardTile(
 
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked)
-            dest.writeBoolean(source.isFlashing)
+            dest.writeBoolean(source.isFlashingOnMap)
             dest.writeBoolean(source.isAchieved)
 
             dest.writeFloat(source.progress)
@@ -357,7 +369,7 @@ data class CardTile(
                 decoration = decoration,
                 isHidden = isHidden,
                 isLocked = isLocked,
-                isFlashing = isFlashing,
+                isFlashingOnMap = isFlashing,
                 isAchieved = isAchieved,
                 progress = progress,
                 teamKeys = teamKeys,
@@ -381,7 +393,79 @@ data class CardTile(
 
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked)
-            dest.writeBoolean(source.isFlashing)
+            dest.writeBoolean(source.isFlashingOnMap)
+            dest.writeBoolean(source.isAchieved)
+
+            dest.writeFloat(source.progress)
+
+            dest.writeInt(source.teamKeys.size)
+            for (team in source.teamKeys) {
+                dest.writeString(team.id)
+            }
+        }
+    }
+
+    object V6 : PacketConverter<CardTile> {
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_tile_v6")!!
+
+        override fun fromPacketBuf(buf: IPacketBuf): CardTile {
+            val id = buf.readString()
+            val image = CardTileImage.V1.fromPacketBuf(buf)
+            val imageList = buf.readList { CardTileImage.V1.fromPacketBuf(buf) }
+            val itemTier = buf.readNullable {
+                TierLabel.valueOf(buf.readString())
+            }
+            val name = buf.readNullable(buf::readText)
+            val lore = List(buf.readInt()) { buf.readText() }
+            val decoration = try {
+                Decoration.valueOf(buf.readString())
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+            val isHidden = buf.readBoolean()
+            val isLocked = buf.readBoolean()
+            val isFlashing = buf.readBoolean()
+            val isAchieved = buf.readBoolean()
+            val progress = buf.readFloat()
+            val teamKeys = List(buf.readInt()) {
+                BingoTeamKey(buf.readString())
+            }
+            return CardTile(
+                id = id,
+                image = image,
+                imageList = imageList,
+                itemTier = itemTier,
+                name = name,
+                lore = lore,
+                decoration = decoration,
+                isHidden = isHidden,
+                isLocked = isLocked,
+                isFlashing = isFlashing,
+                isAchieved = isAchieved,
+                progress = progress,
+                teamKeys = teamKeys,
+            )
+        }
+
+        override fun toPacketBuf(source: CardTile, dest: IPacketBuf) {
+            dest.writeString(source.id.orEmpty())
+            CardTileImage.V1.toPacketBuf(source.image, dest)
+            dest.writeList(source.imageList) {
+                CardTileImage.V1.toPacketBuf(it, dest)
+            }
+            dest.writeNullable(source.itemTier?.name, dest::writeString)
+            dest.writeNullable(source.name, dest::writeText)
+
+            dest.writeInt(source.lore.size)
+            for (text in source.lore) {
+                dest.writeText(text)
+            }
+
+            dest.writeString(source.decoration?.name ?: "")
+
+            dest.writeBoolean(source.isHidden)
+            dest.writeBoolean(source.isLocked)
+            dest.writeBoolean(source.isFlashing ?: false)
             dest.writeBoolean(source.isAchieved)
 
             dest.writeFloat(source.progress)

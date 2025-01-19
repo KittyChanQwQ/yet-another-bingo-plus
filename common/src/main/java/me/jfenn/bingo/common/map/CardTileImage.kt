@@ -6,10 +6,20 @@ import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.packet.PacketConverter
 import net.minecraft.util.Identifier
 
-data class CardTileImage(
+class CardTileImage(
     val item: IItemStack? = null,
     val texture: String? = null,
 ) {
+
+    override fun hashCode(): Int {
+        return arrayOf(item?.identifier, texture).contentHashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is CardTileImage &&
+                item?.identifier == other.item?.identifier &&
+                texture == other.texture
+    }
 
     object V1 : PacketConverter<CardTileImage> {
         override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_tile_image")!!

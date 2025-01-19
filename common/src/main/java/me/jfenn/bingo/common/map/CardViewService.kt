@@ -83,6 +83,7 @@ class CardViewService(
                 .associate { it.index to it.value }
         )
 
+        @Suppress("Deprecation")
         val updatePacket = CardUpdatePacket(view)
 
         when {
@@ -213,7 +214,10 @@ class CardViewService(
                 }
         } else emptyList()
 
+        val isFlashing = objective.isFlashing(team?.key, FLASHING_DURATION)
+
         return CardTile(
+            id = objective.id,
             image = image,
             imageList = imageList,
             itemTier = entry.tier.takeIf { !card.options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
@@ -222,7 +226,8 @@ class CardViewService(
             decoration = objective.display.decoration.takeIf { isFreeSpace || !isHidden },
             isHidden = isHidden,
             isLocked = isLocked,
-            isFlashing = objective.isFlashing(team?.key, FLASHING_DURATION) && (server.ticks / 10) % 2 == 0,
+            isFlashing = isFlashing,
+            isFlashingOnMap = isFlashing && (server.ticks / 10) % 2 == 0,
             isAchieved = isAchieved,
             progress = when {
                 isAchieved -> 1f
@@ -281,7 +286,7 @@ class CardViewService(
         if (forceNotFlashing) {
             currentView = currentView.copy(
                 tiles = map.view.tiles.map {
-                    it.copy(isFlashing = false)
+                    it.copy(isFlashingOnMap = false)
                 }.toMutableList(),
             )
         }

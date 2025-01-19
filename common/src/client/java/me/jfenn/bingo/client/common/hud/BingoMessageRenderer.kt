@@ -1,6 +1,5 @@
 package me.jfenn.bingo.client.common.hud
 
-import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
@@ -41,7 +40,7 @@ internal class BingoMessageRenderer(
 
         val context = drawService.context
         val direction = if (isAboveCard) -1 else 1
-        val now = Clock.System.now()
+        val now = state.now
         val duration = config.client.messageDurationSeconds.seconds
 
         context.matrices.push()

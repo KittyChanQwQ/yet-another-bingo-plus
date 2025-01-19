@@ -60,8 +60,8 @@ internal class BingoEndFireworkRenderer(
         textRenderer: TextRenderer,
         centerX: Int,
         centerY: Int,
+        now: Instant,
     ) {
-        val now = Clock.System.now()
         val ticks = (now - startedAt).inWholeMilliseconds.toDouble() / 50.0
 
         val iterator = stars.iterator()

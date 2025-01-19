@@ -375,7 +375,7 @@ class MapRenderService(
                 }
                 else -> BingoTileImage.HIDDEN.regular
             }
-            tile.isFlashing -> tileImage.flashing
+            tile.isFlashingOnMap -> tileImage.flashing
             tile.isAchieved -> tileImage.achieved
             else -> {
                 isRegularTile = true
