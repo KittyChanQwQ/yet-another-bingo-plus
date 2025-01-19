@@ -1,6 +1,5 @@
 package me.jfenn.bingo.client.common.hud
 
-import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
@@ -9,7 +8,7 @@ import me.jfenn.bingo.client.platform.screen.IScreen
 import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.platform.screen.IScreenHelper
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.game.GameOverPacket
+import me.jfenn.bingo.common.game.GameOverPacket.EndScreenTab
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.ready.SetReadyPacket
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -130,25 +129,11 @@ internal class BingoEndScreen(
     private var dismissButton: ButtonWidget? = null
     private var restartButton: ButtonWidget? = null
 
-    enum class EndScreenTab(val title: StringKey) {
-        CARDS(StringKey.GameEndTabCards),
-        SCORES(StringKey.GameEndTabScores),
-    }
-
     private val tabsWidget = tabsWidgetFactory.create(EndScreenTab.entries.map { text.string(it.title) })
         .apply {
-            currentTab = when {
-                gameOver.packet.shouldDefaultToScoresTab -> 1
-                else -> 0
-            }
+            currentTab = EndScreenTab.entries.indexOf(gameOver.packet.defaultTab)
             onTabChanged { updateButtons() }
         }
-
-    private val GameOverPacket.shouldDefaultToScoresTab: Boolean get() {
-        // If there are multiple teams & either more than one team completed the game, or the game was a draw
-        val completedTeamCount = scores.count { it.duration != null }
-        return scores.size > 1 && (completedTeamCount > 1 || completedTeamCount == 0)
-    }
 
     // If multiple teams have a duration (i.e. have completed the game), show the score list by default
     private val tab get() = EndScreenTab.entries.getOrNull(tabsWidget.currentTab)

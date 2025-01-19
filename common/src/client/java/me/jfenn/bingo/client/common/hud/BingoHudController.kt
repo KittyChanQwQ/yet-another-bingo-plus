@@ -400,6 +400,7 @@ internal class BingoHudController(
         packetEvents.gameOverV4.onPacket(::onGameOver)
         packetEvents.gameOverV5.onPacket(::onGameOver)
         packetEvents.gameOverV6.onPacket(::onGameOver)
+        packetEvents.gameOverV7.onPacket(::onGameOver)
 
         packetEvents.readyUpdateV1.onPacket(::onReadyUpdate)
         packetEvents.readyUpdateV2.onPacket(::onReadyUpdate)

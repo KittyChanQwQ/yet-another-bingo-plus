@@ -111,6 +111,13 @@ class GameOverController(
             )
         }
 
+        val defaultTab = when {
+            // If there are multiple teams & either more than one team completed the game, or the game was a draw
+            scoreRankings.size > 1 && scoreRankings.count { it.duration != null } != 1 -> GameOverPacket.EndScreenTab.SCORES
+            options.winCondition == BingoWinCondition.ReplaceGoals -> GameOverPacket.EndScreenTab.SCORES
+            else -> GameOverPacket.EndScreenTab.CARDS
+        }
+
         for (player in playerManager.getPlayers()) {
             val playerInfo = info.playerInfo[player.uuid]
             val isWinner = winningTeam?.includesPlayer(player.player) ?: false
@@ -142,9 +149,11 @@ class GameOverController(
 
                 seed = server.overworld.seed,
                 scores = scoreRankings,
+                defaultTab = defaultTab,
             )
 
             when {
+                packetManager.gameOverV7.send(player.player, packet) -> {}
                 packetManager.gameOverV6.send(player.player, packet) -> {}
                 packetManager.gameOverV5.send(player.player, packet) -> {}
                 packetManager.gameOverV4.send(player.player, packet) -> {}

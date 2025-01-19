@@ -1,11 +1,12 @@
 package me.jfenn.bingo.common.game
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamScore
+import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.packet.PacketConverter
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import kotlin.time.Duration
@@ -39,7 +40,18 @@ data class GameOverPacket(
     val seed: Long?,
 
     val scores: List<ScoreRanking> = emptyList(),
+    val defaultTab: EndScreenTab = run {
+        // If there are multiple teams & either more than one team completed the game, or the game was a draw
+        if (scores.size > 1 && scores.count { it.duration != null } != 1)
+            EndScreenTab.SCORES
+        else EndScreenTab.CARDS
+    },
 ) {
+
+    enum class EndScreenTab(val title: StringKey) {
+        CARDS(StringKey.GameEndTabCards),
+        SCORES(StringKey.GameEndTabScores),
+    }
 
     class ScoreRanking(
         val index: Int,
@@ -326,6 +338,86 @@ data class GameOverPacket(
                 TeamScore.V1.toPacketBuf(it.score, dest)
                 dest.writeNullable(it.duration?.toIsoString(), dest::writeString)
             }
+        }
+    }
+
+    object V7 : PacketConverter<GameOverPacket> {
+        override val id = Identifier.of(MOD_ID_BINGO, "game_over_v7")!!
+
+        override fun fromPacketBuf(buf: IPacketBuf): GameOverPacket {
+            return GameOverPacket(
+                title = buf.readText(),
+                subtitle = buf.readText(),
+                winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
+                duration = buf.readLong().milliseconds,
+                canSendRestart = buf.readBoolean(),
+                isWinner = buf.readBoolean(),
+                isUpdate = buf.readBoolean(),
+
+                winStreak = buf.readNullable(buf::readLong),
+                bestWinStreak = buf.readNullable(buf::readLong),
+                isBestWinStreak = buf.readBoolean(),
+
+                capturedItems = buf.readNullable(buf::readInt),
+                bestCapturedItems = buf.readNullable(buf::readInt),
+                isBestCapturedItems = buf.readBoolean(),
+
+                endedAt = Instant.fromEpochMilliseconds(buf.readLong()),
+                isBestTime = buf.readBoolean(),
+                prevBestTime = buf.readNullable(buf::readLong)?.milliseconds,
+                seed = buf.readNullable(buf::readLong),
+
+                scores = buf.readList {
+                    ScoreRanking(
+                        index = buf.readInt(),
+                        key = BingoTeamKey(buf.readString()),
+                        name = buf.readText(),
+                        score = TeamScore.V1.fromPacketBuf(buf),
+                        duration = buf.readNullable(buf::readString)
+                            ?.let { Duration.parseIsoString(it) }
+                    )
+                },
+                defaultTab = try {
+                    EndScreenTab.valueOf(buf.readString())
+                } catch (e: IllegalArgumentException) {
+                    EndScreenTab.CARDS
+                },
+            )
+        }
+
+        override fun toPacketBuf(source: GameOverPacket, dest: IPacketBuf) {
+            dest.writeText(source.title)
+            dest.writeText(source.subtitle)
+
+            dest.writeNullable(source.winner?.id, dest::writeString)
+
+            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isWinner)
+            dest.writeBoolean(source.isUpdate)
+
+            dest.writeNullable(source.winStreak, dest::writeLong)
+            dest.writeNullable(source.bestWinStreak, dest::writeLong)
+            dest.writeBoolean(source.isBestWinStreak)
+
+            dest.writeNullable(source.capturedItems, dest::writeInt)
+            dest.writeNullable(source.bestCapturedItems, dest::writeInt)
+            dest.writeBoolean(source.isBestCapturedItems)
+
+            dest.writeLong(source.endedAt.toEpochMilliseconds())
+            dest.writeBoolean(source.isBestTime)
+            dest.writeNullable(source.prevBestTime?.inWholeMilliseconds, dest::writeLong)
+
+            dest.writeNullable(source.seed, dest::writeLong)
+
+            dest.writeList(source.scores) {
+                dest.writeInt(it.index)
+                dest.writeString(it.key.id)
+                dest.writeText(it.name)
+                TeamScore.V1.toPacketBuf(it.score, dest)
+                dest.writeNullable(it.duration?.toIsoString(), dest::writeString)
+            }
+            dest.writeString(source.defaultTab.name)
         }
     }
 }
