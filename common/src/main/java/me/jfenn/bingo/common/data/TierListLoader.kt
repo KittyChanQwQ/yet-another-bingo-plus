@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.data
 
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierListConfig
@@ -10,6 +11,7 @@ import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.math.BigInteger
 import java.nio.file.Files
 import java.security.MessageDigest
@@ -56,7 +58,7 @@ class TierListLoader(
 
     private fun readTierListFiles() : Map<String, TierListConfig> {
         return Config.configDir
-            .resolve(MOD_ID_BINGO)
+            .resolve(TIERLISTS_PATH)
             .toFile()
             .listFiles()
             .orEmpty()
@@ -76,14 +78,9 @@ class TierListLoader(
 
         val newTierLists = mutableMapOf<String, TierListConfig>()
 
-        val lists = manager.findAllResources("$MOD_ID_BINGO/tierlists") { it.path.endsWith(FILE_SUFFIX) }
+        val lists = manager.findAllResources(TIERLISTS_PATH) { it.path.endsWith(FILE_SUFFIX) }
         for ((id, files) in lists) {
             val name = id.path.substringAfterLast('/').removeSuffix(FILE_SUFFIX)
-            if (id.namespace == MOD_ID_BINGO && name in BUILTIN_TIER_LISTS) {
-                // Default tier lists are written to the config dir as files (in MigrationHandler)
-                // and should only be read from readTierListFiles() to avoid duplication
-                continue
-            }
 
             val configs = files.mapNotNull { file ->
                 try {
@@ -101,6 +98,15 @@ class TierListLoader(
             var config = TierListConfig.EMPTY
             configs.forEach { config = it.combine(config) }
 
+            if (id.namespace == MOD_ID_BINGO && name in BUILTIN_TIER_LISTS) {
+                // Default tier lists are written to the config dir as files
+                // and should only be read from readTierListFiles() to avoid duplication
+                if (!Files.exists(configFile(name))) {
+                    writeTierList(name, config)
+                }
+                continue
+            }
+
             newTierLists[name] = config
         }
 
@@ -115,8 +121,28 @@ class TierListLoader(
         return newTierLists
     }
 
+    private fun configFile(tierListName: String) =
+        Config.configDir.resolve("$TIERLISTS_PATH/$tierListName$FILE_SUFFIX")
+
+    fun writeTierList(name: String, tierList: TierListConfig) {
+        val filePath = configFile(name)
+
+        if (tierList.isEmpty()) {
+            filePath.toFile().delete()
+            return
+        }
+
+        try {
+            filePath.parent.toFile().mkdirs()
+            filePath.toFile().writeText(json.encodeToString(tierList))
+        } catch (e: IOException) {
+            log.error("Error writing to $filePath:", e)
+        }
+    }
+
     companion object {
-        val BUILTIN_TIER_LISTS = listOf("advancements", "challenge", "items", "simplified")
+        val BUILTIN_TIER_LISTS = arrayOf("advancements", "challenge", "items", "simplified")
         const val FILE_SUFFIX = ".tierlist.json"
+        const val TIERLISTS_PATH = "$MOD_ID_BINGO/tierlists"
     }
 }

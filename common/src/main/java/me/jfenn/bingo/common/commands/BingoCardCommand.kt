@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.commands
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
-import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
+import me.jfenn.bingo.common.card.objective.ObjectiveListService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -14,7 +14,6 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.cacheFor
 import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.commands.CommandArgument
@@ -24,7 +23,6 @@ import me.jfenn.bingo.platform.commands.IExecutionSource
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
-import kotlin.time.Duration.Companion.seconds
 
 class BingoCardCommand(
     commandManager: ICommandManager,
@@ -49,15 +47,6 @@ class BingoCardCommand(
     private val IExecutionContext.state get() = scope.get<BingoState>()
     private val IExecutionContext.cardService get() = scope.get<CardService>()
     private val IExecutionContext.cardViewService get() = scope.get<CardViewService>()
-
-    private fun IExecutionContext.suggestObjectives(): Iterable<String> {
-        val objectiveManager = scope.get<BingoObjectiveManager>()
-        return objectiveManager.list()
-    }
-
-    private val objectivesCache = cacheFor(5.seconds) { ctx: IExecutionContext ->
-        ctx.suggestObjectives()
-    }
 
     private fun IExecutionContext.setObjective(tile: String, objectiveId: String) {
         val (x, y) = CARD_POSITIONS[tile]
@@ -171,7 +160,11 @@ class BingoCardCommand(
                 requires { hasConfigureGame() }
                 literal("set") {
                     string("tile", { CARD_KEYS }) { tileArg ->
-                        string("objective", { objectivesCache.get(this) }, greedy = true) { objectiveArg ->
+                        string(
+                            name = "objective",
+                            suggestions = { scope.get<ObjectiveListService>().getAllObjectives() },
+                            greedy = true,
+                        ) { objectiveArg ->
                             executes {
                                 val tile = getArgument(tileArg).lowercase()
                                 val objectiveId = getArgument(objectiveArg)

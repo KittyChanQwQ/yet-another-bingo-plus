@@ -120,6 +120,7 @@ val commonModule = module {
     singleOf(::StatsCommand)
     singleOf(::ObjectiveFilterCommand)
     singleOf(::InfoBookCommand)
+    singleOf(::DataCommands)
 
     singleOf(::TagExpansionService)
 
@@ -143,8 +144,10 @@ val commonModule = module {
         scopedOf(::UnobtainableItemsLoader)
         scopedOf(::ScopedData)
         scopedOf(::DataLoaderManager)
+        scopedOf(::DataCommandService)
 
         scopedOf(::ObjectiveService)
+        scopedOf(::ObjectiveListService)
         scopedOf(::ObjectiveDisplayService)
         scopedOf(::AdvancementObjectiveManager)
         scopedOf(::ItemObjectiveManager)
@@ -292,6 +295,7 @@ fun Koin.commonInit() {
     get<StatsCommand>()
     get<ObjectiveFilterCommand>()
     get<InfoBookCommand>()
+    get<DataCommands>()
 
     get<ConnectionFactory>()
     get<StatsService>()

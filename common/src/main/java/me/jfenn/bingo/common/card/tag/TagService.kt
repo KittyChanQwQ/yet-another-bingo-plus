@@ -11,6 +11,12 @@ class TagService(
     private val tagsCache = cacheFor(5.seconds) { _: Unit ->
         providers
             .flatMap { it.listTags().toList() }
+            .groupBy { (name, _) -> name }
+            .mapValues { (_, tags) ->
+                tags
+                    .map { it.second }
+                    .reduce { acc, tag -> acc + tag }
+            }
             .toMap()
             .plus(ObjectiveFilter.UNCATEGORIZED to TagData(emptySet()))
     }

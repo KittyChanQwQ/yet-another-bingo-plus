@@ -26,7 +26,7 @@ class ResetCommand(
     init {
         commandManager.register("bingo") {
             literal("reset") {
-                requires { hasPermission(Permission.COMMAND_RESTART) && hasState(GameState.PLAYING, GameState.POSTGAME) }
+                requires { hasPermission(Permission.COMMAND_RESET) && hasState(GameState.PLAYING, GameState.POSTGAME) }
                 executes {
                     reset()
                 }
@@ -34,7 +34,7 @@ class ResetCommand(
         }
 
         commandManager.register("restart") {
-            requires { hasPermission(Permission.COMMAND_RESTART) && hasState(GameState.PLAYING, GameState.POSTGAME) }
+            requires { hasPermission(Permission.COMMAND_RESET) && hasState(GameState.PLAYING, GameState.POSTGAME) }
             executes {
                 reset()
             }

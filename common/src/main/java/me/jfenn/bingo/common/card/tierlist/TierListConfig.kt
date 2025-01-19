@@ -39,6 +39,8 @@ data class TierListConfig(
         )
     }
 
+    fun isEmpty() = values.isEmpty() && s.isEmpty() && a.isEmpty() && b.isEmpty() && c.isEmpty() && d.isEmpty() && groups.none { it.isNotEmpty() }
+
     fun combine(other: TierListConfig): TierListConfig {
         return this.copy(
             values = emptySet(),
@@ -55,6 +57,18 @@ data class TierListConfig(
                     .toSet()
             )
         }
+    }
+
+    fun plus(objective: String, tier: TierLabel?): TierListConfig {
+        val entry = TierListEntry(null, objective)
+        return this.mapTiers { set, setTier ->
+            if (setTier == tier) set + entry else set - entry
+        }
+    }
+
+    fun minus(objective: String): TierListConfig {
+        val entry = TierListEntry(null, objective)
+        return this.mapTiers { set, _ -> set - entry }
     }
 
     fun getTier(tier: TierLabel) = when (tier) {

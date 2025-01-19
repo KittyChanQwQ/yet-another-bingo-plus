@@ -2,12 +2,11 @@ package me.jfenn.bingo.common.config
 
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.data.TagLoader
 import me.jfenn.bingo.common.data.TierListLoader
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
-import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
-import java.io.FileOutputStream
 import java.io.IOException
 import java.math.BigInteger
 import java.nio.file.Files
@@ -209,6 +208,21 @@ class MigrationHandler(
                 .takeIfMd5("a2a51e6e8a965ac98b7551ddcb1a8e1")
                 ?.deleteIfExists()
         }
+
+        migrations[27] = { // 2.5.0
+            // Move *.tierlist.json files from "{config}/" to "{config}/tierlists/"
+            val targetPath = loader.configDir.resolve(TierListLoader.TIERLISTS_PATH)
+            targetPath.toFile().mkdirs()
+
+            loader.configDir.resolve(MOD_ID_BINGO)
+                .toFile()
+                .listFiles()
+                .orEmpty()
+                .filter { it.name.endsWith(TierListLoader.FILE_SUFFIX) }
+                .forEach { sourceFile ->
+                    Files.move(sourceFile.toPath(), targetPath.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
+                }
+        }
     }
 
     private fun md5Of(path: Path): String? {
@@ -252,22 +266,15 @@ class MigrationHandler(
         configService.optionsDefault = configService.optionsDefault.copy()
         configService.playerConfig = configService.playerConfig.copy()
 
-        // - tierlist files should be re-generated on each launch if removed:
-        for (list in TierListLoader.BUILTIN_TIER_LISTS) {
-            val filePath = Config.configDir.resolve("$MOD_ID_BINGO/$list${TierListLoader.FILE_SUFFIX}")
-            if (!Files.exists(filePath)) {
-                FileOutputStream(filePath.toFile()).use { output ->
-                    javaClass.getResourceAsStream("/data/$MOD_ID_BINGO/$MOD_ID_BINGO/tierlists/$list${TierListLoader.FILE_SUFFIX}")!!
-                        .use { input -> IOUtils.copy(input, output) }
-                }
-            }
-        }
-
         if (log.isDebugEnabled) {
-            Config.configDir.resolve(MOD_ID_BINGO)
-                .takeIf { it.isDirectory() }
-                ?.listDirectoryEntries(glob = "*.json")
-                ?.forEach {
+            listOf(TierListLoader.TIERLISTS_PATH, TagLoader.TAGS_PATH)
+                .flatMap {
+                    Config.configDir.resolve(TierListLoader.TIERLISTS_PATH)
+                        .takeIf { it.isDirectory() }
+                        ?.listDirectoryEntries(glob = "*.json")
+                        .orEmpty()
+                }
+                .forEach {
                     log.info("| $MOD_ID_BINGO | ${it.fileName.toString().padEnd(40)} | ${md5Of(it)} |")
                 }
         }

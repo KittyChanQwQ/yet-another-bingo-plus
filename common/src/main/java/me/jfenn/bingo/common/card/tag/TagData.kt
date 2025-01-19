@@ -10,7 +10,7 @@ class TagData(
         val EMPTY = TagData(emptySet())
     }
 
-    fun combine(other: TagData): TagData {
+    operator fun plus(other: TagData): TagData {
         return TagData(
             values = this.values + other.values,
         )
@@ -19,4 +19,9 @@ class TagData(
     fun contains(value: String): Boolean {
         return values.contains(value)
     }
+
+    operator fun plus(value: String) = TagData(values + value)
+    operator fun minus(value: String) = TagData(values - value)
+
+    fun isEmpty() = values.isEmpty()
 }

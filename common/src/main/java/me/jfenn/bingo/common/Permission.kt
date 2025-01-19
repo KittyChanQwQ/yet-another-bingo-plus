@@ -39,8 +39,11 @@ object Permission {
     /** "/spectator" command */
     val COMMAND_SPECTATOR = PermissionKey("$MOD_ID.command.spectator", PermissionDefault.ALLOW)
 
-    /** "/restart" command */
-    val COMMAND_RESTART = PermissionKey("$MOD_ID.command.restart", PermissionDefault.OPERATORS)
+    /** "/bingo reset" command */
+    val COMMAND_RESET = PermissionKey("$MOD_ID.command.reset", PermissionDefault.OPERATORS)
+
+    /** "/bingodata" commands */
+    val COMMAND_DATA = PermissionKey("$MOD_ID.command.bingodata", PermissionDefault.OPERATORS)
 
     /** "/bingo debug" command */
     val COMMAND_DEBUG = PermissionKey("$MOD_ID.command.debug", PermissionDefault.OPERATORS)
