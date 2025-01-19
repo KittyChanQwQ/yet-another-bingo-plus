@@ -446,7 +446,7 @@ class MapRenderService(
     fun update(
         team: BingoTeam?,
         map: BingoMap,
-        currentView: CardView,
+        changedTiles: List<Int>,
     ) = measureTime {
         val state = map.mapState ?: kotlin.run {
             val state = MapState.of(1, true, server.overworld.registryKey)
@@ -457,20 +457,16 @@ class MapRenderService(
             state
         }
 
-        for (x in 0 until 5) {
-            for (y in 0 until 5) {
-                val drawnTile = map.view.tile(x, y)
-                val currentTile = currentView.tile(x, y) ?: continue
-
-                if (drawnTile != currentTile) {
-                    drawMapTile(
-                        mapState = state,
-                        tile = currentTile,
-                        itemX = x,
-                        itemY = y,
-                    )
-                }
-            }
+        for (index in changedTiles) {
+            val tile = map.view.tiles.getOrNull(index) ?: continue
+            val x = index % 5
+            val y = index / 5
+            drawMapTile(
+                mapState = state,
+                tile = tile,
+                itemX = x,
+                itemY = y,
+            )
         }
     }.also {
         if (it >= 1.milliseconds) {

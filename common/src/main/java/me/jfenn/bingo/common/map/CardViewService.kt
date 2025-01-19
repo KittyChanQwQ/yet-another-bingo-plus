@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.truncate
@@ -19,7 +20,6 @@ import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import kotlin.time.Duration.Companion.seconds
@@ -48,19 +48,52 @@ class CardViewService(
      */
     fun supportsCardHud(player: IPlayerHandle): Boolean {
         return config.supportClientHud &&
-                packets.cardDisplayV1.isSupported(player)
+                (packets.cardDisplayV1.isSupported(player) || packets.cardDisplayV2.isSupported(player))
     }
 
     /**
      * Send an empty CardDisplayPacket to clear the HUD state
      */
-    fun sendClearDisplayPacket(player: ServerPlayerEntity) {
-        packets.cardDisplayV1.send(
-            player, CardDisplayPacket(
-                teamInfo = emptyMap(),
-                display = emptyList(),
-            )
+    fun sendClearDisplayPacket(player: IPlayerHandle) {
+        sendCardDisplayPacket(player, emptyMap())
+    }
+
+    private fun sendCardDisplayPacket(
+        player: IPlayerHandle,
+        displayCards: Map<BingoTeamKey?, CardDisplay>,
+    ) {
+        val packet = CardDisplayPacket(
+            display = displayCards,
         )
+
+        when {
+            packets.cardDisplayV2.send(player, packet) -> {}
+            packets.cardDisplayV1.send(player, packet) -> {}
+        }
+    }
+
+    private fun sendEntireCardTilesPacket(
+        player: IPlayerHandle,
+        view: CardView,
+    ) {
+        val tilesPacket = CardTilesPacket(
+            teamKey = view.teamKey,
+            tiles = view.tiles
+                .withIndex()
+                .associate { it.index to it.value }
+        )
+
+        val updatePacket = CardUpdatePacket(view)
+
+        when {
+            packets.cardTilesV1.send(player, tilesPacket) -> {}
+            packets.cardUpdateV6.send(player, updatePacket) -> {}
+            packets.cardUpdateV5.send(player, updatePacket) -> {}
+            packets.cardUpdateV4.send(player, updatePacket) -> {}
+            packets.cardUpdateV3.send(player, updatePacket) -> {}
+            packets.cardUpdateV2.send(player, updatePacket) -> {}
+            packets.cardUpdateV1.send(player, updatePacket) -> {}
+        }
     }
 
     fun sendUpdatePackets(player: IPlayerHandle) {
@@ -68,38 +101,42 @@ class CardViewService(
             return
 
         val teams = state.getRegisteredTeams()
-        val displayTeams = (teams + null).filter { isViewingCard(player, it) }
-
-        val packet = CardDisplayPacket(
-            teamInfo = teams.associate { it.key to it.textColor },
-            display = displayTeams.map { it?.key },
-        )
-
-        packets.cardDisplayV1.send(player, packet)
+        val displayTeams = (teams + null)
+            .filter { isViewingCard(player, it) }
 
         val isViewingSpectatorCards = displayTeams.size > 1
-
-        for (team in displayTeams) {
+        val displayCards = displayTeams.associate { team ->
             val map = team
                 ?.let { teamService.getTeamMap(it) }
                 ?: state.getPreviewMap(mapService)
 
-            val view = when {
-                // When the player is viewing multiple cards, use player names on the card titles
-                // (otherwise, it only shows the team name)
-                isViewingSpectatorCards -> map.view.copy(teamName = getMapName(team, playerName = true))
-                else -> map.view
+            // If the map view has no tiles, update it first!
+            // (this is necessary to populate the display info)
+            if (map.view.tiles.isEmpty()) {
+                updateCard(team)
             }
 
-            val updatePacket = CardUpdatePacket(view)
-            when {
-                packets.cardUpdateV6.send(player, updatePacket) -> {}
-                packets.cardUpdateV5.send(player, updatePacket) -> {}
-                packets.cardUpdateV4.send(player, updatePacket) -> {}
-                packets.cardUpdateV3.send(player, updatePacket) -> {}
-                packets.cardUpdateV2.send(player, updatePacket) -> {}
-                packets.cardUpdateV1.send(player, updatePacket) -> {}
+            val display = when {
+                // When the player is viewing multiple cards, use player names on the card titles
+                // (otherwise, it only shows the team name)
+                isViewingSpectatorCards -> map.view.display.copy(
+                    teamName = getMapName(team, playerName = true)
+                )
+                else -> map.view.display
             }
+
+            team?.key to display
+        }
+
+        sendCardDisplayPacket(player, displayCards)
+
+        for ((key, display) in displayCards) {
+            val map = state.teams[key]
+                ?.let { teamService.getTeamMap(it) }
+                ?: state.getPreviewMap(mapService)
+
+            val view = map.view.copy(display = display)
+            sendEntireCardTilesPacket(player, view)
         }
     }
 
@@ -219,8 +256,11 @@ class CardViewService(
 
         return CardView(
             teamKey = team?.key,
-            teamColor = team?.mapColor,
-            teamName = getMapName(team),
+            display = CardDisplay(
+                teamColor = team?.mapColor,
+                teamName = getMapName(team),
+                players = team?.players?.toList() ?: emptyList(),
+            ),
             tiles = card.entries
                 .map { entry ->
                     val goal = card.objectives[entry.objectiveId]
@@ -228,7 +268,6 @@ class CardViewService(
                         ?: CardTile.EMPTY
                 }
                 .toMutableList(),
-            players = team?.players?.toList() ?: emptyList(),
         )
     }
 
@@ -236,22 +275,46 @@ class CardViewService(
         team: BingoTeam?,
         forceNotFlashing: Boolean = false,
     ) {
-        var view = getMapView(team)
+        var currentView = getMapView(team)
         val map = team?.let { teamService.getTeamMap(it) } ?: state.getPreviewMap(mapService)
 
         if (forceNotFlashing) {
-            view = view.copy(
+            currentView = currentView.copy(
                 tiles = map.view.tiles.map {
                     it.copy(isFlashing = false)
                 }.toMutableList(),
             )
         }
 
-        mapRenderService.update(team, map, view)
-        map.view = view
+        // Determine which tiles have been changed since the last update
+        val changedTiles = currentView.tiles
+            .withIndex()
+            .filter { (i, tile) -> tile != map.view.tiles.getOrNull(i) }
+            .map { it.index }
 
-        for (player in playerManager.getPlayers()) {
-            sendUpdatePackets(player)
+        if (changedTiles.isEmpty())
+            return
+
+        // Re-draw changed tiles on the vanilla map
+        map.view = currentView
+        mapRenderService.update(team, map, changedTiles)
+
+        val cardTilesPacket = CardTilesPacket(
+            teamKey = team?.key,
+            tiles = changedTiles.associateWith {
+                currentView.tiles[it]
+            }
+        )
+
+        val players = playerManager.getPlayers()
+            .filter { isViewingCard(it, team) }
+
+        for (player in players) {
+            when {
+                packets.cardTilesV1.send(player, cardTilesPacket) -> {}
+                // Legacy support (when cardTiles is not supported) - is not performant
+                else -> sendEntireCardTilesPacket(player, currentView)
+            }
         }
     }
 

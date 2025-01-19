@@ -28,7 +28,7 @@ internal class BingoCardsWidget(
     interpolateDuration: Duration = Duration.ZERO,
 
     val showFlashingTiles: Boolean,
-    var views: List<CardView> = emptyList(),
+    var views: Collection<CardView> = emptyList(),
     var winner: BingoTeamKey? = null,
 
     val onTileClick: (CardTile) -> Boolean,

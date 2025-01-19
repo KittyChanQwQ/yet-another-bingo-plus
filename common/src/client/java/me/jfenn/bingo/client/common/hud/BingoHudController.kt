@@ -13,8 +13,7 @@ import me.jfenn.bingo.common.KEYBIND_TOGGLE_HUD
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameOverPacket
-import me.jfenn.bingo.common.map.CardUpdatePacket
-import me.jfenn.bingo.common.map.CardView
+import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.ready.SetReadyPacket
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -118,15 +117,15 @@ internal class BingoHudController(
     }
 
     private fun getSelectedCard(): CardView? {
-        val teamKeys = state.display?.display
-        if (teamKeys.isNullOrEmpty()) return null
+        val teamKeys = state.views.keys
+        if (teamKeys.isEmpty()) return null
 
         val selectedTeam = state.selectedTeam
         return when {
             // If the selected team is one of the displayed cards, try to find its view state...
             selectedTeam in teamKeys -> state.views[selectedTeam]
             // otherwise, find a different card to display
-            else -> teamKeys.firstOrNull().let { state.views[it] } // firstOrNull() falls back to preview card
+            else -> state.views.keys.firstOrNull().let { state.views[it] } // firstOrNull() falls back to preview card
         }
     }
 
@@ -174,7 +173,7 @@ internal class BingoHudController(
             // if the client can only see one card, enable team outlines
             // inverse: if the client can see every card, we don't need to show the outlines
             showTeamOutlines = config.client.cardTeamOutlines && (
-                !config.client.showMultipleCards || state.display?.display?.size?.let { it <= 1 } == true
+                !config.client.showMultipleCards || state.views.size <= 1
             ),
             isMouseOver = isMouseOver,
             mouseX = mouseX,
@@ -195,8 +194,7 @@ internal class BingoHudController(
         // Attempt to draw additional cards if showMultipleCards=true
         val xDirection = if (cardAlignment.x > 0) -1 else 1
         if (config.client.showMultipleCards) {
-            val remainingViews = (state.display?.display.orEmpty() - view.teamKey)
-                .mapNotNull { state.views[it] }
+            val remainingViews = state.views.values - view
 
             for ((i, remainingView) in remainingViews.withIndex()) {
                 val cardX = x + ((i+1) * xDirection * BingoHudRenderer.CARD_WIDTH * cardScale)
@@ -257,11 +255,7 @@ internal class BingoHudController(
         // Add any new views to the gameOver screen, but do not take away previously-seen views
         // - this is a compatibility fix for previous server versions
         //   that do not ensure all cards are sent before the game over screen
-        gameOver.views = (
-                (state.display?.display ?: emptyList())
-                    .mapNotNull { state.views[it] }
-                        + gameOver.views
-                )
+        gameOver.views = (state.views.values + gameOver.views)
             // do not show the preview card on the Game Over screen
             .filter { it.teamKey != null }
             // prevent any duplicate cards (uses newly-sent cards first)
@@ -302,7 +296,7 @@ internal class BingoHudController(
 
     private fun onCardUpdate(clientPacket: ClientPacket<CardUpdatePacket>) {
         val packet = clientPacket.packet
-        state.views[packet.view.teamKey] = packet.view
+        state.views += packet.view.teamKey to packet.view
         updateGameOverViews()
     }
 
@@ -311,18 +305,63 @@ internal class BingoHudController(
         state.ready = packet
     }
 
-    init {
-        packetEvents.cardDisplayV1.onPacket {
-            state.display = it.packet
-            updateGameOverViews()
-
-            // if there are no teams being displayed (BingoMapController sends when entering PREGAME)
-            // reset the HUD state completely
-            // (which clears the gameOverPacket state)
-            if (it.packet.display.isEmpty()) {
-                state.reset()
-            }
+    private fun onCardDisplayV1(clientPacket: ClientPacket<CardDisplayPacket>) {
+        val displays = clientPacket.packet.display
+        state.views = displays.mapValues { (key, display) ->
+            state.views[key]
+                ?.let {
+                    // only overwrite teamColor from display, as the rest will come from card update packets
+                    it.copy(
+                        display = it.display.copy(
+                            teamColor = display.teamColor,
+                        )
+                    )
+                }
+                ?: CardView(key, display, mutableListOf())
         }
+
+        updateGameOverViews()
+
+        // if there are no teams being displayed (BingoMapController sends when entering PREGAME)
+        // reset the HUD state completely
+        // (which clears the gameOverPacket state)
+        if (displays.isEmpty()) {
+            state.reset()
+        }
+    }
+
+    private fun onCardDisplayV2(clientPacket: ClientPacket<CardDisplayPacket>) {
+        val displays = clientPacket.packet.display
+        state.views = displays.mapValues { (key, display) ->
+            state.views[key]
+                ?.copy(display = display)
+                ?: CardView(key, display, mutableListOf())
+        }
+
+        updateGameOverViews()
+
+        // if there are no teams being displayed (BingoMapController sends when entering PREGAME)
+        // reset the HUD state completely
+        // (which clears the gameOverPacket state)
+        if (displays.isEmpty()) {
+            state.reset()
+        }
+    }
+
+    private fun onCardTiles(clientPacket: ClientPacket<CardTilesPacket>) {
+        val packet = clientPacket.packet
+        val view = state.views[packet.teamKey] ?: CardView(packet.teamKey, CardDisplay(), mutableListOf())
+        val tiles = MutableList(25) {
+            packet.tiles[it] ?: view.tiles.getOrNull(it) ?: CardTile.EMPTY
+        }
+
+        state.views += (packet.teamKey to view.copy(tiles = tiles))
+        updateGameOverViews()
+    }
+
+    init {
+        packetEvents.cardDisplayV1.onPacket(::onCardDisplayV1)
+        packetEvents.cardDisplayV2.onPacket(::onCardDisplayV2)
 
         packetEvents.cardUpdateV1.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV2.onPacket(::onCardUpdate)
@@ -330,6 +369,8 @@ internal class BingoHudController(
         packetEvents.cardUpdateV4.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV5.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV6.onPacket(::onCardUpdate)
+
+        packetEvents.cardTilesV1.onPacket(::onCardTiles)
 
         packetEvents.cardCompletedV1.onPacket {
             if (it.packet.isWinner) {
@@ -410,8 +451,7 @@ internal class BingoHudController(
                 if (optionsAccessor.isSneakPressed() && state.ready?.isRunning == true) {
                     packetEvents.readySetV1.send(SetReadyPacket(!(state.ready?.isReady ?: false)))
                 } else {
-                    val display = state.display?.display
-                    if (display.isNullOrEmpty()) {
+                    if (state.views.isEmpty()) {
                         client.player?.sendMessage(text.string(StringKey.CardNoCards), true)
                         return@register
                     }

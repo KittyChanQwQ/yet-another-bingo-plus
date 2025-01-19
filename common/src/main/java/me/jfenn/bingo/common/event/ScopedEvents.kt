@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.event
 
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.common.utils.ReturnEventListener
 import me.jfenn.bingo.platform.IPlayerHandle
@@ -44,6 +45,8 @@ class ScopedEvents(
     val onChangeOptions = EventListener<Unit>()
     val onChangePlayerSettings = EventListener<IPlayerHandle>()
     val onChangeTeam = EventListener<IPlayerHandle>()
+
+    val onTeamWinner = EventListener<BingoTeam>()
 
     val onDataReload = EventListener<ReloadEvent>()
 

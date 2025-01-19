@@ -241,6 +241,18 @@ internal class PlayerController(
             }
         }
 
+        events.onTeamWinner { team ->
+            val teamPlayers = team.players.mapNotNull { playerManager.getPlayer(it.uuid) }
+            for (player in teamPlayers) {
+                if (state.isLobbyMode) {
+                    updateGameMode(player)
+                } else {
+                    // if running with isLobbyMode=false, take the elytra back after a game
+                    elytraService.takeElytra(player)
+                }
+            }
+        }
+
         // Transition from PLAYING -> POSTGAME
         events.onEnter(GameState.POSTGAME) {
             for (player in playerManager.getPlayers()) {

@@ -26,10 +26,12 @@ class CardUpdatePacket(
             return CardUpdatePacket(
                 CardView(
                     teamKey = teamKey,
-                    teamColor = teamColor,
-                    teamName = Text.literal(teamName),
+                    display = CardDisplay(
+                        teamColor = teamColor,
+                        teamName = Text.literal(teamName),
+                        players = emptyList(),
+                    ),
                     tiles = tiles,
-                    players = emptyList(),
                 )
             )
         }
@@ -44,14 +46,14 @@ class CardUpdatePacket(
                 dest.writeBoolean(false)
             }
 
-            if (view.teamColor != null) {
+            if (view.display.teamColor != null) {
                 dest.writeBoolean(true)
-                dest.writeString(view.teamColor.name)
+                dest.writeString(view.display.teamColor.name)
             } else {
                 dest.writeBoolean(false)
             }
 
-            dest.writeString(view.teamName.string)
+            dest.writeString(view.display.teamName.string)
 
             // read-only copy of tiles to avoid concurrent modification
             val tiles = view.tiles.toList()
@@ -75,10 +77,12 @@ class CardUpdatePacket(
             return CardUpdatePacket(
                 CardView(
                     teamKey = teamKey,
-                    teamColor = teamColor,
-                    teamName = teamName,
+                    display = CardDisplay(
+                        teamColor = teamColor,
+                        teamName = teamName,
+                        players = emptyList(),
+                    ),
                     tiles = tiles,
-                    players = emptyList(),
                 )
             )
         }
@@ -93,14 +97,14 @@ class CardUpdatePacket(
                 dest.writeBoolean(false)
             }
 
-            if (view.teamColor != null) {
+            if (view.display.teamColor != null) {
                 dest.writeBoolean(true)
-                dest.writeString(view.teamColor.name)
+                dest.writeString(view.display.teamColor.name)
             } else {
                 dest.writeBoolean(false)
             }
 
-            dest.writeText(view.teamName)
+            dest.writeText(view.display.teamName)
 
             // read-only copy of tiles to avoid concurrent modification
             val tiles = view.tiles.toList()
@@ -129,10 +133,12 @@ class CardUpdatePacket(
             return CardUpdatePacket(
                 CardView(
                     teamKey = teamKey,
-                    teamColor = teamColor,
-                    teamName = teamName,
+                    display = CardDisplay(
+                        teamColor = teamColor,
+                        teamName = teamName,
+                        players = players,
+                    ),
                     tiles = tiles,
-                    players = players,
                 )
             )
         }
@@ -147,14 +153,14 @@ class CardUpdatePacket(
                 dest.writeBoolean(false)
             }
 
-            if (view.teamColor != null) {
+            if (view.display.teamColor != null) {
                 dest.writeBoolean(true)
-                dest.writeString(view.teamColor.name)
+                dest.writeString(view.display.teamColor.name)
             } else {
                 dest.writeBoolean(false)
             }
 
-            dest.writeText(view.teamName)
+            dest.writeText(view.display.teamName)
 
             // read-only copy of tiles to avoid concurrent modification
             val tiles = view.tiles.toList()
@@ -163,8 +169,8 @@ class CardUpdatePacket(
                 CardTile.V2.toPacketBuf(tile, dest)
             }
 
-            dest.writeInt(view.players.size)
-            for (player in view.players) {
+            dest.writeInt(view.display.players.size)
+            for (player in view.display.players) {
                 dest.writeString(player.uuid.toString())
                 dest.writeString(player.name)
             }
@@ -188,10 +194,12 @@ class CardUpdatePacket(
             return CardUpdatePacket(
                 CardView(
                     teamKey = teamKey,
-                    teamColor = teamColor,
-                    teamName = teamName,
+                    display = CardDisplay(
+                        teamColor = teamColor,
+                        teamName = teamName,
+                        players = players,
+                    ),
                     tiles = tiles,
-                    players = players,
                 )
             )
         }
@@ -206,14 +214,14 @@ class CardUpdatePacket(
                 dest.writeBoolean(false)
             }
 
-            if (view.teamColor != null) {
+            if (view.display.teamColor != null) {
                 dest.writeBoolean(true)
-                dest.writeString(view.teamColor.name)
+                dest.writeString(view.display.teamColor.name)
             } else {
                 dest.writeBoolean(false)
             }
 
-            dest.writeText(view.teamName)
+            dest.writeText(view.display.teamName)
 
             // read-only copy of tiles to avoid concurrent modification
             val tiles = view.tiles.toList()
@@ -222,8 +230,8 @@ class CardUpdatePacket(
                 CardTile.V3.toPacketBuf(tile, dest)
             }
 
-            dest.writeInt(view.players.size)
-            for (player in view.players) {
+            dest.writeInt(view.display.players.size)
+            for (player in view.display.players) {
                 dest.writeString(player.uuid.toString())
                 dest.writeString(player.name)
             }
@@ -247,10 +255,12 @@ class CardUpdatePacket(
             return CardUpdatePacket(
                 CardView(
                     teamKey = teamKey,
-                    teamColor = teamColor,
-                    teamName = teamName,
+                    display = CardDisplay(
+                        teamColor = teamColor,
+                        teamName = teamName,
+                        players = players,
+                    ),
                     tiles = tiles,
-                    players = players,
                 )
             )
         }
@@ -265,14 +275,14 @@ class CardUpdatePacket(
                 dest.writeBoolean(false)
             }
 
-            if (view.teamColor != null) {
+            if (view.display.teamColor != null) {
                 dest.writeBoolean(true)
-                dest.writeString(view.teamColor.name)
+                dest.writeString(view.display.teamColor.name)
             } else {
                 dest.writeBoolean(false)
             }
 
-            dest.writeText(view.teamName)
+            dest.writeText(view.display.teamName)
 
             // read-only copy of tiles to avoid concurrent modification
             val tiles = view.tiles.toList()
@@ -281,8 +291,8 @@ class CardUpdatePacket(
                 CardTile.V4.toPacketBuf(tile, dest)
             }
 
-            dest.writeInt(view.players.size)
-            for (player in view.players) {
+            dest.writeInt(view.display.players.size)
+            for (player in view.display.players) {
                 dest.writeString(player.uuid.toString())
                 dest.writeString(player.name)
             }
@@ -306,10 +316,12 @@ class CardUpdatePacket(
             return CardUpdatePacket(
                 CardView(
                     teamKey = teamKey,
-                    teamColor = teamColor,
-                    teamName = teamName,
+                    display = CardDisplay(
+                        teamColor = teamColor,
+                        teamName = teamName,
+                        players = players,
+                    ),
                     tiles = tiles,
-                    players = players,
                 )
             )
         }
@@ -324,14 +336,14 @@ class CardUpdatePacket(
                 dest.writeBoolean(false)
             }
 
-            if (view.teamColor != null) {
+            if (view.display.teamColor != null) {
                 dest.writeBoolean(true)
-                dest.writeString(view.teamColor.name)
+                dest.writeString(view.display.teamColor.name)
             } else {
                 dest.writeBoolean(false)
             }
 
-            dest.writeText(view.teamName)
+            dest.writeText(view.display.teamName)
 
             // read-only copy of tiles to avoid concurrent modification
             val tiles = view.tiles.toList()
@@ -340,8 +352,8 @@ class CardUpdatePacket(
                 CardTile.V5.toPacketBuf(tile, dest)
             }
 
-            dest.writeInt(view.players.size)
-            for (player in view.players) {
+            dest.writeInt(view.display.players.size)
+            for (player in view.display.players) {
                 dest.writeString(player.uuid.toString())
                 dest.writeString(player.name)
             }

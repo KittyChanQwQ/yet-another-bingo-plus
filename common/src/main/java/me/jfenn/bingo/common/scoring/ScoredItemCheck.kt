@@ -46,18 +46,21 @@ internal class ScoredItemCheck(
     private val playerManager: IPlayerManager,
     private val text: TextProvider,
     private val permission: PermissionsIntegration,
-    events: ScopedEvents,
+    private val events: ScopedEvents,
 ) : BingoComponent() {
 
     // Card completed packets should only be sent if the game continues and does not end
     // - these are stored in a map temporarily and are sent/cleared at the end of each tick
     private val pendingCardCompletedPackets = mutableMapOf<BingoTeamKey, TeamCompletedCard>()
 
+    private val pendingTeamWinners = mutableSetOf<BingoTeamKey>()
+
     private fun updateScores(
-        card: BingoCard,
+        initialCard: BingoCard,
         tickStart: Instant,
         sendUpdates: Boolean,
     ) {
+        var card = initialCard // card is mutable, as WinCondition.ReplaceGoals can occur during score counting
         val rootObjectives = card.entries.mapNotNull { card.objectives[it.objectiveId] }
 
         val teams = state.getRegisteredTeams()
@@ -170,7 +173,7 @@ internal class ScoredItemCheck(
                 log.info("[ScoredItemCheck] Replacing {} entries on the card", entriesToReplace.size)
 
                 // Recreate the card, replacing the scored entries
-                cardService.replaceEntries(
+                card = cardService.replaceEntries(
                     card = card,
                     replaceEntries = entriesToReplace.toList(),
                     excludeObjectives = objectiveManager.listExcludedIds().toSet(),
@@ -329,9 +332,8 @@ internal class ScoredItemCheck(
             // the team has won the game
             team.winner = TeamWinner(now)
             team.cardId = null
-            // add to playersJoinedIds - tells [PlayerController] to run updateGameMode
-            // which should place winning teams in spectator
-            state.playersJoinedIds += team.players.map { it.uuid }
+            // tells [PlayerController] to run updateGameMode which should place winning teams in spectator
+            pendingTeamWinners.add(team.key)
         } else {
             // If the team is supposed to get a new card, check that it has >3 ticks
             // (this relates to init() calling the tick function 3 times)
@@ -375,7 +377,7 @@ internal class ScoredItemCheck(
         objectiveManager.tick(card)
 
         updateScores(
-            card = card,
+            initialCard = card,
             tickStart = tickStart,
             sendUpdates = true,
         )
@@ -384,10 +386,13 @@ internal class ScoredItemCheck(
     private fun postTickCards(
         prevLeadingTeam: BingoTeam?,
     ) {
-        if (state.endedAt != null) return
-
         val cardCompletedPackets = pendingCardCompletedPackets.toList()
         pendingCardCompletedPackets.clear()
+
+        val teamWinners = pendingTeamWinners.toList()
+        pendingTeamWinners.clear()
+
+        if (state.endedAt != null) return
 
         val teams = state.getRegisteredTeams()
 
@@ -471,6 +476,12 @@ internal class ScoredItemCheck(
 
             onCardAssigned(newCard, teamsWithoutCards)
         }
+
+        // Only run onTeamWinner events after the card tick is complete
+        // and we know that the game is still running
+        teamWinners
+            .mapNotNull { state.teams[it] }
+            .forEach { events.onTeamWinner(it) }
     }
 
     private fun onCardAssigned(card: BingoCard, removeTeams: List<BingoTeam>) {
@@ -487,7 +498,7 @@ internal class ScoredItemCheck(
         objectiveManager.tick(card)
 
         updateScores(
-            card = card,
+            initialCard = card,
             tickStart = Instant.DISTANT_PAST,
             sendUpdates = false,
         )

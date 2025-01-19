@@ -231,7 +231,7 @@ class CardService(
         seed: Long = card.seed + 1L,
         replaceEntries: List<BingoCardEntry>,
         excludeObjectives: Set<String> = emptySet(),
-    ) {
+    ): BingoCard {
         val maxTier = TierLabel.entries
             .withIndex()
             .shuffled()
@@ -281,6 +281,7 @@ class CardService(
             options = card.options
         )
         state.replaceCard(newCard)
+        return newCard
     }
 
     private fun getFilterTag(tags: Map<String, TagData>, filter: ObjectiveFilter): TagData? {

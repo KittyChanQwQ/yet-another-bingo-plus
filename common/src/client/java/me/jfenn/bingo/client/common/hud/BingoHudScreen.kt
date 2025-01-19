@@ -94,9 +94,7 @@ internal class BingoHudScreen(
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        cardsWidget.views = state.display?.display
-            ?.mapNotNull { state.views[it] }
-            ?: emptyList()
+        cardsWidget.views = state.views.values
         cardsWidget.x = width/2f
         cardsWidget.y = height/2f
         cardsWidget.width = width * 6/10

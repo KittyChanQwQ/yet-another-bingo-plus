@@ -104,7 +104,7 @@ internal class BingoHudRenderer(
         isGui: Boolean = false,
         isWinner: Boolean = false,
     ) {
-        val colors = cardColors.getTeamColors(view.teamKey ?: BingoTeamKey("preview"), view.teamColor)
+        val colors = cardColors.getTeamColors(view.teamKey ?: BingoTeamKey("preview"), view.display.teamColor)
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         context.matrices.push()
@@ -124,7 +124,7 @@ internal class BingoHudRenderer(
             textureHeight = CARD_HEIGHT,
         )
 
-        context.drawText(textRenderer, view.teamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
+        context.drawText(textRenderer, view.display.teamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
 
         if (isWinner) {
             context.matrices.push()
@@ -192,8 +192,7 @@ internal class BingoHudRenderer(
             }
 
             if (showTeamOutlines) for ((i, team) in tile.teamKeys.withIndex()) {
-                val teamInfo = state.display?.teamInfo?.get(team)
-                val color = cardColors.getTeamColors(team, teamInfo).outlineColor
+                val color = cardColors.getTeamColors(team, view.display.teamColor).outlineColor
                 val colorValue = color.asInt
                 val colorValueDark = color.mix(BLACK_A40).asInt
 
@@ -252,11 +251,11 @@ internal class BingoHudRenderer(
             isMouseOver &&
             mouseX in x.toInt()..(x + CARD_WIDTH*0.7*cardScale).toInt() &&
             mouseY in y.toInt()..(y+20*cardScale).toInt() &&
-            view.players.isNotEmpty()
+            view.display.players.isNotEmpty()
         ) {
             context.matrices.push()
             context.matrices.translate(0f, 0f, z + 2000f)
-            context.drawTooltip(textRenderer, view.players.map { Text.literal(it.name) }, mouseX, mouseY)
+            context.drawTooltip(textRenderer, view.display.players.map { Text.literal(it.name) }, mouseX, mouseY)
             context.matrices.pop()
         }
 
