@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TagData(
+    val values: Set<String>,
     val replace: Boolean = false,
-    val values: Set<String>
 ) {
     companion object {
         val EMPTY = TagData(values = emptySet())

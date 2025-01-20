@@ -232,37 +232,37 @@ internal class OptionsService(
 
     fun togglePreviewCard(
         ctx: Context,
-        showPreviewCard: Boolean = !options.showPreviewCard,
+        showPreviewCard: Boolean? = null,
     ) {
-        options.showPreviewCard = showPreviewCard
+        options.showPreviewCard = showPreviewCard ?: !options.showPreviewCard
         ctx.sendFeedback(
-            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsPreviewCard, text.boolean(showPreviewCard))
+            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsPreviewCard, text.boolean(options.showPreviewCard))
         )
     }
 
     fun toggleElytra(
         ctx: Context,
-        isElytra: Boolean = !options.isElytra,
+        isElytra: Boolean? = null,
     ) {
-        options.isElytra = isElytra
+        options.isElytra = isElytra ?: !options.isElytra
 
         // if Elytra mode is turned off during a game, remove all players' elytra
-        if (!isElytra && state.isLobbyMode) {
+        if (!options.isElytra && state.isLobbyMode) {
             for (player in playerManager.getPlayers()) {
                 elytraService.takeElytra(player)
             }
         }
 
         ctx.sendFeedback(
-            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsElytra, text.boolean(isElytra))
+            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsElytra, text.boolean(options.isElytra))
         )
     }
 
     fun toggleNightVision(
         ctx: Context,
-        isNightVision: Boolean = !options.isNightVision,
+        isNightVision: Boolean? = null,
     ) {
-        options.isNightVision = isNightVision
+        options.isNightVision = isNightVision ?: !options.isNightVision
 
         // if night vision is changed, update all players
         if (state.state == GameState.PLAYING) {
@@ -272,18 +272,18 @@ internal class OptionsService(
         }
 
         ctx.sendFeedback(
-            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsNightVis, text.boolean(isNightVision))
+            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsNightVis, text.boolean(options.isNightVision))
         )
     }
 
     fun togglePvp(
         ctx: Context,
-        isPvpEnabled: Boolean = !options.isPvpEnabled,
+        isPvpEnabled: Boolean? = null,
     ) {
-        options.isPvpEnabled = isPvpEnabled
+        options.isPvpEnabled = isPvpEnabled ?: !options.isPvpEnabled
         gameRuleController.writeToServer()
         ctx.sendFeedback(
-            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsAllowPvp, text.boolean(isPvpEnabled))
+            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsAllowPvp, text.boolean(options.isPvpEnabled))
         )
     }
 

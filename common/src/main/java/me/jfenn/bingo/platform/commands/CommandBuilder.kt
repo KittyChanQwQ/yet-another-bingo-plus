@@ -97,6 +97,7 @@ sealed class CommandNode {
     val children = mutableListOf<CommandNode>()
     var requires: (IExecutionSource.() -> Boolean)? = null
     var callback: (IExecutionContext.() -> Unit)? = null
+    var isAvailableToDataPacks: Boolean = true
 
     class Root : CommandNode()
     class Literal(val name: String) : CommandNode()

@@ -102,6 +102,10 @@ class CommandManagerImpl(
 
         if (command.requires != null) {
             builder.requires { source ->
+                // Server is null when the command is being evaluated for datapack functions
+                if (source.server == null)
+                    return@requires command.isAvailableToDataPacks
+
                 try {
                     command.requires?.invoke(ExecutionSourceImpl(source)) ?: true
                 } catch (e: Throwable) {
