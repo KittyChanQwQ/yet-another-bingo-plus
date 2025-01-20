@@ -53,6 +53,7 @@ class BingoCardCommand(
             ?: throw IllegalArgumentException("'$tile' is not a valid bingo tile position: ${CARD_POSITIONS.keys}")
 
         cardService.replaceEntry(x, y, objectiveId)
+        sendFeedback(text.string(StringKey.CommandCardSetSuccess, tile, objectiveId))
     }
 
     private fun IExecutionContext.setFreeSpace(tile: String) {
@@ -60,24 +61,27 @@ class BingoCardCommand(
             ?: throw IllegalArgumentException("'$tile' is not a valid bingo tile position: ${CARD_POSITIONS.keys}")
 
         cardService.replaceEntry(x, y, BingoObjective.FreeSpace())
+        sendFeedback(text.string(StringKey.CommandCardSetSuccess, tile, StringKey.CardFreeSpace))
     }
 
     private fun IExecutionContext.getCardSeed() {
         val card = cardViewService.getPlayerCard(player)
-        sendInfoMessage(
-            Text.empty()
-                .append("The current Bingo Card seed is: ")
-                .append(Texts.bracketedCopyable(card.seed.toString()))
+        sendFeedback(
+            text.string(
+                StringKey.CommandCardSeedGet,
+                Texts.bracketedCopyable(card.seed.toString()),
+            )
         )
     }
 
     private fun IExecutionContext.setCardSeed(seed: Long) {
         val card = cardViewService.getPlayerCard(player)
         val newCard = cardService.generateCard(card, seed = seed)
-        sendInfoFeedback(
-            Text.empty()
-                .append("Changed the Bingo Card seed to: ")
-                .append(Texts.bracketedCopyable(newCard.seed.toString()))
+        sendFeedback(
+            text.string(
+                StringKey.CommandCardSeedSet,
+                Texts.bracketedCopyable(newCard.seed.toString()),
+            )
         )
     }
 

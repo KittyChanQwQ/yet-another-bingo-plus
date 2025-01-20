@@ -434,10 +434,18 @@ class CardService(
         log.info("[CardService] Using random BINGO card seed: $seed")
 
         val tags = tagService.getTags().toMutableMap()
-        val tierList = assembleTierList(tags, cardOptions.itemFilter)
+        val filterList = cardOptions.itemFilter
+            .filter {
+                if (tags.containsKey(it.tag)) true else {
+                    log.error("[CardService] Tag $it in filters does not exist!")
+                    false
+                }
+            }
+            .let { ObjectiveFilterList(it) }
+        val tierList = assembleTierList(tags, filterList)
 
         // Track the tags added to the card to enforce filter requirements
-        val requiredTagCounts = cardOptions.itemFilter
+        val requiredTagCounts = filterList
             .filterIsInstance<ObjectiveFilter.Count>()
             .mapNotNull { filter ->
                 val tag = getFilterTag(tags, filter) ?: return@mapNotNull null

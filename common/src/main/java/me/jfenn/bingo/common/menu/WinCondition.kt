@@ -50,6 +50,7 @@ internal fun MenuComponent.registerWinCondition(
         width = width,
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsWinConditionNumCards),
+        tooltip = buildTooltip(StringKey.OptionsWinConditionNumCards),
         isActiveProp = computedProperty { options.winCondition is BingoWinCondition.Cards }
     ) {
         optionsService.setWinCondition(OptionsService.Context(it), BingoWinCondition.Cards(1))

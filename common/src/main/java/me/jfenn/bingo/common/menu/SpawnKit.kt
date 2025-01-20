@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
+import net.minecraft.util.Formatting
 import org.joml.Vector3d
 
 internal const val MENU_SPAWN_KIT_WIDTH = 2.0
@@ -36,6 +37,7 @@ internal fun MenuComponent.registerSpawnKit(
         width = MENU_SPAWN_KIT_WIDTH,
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsSpawnKitPlayer),
+        tooltip = buildTooltip(StringKey.OptionsSpawnKitPlayer),
         isActiveProp = computedProperty { options.isPlayerKit },
     ) {
         options.isPlayerKit = !options.isPlayerKit
@@ -56,6 +58,10 @@ internal fun MenuComponent.registerSpawnKit(
         height = EDIT_HEIGHT,
         icon = "\uD83C\uDF71",
         text = text.string(StringKey.OptionsSpawnKitEdit),
+        tooltip = listOf(
+            text.string(StringKey.OptionsSpawnKitPlayerEdit).formatted(Formatting.GREEN),
+            text.string(StringKey.OptionsSpawnKitEditTooltip)
+        ),
         blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) { player ->
         player.player.openHandledScreen(
@@ -81,6 +87,7 @@ internal fun MenuComponent.registerSpawnKit(
         width = MENU_SPAWN_KIT_WIDTH,
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsSpawnKitTeam),
+        tooltip = buildTooltip(StringKey.OptionsSpawnKitTeam),
         isActiveProp = computedProperty { options.isTeamKit },
     ) {
         options.isTeamKit = !options.isTeamKit
@@ -101,6 +108,10 @@ internal fun MenuComponent.registerSpawnKit(
         height = EDIT_HEIGHT,
         icon = "\uD83C\uDF71",
         text = text.string(StringKey.OptionsSpawnKitEdit),
+        tooltip = listOf(
+            text.string(StringKey.OptionsSpawnKitTeamEdit).formatted(Formatting.GREEN),
+            text.string(StringKey.OptionsSpawnKitEditTooltip)
+        ),
         blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
     ) { player ->
         player.player.openHandledScreen(

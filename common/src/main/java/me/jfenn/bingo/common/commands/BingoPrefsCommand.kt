@@ -103,9 +103,12 @@ class BingoPrefsCommand(
 
         fun <T> getCommand(
             field: KMutableProperty1<PlayerSettings, T>,
-            value: T,
+            value: T? = null,
         ): String {
-            return "/bingoprefs ${getFieldName(field)} $value"
+            return when {
+                value != null -> "/bingoprefs ${getFieldName(field)} $value"
+                else -> "/bingoprefs ${getFieldName(field)}"
+            }
         }
     }
 
