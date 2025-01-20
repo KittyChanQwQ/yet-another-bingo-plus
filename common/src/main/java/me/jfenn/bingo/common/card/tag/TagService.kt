@@ -15,10 +15,10 @@ class TagService(
             .mapValues { (_, tags) ->
                 tags
                     .map { it.second }
-                    .reduce { acc, tag -> acc + tag }
+                    .reduce { acc, tag -> acc.plus(tag) }
             }
             .toMap()
-            .plus(ObjectiveFilter.UNCATEGORIZED to TagData(emptySet()))
+            .plus(ObjectiveFilter.UNCATEGORIZED to TagData.EMPTY)
     }
 
     fun getTags() = tagsCache.get(Unit)

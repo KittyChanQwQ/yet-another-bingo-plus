@@ -72,8 +72,7 @@ class TagLoader(
             }
 
             if (configs.isEmpty()) continue
-            var config = TagData.EMPTY
-            configs.forEach { config = it.plus(config) }
+            val config = configs.reduce { acc, tag -> tag.plus(acc) }
 
             if (id.namespace == MOD_ID_BINGO && name in BUILTIN_TAGS) {
                 // Default tags are written to the config dir as files
@@ -84,7 +83,7 @@ class TagLoader(
                 continue
             }
 
-            newTags[name] = config
+            newTags[name] = (newTags[name] ?: TagData.EMPTY).plus(config)
         }
 
         for ((name, config) in readTagsFiles()) {

@@ -10,6 +10,7 @@ import kotlin.random.Random
 
 @Serializable
 data class TierListConfig(
+    val replace: Boolean = false,
     // Contains uncategorized entries
     val values: Set<TierListEntry> = emptySet(),
     @SerialName("S")
@@ -42,6 +43,8 @@ data class TierListConfig(
     fun isEmpty() = values.isEmpty() && s.isEmpty() && a.isEmpty() && b.isEmpty() && c.isEmpty() && d.isEmpty() && groups.none { it.isNotEmpty() }
 
     fun combine(other: TierListConfig): TierListConfig {
+        if (other.replace) return other
+
         return this.copy(
             values = emptySet(),
             s = s + other.s,

@@ -95,8 +95,7 @@ class TierListLoader(
             }
 
             if (configs.isEmpty()) continue
-            var config = TierListConfig.EMPTY
-            configs.forEach { config = it.combine(config) }
+            val config = configs.reduce { acc, list -> list.combine(acc) }
 
             if (id.namespace == MOD_ID_BINGO && name in BUILTIN_TIER_LISTS) {
                 // Default tier lists are written to the config dir as files
@@ -107,7 +106,7 @@ class TierListLoader(
                 continue
             }
 
-            newTierLists[name] = config
+            newTierLists[name] = (newTierLists[name] ?: TierListConfig.EMPTY).combine(config)
         }
 
         for ((name, config) in readTierListFiles()) {
