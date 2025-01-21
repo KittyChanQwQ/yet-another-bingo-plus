@@ -32,12 +32,5 @@ class ResetCommand(
                 }
             }
         }
-
-        commandManager.register("restart") {
-            requires { hasPermission(Permission.COMMAND_RESET) && hasState(GameState.PLAYING, GameState.POSTGAME) }
-            executes {
-                reset()
-            }
-        }
     }
 }
