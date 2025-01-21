@@ -197,21 +197,24 @@ class CardViewService(
             texture = if (isHidden) null else entry.display.image,
         )
 
-        val imageList = if (!isHidden && objective is BingoObjective.SomeOfEntry) {
-            objective.someOfObjectives
-                .mapNotNull { card.objectives[it] }
-                .sortedBy { innerObjective ->
+        val imageList = when (objective) {
+            is BingoObjective.SomeOfEntry -> objective.someOfObjectives
+                .takeIf { !isHidden && objective.display.decoration in arrayOf(CardTile.Decoration.ONE_OF, CardTile.Decoration.MANY_OF) }
+                ?.mapNotNull { card.objectives[it] }
+                ?.sortedBy { innerObjective ->
                     // prefer displaying objectives that are not yet achieved
                     val isInnerAchieved = team?.key?.let { innerObjective.hasAchieved(it) } ?: false
                     if (isInnerAchieved) 1 else 0
                 }
-                .map { innerObjective ->
+                ?.map { innerObjective ->
                     CardTileImage(
                         item = innerObjective.display.item,
                         texture = innerObjective.display.image,
                     )
                 }
-        } else emptyList()
+                .orEmpty()
+            else -> emptyList()
+        }
 
         val isFlashing = objective.isFlashing(team?.key, FLASHING_DURATION)
 
