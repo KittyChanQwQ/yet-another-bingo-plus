@@ -56,7 +56,16 @@ class OpponentObjectiveManager(
 
             objective.teamsSeen = opponent.teamsSeen
 
-            val opponentCaptures = opponent.playersHolding.values
+            if (objective.permanent) {
+                // if permanent, only add new captures into opponentsAchieved (never remove)
+                opponent.playersHolding.forEach { (uuid, capture) ->
+                    objective.opponentsAchieved.putIfAbsent(uuid, capture)
+                }
+            } else {
+                objective.opponentsAchieved = opponent.playersHolding
+            }
+
+            val opponentCaptures = objective.opponentsAchieved.values
                 // oldest capture first
                 .sortedBy { it.instant }
                 // distinctBy keeps the first of each team; i.e. the oldest capture from each team
@@ -73,10 +82,6 @@ class OpponentObjectiveManager(
                 .filter { team -> opponentCaptures.any { it.team != team.key } }
                 .map { it.key }
                 .toSet()
-                .let {
-                    // once an opponent earns the objective, they can never un-capture this one
-                    if (objective.permanent) it.plus(objective.teamsOnceAchieved) else it
-                }
 
             objectiveService.update(
                 objective = objective,

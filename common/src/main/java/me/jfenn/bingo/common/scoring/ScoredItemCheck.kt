@@ -126,9 +126,10 @@ internal class ScoredItemCheck(
         }
 
         // if ReplaceGoals is enabled, replace any newly-captured items/lines
+
+        // Collect any entries to replace
+        val entriesToReplace = mutableSetOf<BingoCardEntry>()
         if (options.winCondition is BingoWinCondition.ReplaceGoals) {
-            // Collect any entries to replace
-            val entriesToReplace = mutableSetOf<BingoCardEntry>()
             for (team in teams) {
                 val scoredLines = card.lines()
                     .filter { line ->
@@ -168,24 +169,6 @@ internal class ScoredItemCheck(
                     team.currentScore = TeamScore.ZERO
                 }
             }
-
-            if (entriesToReplace.isNotEmpty()) {
-                log.info("[ScoredItemCheck] Replacing {} entries on the card", entriesToReplace.size)
-
-                // Recreate the card, replacing the scored entries
-                card = cardService.replaceEntries(
-                    card = card,
-                    replaceEntries = entriesToReplace.toList(),
-                    excludeObjectives = objectiveManager.listExcludedIds().toSet(),
-                ).also {
-                    objectiveManager.init(it)
-                }
-
-                // Re-count current scores
-                for (team in teams) {
-                    team.currentScore = card.getTeamScore(team)
-                }
-            }
         }
 
         // check if a team has completed the card
@@ -211,6 +194,26 @@ internal class ScoredItemCheck(
         // If the game has just ended, don't check for stalemates
         if (state.endedAt != null)
             return
+
+        // Replace any entries that need changing on the card
+        if (entriesToReplace.isNotEmpty()) {
+            log.info("[ScoredItemCheck] Replacing {} entries on the card", entriesToReplace.size)
+
+            // Recreate the card, replacing the scored entries
+            card = cardService.replaceEntries(
+                card = card,
+                replaceEntries = entriesToReplace.toList(),
+                excludeObjectives = objectiveManager.listExcludedIds().toSet(),
+            ).also {
+                objectiveManager.init(it)
+                it.ticks = card.ticks
+            }
+
+            // Re-count current scores
+            for (team in teams) {
+                team.currentScore = card.getTeamScore(team)
+            }
+        }
 
         // skip the card if it is in a stalemate
         val stalemate = ScoreService.isStalemate(state, card)

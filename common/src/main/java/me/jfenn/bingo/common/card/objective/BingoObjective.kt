@@ -248,7 +248,21 @@ sealed class BingoObjective {
         override val conflictsWithObjectives: Set<String>
             get() = super.conflictsWithObjectives + opponentObjective
 
+        var opponentsAchieved = mutableMapOf<UuidAsString, BingoObjectiveCapture>()
         val permanent get() = data.permanent
+
+        override fun removePlayer(uuid: UUID) {
+            super.removePlayer(uuid)
+            opponentsAchieved.remove(uuid)
+        }
+
+        override fun removeTeam(team: BingoTeam) {
+            super.removeTeam(team)
+
+            for (player in team.players) {
+                opponentsAchieved.remove(player.uuid)
+            }
+        }
     }
 
     @Serializable
