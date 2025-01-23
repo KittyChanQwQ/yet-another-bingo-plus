@@ -12,7 +12,7 @@ data class ClientConfig(
     var cardAlignment: CardAlignment = CardAlignment.TOP_LEFT,
     var cardOffsetX: Int = 0,
     var cardOffsetY: Int = 0,
-    var cardOverlap: CardOverlap = CardOverlap.UNDERNEATH,
+    var cardOverlap: CardOverlap = CardOverlap.ABOVE,
     var cardTeamOutlines: Boolean = true,
     var showMultipleCards: Boolean = false,
     var hideOnF3: Boolean = true,
