@@ -544,6 +544,9 @@ internal class ScoredItemCheck(
         }
 
         events.onEnter(GameState.PREGAME) {
+            pendingCardCompletedPackets.clear()
+            pendingTeamWinners.clear()
+
             // When entering PREGAME, regenerate initial cards from the config
             cardService.createInitialCards()
         }
