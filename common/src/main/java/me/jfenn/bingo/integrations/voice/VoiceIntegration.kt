@@ -3,8 +3,8 @@ package me.jfenn.bingo.integrations.voice
 import de.maxhenkel.voicechat.api.Group
 import de.maxhenkel.voicechat.api.VoicechatServerApi
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.platform.IPlayerHandle
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger
 import java.util.*
@@ -103,8 +103,14 @@ class SimpleVoiceIntegration(
     ): IGroupHandle {
         override fun addPlayer(player: IPlayerHandle) {
             val connection = serverApi?.getConnectionOf(player.uuid) ?: return
-            val group = serverApi?.getGroup(groupId) ?: return
-            connection.group = group
+            if (connection.isConnected) {
+                val group = serverApi?.getGroup(groupId) ?: return
+                connection.group = group
+            } else {
+                SimpleVoiceEntrypoint.onPlayerConnectedCallbacks[player.uuid] = {
+                    addPlayer(player)
+                }
+            }
         }
 
         override fun removePlayer(player: IPlayerHandle) {
