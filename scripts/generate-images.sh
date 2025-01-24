@@ -175,7 +175,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     image_mask_id="null"
     image_mask_file="null"
     for image_mask in $IMAGE_MASK_DIR/*; do
-      image_mask_id="$(basename $image_mask | cut -d '.' -f1 | sed 's/\-/\//g')"
+      image_mask_id="$(basename $image_mask | cut -d '.' -f1 | sed 's/__/:/g' | sed 's/\-/\//g')"
       if echo $item_models | jq -e ". | index( \"$image_mask_id\" )" >/dev/null; then
         image_mask_file=$image_mask
         break
