@@ -9,6 +9,14 @@ The [Chunky mod](https://modrinth.com/plugin/chunky) can pre-generate Minecraft 
 
 However, it does need time to run before starting a game, and can use a fair amount of storage space.
 
+## Important!
+
+In recent versions, Yet Another Bingo will reset the world and seed without restarting the server! This can make mods like Chunky (understandably) a little confused.
+
+To properly regenerate chunks before each game, you'll need to edit its config (`config/chunky/config.json`) to enable `"forceLoadExistingChunks": true`. 
+
+## Configuration
+
 The default configuration will generate a distance of 8000 blocks in the overworld, and 1000 in the nether.
 
 Pre-generation will begin as soon as the server starts up. Any pre-generation tasks will be cancelled as soon as you start the game, so it will not have any effect on gameplay.
