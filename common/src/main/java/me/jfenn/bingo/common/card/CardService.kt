@@ -51,9 +51,29 @@ class CardService(
     }
 
     fun validateLists() {
+        data.tags.entries
+            .filter { (_, tag) -> Build.isDebug || tag.shouldValidate }
+            .forEach { (name, tag) -> validateTag(name, tag) }
         data.tierLists.entries
             .filter { (_, list) -> Build.isDebug || list.shouldValidate }
             .forEach { (name, list) -> validateList(name, list) }
+    }
+
+    private fun validateTag(name: String, tag: TagData) = withMdc(
+        MDC_FILENAME to "$name.json",
+        MDC_DEBUG to "true",
+    ) {
+        log.info("[CardService] Validating tag $name.json...")
+        for (objectiveId in tag.values) {
+            val map = createObjectives(
+                objectiveType = null,
+                objectiveId = objectiveId,
+                state = CardGeneratorState.DEFAULT
+            )
+            if (map == null) {
+                log.objectiveError(objectiveId, "Not found")
+            }
+        }
     }
 
     private fun validateList(name: String, list: TierListConfig) = withMdc(

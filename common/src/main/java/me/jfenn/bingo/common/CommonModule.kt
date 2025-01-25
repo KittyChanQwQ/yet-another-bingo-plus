@@ -23,6 +23,7 @@ import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.config.MigrationHandler
 import me.jfenn.bingo.common.config.PlayerSettingsService
+import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.data.*
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
@@ -86,6 +87,7 @@ val commonModule = module {
     singleOf(::MapColors)
 
     singleOf(::ConfigService)
+    singleOf(::TrackedFileService)
     single { get<ConfigService>().config }
     single { get<ConfigService>().config.client }
     singleOf(::TextProvider)

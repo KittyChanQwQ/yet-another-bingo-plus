@@ -10,6 +10,7 @@ class ConfigService {
     var options: BingoOptions by config("$MOD_ID_BINGO/game-options.json")
     var optionsDefault: BingoOptions by config("$MOD_ID_BINGO/game-options-default.json")
     var playerConfig: PlayerConfig by config("$MOD_ID_BINGO/player-settings.json")
+    var files: TrackedFiles by config("$MOD_ID_BINGO/files.json")
 
     fun writeConfig(config: BingoConfig) {
         this.config = config

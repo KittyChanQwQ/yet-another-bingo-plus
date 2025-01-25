@@ -1,0 +1,120 @@
+package me.jfenn.bingo.common.config
+
+import kotlinx.datetime.Clock
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.serializer
+import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.utils.json
+import org.slf4j.Logger
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStream
+import java.math.BigInteger
+import java.nio.file.Path
+import java.security.MessageDigest
+
+class TrackedFileService(
+    private val configService: ConfigService,
+    private val log: Logger,
+) {
+
+    private fun md5Of(data: String): String {
+        val md = MessageDigest.getInstance("MD5")
+        val digest = md.digest(data.toByteArray())
+        val hexDigest = BigInteger(1, digest).toString(16)
+        return hexDigest
+    }
+
+    data class Result<T>(
+        val isModified: Boolean,
+        val config: T?,
+    )
+
+    inline fun <reified T: Any> readFileOrResource(
+        path: Path,
+        resource: T?,
+    ): Result<T> {
+        val serializer = serializer<T>()
+        return readFileOrResource(
+            path = path,
+            resource = resource,
+            serialize = { json.encodeToString(serializer, it) },
+            deserialize = {
+                @OptIn(ExperimentalSerializationApi::class)
+                json.decodeFromStream(serializer, it)
+            },
+        )
+    }
+
+    fun readTextFileOrResource(path: Path, resource: String?): Result<String> {
+        return readFileOrResource(
+            path = path,
+            resource = resource,
+            serialize = { it },
+            deserialize = { stream ->
+                stream.bufferedReader().use { it.readText() }
+            },
+        )
+    }
+
+    fun <T: Any> readFileOrResource(
+        path: Path,
+        resource: T?,
+        serialize: (T) -> String,
+        deserialize: (InputStream) -> T,
+    ): Result<T> {
+        val name = Config.configDir.resolve(MOD_ID_BINGO).relativize(path).toString()
+        val trackedFile: TrackedFile? = configService.files.filesMap[name]
+
+        val file = path.toFile()
+        val fileConfig = if (file.exists()) {
+            try {
+                FileInputStream(path.toFile()).use {
+                    deserialize(it)
+                }
+            } catch (e: Throwable) {
+                log.error("[$name] Error reading config:", e)
+                return Result(true, null)
+            }
+        } else null
+
+        if (resource == null)
+            return Result(true, fileConfig)
+
+        val resourceJson = serialize(resource)
+        val fileJson = fileConfig?.let { serialize(it) }
+
+        return if (
+            fileConfig == null ||
+            fileJson == null ||
+            md5Of(fileJson) == trackedFile?.md5 ||
+            md5Of(fileJson) == md5Of(resourceJson)
+        ) {
+            log.debug("[{}] Applying updates!", name)
+
+            // If the file doesn't exist or has never been changed, replace it with the updated resource
+            val newTrackedFile = TrackedFile(
+                name = name,
+                createdAt = trackedFile?.createdAt ?: Clock.System.now(),
+                md5 = md5Of(resourceJson),
+            )
+
+            try {
+                path.parent.toFile().mkdirs()
+                path.toFile().writeText(resourceJson)
+                configService.files = configService.files.plus(newTrackedFile)
+            } catch (e: IOException) {
+                log.error("Error writing to $path:", e)
+            }
+            Result(false, resource)
+        } else {
+            if (log.isDebugEnabled) {
+                log.debug("[$name] Skipping - ${trackedFile?.md5} != ${md5Of(fileJson)} (original = ${md5Of(resourceJson)})")
+            }
+            // Otherwise, only use the config file
+            Result(true, fileConfig)
+        }
+    }
+
+}

@@ -21,8 +21,8 @@ def sqlMigrationsDir = layout.buildDirectory.dir("generated/sqldelight/migration
 
 sqldelight {
     databases {
-        create("StatsDatabase") {
-            packageName.set("me.jfenn.bingo.stats.sql")
+        create("BingoDatabase") {
+            packageName.set("me.jfenn.bingo.sql")
             dialect(libs.sqldelight.sqlite.get().toString())
             deriveSchemaFromMigrations.set(true)
             migrationOutputDirectory = sqlMigrationsDir
@@ -32,7 +32,7 @@ sqldelight {
 
 tasks.register('bingoMigrations', Zip) {
     def resDir = "resources/main/yet-another-minecraft-bingo"
-    dependsOn("generateMainStatsDatabaseMigrations")
+    dependsOn("generateMainBingoDatabaseMigrations")
     outputs.file(layout.buildDirectory.file("$resDir/migrations.zip"))
 
     from sqlMigrationsDir

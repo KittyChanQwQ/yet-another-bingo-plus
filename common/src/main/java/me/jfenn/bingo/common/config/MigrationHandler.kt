@@ -209,7 +209,7 @@ class MigrationHandler(
                 ?.deleteIfExists()
         }
 
-        migrations[27] = { // 2.5.0
+        migrations[28] = { // 2.5.0
             // Move *.tierlist.json files from "{config}/" to "{config}/tierlists/"
             val targetPath = loader.configDir.resolve(TierListLoader.TIERLISTS_PATH)
             targetPath.toFile().mkdirs()
@@ -222,6 +222,14 @@ class MigrationHandler(
                 .forEach { sourceFile ->
                     Files.move(sourceFile.toPath(), targetPath.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
                 }
+
+            if (config.databaseUrl == null) {
+                loader.configDir.resolve("$MOD_ID_BINGO/stats.db")
+                    .takeIf { it.toFile().exists() }
+                    ?.let {
+                        Files.move(it, loader.configDir.resolve("$MOD_ID_BINGO/bingo.db"), StandardCopyOption.REPLACE_EXISTING)
+                    }
+            }
         }
     }
 

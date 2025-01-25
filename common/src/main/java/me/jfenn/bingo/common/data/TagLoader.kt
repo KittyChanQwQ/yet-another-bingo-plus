@@ -6,47 +6,25 @@ import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tag.TagData
 import me.jfenn.bingo.common.config.Config
+import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.utils.json
 import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
-import java.io.File
-import java.io.FileInputStream
 import java.io.IOException
-import java.nio.file.Files
 
 class TagLoader(
+    private val trackedFileService: TrackedFileService,
     private val log: Logger,
 ) {
-    private fun readTagsFile(file: File): TagData? {
-        val tagData = runCatching {
-            FileInputStream(file).use {
-                @OptIn(ExperimentalSerializationApi::class)
-                json.decodeFromStream<TagData>(it)
-            }
-        }
 
-        val tagDataVal = tagData.getOrNull()
-        if (tagDataVal == null) {
-            log.error("Unable to read tag '${file.name}'", tagData.exceptionOrNull())
-            return null
-        }
-
-        return tagDataVal
-    }
-
-    private fun readTagsFiles() : Map<String, TagData> {
+    private fun readTagsFiles() : List<String> {
         return Config.configDir
             .resolve(TAGS_PATH)
             .toFile()
             .listFiles()
             .orEmpty()
             .filter { it.name.endsWith(FILE_SUFFIX) }
-            .mapNotNull {
-                val name = it.name.removeSuffix(FILE_SUFFIX)
-                val tagData = readTagsFile(it) ?: return@mapNotNull null
-                name to tagData
-            }
-            .toMap()
+            .map { it.name.removeSuffix(FILE_SUFFIX) }
     }
 
     fun loadTags(
@@ -73,25 +51,18 @@ class TagLoader(
 
             if (configs.isEmpty()) continue
             val config = configs.reduce { acc, tag -> tag.plus(acc) }
-
-            if (id.namespace == MOD_ID_BINGO && name in BUILTIN_TAGS) {
-                // Default tags are written to the config dir as files
-                // and should only be read from readTierListFiles() to avoid duplication
-                if (!Files.exists(configFile(name))) {
-                    writeTag(name, config)
-                }
-                continue
-            }
-
             newTags[name] = (newTags[name] ?: TagData.EMPTY).plus(config)
         }
 
-        for ((name, config) in readTagsFiles()) {
-            // Files cannot completely overwrite the resource lists, otherwise this prevents
-            // datapacks from modifying them...
-            // However, the builtin lists should never be pulled from resources (due to the check above)
-            val otherConfig = newTags[name]
-            newTags[name] = otherConfig?.plus(config) ?: config
+        for (name in (readTagsFiles() + newTags.keys).distinct()) {
+            val (isModified, finalConfig) = trackedFileService.readFileOrResource(
+                path = configFile(name),
+                resource = newTags[name],
+            )
+
+            if (finalConfig == null) continue
+            finalConfig.shouldValidate = isModified
+            newTags[name] = finalConfig
         }
 
         return newTags
@@ -117,7 +88,6 @@ class TagLoader(
     }
 
     companion object {
-        val BUILTIN_TAGS = arrayOf("biome_specific", "in_overworld", "in_the_end", "in_the_nether", "tedious", "unobtainable")
         const val FILE_SUFFIX = ".json"
         const val TAGS_PATH = "$MOD_ID_BINGO/tags"
     }

@@ -1,0 +1,23 @@
+package me.jfenn.bingo.common.config
+
+import kotlinx.datetime.Instant
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+
+@Serializable
+class TrackedFiles(
+    val files: List<TrackedFile> = emptyList(),
+) {
+    @Transient
+    val filesMap = files.associateBy { it.name }
+
+    operator fun plus(file: TrackedFile) =
+        TrackedFiles(files.filterNot { it.name == file.name } + file)
+}
+
+@Serializable
+class TrackedFile(
+    val name: String,
+    val md5: String,
+    val createdAt: Instant,
+)

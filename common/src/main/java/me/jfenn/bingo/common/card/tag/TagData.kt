@@ -1,12 +1,17 @@
 package me.jfenn.bingo.common.card.tag
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class TagData(
     val values: Set<String>,
     val replace: Boolean = false,
 ) {
+
+    @Transient
+    var shouldValidate: Boolean = false
+
     companion object {
         val EMPTY = TagData(values = emptySet())
     }

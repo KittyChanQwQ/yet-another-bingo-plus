@@ -2,11 +2,11 @@ package me.jfenn.bingo.common.stats
 
 import app.cash.sqldelight.driver.jdbc.asJdbcDriver
 import com.zaxxer.hikari.HikariDataSource
-import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.utils.measureTime
-import me.jfenn.bingo.stats.sql.StatsDatabase
+import me.jfenn.bingo.platform.ICloseEvent
+import me.jfenn.bingo.sql.BingoDatabase
 import net.fabricmc.loader.api.FabricLoader
 import org.apache.commons.io.FileUtils
 import org.flywaydb.core.Flyway
@@ -27,7 +27,7 @@ class ConnectionFactory(
         .configDir
         .absolutePathString()
         .let { configDir ->
-            "jdbc:sqlite:$configDir/$MOD_ID_BINGO/stats.db"
+            "jdbc:sqlite:$configDir/$MOD_ID_BINGO/bingo.db"
         }
 
     private val url = config.databaseUrl ?: defaultUrl
@@ -61,7 +61,7 @@ class ConnectionFactory(
         }
     }
 
-    fun create(): StatsDatabase {
+    fun create(): BingoDatabase {
         log.measureTime("Running Flyway migrations...") {
             val tmpDir = Files.createTempDirectory("bingo-migrations")
             extractMigrations(tmpDir)
@@ -80,7 +80,7 @@ class ConnectionFactory(
             FileUtils.deleteDirectory(tmpDir.toFile())
         }
 
-        return StatsDatabase(dataSource.asJdbcDriver())
+        return BingoDatabase(dataSource.asJdbcDriver())
     }
 
     fun close() {

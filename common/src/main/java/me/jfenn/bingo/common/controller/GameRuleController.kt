@@ -13,7 +13,7 @@ import net.minecraft.world.GameRules
  * - Hides advancements/death messages in PREGAME
  * - Applies game configuration (pvp, keepinv) when PLAYING
  */
-class GameRuleController(
+internal class GameRuleController(
     events: ScopedEvents,
     private val server: MinecraftServer,
     private val options: BingoOptions,

@@ -2,12 +2,12 @@ package me.jfenn.bingo.common.stats
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.stats.data.*
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.stats.sql.StatsDatabase
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.sql.BingoDatabase
 import org.slf4j.Logger
 import java.security.MessageDigest
 import java.util.*
@@ -18,7 +18,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class StatsService(
     private val log: Logger,
-    private val db: StatsDatabase,
+    private val db: BingoDatabase,
     executors: IExecutors,
     config: BingoConfig,
 ) {
