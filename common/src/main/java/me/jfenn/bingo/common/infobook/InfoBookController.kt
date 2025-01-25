@@ -15,7 +15,7 @@ import me.jfenn.bingo.common.state.GameState
  * - When isLobbyMode=false, books should never be given to players
  *   unless they run the "/bingo book" command
  */
-class InfoBookController(
+internal class InfoBookController(
     events: ScopedEvents,
     private val state: BingoState,
     private val config: BingoConfig,

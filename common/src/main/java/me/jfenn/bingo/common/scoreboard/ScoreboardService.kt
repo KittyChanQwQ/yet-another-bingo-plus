@@ -19,7 +19,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 
-class ScoreboardService(
+internal class ScoreboardService(
     private val state: BingoState,
     private val server: MinecraftServer,
     private val scoreboardManager: IScoreboardManager,

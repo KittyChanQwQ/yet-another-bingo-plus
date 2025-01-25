@@ -13,7 +13,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import org.slf4j.Logger
 
-class NightVisionController(
+internal class NightVisionController(
     private val log: Logger,
     private val config: BingoConfig,
     private val state: BingoState,

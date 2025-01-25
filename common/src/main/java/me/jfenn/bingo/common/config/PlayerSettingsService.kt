@@ -1,32 +1,105 @@
 package me.jfenn.bingo.common.config
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.sql.BingoDatabase
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.time.Duration.Companion.minutes
 
 class PlayerSettingsService(
-    private val configService: ConfigService,
-    private val events: ScopedEvents,
+    private val db: BingoDatabase,
+    config: BingoConfig,
 ) {
 
-    fun getPlayer(player: IPlayerHandle): PlayerSettings {
-        return configService.playerConfig[player.uuid]
+    private val defaultPlayerSettings = config.server.defaultPlayerSettings
+
+    private val cache = ConcurrentHashMap<UUID, Pair<Instant, PlayerSettings>>()
+
+    private fun clearOutdatedCache(now: Instant) {
+        cache.entries
+            .filter { (_, value) -> (now - value.first) > 10.minutes }
+            .map { it.key }
+            .toList()
+            .forEach { cache.remove(it) }
     }
 
-    fun setPlayer(
-        player: IPlayerHandle,
-        settings: PlayerSettings,
-        seenTutorial: Boolean = false,
+    fun getPlayer(player: IPlayerHandle) = getPlayer(player.uuid)
+
+    fun getPlayer(player: UUID): PlayerSettings {
+        val now = Clock.System.now()
+        clearOutdatedCache(now)
+
+        val (_, cachedValue) = cache.getOrPut(player) {
+            val playerSettings = db.playerSettingsQueries.findById(player.toString())
+                .executeAsList()
+                .associateBy { it.setting_name }
+
+            fun getSetting(field: KProperty1<PlayerSettings, Boolean>): Boolean {
+                return playerSettings[field.name]
+                    ?.setting_value
+                    ?.let { it > 0 }
+                    ?: field.get(defaultPlayerSettings)
+            }
+
+            Clock.System.now() to PlayerSettings(
+                seenTutorial = getSetting(PlayerSettings::seenTutorial),
+                hideLobbyPrompt = getSetting(PlayerSettings::hideLobbyPrompt),
+                bossbar = getSetting(PlayerSettings::bossbar),
+                scoreboard = getSetting(PlayerSettings::scoreboard),
+                scoreboardAutoHide = getSetting(PlayerSettings::scoreboardAutoHide),
+                leadingMessages = getSetting(PlayerSettings::leadingMessages),
+                scoreMessages = getSetting(PlayerSettings::scoreMessages),
+                itemMessages = getSetting(PlayerSettings::itemMessages),
+                nightVision = getSetting(PlayerSettings::nightVision),
+            )
+        }
+        return cachedValue
+    }
+
+    fun write(
+        player: UUID,
+        field: KProperty1<PlayerSettings, *>,
+        value: Boolean,
+        seenTutorial: Boolean = false
     ) {
-        if (seenTutorial) {
-            settings.seenTutorial = true
-        } else {
-            val prevConfig = configService.playerConfig[player.uuid]
-            settings.seenTutorial = settings.seenTutorial || prevConfig.seenTutorial
+        var newValue = value
+
+        if (field == PlayerSettings::seenTutorial) {
+            newValue = value || getPlayer(player).seenTutorial
         }
 
-        configService.playerConfig.players[player.uuid.toString()] = settings
-        configService.writePlayerConfig()
-        events.onChangePlayerSettings(player)
+        db.playerSettingsQueries.putSetting(
+            me.jfenn.bingo.stats.sql.PlayerSettings(
+                minecraft_id = player.toString(),
+                setting_name = field.name,
+                setting_value = if (newValue) 1L else 0L,
+            )
+        )
+        if (seenTutorial) {
+            db.playerSettingsQueries.putSetting(
+                me.jfenn.bingo.stats.sql.PlayerSettings(
+                    minecraft_id = player.toString(),
+                    setting_name = PlayerSettings::seenTutorial.name,
+                    setting_value = 1L,
+                )
+            )
+        }
+
+        cache.remove(player)
+    }
+
+    fun writeAll(player: UUID, settings: PlayerSettings) {
+        PlayerSettings::class.declaredMemberProperties
+            .forEach { field ->
+                val value = field.get(settings)
+                if (value is Boolean) {
+                    write(player, field, value)
+                }
+            }
     }
 
 }

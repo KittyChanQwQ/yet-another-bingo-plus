@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.controller
 
-import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
@@ -8,10 +7,11 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.platform.IPlayerHandle
 import org.slf4j.Logger
 
-class PlayerSettingsController(
-    events: ScopedEvents,
+internal class PlayerSettingsController(
+    private val events: ScopedEvents,
     private val log: Logger,
     private val permissions: PermissionsIntegration,
     private val playerSettingsService: PlayerSettingsService,
@@ -24,9 +24,12 @@ class PlayerSettingsController(
 
             // Don't let clients sync hideLobbyPrompt to a server, as it should be install-specific
             val existingSettings = playerSettingsService.getPlayer(player)
-            settings.hideLobbyPrompt = existingSettings.hideLobbyPrompt
+            val newSettings = settings.copy(
+                hideLobbyPrompt = existingSettings.hideLobbyPrompt
+            )
 
-            playerSettingsService.setPlayer(player, settings)
+            playerSettingsService.writeAll(player.uuid, newSettings)
+            events.onChangePlayerSettings(player)
         } else {
             log.debug(
                 "[PlayerSettingsController] Server - denying settings change from {} due to permissions",

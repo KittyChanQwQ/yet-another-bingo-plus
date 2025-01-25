@@ -21,7 +21,7 @@ import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-class InfoBookService(
+internal class InfoBookService(
     private val config: BingoConfig,
     private val state: BingoState,
     private val text: TextProvider,

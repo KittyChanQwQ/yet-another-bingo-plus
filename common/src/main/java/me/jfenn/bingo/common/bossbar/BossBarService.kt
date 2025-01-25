@@ -12,7 +12,7 @@ import me.jfenn.bingo.platform.IBossBarManager
 import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.text.Text
 
-class BossBarService(
+internal class BossBarService(
     private val state: BingoState,
     private val playerSettingsService: PlayerSettingsService,
     private val teamService: TeamService,

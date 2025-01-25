@@ -22,7 +22,7 @@ import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 
-class ScoreUpdateService(
+internal class ScoreUpdateService(
     private val packetManager: ServerPacketEvents,
     private val options: BingoOptions,
     private val state: BingoState,

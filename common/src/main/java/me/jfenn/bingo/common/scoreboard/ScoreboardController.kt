@@ -22,7 +22,7 @@ import kotlin.time.Duration
 /**
  * Displays scoreboard score/timer information for all players.
  */
-class ScoreboardController(
+internal class ScoreboardController(
     events: ScopedEvents,
     private val options: BingoOptions,
     private val state: BingoState,

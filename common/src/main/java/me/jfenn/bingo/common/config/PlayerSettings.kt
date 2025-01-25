@@ -9,15 +9,15 @@ import net.minecraft.util.Identifier
 
 @Serializable
 data class PlayerSettings(
-    var seenTutorial: Boolean = false,
-    var hideLobbyPrompt: Boolean = false,
-    var bossbar: Boolean = false,
-    var scoreboard: Boolean = true,
-    var scoreboardAutoHide: Boolean = false,
-    var leadingMessages: Boolean = true,
-    var scoreMessages: Boolean = true,
-    var itemMessages: Boolean = scoreMessages,
-    var nightVision: Boolean = true,
+    val seenTutorial: Boolean = false,
+    val hideLobbyPrompt: Boolean = false,
+    val bossbar: Boolean = false,
+    val scoreboard: Boolean = true,
+    val scoreboardAutoHide: Boolean = false,
+    val leadingMessages: Boolean = true,
+    val scoreMessages: Boolean = true,
+    val itemMessages: Boolean = scoreMessages,
+    val nightVision: Boolean = true,
 ) {
     object V1_S2C : PacketConverter<PlayerSettings> {
         override val id: Identifier = Identifier.of("bingo", "update_settings_s2c")!!

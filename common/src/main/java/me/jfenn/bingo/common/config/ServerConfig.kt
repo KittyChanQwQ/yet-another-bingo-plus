@@ -23,4 +23,5 @@ data class ServerConfig(
         "level.dat",
         "level.dat_old",
     ),
+    val defaultPlayerSettings: PlayerSettings = PlayerSettings(),
 )

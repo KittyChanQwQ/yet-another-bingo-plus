@@ -12,7 +12,7 @@ import net.minecraft.util.Formatting
 /**
  * Displays bossbar score/timer information for all players.
  */
-class BossBarController(
+internal class BossBarController(
     events: ScopedEvents,
     private val options: BingoOptions,
     private val state: BingoState,

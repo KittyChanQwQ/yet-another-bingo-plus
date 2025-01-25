@@ -3,14 +3,16 @@ package me.jfenn.bingo.common.commands
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
-import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
 
 class BingoPrefsCommand(
     commandManager: ICommandManager,
@@ -18,13 +20,13 @@ class BingoPrefsCommand(
 ) : BingoComponent() {
 
     data class SettingEntry(
-        val field: KMutableProperty1<PlayerSettings, Boolean>,
+        val field: KProperty1<PlayerSettings, Boolean>,
         val string: StringKey,
     )
 
     private fun IExecutionContext.toggleBooleanSetting(
         player: IPlayerHandle,
-        field: KMutableProperty1<PlayerSettings, Boolean>,
+        field: KProperty1<PlayerSettings, Boolean>,
         string: StringKey?,
     ) {
         val handler = scope.get<PlayerSettingsService>()
@@ -36,15 +38,13 @@ class BingoPrefsCommand(
 
     private fun IExecutionContext.changeBooleanSetting(
         player: IPlayerHandle,
-        field: KMutableProperty1<PlayerSettings, Boolean>,
+        field: KProperty1<PlayerSettings, Boolean>,
         string: StringKey?,
         value: Boolean,
     ) {
         val handler = scope.get<PlayerSettingsService>()
-
-        val settings = handler.getPlayer(player)
-        field.set(settings, value)
-        handler.setPlayer(player, settings, seenTutorial = true)
+        handler.write(player.uuid, field, value, seenTutorial = true)
+        scope.get<ScopedEvents>().onChangePlayerSettings(player)
 
         if (string != null) {
             sendMessage(
@@ -95,14 +95,14 @@ class BingoPrefsCommand(
 
     companion object {
         private fun getFieldName(
-            field: KMutableProperty<*>,
+            field: KProperty<*>,
         ): String {
             // replace any upper case letter to transform camelCase -> snake_case
             return field.name.replace(Regex("[A-Z]")) { match -> "_" + match.value.lowercase() }
         }
 
         fun <T> getCommand(
-            field: KMutableProperty1<PlayerSettings, T>,
+            field: KProperty1<PlayerSettings, T>,
             value: T? = null,
         ): String {
             return when {

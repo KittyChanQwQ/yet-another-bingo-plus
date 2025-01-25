@@ -209,7 +209,7 @@ class MigrationHandler(
                 ?.deleteIfExists()
         }
 
-        migrations[29] = { // 2.5.0
+        migrations[30] = { // 2.5.0
             // Move *.tierlist.json files from "{config}/" to "{config}/tierlists/"
             val targetPath = loader.configDir.resolve(TierListLoader.TIERLISTS_PATH)
             targetPath.toFile().mkdirs()
@@ -236,6 +236,9 @@ class MigrationHandler(
                 ?.let {
                     Files.move(it, loader.configDir.resolve("$MOD_ID_BINGO/commands/on_starting.mcfunction"), StandardCopyOption.REPLACE_EXISTING)
                 }
+
+            loader.configDir.resolve("$MOD_ID_BINGO/player-settings.json")
+                .deleteIfExists()
         }
     }
 
@@ -278,7 +281,6 @@ class MigrationHandler(
         configService.config = configService.config.copy(version = maxVersion)
         configService.options = configService.options.copy()
         configService.optionsDefault = configService.optionsDefault.copy()
-        configService.playerConfig = configService.playerConfig.copy()
 
         if (log.isDebugEnabled) {
             listOf(TierListLoader.TIERLISTS_PATH, TagLoader.TAGS_PATH)
