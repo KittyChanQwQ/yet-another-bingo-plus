@@ -57,6 +57,8 @@ dependencies {
     include project(path: ":api")
     api project(path: ":common", configuration: "namedElements")
     include project(path: ":common")
+    api project(path: ":integration-placeholders", configuration: "namedElements")
+    include project(path: ":integration-placeholders")
 }
 
 processResources {

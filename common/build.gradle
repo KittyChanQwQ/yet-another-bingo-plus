@@ -42,8 +42,13 @@ tasks.register('bingoMigrations', Zip) {
 }
 
 dependencies {
-    implementation libs.insert.koin.core
+    api libs.insert.koin.core
+    api libs.hikari
+    api libs.flyway.core
+    api libs.sqldelight.jdbc
+    api libs.sqlite
 
+    modCompileOnly libs.fabric.permissions.api.v2.get()
     modCompileOnly libs.vanish
     modCompileOnly(libs.modmenu) {
         exclude(group: "net.fabricmc")

@@ -3,7 +3,11 @@ plugins {
     id "fabric-loom"
 }
 
-version = project.mod_version + "+" + project.name
+if (project.name.startsWith("mc")) {
+    version = project.mod_version + "+" + project.name
+} else {
+    version = project.mod_version
+}
 group = project.maven_group + "-" + project.name
 
 base {
@@ -38,9 +42,9 @@ loom {
 }
 
 dependencies {
-    compileOnly libs.mockk
+    testmodCompileOnly libs.mockk
     testmodImplementation libs.mockk
-    compileOnly libs.assertk
+    testmodCompileOnly libs.assertk
     testmodImplementation libs.assertk
 
     // To change the versions see the gradle.properties file
@@ -51,16 +55,7 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    api libs.hikari
-    api libs.flyway.core
-    api libs.sqldelight.jdbc
-    api libs.sqlite
-
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
-
-    if (project.name.equals("common")) {
-        modCompileOnly libs.fabric.permissions.api.v2.get()
-    }
 }
 
 def projectVersion = project.version.toString()

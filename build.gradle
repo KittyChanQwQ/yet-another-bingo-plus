@@ -57,6 +57,14 @@ allprojects {
 				includeGroup("de.maxhenkel.voicechat")
 			}
 		}
+		maven {
+			// https://placeholders.pb4.eu/dev/getting-started/
+			name = "Nucleoid"
+			url = "https://maven.nucleoid.xyz/"
+			content {
+				includeGroup("eu.pb4")
+			}
+		}
 		// maven {
 		// 	// https://plasmovoice.com/docs/api/
 		// 	name = "Plasmo Voice"

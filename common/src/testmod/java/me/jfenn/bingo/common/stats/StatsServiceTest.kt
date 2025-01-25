@@ -7,7 +7,6 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import io.mockk.mockk
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.stats.data.GameInfo
@@ -16,7 +15,8 @@ import me.jfenn.bingo.common.stats.data.GameTeamInfo
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.test.BaseGameTest
 import me.jfenn.bingo.common.utils.EventListener
-import me.jfenn.bingo.stats.sql.StatsDatabase
+import me.jfenn.bingo.platform.ICloseEvent
+import me.jfenn.bingo.sql.BingoDatabase
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest
 import net.minecraft.test.GameTest
 import net.minecraft.test.TestContext
@@ -42,7 +42,7 @@ class StatsServiceTest : BaseGameTest() {
     )
 
     private fun createStatsService(
-        db: StatsDatabase,
+        db: BingoDatabase,
         hostId: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000"),
     ) = StatsService(logger, db, mockk(relaxed = true), BingoConfig(statsHostId = hostId))
 

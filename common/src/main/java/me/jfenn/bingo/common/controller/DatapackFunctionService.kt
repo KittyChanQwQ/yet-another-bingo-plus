@@ -17,7 +17,7 @@ internal class DatapackFunctionService(
     companion object {
         val SUPPORTED_EVENTS = arrayOf(
             GameState.PREGAME,
-            GameState.LOADING,
+            GameState.STARTING,
             GameState.COUNTDOWN,
             GameState.PLAYING,
             GameState.POSTGAME
