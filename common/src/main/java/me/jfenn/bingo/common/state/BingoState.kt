@@ -199,6 +199,26 @@ data class BingoState(
             }
     }
 
+    fun formatCardGoalsDescriptive(team: BingoTeam?, text: TextProvider): MutableText {
+        val card = cards.find { it.id == team?.cardId } ?: cards.first()
+        val supportsFullCard = options.winCondition !is BingoWinCondition.ReplaceGoals
+        val remainingCards = (options.winCondition as? BingoWinCondition.Cards)
+            ?.cards
+            ?.minus(1)
+            ?.minus(team?.countCards() ?: 0)
+            ?.takeIf { it > 0 }
+
+        return card.options.goal.format(text, supportsFullCard)
+            .also {
+                if (remainingCards != null)
+                    it.append(Text.literal(" + ")
+                        .append(text.cardCount(remainingCards))
+                        .formatted(Formatting.BOLD))
+                if (options.winCondition is BingoWinCondition.Infinite)
+                    it.append(Text.literal(" + ∞"))
+            }
+    }
+
     /**
      * If a game is over & we want to reset this to its default state
      * without restarting...

@@ -364,7 +364,7 @@ internal class OptionsService(
 
         text.string(StringKey.OptionsGoal)
             .append(": ")
-            .append(state.formatCardGoals(team, text).formatted(Formatting.YELLOW))
+            .append(state.formatCardGoalsDescriptive(team, text).formatted(Formatting.YELLOW))
             .formatted(Formatting.GRAY)
             .also {
                 it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo goal"))
