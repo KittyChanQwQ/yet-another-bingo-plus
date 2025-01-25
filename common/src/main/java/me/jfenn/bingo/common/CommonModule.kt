@@ -60,6 +60,8 @@ import me.jfenn.bingo.common.spawn.*
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.*
 import me.jfenn.bingo.common.team.*
+import me.jfenn.bingo.common.text.MessageService
+import me.jfenn.bingo.common.text.PlaceholderService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.*
 import me.jfenn.bingo.common.utils.Build
@@ -137,6 +139,9 @@ val commonModule = module {
         scoped { get<BingoScope>().server }
         scoped { get<BingoScope>().state }
         scoped { get<BingoState>().options }
+
+        scopedOf(::PlaceholderService)
+        scopedOf(::MessageService)
 
         scopedOf(::FilterPresetsLoader)
         scopedOf(::ObjectiveLoader)

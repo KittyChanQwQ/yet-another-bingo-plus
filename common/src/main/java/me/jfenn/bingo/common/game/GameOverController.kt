@@ -10,6 +10,8 @@ import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
@@ -31,39 +33,18 @@ class GameOverController(
     private val playerManager: IPlayerManager,
     private val permissions: PermissionsIntegration,
     private val packetManager: ServerPacketEvents,
+    private val messageService: MessageService,
+    private val teamService: TeamService,
     events: ScopedEvents,
 ) {
 
     private fun broadcastGameOver(info: GameOverService.GameOverInfo) {
-        sequence {
-            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
-            Text.literal("  ")
-                .append(gameOverService.getMessage(info) ?: gameOverService.getTitle(info))
-                .also { yield(it) }
-
-            Text.literal("  ")
-                .append(
-                    textProvider.string(
-                        StringKey.GameEndDuration, Text.literal(
-                            (state.ingameDuration() ?: Duration.ZERO).formatString()
-                        ).formatted(Formatting.GREEN))
-                )
-                .also { yield(it) }
-
-            Text.literal("  ")
-                .append(
-                    textProvider.string(
-                        StringKey.GameEndSeed,
-                        Texts.bracketedCopyable(server.overworld.seed.toString())
-                    )
-                )
-                .also { yield(it) }
-
+        val scores = buildList {
             if (
                 (options.endGameWhen !is EndWhen.FirstWin || options.winCondition is BingoWinCondition.Infinite)
                 && info.scoreRankings.size > 1
             ) {
-                yield(Text.empty())
+                add(Text.empty())
                 // List all teams that have completed the card
                 for (score in info.scoreRankings) {
                     val duration = score.duration?.formatString() ?: "DNF"
@@ -76,14 +57,35 @@ class GameOverController(
                         .append(" - ")
                         .append(score.score.formatText(textProvider))
                         .append(" - $duration")
-                        .also { yield(it) }
+                        .also { add(it) }
                 }
             }
-
-            yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
-        }.forEach {
-            server.playerManager.broadcast(it, false)
         }
+
+        val placeholders = mapOf(
+            "%game_end_reason%" to listOf(
+                (gameOverService.getMessage(info) ?: gameOverService.getTitle(info))
+                    .let { Text.literal("  ").append(it) }
+            ),
+            "%time%" to textProvider.string(
+                StringKey.GameEndDuration, Text.literal(
+                    (state.ingameDuration() ?: Duration.ZERO).formatString()
+                ).formatted(Formatting.GREEN))
+                .let { listOf(Text.literal("  ").append(it)) },
+            "%seed%" to textProvider.string(
+                StringKey.GameEndSeed,
+                Texts.bracketedCopyable(server.overworld.seed.toString())
+            ).let { listOf(Text.literal("  ").append(it)) },
+            "%scores%" to scores,
+        )
+
+        val players = playerManager.getPlayers()
+            .filter { state.isLobbyMode || teamService.isPlaying(it) }
+
+        messageService.getLines(MessageService.MessageType.GAME_END, placeholders)
+            .forEach { text ->
+                players.forEach { it.sendMessage(text) }
+            }
     }
 
     private fun sendGameOverPacket(

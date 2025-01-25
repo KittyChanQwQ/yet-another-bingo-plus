@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.data
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.controller.DatapackFunctionService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.utils.measureTime
 import org.slf4j.Logger
 
@@ -17,6 +18,7 @@ internal class DataLoaderManager(
     private val unobtainableItemsLoader: UnobtainableItemsLoader,
     private val cardService: CardService,
     private val datapackFunctionService: DatapackFunctionService,
+    private val messageService: MessageService,
 ) {
     init {
         events.onDataReload { (_, manager) ->
@@ -27,6 +29,7 @@ internal class DataLoaderManager(
                 scopedData.tags = tagLoader.loadTags(manager)
                 scopedData.unobtainableItems = emptySet()
                 datapackFunctionService.loadCommands()
+                messageService.loadMessages(manager)
             }
 
             log.measureTime("[DataLoader] Determining unobtainable items...") {

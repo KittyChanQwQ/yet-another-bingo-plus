@@ -20,6 +20,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.WriteStatsService
 import me.jfenn.bingo.common.team.*
+import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.PermissionsIntegration
@@ -46,6 +47,7 @@ internal class GameService(
     private val optionsService: OptionsService,
     private val gameOverService: GameOverService,
     private val writeStatsService: WriteStatsService,
+    private val messageService: MessageService,
     private val text: TextProvider,
 ) {
 
@@ -212,22 +214,17 @@ internal class GameService(
         playerManager.getPlayers()
             .filter { state.isLobbyMode || teamService.isPlaying(it) }
             .forEach { player ->
-                sequence {
-                    yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
-
-                    Text.literal("  ")
-                        .append(text.string(StringKey.GameStart))
+                val placeholders = mapOf(
+                    "%game_start%" to text.string(StringKey.GameStart)
                         .formatted(Formatting.GREEN)
-                        .also { yield(it) }
-
-                    optionsService.getOptionsSummary(player)
+                        .let { listOf(Text.literal("  ").append(it)) },
+                    "%game_options%" to optionsService.getOptionsSummary(player)
                         .map { Text.literal("  ").append(it) }
-                        .let { yieldAll(it) }
+                        .toList(),
+                )
 
-                    yield(Text.literal("┄".repeat(50)).formatted(Formatting.YELLOW))
-                }.forEach {
-                    player.sendMessage(it)
-                }
+                messageService.getLines(MessageService.MessageType.GAME_START, placeholders)
+                    .forEach { player.sendMessage(it) }
             }
     }
 
