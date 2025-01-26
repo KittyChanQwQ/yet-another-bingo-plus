@@ -163,6 +163,7 @@
     "minecraft:nether/explore_nether",
     "minecraft:adventure/kill_mob_near_sculk_catalyst",
     "minecraft:adventure/avoid_vibration",
+    "minecraft:husbandry/ride_a_boat_with_a_goat",
     "yet-another-minecraft-bingo:challenge/stat_killed_creaking",
     "yet-another-minecraft-bingo:challenge/stat_killed_by_warden"
   ]
