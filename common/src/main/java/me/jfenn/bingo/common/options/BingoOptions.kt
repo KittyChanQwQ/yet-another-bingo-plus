@@ -21,7 +21,7 @@ data class BingoOptions(
     var cards: List<BingoCardOptions> = listOf(BingoCardOptions()),
 
     var skipCardWhenLost: Boolean = true,
-    var endGameWhenStalemate: Boolean = true,
+    var stalemateBehavior: StalemateBehavior = StalemateBehavior.END_GAME,
     var endGameWhen: EndWhen = EndWhen.FirstWin,
 
     var timeLimit: Duration? = null,

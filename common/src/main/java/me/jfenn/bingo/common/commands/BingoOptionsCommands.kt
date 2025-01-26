@@ -45,6 +45,11 @@ class BingoOptionsCommands(
         scope.get<ScopedEvents>().onChangeOptions(Unit)
     }
 
+    private fun IExecutionContext.setStalemateBehavior(stalemateBehavior: StalemateBehavior) {
+        scope.get<OptionsService>().setStalemateBehavior(optionsContext, stalemateBehavior)
+        scope.get<ScopedEvents>().onChangeOptions(Unit)
+    }
+
     private fun IExecutionContext.setEndWhen(endWhen: EndWhen) {
         scope.get<OptionsService>().setEndWhen(optionsContext, endWhen)
         scope.get<ScopedEvents>().onChangeOptions(Unit)
@@ -126,6 +131,18 @@ class BingoOptionsCommands(
                         executes {
                             setWinCondition(BingoWinCondition.ReplaceGoals)
                         }
+                    }
+                }
+
+                literal("stalemate") {
+                    literal("end_game") {
+                        executes { setStalemateBehavior(StalemateBehavior.END_GAME) }
+                    }
+                    literal("reroll_card") {
+                        executes { setStalemateBehavior(StalemateBehavior.REROLL_CARD) }
+                    }
+                    literal("do_nothing") {
+                        executes { setStalemateBehavior(StalemateBehavior.NOTHING) }
                     }
                 }
 

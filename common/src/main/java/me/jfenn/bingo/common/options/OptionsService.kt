@@ -185,28 +185,16 @@ internal class OptionsService(
         )
     }
 
-    fun toggleInfiniteMode(
+    fun setStalemateBehavior(
         ctx: Context,
+        stalemateBehavior: StalemateBehavior,
     ) {
-        val newWinCondition = when (options.winCondition) {
-            is BingoWinCondition.ReplaceGoals -> BingoWinCondition.Infinite
-            is BingoWinCondition.Cards -> BingoWinCondition.Infinite
-            is BingoWinCondition.Infinite -> BingoWinCondition.Cards(1)
-        }
+        options.stalemateBehavior = stalemateBehavior
 
-        setWinCondition(ctx, newWinCondition)
-    }
-
-    fun toggleReplaceGoals(
-        ctx: Context,
-    ) {
-        val newWinCondition = when (options.winCondition) {
-            is BingoWinCondition.Cards -> BingoWinCondition.ReplaceGoals
-            is BingoWinCondition.Infinite -> BingoWinCondition.ReplaceGoals
-            is BingoWinCondition.ReplaceGoals -> BingoWinCondition.Cards(1)
-        }
-
-        setWinCondition(ctx, newWinCondition)
+        // Send a message that the goal was changed
+        ctx.sendFeedback(
+            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsWinBehaviorWhenStalemate, text.string(stalemateBehavior.string).formatted(Formatting.WHITE))
+        )
     }
 
     fun setEndWhen(

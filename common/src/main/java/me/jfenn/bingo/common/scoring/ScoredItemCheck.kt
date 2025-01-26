@@ -12,10 +12,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.game.GameService
-import me.jfenn.bingo.common.options.BingoGoal
-import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.options.BingoWinCondition
-import me.jfenn.bingo.common.options.EndWhen
+import me.jfenn.bingo.common.options.*
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -226,7 +223,7 @@ internal class ScoredItemCheck(
             is StalemateReason.Stalemate,
             is StalemateReason.Lockout,
             is StalemateReason.ImpossibleGoal -> {
-                if (options.endGameWhenStalemate) {
+                if (options.stalemateBehavior == StalemateBehavior.END_GAME) {
                     log.info("[ScoredItemCheck] Ending the game because the card has reached a stalemate (${stalemate})")
                     // if there's only one card, end the game when there's a lockout
                     gameService.end(
@@ -236,16 +233,16 @@ internal class ScoredItemCheck(
                             else -> GameEndReason.Stalemate
                         }
                     )
-                } else {
+                } else if (options.stalemateBehavior == StalemateBehavior.REROLL_CARD) {
                     log.info("[ScoredItemCheck] Skipping the current card because it has reached a stalemate (${stalemate})")
                     // otherwise, skip to the next card when a lockout occurs
                     teams.filter { it.cardId == card.id }
                         .forEach { onCardCompleted(it, card, false) }
 
-                    // Notify players that the game is continuing because of endGameWhenStalemate
+                    // Notify players that the game is continuing because of stalemateBehavior
                     val message = text.string(
                         StringKey.GameNotEndingStalemateNewCard,
-                        text.string(StringKey.OptionsWinBehaviorEndWhenStalemate)
+                        options.stalemateBehavior.string(text),
                     )
                         .formatted(Formatting.AQUA, Formatting.BOLD)
                     playerManager.getPlayers()
