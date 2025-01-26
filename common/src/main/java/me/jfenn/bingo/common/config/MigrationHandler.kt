@@ -209,7 +209,7 @@ class MigrationHandler(
                 ?.deleteIfExists()
         }
 
-        migrations[31] = { // 2.5.0
+        migrations[32] = { // 2.5.0
             // Move *.tierlist.json files from "{config}/" to "{config}/tierlists/"
             val targetPath = loader.configDir.resolve(TierListLoader.TIERLISTS_PATH)
             targetPath.toFile().mkdirs()
@@ -246,7 +246,7 @@ class MigrationHandler(
                 "tierlists/items.tierlist.json" to "9bbc463585e52123d15cd1d72e921551",
                 "tierlists/simplified.tierlist.json" to "90fb73f823703ae3d5c8425f949a40f3",
                 "tags/biome_specific.json" to "4962ad50a7c7856193abb68980da6543",
-                "tags/in_overworld.json" to "029b02bffb6d6dd45b373190c58962ea",
+                "tags/in_overworld.json" to "29b02bffb6d6dd45b373190c58962ea",
                 "tags/in_the_end.json" to "b9909612268e0c79c081530a02d4db28",
                 "tags/in_the_nether.json" to "c9baeebe66f08ed75dba91411b0bd128",
                 "tags/tedious.json" to "a7809157fbb7dccad86d446846988c9f",
