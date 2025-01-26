@@ -50,7 +50,7 @@ private fun createRootPage(
         height = 0.55,
         icon = "⚄",
         text = text.string(StringKey.OptionsRerollCard),
-        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
+        brightness = MENU_BRIGHTNESS_ALT,
     ) {
         // Shuffle the current card + seed
         cardService.shuffleCard(state.getActiveCard())
@@ -62,7 +62,7 @@ private fun createRootPage(
         height = 0.55,
         icon = "⟳",
         text = text.string(StringKey.OptionsResetDefaults),
-        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
+        brightness = MENU_BRIGHTNESS_ALT,
     ) {
         // Reset the menu to the default options
         options.copyFrom(configService.optionsDefault)
@@ -86,7 +86,7 @@ private fun createRootPage(
         width = startWidth,
         height = 2.4 - MENU_PLAYER_COUNT_HEIGHT + 2*MENU_LINE_PADDING,
         text = text.string(StringKey.OptionsStart),
-        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
+        brightness = MENU_BRIGHTNESS_ALT,
     ) { player ->
         // Start the game!
         optionsService.broadcastHotbarMessage(player, text.string(StringKey.CommandStartSuccess))
@@ -114,7 +114,7 @@ private fun MenuComponent.registerBackButton(
         height = 2.4,
         text = Text.literal("⬅"),
         textScale = 3.5f,
-        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
+        brightness = MENU_BRIGHTNESS_ALT,
     ) {
         state.menu.page = MenuPage.ROOT
     }

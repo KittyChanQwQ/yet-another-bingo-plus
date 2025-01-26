@@ -62,7 +62,7 @@ internal fun MenuComponent.registerSpawnKit(
             text.string(StringKey.OptionsSpawnKitPlayerEdit).formatted(Formatting.GREEN),
             text.string(StringKey.OptionsSpawnKitEditTooltip)
         ),
-        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
+        brightness = MENU_BRIGHTNESS_ALT,
     ) { player ->
         player.player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
@@ -112,7 +112,7 @@ internal fun MenuComponent.registerSpawnKit(
             text.string(StringKey.OptionsSpawnKitTeamEdit).formatted(Formatting.GREEN),
             text.string(StringKey.OptionsSpawnKitEditTooltip)
         ),
-        blockIdentifier = MENU_BUTTON_ALT_MATERIAL,
+        brightness = MENU_BRIGHTNESS_ALT,
     ) { player ->
         player.player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(

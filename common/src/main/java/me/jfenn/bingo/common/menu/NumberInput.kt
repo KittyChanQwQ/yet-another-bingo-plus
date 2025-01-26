@@ -64,7 +64,7 @@ internal fun MenuComponent.registerNumberInput(
     val backgroundWidth = width - 2*height - 0.2
     registerEntity(EntityType.BLOCK_DISPLAY) {
         pos = position + Vector3d(-backgroundWidth/2, 0.0, -0.051)
-        blockIdentifier = if (isVisible()) MENU_BUTTON_MATERIAL else "minecraft:air"
+        blockIdentifier = if (isVisible()) MENU_BUTTON_OFF_MATERIAL else "minecraft:air"
         brightness = MENU_BRIGHTNESS_OFF
         transformation = Matrix4f().scale(backgroundWidth.toFloat(), height.toFloat(), 0.05f)
     }

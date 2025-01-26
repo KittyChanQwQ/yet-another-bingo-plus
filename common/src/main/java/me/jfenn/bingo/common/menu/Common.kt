@@ -20,10 +20,11 @@ internal const val MENU_LINE_PADDING = 0.1
 
 internal const val MENU_TITLE_MATERIAL = "minecraft:lime_concrete"
 internal const val MENU_BUTTON_MATERIAL = "minecraft:white_concrete"
-internal const val MENU_BUTTON_ALT_MATERIAL = "minecraft:light_gray_concrete"
+internal const val MENU_BUTTON_OFF_MATERIAL = "minecraft:gray_concrete"
 
 internal val MENU_BRIGHTNESS_ON = IDisplayEntity.Brightness(0, 15)
-internal val MENU_BRIGHTNESS_OFF = IDisplayEntity.Brightness(0, 3)
+internal val MENU_BRIGHTNESS_OFF = IDisplayEntity.Brightness(0, 14)
+internal val MENU_BRIGHTNESS_ALT = IDisplayEntity.Brightness(0, 8)
 
 internal interface Property<T> {
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T

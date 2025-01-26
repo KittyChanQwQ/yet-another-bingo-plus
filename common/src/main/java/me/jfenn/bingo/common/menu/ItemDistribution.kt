@@ -116,8 +116,8 @@ internal fun MenuComponent.registerItemDistribution(
 
     registerEntity(EntityType.BLOCK_DISPLAY) {
         pos = position + Vector3d(0.0, -4*MENU_LINE_PADDING - MENU_LINE_HEIGHT - 3*TIER_HEIGHT, -0.051)
-        this.blockIdentifier = MENU_BUTTON_ALT_MATERIAL
-        brightness = MENU_BRIGHTNESS_OFF
+        this.blockIdentifier = MENU_BUTTON_OFF_MATERIAL
+        brightness = MENU_BRIGHTNESS_ALT
         transformation = Matrix4f().scale(MENU_ITEM_DISTRIBUTION_WIDTH.toFloat(), (2*TIER_HEIGHT + MENU_LINE_PADDING).toFloat(), 0.05f)
     }
 

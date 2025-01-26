@@ -8,7 +8,6 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.formatTitle
-import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 
@@ -19,7 +18,6 @@ class VoiceGroupController(
     private val teamService: TeamService,
     private val playerManager: IPlayerManager,
     private val voiceIntegration: VoiceIntegration,
-    private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
 ) {
     private var usingCombinedGroup: Boolean? = null
     private fun isUsingCombinedGroup(): Boolean {

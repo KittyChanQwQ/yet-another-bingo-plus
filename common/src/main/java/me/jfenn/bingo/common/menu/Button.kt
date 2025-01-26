@@ -82,7 +82,8 @@ internal fun MenuComponent.registerTileButton(
     tooltip: List<Text>? = null,
     tooltipProp: Property<List<Text>?> = ConstantProperty(tooltip),
     isActiveProp: Property<Boolean> = ConstantProperty(false),
-    blockIdentifier: String = MENU_BUTTON_MATERIAL,
+    blockIdentifier: String? = null,
+    brightness: IDisplayEntity.Brightness? = null,
     width: Double = 1.0,
     height: Double = MENU_LINE_HEIGHT,
     permissionGetter: ((ServerPlayerEntity) -> Boolean)? = null,
@@ -105,8 +106,10 @@ internal fun MenuComponent.registerTileButton(
 
     registerEntity(EntityType.BLOCK_DISPLAY) {
         pos = position + Vector3d(-width/2, 0.0, -0.051)
-        this.blockIdentifier = if (isVisible) blockIdentifier else "minecraft:air"
-        brightness = if (isActive) MENU_BRIGHTNESS_ON else MENU_BRIGHTNESS_OFF
+        this.blockIdentifier = if (isVisible) {
+            blockIdentifier ?: if (isActive) MENU_BUTTON_MATERIAL else MENU_BUTTON_OFF_MATERIAL
+        } else "minecraft:air"
+        this.brightness = brightness ?: if (isActive) MENU_BRIGHTNESS_ON else MENU_BRIGHTNESS_OFF
         transformation = Matrix4f().scale(width.toFloat(), height.toFloat(), 0.05f)
     }
 
