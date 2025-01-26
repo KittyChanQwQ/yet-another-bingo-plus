@@ -130,6 +130,7 @@ val commonModule = module {
     singleOf(::ConnectionFactory)
     single { get<ConnectionFactory>().create() }
     singleOf(::StatsService)
+    singleOf(::PlayerSettingsService)
 
     scope<BingoScope> {
         scopedOf(::ScopedEvents)
@@ -220,7 +221,6 @@ val commonModule = module {
         scopedOf(::CardViewService)
         scopedOf(::CardImageService)
         scopedOf(::ScoreboardService)
-        scopedOf(::PlayerSettingsService)
 
         scopedOf(::ScoredItemCheck)
         scopedOf(::ScoreUpdateService)

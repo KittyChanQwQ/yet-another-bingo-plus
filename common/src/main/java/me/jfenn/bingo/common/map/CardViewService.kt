@@ -197,7 +197,7 @@ class CardViewService(
             texture = if (isHidden) null else entry.display.image,
         )
 
-        val imageList = when (objective) {
+        val imageListObjectives = when (objective) {
             is BingoObjective.SomeOfEntry -> objective.someOfObjectives
                 .takeIf { !isHidden && objective.display.decoration in arrayOf(CardTile.Decoration.ONE_OF, CardTile.Decoration.MANY_OF) }
                 ?.mapNotNull { card.objectives[it] }
@@ -206,14 +206,29 @@ class CardViewService(
                     val isInnerAchieved = team?.key?.let { innerObjective.hasAchieved(it) } ?: false
                     if (isInnerAchieved) 1 else 0
                 }
-                ?.map { innerObjective ->
-                    CardTileImage(
-                        item = innerObjective.display.item,
-                        texture = innerObjective.display.image,
-                    )
-                }
-                .orEmpty()
             else -> emptyList()
+        }
+
+        val imageList = imageListObjectives
+            ?.map { innerObjective ->
+                CardTileImage(
+                    item = innerObjective.display.item,
+                    texture = innerObjective.display.image,
+                )
+            }
+            .orEmpty()
+
+        val action = when (
+            val actionObjective = imageListObjectives?.firstOrNull() ?: objective
+        ) {
+            is BingoObjective.ItemEntry -> {
+                actionObjective.itemStack?.let { CardTileAction.Item(it) }
+                    ?: CardTileAction.None
+            }
+            is BingoObjective.AdvancementEntry -> {
+                CardTileAction.Advancement(actionObjective.advancementId)
+            }
+            else -> CardTileAction.None
         }
 
         val isFlashing = objective.isFlashing(team?.key, FLASHING_DURATION)
@@ -222,6 +237,7 @@ class CardViewService(
             id = objective.id,
             image = image,
             imageList = imageList,
+            action = action.takeIf { !isHidden } ?: CardTileAction.None,
             itemTier = entry.tier.takeIf { !card.options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
             name = entry.display.name.takeIf { !isHidden },
             lore = entry.display.lore.takeIf { !isHidden } ?: emptyList(),

@@ -14,6 +14,8 @@ data class CardTile(
     val id: String? = null,
     val image: CardTileImage,
     val imageList: List<CardTileImage> = emptyList(),
+    val action: CardTileAction = image.item?.let { CardTileAction.Item(it) }
+        ?: CardTileAction.None,
     val itemTier: TierLabel? = null,
     val name: Text? = image.item?.displayName,
     val lore: List<Text> = image.item?.lore ?: emptyList(),
@@ -412,6 +414,7 @@ data class CardTile(
             val id = buf.readString()
             val image = CardTileImage.V1.fromPacketBuf(buf)
             val imageList = buf.readList { CardTileImage.V1.fromPacketBuf(buf) }
+            val action = CardTileAction.V1.fromPacketBuf(buf)
             val itemTier = buf.readNullable {
                 TierLabel.valueOf(buf.readString())
             }
@@ -434,6 +437,7 @@ data class CardTile(
                 id = id,
                 image = image,
                 imageList = imageList,
+                action = action,
                 itemTier = itemTier,
                 name = name,
                 lore = lore,
@@ -453,6 +457,7 @@ data class CardTile(
             dest.writeList(source.imageList) {
                 CardTileImage.V1.toPacketBuf(it, dest)
             }
+            CardTileAction.V1.toPacketBuf(source.action, dest)
             dest.writeNullable(source.itemTier?.name, dest::writeString)
             dest.writeNullable(source.name, dest::writeText)
 

@@ -5,7 +5,7 @@ import me.jfenn.bingo.client.platform.screen.IScreen
 import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.platform.screen.IScreenHelper
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.map.CardTile
+import me.jfenn.bingo.common.map.CardTileAction
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -73,11 +73,9 @@ internal class BingoHudScreen(
         interpolateDuration = 150.milliseconds,
 
         onTileClick = { tile ->
-            val stack = tile.image.item
-            if ((tile.decoration == null || tile.decoration == CardTile.Decoration.NONE) && stack != null) {
-                jei.openJeiRecipe(stack.stack)
-            } else {
-                false
+            when (val action = tile.action) {
+                is CardTileAction.Item -> jei.openJeiRecipe(action.item.stack)
+                else -> false
             }
         },
         onViewClick = { view ->
