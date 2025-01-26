@@ -598,9 +598,10 @@ class CardService(
         val cols = "bingo".toCharArray()
         val rows = "12345".toCharArray()
         entries.forEachIndexed { i, entry ->
-            val x = i % 5
-            val y = i / 5
-            entry.tileName = "${cols[x]}${rows[y]}"
+            val col = cols.getOrNull(i % 5)
+            val row = rows.getOrNull(i / 5)
+            if (col != null && row != null)
+                entry.tileName = "$col$row"
         }
     }
 

@@ -209,7 +209,7 @@ class MigrationHandler(
                 ?.deleteIfExists()
         }
 
-        migrations[30] = { // 2.5.0
+        migrations[31] = { // 2.5.0
             // Move *.tierlist.json files from "{config}/" to "{config}/tierlists/"
             val targetPath = loader.configDir.resolve(TierListLoader.TIERLISTS_PATH)
             targetPath.toFile().mkdirs()
@@ -239,6 +239,25 @@ class MigrationHandler(
 
             loader.configDir.resolve("$MOD_ID_BINGO/player-settings.json")
                 .deleteIfExists()
+
+            val hashes = listOf(
+                "tierlists/advancements.tierlist.json" to "5444f9ee52d211499fe75d74fdc89542",
+                "tierlists/challenge.tierlist.json" to "124a93320a483b3020e87ffd86f71d65",
+                "tierlists/items.tierlist.json" to "9bbc463585e52123d15cd1d72e921551",
+                "tierlists/simplified.tierlist.json" to "90fb73f823703ae3d5c8425f949a40f3",
+                "tags/biome_specific.json" to "4962ad50a7c7856193abb68980da6543",
+                "tags/in_overworld.json" to "029b02bffb6d6dd45b373190c58962ea",
+                "tags/in_the_end.json" to "b9909612268e0c79c081530a02d4db28",
+                "tags/in_the_nether.json" to "c9baeebe66f08ed75dba91411b0bd128",
+                "tags/tedious.json" to "a7809157fbb7dccad86d446846988c9f",
+                "tags/unobtainable.json" to "1179f48cbee870f0f964a3c564565900"
+            )
+
+            for ((path, hash) in hashes) {
+                loader.configDir.resolve("$MOD_ID_BINGO/$path")
+                    .takeIfMd5(hash)
+                    ?.deleteIfExists()
+            }
         }
     }
 
