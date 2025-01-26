@@ -29,6 +29,7 @@ import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import org.slf4j.Logger
 import kotlin.time.Duration.Companion.seconds
 
 internal class GameService(
@@ -49,6 +50,7 @@ internal class GameService(
     private val writeStatsService: WriteStatsService,
     private val messageService: MessageService,
     private val text: TextProvider,
+    private val log: Logger,
 ) {
 
     private val notifySpamCooldown = 2.seconds
@@ -211,6 +213,20 @@ internal class GameService(
     }
 
     private fun broadcastStart() {
+        run {
+            val placeholders = mapOf(
+                "%game_start%" to text.string(StringKey.GameStart)
+                    .formatted(Formatting.GREEN)
+                    .let { listOf(Text.literal("  ").append(it)) },
+                "%game_options%" to optionsService.getOptionsSummary(null)
+                    .map { Text.literal("  ").append(it) }
+                    .toList(),
+            )
+
+            messageService.getLines(MessageService.MessageType.GAME_START, placeholders)
+                .forEach { log.info(it.string) }
+        }
+
         playerManager.getPlayers()
             .filter { state.isLobbyMode || teamService.isPlaying(it) }
             .forEach { player ->

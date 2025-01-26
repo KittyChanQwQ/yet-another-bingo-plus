@@ -21,6 +21,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
+import org.slf4j.Logger
 import kotlin.time.Duration
 
 class GameOverController(
@@ -35,6 +36,7 @@ class GameOverController(
     private val packetManager: ServerPacketEvents,
     private val messageService: MessageService,
     private val teamService: TeamService,
+    private val log: Logger,
     events: ScopedEvents,
 ) {
 
@@ -84,6 +86,7 @@ class GameOverController(
 
         messageService.getLines(MessageService.MessageType.GAME_END, placeholders)
             .forEach { text ->
+                log.info(text.string)
                 players.forEach { it.sendMessage(text) }
             }
     }
