@@ -218,8 +218,6 @@
   "bingo.options.time_limit_off": "Wyłącz",
   "bingo.options.unlock_recipes": "Odblokuj Receptury",
   "bingo.options.win_behavior": "Zasady Wygranej",
-  "bingo.options.win_behavior.end_when_stalemate": "Zakończ grę, gdy wystąpi pat.",
-  "bingo.options.win_behavior.end_when_stalemate.tooltip": "Jeśli wybrane, gra zakończy się, gdy gra nie będzie możliwa do wygrania przez żadną z drużyn. W przeciwnym razie gra będzie kontynuowana na następnej karcie.",
   "bingo.options.win_behavior.skip_card_when_lost": "Pomiń kartę w przypadku przegranej",
   "bingo.options.win_behavior.skip_card_when_lost.tooltip": "Gdy karta zostanie po raz pierwszy ukończona, wszystkie drużyny zostaną przeniesione do następnej karty.",
   "bingo.options.win_condition": "Graj do...",

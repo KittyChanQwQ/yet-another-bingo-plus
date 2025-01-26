@@ -252,8 +252,6 @@
   "bingo.options.end_when.first_win": "Première Victoire",
   "bingo.options.end_when.teams_win": "%s Équipes gagnent",
   "bingo.options.end_when.all_win": "Toutes les Équipes gagnent",
-  "bingo.options.win_behavior.end_when_stalemate": "Fin de partie si Blocage",
-  "bingo.options.win_behavior.end_when_stalemate.tooltip": "Si sélectionné, la partie se terminera l'objectif deviens impossible. Autrement, la partie continuera sur la prochaine carte.",
   "bingo.options.win_behavior.skip_card_when_lost": "Passer la carte quand Perdu",
   "bingo.options.win_behavior.skip_card_when_lost.tooltip": "Quand une carte est complétée la première fois, chaque équipe passera à la nouvelle carte.",
   "bingo.options.win_condition": "Jouer jusqu'à...",
