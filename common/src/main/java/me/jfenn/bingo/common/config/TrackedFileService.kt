@@ -13,6 +13,7 @@ import java.io.InputStream
 import java.math.BigInteger
 import java.nio.file.Path
 import java.security.MessageDigest
+import kotlin.io.path.deleteIfExists
 
 class TrackedFileService(
     private val configService: ConfigService,
@@ -79,11 +80,22 @@ class TrackedFileService(
             }
         } else null
 
-        if (resource == null)
-            return Result(true, fileConfig)
-
-        val resourceJson = serialize(resource)
+        val resourceJson = resource?.let { serialize(it) }
         val fileJson = fileConfig?.let { serialize(it) }
+
+        if (resourceJson == null) {
+            if (fileJson != null && md5Of(fileJson) == trackedFile?.md5) {
+                // If the file hasn't been modified (was created from data, but no longer exists), remove it
+                // - this may happen if a datapack providing the file was uninstalled
+                log.warn("[$name] Resource no longer exists - removing from config folder!")
+                path.deleteIfExists()
+                configService.files = configService.files.minus(trackedFile)
+                return Result(false, null)
+            } else {
+                // Otherwise, this is a new file that was created
+                return Result(true, fileConfig)
+            }
+        }
 
         return if (
             fileConfig == null ||

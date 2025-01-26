@@ -52,16 +52,18 @@ class TagLoader(
             if (configs.isEmpty()) continue
             val config = configs.reduce { acc, tag -> tag.plus(acc) }
             newTags[name] = (newTags[name] ?: TagData.EMPTY).plus(config)
+                .also { it.shouldValidate = id.namespace != MOD_ID_BINGO }
         }
 
         for (name in (readTagsFiles() + newTags.keys).distinct()) {
+            val resource = newTags[name]
             val (isModified, finalConfig) = trackedFileService.readFileOrResource(
                 path = configFile(name),
-                resource = newTags[name],
+                resource = resource,
             )
 
             if (finalConfig == null) continue
-            finalConfig.shouldValidate = isModified
+            finalConfig.shouldValidate = isModified || resource?.shouldValidate == true
             newTags[name] = finalConfig
         }
 

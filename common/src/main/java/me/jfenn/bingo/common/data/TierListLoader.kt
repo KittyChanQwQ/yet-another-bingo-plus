@@ -52,16 +52,18 @@ class TierListLoader(
             if (configs.isEmpty()) continue
             val config = configs.reduce { acc, list -> list.combine(acc) }
             newTierLists[name] = (newTierLists[name] ?: TierListConfig.EMPTY).combine(config)
+                .also { it.shouldValidate = id.namespace != MOD_ID_BINGO }
         }
 
         for (name in (readTierListFiles() + newTierLists.keys).distinct()) {
+            val resource = newTierLists[name]
             val (isModified, finalConfig) = trackedFileService.readFileOrResource(
                 path = configFile(name),
-                resource = newTierLists[name],
+                resource = resource,
             )
 
             if (finalConfig == null) continue
-            finalConfig.shouldValidate = isModified
+            finalConfig.shouldValidate = isModified || resource?.shouldValidate == true
             newTierLists[name] = finalConfig
         }
 

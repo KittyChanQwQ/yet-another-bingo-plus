@@ -13,6 +13,9 @@ class TrackedFiles(
 
     operator fun plus(file: TrackedFile) =
         TrackedFiles(files.filterNot { it.name == file.name } + file)
+
+    operator fun minus(file: TrackedFile) =
+        TrackedFiles(files.filterNot { it.name == file.name })
 }
 
 @Serializable
