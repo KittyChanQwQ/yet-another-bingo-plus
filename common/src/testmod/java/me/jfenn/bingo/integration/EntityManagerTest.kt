@@ -6,7 +6,7 @@ import me.jfenn.bingo.platform.EffectType
 import me.jfenn.bingo.platform.EntityType
 import me.jfenn.bingo.platform.IEntityManager
 import me.jfenn.bingo.platform.ITextDisplayEntity
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.test.BaseGameTest
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest
 import net.minecraft.test.GameTest

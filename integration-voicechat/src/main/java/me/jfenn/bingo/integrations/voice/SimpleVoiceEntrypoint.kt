@@ -2,28 +2,43 @@ package me.jfenn.bingo.integrations.voice
 
 import de.maxhenkel.voicechat.api.VoicechatApi
 import de.maxhenkel.voicechat.api.VoicechatPlugin
-import de.maxhenkel.voicechat.api.VoicechatServerApi
 import de.maxhenkel.voicechat.api.events.EventRegistration
 import de.maxhenkel.voicechat.api.events.PlayerConnectedEvent
 import de.maxhenkel.voicechat.api.events.VoicechatServerStartedEvent
 import de.maxhenkel.voicechat.api.events.VoicechatServerStoppedEvent
-import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.api.BingoEvents
+import me.jfenn.bingo.platform.scope.BingoKoin
 import org.slf4j.LoggerFactory
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 internal object SimpleVoiceEntrypoint : VoicechatPlugin {
 
     private val logger = LoggerFactory.getLogger("bingo")
-    var serverApi: VoicechatServerApi? = null
-    val onPlayerConnectedCallbacks = ConcurrentHashMap<UUID, () -> Unit>()
+    private var integration: SimpleVoiceIntegration? = null
+    private var controller: VoiceGroupController? = null
 
     override fun getPluginId(): String {
-        return MOD_ID_BINGO
+        return "yet-another-minecraft-bingo"
     }
 
     override fun initialize(api: VoicechatApi) {
         super.initialize(api)
+
+        BingoEvents.INIT.register {
+            val koin = BingoKoin.getScope(it.server)
+                ?: error("Unable to fetch Koin scope from INIT!")
+
+            controller = VoiceGroupController(
+                configManager = koin.get(),
+                playerManager = koin.get(),
+                voiceIntegrationProp = ::integration,
+                serverEvents = koin.get()
+            )
+        }
+
+        BingoEvents.CLOSE.register {
+            controller?.close()
+            controller = null
+        }
     }
 
     override fun registerEvents(registration: EventRegistration) {
@@ -34,18 +49,18 @@ internal object SimpleVoiceEntrypoint : VoicechatPlugin {
 
     fun onServerStarted(event: VoicechatServerStartedEvent) {
         logger.debug("[SimpleVoiceEntrypoint] Voice server started")
-        serverApi = event.voicechat
+        integration = SimpleVoiceIntegration(event.voicechat)
     }
 
     fun onServerStopped(event: VoicechatServerStoppedEvent) {
         logger.debug("[SimpleVoiceEntrypoint] Voice server stopped")
-        serverApi = null
+        integration = null
     }
 
     fun onPlayerConnected(event: PlayerConnectedEvent) {
         try {
             val uuid = event.connection.player.uuid
-            onPlayerConnectedCallbacks.remove(uuid)?.invoke()
+            integration?.onPlayerConnected(uuid)
         } catch (e: Throwable) {
             logger.error("[SimpleVoiceEntrypoint] Error invoking callbacks:", e)
         }

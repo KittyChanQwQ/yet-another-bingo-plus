@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.stats
 
-import me.jfenn.bingo.platform.IExecutors
-import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -10,6 +8,8 @@ import me.jfenn.bingo.common.stats.data.PlayerGameSummary
 import me.jfenn.bingo.common.stats.packets.StatsCheckPacket
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IPlayerHandle
 import org.slf4j.Logger
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -75,7 +75,6 @@ class StatsSyncController(
                 continue
             }
 
-            log.info("[StatsSyncController] Sending requested gameId={}", gameId)
             val packet = StatsGamePacket(gameSummary)
             packets.statsGameV1S2C.send(player, packet)
 
@@ -90,7 +89,6 @@ class StatsSyncController(
     }
 
     private fun insertReceivedGame(game: PlayerGameSummary) {
-        log.info("[StatsSyncController] Inserting gameId={}, playerId={}", game.game.id, game.player.minecraftId)
         stats.insertGame(
             game = game.game,
             teams = listOf(game.team),

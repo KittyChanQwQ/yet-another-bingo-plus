@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.chat
 
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.platform.IServerEvents
 import me.jfenn.bingo.platform.commands.ICommandManager

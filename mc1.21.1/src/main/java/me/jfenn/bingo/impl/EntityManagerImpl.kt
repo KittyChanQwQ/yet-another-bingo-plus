@@ -1,6 +1,6 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.item.IItemStack

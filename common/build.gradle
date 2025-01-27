@@ -65,16 +65,8 @@ dependencies {
     modCompileOnly(libs.jei)
     modCompileOnly(libs.roughlyenoughitems)
     modCompileOnly(libs.emi)
-    modCompileOnly(libs.voicechat)
-    // modCompileOnly(libs.plasmovoice) {
-    //     exclude(group: "org.jetbrains.kotlin")
-    //     exclude(group: "org.jetbrains.kotlinx")
-    //     exclude(group: "org.jetbrains")
-    //     exclude(group: "org.projectlombok")
-    //     exclude(group: "com.google.guava")
-    //     exclude(group: "com.google.code.gson")
-    // }
 
+    api project(path: ":platform", configuration: "namedElements")
     api project(path: ":api", configuration: "namedElements")
 }
 

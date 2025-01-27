@@ -1,0 +1,9 @@
+plugins {
+    id 'bingo.common'
+}
+
+base.archivesName.set("${project.archives_base_name}-platform")
+
+dependencies {
+    api libs.insert.koin.core
+}

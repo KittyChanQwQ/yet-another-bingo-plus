@@ -1,7 +1,7 @@
 package me.jfenn.bingo.impl
 
 import com.mojang.authlib.GameProfile
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage

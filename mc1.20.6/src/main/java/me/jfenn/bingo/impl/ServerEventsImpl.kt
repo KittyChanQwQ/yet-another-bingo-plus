@@ -1,7 +1,7 @@
 package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.common.utils.ReturnEventListener
 import me.jfenn.bingo.platform.IPlayerHandle

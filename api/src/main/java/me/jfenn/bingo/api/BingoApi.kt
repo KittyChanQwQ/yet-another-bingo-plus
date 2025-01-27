@@ -12,16 +12,14 @@ object BingoApi {
     fun set(api: IBingoApi?) { current = api }
 
     @JvmStatic
-    private fun getCurrent(): IBingoApi {
-        return current ?: error("Yet Another Bingo is not initialized!")
-    }
+    val game get() = current?.game
 
     @JvmStatic
-    val game get() = getCurrent().game
+    val teams get() = current?.teams
 
     @JvmStatic
-    val teams get() = getCurrent().teams
+    fun getPlayerStats(id: UUID) = current?.getPlayerStats(id)
 
     @JvmStatic
-    fun getPlayerStats(id: UUID) = getCurrent().getPlayerStats(id)
+    val config get() = current?.config
 }

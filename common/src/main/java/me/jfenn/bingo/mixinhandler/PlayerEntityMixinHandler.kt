@@ -4,7 +4,7 @@ import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_KEEP
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.ready.ReadyTimerState
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity

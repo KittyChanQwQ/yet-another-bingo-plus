@@ -4,46 +4,61 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.config.IConfigManager
 import net.fabricmc.loader.api.FabricLoader
 import org.apache.commons.io.IOUtils
+import org.slf4j.LoggerFactory
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.InputStream
+import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-object Config {
+object Config : IConfigManager {
 
-    val configDir get() = try {
+    private val log = LoggerFactory.getLogger("bingo")
+    override val configDir get() = try {
         FabricLoader.getInstance().configDir
     } catch (e: Exception) {
         Path.of("").toAbsolutePath()
     }!!
 
+    override fun inputStream(path: String): InputStream {
+        val filePath = configDir.resolve(path)
+        return Files.newInputStream(filePath)
+    }
+
+    override fun outputStream(path: String): OutputStream {
+        val filePath = configDir.resolve(path)
+        if (!Files.exists(filePath)) {
+            filePath.parent.toFile().mkdirs()
+        }
+        return Files.newOutputStream(filePath)
+    }
+
     @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
     fun <T: Any> read(clazz: KClass<T>, file: String): T {
-        val filePath = configDir.resolve(file)
         return try {
-            Files.newInputStream(filePath).use { json.decodeFromStream(clazz.serializer(), it) }
+            inputStream(file).use { json.decodeFromStream(clazz.serializer(), it) }
         } catch (e: Exception) {
+            log.error("Error reading $file", e)
             json.decodeFromString(clazz.serializer(), "{}").also { write(clazz, file, it) }
         }
     }
 
-    @OptIn(InternalSerializationApi::class)
+    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
     fun <T: Any> write(clazz: KClass<T>, file: String, config: T) {
-        val filePath = configDir.resolve(file)
-        if (!Files.exists(filePath)) {
-            filePath.parent.toFile().mkdirs()
-            Files.createFile(filePath)
+        outputStream(file).use {
+            json.encodeToStream(clazz.serializer(), config, it)
         }
-        Files.write(filePath, json.encodeToString(clazz.serializer(), config).toByteArray())
     }
 
     /**
@@ -76,10 +91,9 @@ object Config {
                 return default()
 
             filePath.parent.toFile().mkdirs()
-            Files.createFile(filePath)
 
             // write the default resource file to the config dir
-            FileOutputStream(filePath.toFile()).use { output ->
+            Files.newOutputStream(filePath, StandardOpenOption.CREATE).use { output ->
                 default().use { input -> IOUtils.copy(input, output) }
             }
         }

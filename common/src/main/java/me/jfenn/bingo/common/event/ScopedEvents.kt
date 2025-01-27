@@ -3,13 +3,14 @@ package me.jfenn.bingo.common.event
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
-import me.jfenn.bingo.common.utils.EventListener
-import me.jfenn.bingo.common.utils.ReturnEventListener
+import me.jfenn.bingo.common.utils.EventListenerFactory
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.event.model.*
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.packet.IServerPacketHandlerC2S
 import me.jfenn.bingo.platform.packet.ServerPacket
+import me.jfenn.bingo.platform.utils.IEventListener
+import me.jfenn.bingo.platform.utils.IReturnEventListener
 import net.minecraft.entity.Entity
 import net.minecraft.server.world.ServerWorld
 import org.koin.core.scope.Scope
@@ -20,37 +21,37 @@ class ScopedEvents(
     private val log: Logger,
 ) : BingoComponent(), ScopeCallback {
 
-    val onGameTick = EventListener<Unit>()
-    val onGameTickEnd = EventListener<Unit>()
-    val onUpdateTick = EventListener<Unit>()
+    val onGameTick: IEventListener<Unit> by EventListenerFactory()
+    val onGameTickEnd: IEventListener<Unit> by EventListenerFactory()
+    val onUpdateTick: IEventListener<Unit> by EventListenerFactory()
 
     /**
      * Note: this event is NOT called on the server thread!
      */
-    val onPlayerInit = EventListener<IPlayerHandle>()
-    val onPlayerJoin = EventListener<IPlayerHandle>()
-    val onPlayerDisconnect = EventListener<IPlayerHandle>()
-    val onPlayerRespawn = EventListener<PlayerEvent>()
-    val onPlayerChannelRegister = EventListener<IPlayerHandle>()
+    val onPlayerInit: IEventListener<IPlayerHandle> by EventListenerFactory()
+    val onPlayerJoin: IEventListener<IPlayerHandle> by EventListenerFactory()
+    val onPlayerDisconnect: IEventListener<IPlayerHandle> by EventListenerFactory()
+    val onPlayerRespawn: IEventListener<PlayerEvent> by EventListenerFactory()
+    val onPlayerChannelRegister: IEventListener<IPlayerHandle> by EventListenerFactory()
 
-    val onEntityLoad = EventListener<Pair<Entity, ServerWorld>>()
-    val onUseBlock = ReturnEventListener<UseBlockEvent, ActionResult<Unit>?>()
-    val onUseEntity = ReturnEventListener<UseEntityEvent, ActionResult<Unit>?>()
-    val onUseItem = ReturnEventListener<UseItemEvent, ActionResult<IItemStack?>?>()
-    val onAttackEntity = ReturnEventListener<AttackEntityEvent, ActionResult<Unit>?>()
-    val onAttackBlock = ReturnEventListener<AttackBlockEvent, ActionResult<Unit>?>()
+    val onEntityLoad: IEventListener<Pair<Entity, ServerWorld>> by EventListenerFactory()
+    val onUseBlock: IReturnEventListener<UseBlockEvent, ActionResult<Unit>?> by EventListenerFactory()
+    val onUseEntity: IReturnEventListener<UseEntityEvent, ActionResult<Unit>?> by EventListenerFactory()
+    val onUseItem: IReturnEventListener<UseItemEvent, ActionResult<IItemStack?>?> by EventListenerFactory()
+    val onAttackEntity: IReturnEventListener<AttackEntityEvent, ActionResult<Unit>?> by EventListenerFactory()
+    val onAttackBlock: IReturnEventListener<AttackBlockEvent, ActionResult<Unit>?> by EventListenerFactory()
 
-    val onStateChange = EventListener<Pair<GameState, GameState>>()
+    val onStateChange: IEventListener<Pair<GameState, GameState>> by EventListenerFactory()
 
-    val onChangeOptions = EventListener<Unit>()
-    val onChangePlayerSettings = EventListener<IPlayerHandle>()
-    val onChangeTeam = EventListener<IPlayerHandle>()
+    val onChangeOptions: IEventListener<Unit> by EventListenerFactory()
+    val onChangePlayerSettings: IEventListener<IPlayerHandle> by EventListenerFactory()
+    val onChangeTeam: IEventListener<IPlayerHandle> by EventListenerFactory()
 
-    val onTeamWinner = EventListener<BingoTeam>()
+    val onTeamWinner: IEventListener<BingoTeam> by EventListenerFactory()
 
-    val onDataReload = EventListener<ReloadEvent>()
+    val onDataReload: IEventListener<ReloadEvent> by EventListenerFactory()
 
-    val onClose = EventListener<Unit>()
+    val onClose: IEventListener<Unit> by EventListenerFactory()
 
     init {
         onStateChange { (from, to) ->

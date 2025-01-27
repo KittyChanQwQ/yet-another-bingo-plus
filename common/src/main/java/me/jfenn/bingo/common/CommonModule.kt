@@ -20,10 +20,7 @@ import me.jfenn.bingo.common.chat.ChatCommand
 import me.jfenn.bingo.common.chat.ChatMessageService
 import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.commands.*
-import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.config.MigrationHandler
-import me.jfenn.bingo.common.config.PlayerSettingsService
-import me.jfenn.bingo.common.config.TrackedFileService
+import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.data.*
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
@@ -70,9 +67,9 @@ import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
 import me.jfenn.bingo.integrations.chunky.ChunkyController
 import me.jfenn.bingo.integrations.chunky.ChunkyIntegration
-import me.jfenn.bingo.integrations.voice.VoiceGroupController
-import me.jfenn.bingo.integrations.voice.VoiceIntegration
 import me.jfenn.bingo.platform.ICloseEvent
+import me.jfenn.bingo.platform.config.IConfigManager
+import me.jfenn.bingo.platform.scope.IScopeManager
 import org.koin.core.Koin
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.scopedOf
@@ -88,6 +85,7 @@ val commonModule = module {
     singleOf(::MigrationHandler)
     singleOf(::MapColors)
 
+    single { Config } bind IConfigManager::class
     singleOf(::ConfigService)
     singleOf(::TrackedFileService)
     single { get<ConfigService>().config }
@@ -96,13 +94,12 @@ val commonModule = module {
 
     singleOf(::ServerDatapackManager)
     singleOf(::EventManager)
-    singleOf(::ScopeManager)
+    singleOf(::ScopeManager) bind IScopeManager::class
     singleOf(::ServerPacketEvents)
 
     factoryOf(PermissionsIntegration::create)
     factoryOf(VanishIntegration::create)
     factoryOf(ChunkyIntegration::create)
-    factoryOf(VoiceIntegration::create)
 
     singleOf(::ReadyTimerState)
 
@@ -245,7 +242,6 @@ val commonModule = module {
         scopedOf(::ScoreboardController)
 
         scopedOf(::ChunkyController)
-        scopedOf(::VoiceGroupController)
 
         scopedOf(::ChestService)
         scopedOf(::ChestController)
@@ -279,7 +275,7 @@ fun Koin.commonInit() {
     get<MapColors>()
     get<ServerDatapackManager>()
     get<EventManager>()
-    get<ScopeManager>()
+    get<IScopeManager>()
     get<ServerPacketEvents>()
 
     get<BingoCommand>()
@@ -338,7 +334,6 @@ fun Scope.commonInit() {
     get<TeamController>()
 
     get<ChunkyController>()
-    get<VoiceGroupController>()
 
     get<CountdownController>()
     get<TimerCheck>()

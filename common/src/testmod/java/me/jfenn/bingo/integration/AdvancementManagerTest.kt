@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.test.BaseGameTest
 import me.jfenn.bingo.platform.IAdvancementManager
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest

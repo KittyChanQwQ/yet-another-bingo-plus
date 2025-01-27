@@ -1,6 +1,8 @@
 package me.jfenn.bingo.common.scope
 
 import me.jfenn.bingo.api.BingoApi
+import me.jfenn.bingo.api.BingoEvents
+import me.jfenn.bingo.api.IBingoApi
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
@@ -13,6 +15,8 @@ import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.event.model.ReloadEvent
 import me.jfenn.bingo.platform.getFromWorld
+import me.jfenn.bingo.platform.scope.IScopeManager
+import me.jfenn.bingo.platform.utils.IEventListener
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
 import org.koin.core.Koin
@@ -26,18 +30,23 @@ class ScopeManager(
     private val log: Logger,
     private val persistentStateManager: IPersistentStateManager,
     private val configService: ConfigService,
-) {
+) : IScopeManager {
 
     private fun getScopeId(server: MinecraftServer): ScopeID =
         System.identityHashCode(server).toString()
 
-    fun getScope(server: MinecraftServer) : Scope? {
+    override fun getScope(server: MinecraftServer?) : Scope? {
+        server ?: return null
         return try {
             koin.getScope(getScopeId(server))
         } catch (e: ScopeNotCreatedException) {
+            log.error("getScope invoked, but the server scope does not exist!")
             null
         }
     }
+
+    override val onCreate: IEventListener<Scope> = EventListener()
+    override val onCleanup: IEventListener<Scope> = EventListener()
 
     init {
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
@@ -76,7 +85,10 @@ class ScopeManager(
                 scope.get<CardService>().createInitialCards()
             }
 
-            BingoApi.set(scope.get())
+            val api = scope.get<IBingoApi>();
+            BingoApi.set(api)
+            onCreate(scope)
+            BingoEvents.INIT.invoke(api)
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
@@ -85,12 +97,12 @@ class ScopeManager(
             configService.writeOptions(scope.get())
             BingoApi.set(null)
             onCleanup(scope)
+            BingoEvents.CLOSE.invoke(null)
             scope.close()
         }
     }
 
     companion object {
-        val onCleanup = EventListener<Scope>()
         const val BINGO_STATE_ID = MOD_ID
     }
 

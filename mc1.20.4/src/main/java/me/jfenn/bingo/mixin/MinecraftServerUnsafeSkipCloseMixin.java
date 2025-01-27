@@ -2,7 +2,7 @@ package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.WorldDeleter;
 import me.jfenn.bingo.common.config.ConfigService;
-import me.jfenn.bingo.common.scope.BingoKoin;
+import me.jfenn.bingo.platform.scope.BingoKoin;
 import me.jfenn.bingo.mixinhandler.MinecraftServerMixinHandler;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resource.LifecycledResourceManager;

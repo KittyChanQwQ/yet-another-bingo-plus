@@ -18,6 +18,7 @@ class BingoGame(
 
 enum class BingoGameStatus {
     PREGAME,
+    STARTING,
     PLAYING,
     POSTGAME
 }

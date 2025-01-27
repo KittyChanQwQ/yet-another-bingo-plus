@@ -6,7 +6,7 @@ import assertk.assertions.containsExactly
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEmpty
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.test.BaseGameTest
 import me.jfenn.bingo.platform.IBossBarManager
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest

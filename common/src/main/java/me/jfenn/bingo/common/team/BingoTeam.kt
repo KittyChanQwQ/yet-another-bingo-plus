@@ -6,7 +6,7 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonElement
 import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.map.BingoMap
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.generated.StringKey

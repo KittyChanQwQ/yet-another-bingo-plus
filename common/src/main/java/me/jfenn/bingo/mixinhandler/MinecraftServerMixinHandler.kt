@@ -1,6 +1,6 @@
 package me.jfenn.bingo.mixinhandler
 
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.server.MinecraftServer

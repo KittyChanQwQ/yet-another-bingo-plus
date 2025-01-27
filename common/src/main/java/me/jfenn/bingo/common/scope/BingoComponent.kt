@@ -1,11 +1,10 @@
 package me.jfenn.bingo.common.scope
 
-import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 abstract class BingoComponent {
     init {
-        BingoKoin.koinApp.koin
-            .get<Logger>()
+        LoggerFactory.getLogger("bingo")
             .takeIf { it.isDebugEnabled }
             ?.debug("Initialize [{}]", this::class.simpleName)
     }

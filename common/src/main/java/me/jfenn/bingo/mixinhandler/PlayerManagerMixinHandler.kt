@@ -2,7 +2,7 @@ package me.jfenn.bingo.mixinhandler
 
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState

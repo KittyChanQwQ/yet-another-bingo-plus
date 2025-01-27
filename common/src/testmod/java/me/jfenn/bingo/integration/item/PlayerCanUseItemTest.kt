@@ -5,7 +5,7 @@ import assertk.assertions.isFalse
 import assertk.assertions.isTrue
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.test.BaseGameTest
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest
 import net.minecraft.test.GameTest

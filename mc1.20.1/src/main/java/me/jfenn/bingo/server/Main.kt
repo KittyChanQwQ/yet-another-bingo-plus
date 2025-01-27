@@ -4,7 +4,7 @@ import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.commonModule
 import me.jfenn.bingo.common.commonServerModule
 import me.jfenn.bingo.common.config.MigrationHandler
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.sharedModule
 import net.fabricmc.api.DedicatedServerModInitializer
 import org.koin.core.logger.Level

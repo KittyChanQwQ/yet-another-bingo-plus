@@ -53,12 +53,16 @@ dependencies {
     modImplementation fabricPermissionsApi
     include fabricPermissionsApi
 
+    api project(path: ":platform", configuration: "namedElements")
+    include project(path: ":platform")
     api project(path: ":api", configuration: "namedElements")
     include project(path: ":api")
     api project(path: ":common", configuration: "namedElements")
     include project(path: ":common")
     api project(path: ":integration-placeholders", configuration: "namedElements")
     include project(path: ":integration-placeholders")
+    api project(path: ":integration-voicechat", configuration: "namedElements")
+    include project(path: ":integration-voicechat")
 }
 
 processResources {

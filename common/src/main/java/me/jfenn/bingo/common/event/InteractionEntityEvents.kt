@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.event
 
 import me.jfenn.bingo.platform.IEntity
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.scope.ScopeManager
 import net.minecraft.entity.decoration.InteractionEntity
 import net.minecraft.server.network.ServerPlayerEntity

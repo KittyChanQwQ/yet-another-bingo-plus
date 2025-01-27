@@ -1,6 +1,8 @@
 package me.jfenn.bingo.platform.utils
 
-interface ICallbackHandle
+import java.io.Closeable
+
+interface ICallbackHandle: Closeable
 
 interface IReturnEventListener<T, R> {
     operator fun invoke(event: T): List<R?>

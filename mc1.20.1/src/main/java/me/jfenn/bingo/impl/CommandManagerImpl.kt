@@ -13,7 +13,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionProvider
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.*
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback

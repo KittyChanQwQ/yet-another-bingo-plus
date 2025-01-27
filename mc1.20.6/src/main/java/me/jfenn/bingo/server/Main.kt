@@ -1,7 +1,7 @@
 package me.jfenn.bingo.server
 
 import me.jfenn.bingo.common.commonInit
-import me.jfenn.bingo.common.scope.BingoKoin
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.commonModule
 import me.jfenn.bingo.common.commonServerModule
 import me.jfenn.bingo.common.config.MigrationHandler

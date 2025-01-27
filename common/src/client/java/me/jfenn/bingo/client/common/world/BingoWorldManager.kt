@@ -4,9 +4,9 @@ import me.jfenn.bingo.client.platform.IButtonService
 import me.jfenn.bingo.client.platform.IWorldService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
-import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.platform.scope.IScopeManager
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.screen.TitleScreen
@@ -15,13 +15,14 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 internal class BingoWorldManager(
+    scopeManager: IScopeManager,
     private val buttonService: IButtonService,
     private val worldService: IWorldService,
     private val config: BingoConfig,
 ) : BingoComponent() {
 
     init {
-        ScopeManager.onCleanup { scope ->
+        scopeManager.onCleanup { scope ->
             val state = scope.get<BingoState>()
             val server = scope.get<MinecraftServer>()
 
