@@ -1,5 +1,3 @@
-@file:Suppress("unused", "FunctionName")
-
 package me.jfenn.bingo.common.stats
 
 import assertk.assertThat
@@ -13,19 +11,18 @@ import me.jfenn.bingo.common.stats.data.GameInfo
 import me.jfenn.bingo.common.stats.data.GamePlayerInfo
 import me.jfenn.bingo.common.stats.data.GameTeamInfo
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.test.BaseGameTest
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.sql.BingoDatabase
-import net.fabricmc.fabric.api.gametest.v1.FabricGameTest
-import net.minecraft.test.GameTest
-import net.minecraft.test.TestContext
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
-class StatsServiceTest : BaseGameTest() {
+class StatsServiceTest {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -46,13 +43,13 @@ class StatsServiceTest : BaseGameTest() {
         hostId: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000"),
     ) = StatsService(logger, db, mockk(relaxed = true), BingoConfig(statsHostId = hostId))
 
-    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    fun startsAndRunsMigrations(context: TestContext) {
+    @Test
+    fun startsAndRunsMigrations() {
         connectionFactory.create()
     }
 
-    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    fun checkIfIdsExist_AlreadyExists(context: TestContext) {
+    @Test
+    fun checkIfIdsExist_AlreadyExists() {
         val db = connectionFactory.create()
         val service = createStatsService(db)
 
@@ -97,8 +94,8 @@ class StatsServiceTest : BaseGameTest() {
         assertThat(checkIds).isEqualTo(emptySet())
     }
 
-    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    fun checkIfIdsExist_MissingGameId(context: TestContext) {
+    @Test
+    fun checkIfIdsExist_MissingGameId() {
         val db = connectionFactory.create()
         val service = createStatsService(db)
 
@@ -112,8 +109,8 @@ class StatsServiceTest : BaseGameTest() {
         assertThat(checkIds).isEqualTo(setOf(gameIdMissing))
     }
 
-    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    fun checkIfIdsExist_MissingPlayerId(context: TestContext) {
+    @Test
+    fun checkIfIdsExist_MissingPlayerId() {
         val db = connectionFactory.create()
         val service = createStatsService(db)
 
@@ -160,8 +157,8 @@ class StatsServiceTest : BaseGameTest() {
         assertThat(checkIds).isEqualTo(setOf(gameId))
     }
 
-    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    fun getPlayerSummary_Nonexistent(context: TestContext) {
+    @Test
+    fun getPlayerSummary_Nonexistent() {
         val db = connectionFactory.create()
         val service = createStatsService(db)
 
@@ -174,8 +171,8 @@ class StatsServiceTest : BaseGameTest() {
         assertThat(summary.favoriteTeam).isNull()
     }
 
-    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    fun getPlayerSummary_Monthly(context: TestContext) {
+    @Test
+    fun getPlayerSummary_Monthly() {
         val db = connectionFactory.create()
         val service = createStatsService(db)
         val playerId = UUID.fromString("80f963e1-213e-412c-9d89-bb2986bafd0c")
@@ -273,8 +270,8 @@ class StatsServiceTest : BaseGameTest() {
         assertThat(summary.favoriteTeamPercentage).isEqualTo(1f)
     }
 
-    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    fun updateBestStats_DecreasesBestTime(context: TestContext) {
+    @Test
+    fun updateBestStats_DecreasesBestTime() {
         val db = connectionFactory.create()
         val hostId = UUID.fromString("608714c6-8520-4ab1-aba7-20ad5a3f6da7")
         val service = createStatsService(db, hostId = hostId)
@@ -328,8 +325,8 @@ class StatsServiceTest : BaseGameTest() {
         ).isEqualTo(2.minutes)
     }
 
-    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    fun updateBestStats_DoesNotMixSingleplayer(context: TestContext) {
+    @Test
+    fun updateBestStats_DoesNotMixSingleplayer() {
         val db = connectionFactory.create()
         val hostId = UUID.fromString("664fb41c-ec4c-4f9a-b8e0-2acb41accc29")
         val service = createStatsService(db, hostId = hostId)
@@ -388,8 +385,8 @@ class StatsServiceTest : BaseGameTest() {
         ).isEqualTo(3.minutes)
     }
 
-    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    fun updateBestStats_DoesNotMixHosts(context: TestContext) {
+    @Test
+    fun updateBestStats_DoesNotMixHosts() {
         val db = connectionFactory.create()
         // Create two different stats services, with different hostIds
         val hostId = UUID.fromString("608714c6-8520-4ab1-aba7-20ad5a3f6da7")
@@ -451,8 +448,8 @@ class StatsServiceTest : BaseGameTest() {
         ).isEqualTo(2.minutes)
     }
 
-    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    fun updateBestStats_DoesNotIncreaseBestTime(context: TestContext) {
+    @Test
+    fun updateBestStats_DoesNotIncreaseBestTime() {
         val db = connectionFactory.create()
         val hostId = UUID.fromString("01c44a53-1fd8-49c0-9709-fdc1a657c4e9")
         val service = createStatsService(db, hostId = hostId)
@@ -506,7 +503,14 @@ class StatsServiceTest : BaseGameTest() {
         ).isEqualTo(3.minutes)
     }
 
-    override fun afterEach() {
+    @BeforeEach
+    fun beforeEach() {
+        // ensure that the sqlite driver is loaded
+        Class.forName("org.sqlite.JDBC")
+    }
+
+    @AfterEach
+    fun afterEach() {
         closeEvent.onClose(Unit)
     }
 

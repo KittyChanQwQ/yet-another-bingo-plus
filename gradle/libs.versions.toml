@@ -5,6 +5,7 @@ sqldelight = "2.0.2"
 jackson = "2.17.2"
 mockk = "1.13.11"
 assertk = "0.28.1"
+junit-jupiter = "5.11.4"
 
 [libraries]
 insert-koin-core = { module = "io.insert-koin:koin-core-jvm", version.ref = "insert-koin" }
@@ -32,6 +33,7 @@ sqldelight-sqlite = { module = "app.cash.sqldelight:sqlite-3-38-dialect", versio
 sqldelight-runtime = { module = "app.cash.sqldelight:runtime-jvm", version.ref = "sqldelight" }
 sqlite = { module = "org.xerial:sqlite-jdbc", version = "3.46.0.0" }
 
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
 

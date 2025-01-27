@@ -12,6 +12,4 @@ class FakeConnectionFactory {
         password = ""
     }
 
-
-
 }

@@ -9,22 +9,6 @@
     "fabric-gametest": [
       {
         "adapter": "kotlin",
-        "value": "me.jfenn.bingo.common.stats.StatsServiceTest"
-      },
-      {
-        "adapter": "kotlin",
-        "value": "me.jfenn.bingo.common.text.TextProviderTest"
-      },
-      {
-        "adapter": "kotlin",
-        "value": "me.jfenn.bingo.common.utils.DurationTest"
-      },
-      {
-        "adapter": "kotlin",
-        "value": "me.jfenn.bingo.impl.itemstackfactory.ItemStackDataTest"
-      },
-      {
-        "adapter": "kotlin",
         "value": "me.jfenn.bingo.integration.item.ItemStackFactoryTest"
       },
       {
