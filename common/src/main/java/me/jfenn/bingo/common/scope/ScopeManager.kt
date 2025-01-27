@@ -13,11 +13,11 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.platform.IPersistentStateManager
+import me.jfenn.bingo.platform.IServerEvents
 import me.jfenn.bingo.platform.event.model.ReloadEvent
 import me.jfenn.bingo.platform.getFromWorld
 import me.jfenn.bingo.platform.scope.IScopeManager
 import me.jfenn.bingo.platform.utils.IEventListener
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
 import org.koin.core.Koin
 import org.koin.core.error.ScopeNotCreatedException
@@ -30,6 +30,7 @@ class ScopeManager(
     private val log: Logger,
     private val persistentStateManager: IPersistentStateManager,
     private val configService: ConfigService,
+    serverEvents: IServerEvents,
 ) : IScopeManager {
 
     private fun getScopeId(server: MinecraftServer): ScopeID =
@@ -49,7 +50,7 @@ class ScopeManager(
     override val onCleanup: IEventListener<Scope> = EventListener()
 
     init {
-        ServerLifecycleEvents.SERVER_STARTED.register { server ->
+        serverEvents.onServerStarted { server ->
             val isLobbyMode = server.lobbyWorld != null
             if (isLobbyMode) log.info("[ScopeManager] $MOD_ID.zip datapack exists - starting with isLobbyMode=true")
             else log.info("[ScopeManager] $MOD_ID.zip datapack does not exist - starting with isLobbyMode=false")
@@ -91,8 +92,8 @@ class ScopeManager(
             BingoEvents.INIT.invoke(api)
         }
 
-        ServerLifecycleEvents.SERVER_STOPPED.register { server ->
-            val scope = getScope(server) ?: return@register
+        serverEvents.onServerStopped { server ->
+            val scope = getScope(server) ?: return@onServerStopped
             log.info("[ScopeManager] Closing server scope...")
             configService.writeOptions(scope.get())
             BingoApi.set(null)

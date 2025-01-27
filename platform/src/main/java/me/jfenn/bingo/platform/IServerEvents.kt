@@ -7,6 +7,8 @@ import me.jfenn.bingo.platform.utils.IReturnEventListener
 import net.minecraft.server.MinecraftServer
 
 interface IServerEvents {
+    val onServerStarted: IEventListener<MinecraftServer>
+    val onServerStopped: IEventListener<MinecraftServer>
     val onTickStart: IEventListener<MinecraftServer>
     val onTickEnd: IEventListener<MinecraftServer>
     /**

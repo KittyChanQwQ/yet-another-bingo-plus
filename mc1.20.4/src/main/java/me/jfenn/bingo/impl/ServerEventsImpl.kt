@@ -1,14 +1,13 @@
 package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.platform.scope.BingoKoin
-import me.jfenn.bingo.common.utils.EventListener
-import me.jfenn.bingo.common.utils.ReturnEventListener
+import me.jfenn.bingo.common.utils.EventListenerFactory
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.IServerEvents
 import me.jfenn.bingo.platform.event.model.*
 import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.platform.utils.IEventListener
 import me.jfenn.bingo.platform.utils.IReturnEventListener
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
@@ -30,22 +29,23 @@ import net.minecraft.util.TypedActionResult
 import java.lang.ref.WeakReference
 
 object ServerEventsImpl : IServerEvents {
-    override val onTickStart: IEventListener<MinecraftServer> = EventListener()
-    override val onTickEnd: IEventListener<MinecraftServer> = EventListener()
-    override val onPlayerInit: IEventListener<PlayerEvent> = EventListener()
-    override val onPlayerJoin: IEventListener<PlayerEvent> = EventListener()
-    override val onPlayerDisconnect: IEventListener<PlayerEvent> = EventListener()
-    override val onAfterRespawn: IEventListener<PlayerEvent> = EventListener()
-    override val onEntityLoad: IEventListener<EntityLoadEvent> = EventListener()
-    override val onUseBlock: IReturnEventListener<UseBlockEvent, ActionResult<Unit>> = ReturnEventListener()
-    override val onUseEntity: IReturnEventListener<UseEntityEvent, ActionResult<Unit>> = ReturnEventListener()
-    override val onUseItem: IReturnEventListener<UseItemEvent, ActionResult<IItemStack?>> = ReturnEventListener()
-    override val onAttackEntity: IReturnEventListener<AttackEntityEvent, ActionResult<Unit>> = ReturnEventListener()
-    override val onAttackBlock: IReturnEventListener<AttackBlockEvent, ActionResult<Unit>> = ReturnEventListener()
-    override val onPlayerChannelRegister: IEventListener<PlayerEvent> = EventListener()
-
-    override val onDataReload: IEventListener<ReloadEvent> = EventListener()
-    override val onAllowChatMessage: IReturnEventListener<AllowChatMessageEvent, Boolean> = ReturnEventListener()
+    override val onServerStarted: IEventListener<MinecraftServer> by EventListenerFactory()
+    override val onServerStopped: IEventListener<MinecraftServer> by EventListenerFactory()
+    override val onTickStart: IEventListener<MinecraftServer> by EventListenerFactory()
+    override val onTickEnd: IEventListener<MinecraftServer> by EventListenerFactory()
+    override val onPlayerInit: IEventListener<PlayerEvent> by EventListenerFactory()
+    override val onPlayerJoin: IEventListener<PlayerEvent> by EventListenerFactory()
+    override val onPlayerDisconnect: IEventListener<PlayerEvent> by EventListenerFactory()
+    override val onAfterRespawn: IEventListener<PlayerEvent> by EventListenerFactory()
+    override val onEntityLoad: IEventListener<EntityLoadEvent> by EventListenerFactory()
+    override val onUseBlock: IReturnEventListener<UseBlockEvent, ActionResult<Unit>> by EventListenerFactory()
+    override val onUseEntity: IReturnEventListener<UseEntityEvent, ActionResult<Unit>> by EventListenerFactory()
+    override val onUseItem: IReturnEventListener<UseItemEvent, ActionResult<IItemStack?>> by EventListenerFactory()
+    override val onAttackEntity: IReturnEventListener<AttackEntityEvent, ActionResult<Unit>> by EventListenerFactory()
+    override val onAttackBlock: IReturnEventListener<AttackBlockEvent, ActionResult<Unit>> by EventListenerFactory()
+    override val onPlayerChannelRegister: IEventListener<PlayerEvent> by EventListenerFactory()
+    override val onDataReload: IEventListener<ReloadEvent> by EventListenerFactory()
+    override val onAllowChatMessage: IReturnEventListener<AllowChatMessageEvent, Boolean> by EventListenerFactory()
 
     private var serverRef: WeakReference<MinecraftServer>? = null
 
@@ -74,6 +74,14 @@ object ServerEventsImpl : IServerEvents {
     init {
         ServerLifecycleEvents.SERVER_STARTING.register { server ->
             serverRef = WeakReference(server)
+        }
+
+        ServerLifecycleEvents.SERVER_STARTED.register { server ->
+            onServerStarted(server)
+        }
+
+        ServerLifecycleEvents.SERVER_STOPPED.register { server ->
+            onServerStopped(server)
         }
 
         ServerTickEvents.START_SERVER_TICK.register {
