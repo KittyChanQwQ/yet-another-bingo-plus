@@ -48,8 +48,12 @@ object Config : IConfigManager {
     fun <T: Any> read(clazz: KClass<T>, file: String): T {
         return try {
             inputStream(file).use { json.decodeFromStream(clazz.serializer(), it) }
+        } catch (e: NoSuchFileException) {
+            null
         } catch (e: Exception) {
             log.error("Error reading $file", e)
+            null
+        } ?: run {
             json.decodeFromString(clazz.serializer(), "{}").also { write(clazz, file, it) }
         }
     }
