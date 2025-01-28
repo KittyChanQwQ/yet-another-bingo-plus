@@ -11,7 +11,7 @@ import java.nio.file.Path
 
 class MinecraftServerImpl(
     private val server: MinecraftServer,
-): IMapService, ITickManager, me.jfenn.bingo.platform.ILevelStorage {
+): IMapService, ITickManager, ILevelStorage {
     override fun getNextMapId(): Int {
         return server.overworld.increaseAndGetMapId().id
     }

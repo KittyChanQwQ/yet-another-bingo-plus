@@ -5,19 +5,20 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierListConfig
-import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
 import java.io.IOException
 
 class TierListLoader(
     private val trackedFileService: TrackedFileService,
+    private val environment: IModEnvironment,
     private val log: Logger,
 ) {
     private fun readTierListFiles() : List<String> {
-        return Config.configDir
+        return environment.configDir
             .resolve(TIERLISTS_PATH)
             .toFile()
             .listFiles()
@@ -71,7 +72,7 @@ class TierListLoader(
     }
 
     private fun configFile(tierListName: String) =
-        Config.configDir.resolve("$TIERLISTS_PATH/$tierListName$FILE_SUFFIX")
+        environment.configDir.resolve("$TIERLISTS_PATH/$tierListName$FILE_SUFFIX")
 
     fun writeTierList(name: String, tierList: TierListConfig) {
         val filePath = configFile(name)

@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.state
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.map.BingoMap
@@ -39,7 +38,7 @@ data class BingoState(
     var lobbySpawnPos: BlockPositionType = BlockPosition(0, 0, 0),
     var lobbySpawnYaw: Float = 0f,
     var timeOffline: Duration = Duration.ZERO,
-    val options: BingoOptions = ConfigService().options,
+    val options: BingoOptions,
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
     var previewMap: BingoMap? = null,
     // This is a temporary list that should be overwritten by `CardService.generate()`

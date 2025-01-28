@@ -3,13 +3,12 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierLabel
-import me.jfenn.bingo.common.config.Config
+import me.jfenn.bingo.common.config.ConfigManager
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.LruHashMap
 import me.jfenn.bingo.platform.IMapService
 import net.minecraft.item.map.MapState
-import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
@@ -26,6 +25,7 @@ class MapRenderService(
     private val mapService: IMapService,
     private val imageService: CardImageService,
     private val state: BingoState,
+    private val configManager: ConfigManager,
 ) {
 
     companion object {
@@ -47,35 +47,6 @@ class MapRenderService(
         private const val TILE_MARGIN = 2
         private const val TILE_SIZE = TILE_IMAGE + TILE_PADDING*2 + TILE_MARGIN
         private const val IMAGE_SIZE = TILE_IMAGE + TILE_PADDING*2
-
-        fun validateItems() {
-            for (item in Registries.ITEM.keys) {
-                try {
-                    readTileImage(item.value.toString())!!.close()
-                } catch (e: Throwable) {
-                    val log = LoggerFactory.getLogger(MOD_ID)
-                    log.warn("Missing item image: ${item.value.toString().replace(':', '/')}.png")
-                }
-            }
-        }
-
-        private fun readTileImage(itemPath: String): InputStream? {
-            val namespace = itemPath.substringBefore(':')
-            val path = itemPath.substringAfter(':')
-            return try {
-                Config.readStream("images/${path}.png", false) {
-                    MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/images/${path}.png")!!
-                }
-            } catch (e: NullPointerException) {
-                null
-            } ?: try {
-                Config.readStream("images/$namespace/${path}.png", false) {
-                    MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/images/$namespace/${path}.png")!!
-                }
-            } catch (e: NullPointerException) {
-                null
-            }
-        }
 
         private fun BufferedImage.toMinecraftByteArray(): ByteArray {
             val arr = ByteArray(width*height) { 0.toByte() }
@@ -107,8 +78,33 @@ class MapRenderService(
             .toMinecraftByteArray()
     }
 
-    init {
-        validateItems()
+    fun validateItems(items: List<String>) {
+        for (item in items) {
+            try {
+                readTileImage(item)!!.close()
+            } catch (e: Throwable) {
+                val log = LoggerFactory.getLogger(MOD_ID)
+                log.warn("Missing item image: ${item.replace(':', '/')}.png")
+            }
+        }
+    }
+
+    private fun readTileImage(itemPath: String): InputStream? {
+        val namespace = itemPath.substringBefore(':')
+        val path = itemPath.substringAfter(':')
+        return try {
+            configManager.readStream("images/${path}.png", false) {
+                MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/images/${path}.png")!!
+            }
+        } catch (e: NullPointerException) {
+            null
+        } ?: try {
+            configManager.readStream("images/$namespace/${path}.png", false) {
+                MapRenderService::class.java.getResourceAsStream("/$MOD_ID_BINGO/images/$namespace/${path}.png")!!
+            }
+        } catch (e: NullPointerException) {
+            null
+        }
     }
 
     class BingoTileImage(

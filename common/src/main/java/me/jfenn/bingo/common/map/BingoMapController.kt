@@ -5,6 +5,8 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.item.IItemStackFactory
+import net.minecraft.server.MinecraftServer
 
 /**
  * Handles re-rolling or generating new BINGO card layouts.
@@ -16,6 +18,8 @@ class BingoMapController(
     private val cardViewService: CardViewService,
     private val cardImageService: CardImageService,
     private val mapRenderService: MapRenderService,
+    itemStackFactory: IItemStackFactory,
+    server: MinecraftServer,
 ) : BingoComponent() {
 
     private fun updateCards() {
@@ -31,6 +35,8 @@ class BingoMapController(
     }
 
     init {
+        mapRenderService.validateItems(itemStackFactory.listItems(server))
+
         events.onGameTick {
             cardImageService.sendNecessaryImages()
             updateCards()

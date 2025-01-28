@@ -4,7 +4,7 @@ import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.data.TagLoader
 import me.jfenn.bingo.common.data.TierListLoader
-import net.fabricmc.api.EnvType
+import me.jfenn.bingo.platform.IModEnvironment
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger
 import java.io.IOException
@@ -18,6 +18,8 @@ import kotlin.io.path.*
 class MigrationHandler(
     private val log: Logger,
     private val config: BingoConfig,
+    private val environment: IModEnvironment,
+    private val configManager: ConfigManager,
 ) {
 
     private val migrations = mutableMapOf<Int, (BingoConfig) -> Unit>()
@@ -26,7 +28,7 @@ class MigrationHandler(
         val loader = FabricLoader.getInstance()
 
         migrations[1] = {
-            if (loader.environmentType == EnvType.SERVER) {
+            if (environment.envType == IModEnvironment.EnvType.SERVER) {
                 loader.gameDir.resolve("world/datapacks/bingo-lobby.zip")
                     .takeIfMd5("89c7644b5cbcf785f25839364ad61788")
                     ?.deleteIfExists()
@@ -296,7 +298,7 @@ class MigrationHandler(
             migrations[i]?.invoke(config)
         }
 
-        val configService = ConfigService()
+        val configService = ConfigService(configManager)
         configService.config = configService.config.copy(version = maxVersion)
         configService.options = configService.options.copy()
         configService.optionsDefault = configService.optionsDefault.copy()
@@ -304,7 +306,7 @@ class MigrationHandler(
         if (log.isDebugEnabled) {
             listOf(TierListLoader.TIERLISTS_PATH, TagLoader.TAGS_PATH)
                 .flatMap {
-                    Config.configDir.resolve(TierListLoader.TIERLISTS_PATH)
+                    environment.configDir.resolve(TierListLoader.TIERLISTS_PATH)
                         .takeIf { it.isDirectory() }
                         ?.listDirectoryEntries(glob = "*.json")
                         .orEmpty()

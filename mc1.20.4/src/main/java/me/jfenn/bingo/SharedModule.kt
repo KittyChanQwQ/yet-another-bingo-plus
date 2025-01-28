@@ -16,6 +16,8 @@ import org.koin.dsl.binds
 import org.koin.dsl.module
 
 val sharedModule = module {
+    singleOf(::ModEnvironment) bind IModEnvironment::class
+
     single { ParticleFactory } bind IParticleFactory::class
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class

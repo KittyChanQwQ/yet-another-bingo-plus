@@ -5,20 +5,21 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tag.TagData
-import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
 import java.io.IOException
 
 class TagLoader(
     private val trackedFileService: TrackedFileService,
+    private val environment: IModEnvironment,
     private val log: Logger,
 ) {
 
     private fun readTagsFiles() : List<String> {
-        return Config.configDir
+        return environment.configDir
             .resolve(TAGS_PATH)
             .toFile()
             .listFiles()
@@ -71,7 +72,7 @@ class TagLoader(
     }
 
     private fun configFile(tagName: String) =
-        Config.configDir.resolve("$TAGS_PATH/$tagName${FILE_SUFFIX}")
+        environment.configDir.resolve("$TAGS_PATH/$tagName${FILE_SUFFIX}")
 
     fun writeTag(name: String, tag: TagData) {
         val filePath = configFile(name)

@@ -6,8 +6,8 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.ICloseEvent
+import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.sql.BingoDatabase
-import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger
 import kotlin.io.path.absolutePathString
 import kotlin.math.max
@@ -15,11 +15,11 @@ import kotlin.math.max
 class ConnectionFactory(
     private val log: Logger,
     private val config: BingoConfig,
+    environment: IModEnvironment,
     closeEvent: ICloseEvent,
 ) {
 
-    private val defaultUrl = FabricLoader.getInstance()
-        .configDir
+    private val defaultUrl = environment.configDir
         .absolutePathString()
         .let { configDir ->
             "jdbc:sqlite:$configDir/$MOD_ID_BINGO/bingo.db"

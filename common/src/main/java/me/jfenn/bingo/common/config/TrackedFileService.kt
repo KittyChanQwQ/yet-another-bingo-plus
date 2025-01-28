@@ -6,6 +6,7 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.IModEnvironment
 import org.slf4j.Logger
 import java.io.FileInputStream
 import java.io.IOException
@@ -17,6 +18,7 @@ import kotlin.io.path.deleteIfExists
 
 class TrackedFileService(
     private val configService: ConfigService,
+    private val environment: IModEnvironment,
     private val log: Logger,
 ) {
 
@@ -65,7 +67,7 @@ class TrackedFileService(
         serialize: (T) -> String,
         deserialize: (InputStream) -> T,
     ): Result<T> {
-        val name = Config.configDir.resolve(MOD_ID_BINGO).relativize(path).toString()
+        val name = environment.configDir.resolve(MOD_ID_BINGO).relativize(path).toString()
         val trackedFile: TrackedFile? = configService.files.filesMap[name]
 
         val file = path.toFile()

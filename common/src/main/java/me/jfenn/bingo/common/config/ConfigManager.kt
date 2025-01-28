@@ -8,28 +8,25 @@ import kotlinx.serialization.json.encodeToStream
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.platform.config.IConfigManager
-import net.fabricmc.loader.api.FabricLoader
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 import java.io.FileInputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-object Config : IConfigManager {
+class ConfigManager(
+    environment: IModEnvironment,
+) : IConfigManager {
 
     private val log = LoggerFactory.getLogger("bingo")
-    override val configDir get() = try {
-        FabricLoader.getInstance().configDir
-    } catch (e: Exception) {
-        Path.of("").toAbsolutePath()
-    }!!
+    override val configDir = environment.configDir
 
     override fun inputStream(path: String): InputStream {
         val filePath = configDir.resolve(path)
@@ -105,21 +102,21 @@ object Config : IConfigManager {
         // return the config dir file content
         return FileInputStream(filePath.toFile())
     }
+
+    inner class ConfigDelegate<T: Any>(
+        private val clazz: KClass<T>,
+        private val file: String,
+    ) : ReadWriteProperty<Any, T> {
+        var value: T? = null
+
+        override fun getValue(thisRef: Any, property: KProperty<*>): T {
+            return value ?: read(clazz, file).also { value = it }
+        }
+
+        override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
+            this.value = value.also { write(clazz, file, value) }
+        }
+    }
 }
 
-class ConfigDelegate<T: Any>(
-    private val clazz: KClass<T>,
-    private val file: String,
-) : ReadWriteProperty<Any, T> {
-    var value: T? = null
-
-    override fun getValue(thisRef: Any, property: KProperty<*>): T {
-        return value ?: Config.read(clazz, file).also { value = it }
-    }
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
-        this.value = value.also { Config.write(clazz, file, value) }
-    }
-}
-
-inline fun <reified T: Any> config(file: String) = ConfigDelegate(T::class, file)
+inline fun <reified T: Any> ConfigManager.config(file: String) = ConfigDelegate(T::class, file)

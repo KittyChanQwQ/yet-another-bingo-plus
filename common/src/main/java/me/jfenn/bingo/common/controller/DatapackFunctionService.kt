@@ -1,17 +1,18 @@
 package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.ICommandRunner
+import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.server.MinecraftServer
 
 internal class DatapackFunctionService(
     private val server: MinecraftServer,
     private val commandRunner: ICommandRunner,
     private val trackedFileService: TrackedFileService,
+    private val environment: IModEnvironment,
 ): BingoComponent() {
 
     companion object {
@@ -30,7 +31,7 @@ internal class DatapackFunctionService(
 
     private fun loadCommandFile(state: GameState): String {
         val pathStr = filePath(state)
-        val path = Config.configDir.resolve(pathStr)
+        val path = environment.configDir.resolve(pathStr)
         val resource = this::class.java
             .getResourceAsStream("/$pathStr")
             ?.use { stream -> stream.bufferedReader().use { it.readText() } }

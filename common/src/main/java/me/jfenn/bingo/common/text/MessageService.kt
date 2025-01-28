@@ -4,9 +4,9 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.config.Config
 import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.resource.ResourceManager
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -14,6 +14,7 @@ import org.slf4j.Logger
 
 class MessageService(
     private val trackedFileService: TrackedFileService,
+    private val environment: IModEnvironment,
     private val placeholderService: PlaceholderService,
     private val text: TextProvider,
     private val log: Logger,
@@ -34,7 +35,7 @@ class MessageService(
         type: MessageType
     ): MessageData {
         val pathStr = filePath(type)
-        val path = Config.configDir.resolve(pathStr)
+        val path = environment.configDir.resolve(pathStr)
         val resource = manager.getResourceOrThrow(Identifier.of(MOD_ID_BINGO, pathStr))
             .inputStream
             .use {

@@ -2,14 +2,14 @@ package me.jfenn.bingo.common.lobby
 
 import me.jfenn.bingo.common.commands.runByName
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionSource
-import net.fabricmc.api.EnvType
-import net.fabricmc.loader.api.FabricLoader
 import java.util.*
 
 internal class BingoLobbyCommand(
     commandManager: ICommandManager,
+    environment: IModEnvironment,
     config: BingoConfig,
 ) {
     private val IExecutionSource.lobbyModeService get() = scope.get<LobbyModeService>()
@@ -22,7 +22,7 @@ internal class BingoLobbyCommand(
     }
 
     init {
-        if (FabricLoader.getInstance().environmentType == EnvType.SERVER && !config.server.isLobbyMode) {
+        if (environment.envType == IModEnvironment.EnvType.SERVER && !config.server.isLobbyMode) {
             commandManager.register("bingo") {
                 literal("lobby") {
                     requires {

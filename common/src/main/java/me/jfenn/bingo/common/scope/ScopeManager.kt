@@ -59,7 +59,7 @@ class ScopeManager(
             val state = persistentStateManager.getFromWorld<BingoState>(
                 world = server.overworld,
                 id = BINGO_STATE_ID,
-                default = { BingoState() },
+                default = { BingoState(options = configService.options) },
             )
             state.isLobbyMode = isLobbyMode
 

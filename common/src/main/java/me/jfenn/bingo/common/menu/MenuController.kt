@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.menu
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.common.config.Config
+import me.jfenn.bingo.common.config.ConfigManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -25,8 +25,6 @@ import net.minecraft.block.Blocks
 import net.minecraft.block.PlayerSkullBlock
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Text
-import net.minecraft.text.Texts
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.Heightmap
 import net.minecraft.world.chunk.ChunkStatus
@@ -48,6 +46,7 @@ internal class MenuController(
     scopeManager: ScopeManager,
     private val log: Logger,
     private val server: MinecraftServer,
+    private val configManager: ConfigManager,
     private val entityManager: IEntityManager,
     private val interactionEntityEvents: InteractionEntityEvents,
     private val state: BingoState,
@@ -173,7 +172,7 @@ internal class MenuController(
             }
 
         // If the lobby has been modified, clear cached positions
-        val lobbyWorldModified = Config.readLastModified(LOBBY_WORLD_ZIP)
+        val lobbyWorldModified = configManager.readLastModified(LOBBY_WORLD_ZIP)
         if (lobbyWorldModified != Cache.lobbyWorldModified) {
             Cache.spawnPosition = null
             Cache.menuPosition = null
@@ -181,7 +180,7 @@ internal class MenuController(
             Cache.lobbyWorldModified = lobbyWorldModified
         }
 
-        Config.readStream(LOBBY_WORLD_ZIP, shouldWriteDefault = false).use { stream ->
+        configManager.readStream(LOBBY_WORLD_ZIP, shouldWriteDefault = false).use { stream ->
             ZipInputStream(stream).use { zipStream ->
                 while (true) {
                     val entry = zipStream.nextEntry ?: break

@@ -5,9 +5,8 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.platform.IPlayerManager
-import net.fabricmc.api.EnvType
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 
@@ -19,18 +18,19 @@ internal class RestartOnLeaveController(
     private val server: MinecraftServer,
     private val playerManager: IPlayerManager,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
+    environment: IModEnvironment,
     events: ScopedEvents,
 ) {
     init {
-        events.onPlayerDisconnect {
-            // This should only ever run on the server env
-            if (FabricLoader.getInstance().environmentType != EnvType.SERVER) return@onPlayerDisconnect
-
-            // if the last player is disconnecting after a bingo game, shut down the server
-            if (server.isRunning && config.nextRoundWhenEveryoneDisconnects && state.isLobbyMode && state.state == GameState.POSTGAME && playerManager.getPlayers().isEmpty()) {
-                log.info("[RestartOnLeaveController] Last player has disconnected and 'nextRoundWhenEveryoneDisconnects' is true; Resetting...")
-                serverTaskExecutor.execute {
-                    resetService.resetGame()
+        // This should only ever run on the server env
+        if (environment.envType == IModEnvironment.EnvType.SERVER) {
+            events.onPlayerDisconnect {
+                // if the last player is disconnecting after a bingo game, shut down the server
+                if (server.isRunning && config.nextRoundWhenEveryoneDisconnects && state.isLobbyMode && state.state == GameState.POSTGAME && playerManager.getPlayers().isEmpty()) {
+                    log.info("[RestartOnLeaveController] Last player has disconnected and 'nextRoundWhenEveryoneDisconnects' is true; Resetting...")
+                    serverTaskExecutor.execute {
+                        resetService.resetGame()
+                    }
                 }
             }
         }

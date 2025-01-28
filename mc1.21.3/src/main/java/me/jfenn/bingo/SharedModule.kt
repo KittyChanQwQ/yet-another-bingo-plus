@@ -18,6 +18,7 @@ import org.koin.dsl.module
 
 val sharedModule = module {
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
+    singleOf(::ModEnvironment) bind IModEnvironment::class
 
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class

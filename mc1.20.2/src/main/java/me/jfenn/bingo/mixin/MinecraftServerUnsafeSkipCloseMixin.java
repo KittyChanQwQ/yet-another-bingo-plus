@@ -1,18 +1,13 @@
 package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.WorldDeleter;
-import me.jfenn.bingo.common.config.ConfigService;
-import me.jfenn.bingo.platform.scope.BingoKoin;
 import me.jfenn.bingo.mixinhandler.MinecraftServerMixinHandler;
+import me.jfenn.bingo.platform.scope.BingoKoin;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.minecraft.resource.LifecycledResourceManager;
-import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.ServerNetworkIo;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.profiler.Recorder;
-import net.minecraft.world.level.storage.LevelStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Final;
@@ -22,8 +17,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.io.IOException;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerUnsafeSkipCloseMixin {
@@ -67,8 +60,7 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         if (shouldKeepWorldData()) return;
 
         // Only proceed if unsafeSkipWorldClose=true
-        boolean isUnsafeSkipWorldClose = new ConfigService().getConfig().getUnsafeSkipWorldClose();
-        if (!isUnsafeSkipWorldClose) return;
+        if (!MinecraftServerMixinHandler.INSTANCE.isUnsafeSkipWorldClose(server)) return;
 
         try {
             // tell Fabric to invoke SERVER_STOPPING, which *might* not be the first mixin
@@ -112,7 +104,7 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         }
 
         // finally, delete the world files before restarting
-        WorldDeleter.INSTANCE.invoke();
+        WorldDeleter.INSTANCE.invoke(server);
 
         // immediately halt the JVM (like System.exit(0) but *worse!*)
         Runtime.getRuntime().halt(0);
@@ -132,7 +124,7 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         }
 
         // finally, delete the world files before restarting
-        WorldDeleter.INSTANCE.invoke();
+        WorldDeleter.INSTANCE.invoke(server);
         ci.cancel();
     }
 

@@ -1,9 +1,8 @@
 package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.WorldDeleter;
-import me.jfenn.bingo.common.config.ConfigService;
-import me.jfenn.bingo.platform.scope.BingoKoin;
 import me.jfenn.bingo.mixinhandler.MinecraftServerMixinHandler;
+import me.jfenn.bingo.platform.scope.BingoKoin;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -61,8 +60,7 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         if (shouldKeepWorldData()) return;
 
         // Only proceed if unsafeSkipWorldClose=true
-        boolean isUnsafeSkipWorldClose = new ConfigService().getConfig().getUnsafeSkipWorldClose();
-        if (!isUnsafeSkipWorldClose) return;
+        if (!MinecraftServerMixinHandler.INSTANCE.isUnsafeSkipWorldClose(server)) return;
 
         try {
             // tell Fabric to invoke SERVER_STOPPING, which *might* not be the first mixin
@@ -106,7 +104,7 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         }
 
         // finally, delete the world files before restarting
-        WorldDeleter.INSTANCE.invoke();
+        WorldDeleter.INSTANCE.invoke(server);
 
         // immediately halt the JVM (like System.exit(0) but *worse!*)
         Runtime.getRuntime().halt(0);
@@ -126,7 +124,7 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         }
 
         // finally, delete the world files before restarting
-        WorldDeleter.INSTANCE.invoke();
+        WorldDeleter.INSTANCE.invoke(server);
         ci.cancel();
     }
 

@@ -12,12 +12,8 @@ import net.minecraft.text.Text
 @Serializable
 data class BingoCardOptions(
     var goal: BingoGoal = BingoGoal.Lines(3),
-    var itemDistribution: List<Int> =
-        ConfigService().config.difficultyPresets[TierLabel.LIST_EASY]
-            ?: TierLabel.DIFFICULTY_EASY,
-    var itemFilter: ObjectiveFilterList =
-        ConfigService().config.itemFilterPresets[ObjectiveFilter.EVERYTHING]
-            ?: ObjectiveFilterList.EVERYTHING,
+    var itemDistribution: List<Int> = TierLabel.DIFFICULTY_EASY,
+    var itemFilter: ObjectiveFilterList = ObjectiveFilterList.EVERYTHING,
 
     // game mode settings
     var isLockoutMode: Boolean = false,

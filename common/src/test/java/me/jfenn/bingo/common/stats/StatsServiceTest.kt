@@ -35,6 +35,7 @@ class StatsServiceTest {
         config = BingoConfig(
             databaseUrl = "jdbc:sqlite:file:memdb1?mode=memory"
         ),
+        environment = mockk(),
         closeEvent = closeEvent,
     )
 
