@@ -8,14 +8,9 @@ import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.sql.BingoDatabase
 import net.fabricmc.loader.api.FabricLoader
-import org.apache.commons.io.FileUtils
-import org.flywaydb.core.Flyway
 import org.slf4j.Logger
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Path
-import java.util.zip.ZipInputStream
 import kotlin.io.path.absolutePathString
+import kotlin.math.max
 
 class ConnectionFactory(
     private val log: Logger,
@@ -38,46 +33,58 @@ class ConnectionFactory(
         password = config.databasePass ?: ""
     }
 
-    private fun extractMigrations(tmpDir: Path) {
-        this::class.java.getResourceAsStream("/$MOD_ID_BINGO/migrations.zip")?.use { stream ->
-            ZipInputStream(stream).use { zipStream ->
-                while (true) {
-                    val entry = zipStream.nextEntry ?: break
-                    if (entry.isDirectory) continue
+    private fun doMigrations() {
+        val driver = dataSource.asJdbcDriver()
+        val connection = dataSource.connection
 
-                    val outPath = tmpDir.resolve(entry.name)
-                    log.debug("Copying file -> {}", outPath)
-                    try {
-                        Files.copy(zipStream, outPath)
-                    } catch (e: IOException) {
-                        log.error("[ConnectionFactory] Error copying lobby file ${entry.name}", e)
-                    }
-
-                    zipStream.closeEntry()
-                }
-            }
-        } ?: run {
-            log.error("[ConnectionFactory] Unable to find migrations.zip in resources")
+        var oldVersion = try {
+            connection.createStatement()
+                .use { it.executeQuery("PRAGMA user_version").getLong("user_version") }
+        } catch (e: Throwable) {
+            log.error("Error determining user_version", e)
+            0L
         }
+
+        // legacy support for flyway's migration table
+        if (oldVersion == 0L) {
+            val flywayVersion = try {
+                connection.createStatement()
+                    .use {
+                        it.executeQuery("SELECT max(version) AS flyway_version FROM flyway_schema_history")
+                            .getLong("flyway_version")
+                    }
+                    .let { if (it > 0) it + 1 else it }
+            } catch (e: Throwable) {
+                0L
+            }
+
+            oldVersion = max(oldVersion, flywayVersion)
+        }
+
+        val newVersion = BingoDatabase.Schema.version
+        log.info("[ConnectionFactory] Migrating database from version $oldVersion to $newVersion...")
+
+        if (oldVersion <= 0L) {
+            BingoDatabase.Schema.create(driver)
+        } else {
+            BingoDatabase.Schema.migrate(
+                driver = driver,
+                oldVersion = oldVersion,
+                newVersion = newVersion,
+            )
+        }
+
+        connection.createStatement()
+            .use { it.execute("PRAGMA user_version = $newVersion") }
     }
 
     fun create(): BingoDatabase {
-        log.measureTime("Running Flyway migrations...") {
-            val tmpDir = Files.createTempDirectory("bingo-migrations")
-            extractMigrations(tmpDir)
-
-            // configure Flyway and run migrations - these are just sql files saved under `src/sqldelight/.../V1_init.sqm`
-            val flyway = Flyway.configure()
-                // need to use filesystem: locations here, as Quilt does some wacky things to the classloader
-                // ...so I'm extracting these to a tmp dir and telling Flyway to look there instead
-                .locations("filesystem:${tmpDir.absolutePathString()}")
-                .failOnMissingLocations(true)
-                .dataSource(dataSource)
-                .load()
-
-            flyway.migrate()
-
-            FileUtils.deleteDirectory(tmpDir.toFile())
+        log.measureTime("Running database migrations...") {
+            try {
+                doMigrations()
+            } catch (e: Throwable) {
+                log.error("[ConnectionFactory] Unable to run migrations - things might be broken!", e)
+            }
         }
 
         return BingoDatabase(dataSource.asJdbcDriver())

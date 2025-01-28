@@ -32,11 +32,6 @@ dependencies {
     include libs.insert.koin.logger.slf4j
 
     include libs.hikari
-    include libs.flyway.core
-    // jackson-databind is a runtime dependency for flyway
-    include libs.jackson.core
-    include libs.jackson.databind
-    include libs.jackson.annotations
     include libs.sqldelight.jdbc
     include libs.sqldelight.runtime
     include libs.sqlite

@@ -30,21 +30,9 @@ sqldelight {
     }
 }
 
-tasks.register('bingoMigrations', Zip) {
-    def resDir = "resources/main/yet-another-minecraft-bingo"
-    dependsOn("generateMainBingoDatabaseMigrations")
-    outputs.file(layout.buildDirectory.file("$resDir/migrations.zip"))
-
-    from sqlMigrationsDir
-    include '**/*'
-    archiveFileName.set('migrations.zip')
-    destinationDirectory.set(layout.buildDirectory.dir(resDir))
-}
-
 dependencies {
     api libs.insert.koin.core
     api libs.hikari
-    api libs.flyway.core
     api libs.sqldelight.jdbc
     api libs.sqlite
 
@@ -248,7 +236,6 @@ tasks.register("bingoConstants") {
 }
 
 tasks.processResources.configure {
-    dependsOn(tasks.bingoMigrations)
     dependsOn(tasks.bingoDatapack)
     dependsOn(tasks.bingoImages)
     dependsOn(tasks.bingoLangServerTranslations)

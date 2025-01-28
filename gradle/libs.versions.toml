@@ -1,8 +1,6 @@
 [versions]
 insert-koin = "3.5.6"
-flyway = "10.20.0"
 sqldelight = "2.0.2"
-jackson = "2.17.2"
 mockk = "1.13.11"
 assertk = "0.28.1"
 junit-jupiter = "5.11.4"
@@ -21,13 +19,9 @@ voicechat = { module = "de.maxhenkel.voicechat:voicechat-api", version = "2.5.0"
 # https://github.com/lucko/fabric-permissions-api
 fabric-permissions-api-v2 = { module = "me.lucko:fabric-permissions-api", version = "0.3.20230723" }
 fabric-permissions-api-v3 = { module = "me.lucko:fabric-permissions-api", version = "0.3.3" }
-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
-jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 papi-mc1i20i1 = { module = "eu.pb4:placeholder-api", version = "2.1.2+1.20.1" }
 
 hikari = { module = "com.zaxxer:HikariCP", version = "5.1.0" }
-flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 sqldelight-jdbc = { module = "app.cash.sqldelight:jdbc-driver", version.ref = "sqldelight" }
 sqldelight-sqlite = { module = "app.cash.sqldelight:sqlite-3-38-dialect", version.ref = "sqldelight" }
 sqldelight-runtime = { module = "app.cash.sqldelight:runtime-jvm", version.ref = "sqldelight" }
