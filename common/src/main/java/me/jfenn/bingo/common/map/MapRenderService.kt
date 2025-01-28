@@ -189,6 +189,8 @@ class MapRenderService(
     // worst case = all 8 teams each have their own card of 25 unique items
     private val imageMap = LruHashMap<TileImageKey, BingoTileImage?>(25*8)
 
+    fun clearCache() = imageMap.clear()
+
     private inline fun drawTileDecorations(
         tile: TileImageKey,
         crossinline callback: (x: Int, y: Int, color: Byte) -> Unit,

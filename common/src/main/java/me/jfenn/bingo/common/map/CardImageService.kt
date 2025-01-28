@@ -34,6 +34,10 @@ class CardImageService(
         return CardImagePacket(id, bytes)
     }
 
+    fun clearPlayerStates() {
+        playersWithImages.clear()
+    }
+
     fun clearPlayerState(player: UUID) {
         for (entry in playersWithImages.entries) {
             entry.setValue(entry.value - player)

@@ -15,6 +15,7 @@ class BingoMapController(
     private val playerManager: IPlayerManager,
     private val cardViewService: CardViewService,
     private val cardImageService: CardImageService,
+    private val mapRenderService: MapRenderService,
 ) : BingoComponent() {
 
     private fun updateCards() {
@@ -69,6 +70,11 @@ class BingoMapController(
             for (player in playerManager.getPlayers()) {
                 cardViewService.sendUpdatePackets(player)
             }
+        }
+
+        events.onDataReload {
+            cardImageService.clearPlayerStates()
+            mapRenderService.clearCache()
         }
     }
 }
