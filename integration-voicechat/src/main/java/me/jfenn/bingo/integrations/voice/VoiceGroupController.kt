@@ -1,9 +1,5 @@
 package me.jfenn.bingo.integrations.voice
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
 import me.jfenn.bingo.api.BingoApi
 import me.jfenn.bingo.api.BingoEvents
 import me.jfenn.bingo.api.data.BingoGameStatus
@@ -25,27 +21,15 @@ class VoiceGroupController(
     private val voiceIntegration by voiceIntegrationProp
 
     companion object {
-        private val json = Json {
-            ignoreUnknownKeys = true
-            isLenient = true
-            encodeDefaults = true
-            prettyPrint = true
-        }
-
         private const val CONFIG_PATH = "yet-another-minecraft-bingo/voicechat.json"
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     val config: VoiceConfig = try {
-        configManager.inputStream(CONFIG_PATH).use {
-            json.decodeFromStream(it)
-        }
+        configManager.read(VoiceConfig::class, CONFIG_PATH)
     } catch (e: Throwable) {
-        val defaultConfig = VoiceConfig()
-        configManager.outputStream(CONFIG_PATH).use {
-            json.encodeToStream(defaultConfig, it)
-        }
-        defaultConfig
+        VoiceConfig()
+    }.also {
+        configManager.write(VoiceConfig::class, CONFIG_PATH, it)
     }
 
     private var usingCombinedGroup: Boolean? = null

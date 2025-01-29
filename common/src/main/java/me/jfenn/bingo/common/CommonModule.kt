@@ -65,8 +65,6 @@ import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.impl.ServerCloseEvent
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
-import me.jfenn.bingo.integrations.chunky.ChunkyController
-import me.jfenn.bingo.integrations.chunky.ChunkyIntegration
 import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.scope.IScopeManager
@@ -99,7 +97,6 @@ val commonModule = module {
 
     factoryOf(PermissionsIntegration::create)
     factoryOf(VanishIntegration::create)
-    factoryOf(ChunkyIntegration::create)
 
     singleOf(::ReadyTimerState)
 
@@ -241,8 +238,6 @@ val commonModule = module {
         scopedOf(::PlayerSpectatorController)
         scopedOf(::ScoreboardController)
 
-        scopedOf(::ChunkyController)
-
         scopedOf(::ChestService)
         scopedOf(::ChestController)
         scopedOf(::ElytraService)
@@ -332,8 +327,6 @@ fun Scope.commonInit() {
     get<StatsSyncController>()
 
     get<TeamController>()
-
-    get<ChunkyController>()
 
     get<CountdownController>()
     get<TimerCheck>()

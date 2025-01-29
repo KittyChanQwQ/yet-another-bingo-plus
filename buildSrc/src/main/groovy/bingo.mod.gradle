@@ -59,6 +59,8 @@ dependencies {
     include project(path: ":api")
     api project(path: ":common", configuration: "namedElements")
     shade project(path: ":common")
+    api project(path: ":integration-chunky", configuration: "namedElements")
+    shade project(path: ":integration-chunky")
     api project(path: ":integration-placeholders", configuration: "namedElements")
     shade project(path: ":integration-placeholders")
     api project(path: ":integration-voicechat", configuration: "namedElements")
@@ -81,6 +83,7 @@ shadowJar {
     dependencies {
         include(project(":api"))
         include(project(":common"))
+        include(project(":integration-chunky"))
         include(project(":integration-placeholders"))
         include(project(":integration-voicechat"))
         include(project(":platform"))

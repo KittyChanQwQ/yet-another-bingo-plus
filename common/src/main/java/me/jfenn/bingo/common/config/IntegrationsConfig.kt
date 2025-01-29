@@ -5,9 +5,4 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IntegrationsConfig(
     val vanish: Boolean = true,
-    val chunky: Boolean = true,
-    val chunkyWorlds: Map<String, Int> = mapOf(
-        "minecraft:overworld" to 0,
-        "minecraft:the_nether" to 1000,
-    )
 )

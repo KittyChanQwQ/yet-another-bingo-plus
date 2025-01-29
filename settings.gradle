@@ -31,7 +31,9 @@ dependencyResolutionManagement {
 rootProject.name = "bingo"
 include 'api'
 include 'common'
+include 'integration-chunky'
 include 'integration-placeholders'
+include 'integration-voicechat'
 include 'mc1.20.1'
 include 'mc1.20.2'
 include 'mc1.20.4'
@@ -40,5 +42,4 @@ include 'mc1.21.1'
 include 'mc1.21.3'
 include 'mc1.21.4'
 include 'platform'
-include 'integration-voicechat'
 

@@ -17,4 +17,7 @@ class ModEnvironment : IModEnvironment {
             EnvType.CLIENT -> IModEnvironment.EnvType.CLIENT
             EnvType.SERVER -> IModEnvironment.EnvType.SERVER
         }
+
+    override fun isModLoaded(modId: String): Boolean =
+        FabricLoader.getInstance().isModLoaded(modId)
 }
