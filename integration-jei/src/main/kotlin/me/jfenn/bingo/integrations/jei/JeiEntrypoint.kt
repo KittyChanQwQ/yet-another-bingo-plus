@@ -1,6 +1,5 @@
-package me.jfenn.bingo.client.integrations.jei
+package me.jfenn.bingo.integrations.jei
 
-import me.jfenn.bingo.common.MOD_ID
 import mezz.jei.api.IModPlugin
 import mezz.jei.api.JeiPlugin
 import mezz.jei.api.runtime.IJeiRuntime
@@ -9,7 +8,7 @@ import net.minecraft.util.Identifier
 @JeiPlugin
 internal object JeiEntrypoint : IModPlugin {
 
-    private val IDENTIFIER = Identifier.of(MOD_ID, "yet-another-minecraft-bingo")!!
+    private val IDENTIFIER = Identifier.of("yet-another-minecraft-bingo", "bingo")!!
 
     var runtime: IJeiRuntime? = null
 

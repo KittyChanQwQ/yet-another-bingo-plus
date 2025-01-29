@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
-import me.jfenn.bingo.client.integrations.jei.JeiIntegration
+import me.jfenn.bingo.client.integrations.JeiIntegration
+import me.jfenn.bingo.client.integrations.jei.IJeiApi
 import me.jfenn.bingo.client.platform.screen.IScreen
 import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.platform.screen.IScreenHelper
@@ -18,7 +19,7 @@ internal class BingoHudScreen(
     koin: Koin,
     private val config: BingoConfig,
     private val state: BingoHudState,
-    private val jei: JeiIntegration,
+    private val jei: IJeiApi,
     private val helper: IScreenHelper,
     originalCardKey: BingoTeamKey?,
     originalCardPos: Pair<Float, Float>,
@@ -74,7 +75,7 @@ internal class BingoHudScreen(
 
         onTileClick = { tile ->
             when (val action = tile.action) {
-                is CardTileAction.Item -> jei.openJeiRecipe(action.item.stack)
+                is CardTileAction.Item -> jei.openItemRecipe(action.item.stack)
                 else -> false
             }
         },

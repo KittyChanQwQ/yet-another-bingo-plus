@@ -10,8 +10,10 @@ import me.jfenn.bingo.client.common.sound.SoundService
 import me.jfenn.bingo.client.common.stats.ClientStatsSyncController
 import me.jfenn.bingo.client.common.world.BingoWorldManager
 import me.jfenn.bingo.client.impl.ClientCloseEvent
+import me.jfenn.bingo.client.integrations.JeiIntegration
 import me.jfenn.bingo.client.integrations.YetAnotherConfigLibIntegration
-import me.jfenn.bingo.client.integrations.jei.JeiIntegration
+import me.jfenn.bingo.client.integrations.jei.IJeiApi
+import me.jfenn.bingo.client.integrations.jei.IJeiApiFactory
 import me.jfenn.bingo.platform.ICloseEvent
 import org.koin.core.module.dsl.createdAtStart
 import org.koin.core.module.dsl.factoryOf
@@ -19,6 +21,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.withOptions
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import java.util.*
 
 val commonClientModule = module {
     singleOf(::ClientPacketEvents) withOptions { createdAtStart() }
@@ -44,7 +47,13 @@ val commonClientModule = module {
     singleOf(::ClientSettingsService)
     singleOf(::ClientSettingsController) withOptions { createdAtStart() }
     factoryOf(YetAnotherConfigLibIntegration::create)
-    factoryOf(JeiIntegration::create)
+
+    single {
+        JeiIntegration(
+            ServiceLoader.load(IJeiApiFactory::class.java)
+                .mapNotNull { it.create(get()) }
+        )
+    } bind IJeiApi::class
 
     singleOf(::ResourcePackInit) withOptions { createdAtStart() }
 

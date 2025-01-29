@@ -30,7 +30,7 @@
     "jei_mod_plugin": [
       {
         "adapter": "kotlin",
-        "value": "me.jfenn.bingo.client.integrations.jei.JeiEntrypoint"
+        "value": "me.jfenn.bingo.integrations.jei.JeiEntrypoint"
       }
     ]
   },
