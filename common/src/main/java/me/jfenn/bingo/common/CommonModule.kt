@@ -85,7 +85,7 @@ val commonModule = module {
     singleOf(::MigrationHandler)
     singleOf(::MapColors)
 
-    singleOf(::ConfigManager)
+    singleOf(::ConfigManager) bind IConfigManager::class
     singleOf(::ConfigService)
     singleOf(::TrackedFileService)
     single { get<ConfigService>().config }

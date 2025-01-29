@@ -13,8 +13,6 @@ plugins {
     id 'bingo.common'
 }
 
-loom.accessWidenerPath = file("src/main/resources/bingo.accesswidener")
-
 base.archivesName.set("${project.archives_base_name}-common")
 
 def sqlMigrationsDir = layout.buildDirectory.dir("generated/sqldelight/migrations")

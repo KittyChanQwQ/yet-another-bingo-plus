@@ -3,11 +3,12 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierLabel
-import me.jfenn.bingo.common.config.ConfigManager
+import me.jfenn.bingo.common.config.readStream
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.LruHashMap
 import me.jfenn.bingo.platform.IMapService
+import me.jfenn.bingo.platform.config.IConfigManager
 import net.minecraft.item.map.MapState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
@@ -25,7 +26,7 @@ class MapRenderService(
     private val mapService: IMapService,
     private val imageService: CardImageService,
     private val state: BingoState,
-    private val configManager: ConfigManager,
+    private val configManager: IConfigManager,
 ) {
 
     companion object {

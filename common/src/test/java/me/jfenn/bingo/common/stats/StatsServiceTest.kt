@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.stats
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.config.BingoConfig
@@ -13,11 +14,14 @@ import me.jfenn.bingo.common.stats.data.GameTeamInfo
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.platform.ICloseEvent
+import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.sql.BingoDatabase
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import java.nio.file.Files
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -35,7 +39,9 @@ class StatsServiceTest {
         config = BingoConfig(
             databaseUrl = "jdbc:sqlite:file:memdb1?mode=memory"
         ),
-        environment = mockk(),
+        environment = mockk<IModEnvironment>().also {
+            every { it.configDir } returns tempDir
+        },
         closeEvent = closeEvent,
     )
 
@@ -513,6 +519,18 @@ class StatsServiceTest {
     @AfterEach
     fun afterEach() {
         closeEvent.onClose(Unit)
+    }
+
+    companion object {
+        private val tempDir = Files.createTempDirectory("StatsServiceTest")
+
+        @JvmStatic
+        @AfterAll
+        fun afterAll() {
+            tempDir.toFile()
+                .takeIf { it.exists() }
+                ?.deleteRecursively()
+        }
     }
 
 }

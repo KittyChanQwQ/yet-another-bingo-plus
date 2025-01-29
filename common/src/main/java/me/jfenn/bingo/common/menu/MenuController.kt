@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.menu
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.common.config.ConfigManager
+import me.jfenn.bingo.common.config.readStream
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -21,6 +21,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.IWallSignBlockState
+import me.jfenn.bingo.platform.config.IConfigManager
 import net.minecraft.block.Blocks
 import net.minecraft.block.PlayerSkullBlock
 import net.minecraft.server.MinecraftServer
@@ -46,7 +47,7 @@ internal class MenuController(
     scopeManager: ScopeManager,
     private val log: Logger,
     private val server: MinecraftServer,
-    private val configManager: ConfigManager,
+    private val configManager: IConfigManager,
     private val entityManager: IEntityManager,
     private val interactionEntityEvents: InteractionEntityEvents,
     private val state: BingoState,

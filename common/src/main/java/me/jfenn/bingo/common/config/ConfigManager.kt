@@ -16,6 +16,7 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Files
+import java.nio.file.NoSuchFileException
 import java.nio.file.StandardOpenOption
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
@@ -42,7 +43,7 @@ class ConfigManager(
     }
 
     @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-    fun <T: Any> read(clazz: KClass<T>, file: String): T {
+    override fun <T: Any> read(clazz: KClass<T>, file: String): T {
         return try {
             inputStream(file).use { json.decodeFromStream(clazz.serializer(), it) }
         } catch (e: NoSuchFileException) {
@@ -56,17 +57,13 @@ class ConfigManager(
     }
 
     @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-    fun <T: Any> write(clazz: KClass<T>, file: String, config: T) {
+    override fun <T: Any> write(clazz: KClass<T>, file: String, config: T) {
         outputStream(file).use {
             json.encodeToStream(clazz.serializer(), config, it)
         }
     }
 
-    /**
-     * Returns the last modified timestamp if the file exists on disk
-     * Otherwise, returns DISTANT_PAST
-     */
-    fun readLastModified(fileName: String): Instant {
+    override fun readLastModified(fileName: String): Instant {
         val file = configDir.resolve("$MOD_ID_BINGO/$fileName").toFile()
         return if (file.exists()) {
             Instant.fromEpochMilliseconds(file.lastModified())
@@ -75,48 +72,49 @@ class ConfigManager(
         }
     }
 
-    /**
-     * Obtains a resource InputStream from the config directory, or
-     * creates it from the java resources if it doesn't exist
-     */
-    fun readStream(
-        file: String,
-        shouldWriteDefault: Boolean = true,
-        default: () -> InputStream = {
-            javaClass.getResourceAsStream("/$MOD_ID_BINGO/$file")!!
-        },
-    ): InputStream {
-        val filePath = configDir.resolve("$MOD_ID_BINGO/$file")
-        if (!Files.exists(filePath)) {
-            if (!shouldWriteDefault)
-                return default()
-
-            filePath.parent.toFile().mkdirs()
-
-            // write the default resource file to the config dir
-            Files.newOutputStream(filePath, StandardOpenOption.CREATE).use { output ->
-                default().use { input -> IOUtils.copy(input, output) }
-            }
-        }
-
-        // return the config dir file content
-        return FileInputStream(filePath.toFile())
-    }
-
-    inner class ConfigDelegate<T: Any>(
+    class ConfigDelegate<T: Any>(
+        private val configManager: IConfigManager,
         private val clazz: KClass<T>,
         private val file: String,
     ) : ReadWriteProperty<Any, T> {
         var value: T? = null
 
         override fun getValue(thisRef: Any, property: KProperty<*>): T {
-            return value ?: read(clazz, file).also { value = it }
+            return value ?: configManager.read(clazz, file).also { value = it }
         }
 
         override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
-            this.value = value.also { write(clazz, file, value) }
+            this.value = value.also { configManager.write(clazz, file, value) }
         }
     }
 }
 
-inline fun <reified T: Any> ConfigManager.config(file: String) = ConfigDelegate(T::class, file)
+/**
+ * Obtains a resource InputStream from the config directory, or
+ * creates it from the java resources if it doesn't exist
+ */
+fun IConfigManager.readStream(
+    file: String,
+    shouldWriteDefault: Boolean = true,
+    default: () -> InputStream = {
+        javaClass.getResourceAsStream("/$MOD_ID_BINGO/$file")!!
+    },
+): InputStream {
+    val filePath = configDir.resolve("$MOD_ID_BINGO/$file")
+    if (!Files.exists(filePath)) {
+        if (!shouldWriteDefault)
+            return default()
+
+        filePath.parent.toFile().mkdirs()
+
+        // write the default resource file to the config dir
+        Files.newOutputStream(filePath, StandardOpenOption.CREATE).use { output ->
+            default().use { input -> IOUtils.copy(input, output) }
+        }
+    }
+
+    // return the config dir file content
+    return FileInputStream(filePath.toFile())
+}
+
+inline fun <reified T: Any> IConfigManager.config(file: String) = ConfigManager.ConfigDelegate(this, T::class, file)

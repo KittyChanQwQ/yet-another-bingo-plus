@@ -31,6 +31,11 @@ sourceSets {
 loom {
     splitEnvironmentSourceSets()
 
+    def accessWidenerFile = file("src/main/resources/bingo.accesswidener")
+    if (accessWidenerFile.exists()) {
+        accessWidenerPath = accessWidenerFile
+    }
+
     mods {
         "${group}" {
             sourceSet sourceSets.main
@@ -63,11 +68,19 @@ dependencies {
 }
 
 def projectVersion = project.version.toString()
+def supportedMinecraftVersion = project.hasProperty("minecraft_supported_versions")
+    ? project.minecraft_supported_versions.toString().split(",").first()
+        : project.minecraft_version.toString();
+
 processResources {
     inputs.property "version", projectVersion
+    inputs.property "minecraft_version", supportedMinecraftVersion
 
     filesMatching("fabric.mod.json") {
-        expand "version": projectVersion
+        expand(
+                "version": projectVersion,
+                "minecraft_version": supportedMinecraftVersion,
+        )
     }
 }
 

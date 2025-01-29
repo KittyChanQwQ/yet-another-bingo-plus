@@ -2,9 +2,10 @@ package me.jfenn.bingo.common.config
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.platform.config.IConfigManager
 
 class ConfigService(
-    configManager: ConfigManager,
+    configManager: IConfigManager,
 ) {
 
     var config: BingoConfig by configManager.config("$MOD_ID_BINGO/config.json")

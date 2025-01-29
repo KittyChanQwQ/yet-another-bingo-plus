@@ -1,5 +1,10 @@
 plugins {
     id "bingo.common"
+    id 'com.gradleup.shadow'
+}
+
+configurations {
+    shade
 }
 
 sourceSets {
@@ -27,13 +32,13 @@ loom {
 
 dependencies {
     implementation libs.insert.koin.core
-    include libs.insert.koin.core
+    shade libs.insert.koin.core
     implementation libs.insert.koin.logger.slf4j
-    include libs.insert.koin.logger.slf4j
+    shade libs.insert.koin.logger.slf4j
 
     include libs.hikari
-    include libs.sqldelight.jdbc
-    include libs.sqldelight.runtime
+    shade libs.sqldelight.jdbc
+    shade libs.sqldelight.runtime
     include libs.sqlite
 
     include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
@@ -49,21 +54,54 @@ dependencies {
     include fabricPermissionsApi
 
     api project(path: ":platform", configuration: "namedElements")
-    include project(path: ":platform")
+    shade project(path: ":platform")
     api project(path: ":api", configuration: "namedElements")
     include project(path: ":api")
     api project(path: ":common", configuration: "namedElements")
-    include project(path: ":common")
+    shade project(path: ":common")
     api project(path: ":integration-placeholders", configuration: "namedElements")
-    include project(path: ":integration-placeholders")
+    shade project(path: ":integration-placeholders")
     api project(path: ":integration-voicechat", configuration: "namedElements")
-    include project(path: ":integration-voicechat")
+    shade project(path: ":integration-voicechat")
 }
 
 processResources {
     from("../common/src/main/resources") {
         include "yet-another-minecraft-bingo/icon.png"
+        include "fabric.mod.json"
     }
 }
 
-tasks.test.dependsOn tasks.runGametestServer
+shadowJar {
+    from sourceSets.main.output
+    from sourceSets.client.output
+
+    configurations = [project.configurations.shade]
+
+    dependencies {
+        include(project(":api"))
+        include(project(":common"))
+        include(project(":integration-placeholders"))
+        include(project(":integration-voicechat"))
+        include(project(":platform"))
+        include { it.moduleGroup == "io.insert-koin" }
+        include { it.moduleGroup == "app.cash.sqldelight" }
+    }
+
+    // This should only affect usage of Kotlin features if someone tries to use the entire mod jar as a library
+    // ...which you really shouldn't be doing. Don't do that.
+    exclude("META-INF/*.kotlin_module")
+
+    relocate "org.koin", "me.jfenn.bingo.koin"
+    relocate "app.cash.sqldelight", "me.jfenn.bingo.sqldelight"
+
+    minimize {
+        include { it.moduleGroup == "io.insert-koin" }
+        include { it.moduleGroup == "app.cash.sqldelight" }
+    }
+}
+
+remapJar {
+    dependsOn(shadowJar)
+    inputFile.set(shadowJar.archiveFile)
+}

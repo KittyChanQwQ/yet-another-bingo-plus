@@ -11,6 +11,7 @@ import net.minecraft.resource.ResourceManager
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.slf4j.Logger
+import kotlin.jvm.optionals.getOrNull
 
 class MessageService(
     private val trackedFileService: TrackedFileService,
@@ -36,8 +37,14 @@ class MessageService(
     ): MessageData {
         val pathStr = filePath(type)
         val path = environment.configDir.resolve(pathStr)
-        val resource = manager.getResourceOrThrow(Identifier.of(MOD_ID_BINGO, pathStr))
-            .inputStream
+
+        // Attempt to retrieve from datapack; otherwise, fall back to jar resources
+        val resourceStream = manager.getResource(Identifier.of(MOD_ID_BINGO, pathStr))
+            .getOrNull()
+            ?.inputStream
+            ?: this::class.java.getResourceAsStream("/data/$MOD_ID_BINGO/$pathStr")
+
+        val resource = resourceStream
             .use {
                 @OptIn(ExperimentalSerializationApi::class)
                 json.decodeFromStream<MessageData>(it)
