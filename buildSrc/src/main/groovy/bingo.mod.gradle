@@ -43,16 +43,6 @@ dependencies {
 
     include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
 
-    def fabricPermissionsApi
-    if (project.name.compareTo("mc1.21.2") < 0) {
-        fabricPermissionsApi = libs.fabric.permissions.api.v2.get()
-    } else {
-        fabricPermissionsApi = libs.fabric.permissions.api.v3.get()
-    }
-
-    modImplementation fabricPermissionsApi
-    include fabricPermissionsApi
-
     api project(path: ":platform", configuration: "namedElements")
     shade project(path: ":platform")
     api project(path: ":api", configuration: "namedElements")

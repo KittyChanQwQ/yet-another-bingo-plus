@@ -6,12 +6,6 @@
   "environment": "*",
   "icon": "yet-another-minecraft-bingo/icon.png",
   "entrypoints": {
-    "main": [
-      {
-        "adapter": "kotlin",
-        "value": "me.jfenn.bingo.integrations.chunky.Main"
-      }
-    ],
     "server": [
       {
         "adapter": "kotlin",

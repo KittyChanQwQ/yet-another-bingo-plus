@@ -1,20 +1,11 @@
 package me.jfenn.bingo.common
 
+import me.jfenn.bingo.integrations.permissions.PermissionDefault
+import me.jfenn.bingo.integrations.permissions.PermissionKey
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 
-class PermissionKey(
-    val permission: String,
-    val default: PermissionDefault,
-)
-
-enum class PermissionDefault {
-    ALLOW,
-    OPERATORS,
-    DENY,
-}
-
-object Permission {
+internal object Permission {
 
     val CONFIGURE_LOBBY = PermissionKey("$MOD_ID.configure.lobby", PermissionDefault.OPERATORS)
 

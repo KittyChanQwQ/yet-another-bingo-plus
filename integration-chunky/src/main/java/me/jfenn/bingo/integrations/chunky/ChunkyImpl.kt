@@ -1,26 +1,21 @@
 package me.jfenn.bingo.integrations.chunky
 
-import me.jfenn.bingo.api.BingoEvents
-import me.jfenn.bingo.api.IBingoApi
-import me.jfenn.bingo.api.data.BingoGameStatus
 import me.jfenn.bingo.platform.ICommandRunner
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
-import java.io.Closeable
 
-class ChunkyController(
-    api: IBingoApi,
+class ChunkyImpl(
     private val server: MinecraftServer,
     private val config: ChunkyConfig,
     private val commandRunner: ICommandRunner,
     private val log: Logger,
-) : Closeable {
+) : IChunkyApi {
 
     init {
         log.info("Integrations: Chunky is installed!")
     }
 
-    private fun startPregen() {
+    override fun startPregen() {
         try {
             config.chunkyWorlds.forEach { (world, size) ->
                 if (size > 0) {
@@ -35,34 +30,13 @@ class ChunkyController(
         }
     }
 
-    private fun cancelTasks() {
+    override fun cancelTasks() {
         try {
             commandRunner.runSilentCommand(server, "chunky cancel")
             commandRunner.runSilentCommand(server, "chunky confirm")
         } catch (e: Throwable) {
             log.error("Error cancelling chunky pre-generation:", e)
         }
-    }
-
-    private val listeners = listOf(
-        BingoEvents.GAME_RESET.register {
-            startPregen()
-        },
-        BingoEvents.GAME_STARTING.register {
-            cancelTasks()
-        },
-        BingoEvents.GAME_STARTED.register {
-            cancelTasks()
-        }
-    )
-
-    init {
-        if (api.game.status == BingoGameStatus.PLAYING)
-            cancelTasks()
-    }
-
-    override fun close() {
-        listeners.forEach { it.close() }
     }
 
 }

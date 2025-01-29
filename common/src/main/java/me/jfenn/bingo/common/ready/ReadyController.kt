@@ -13,7 +13,7 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
@@ -33,7 +33,7 @@ internal class ReadyController(
     private val teamService: TeamService,
     private val resetService: ResetService,
     private val packets: ServerPacketEvents,
-    private val permissions: PermissionsIntegration,
+    private val permissions: IPermissionsApi,
     private val readyService: ReadyService,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
     events: ScopedEvents,

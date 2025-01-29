@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.common.PermissionKey
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
+import me.jfenn.bingo.integrations.permissions.PermissionKey
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
 import net.minecraft.text.MutableText
@@ -23,7 +23,7 @@ fun IExecutionSource.hasState(vararg requiredState: GameState): Boolean {
 fun IExecutionSource.hasPermission(key: PermissionKey): Boolean {
     if (isConsole) return true
     val player = player ?: return false
-    val permissions = scope.get<PermissionsIntegration>()
+    val permissions = scope.get<IPermissionsApi>()
     return permissions.hasPermission(player, key)
 }
 

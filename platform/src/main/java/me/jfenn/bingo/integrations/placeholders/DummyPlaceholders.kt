@@ -1,7 +1,5 @@
 package me.jfenn.bingo.integrations.placeholders
 
-import me.jfenn.bingo.platform.integrations.IPlaceholderContext
-import me.jfenn.bingo.platform.integrations.ITextPlaceholders
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import java.util.function.Function

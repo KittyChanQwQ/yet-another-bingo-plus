@@ -6,14 +6,14 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 
 class ReadyService(
     private val state: BingoState,
     private val config: BingoConfig,
     private val readyTimerState: ReadyTimerState,
     private val playerManager: IPlayerManager,
-    private val permissions: PermissionsIntegration,
+    private val permissions: IPermissionsApi,
 ) {
     fun canUseReady(player: IPlayerHandle): Boolean {
         val isLobbyMode = state.isLobbyMode

@@ -10,14 +10,14 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import net.minecraft.block.Blocks
 
 class LobbyChaosController(
     events: ScopedEvents,
     private val config: BingoConfig,
     private val state: BingoState,
-    private val permissions: PermissionsIntegration,
+    private val permissions: IPermissionsApi,
     private val textProvider: TextProvider,
 ) : BingoComponent() {
 

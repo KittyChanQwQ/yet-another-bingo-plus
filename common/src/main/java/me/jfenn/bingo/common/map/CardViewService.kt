@@ -15,7 +15,7 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.truncate
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
@@ -33,7 +33,7 @@ class CardViewService(
     private val teamService: TeamService,
     private val mapService: IMapService,
     private val mapRenderService: MapRenderService,
-    private val permissions: PermissionsIntegration,
+    private val permissions: IPermissionsApi,
     private val textProvider: TextProvider,
     private val packets: ServerPacketEvents,
 ) {

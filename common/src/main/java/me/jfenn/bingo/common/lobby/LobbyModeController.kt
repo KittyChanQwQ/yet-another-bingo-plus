@@ -12,7 +12,7 @@ import me.jfenn.bingo.common.lobby.BingoLobbyCommand.Companion.LOBBY_COMMAND
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.ClickEvent
@@ -25,7 +25,7 @@ internal class LobbyModeController(
     private val server: MinecraftServer,
     private val lobbyModeService: LobbyModeService,
     private val playerSettingsService: PlayerSettingsService,
-    private val permissions: PermissionsIntegration,
+    private val permissions: IPermissionsApi,
     private val text: TextProvider,
 ) {
     private val neverShowAgain get() = Text.literal("  > ")

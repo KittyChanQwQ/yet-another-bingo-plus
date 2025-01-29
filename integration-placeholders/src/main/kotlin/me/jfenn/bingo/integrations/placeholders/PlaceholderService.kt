@@ -5,8 +5,6 @@ import eu.pb4.placeholders.api.PlaceholderHandler
 import eu.pb4.placeholders.api.PlaceholderResult
 import eu.pb4.placeholders.api.Placeholders
 import eu.pb4.placeholders.api.parsers.PatternPlaceholderParser
-import me.jfenn.bingo.platform.integrations.IPlaceholderContext
-import me.jfenn.bingo.platform.integrations.ITextPlaceholders
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier

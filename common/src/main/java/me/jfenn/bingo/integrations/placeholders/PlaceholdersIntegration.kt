@@ -1,7 +1,6 @@
 package me.jfenn.bingo.integrations.placeholders
 
 import me.jfenn.bingo.api.BingoApi
-import me.jfenn.bingo.platform.integrations.ITextPlaceholders
 import net.minecraft.text.Text
 import java.time.Duration
 import java.util.*

@@ -15,7 +15,7 @@ import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
@@ -32,7 +32,7 @@ class GameOverController(
     private val gameOverService: GameOverService,
     private val cardViewService: CardViewService,
     private val playerManager: IPlayerManager,
-    private val permissions: PermissionsIntegration,
+    private val permissions: IPermissionsApi,
     private val packetManager: ServerPacketEvents,
     private val messageService: MessageService,
     private val teamService: TeamService,

@@ -19,7 +19,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.*
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.util.Formatting
@@ -42,7 +42,7 @@ internal class ScoredItemCheck(
     private val itemObjectiveManager: ItemObjectiveManager,
     private val playerManager: IPlayerManager,
     private val text: TextProvider,
-    private val permission: PermissionsIntegration,
+    private val permission: IPermissionsApi,
     private val events: ScopedEvents,
 ) : BingoComponent() {
 

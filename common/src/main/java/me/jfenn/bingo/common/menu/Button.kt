@@ -6,7 +6,7 @@ import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.menu.tooltips.TooltipService
 import me.jfenn.bingo.common.utils.plus
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.*
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
@@ -22,7 +22,7 @@ internal fun MenuComponent.registerButtonInteraction(
     width: Float = 1f,
     height: Float = 1f,
     playerManager: IPlayerManager = koinScope.get(),
-    permissions: PermissionsIntegration = koinScope.get(),
+    permissions: IPermissionsApi = koinScope.get(),
     permissionGetter: ((ServerPlayerEntity) -> Boolean)? = null,
     interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
     tooltipService: TooltipService = koinScope.get(),

@@ -34,8 +34,6 @@ dependencies {
     api libs.sqldelight.jdbc
     api libs.sqlite
 
-    modCompileOnly libs.fabric.permissions.api.v2.get()
-    modCompileOnly libs.vanish
     modCompileOnly(libs.modmenu) {
         exclude(group: "net.fabricmc")
         exclude(group: "net.fabricmc.fabric-api")

@@ -1,4 +1,4 @@
-package me.jfenn.bingo.platform.integrations
+package me.jfenn.bingo.integrations.placeholders
 
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text

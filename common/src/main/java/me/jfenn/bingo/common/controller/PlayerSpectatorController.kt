@@ -7,7 +7,7 @@ import me.jfenn.bingo.common.spectator.SpectatorInventoryScreenHandler
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.event.model.ActionResult
 import net.minecraft.block.*
 import net.minecraft.entity.vehicle.ChestBoatEntity
@@ -22,7 +22,7 @@ class PlayerSpectatorController(
     events: ScopedEvents,
     private val state: BingoState,
     private val teamService: TeamService,
-    private val permissions: PermissionsIntegration,
+    private val permissions: IPermissionsApi,
 ) : BingoComponent() {
 
     init {

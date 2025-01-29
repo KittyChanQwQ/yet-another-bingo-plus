@@ -15,7 +15,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
@@ -25,7 +25,7 @@ internal class InfoBookService(
     private val config: BingoConfig,
     private val state: BingoState,
     private val text: TextProvider,
-    private val permissions: PermissionsIntegration,
+    private val permissions: IPermissionsApi,
     private val cardViewService: CardViewService,
     private val scoreboardManager: IScoreboardManager,
     private val playerSettingsService: PlayerSettingsService,

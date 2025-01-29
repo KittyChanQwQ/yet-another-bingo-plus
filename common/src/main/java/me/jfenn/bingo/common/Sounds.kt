@@ -8,7 +8,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import org.joml.Vector3d
 
-object Sounds {
+internal object Sounds {
 
     fun playButtonSound(playerManager: IPlayerManager, player: ServerPlayerEntity, fromPosition: Vector3d, fromWorld: ServerWorld, sound: PlayerSoundEvent = PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_ON) {
         playerManager.playToAround(

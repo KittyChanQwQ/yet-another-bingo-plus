@@ -1,18 +1,18 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
-import me.jfenn.bingo.integrations.VanishIntegration
+import me.jfenn.bingo.integrations.vanish.IVanishApi
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.commands.ICommandManager
 import net.minecraft.world.GameMode
 import org.slf4j.Logger
 
 class SpectatorCommand(
     commandManager: ICommandManager,
-    private val vanish: VanishIntegration,
+    private val vanish: IVanishApi,
     private val log: Logger,
 ) {
 

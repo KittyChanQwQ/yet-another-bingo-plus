@@ -63,16 +63,22 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.*
 import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.impl.ServerCloseEvent
-import me.jfenn.bingo.integrations.PermissionsIntegration
-import me.jfenn.bingo.integrations.VanishIntegration
+import me.jfenn.bingo.integrations.chunky.ChunkyController
+import me.jfenn.bingo.integrations.chunky.DummyChunky
+import me.jfenn.bingo.integrations.chunky.IChunkyApiFactory
+import me.jfenn.bingo.integrations.permissions.FallbackPermissionsApi
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
+import me.jfenn.bingo.integrations.permissions.IPermissionsApiFactory
 import me.jfenn.bingo.integrations.placeholders.DummyPlaceholders
+import me.jfenn.bingo.integrations.placeholders.ITextPlaceholders
 import me.jfenn.bingo.integrations.placeholders.PlaceholdersIntegration
+import me.jfenn.bingo.integrations.vanish.DummyVanish
+import me.jfenn.bingo.integrations.vanish.IVanishApi
+import me.jfenn.bingo.integrations.vanish.IVanishApiFactory
 import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.platform.config.IConfigManager
-import me.jfenn.bingo.platform.integrations.ITextPlaceholders
 import me.jfenn.bingo.platform.scope.IScopeManager
 import org.koin.core.Koin
-import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.scope.Scope
@@ -99,9 +105,6 @@ val commonModule = module {
     singleOf(::EventManager)
     singleOf(::ScopeManager) bind IScopeManager::class
     singleOf(::ServerPacketEvents)
-
-    factoryOf(PermissionsIntegration::create)
-    factoryOf(VanishIntegration::create)
 
     singleOf(::ReadyTimerState)
 
@@ -136,6 +139,26 @@ val commonModule = module {
             ?: DummyPlaceholders
     }
     singleOf(::PlaceholdersIntegration)
+
+    single<IVanishApi> {
+        ServiceLoader.load(IVanishApiFactory::class.java).findFirst()
+            .getOrNull()
+            ?.create(get())
+            ?: DummyVanish
+    }
+
+    single<IChunkyApiFactory> {
+        ServiceLoader.load(IChunkyApiFactory::class.java).findFirst()
+            .getOrNull()
+            ?: DummyChunky.Factory
+    }
+
+    single<IPermissionsApi> {
+        ServiceLoader.load(IPermissionsApiFactory::class.java).findFirst()
+            .getOrNull()
+            ?.create(get())
+            ?: FallbackPermissionsApi()
+    }
 
     scope<BingoScope> {
         scopedOf(::ScopedEvents)
@@ -270,6 +293,9 @@ val commonModule = module {
         scopedOf(::RestartOnLeaveController)
 
         scopedOf(::CommandTreeHandler)
+
+        scoped { get<IChunkyApiFactory>().create(this) }
+        scopedOf(::ChunkyController)
     }
 }
 
@@ -353,4 +379,6 @@ fun Scope.commonInit() {
     get<PlayerController>()
     get<ChestController>()
     get<SpawnPreloadingController>()
+
+    get<ChunkyController>()
 }

@@ -1,7 +1,6 @@
 package me.jfenn.bingo.integrations.placeholders
 
 import eu.pb4.placeholders.api.PlaceholderContext
-import me.jfenn.bingo.platform.integrations.IPlaceholderContext
 import net.minecraft.server.MinecraftServer
 
 class BingoPlaceholderContext(

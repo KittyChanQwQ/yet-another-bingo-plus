@@ -9,7 +9,7 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
-import me.jfenn.bingo.integrations.VanishIntegration
+import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.platform.*
 import net.minecraft.server.MinecraftServer
 import net.minecraft.world.GameMode
@@ -41,7 +41,7 @@ internal class PlayerController(
     private val elytraService: ElytraService,
     private val advancementManager: IAdvancementManager,
     private val recipeManager: IRecipeManager,
-    private val vanishIntegration: VanishIntegration,
+    private val vanishIntegration: IVanishApi,
     private val playerManager: IPlayerManager,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
 ) : BingoComponent() {
@@ -54,7 +54,7 @@ internal class PlayerController(
 
         // if the player is not on a team, they should be vanished
         val isVanished = !isOnActiveTeam && (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN || state.state == GameState.PLAYING)
-        vanishIntegration.setVanish(player.player, isVanished)
+        vanishIntegration.setVanish(player, isVanished)
         return isVanished
     }
 

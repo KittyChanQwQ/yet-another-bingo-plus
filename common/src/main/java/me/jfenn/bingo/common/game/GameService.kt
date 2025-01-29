@@ -20,7 +20,7 @@ import me.jfenn.bingo.common.team.*
 import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
@@ -41,7 +41,7 @@ internal class GameService(
     private val cardService: CardService,
     private val objectiveManager: BingoObjectiveManager,
     private val playerManager: IPlayerManager,
-    private val permissions: PermissionsIntegration,
+    private val permissions: IPermissionsApi,
     private val optionsService: OptionsService,
     private val gameOverService: GameOverService,
     private val writeStatsService: WriteStatsService,

@@ -18,7 +18,6 @@ voicechat = { module = "de.maxhenkel.voicechat:voicechat-api", version = "2.5.0"
 # plasmovoice = { module = "su.plo.voice.api:server", version = "2.1.0-SNAPSHOT" }
 # https://github.com/lucko/fabric-permissions-api
 fabric-permissions-api-v2 = { module = "me.lucko:fabric-permissions-api", version = "0.3.20230723" }
-fabric-permissions-api-v3 = { module = "me.lucko:fabric-permissions-api", version = "0.3.3" }
 papi-mc1i20i1 = { module = "eu.pb4:placeholder-api", version = "2.1.2+1.20.1" }
 
 hikari = { module = "com.zaxxer:HikariCP", version = "5.1.0" }

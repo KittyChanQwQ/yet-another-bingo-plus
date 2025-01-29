@@ -6,14 +6,14 @@ import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
-import me.jfenn.bingo.integrations.PermissionsIntegration
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import org.slf4j.Logger
 
 internal class PlayerSettingsController(
     private val events: ScopedEvents,
     private val log: Logger,
-    private val permissions: PermissionsIntegration,
+    private val permissions: IPermissionsApi,
     private val playerSettingsService: PlayerSettingsService,
     private val packetManager: ServerPacketEvents,
 ) : BingoComponent() {
