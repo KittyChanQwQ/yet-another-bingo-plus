@@ -65,8 +65,11 @@ import me.jfenn.bingo.common.utils.Build
 import me.jfenn.bingo.impl.ServerCloseEvent
 import me.jfenn.bingo.integrations.PermissionsIntegration
 import me.jfenn.bingo.integrations.VanishIntegration
+import me.jfenn.bingo.integrations.placeholders.DummyPlaceholders
+import me.jfenn.bingo.integrations.placeholders.PlaceholdersIntegration
 import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.platform.config.IConfigManager
+import me.jfenn.bingo.platform.integrations.ITextPlaceholders
 import me.jfenn.bingo.platform.scope.IScopeManager
 import org.koin.core.Koin
 import org.koin.core.module.dsl.factoryOf
@@ -76,6 +79,8 @@ import org.koin.core.scope.Scope
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
+import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 val commonModule = module {
     single { getKoin() }
@@ -125,6 +130,12 @@ val commonModule = module {
     single { get<ConnectionFactory>().create() }
     singleOf(::StatsService)
     singleOf(::PlayerSettingsService)
+
+    single<ITextPlaceholders> {
+        ServiceLoader.load(ITextPlaceholders::class.java).findFirst().getOrNull()
+            ?: DummyPlaceholders
+    }
+    singleOf(::PlaceholdersIntegration)
 
     scope<BingoScope> {
         scopedOf(::ScopedEvents)
@@ -295,6 +306,8 @@ fun Koin.commonInit() {
 
     get<ConnectionFactory>()
     get<StatsService>()
+
+    get<PlaceholdersIntegration>()
 }
 
 fun Scope.commonInit() {

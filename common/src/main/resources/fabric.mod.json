@@ -10,10 +10,6 @@
       {
         "adapter": "kotlin",
         "value": "me.jfenn.bingo.integrations.chunky.Main"
-      },
-      {
-        "adapter": "kotlin",
-        "value": "me.jfenn.bingo.integrations.placeholders.Main"
       }
     ],
     "server": [

@@ -1,0 +1,16 @@
+package me.jfenn.bingo.integrations.placeholders
+
+import me.jfenn.bingo.platform.integrations.IPlaceholderContext
+import me.jfenn.bingo.platform.integrations.ITextPlaceholders
+import net.minecraft.server.MinecraftServer
+import net.minecraft.text.Text
+import java.util.function.Function
+import java.util.function.Supplier
+
+object DummyPlaceholders : ITextPlaceholders {
+    override fun registerPlaceholder(id: String, handler: Function<IPlaceholderContext, Text>) {}
+
+    override fun parseText(message: Text, server: MinecraftServer): Text = message
+
+    override fun parseInline(message: Text, server: MinecraftServer, replacements: Map<String, Supplier<Text>>): Text = message
+}
