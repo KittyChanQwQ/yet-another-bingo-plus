@@ -65,9 +65,9 @@ dependencies {
 
 processResources {
     from("../common/src/main/resources") {
-        include "yet-another-minecraft-bingo/icon.png"
-        include "fabric.mod.json"
+        exclude("bingo.accesswidener")
     }
+    from("../common/fabric.mod.json")
 }
 
 shadowJar {

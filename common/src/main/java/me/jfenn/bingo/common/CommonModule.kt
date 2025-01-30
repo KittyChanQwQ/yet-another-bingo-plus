@@ -70,7 +70,8 @@ import me.jfenn.bingo.integrations.permissions.FallbackPermissionsApi
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.integrations.permissions.IPermissionsApiFactory
 import me.jfenn.bingo.integrations.placeholders.DummyPlaceholders
-import me.jfenn.bingo.integrations.placeholders.ITextPlaceholders
+import me.jfenn.bingo.integrations.placeholders.ITextPlaceholdersApi
+import me.jfenn.bingo.integrations.placeholders.ITextPlaceholdersApiFactory
 import me.jfenn.bingo.integrations.placeholders.PlaceholdersIntegration
 import me.jfenn.bingo.integrations.vanish.DummyVanish
 import me.jfenn.bingo.integrations.vanish.IVanishApi
@@ -134,8 +135,10 @@ val commonModule = module {
     singleOf(::StatsService)
     singleOf(::PlayerSettingsService)
 
-    single<ITextPlaceholders> {
-        ServiceLoader.load(ITextPlaceholders::class.java).findFirst().getOrNull()
+    single<ITextPlaceholdersApi> {
+        ServiceLoader.load(ITextPlaceholdersApiFactory::class.java).findFirst()
+            .getOrNull()
+            ?.create(get())
             ?: DummyPlaceholders
     }
     singleOf(::PlaceholdersIntegration)

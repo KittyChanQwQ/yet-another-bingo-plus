@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier
 import java.util.function.Function
 import java.util.function.Supplier
 
-class PlaceholderService : ITextPlaceholders {
+class TextPlaceholdersApi : ITextPlaceholdersApi {
     override fun registerPlaceholder(id: String, handler: Function<IPlaceholderContext, Text>) {
         Placeholders.register(Identifier.of("yet-another-minecraft-bingo", id)!!) { ctx, _ ->
             try {

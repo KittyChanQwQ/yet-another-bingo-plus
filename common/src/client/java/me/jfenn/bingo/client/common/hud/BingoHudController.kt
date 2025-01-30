@@ -4,10 +4,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.utils.Interpolate
-import me.jfenn.bingo.client.platform.ClientPacket
-import me.jfenn.bingo.client.platform.IDrawService
-import me.jfenn.bingo.client.platform.IHudCallback
-import me.jfenn.bingo.client.platform.IOptionsAccessor
+import me.jfenn.bingo.client.platform.*
+import me.jfenn.bingo.client.platform.event.IClientEvents
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.KEYBIND_TOGGLE_HUD
 import me.jfenn.bingo.common.config.BingoConfig
@@ -22,15 +20,9 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.wrap
 import me.jfenn.bingo.generated.StringKey
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.client.rendering.v1.InvalidateRenderStateCallback
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import me.jfenn.bingo.platform.IServerEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ChatScreen
-import net.minecraft.client.option.KeyBinding
-import net.minecraft.client.util.InputUtil
 import org.lwjgl.glfw.GLFW
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -45,26 +37,25 @@ internal class BingoHudController(
     private val endScreenFactory: BingoEndScreen.Factory,
     private val state: BingoHudState,
     private val text: TextProvider,
+    keyBindingManager: IKeyBindingManager,
     hud: IHudCallback,
     packetEvents: ClientPacketEvents,
+    serverEvents: IServerEvents,
+    clientEvents: IClientEvents,
 ) : BingoComponent() {
 
-    private val openCardKey = KeyBindingHelper.registerKeyBinding(
-        KeyBinding(
-            KEYBIND_OPEN_CARD,
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_Y,
-            StringKey.FullName.key,
-        )
+    private val client = MinecraftClient.getInstance()
+
+    private val openCardKey = keyBindingManager.registerKey(
+        KEYBIND_OPEN_CARD,
+        GLFW.GLFW_KEY_Y,
+        StringKey.FullName.key,
     )
 
-    private val toggleHudKey = KeyBindingHelper.registerKeyBinding(
-        KeyBinding(
-            KEYBIND_TOGGLE_HUD,
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_UNKNOWN,
-            StringKey.FullName.key,
-        )
+    private val toggleHudKey = keyBindingManager.registerKey(
+        KEYBIND_TOGGLE_HUD,
+        GLFW.GLFW_KEY_UNKNOWN,
+        StringKey.FullName.key,
     )
 
     private var fireworkRenderer: BingoEndFireworkRenderer? = null
@@ -439,28 +430,28 @@ internal class BingoHudController(
             drawHud(it.drawService)
         }
 
-        ClientPlayConnectionEvents.JOIN.register { _, _, client ->
+        clientEvents.onServerJoin {
             client.execute { state.reset() }
         }
 
-        ClientPlayConnectionEvents.DISCONNECT.register { _, client ->
+        clientEvents.onServerDisconnect {
             client.execute { state.resetAll() }
         }
 
-        ServerLifecycleEvents.SERVER_STARTED.register { _ ->
-            MinecraftClient.getInstance().execute { state.reset() }
+        serverEvents.onServerStarted {
+            client.execute { state.reset() }
         }
 
-        ServerLifecycleEvents.SERVER_STOPPED.register { _ ->
-            MinecraftClient.getInstance().execute { state.resetAll() }
+        serverEvents.onServerStopped {
+            client.execute { state.resetAll() }
         }
 
-        InvalidateRenderStateCallback.EVENT.register {
-            MinecraftClient.getInstance().execute { state.reset() }
+        clientEvents.onInvalidateRenderState {
+            client.execute { state.reset() }
         }
 
-        ClientTickEvents.END_CLIENT_TICK.register { client ->
-            if (client.isPaused) return@register
+        clientEvents.onClientTickEnd {
+            if (client.isPaused) return@onClientTickEnd
 
             if (openCardKey.wasPressed()) {
                 if (optionsAccessor.isSneakPressed() && state.ready?.isRunning == true) {
@@ -468,7 +459,7 @@ internal class BingoHudController(
                 } else {
                     if (state.views.isEmpty()) {
                         client.player?.sendMessage(text.string(StringKey.CardNoCards), true)
-                        return@register
+                        return@onClientTickEnd
                     }
 
                     val gameOver = state.gameOver
@@ -496,6 +487,10 @@ internal class BingoHudController(
                 config.client.enableHud = !config.client.enableHud
                 configService.writeConfig(config)
             }
+        }
+
+        clientEvents.onAssetsReload {
+            renderer.loadCardColors(it.resourceManager)
         }
     }
 }

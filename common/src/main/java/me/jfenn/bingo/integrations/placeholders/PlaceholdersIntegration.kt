@@ -6,7 +6,7 @@ import java.time.Duration
 import java.util.*
 
 class PlaceholdersIntegration(
-    textPlaceholders: ITextPlaceholders,
+    textPlaceholders: ITextPlaceholdersApi,
 ) {
 
     private fun Duration.formatString(): String {

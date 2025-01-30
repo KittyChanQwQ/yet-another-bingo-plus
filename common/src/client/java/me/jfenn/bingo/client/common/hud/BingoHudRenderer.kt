@@ -13,13 +13,10 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.common.utils.wrap
 import me.jfenn.bingo.generated.StringKey
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.resource.ResourceManager
-import net.minecraft.resource.ResourceType
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.joml.AxisAngle4f
@@ -368,21 +365,15 @@ internal class BingoHudRenderer(
         }
     }
 
-    init {
-        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(object : SimpleSynchronousResourceReloadListener {
-            override fun reload(manager: ResourceManager) {
-                this@BingoHudRenderer.cardColors = manager.getResource(CARD_COLORS_ID)
-                    .getOrNull()
-                    ?.inputStream
-                    ?.use {
-                        @OptIn(ExperimentalSerializationApi::class)
-                        json.decodeFromStream<BingoCardColors>(it)
-                    }
-                    ?: BingoCardColors()
+    fun loadCardColors(manager: ResourceManager) {
+        this@BingoHudRenderer.cardColors = manager.getResource(CARD_COLORS_ID)
+            .getOrNull()
+            ?.inputStream
+            ?.use {
+                @OptIn(ExperimentalSerializationApi::class)
+                json.decodeFromStream<BingoCardColors>(it)
             }
-
-            override fun getFabricId(): Identifier = Identifier.of(MOD_ID_BINGO, "hud_renderer")!!
-        })
+            ?: BingoCardColors()
     }
 
 }

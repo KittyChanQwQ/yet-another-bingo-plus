@@ -5,7 +5,7 @@ import net.minecraft.text.Text
 import java.util.function.Function
 import java.util.function.Supplier
 
-object DummyPlaceholders : ITextPlaceholders {
+object DummyPlaceholders : ITextPlaceholdersApi {
     override fun registerPlaceholder(id: String, handler: Function<IPlaceholderContext, Text>) {}
 
     override fun parseText(message: Text, server: MinecraftServer): Text = message

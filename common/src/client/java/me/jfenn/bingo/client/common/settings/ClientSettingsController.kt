@@ -1,13 +1,14 @@
 package me.jfenn.bingo.client.common.settings
 
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
-import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents
+import me.jfenn.bingo.client.platform.event.IClientEvents
 import org.slf4j.Logger
 
 internal class ClientSettingsController(
     private val log: Logger,
     private val clientSettings: ClientSettingsService,
     private val packetEvents: ClientPacketEvents,
+    clientEvents: IClientEvents,
 ) {
 
     init {
@@ -21,7 +22,7 @@ internal class ClientSettingsController(
             clientSettings.update(packet, sendPacket = false)
         }
 
-        C2SPlayChannelEvents.REGISTER.register { _, _, _, _ ->
+        clientEvents.onPlayChannelRegister {
             log.debug("[ClientSettingsController] Sending initial settings to the server...")
             val settings = clientSettings.getSettings()
             when {

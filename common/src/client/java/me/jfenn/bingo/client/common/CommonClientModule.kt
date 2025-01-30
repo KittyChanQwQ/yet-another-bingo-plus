@@ -9,12 +9,10 @@ import me.jfenn.bingo.client.common.sound.ScorePacketReceiver
 import me.jfenn.bingo.client.common.sound.SoundService
 import me.jfenn.bingo.client.common.stats.ClientStatsSyncController
 import me.jfenn.bingo.client.common.world.BingoWorldManager
-import me.jfenn.bingo.client.impl.ClientCloseEvent
 import me.jfenn.bingo.client.integrations.JeiIntegration
 import me.jfenn.bingo.client.integrations.YetAnotherConfigLibIntegration
 import me.jfenn.bingo.client.integrations.jei.IJeiApi
 import me.jfenn.bingo.client.integrations.jei.IJeiApiFactory
-import me.jfenn.bingo.platform.ICloseEvent
 import org.koin.core.module.dsl.createdAtStart
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -56,6 +54,4 @@ val commonClientModule = module {
     } bind IJeiApi::class
 
     singleOf(::ResourcePackInit) withOptions { createdAtStart() }
-
-    single { ClientCloseEvent } bind ICloseEvent::class
 }

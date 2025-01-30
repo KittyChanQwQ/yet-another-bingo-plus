@@ -67,7 +67,6 @@ internal class MenuController(
 
     companion object {
         private const val LOBBY_WORLD_ZIP = "lobby_world.zip"
-        private val MENU_OFFSET = Vector3f(0.5f, 1.0f, -0.5f)
     }
 
     private object Cache {

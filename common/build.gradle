@@ -46,10 +46,6 @@ dependencies {
         exclude(group: "org.quiltmc.parsers")
     }
 
-    modCompileOnly(libs.jei)
-    modCompileOnly(libs.roughlyenoughitems)
-    modCompileOnly(libs.emi)
-
     api project(path: ":platform", configuration: "namedElements")
     api project(path: ":api", configuration: "namedElements")
 }
