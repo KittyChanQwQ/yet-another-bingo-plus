@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.menu.MenuPage
 import me.jfenn.bingo.common.menu.MenuState
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.BingoWinCondition
+import me.jfenn.bingo.common.spawn.PlayerState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
@@ -44,9 +45,18 @@ data class BingoState(
     // This is a temporary list that should be overwritten by `CardService.generate()`
     val cards: MutableList<BingoCard> = mutableListOf(),
     var gameOverInfo: GameOverService.GameOverInfo? = null,
-    // Stores a set of recently-joined player UUIDs for [PlayerController]
+    /**
+     * Stores a set of recently-joined player UUIDs for PlayerController
+     */
     val playersJoinedIds: MutableSet<UuidAsString> = mutableSetOf(),
-    // Stores if the game was ended manually (with "/bingo end")
+    /**
+     * Stores player data tracked to determine when respawning/clearing inventory is needed
+     * (in PlayerController)
+     */
+    val players: MutableMap<UuidAsString, PlayerState> = mutableMapOf(),
+    /**
+     * Stores if the game was ended manually (with "/bingo end")
+     */
     var isForfeit: Boolean = false,
 ) {
 

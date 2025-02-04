@@ -242,7 +242,7 @@ internal class ScoredItemCheck(
                     // Notify players that the game is continuing because of stalemateBehavior
                     val message = text.string(
                         StringKey.GameNotEndingStalemateNewCard,
-                        options.stalemateBehavior.string(text),
+                        StalemateBehavior.END_GAME.string(text),
                     )
                         .formatted(Formatting.AQUA, Formatting.BOLD)
                     playerManager.getPlayers()

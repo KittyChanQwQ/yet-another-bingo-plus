@@ -72,6 +72,14 @@ internal class PlayerController(
         val isOnActiveTeam = team?.isPlaying() == true
         log.debug("updateGameMode({}, forceReset={})", player.playerName, forceReset)
 
+        // Track whenever the player changes game/state/team
+        val oldPlayerState = state.players[player.uuid] ?: PlayerState.DEFAULT
+        val newPlayerState = PlayerState(
+            lastGameId = state.gameId,
+            lastState = state.state,
+            lastTeam = team?.key,
+        )
+
         val gameMode = when (state.state) {
             GameState.UNINITIALIZED,
             GameState.PREGAME,
@@ -94,20 +102,22 @@ internal class PlayerController(
         }
 
         // This indicates that a player is starting the game, or has logged back on after a game has started
-        // Note: if force-gamemode=true in server.properties, this check might be falsely activated during gameplay
+        // Note: if force-gamemode=true in server.properties, the player's gamemode might not match even if the state has not changed
+        // (this also happens on LAN)
         val preGameStates = arrayOf(GameState.PREGAME, GameState.STARTING, GameState.PRELOADING, GameState.LOADING, GameState.COUNTDOWN)
-        val isRespawnNeeded = (player.gameMode != gameMode || forceReset) && (state.state in preGameStates || isOnActiveTeam) && state.state != GameState.POSTGAME
+        val isRespawnNeeded = (newPlayerState != oldPlayerState || forceReset) && (state.state in preGameStates || isOnActiveTeam) && state.state != GameState.POSTGAME
         val isStuckInLobby = player.serverWorld == lobbyWorld && state.state != GameState.PREGAME
         val isStuckInWorld = player.serverWorld != lobbyWorld && state.state == GameState.PREGAME
         if (isRespawnNeeded || isStuckInLobby || isStuckInWorld) {
             if (!player.isAlive) {
-                log.debug("[PlayerController] respawnPlayer({})", player.playerName)
+                log.debug("[PlayerController] respawnPlayer({}, {})", player.playerName, player.uuid)
                 val newPlayer = player.respawn()
                 serverTaskExecutor.execute { updateGameMode(newPlayer, true) }
                 return
             }
 
             respawnPlayer(player)
+            state.players[player.uuid] = newPlayerState
         }
 
         if (player.gameMode != gameMode) {
