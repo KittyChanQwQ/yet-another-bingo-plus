@@ -64,6 +64,7 @@ dependencies {
 }
 
 processResources {
+    dependsOn(project(":common").tasks.processResources)
     from("../common/src/main/resources") {
         exclude("bingo.accesswidener")
     }
