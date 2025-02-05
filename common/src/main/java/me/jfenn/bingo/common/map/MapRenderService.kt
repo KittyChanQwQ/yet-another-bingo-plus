@@ -362,8 +362,10 @@ class MapRenderService(
         itemX: Int,
         itemY: Int,
     ) {
-        require(itemX in 0 until 5)
-        require(itemY in 0 until 5)
+        if (itemX !in 0 until 5 || itemY !in 0 until 5) {
+            log.error("drawMapTile() called with an invalid item position! ($itemX,$itemY)")
+            return
+        }
 
         var isRegularTile = false
         val tileImage = getTileImage(tile) ?: BingoTileImage.EMPTY

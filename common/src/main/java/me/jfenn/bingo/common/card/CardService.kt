@@ -31,6 +31,7 @@ import net.minecraft.text.Text
 import org.slf4j.Logger
 import java.util.*
 import kotlin.math.ceil
+import kotlin.math.min
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
@@ -579,7 +580,7 @@ class CardService(
             cardOptions = cardOptions,
             excludeObjectives = excludeObjectives,
             dist = cardOptions.itemDistribution,
-        )
+        ).take(min(cardOptions.itemDistribution.sum(), 25))
 
         return BingoCard(
             id = id,
