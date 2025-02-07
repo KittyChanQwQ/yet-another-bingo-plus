@@ -7,7 +7,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
 import org.joml.Vector3d
 
 internal const val MENU_GOAL_WIDTH = 2.0
@@ -104,7 +103,7 @@ internal fun MenuComponent.registerCardGoal(
         width = MENU_GOAL_WIDTH,
         height = MENU_LINE_HEIGHT,
         icon = "⇄",
-        text = Text.empty(),
+        text = this.text.empty(),
         textProp = computedProperty { text.string(cardOptions.goal.string()) },
     ) {
         val newGoal = when (val goal = cardOptions.goal) {

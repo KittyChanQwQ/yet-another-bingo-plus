@@ -3,9 +3,7 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
 
@@ -18,7 +16,6 @@ internal fun MenuComponent.registerItemFilters(
     state: BingoState = koinScope.get(),
     objectiveFilterService: ObjectiveFilterService = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) {
     val presets = objectiveFilterService.getPresetFilters()
 
@@ -37,7 +34,7 @@ internal fun MenuComponent.registerItemFilters(
         height = height,
         title = text.string(StringKey.OptionsFilter),
         options = presets.values.map {
-            it.name(text)
+            it.name(this.text)
         },
         tooltips = presets.values.map { value ->
             buildList {
@@ -48,7 +45,7 @@ internal fun MenuComponent.registerItemFilters(
                         .formatted(Formatting.GREEN)
                 )
                 add(text.string(StringKey.OptionsFilterTooltip))
-                add(Text.literal(value.value.toString()).formatted(Formatting.GRAY))
+                add(text.literal(value.value.toString()).formatted(Formatting.GRAY))
             }
         },
         selectedIndexProp = selectedIndexProp,

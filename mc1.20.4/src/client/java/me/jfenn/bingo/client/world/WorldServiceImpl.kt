@@ -43,7 +43,7 @@ class WorldServiceImpl(
 
     override fun disconnect() {
         client.world?.disconnect()
-        client.disconnect(MessageScreen(text.string(StringKey.WorldPreparing)))
+        client.disconnect(MessageScreen(text.string(StringKey.WorldPreparing).value))
         client.setScreen(TitleScreen())
     }
 

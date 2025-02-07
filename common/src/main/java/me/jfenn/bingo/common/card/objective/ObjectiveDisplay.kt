@@ -2,14 +2,15 @@ package me.jfenn.bingo.common.card.objective
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.common.map.CardTile
 import net.minecraft.text.Text
 
 class ObjectiveDisplay {
     data class Resolved(
-        val name: Text? = null,
-        val lore: List<Text>? = null,
+        val name: IText? = null,
+        val lore: List<IText>? = null,
         val item: IItemStack? = null,
         val decoration: CardTile.Decoration = CardTile.Decoration.NONE,
         val image: String? = null,

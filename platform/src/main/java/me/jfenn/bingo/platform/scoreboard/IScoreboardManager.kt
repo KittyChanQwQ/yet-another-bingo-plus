@@ -1,13 +1,13 @@
 package me.jfenn.bingo.platform.scoreboard
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 
 interface IScoreboardManager {
 
-    fun createDummyObjective(server: MinecraftServer, name: String, displayName: Text): IObjectiveHandle
+    fun createDummyObjective(server: MinecraftServer, name: String, displayName: IText): IObjectiveHandle
 
     fun removeObjective(server: MinecraftServer, handle: IObjectiveHandle)
 

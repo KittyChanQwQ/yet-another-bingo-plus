@@ -41,7 +41,7 @@ class DataCommands(
                                     text.string(
                                         StringKey.CommandDataTagAddSuccess,
                                         objective,
-                                        ObjectiveFilterPreset.formatName(tag),
+                                        ObjectiveFilterPreset.formatName(text, tag),
                                     )
                                 )
                             }
@@ -70,7 +70,7 @@ class DataCommands(
                                     text.string(
                                         StringKey.CommandDataTagRemoveSuccess,
                                         objective,
-                                        ObjectiveFilterPreset.formatName(tag),
+                                        ObjectiveFilterPreset.formatName(text, tag),
                                     )
                                 )
                             }
@@ -105,7 +105,7 @@ class DataCommands(
                                                 StringKey.CommandDataTierlistAddSuccess,
                                                 objective,
                                                 tier?.string ?: StringKey.ListUncategorized,
-                                                ObjectiveFilterPreset.formatName(list),
+                                                ObjectiveFilterPreset.formatName(text, list),
                                             )
                                         )
                                     }
@@ -136,7 +136,7 @@ class DataCommands(
                                     text.string(
                                         StringKey.CommandDataTierlistRemoveSuccess,
                                         objective,
-                                        ObjectiveFilterPreset.formatName(list),
+                                        ObjectiveFilterPreset.formatName(text, list),
                                     )
                                 )
                             }

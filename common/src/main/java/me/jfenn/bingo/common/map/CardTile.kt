@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.map
 
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 data class CardTile(
@@ -17,8 +17,8 @@ data class CardTile(
     val action: CardTileAction = image.item?.let { CardTileAction.Item(it) }
         ?: CardTileAction.None,
     val itemTier: TierLabel? = null,
-    val name: Text? = image.item?.displayName,
-    val lore: List<Text> = image.item?.lore ?: emptyList(),
+    val name: IText? = image.item?.displayName,
+    val lore: List<IText> = image.item?.lore ?: emptyList(),
     val decoration: Decoration?,
     val isHidden: Boolean = false,
     val isLocked: Boolean = false,
@@ -39,7 +39,7 @@ data class CardTile(
     var updatedAt: Instant? = null
 
     @Transient
-    val mapRenderKey = image.item?.let { item ->
+    internal val mapRenderKey = image.item?.let { item ->
         MapRenderService.TileImageKey(
             name = item.identifier.toString(),
             image = image.texture,

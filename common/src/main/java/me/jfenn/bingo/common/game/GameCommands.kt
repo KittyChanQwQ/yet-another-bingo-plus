@@ -29,7 +29,7 @@ class GameCommands(
                 allowSpectators = ignoreWarnings,
                 sendFeedback = { feedback ->
                     sendMessage(
-                        Text.literal("⚠  ")
+                        text.literal("⚠  ")
                             .append(feedback.copy().formatted(Formatting.ITALIC))
                             .formatted(Formatting.YELLOW),
                     )

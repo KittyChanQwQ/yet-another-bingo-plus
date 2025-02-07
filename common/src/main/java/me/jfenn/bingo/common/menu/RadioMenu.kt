@@ -1,10 +1,8 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.utils.joinText
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.platform.IPlayerHandle
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
 import kotlin.math.ceil
@@ -17,9 +15,9 @@ internal fun MenuComponent.registerRadioMenu(
     position: Vector3d,
     width: Double,
     height: Double,
-    title: MutableText,
-    options: List<Text>,
-    tooltips: List<List<Text>> = emptyList(),
+    title: IText,
+    options: List<IText>,
+    tooltips: List<List<IText>> = emptyList(),
     optionsPerPage: Int = (height / (MENU_LINE_HEIGHT + MENU_LINE_PADDING)).toInt() - 2,
     selectedIndexProp: MutableProperty<Int>,
     onChange: (IPlayerHandle, Int) -> Unit = { _, _ -> },
@@ -48,9 +46,9 @@ internal fun MenuComponent.registerRadioMenu(
             position = position + offset.sub(0.0, MENU_LINE_PADDING + optionHeight, 0.0),
             width = width,
             height = optionHeight,
-            text = Text.empty(),
+            text = text.empty(),
             textProp = computedProperty {
-                itemIndex?.let { options.getOrNull(it) } ?: Text.empty()
+                itemIndex?.let { options.getOrNull(it) } ?: text.empty()
             },
             tooltipProp = computedProperty {
                 itemIndex?.let { tooltips.getOrNull(it) }
@@ -76,11 +74,11 @@ internal fun MenuComponent.registerRadioMenu(
                 .map { i ->
                     val hasSelected = selectedIndex in i*optionsPerPage until (i+1)*optionsPerPage
                     when {
-                        page == i -> Text.literal(if (hasSelected) "■" else "□").formatted(Formatting.WHITE)
-                        else -> Text.literal(if (hasSelected) "◆" else "◇").formatted(Formatting.GRAY)
+                        page == i -> text.literal(if (hasSelected) "■" else "□").formatted(Formatting.WHITE)
+                        else -> text.literal(if (hasSelected) "◆" else "◇").formatted(Formatting.GRAY)
                     }
                 }
-                .joinText(Text.literal(" "))
+                .let { text.joinText(it, text.literal(" ")) }
         }
     )
 }

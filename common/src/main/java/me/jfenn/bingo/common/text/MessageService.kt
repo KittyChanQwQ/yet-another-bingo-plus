@@ -3,12 +3,12 @@ package me.jfenn.bingo.common.text
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromStream
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.resource.ResourceManager
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import kotlin.jvm.optionals.getOrNull
@@ -71,8 +71,8 @@ class MessageService(
 
     fun getLines(
         type: MessageType,
-        replacements: Map<String, List<Text>>
-    ): List<Text> {
+        replacements: Map<String, List<IText>>
+    ): List<IText> {
         val message = messages[type] ?: MessageData(emptyList())
 
         val lines = message.lines

@@ -2,8 +2,7 @@ package me.jfenn.bingo.common.stats
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.*
-import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
@@ -14,10 +13,11 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.*
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.block.Blocks
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
@@ -31,7 +31,7 @@ class StatsLobbyController(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val stats: StatsService,
-    private val textProvider: TextProvider,
+    private val text: TextProvider,
     private val playerManager: IPlayerManager,
     private val itemStackFactory: IItemStackFactory,
     private val entityManager: IEntityManager,
@@ -62,7 +62,7 @@ class StatsLobbyController(
         val entity = entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
                 this.pos = pos + Vector3d(0.0, 2.2, 0.0)
-                value = Text.empty()
+                value = text.empty()
                 billboard = ITextDisplayEntity.Billboard.FIXED
                 alignment = ITextDisplayEntity.TextAlignment.RIGHT
                 background = 0x80_000000.toInt()
@@ -88,7 +88,7 @@ class StatsLobbyController(
         val entity = entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
                 this.pos = pos + Vector3d(-1.8, 0.5, 0.0)
-                value = Text.empty()
+                value = text.empty()
                 billboard = ITextDisplayEntity.Billboard.FIXED
                 alignment = ITextDisplayEntity.TextAlignment.RIGHT
                 background = 0xb0_000000.toInt()
@@ -115,7 +115,7 @@ class StatsLobbyController(
         val entity = entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
                 this.pos = pos + Vector3d(1.8, 0.5, 0.0)
-                value = Text.empty()
+                value = text.empty()
                 billboard = ITextDisplayEntity.Billboard.FIXED
                 alignment = ITextDisplayEntity.TextAlignment.LEFT
                 background = 0xb0_000000.toInt()
@@ -150,15 +150,15 @@ class StatsLobbyController(
         playerHead.setSkullOwner(player)
         armorStand.equipStack(IArmorStandEntity.EquipmentSlot.HEAD, playerHead)
 
-        nameEntity?.value = Text.literal(playerManager.forPlayer(player).playerName)
+        nameEntity?.value = text.literal(playerManager.forPlayer(player).playerName)
 
         val favoriteTeam = BingoTeam.TEAM_BLOCKS.values
             .find { it.key == summary.favoriteTeam }
             ?.let { team ->
-                Text.empty()
+                text.empty()
                     .append(
                         team.getName(
-                            textProvider = textProvider,
+                            textProvider = text,
                             symbol = true,
                             bracketed = false,
                             teamNameKey = null,
@@ -167,78 +167,78 @@ class StatsLobbyController(
                     .append(" (${(summary.favoriteTeamPercentage * 100f).toInt()}%)")
             }
 
-        val divider = Text.literal("\uD83E\uDF2D".repeat(28))
-        val allTimeStats = buildList<Text> {
-            add(textProvider.string(StringKey.StatsAllTime).append(" ★").formatted(Formatting.BOLD, Formatting.YELLOW))
+        val divider = text.literal("\uD83E\uDF2D".repeat(28))
+        val allTimeStats = buildList<IText> {
+            add(text.string(StringKey.StatsAllTime).append(" ★").formatted(Formatting.BOLD, Formatting.YELLOW))
             add(divider)
-            add(Text.empty())
+            add(text.empty())
 
-            Text.empty()
-                .append(textProvider.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
+            text.empty()
+                .append(text.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.totalGames.formatLargeNumber()}")
                 .also { add(it) }
 
-            Text.empty()
-                .append(textProvider.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
+            text.empty()
+                .append(text.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.totalWins.formatLargeNumber()}/${summary.totalLosses.formatLargeNumber()}")
                 .also { add(it) }
 
-            Text.empty()
-                .append(textProvider.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
+            text.empty()
+                .append(text.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.totalItems.formatLargeNumber()}")
                 .also { add(it) }
 
-            Text.empty()
-                .append(textProvider.string(StringKey.StatsPlaytime).formatted(Formatting.BOLD, Formatting.GRAY))
+            text.empty()
+                .append(text.string(StringKey.StatsPlaytime).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.totalPlaytime.formatString()}")
                 .also { add(it) }
 
-            add(Text.empty())
+            add(text.empty())
 
-            Text.empty()
-                .append(textProvider.string(StringKey.StatsFavoriteTeam).formatted(Formatting.BOLD, Formatting.GRAY))
+            text.empty()
+                .append(text.string(StringKey.StatsFavoriteTeam).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(":")
                 .also { add(it) }
 
-            add(favoriteTeam ?: Text.literal("-"))
+            add(favoriteTeam ?: text.literal("-"))
         }.toMutableList()
 
-        val monthlyStats = buildList<Text> {
-            add(Text.literal("\uD83D\uDCC6 ").append(textProvider.string(StringKey.StatsMonthly)).formatted(Formatting.BOLD, Formatting.AQUA))
+        val monthlyStats = buildList<IText> {
+            add(text.literal("\uD83D\uDCC6 ").append(text.string(StringKey.StatsMonthly)).formatted(Formatting.BOLD, Formatting.AQUA))
             add(divider)
-            add(Text.empty())
+            add(text.empty())
 
-            Text.empty()
-                .append(textProvider.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
+            text.empty()
+                .append(text.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.monthlyGames.formatLargeNumber()}")
                 .also { add(it) }
 
-            Text.empty()
-                .append(textProvider.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
+            text.empty()
+                .append(text.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.monthlyWins.formatLargeNumber()}/${summary.monthlyLosses.formatLargeNumber()}")
                 .also { add(it) }
 
-            Text.empty()
-                .append(textProvider.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
+            text.empty()
+                .append(text.string(StringKey.StatsItems).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.monthlyItems.formatLargeNumber()}")
                 .also { add(it) }
 
-            Text.empty()
-                .append(textProvider.string(StringKey.StatsPlaytime).formatted(Formatting.BOLD, Formatting.GRAY))
+            text.empty()
+                .append(text.string(StringKey.StatsPlaytime).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.monthlyPlaytime.formatString()}")
                 .also { add(it) }
 
-            add(Text.empty())
+            add(text.empty())
 
-            Text.empty()
-                .append(textProvider.string(StringKey.StatsWinStreak).formatted(Formatting.BOLD, Formatting.GRAY))
+            text.empty()
+                .append(text.string(StringKey.StatsWinStreak).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ")
                 .append(
                     when {
                         summary.winStreakBest != null -> {
-                            textProvider.string(StringKey.StatsWinStreakValue, summary.winStreak, summary.winStreakBest)
+                            text.string(StringKey.StatsWinStreakValue, summary.winStreak, summary.winStreakBest)
                         }
-                        else -> Text.literal(summary.winStreak.toString())
+                        else -> text.literal(summary.winStreak.toString())
                     }
                 )
                 .also { add(it) }
@@ -246,20 +246,20 @@ class StatsLobbyController(
 
         // ensure that both lists have an equal height
         while (allTimeStats.size < monthlyStats.size)
-            allTimeStats.add(Text.empty())
+            allTimeStats.add(text.empty())
 
         while (monthlyStats.size < allTimeStats.size)
-            monthlyStats.add(Text.empty())
+            monthlyStats.add(text.empty())
 
         val margin = " ".repeat(4)
-        Text.literal("\n")
+        text.literal("\n")
             .also { text ->
                 for (t in allTimeStats)
                     text.append(margin).append(t).append("$margin\n")
             }
             .let { leftEntity?.value = it }
 
-        Text.literal("\n")
+        text.literal("\n")
             .also { text ->
                 for (t in monthlyStats)
                     text.append(margin).append(t).append("$margin\n")
@@ -268,9 +268,9 @@ class StatsLobbyController(
     }
 
     private fun resetSummary() {
-        leftEntity?.value = Text.empty()
-        rightEntity?.value = Text.empty()
-        nameEntity?.value = Text.empty()
+        leftEntity?.value = text.empty()
+        rightEntity?.value = text.empty()
+        nameEntity?.value = text.empty()
         getArmorStand()?.equipStack(IArmorStandEntity.EquipmentSlot.HEAD, itemStackFactory.emptyStack)
     }
 

@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.jfenn.bingo.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "InteractionEntityMixin",
+    "LevelPropertiesAccessor",
+    "MinecraftServerSkipStartRegionMixin",
+    "MinecraftServerUnsafeSkipCloseMixin",
+    "PlayerEntityMixin",
+    "PlayerManagerMixin",
+    "ServerBossBarMixin",
+    "ServerChunkLoadingManagerAccessor",
+    "ServerChunkManagerAccessor",
+    "ServerChunkManagerMixin",
+    "ServerEntityManagerMixin",
+    "ServerPlayNetworkHandlerMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

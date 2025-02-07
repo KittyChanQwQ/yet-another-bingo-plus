@@ -1,9 +1,10 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.client.platform.text.ITextFactory
+import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.item.IItemStack
-import me.jfenn.bingo.platform.scope.BingoKoin
-import me.jfenn.bingo.common.utils.toNbt
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.LivingEntity
@@ -19,14 +20,15 @@ import net.minecraft.entity.passive.BatEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registries
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.joml.Matrix4f
 import org.joml.Vector3d
 import java.util.*
 import kotlin.reflect.KProperty
 
-object EntityManagerImpl : IEntityManager {
+class EntityManagerImpl(
+    private val textFactory: ITextFactory,
+) : IEntityManager {
     private fun EntityType<*>.toMinecraftType(): net.minecraft.entity.EntityType<*> {
         return when (this) {
             EntityType.INTERACTION -> net.minecraft.entity.EntityType.INTERACTION
@@ -41,7 +43,7 @@ object EntityManagerImpl : IEntityManager {
     private fun forEntity(entity: Entity): IEntity {
         val impl = when (entity) {
             is InteractionEntity -> InteractionEntityImpl(entity)
-            is TextDisplayEntity -> TextDisplayEntityImpl(entity)
+            is TextDisplayEntity -> TextDisplayEntityImpl(entity, textFactory)
             is BlockDisplayEntity -> BlockDisplayEntityImpl(entity)
             is ArmorStandEntity -> ArmorStandEntityImpl(entity)
             is BatEntity -> BatEntityImpl(entity)
@@ -190,23 +192,15 @@ open class DisplayEntityImpl(
 }
 
 class TextDisplayEntityImpl(
-    override val entity: TextDisplayEntity
+    override val entity: TextDisplayEntity,
+    private val textFactory: ITextFactory,
 ) : ITextDisplayEntity, DisplayEntityImpl(entity) {
     override val type: EntityType<ITextDisplayEntity>
         get() = EntityType.TEXT_DISPLAY
 
-    private val koin = BingoKoin.getScope(entity.server)!!
-    private val textSerializer by koin.inject<ITextSerializer>()
-
-    override var value: Text
-        get() = nbt.getString("text")
-            ?.let { textSerializer.fromJson(it) }
-            ?: Text.empty()
-        set(value) {
-            patchNbt {
-                putString("text", textSerializer.toJson(value))
-            }
-        }
+    override var value: IText
+        get() = entity.text.let { textFactory.from(it) }
+        set(value) { entity.text = value.value }
 
     override var lineWidth: Int by NbtIntDelegate("line_width")
 

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.platform.item
 
+import me.jfenn.bingo.client.platform.text.IText
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer
@@ -31,16 +32,16 @@ interface IItemStack {
     val maxCount: Int
     val isEmpty get() = count <= 0
 
-    val displayName: Text
-    val lore: List<Text>
+    val displayName: IText
+    val lore: List<IText>
 
     fun addCustomTag(tag: String)
     fun removeCustomTag(tag: String)
     fun hasCustomTag(tag: String): Boolean
 
     fun setDisplay(
-        name: Text?,
-        lore: List<Text>?,
+        name: IText?,
+        lore: List<IText>?,
     )
 
     fun setUnbreakable(value: Boolean)

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.IAdvancementHandle
 import me.jfenn.bingo.platform.IAdvancementManager
 import me.jfenn.bingo.platform.item.IItemStack
@@ -8,7 +9,6 @@ import net.minecraft.advancement.AdvancementEntry
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandOutput
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import kotlin.jvm.optionals.getOrNull
 
@@ -51,10 +51,12 @@ class AdvancementHandle(
     val advancement: AdvancementEntry,
     private val itemStackFactory: IItemStackFactory,
 ) : IAdvancementHandle {
-    override val name: Text?
+    override val name: IText?
         get() = advancement.value.display.getOrNull()?.title
-    override val description: Text?
+            ?.let { TextImpl(it.copy()) }
+    override val description: IText?
         get() = advancement.value.display.getOrNull()?.description
+            ?.let { TextImpl(it.copy()) }
     override val displayIcon: IItemStack?
         get() = advancement.value.display.getOrNull()?.icon
             ?.let { itemStackFactory.forStack(it) }

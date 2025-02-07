@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.team
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
-import me.jfenn.bingo.common.commands.sendInfoFeedback
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -24,7 +23,7 @@ class ShuffleTeamsCommand(
                 integer("teams", min = 1) { teamsArg ->
                     executes {
                         scope.get<TeamService>().shuffleTeams(getArgument(teamsArg))
-                        sendInfoFeedback(text.string(StringKey.CommandShuffleteamsSuccess))
+                        sendFeedback(text.string(StringKey.CommandShuffleteamsSuccess))
                     }
                 }
             }

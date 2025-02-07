@@ -1,0 +1,190 @@
+package me.jfenn.bingo.impl
+
+import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.utils.measureTime
+import me.jfenn.bingo.impl.block.BlockStateImpl
+import me.jfenn.bingo.mixin.LevelPropertiesAccessor
+import me.jfenn.bingo.mixin.ServerChunkLoadingManagerAccessor
+import me.jfenn.bingo.mixin.ServerChunkManagerAccessor
+import me.jfenn.bingo.mixinhelper.ServerChunkManagerMixinHelper
+import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.block.IBlockState
+import net.minecraft.registry.Registries
+import net.minecraft.registry.Registry
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.world.ChunkTicketType
+import net.minecraft.server.world.ChunkTicketType.Use
+import net.minecraft.server.world.ServerWorld
+import net.minecraft.util.Identifier
+import net.minecraft.util.math.ChunkPos
+import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.chunk.ChunkStatus
+import net.minecraft.world.level.LevelProperties
+import org.slf4j.Logger
+import java.nio.file.Path
+import java.util.*
+import java.util.concurrent.CompletableFuture
+
+internal object ChunkTickets {
+    lateinit var TICKET_HELD: ChunkTicketType
+    lateinit var TICKET_ASYNC: ChunkTicketType
+
+    fun init() {
+        TICKET_HELD = Registry.register(Registries.TICKET_TYPE, "$MOD_ID_BINGO-held", ChunkTicketType(0, true, Use.LOADING))
+        TICKET_ASYNC = Registry.register(Registries.TICKET_TYPE, "$MOD_ID_BINGO-async", ChunkTicketType(0, true, Use.LOADING))
+    }
+}
+
+class ServerWorldFactory(
+    private val log: Logger,
+) : IServerWorldFactory {
+    override fun forWorld(world: ServerWorld): IServerWorld = ServerWorldImpl(world)
+    override fun listWorlds(server: MinecraftServer): List<IServerWorld> {
+        return server.worlds.map { forWorld(it) }
+    }
+
+    private fun tickKeepAlive(server: MinecraftServer) {
+        server.networkIo?.tick()
+    }
+
+    override fun recreateWorlds(
+        server: MinecraftServer,
+        seed: Long,
+        callback: () -> Unit
+    ) {
+        tickKeepAlive(server)
+
+        // Remove scoreboard objectives to avoid a crash when data is reloaded in loadWorld()
+        server.scoreboard.objectives
+            .toList()
+            .forEach {
+                try {
+                    server.scoreboard.removeObjective(it)
+                } catch (e: Throwable) {
+                    log.error("[Reset] Error removing objective:", e)
+                }
+            }
+
+        server.saving = true
+        try {
+            // First, ensure the world/data is saved
+            log.measureTime("[Reset] Saving...") {
+                // MinecraftServer::saveAll
+                server.playerManager.saveAllPlayerData()
+
+                for (world in listWorlds(server)) {
+                    // ServerWorld::save -> ServerWorld::saveLevel
+                    val serverWorld: ServerWorld = world.world
+                    serverWorld.persistentStateManager.save()
+                }
+            }
+
+            tickKeepAlive(server)
+
+            server.cancelTasks()
+
+            // Use mixins to skip save() calls within world.close(), so that it
+            // *only* closes resources without waiting to write to disk
+            ServerChunkManagerMixinHelper.shouldCancelSaving = true
+
+            for (world in listWorlds(server)) {
+                log.measureTime("[Reset] Closing ${world.identifier}...") {
+                    world.close()
+                }
+
+                tickKeepAlive(server)
+
+                arrayOf("region", "poi", "entities")
+                    .map { world.directory.resolve(it).toFile() }
+                    .filter { it.exists() }
+                    .onEach { it.deleteRecursively() }
+
+                tickKeepAlive(server)
+            }
+
+            callback()
+            tickKeepAlive(server)
+
+            log.measureTime("[Reset] Loading new worlds...") {
+                val levelPropertiesAccessor = (server.saveProperties as LevelProperties) as LevelPropertiesAccessor
+                levelPropertiesAccessor.generatorOptions = levelPropertiesAccessor.generatorOptions.withSeed(OptionalLong.of(seed))
+                server.loadWorld()
+            }
+            tickKeepAlive(server)
+
+            // invoke "#minecraft:load" again, as scoreboards will be reset
+            with(server.commandFunctionManager) {
+                getTag(Identifier.of("minecraft:load"))
+                    .forEach { execute(it, scheduledCommandSource) }
+            }
+        } finally {
+            server.saving = false
+            ServerChunkManagerMixinHelper.shouldCancelSaving = false
+        }
+    }
+}
+
+class ServerWorldImpl(
+    override val world: ServerWorld
+): IServerWorld {
+
+    override val identifier: String
+        get() = world.registryKey.value.toString()
+
+    override val directory: Path
+        get() = world.server.session.getWorldDirectory(world.registryKey)
+
+    override fun getBlockState(pos: BlockPosition): IBlockState {
+        return world.getBlockState(pos.toBlockPos())
+            .let { BlockStateImpl.fromBlockState(it) }
+    }
+
+    private val taskExecutor = Executors.createServerTaskExecutor(world.server)
+
+    override fun addTicket(chunk: Pair<Int, Int>): IServerWorld.IChunkTicketHandle {
+        world.chunkManager.addTicket(ChunkTickets.TICKET_HELD, ChunkPos(chunk.first, chunk.second), 0)
+        return ChunkTicketHandle(chunk)
+    }
+
+    inner class ChunkTicketHandle(
+        private val chunk: Pair<Int, Int>
+    ) : IServerWorld.IChunkTicketHandle {
+        override fun close() {
+            world.chunkManager.removeTicket(ChunkTickets.TICKET_HELD, ChunkPos(chunk.first, chunk.second), 0)
+        }
+    }
+
+    override fun getChunkAsync(chunk: Pair<Int, Int>): CompletableFuture<Chunk?> {
+        if (!world.server.isOnThread) {
+            return CompletableFuture.supplyAsync({ getChunkAsync(chunk) }, world.server)
+                .thenCompose({ it })
+        }
+
+        // Add a ticket for the chunk
+        val chunkManager = world.chunkManager
+        chunkManager.addTicket(ChunkTickets.TICKET_ASYNC, ChunkPos(chunk.first, chunk.second), 0)
+
+        (chunkManager as ServerChunkManagerAccessor).invokeUpdateChunks()
+
+        val chunkLoadingManager = world.chunkManager.chunkLoadingManager
+        val chunkHolder = (chunkLoadingManager as ServerChunkLoadingManagerAccessor)
+            .invokeGetChunkHolder(ChunkPos(chunk.first, chunk.second).toLong())
+
+        val chunkFuture = chunkHolder?.load(ChunkStatus.FULL, chunkLoadingManager)
+            ?.thenApply { it?.orElse(null) }
+            ?: CompletableFuture.completedFuture<Chunk?>(null)
+
+        // Remove the chunk ticket once loaded
+        chunkFuture.whenCompleteAsync({ _, _ ->
+            chunkManager.removeTicket(ChunkTickets.TICKET_ASYNC, ChunkPos(chunk.first, chunk.second), 0)
+        }, taskExecutor)
+
+        return chunkFuture
+    }
+
+    override fun close() {
+        world.close()
+    }
+}

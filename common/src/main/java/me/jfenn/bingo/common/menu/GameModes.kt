@@ -22,7 +22,6 @@ internal fun MenuComponent.registerGameModes(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) {
     val cardOptions by DelegatedProperty(
         getter = { state.getActiveCard().options },

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.platform
 
+import me.jfenn.bingo.client.platform.text.IText
 import net.minecraft.text.Text
 
 interface IBossBarManager {
@@ -18,7 +19,7 @@ interface IBossBar {
     }
 
     val id: String?
-    var name: Text
+    var name: IText
     var color: Color
     var style: Style
     var value: Int

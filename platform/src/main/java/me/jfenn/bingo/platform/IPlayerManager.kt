@@ -1,5 +1,6 @@
 package me.jfenn.bingo.platform
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
 import me.jfenn.bingo.platform.item.IItemStack
@@ -87,13 +88,13 @@ interface IPlayerHandle : ILivingEntity {
     fun setSpawnPoint(world: ServerWorld, spawn: BlockPosition, angle: Float, forced: Boolean, sendMessage: Boolean)
 
     fun hasPermissionLevel(level: Int): Boolean
-    fun sendMessage(message: Text)
-    fun sendHotbarMessage(message: Text)
+    fun sendMessage(message: IText)
+    fun sendHotbarMessage(message: IText)
     fun sendChatMessage(message: ISignedMessage, sender: IPlayerHandle)
-    fun sendTeamMessage(message: ISignedMessage, sender: IPlayerHandle, teamName: Text)
-    fun sendTeamMessage(message: Text, sender: IPlayerHandle, teamName: Text)
+    fun sendTeamMessage(message: ISignedMessage, sender: IPlayerHandle, teamName: IText)
+    fun sendTeamMessage(message: IText, sender: IPlayerHandle, teamName: IText)
 
-    fun sendTitle(title: Text, subtitle: Text?)
+    fun sendTitle(title: IText, subtitle: IText?)
 }
 
 enum class PlayerSoundEvent {

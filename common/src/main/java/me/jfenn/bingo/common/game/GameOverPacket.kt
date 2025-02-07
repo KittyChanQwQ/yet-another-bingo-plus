@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.game
 
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamScore
@@ -13,8 +14,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 data class GameOverPacket(
-    val title: Text,
-    val subtitle: Text,
+    val title: IText,
+    val subtitle: IText,
     val winner: BingoTeamKey?,
     val duration: Duration,
     val canSendRestart: Boolean,
@@ -56,7 +57,7 @@ data class GameOverPacket(
     class ScoreRanking(
         val index: Int,
         val key: BingoTeamKey,
-        val name: Text,
+        val name: IText,
         val score: TeamScore,
         val duration: Duration?
     )

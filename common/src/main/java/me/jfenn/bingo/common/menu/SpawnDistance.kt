@@ -15,7 +15,6 @@ internal fun MenuComponent.registerSpawnDistance(
     width: Double = MENU_SPAWN_DISTANCE_WIDTH,
     state: BingoState = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) {
     val offset = Vector3d()
 

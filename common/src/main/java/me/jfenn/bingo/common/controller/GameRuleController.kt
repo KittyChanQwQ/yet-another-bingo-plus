@@ -36,9 +36,6 @@ internal class GameRuleController(
     private var showDeathMessages = false
 
     private fun setPregameRules() {
-        // remove overworld spawn tickets
-        server.overworld.chunkManager.removePersistentTickets()
-
         // hide spammy messages in the lobby
         announceAdvancements = server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).get()
         server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(false, server)

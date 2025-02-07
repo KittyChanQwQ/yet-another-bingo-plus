@@ -1,13 +1,11 @@
 package me.jfenn.bingo.common.options
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.common.card.filter.ObjectiveFilter
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.tierlist.TierLabel
-import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.utils.joinText
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
 
 @Serializable
 data class BingoCardOptions(
@@ -41,11 +39,11 @@ data class BingoCardOptions(
         return gameMode.ifEmpty { listOf(StringKey.OptionsModeStandard) }
     }
 
-    fun formatItemDist(): Text {
+    fun formatItemDist(text: TextProvider): IText {
         return TierLabel.entries
             .mapIndexed { i, label ->
-                Text.literal("${itemDistribution[i]}").formatted(label.formatting)
+                text.literal("${itemDistribution[i]}").formatted(label.formatting)
             }
-            .joinText(Text.literal(" "))
+            .let { text.joinText(it, text.literal(" ")) }
     }
 }

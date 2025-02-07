@@ -14,8 +14,8 @@ import org.joml.Vector4f
 import java.util.*
 import kotlin.math.pow
 
-class TooltipController(
-    private val tooltipService: TooltipService,
+internal class TooltipController(
+    private val tooltipState: TooltipState,
     private val packets: ServerPacketEvents,
     private val playerManager: IPlayerManager,
     events: ScopedEvents
@@ -34,7 +34,7 @@ class TooltipController(
         }
     }
 
-    fun sendTooltip(player: IPlayerHandle, prevTicks: Map<Pair<UUID, UUID>, Int>) {
+    private fun sendTooltip(player: IPlayerHandle, prevTicks: Map<Pair<UUID, UUID>, Int>) {
         val reachDistance = 3.0
         val origin = with(player.player.eyePos) { Vec3d(x, y, z) }
 
@@ -59,12 +59,12 @@ class TooltipController(
             origin,
             vec3d3,
             box,
-            { e -> tooltipService[e.uuid] != null },
+            { e -> tooltipState[e.uuid] != null },
             blockDistanceSq
         )
 
         val hitUuid = hit?.entity?.uuid
-        val hitTooltip = hitUuid?.let { tooltipService[it] }
+        val hitTooltip = hitUuid?.let { tooltipState[it] }
 
         if (hitUuid != null && hitTooltip != null) {
             val pair = player.uuid to hitUuid

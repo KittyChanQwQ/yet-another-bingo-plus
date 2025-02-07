@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.card.tierlist
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 enum class TierLabel(
@@ -17,7 +16,7 @@ enum class TierLabel(
     C(Formatting.YELLOW, StringKey.TierC, StringKey.TierCShort),
     D(Formatting.GREEN, StringKey.TierD, StringKey.TierDShort);
 
-    fun text(text: TextProvider): Text = text.string(this.string).formatted(formatting)
+    fun text(text: TextProvider) = text.string(this.string).formatted(formatting)
 
     companion object {
         const val LIST_EASY = "easy"
@@ -30,6 +29,6 @@ enum class TierLabel(
             "impossible" to listOf(5, 7, 6, 5, 2),
         )
 
-        fun presetText(difficulty: String) = Text.translatableWithFallback("bingo.card_difficulty.$difficulty", difficulty.formatTitle())
+        fun presetText(text: TextProvider, difficulty: String) = text.translatable("bingo.card_difficulty.$difficulty", difficulty.formatTitle())
     }
 }

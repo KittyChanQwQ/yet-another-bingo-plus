@@ -27,9 +27,9 @@ class StatsCommand(
         sendMessage(text.string(StringKey.CommandStatsPlayer, player.playerName))
 
         // All Time
-        sendMessage(Text.literal("★ ").append(text.string(StringKey.StatsAllTime)).formatted(Formatting.BOLD, Formatting.YELLOW))
+        sendMessage(text.literal("★ ").append(text.string(StringKey.StatsAllTime)).formatted(Formatting.BOLD, Formatting.YELLOW))
         sendMessage(
-            Text.literal("  ")
+            text.literal("  ")
                 .append(text.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.totalGames.formatLargeNumber()}, ")
                 .append(text.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
@@ -38,15 +38,15 @@ class StatsCommand(
                 .append(": ${summary.totalItems.formatLargeNumber()}")
         )
         sendMessage(
-            Text.literal("  ")
+            text.literal("  ")
                 .append(text.string(StringKey.StatsPlaytime).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.totalPlaytime.formatString()}")
         )
 
         // Monthly
-        sendMessage(Text.literal("\uD83D\uDCC6 ").append(text.string(StringKey.StatsMonthly)).formatted(Formatting.BOLD, Formatting.AQUA))
+        sendMessage(text.literal("\uD83D\uDCC6 ").append(text.string(StringKey.StatsMonthly)).formatted(Formatting.BOLD, Formatting.AQUA))
         sendMessage(
-            Text.literal("  ")
+            text.literal("  ")
                 .append(text.string(StringKey.StatsGames).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.monthlyGames.formatLargeNumber()}, ")
                 .append(text.string(StringKey.StatsWinLoss).formatted(Formatting.BOLD, Formatting.GRAY))
@@ -55,7 +55,7 @@ class StatsCommand(
                 .append(": ${summary.monthlyItems.formatLargeNumber()}")
         )
         sendMessage(
-            Text.literal("  ")
+            text.literal("  ")
                 .append(text.string(StringKey.StatsPlaytime).formatted(Formatting.BOLD, Formatting.GRAY))
                 .append(": ${summary.monthlyPlaytime.formatString()}")
         )

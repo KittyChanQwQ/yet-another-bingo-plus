@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.platform.EntityType
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.ITextDisplayEntity
-import net.minecraft.text.Text
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
@@ -16,8 +16,8 @@ internal fun MenuComponent.registerNumberInput(
     minValueProp: Property<Int>,
     maxValueProp: Property<Int>,
     step: Int = 1,
-    format: (Int) -> Text = { Text.literal(it.toString()) },
-    tooltip: List<Text>? = null,
+    format: (Int) -> IText = { text.literal(it.toString()) },
+    tooltip: List<IText>? = null,
     isVisible: () -> Boolean = { true },
     decreaseLabel: String = "-",
     increaseLabel: String = "+",
@@ -27,14 +27,14 @@ internal fun MenuComponent.registerNumberInput(
     val minValue by minValueProp
     val maxValue by maxValueProp
 
-    val increaseText = Text.literal(increaseLabel)
+    val increaseText = text.literal(increaseLabel)
     registerTileButton(
         position = position + Vector3d(width/2 - height/2, 0.0, 0.0),
         width = height,
         height = height,
-        text = Text.empty(),
+        text = text.empty(),
         textProp = computedProperty {
-            increaseText.takeIf { isVisible() } ?: Text.empty()
+            increaseText.takeIf { isVisible() } ?: text.empty()
         },
         isActiveProp = ConstantProperty(true),
         tooltip = tooltip,
@@ -44,14 +44,14 @@ internal fun MenuComponent.registerNumberInput(
             .also { onChange(player, it) }
     }
 
-    val decreaseText = Text.literal(decreaseLabel)
+    val decreaseText = text.literal(decreaseLabel)
     registerTileButton(
         position = position + Vector3d(-width/2 + height/2, 0.0, 0.0),
         width = height,
         height = height,
-        text = Text.empty(),
+        text = text.empty(),
         textProp = computedProperty {
-            decreaseText.takeIf { isVisible() } ?: Text.empty()
+            decreaseText.takeIf { isVisible() } ?: text.empty()
         },
         isActiveProp = ConstantProperty(true),
         tooltip = tooltip,
@@ -71,7 +71,7 @@ internal fun MenuComponent.registerNumberInput(
 
     registerEntity(EntityType.TEXT_DISPLAY) {
         pos = position + Vector3d(0.0, height/2 - 0.1, 0.0)
-        this.value = format(value).takeIf { isVisible() } ?: Text.empty()
+        this.value = format(value).takeIf { isVisible() } ?: text.empty()
         billboard = ITextDisplayEntity.Billboard.FIXED
         alignment = ITextDisplayEntity.TextAlignment.CENTER
         background = 0

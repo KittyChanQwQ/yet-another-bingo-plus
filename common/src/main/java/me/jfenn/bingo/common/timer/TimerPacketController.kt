@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
 import net.minecraft.server.MinecraftServer
 
-class TimerPacketController(
+internal class TimerPacketController(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val packetManager: ServerPacketEvents,

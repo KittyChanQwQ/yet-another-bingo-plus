@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.client.platform.IDrawServiceFactory
 import me.jfenn.bingo.client.platform.INativeImage
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.impl.ItemStackFactory
 import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.MinecraftClient
@@ -27,6 +28,18 @@ class DrawService(
     override fun setShaderColor(r: Float, g: Float, b: Float, a: Float) {
         context.draw()
         RenderSystem.setShaderColor(r, g, b, a)
+    }
+
+    override fun getTextWidth(text: IText): Int {
+        return textRenderer.getWidth(text.value)
+    }
+
+    override fun getTextHeight(): Int {
+        return textRenderer.fontHeight
+    }
+
+    override fun drawText(text: IText, x: Int, y: Int, color: Int, shadow: Boolean) {
+        context.drawText(textRenderer, text.value, x, y, color, shadow)
     }
 
     override fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int) {

@@ -7,29 +7,6 @@ configurations {
     shade
 }
 
-sourceSets {
-    testmod {
-        java.srcDirs += [project(":common").sourceSets.testmod.java]
-        resources.srcDirs += [project(":common").sourceSets.testmod.resources]
-    }
-}
-
-loom {
-    runs {
-        gametestServer {
-            server()
-            source sourceSets.testmod
-
-            name "Game Test"
-
-            // Enable the gametest runner
-            vmArg "-Dfabric-api.gametest"
-            vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get()}/junit.xml"
-            runDir "build/gametest"
-        }
-    }
-}
-
 dependencies {
     implementation libs.insert.koin.core
     shade libs.insert.koin.core

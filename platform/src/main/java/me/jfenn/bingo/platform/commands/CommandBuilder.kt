@@ -1,5 +1,6 @@
 package me.jfenn.bingo.platform.commands
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
@@ -147,7 +148,7 @@ interface IExecutionSource {
     val scope: Scope
     val player: IPlayerHandle?
     val isConsole: Boolean
-    fun error(text: Text): Nothing
+    fun error(text: IText): Nothing
 
     val playerOrThrow
         get() = player ?: error(Text.translatable("permissions.requires.player"))
@@ -155,13 +156,13 @@ interface IExecutionSource {
 
 interface ISignedMessage {
     val sender: UUID
-    val text: Text
+    val text: IText
     val raw: String
-    fun withUnsignedContent(text: Text): ISignedMessage
+    fun withUnsignedContent(text: IText): ISignedMessage
 }
 
 interface IExecutionContext : IExecutionSource {
-    fun sendMessage(text: Text)
-    fun sendFeedback(text: Text)
+    fun sendMessage(text: IText)
+    fun sendFeedback(text: IText)
     fun <T> getArgument(arg: CommandArgument<T>): T
 }

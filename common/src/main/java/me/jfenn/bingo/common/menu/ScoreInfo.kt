@@ -13,7 +13,6 @@ internal fun MenuComponent.registerScoreInfo(
     position: Vector3d,
     width: Double = MENU_SCORE_INFO_WIDTH,
     options: BingoOptions = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) {
     val offset = Vector3d()
 

@@ -1,13 +1,14 @@
 package me.jfenn.bingo.impl
 
 import com.mojang.authlib.GameProfile
-import me.jfenn.bingo.platform.scope.BingoKoin
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.PlayerProfile
+import me.jfenn.bingo.platform.scope.BingoKoin
 import net.minecraft.command.CommandSource
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EquipmentSlot
@@ -129,12 +130,12 @@ class PlayerHandle(
     override val isSneaking: Boolean
         get() = player.isSneaking
 
-    override fun sendMessage(message: Text) {
-        player.sendMessage(message)
+    override fun sendMessage(message: IText) {
+        player.sendMessage(message.value)
     }
 
-    override fun sendHotbarMessage(message: Text) {
-        player.sendMessage(message, true)
+    override fun sendHotbarMessage(message: IText) {
+        player.sendMessage(message.value, true)
     }
 
     override fun sendChatMessage(message: ISignedMessage, sender: IPlayerHandle) {
@@ -145,32 +146,32 @@ class PlayerHandle(
         player.sendChatMessage(SentMessage.of(message.message), false, parameters)
     }
 
-    override fun sendTeamMessage(message: ISignedMessage, sender: IPlayerHandle, teamName: Text) {
+    override fun sendTeamMessage(message: ISignedMessage, sender: IPlayerHandle, teamName: IText) {
         require(message is SignedMessageImpl)
         require(sender is PlayerHandle)
 
         val parameters: MessageType.Parameters = MessageType.params(
             if (sender.uuid == this.uuid) MessageType.TEAM_MSG_COMMAND_OUTGOING else MessageType.TEAM_MSG_COMMAND_INCOMING,
             sender.player
-        ).withTargetName(teamName)
+        ).withTargetName(teamName.value)
         player.sendChatMessage(SentMessage.of(message.message), false, parameters)
     }
 
-    override fun sendTeamMessage(message: Text, sender: IPlayerHandle, teamName: Text) {
+    override fun sendTeamMessage(message: IText, sender: IPlayerHandle, teamName: IText) {
         require(sender is PlayerHandle)
 
         val parameters: MessageType.Parameters = MessageType.params(
             if (sender.uuid == this.uuid) MessageType.TEAM_MSG_COMMAND_OUTGOING else MessageType.TEAM_MSG_COMMAND_INCOMING,
             sender.player
-        ).withTargetName(teamName)
-        val decoratedMessage = parameters.type.value().chat.apply(message, parameters)
+        ).withTargetName(teamName.value)
+        val decoratedMessage = parameters.type.value().chat.apply(message.value, parameters)
 
-        sendMessage(decoratedMessage)
+        player.sendMessage(decoratedMessage)
     }
 
-    override fun sendTitle(title: Text, subtitle: Text?) {
-        player.networkHandler.sendPacket(TitleS2CPacket(title))
-        player.networkHandler.sendPacket(SubtitleS2CPacket(subtitle ?: Text.empty()))
+    override fun sendTitle(title: IText, subtitle: IText?) {
+        player.networkHandler.sendPacket(TitleS2CPacket(title.value))
+        player.networkHandler.sendPacket(SubtitleS2CPacket(subtitle?.value ?: Text.empty()))
     }
 
     override fun hasPermissionLevel(level: Int): Boolean {

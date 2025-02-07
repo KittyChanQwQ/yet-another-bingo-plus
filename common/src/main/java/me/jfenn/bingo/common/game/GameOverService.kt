@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.game
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.options.EndWhen
@@ -66,12 +67,12 @@ class GameOverService(
         class Items(override val leader: BingoTeamKey): LeadingTeam()
     }
 
-    fun getTitle(info: GameOverInfo): Text {
+    fun getTitle(info: GameOverInfo): IText {
         return info.reason?.format(textProvider)
             ?: textProvider.string(StringKey.GameEndGameOver)
     }
 
-    fun getMessage(info: GameOverInfo): Text? {
+    fun getMessage(info: GameOverInfo): IText? {
         return (
             info.winningTeamKey?.let { state.teams[it] }
                 ?.let { winner ->

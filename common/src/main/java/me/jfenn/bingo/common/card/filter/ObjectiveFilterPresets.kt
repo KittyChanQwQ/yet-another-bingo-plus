@@ -2,10 +2,10 @@ package me.jfenn.bingo.common.card.filter
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.client.platform.text.ITextFactory
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 
 @Serializable
 class ObjectiveFilterPresets(
@@ -24,9 +24,10 @@ class ObjectiveFilterPreset(
 ) {
     fun name(text: TextProvider) =
         name?.let { text.deserialized(it) }
-            ?: formatName(id)
+            ?: formatName(text, id)
 
     companion object {
-        fun formatName(name: String): MutableText = Text.translatableWithFallback("bingo.list.$name", name.formatTitle())
+        fun formatName(textFactory: ITextFactory, name: String): IText =
+            textFactory.translatable("bingo.list.$name", name.formatTitle())
     }
 }

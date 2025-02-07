@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.mojang.serialization.JsonOps
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.item.*
 import net.minecraft.component.DataComponentType
 import net.minecraft.component.DataComponentTypes
@@ -19,7 +20,6 @@ import net.minecraft.resource.featuretoggle.FeatureSet
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.RawFilteredPair
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Unit
 import org.slf4j.Logger
@@ -100,11 +100,11 @@ class ItemStackFactory(
         override val identifier: Identifier
             get() = Registries.ITEM.getId(item)
 
-        override val displayName: Text
-            get() = stack.name
+        override val displayName: IText
+            get() = stack.name.let { TextImpl(it.copy()) }
 
-        override val lore: List<Text>
-            get() = stack[DataComponentTypes.LORE]?.lines ?: emptyList()
+        override val lore: List<IText>
+            get() = stack[DataComponentTypes.LORE]?.lines?.map { TextImpl(it.copy()) } ?: emptyList()
 
         override var count: Int
             get() = stack.count
@@ -135,9 +135,9 @@ class ItemStackFactory(
             return stack[DataComponentTypes.CUSTOM_DATA]?.copyNbt()?.contains(tag) == true
         }
 
-        override fun setDisplay(name: Text?, lore: List<Text>?) {
-            stack[DataComponentTypes.CUSTOM_NAME] = name
-            stack[DataComponentTypes.LORE] = lore?.let { LoreComponent(it) }
+        override fun setDisplay(name: IText?, lore: List<IText>?) {
+            stack[DataComponentTypes.CUSTOM_NAME] = name?.value
+            stack[DataComponentTypes.LORE] = lore?.let { LoreComponent(it.map { t -> t.value }) }
         }
 
         override fun setUnbreakable(value: Boolean) {
@@ -334,13 +334,13 @@ class ItemStackFactory(
                 )
             }
 
-        override fun setPages(pages: List<Text>) {
+        override fun setPages(pages: List<IText>) {
             val original = stack[DataComponentTypes.WRITTEN_BOOK_CONTENT]
             stack[DataComponentTypes.WRITTEN_BOOK_CONTENT] = WrittenBookContentComponent(
                 original?.title ?: RawFilteredPair.of(""),
                 original?.author ?: "",
                 original?.generation ?: 0,
-                pages.map { RawFilteredPair.of(it) },
+                pages.map { RawFilteredPair.of(it.value) },
                 original?.resolved ?: true
             )
         }

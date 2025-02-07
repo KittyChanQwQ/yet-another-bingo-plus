@@ -1,10 +1,9 @@
 package me.jfenn.bingo.common.card.filter
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.text.TextProvider
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 class ObjectiveFilterService(
@@ -23,17 +22,17 @@ class ObjectiveFilterService(
         return configPresets + dataPresets
     }
 
-    fun formatFilter(itemFilter: ObjectiveFilterList, includePresetDetails: Boolean): MutableText {
+    fun formatFilter(itemFilter: ObjectiveFilterList, includePresetDetails: Boolean): IText {
         return getPresetFilters().values
             .find { filter -> filter.value == itemFilter }
             ?.let { filter ->
-                val text = filter.name(text)
+                val name = filter.name(text)
                 when {
-                    includePresetDetails -> text.append(" ")
-                        .append(Text.literal("($filter)").formatted(Formatting.GRAY))
-                    else -> text
+                    includePresetDetails -> name.append(" ")
+                        .append(text.literal("($filter)").formatted(Formatting.GRAY))
+                    else -> name
                 }
             }
-            ?: Text.literal(itemFilter.toString())
+            ?: text.literal(itemFilter.toString())
     }
 }

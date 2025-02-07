@@ -4,11 +4,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.integrations.permissions.PermissionKey
-import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 
 val IExecutionSource.runByName get() = when {
     isConsole -> "RCON"
@@ -29,28 +25,4 @@ fun IExecutionSource.hasPermission(key: PermissionKey): Boolean {
 
 fun IExecutionSource.hasLobby(): Boolean {
     return scope.get<BingoState>().isLobbyMode
-}
-
-fun IExecutionContext.sendInfoFeedback(text: MutableText) {
-    Text.empty()
-        .append("ℹ ")
-        .append(text.formatted(Formatting.ITALIC))
-        .formatted(Formatting.AQUA)
-        .also { sendFeedback(it) }
-}
-
-fun IExecutionContext.sendInfoMessage(text: MutableText) {
-    Text.empty()
-        .append("ℹ ")
-        .append(text.formatted(Formatting.ITALIC))
-        .formatted(Formatting.AQUA)
-        .also { sendMessage(it) }
-}
-
-fun IExecutionContext.sendWarningMessage(text: MutableText) {
-    Text.empty()
-        .append("⚠ ")
-        .append(text.formatted(Formatting.ITALIC))
-        .formatted(Formatting.YELLOW)
-        .also { sendMessage(it) }
 }

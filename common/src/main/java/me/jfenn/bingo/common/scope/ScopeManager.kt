@@ -15,7 +15,6 @@ import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.IServerEvents
 import me.jfenn.bingo.platform.event.model.ReloadEvent
-import me.jfenn.bingo.platform.getFromWorld
 import me.jfenn.bingo.platform.scope.IScopeManager
 import me.jfenn.bingo.platform.utils.IEventListener
 import net.minecraft.server.MinecraftServer
@@ -55,18 +54,15 @@ class ScopeManager(
             if (isLobbyMode) log.info("[ScopeManager] $MOD_ID.zip datapack exists - starting with isLobbyMode=true")
             else log.info("[ScopeManager] $MOD_ID.zip datapack does not exist - starting with isLobbyMode=false")
 
-            // obtain the bingo game state from the save file
-            val state = persistentStateManager.getFromWorld<BingoState>(
-                world = server.overworld,
-                id = BINGO_STATE_ID,
-                default = { BingoState(options = configService.options) },
-            )
-            state.isLobbyMode = isLobbyMode
-
             log.info("[ScopeManager] Starting server scope...")
-            val ctx = BingoScope(server, state)
+            val ctx = BingoScope(server)
             val scopeId = getScopeId(server)
             val scope = koin.createScope<BingoScope>(scopeId, ctx)
+
+            // obtain the bingo game state from the save file
+            val state = scope.get<BingoState>()
+            state.isLobbyMode = isLobbyMode
+
             scope.commonInit()
 
             val events = scope.get<ScopedEvents>()

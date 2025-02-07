@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.autorestart
 
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.commands.hasLobby
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.state.GameState
@@ -26,7 +27,7 @@ class ResetCommand(
     init {
         commandManager.register("bingo") {
             literal("reset") {
-                requires { hasPermission(Permission.COMMAND_RESET) && hasState(GameState.PLAYING, GameState.POSTGAME) }
+                requires { hasPermission(Permission.COMMAND_RESET) && hasState(GameState.PLAYING, GameState.POSTGAME) && hasLobby() }
                 executes {
                     reset()
                 }

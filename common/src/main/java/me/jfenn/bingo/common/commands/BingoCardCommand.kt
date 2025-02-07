@@ -14,13 +14,11 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.commands.CommandArgument
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
-import net.minecraft.text.Text
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 
@@ -96,7 +94,7 @@ class BingoCardCommand(
     private fun IExecutionContext.rerollCard() {
         val card = cardViewService.getPlayerCard(player)
         cardService.shuffleCard(card)
-        sendInfoFeedback(text.string(StringKey.OptionsRerollCardSuccess))
+        sendFeedback(text.string(StringKey.OptionsRerollCardSuccess))
     }
 
     private fun IExecutionContext.getCardTags() = buildMap {
@@ -106,7 +104,7 @@ class BingoCardCommand(
     }
 
     private fun IExecutionContext.getCardStack() {
-        sendMessage(Text.literal("Bingo Cards:").formatted(Formatting.GRAY))
+        sendMessage(text.literal("Bingo Cards:").formatted(Formatting.GRAY))
 
         for ((i, card) in state.cards.withIndex()) {
             val teams = state.getRegisteredTeams()
@@ -118,25 +116,27 @@ class BingoCardCommand(
 
             val mode = card.options.formatGameMode()
                 .map { text.string(it) }
-                .joinText()
+                .let { text.joinText(it) }
 
             val goal = card.options.goal.format(text)
 
-            val itemDist = card.options.formatItemDist()
+            val itemDist = card.options.formatItemDist(text)
 
             buildList {
-                add(Text.literal("  #${i+1}"))
+                add(text.literal("  #${i+1}"))
                 add(itemDist)
                 add(mode)
                 add(goal)
                 if (teams.isNotEmpty()) {
-                    add(teams.joinText(Text.literal(" ")))
+                    add(text.joinText(teams, text.literal(" ")))
                 }
                 if (nextCardIndex != null && nextCardIndex != i+1) {
-                    add(Text.literal(" -> #${nextCardIndex+1}"))
+                    add(text.literal(" -> #${nextCardIndex+1}"))
                 }
             }
-                .joinText(Text.literal(" | ").formatted(Formatting.GRAY))
+                .let {
+                    text.joinText(it, text.literal(" | ").formatted(Formatting.GRAY))
+                }
                 .also { sendMessage(it) }
         }
     }
@@ -150,8 +150,8 @@ class BingoCardCommand(
             ?: throw IllegalArgumentException("Could not find card '$cardTag'")
 
         team.cardId = card.id
-        sendInfoFeedback(
-            Text.empty()
+        sendFeedback(
+            text.empty()
                 .append("Team ")
                 .append(team.getName(text))
                 .append(" assigned to card $cardTag")

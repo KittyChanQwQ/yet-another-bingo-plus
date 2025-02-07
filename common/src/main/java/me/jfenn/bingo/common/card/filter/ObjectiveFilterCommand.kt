@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.card.filter
 
+import me.jfenn.bingo.client.platform.text.TextAction
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.tag.TagService
 import me.jfenn.bingo.common.commands.hasPermission
@@ -96,12 +97,10 @@ class ObjectiveFilterCommand(
 
                             val listWithUnobtainable = ObjectiveFilterList.fromString("-${ObjectiveFilter.UNOBTAINABLE} $list")
                             val command = filter(listWithUnobtainable.toString())
-                            Text.literal("  ")
-                                .append(Text.literal(command).formatted(Formatting.UNDERLINE))
+                            text.literal("  ")
+                                .append(text.literal(command).formatted(Formatting.UNDERLINE))
                                 .also {
-                                    it.style = it.style.withClickEvent(
-                                        ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)
-                                    )
+                                    it.setClickEvent(TextAction.SuggestCommand(command))
                                 }
                                 .let { sendMessage(it) }
                         }

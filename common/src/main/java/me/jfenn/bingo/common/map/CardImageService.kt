@@ -1,16 +1,16 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Identifier
 import java.io.InputStream
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
-class CardImageService(
+internal class CardImageService(
     private val server: MinecraftServer,
     private val playerManager: IPlayerManager,
     private val packets: ServerPacketEvents,

@@ -17,7 +17,7 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * Wait until the player has finished loading terrain
  */
-class WaitUntilLoadedController(
+internal class WaitUntilLoadedController(
     events: ScopedEvents,
     private val options: BingoOptions,
     private val state: BingoState,

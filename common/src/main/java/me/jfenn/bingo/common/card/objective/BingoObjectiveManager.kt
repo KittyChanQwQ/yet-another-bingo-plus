@@ -5,13 +5,9 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveRequirements
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterPreset
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.joinText
-import net.minecraft.text.Style
-import net.minecraft.text.Text
+import me.jfenn.bingo.generated.StringKey
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
-
-private val NON_ITALIC_STYLE = Style.EMPTY.withItalic(false)
 
 class BingoObjectiveManager(
     private val providers: List<IObjectiveManager>,
@@ -95,32 +91,39 @@ class BingoObjectiveManager(
                 continue
             }
 
+            val display = when {
+                objective is BingoObjective.FreeSpace -> ObjectiveDisplay.Resolved(
+                    name = text.string(StringKey.CardFreeSpace)
+                )
+                else -> objective.display
+            }
+
             val lore = buildList {
-                objective.display.lore?.let { addAll(it) }
+                display.lore?.let { addAll(it) }
 
                 val desc = listOfNotNull(
                     entry.tier?.let { text.string(it.string).formatted(it.formatting) },
-                    entry.source?.let { ObjectiveFilterPreset.formatName(it).formatted(Formatting.BLUE) },
-                    entry.tileName?.let { Text.literal(it).formatted(Formatting.GRAY) },
+                    entry.source?.let { ObjectiveFilterPreset.formatName(text, it).formatted(Formatting.BLUE) },
+                    entry.tileName?.let { text.literal(it).formatted(Formatting.GRAY) },
                 )
 
                 desc.takeIf { it.isNotEmpty() }
-                    ?.joinText(Text.literal(" • ").formatted(Formatting.GRAY))
+                    ?.let { text.joinText(it, text.literal(" • ").formatted(Formatting.GRAY)) }
                     ?.let { add(it) }
             }.takeIf { it.isNotEmpty() }
 
-            val item = objective.display.item?.copy()?.also { stack ->
+            val item = display.item?.copy()?.also { stack ->
                 stack.setDisplay(
-                    name = objective.display.name
+                    name = display.name
                         ?.takeIf { it != stack.displayName }
-                        ?.let { Text.empty().append(it).setStyle(NON_ITALIC_STYLE) },
+                        ?.let { text.empty().append(it).resetStyle() },
                     lore = lore
-                        ?.map { Text.empty().append(it).setStyle(NON_ITALIC_STYLE) },
+                        ?.map { text.empty().append(it).resetStyle() },
                 )
                 stack.setHideFlags(255)
             }
 
-            entry.display = objective.display.copy(lore = lore, item = item)
+            entry.display = display.copy(lore = lore, item = item)
         }
     }
 

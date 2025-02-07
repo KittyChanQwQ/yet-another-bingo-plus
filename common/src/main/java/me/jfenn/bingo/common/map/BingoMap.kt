@@ -10,7 +10,7 @@ data class BingoMap(
 ) {
 
     @Transient
-    var view: CardView = CardView(null, CardDisplay(null), mutableListOf())
+    var view: CardView? = null
 
     @Transient
     var mapState: MapState? = null

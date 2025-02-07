@@ -11,7 +11,6 @@ import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.json
-import me.jfenn.bingo.common.utils.wrap
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
@@ -137,14 +136,16 @@ internal class BingoHudRenderer(
             textureHeight = CARD_HEIGHT,
         )
 
-        context.drawText(service.textRenderer, view.display.teamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
+        view.display.teamName?.let { teamName ->
+            service.drawText(teamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
+        }
 
         if (isWinner) {
             context.matrices.push()
             context.matrices.translate(90.0, -4.0, 1000.0)
             context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
 
-            context.drawText(service.textRenderer, text.string(StringKey.CardWinner), 0, 0, getWinColor(state.now), true)
+            service.drawText(text.string(StringKey.CardWinner), 0, 0, getWinColor(state.now), true)
 
             context.matrices.pop()
         }
@@ -298,7 +299,7 @@ internal class BingoHudRenderer(
                 tile.lore.flatMapIndexed { i, lore ->
                     val isLast = i >= tile.lore.size - 1 // the last item (tile info) should never be wrapped
                     if (isLast) listOf(lore)
-                    else lore.wrap(TOOLTIP_MAX_LENGTH)
+                    else listOf(lore) // .wrap(TOOLTIP_MAX_LENGTH)
                 }
             )
         }
@@ -318,7 +319,7 @@ internal class BingoHudRenderer(
             context.matrices.translate(0f, 0f, z + 2000f)
 
             if (tile.imageList.isNotEmpty()) {
-                val tooltipWidth = tooltip.maxOf { service.textRenderer.getWidth(it) }
+                val tooltipWidth = tooltip.maxOf { service.getTextWidth(it) }
                 val tooltipHeight = 10 * tooltip.size // hardcoded in OrderedTextTooltipComponent
                 val componentHeight = 14 + 20 * rows
                 val componentWidth = 14 + 20 * columns
@@ -360,7 +361,7 @@ internal class BingoHudRenderer(
                 }
             }
 
-            context.drawTooltip(service.textRenderer, tooltip, mouseX, mouseY)
+            context.drawTooltip(service.textRenderer, tooltip.map { it.value }, mouseX, mouseY)
             context.matrices.pop()
         }
     }

@@ -10,12 +10,12 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MI
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 import org.slf4j.Logger
 
 class ScoreboardObjectiveManager(
@@ -26,6 +26,7 @@ class ScoreboardObjectiveManager(
     private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
+    private val text: TextProvider,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
         return data.objectives.rootObjectives
@@ -59,7 +60,7 @@ class ScoreboardObjectiveManager(
         objective.scoreboard = scoreboard
 
         val display = ObjectiveDisplay.Resolved(
-            name = Text.literal(objective.data.scoreboardName.formatTitle())
+            name = text.literal(objective.data.scoreboardName.formatTitle())
                 .append(": $FORMAT_MIN"),
             decoration = CardTile.Decoration.ADVANCEMENT,
         )

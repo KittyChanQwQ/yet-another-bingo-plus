@@ -5,7 +5,6 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.options.*
 import me.jfenn.bingo.common.scope.BingoComponent
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.commands.CommandBuilder
@@ -102,7 +101,7 @@ class BingoOptionsCommands(
                     requires {
                         hasState(GameState.PREGAME, GameState.PLAYING)
                                 && hasPermission(Permission.CONFIGURE_GAME)
-                                && scope.get<BingoState>().isLobbyMode
+                                && hasLobby()
                     }
                     executesToggle { toggleCardMode(BingoCardOptions::isConsumeItemsMode, it) }
                 }
@@ -164,6 +163,7 @@ class BingoOptionsCommands(
                 }
 
                 literal("pvp") {
+                    requires { hasLobby() && hasConfigureGame() }
                     executesToggle { isPvpEnabled ->
                         scope.get<OptionsService>().togglePvp(optionsContext, isPvpEnabled)
                         scope.get<ScopedEvents>().onChangeOptions.invoke(Unit)
@@ -178,6 +178,7 @@ class BingoOptionsCommands(
                 }
 
                 literal("night_vision") {
+                    requires { hasLobby() && hasConfigureGame() }
                     executesToggle { isNightVision ->
                         scope.get<OptionsService>().toggleNightVision(optionsContext, isNightVision)
                         scope.get<ScopedEvents>().onChangeOptions(Unit)

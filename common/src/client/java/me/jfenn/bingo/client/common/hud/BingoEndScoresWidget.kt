@@ -31,22 +31,19 @@ internal class BingoEndScoresWidget(
 
         val yOffset = (entryHeight/2) - (textRenderer.fontHeight/2)
 
-        drawService.context.drawText(
-            textRenderer,
+        drawService.drawText(
             text.string(StringKey.GameEndScoresTeam).formatted(Formatting.GRAY),
             teamCol, yOffset,
             0xFF_FFFFFF.toInt(), true,
         )
 
-        drawService.context.drawText(
-            textRenderer,
+        drawService.drawText(
             text.string(StringKey.GameEndScoresScore).formatted(Formatting.GRAY),
             scoreCol, yOffset,
             0xFF_FFFFFF.toInt(), true,
         )
 
-        drawService.context.drawText(
-            textRenderer,
+        drawService.drawText(
             text.string(StringKey.GameEndScoresTime).formatted(Formatting.GRAY),
             timeCol, yOffset,
             0xFF_FFFFFF.toInt(), true,
@@ -56,41 +53,38 @@ internal class BingoEndScoresWidget(
         for ((i, score) in gameOver.packet.scores.withIndex()) {
             val isObfuscated = (now - gameOver.packet.endedAt).inWholeSeconds < (i+1).toLong()
 
-            val teamText = Text.empty()
+            val teamText = text.empty()
                 .append("#${score.index+1} ")
                 .append(score.name)
                 .let { if (isObfuscated) it.formatted(Formatting.OBFUSCATED) else it }
 
-            val scoreText = Text.empty()
+            val scoreText = text.empty()
                 .append(score.score.formatText(text))
                 .let { if (isObfuscated) it.formatted(Formatting.OBFUSCATED) else it }
 
-            val durationText = Text.literal(score.duration?.formatHHMMSS() ?: "DNF")
+            val durationText = text.literal(score.duration?.formatHHMMSS() ?: "DNF")
                 .let { if (isObfuscated) it.formatted(Formatting.OBFUSCATED) else it }
 
             val y = (i + 1) * entryHeight + yOffset
-            drawService.context.drawText(
-                textRenderer,
+            drawService.drawText(
                 teamText,
                 teamCol, y,
                 0xFF_FFFFFF.toInt(), true
             )
 
-            drawService.context.drawText(
-                textRenderer,
+            drawService.drawText(
                 scoreText,
                 scoreCol, y,
                 0xFF_FFFFFF.toInt(), true
             )
 
-            drawService.context.drawText(
-                textRenderer,
+            drawService.drawText(
                 durationText,
                 timeCol, y,
                 0xFF_FFFFFF.toInt(), true
             )
 
-            val isTextHovered = mouseX in teamCol..textRenderer.getWidth(teamText)
+            val isTextHovered = mouseX in teamCol..textRenderer.getWidth(teamText.value)
                     && mouseY in (y - yOffset)..(y - yOffset + entryHeight)
             if (isTextHovered) {
                 val view = gameOver.views.find { it.teamKey == score.key }

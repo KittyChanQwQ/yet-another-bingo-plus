@@ -58,19 +58,19 @@ internal class YetAnotherConfigLibIntegrationImpl(
 
     override fun buildConfigScreen(parent: Screen): Screen {
         return YetAnotherConfigLib.createBuilder()
-            .title(text.string(StringKey.FullName))
+            .title(text.string(StringKey.FullName).value)
             .category(
                 ConfigCategory.createBuilder()
-                    .name(text.string(StringKey.ConfigGui))
-                    .tooltip(text.string(StringKey.ConfigGuiTooltip))
+                    .name(text.string(StringKey.ConfigGui).value)
+                    .tooltip(text.string(StringKey.ConfigGuiTooltip).value)
                     .options(listOf(
                         Option.createBuilder<Boolean>()
-                            .name(text.string(StringKey.ConfigQuickStartButton))
+                            .name(text.string(StringKey.ConfigQuickStartButton).value)
                             .description(
                                 OptionDescription.of(
-                                    text.string(StringKey.ConfigQuickStartButtonDescription),
+                                    text.string(StringKey.ConfigQuickStartButtonDescription).value,
                                     Text.empty(),
-                                    text.string(StringKey.ConfigQuickStartButtonDescription2),
+                                    text.string(StringKey.ConfigQuickStartButtonDescription2).value,
                                 )
                             )
                             .binding(
@@ -86,13 +86,13 @@ internal class YetAnotherConfigLibIntegrationImpl(
                     ))
                     .group(
                         OptionGroup.createBuilder()
-                            .name(text.string(StringKey.ConfigGuiHudSettings))
+                            .name(text.string(StringKey.ConfigGuiHudSettings).value)
                             .options(listOf(
                                 Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.ConfigEnableClientHud))
+                                    .name(text.string(StringKey.ConfigEnableClientHud).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigEnableClientHudDescription)
+                                            text.string(StringKey.ConfigEnableClientHudDescription).value
                                         )
                                     )
                                     .binding(
@@ -106,10 +106,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     .controller { BooleanControllerBuilder.create(it).coloured(true) }
                                     .build(),
                                 Option.createBuilder<Float>()
-                                    .name(text.string(StringKey.ConfigCardScale))
+                                    .name(text.string(StringKey.ConfigCardScale).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigCardScaleDescription)
+                                            text.string(StringKey.ConfigCardScaleDescription).value
                                         )
                                     )
                                     .binding(
@@ -128,10 +128,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     }
                                     .build(),
                                 Option.createBuilder<CardAlignment>()
-                                    .name(text.string(StringKey.ConfigCardAlignment))
+                                    .name(text.string(StringKey.ConfigCardAlignment).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigCardAlignmentDescription)
+                                            text.string(StringKey.ConfigCardAlignmentDescription).value
                                         )
                                     )
                                     .binding(
@@ -145,14 +145,14 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     .controller {
                                         EnumControllerBuilder.create(it)
                                             .enumClass(CardAlignment::class.java)
-                                            .formatValue { value -> text.string(value.string) }
+                                            .formatValue { value -> text.string(value.string).value }
                                     }
                                     .build(),
                                 Option.createBuilder<CardOverlap>()
-                                    .name(text.string(StringKey.ConfigCardOverlap))
+                                    .name(text.string(StringKey.ConfigCardOverlap).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigCardOverlapDescription)
+                                            text.string(StringKey.ConfigCardOverlapDescription).value
                                         )
                                     )
                                     .binding(
@@ -166,14 +166,14 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     .controller {
                                         EnumControllerBuilder.create(it)
                                             .enumClass(CardOverlap::class.java)
-                                            .formatValue { value -> text.string(value.string) }
+                                            .formatValue { value -> text.string(value.string).value }
                                     }
                                     .build(),
                                 Option.createBuilder<Int>()
-                                    .name(text.string(StringKey.ConfigCardOffsetX))
+                                    .name(text.string(StringKey.ConfigCardOffsetX).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigCardOffsetXDescription)
+                                            text.string(StringKey.ConfigCardOffsetXDescription).value
                                         )
                                     )
                                     .binding(
@@ -191,10 +191,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     }
                                     .build(),
                                 Option.createBuilder<Int>()
-                                    .name(text.string(StringKey.ConfigCardOffsetY))
+                                    .name(text.string(StringKey.ConfigCardOffsetY).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigCardOffsetYDescription)
+                                            text.string(StringKey.ConfigCardOffsetYDescription).value
                                         )
                                     )
                                     .binding(
@@ -212,10 +212,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     }
                                     .build(),
                                 Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.ConfigShowMultipleCards))
+                                    .name(text.string(StringKey.ConfigShowMultipleCards).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigShowMultipleCardsDescription)
+                                            text.string(StringKey.ConfigShowMultipleCardsDescription).value
                                         )
                                     )
                                     .binding(
@@ -229,10 +229,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     .controller { BooleanControllerBuilder.create(it) }
                                     .build(),
                                 Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.ConfigShowTeamOutlines))
+                                    .name(text.string(StringKey.ConfigShowTeamOutlines).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigShowTeamOutlinesDescription)
+                                            text.string(StringKey.ConfigShowTeamOutlinesDescription).value
                                         )
                                     )
                                     .binding(
@@ -246,10 +246,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     .controller { BooleanControllerBuilder.create(it) }
                                     .build(),
                                 Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.ConfigHideOnF3))
+                                    .name(text.string(StringKey.ConfigHideOnF3).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigHideOnF3Description)
+                                            text.string(StringKey.ConfigHideOnF3Description).value
                                         )
                                     )
                                     .binding(
@@ -263,10 +263,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     .controller { BooleanControllerBuilder.create(it) }
                                     .build(),
                                 Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.ConfigHideOnChat))
+                                    .name(text.string(StringKey.ConfigHideOnChat).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigHideOnChatDescription)
+                                            text.string(StringKey.ConfigHideOnChatDescription).value
                                         )
                                     )
                                     .binding(
@@ -280,10 +280,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     .controller { BooleanControllerBuilder.create(it) }
                                     .build(),
                                 Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.ConfigCardPausesGame))
+                                    .name(text.string(StringKey.ConfigCardPausesGame).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.ConfigCardPausesGameDescription)
+                                            text.string(StringKey.ConfigCardPausesGameDescription).value
                                         )
                                     )
                                     .binding(
@@ -302,13 +302,13 @@ internal class YetAnotherConfigLibIntegrationImpl(
                     .group(
                         OptionGroup.createBuilder()
                             .collapsed(false)
-                            .name(text.string(StringKey.PlayerSettingsMessages))
+                            .name(text.string(StringKey.PlayerSettingsMessages).value)
                             .option(
                                 Option.createBuilder<Int>()
-                                    .name(text.string(StringKey.PlayerSettingsMessagesDuration))
+                                    .name(text.string(StringKey.PlayerSettingsMessagesDuration).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.PlayerSettingsMessagesDurationDescription)
+                                            text.string(StringKey.PlayerSettingsMessagesDurationDescription).value
                                         )
                                     )
                                     .binding(
@@ -328,10 +328,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                             )
                             .option(
                                 Option.createBuilder<Float>()
-                                    .name(text.string(StringKey.PlayerSettingsMessagesScale))
+                                    .name(text.string(StringKey.PlayerSettingsMessagesScale).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.PlayerSettingsMessagesScaleDescription)
+                                            text.string(StringKey.PlayerSettingsMessagesScaleDescription).value
                                         )
                                     )
                                     .binding(
@@ -352,10 +352,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                             )
                             .option(
                                 Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.PlayerSettingsMessagesLeading))
+                                    .name(text.string(StringKey.PlayerSettingsMessagesLeading).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.PlayerSettingsMessagesLeadingDescription)
+                                            text.string(StringKey.PlayerSettingsMessagesLeadingDescription).value
                                         )
                                     )
                                     .binding(
@@ -370,10 +370,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                             )
                             .option(
                                 Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.PlayerSettingsMessagesLines))
+                                    .name(text.string(StringKey.PlayerSettingsMessagesLines).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.PlayerSettingsMessagesLinesDescription)
+                                            text.string(StringKey.PlayerSettingsMessagesLinesDescription).value
                                         )
                                     )
                                     .binding(
@@ -388,10 +388,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                             )
                             .option(
                                 Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.PlayerSettingsMessagesItems))
+                                    .name(text.string(StringKey.PlayerSettingsMessagesItems).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.PlayerSettingsMessagesItemsDescription)
+                                            text.string(StringKey.PlayerSettingsMessagesItemsDescription).value
                                         )
                                     )
                                     .binding(
@@ -406,10 +406,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                             )
                             .option(
                                 Option.createBuilder<Boolean>()
-                                    .name(text.string(StringKey.PlayerSettingsMessagesShowOtherTeams))
+                                    .name(text.string(StringKey.PlayerSettingsMessagesShowOtherTeams).value)
                                     .description(
                                         OptionDescription.of(
-                                            text.string(StringKey.PlayerSettingsMessagesShowOtherTeamsDescription)
+                                            text.string(StringKey.PlayerSettingsMessagesShowOtherTeamsDescription).value
                                         )
                                     )
                                     .binding(
@@ -429,14 +429,14 @@ internal class YetAnotherConfigLibIntegrationImpl(
             )
             .category(
                 ConfigCategory.createBuilder()
-                    .name(text.string(StringKey.PlayerSettings))
-                    .tooltip(text.string(StringKey.PlayerSettingsTooltip))
+                    .name(text.string(StringKey.PlayerSettings).value)
+                    .tooltip(text.string(StringKey.PlayerSettingsTooltip).value)
                     .option(
                         Option.createBuilder<Boolean>()
-                            .name(text.string(StringKey.PlayerSettingsBossbar))
+                            .name(text.string(StringKey.PlayerSettingsBossbar).value)
                             .description(
                                 OptionDescription.of(
-                                    text.string(StringKey.PlayerSettingsBossbarDescription)
+                                    text.string(StringKey.PlayerSettingsBossbarDescription).value
                                 )
                             )
                             .binding(
@@ -451,10 +451,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                     )
                     .option(
                         Option.createBuilder<Boolean>()
-                            .name(text.string(StringKey.PlayerSettingsScoreboard))
+                            .name(text.string(StringKey.PlayerSettingsScoreboard).value)
                             .description(
                                 OptionDescription.of(
-                                    text.string(StringKey.PlayerSettingsScoreboardDescription)
+                                    text.string(StringKey.PlayerSettingsScoreboardDescription).value
                                 )
                             )
                             .binding(
@@ -469,10 +469,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
                     )
                     .option(
                         Option.createBuilder<Boolean>()
-                            .name(text.string(StringKey.PlayerSettingsNightVision))
+                            .name(text.string(StringKey.PlayerSettingsNightVision).value)
                             .description(
                                 OptionDescription.of(
-                                    text.string(StringKey.PlayerSettingsNightVisionDescription)
+                                    text.string(StringKey.PlayerSettingsNightVisionDescription).value
                                 )
                             )
                             .binding(
@@ -490,14 +490,14 @@ internal class YetAnotherConfigLibIntegrationImpl(
             )
             .category(
                 ConfigCategory.createBuilder()
-                    .name(text.string(StringKey.StatsSettings))
-                    .tooltip(text.string(StringKey.StatsSettingsTooltip))
+                    .name(text.string(StringKey.StatsSettings).value)
+                    .tooltip(text.string(StringKey.StatsSettingsTooltip).value)
                     .option(
                         Option.createBuilder<Boolean>()
-                            .name(text.string(StringKey.StatsSettingsSync))
+                            .name(text.string(StringKey.StatsSettingsSync).value)
                             .description(
                                 OptionDescription.of(
-                                    text.string(StringKey.StatsSettingsSyncDescription)
+                                    text.string(StringKey.StatsSettingsSyncDescription).value
                                 )
                             )
                             .binding(
@@ -515,17 +515,17 @@ internal class YetAnotherConfigLibIntegrationImpl(
             )
             .category(
                 ConfigCategory.createBuilder()
-                    .name(text.string(StringKey.SoundSettings))
-                    .tooltip(text.string(StringKey.SoundSettingsTooltip))
+                    .name(text.string(StringKey.SoundSettings).value)
+                    .tooltip(text.string(StringKey.SoundSettingsTooltip).value)
                     .groups(
                         ClientSounds.Key.entries.map { sound ->
                             val soundId = sound.name.lowercase()
                             val soundString = StringKey.entries.find { it.key == "bingo.sound.${soundId}" }!!
 
                             val sliderOption = Option.createBuilder<Float>()
-                                .name(text.string(StringKey.SoundSettingsVolume))
+                                .name(text.string(StringKey.SoundSettingsVolume).value)
                                 .description(OptionDescription.of(
-                                    text.string(StringKey.SoundSettingsCategoryDescription).formatted(Formatting.YELLOW)
+                                    text.string(StringKey.SoundSettingsCategoryDescription).formatted(Formatting.YELLOW).value
                                 ))
                                 .controller {
                                     FloatSliderControllerBuilder.create(it)
@@ -545,10 +545,10 @@ internal class YetAnotherConfigLibIntegrationImpl(
 
                             val buttonOption = ButtonOption.createBuilder()
                                 .name(
-                                    text.string(StringKey.SoundSettingsTestSound)
+                                    text.string(StringKey.SoundSettingsTestSound).value
                                 )
                                 .description(OptionDescription.of(
-                                    text.string(StringKey.SoundSettingsCategoryDescription).formatted(Formatting.YELLOW)
+                                    text.string(StringKey.SoundSettingsCategoryDescription).formatted(Formatting.YELLOW).value
                                 ))
                                 .action { _, _ ->
                                     soundService.play(sound, actualVolume = sliderOption.pendingValue())
@@ -556,9 +556,9 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                 .build()
 
                             OptionGroup.createBuilder()
-                                .name(text.string(soundString))
+                                .name(text.string(soundString).value)
                                 .description(OptionDescription.of(
-                                    text.string(StringKey.SoundSettingsCategoryDescription).formatted(Formatting.YELLOW)
+                                    text.string(StringKey.SoundSettingsCategoryDescription).formatted(Formatting.YELLOW).value
                                 ))
                                 .collapsed(false)
                                 .option(sliderOption)

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.platform
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.entity.Entity
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Text
 import org.joml.Matrix4f
 import org.joml.Vector3d
 import java.util.*
@@ -76,7 +76,7 @@ interface ITextDisplayEntity : IDisplayEntity {
     enum class TextAlignment { CENTER, LEFT, RIGHT }
 
     override val type get() = EntityType.TEXT_DISPLAY
-    var value: Text
+    var value: IText
     var lineWidth: Int
     var billboard: Billboard
     var alignment: TextAlignment

@@ -12,13 +12,11 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.jsonUnpretty
-import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IAdvancementHandle
 import me.jfenn.bingo.platform.IStatHandle
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
-import net.minecraft.text.Text
 import java.util.*
 import kotlin.time.Duration
 
@@ -132,14 +130,6 @@ sealed class BingoObjective {
 
         @Transient
         override val data: ObjectiveData? = null
-
-        override var display: ObjectiveDisplay.Resolved
-            set(_) {}
-            get() = ObjectiveDisplay.Resolved(
-                name = Text.translatableWithFallback(StringKey.CardFreeSpace.key, "Free Space"),
-                lore = emptyList(),
-                item = null,
-            )
 
         override fun hasAnyAchieved(): Boolean = true
         override fun hasAchieved(player: PlayerProfile): Boolean = true

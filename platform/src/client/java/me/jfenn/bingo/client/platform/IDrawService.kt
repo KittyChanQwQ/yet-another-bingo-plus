@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.platform
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -14,6 +15,9 @@ interface IDrawService {
 
     fun setShaderColor(r: Float, g: Float, b: Float, a: Float)
 
+    fun getTextWidth(text: IText): Int
+    fun getTextHeight(): Int
+    fun drawText(text: IText, x: Int, y: Int, color: Int, shadow: Boolean = false)
     fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int)
 
     fun drawDynamicTexture(

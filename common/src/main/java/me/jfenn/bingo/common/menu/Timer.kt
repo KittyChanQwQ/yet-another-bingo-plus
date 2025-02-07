@@ -14,7 +14,6 @@ const val MAX_TIMER_MINUTES: Int = 360
 internal fun MenuComponent.registerTimer(
     position: Vector3d,
     width: Double,
-    text: TextProvider = koinScope.get(),
     state: BingoState = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
 ) {
@@ -42,7 +41,7 @@ internal fun MenuComponent.registerTimer(
                 ?.let {
                     String.format(Locale.US, "%dh %02dm", minutes / 60, minutes % 60)
                 }
-                ?.let { Text.literal(it) }
+                ?.let { text.literal(it) }
                 ?: text.string(StringKey.OptionsTimeLimitOff)
         }
     ) { player, minutes ->

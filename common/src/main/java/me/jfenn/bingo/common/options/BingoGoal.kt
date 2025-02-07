@@ -2,9 +2,9 @@ package me.jfenn.bingo.common.options
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.MutableText
 
 @Serializable
 sealed class BingoGoal {
@@ -34,7 +34,7 @@ sealed class BingoGoal {
         }
     }
 
-    fun format(textProvider: TextProvider, supportsFullCard: Boolean = true): MutableText {
+    fun format(textProvider: TextProvider, supportsFullCard: Boolean = true): IText {
         return when {
             supportsFullCard && this.isFullCard() -> textProvider.string(StringKey.GoalFullCard)
             else -> when (this) {

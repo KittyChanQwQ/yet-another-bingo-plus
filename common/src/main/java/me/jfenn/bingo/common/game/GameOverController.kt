@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.game
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -18,17 +19,15 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
-import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import kotlin.time.Duration
 
-class GameOverController(
+internal class GameOverController(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
-    private val textProvider: TextProvider,
+    private val text: TextProvider,
     private val gameOverService: GameOverService,
     private val cardViewService: CardViewService,
     private val playerManager: IPlayerManager,
@@ -46,38 +45,38 @@ class GameOverController(
                 (options.endGameWhen !is EndWhen.FirstWin || options.winCondition is BingoWinCondition.Infinite)
                 && info.scoreRankings.size > 1
             ) {
-                add(Text.empty())
+                add(text.empty())
                 // List all teams that have completed the card
                 for (score in info.scoreRankings) {
                     val duration = score.duration?.formatString() ?: "DNF"
-                    val teamName = state.teams[score.key]?.getName(textProvider, playerName = true)
-                        ?: Text.literal("[unknown]")
+                    val teamName = state.teams[score.key]?.getName(text, playerName = true)
+                        ?: text.literal("[unknown]")
 
-                    Text.empty()
-                        .append(Text.literal("${score.index + 1}. ").formatted(Formatting.GRAY))
+                    text.empty()
+                        .append(text.literal("${score.index + 1}. ").formatted(Formatting.GRAY))
                         .append(teamName)
                         .append(" - ")
-                        .append(score.score.formatText(textProvider))
+                        .append(score.score.formatText(text))
                         .append(" - $duration")
                         .also { add(it) }
                 }
             }
         }
 
-        val placeholders = mapOf(
+        val placeholders = mapOf<String, List<IText>>(
             "%game_end_reason%" to listOf(
                 (gameOverService.getMessage(info) ?: gameOverService.getTitle(info))
-                    .let { Text.literal("  ").append(it) }
+                    .let { text.literal("  ").append(it) }
             ),
-            "%time%" to textProvider.string(
-                StringKey.GameEndDuration, Text.literal(
+            "%time%" to text.string(
+                StringKey.GameEndDuration, text.literal(
                     (state.ingameDuration() ?: Duration.ZERO).formatString()
                 ).formatted(Formatting.GREEN))
-                .let { listOf(Text.literal("  ").append(it)) },
-            "%seed%" to textProvider.string(
+                .let { listOf(text.literal("  ").append(it)) },
+            "%seed%" to text.string(
                 StringKey.GameEndSeed,
-                Texts.bracketedCopyable(server.overworld.seed.toString())
-            ).let { listOf(Text.literal("  ").append(it)) },
+                text.bracketedCopyable(server.overworld.seed.toString())
+            ).let { listOf(text.literal("  ").append(it)) },
             "%scores%" to scores,
         )
 
@@ -85,9 +84,9 @@ class GameOverController(
             .filter { state.isLobbyMode || teamService.isPlaying(it) }
 
         messageService.getLines(MessageService.MessageType.GAME_END, placeholders)
-            .forEach { text ->
-                log.info(text.string)
-                players.forEach { it.sendMessage(text) }
+            .forEach { line ->
+                log.info(line.toString())
+                players.forEach { it.sendMessage(line) }
             }
     }
 
@@ -110,7 +109,7 @@ class GameOverController(
             GameOverPacket.ScoreRanking(
                 index = it.index,
                 key = it.key,
-                name = state.teams[it.key]?.getName(textProvider, playerName = true) ?: Text.literal("[unknown]"),
+                name = state.teams[it.key]?.getName(text, playerName = true) ?: text.literal("[unknown]"),
                 score = it.score,
                 duration = it.duration,
             )
@@ -129,7 +128,7 @@ class GameOverController(
 
             val packet = GameOverPacket(
                 title = title,
-                subtitle = message ?: Text.empty(),
+                subtitle = message ?: text.empty(),
                 winner = info.winningTeamKey,
                 duration = state.ingameDuration() ?: Duration.ZERO,
                 canSendRestart = server.isDedicated && state.isLobbyMode && permissions.hasPermission(

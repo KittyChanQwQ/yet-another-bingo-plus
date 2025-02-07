@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoreboard
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.map.CardViewService
@@ -17,7 +18,6 @@ import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import me.jfenn.bingo.platform.scoreboard.ScoreChange
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 
 internal class ScoreboardService(
     private val state: BingoState,
@@ -63,11 +63,11 @@ internal class ScoreboardService(
 
     fun setScoreboardContents(
         objective: IObjectiveHandle,
-        contents: List<Text>,
+        contents: List<IText>,
         players: List<ServerPlayerEntity>,
     ) {
         val contentItems = contents.map {
-            ScoreboardView.ScoreboardItem(textSerializer.toRawString(it), it)
+            ScoreboardView.ScoreboardItem(textSerializer.toRawString(it.value), it.value)
         }
 
         // update the server-side objective
@@ -82,7 +82,7 @@ internal class ScoreboardService(
                 // ensure that the player is only in one scoreboard view at a time
                 for (otherView in scoreboardViews.values - view) {
                     if (otherView.players.contains(player.uuid)) {
-                        val otherObjective = scoreboardManager.createDummyObjective(server, otherView.objectiveName, Text.empty())
+                        val otherObjective = scoreboardManager.createDummyObjective(server, otherView.objectiveName, textProvider.empty())
                         scoreboardManager.sendObjectiveDelete(player, otherObjective)
                         otherView.players -= player.uuid
                     }
@@ -109,7 +109,7 @@ internal class ScoreboardService(
 
     fun clearScoreboards() {
         for (view in scoreboardViews.values) {
-            val objective = scoreboardManager.createDummyObjective(server, view.objectiveName, Text.empty())
+            val objective = scoreboardManager.createDummyObjective(server, view.objectiveName, textProvider.empty())
             for (playerId in view.players) {
                 val player = server.playerManager.getPlayer(playerId) ?: continue
                 scoreboardManager.sendObjectiveDelete(player, objective)

@@ -18,7 +18,6 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.wrap
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IServerEvents
 import net.minecraft.client.MinecraftClient
@@ -222,8 +221,8 @@ internal class BingoHudController(
         val tooltipText = tooltipPacket?.text
         val tooltipStartedAt = state.tooltipStartedAt ?: Instant.DISTANT_PAST
         if (tooltipText != null) {
-            val tooltip = tooltipText.flatMap { it.wrap(30) }
-            val tooltipSize = tooltip.maxOfOrNull { textRenderer.getWidth(it) } ?: 0
+            val tooltip = tooltipText // .flatMap { it.wrap(30) }
+            val tooltipSize = tooltip.maxOfOrNull { drawService.getTextWidth(it) } ?: 0
             val tooltipX = context.scaledWindowWidth/2 - tooltipSize/2 - 12
             val tooltipY = (context.scaledWindowHeight * 0.5).toInt() + 18 + 12
 
@@ -231,7 +230,7 @@ internal class BingoHudController(
             val fadeOut = 1.0 - ((now - tooltipPacket.createdAt.plus(100.milliseconds)) / 250.milliseconds).coerceIn(0.0, 1.0)
 
             drawService.setShaderColor(1f, 1f, 1f, (fadeIn * fadeOut).toFloat())
-            context.drawTooltip(textRenderer, tooltip, tooltipX, tooltipY)
+            context.drawTooltip(textRenderer, tooltip.map { it.value }, tooltipX, tooltipY)
             drawService.setShaderColor(1f, 1f, 1f, 1f)
 
             if (fadeOut <= 0.0) {
@@ -366,7 +365,6 @@ internal class BingoHudController(
         packetEvents.cardDisplayV1.onPacket(::onCardDisplayV1)
         packetEvents.cardDisplayV2.onPacket(::onCardDisplayV2)
 
-        packetEvents.cardUpdateV1.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV2.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV3.onPacket(::onCardUpdate)
         packetEvents.cardUpdateV4.onPacket(::onCardUpdate)
@@ -458,7 +456,7 @@ internal class BingoHudController(
                     packetEvents.readySetV1.send(SetReadyPacket(!(state.ready?.isReady ?: false)))
                 } else {
                     if (state.views.isEmpty()) {
-                        client.player?.sendMessage(text.string(StringKey.CardNoCards), true)
+                        client.player?.sendMessage(text.string(StringKey.CardNoCards).value, true)
                         return@onClientTickEnd
                     }
 

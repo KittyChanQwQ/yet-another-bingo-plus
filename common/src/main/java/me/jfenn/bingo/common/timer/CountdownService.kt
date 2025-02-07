@@ -6,10 +6,9 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-class CountdownService(
+internal class CountdownService(
     private val packetManager: ServerPacketEvents,
     private val teamService: TeamService,
     private val textProvider: TextProvider,
@@ -18,7 +17,7 @@ class CountdownService(
     fun sendCountdownPacket(player: IPlayerHandle, packet: CountdownPacket) {
         if (packet.secondsRemaining in 1..3) {
             player.sendTitle(
-                title = Text.literal(packet.secondsRemaining.toString()),
+                title = textProvider.literal(packet.secondsRemaining.toString()),
                 subtitle = null,
             )
         }

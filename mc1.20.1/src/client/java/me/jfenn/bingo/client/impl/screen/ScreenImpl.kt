@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.impl.screen
 
+import me.jfenn.bingo.client.impl.DrawService
 import me.jfenn.bingo.client.platform.screen.IScreen
 import me.jfenn.bingo.client.platform.screen.IScreenHelper
 import net.minecraft.client.MinecraftClient
@@ -47,7 +48,7 @@ class ScreenImpl(title: Text) : Screen(title) {
         if (context == null) return
         renderBackground(context)
         super.render(context, mouseX, mouseY, delta)
-        impl?.render(context, mouseX, mouseY, delta)
+        impl?.render(DrawService(context), mouseX, mouseY, delta)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

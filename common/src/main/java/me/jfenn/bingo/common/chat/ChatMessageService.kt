@@ -1,12 +1,11 @@
 package me.jfenn.bingo.common.chat
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.commands.ISignedMessage
-import net.minecraft.text.Text
-import net.minecraft.text.Texts
 
 internal class ChatMessageService(
     private val playerManager: IPlayerManager,
@@ -31,7 +30,7 @@ internal class ChatMessageService(
     ): Boolean {
         val team = teamService.getPlayerTeam(sender) ?: return false
 
-        val teamName = Texts.bracketed(team.getSimpleName(text)).formatted(team.textColor)
+        val teamName = team.getSimpleName(text).bracketed().formatted(team.textColor)
 
         playerManager.getPlayers()
             .filter { team.includesPlayer(it) }
@@ -41,12 +40,12 @@ internal class ChatMessageService(
     }
 
     fun sendTeamMessage(
-        message: Text,
+        message: IText,
         sender: IPlayerHandle,
     ): Boolean {
         val team = teamService.getPlayerTeam(sender) ?: return false
 
-        val teamName = Texts.bracketed(team.getSimpleName(text)).formatted(team.textColor)
+        val teamName = team.getSimpleName(text).bracketed().formatted(team.textColor)
 
         playerManager.getPlayers()
             .filter { team.includesPlayer(it) }

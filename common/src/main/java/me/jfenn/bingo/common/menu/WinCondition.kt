@@ -13,7 +13,6 @@ internal fun MenuComponent.registerWinCondition(
     width: Double = MENU_GOAL_WIDTH,
     options: BingoOptions = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) {
     val offset = Vector3d()
 

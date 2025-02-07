@@ -14,7 +14,7 @@ import kotlin.time.measureTime
  * This deletes all world files that should reset when the
  * server restarts. (leaving behind configs, datapacks, & player statistics)
  */
-internal object WorldDeleter {
+object WorldDeleter {
 
     private val log = LoggerFactory.getLogger("bingo")
 

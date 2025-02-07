@@ -2,6 +2,7 @@ package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.integrations.JeiIntegration
 import me.jfenn.bingo.client.integrations.jei.IJeiApi
+import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.client.platform.screen.IScreen
 import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.platform.screen.IScreenHelper
@@ -11,7 +12,6 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
 import org.koin.core.Koin
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -92,12 +92,12 @@ internal class BingoHudScreen(
         }
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
         cardsWidget.views = state.views.values
         cardsWidget.x = width/2f
         cardsWidget.y = height/2f
         cardsWidget.width = width * 6/10
-        cardsWidget.render(context, mouseX, mouseY, delta)
+        cardsWidget.render(drawService, mouseX, mouseY, delta)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

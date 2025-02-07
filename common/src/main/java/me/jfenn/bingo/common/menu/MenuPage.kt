@@ -9,7 +9,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
 import org.koin.core.scope.Scope
@@ -23,7 +22,6 @@ private fun createRootPage(
     gameService: GameService = koinScope.get(),
     cardService: CardService = koinScope.get(),
     configService: ConfigService = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) = component(koinScope) {
     val pos = position + Vector3d(-5.5 + MENU_LINE_PADDING*2, 0.0, 0.0)
     registerGameModes(
@@ -92,7 +90,7 @@ private fun createRootPage(
         optionsService.broadcastHotbarMessage(player, text.string(StringKey.CommandStartSuccess))
         gameService.start(
             sendFeedback = { feedback ->
-                Text.literal("⚠  ")
+                text.literal("⚠  ")
                     .append(feedback.copy().formatted(Formatting.ITALIC))
                     .formatted(Formatting.YELLOW)
                     .also { player.sendMessage(it) }
@@ -112,7 +110,7 @@ private fun MenuComponent.registerBackButton(
         position = position + Vector3d(0.0, -2.4 - 2*MENU_LINE_PADDING, 0.0),
         width = MENU_BACK_WIDTH,
         height = 2.4,
-        text = Text.literal("⬅"),
+        text = text.literal("⬅"),
         textScale = 3.5f,
         brightness = MENU_BRIGHTNESS_ALT,
     ) {

@@ -2,9 +2,9 @@ package me.jfenn.bingo.common.options
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.MutableText
 
 @Serializable
 sealed class EndWhen {
@@ -32,5 +32,5 @@ sealed class EndWhen {
         override fun string(text: TextProvider) = text.string(StringKey.OptionsEndWhenAllWin)
     }
 
-    abstract fun string(text: TextProvider): MutableText
+    abstract fun string(text: TextProvider): IText
 }

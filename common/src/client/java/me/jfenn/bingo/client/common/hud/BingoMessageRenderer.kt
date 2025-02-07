@@ -4,7 +4,6 @@ import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
-import net.minecraft.client.MinecraftClient
 import net.minecraft.util.Identifier
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -83,9 +82,6 @@ internal class BingoMessageRenderer(
         visibility: Float,
         isLeftOfCard: Boolean,
     ) {
-        val context = drawService.context
-        val textRenderer = MinecraftClient.getInstance().textRenderer
-
         drawService.setShaderColor(1f, 1f, 1f, visibility.pow(2))
 
         val itemX = if (isLeftOfCard) -8 - ITEM_HEIGHT else 8
@@ -115,13 +111,12 @@ internal class BingoMessageRenderer(
         }
 
         val textX = if (isLeftOfCard) {
-            -28 - textRenderer.getWidth(message.packet.message)
+            -28 - drawService.getTextWidth(message.packet.message)
         } else 28
 
-        context.drawText(
-            textRenderer,
+        drawService.drawText(
             message.packet.message,
-            textX, ITEM_HEIGHT/2 - textRenderer.fontHeight/2,
+            textX, ITEM_HEIGHT/2 - drawService.getTextHeight()/2,
             0xFF_FFFFFF.toInt(),
             true,
         )

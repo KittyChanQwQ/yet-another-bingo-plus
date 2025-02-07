@@ -16,7 +16,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 class MapItemService(
@@ -82,12 +81,12 @@ class MapItemService(
                 lore = listOfNotNull(
                     team.getName(textProvider, playerName = true, symbol = true)
                         .copy()
-                        .styled { it.withItalic(false) },
-                    Text.empty(),
+                        .resetStyle(),
+                    textProvider.empty(),
                     gameOverService.getTitle(gameInfo).copy().formatted(Formatting.WHITE),
                     gameOverService.getMessage(gameInfo),
-                    state.ingameDuration()?.formatString()?.let { Text.literal(it) },
-                    state.startedAt?.format(timeFormat)?.let { Text.literal(it) },
+                    state.ingameDuration()?.formatString()?.let { textProvider.literal(it) },
+                    state.startedAt?.format(timeFormat)?.let { textProvider.literal(it) },
                 ),
             )
             setHideFlags(255)

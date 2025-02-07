@@ -20,7 +20,7 @@ import javax.imageio.ImageIO
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTime
 
-class MapRenderService(
+internal class MapRenderService(
     private val log: Logger,
     private val server: MinecraftServer,
     private val mapService: IMapService,
@@ -458,8 +458,10 @@ class MapRenderService(
             state
         }
 
+        val view = map.view ?: return@measureTime
+
         for (index in changedTiles) {
-            val tile = map.view.tiles.getOrNull(index) ?: continue
+            val tile = view.tiles.getOrNull(index) ?: continue
             val x = index % 5
             val y = index / 5
             drawMapTile(

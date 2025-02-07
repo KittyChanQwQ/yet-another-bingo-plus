@@ -1,11 +1,11 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.ITeamHandle
 import me.jfenn.bingo.platform.ITeamManager
 import net.minecraft.scoreboard.Team
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 class TeamManager(
@@ -21,7 +21,7 @@ class TeamManager(
             ?.let { TeamHandle(it) }
     }
 
-    override fun createTeam(teamName: String, displayName: Text, color: Formatting): ITeamHandle {
+    override fun createTeam(teamName: String, displayName: IText, color: Formatting): ITeamHandle {
         return TeamHandle(
             server.scoreboard.getTeam(teamName)
                 ?: server.scoreboard.addTeam(teamName)
@@ -60,6 +60,9 @@ class TeamHandle(
     override val name: String
         get() = team.name
 
-    override var displayName: Text by team::displayName
+    override var displayName: IText
+        get() = TextImpl(team.displayName.copy())
+        set(value) { team.displayName = value.value }
+
     override var color: Formatting by team::color
 }

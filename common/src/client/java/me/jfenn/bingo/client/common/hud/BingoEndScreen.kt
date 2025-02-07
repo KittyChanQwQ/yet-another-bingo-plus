@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
+import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
 import me.jfenn.bingo.client.platform.IWorldService
@@ -18,7 +19,6 @@ import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ButtonWidget
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
@@ -186,7 +186,7 @@ internal class BingoEndScreen(
     private fun updateButtons() {
         helper.clearChildren()
 
-        val dismissButton = dismissButton ?: ButtonWidget.builder(text.string(StringKey.CardClose)) { helper.close() }
+        val dismissButton = dismissButton ?: ButtonWidget.builder(text.string(StringKey.CardClose).value) { helper.close() }
             .width(BUTTON_WIDTH)
             .position(0, 0)
             .build()
@@ -199,7 +199,7 @@ internal class BingoEndScreen(
         helper.addDrawableChild(dismissButton)
 
         val restartButton = restartButton ?: ButtonWidget.builder(
-            text.string(nextGameButton().string)
+            text.string(nextGameButton().string).value
         ) {
             it.active = false
             reopenWorld()
@@ -235,7 +235,9 @@ internal class BingoEndScreen(
         updateButtons()
     }
 
-    private fun renderGameDuration(context: DrawContext, titleY: Int) {
+    private fun renderGameDuration(drawService: IDrawService, titleY: Int) {
+        val context by drawService::context
+
         context.matrices.push()
         context.matrices.translate(width * 0.2f - 20f, titleY.toFloat(), 0f)
         context.matrices.multiply(Quaternionf(AxisAngle4f(-.25f, 0f, 0f, 1f)))
@@ -254,7 +256,7 @@ internal class BingoEndScreen(
         context.matrices.pop()
 
         val title = text.string(StringKey.StatsGameDuration)
-        context.drawText(textRenderer, title, -textRenderer.getWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
+        drawService.drawText(title, -drawService.getTextWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
 
         gameOver.packet.prevBestTime?.let { prevBestTime ->
             context.matrices.push()
@@ -272,10 +274,10 @@ internal class BingoEndScreen(
                     .asIntWithAlpha
 
                 context.matrices.scale(bestScale, bestScale, 1f)
-                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, bestColor, true)
+                drawService.drawText(bestText, -drawService.getTextWidth(bestText)/2, 30, bestColor, true)
             } else {
                 val bestText = text.string(StringKey.StatsBestTime, prevBestTime.formatString())
-                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
+                drawService.drawText(bestText, -drawService.getTextWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
             }
 
             context.matrices.pop()
@@ -284,15 +286,18 @@ internal class BingoEndScreen(
         context.matrices.pop()
     }
 
-    private fun renderWinStreak(context: DrawContext, titleY: Int) {
+    private fun renderWinStreak(drawService: IDrawService, titleY: Int) {
+        val context by drawService::context
         val winStreak = gameOver.packet.winStreak ?: return
         val now = state.now
 
         val ready = state.ready
         if (ready != null && ready.isRunning) {
             restartButton?.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
+                .value
         } else {
             restartButton?.message = text.string(nextGameButton().string)
+                .value
         }
 
         context.matrices.push()
@@ -312,7 +317,7 @@ internal class BingoEndScreen(
         context.matrices.pop()
 
         val title = text.string(StringKey.StatsWinStreak)
-        context.drawText(textRenderer, title, -textRenderer.getWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
+        drawService.drawText(title, -drawService.getTextWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
 
         gameOver.packet.bestWinStreak?.let { bestWinStreak ->
             context.matrices.push()
@@ -328,10 +333,10 @@ internal class BingoEndScreen(
                     .asIntWithAlpha
 
                 context.matrices.scale(bestScale, bestScale, 1f)
-                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, bestColor, true)
+                drawService.drawText(bestText, -drawService.getTextWidth(bestText)/2, 30, bestColor, true)
             } else {
                 val bestText = text.string(StringKey.StatsWinStreakMax, bestWinStreak)
-                context.drawText(textRenderer, bestText, -textRenderer.getWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
+                drawService.drawText(bestText, -drawService.getTextWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
             }
 
             context.matrices.pop()
@@ -366,33 +371,32 @@ internal class BingoEndScreen(
         }
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
+        val context by drawService::context
         val cardTop = (height/2) - (BingoHudRenderer.CARD_HEIGHT/2)
         val titleY = min((cardTop * 0.75f).roundToInt(), cardTop - 11*2) + tabsHeight
 
         context.matrices.push()
         context.matrices.scale(2f, 2f, 2f)
-        context.drawText(
-            textRenderer,
+        drawService.drawText(
             gameOver.packet.title,
-            (width/4) - (textRenderer.getWidth(gameOver.packet.title)/2),
+            (width/4) - (drawService.getTextWidth(gameOver.packet.title)/2),
             (titleY/2) - 9,
             0xff_ffffff.toInt(),
             true,
         )
         context.matrices.pop()
 
-        context.drawText(
-            textRenderer,
+        drawService.drawText(
             gameOver.packet.subtitle,
-            (width/2) - (textRenderer.getWidth(gameOver.packet.subtitle)/2),
+            (width/2) - (drawService.getTextWidth(gameOver.packet.subtitle)/2),
             titleY + 4,
             0xff_ffffff.toInt(),
             true,
         )
 
-        renderGameDuration(context, titleY - 20)
-        renderWinStreak(context, titleY - 20)
+        renderGameDuration(drawService, titleY - 20)
+        renderWinStreak(drawService, titleY - 20)
 
         if (tab == EndScreenTab.CARDS) {
             cardsWidget.views = gameOver.views
@@ -400,7 +404,7 @@ internal class BingoEndScreen(
             cardsWidget.x = width/2f
             cardsWidget.y = height/2f + tabsHeight
             cardsWidget.width = width * 6/10
-            cardsWidget.render(context, mouseX, mouseY, delta)
+            cardsWidget.render(drawService, mouseX, mouseY, delta)
         }
 
         if (gameOver.packet.isWinner) {

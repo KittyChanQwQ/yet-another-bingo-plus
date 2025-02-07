@@ -4,20 +4,22 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonElement
+import me.jfenn.bingo.client.platform.text.HoverAction
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.map.BingoMap
-import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.*
+import me.jfenn.bingo.common.utils.BlockPositionType
+import me.jfenn.bingo.common.utils.FormattingSerializer
+import me.jfenn.bingo.common.utils.PlayerProfileType
+import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.scope.BingoKoin
 import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Text
-import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
 
@@ -111,7 +113,7 @@ data class BingoTeam(
     fun getSimpleName(textProvider: TextProvider) =
         name?.let { textProvider.string(name) }
             ?: nameText?.let { textProvider.deserialized(it) }
-            ?: Text.empty()
+            ?: textProvider.empty()
 
     fun getName(
         textProvider: TextProvider,
@@ -119,22 +121,24 @@ data class BingoTeam(
         symbol: Boolean = playerName && players.size == 1,
         bracketed: Boolean = true,
         teamNameKey: StringKey? = StringKey.TeamName,
-    ): Text {
-        val teamName = (if (playerName) singlePlayer?.let { Text.literal(it.name) } else null)
+    ): IText {
+        val teamName = (if (playerName) singlePlayer?.let { textProvider.literal(it.name) } else null)
             ?: name?.let { textProvider.string(name) }?.let {
                 if (teamNameKey != null) textProvider.string(teamNameKey, it) else it
             }
             ?: getSimpleName(textProvider)
 
         return teamName
-            .let { if (symbol && this.symbol != null) Text.empty().append("${this.symbol} ").append(it) else it }
+            .let { if (symbol && this.symbol != null) textProvider.empty().append("${this.symbol} ").append(it) else it }
             .formatted(this.textColor)
-            .let { if (bracketed) Texts.bracketed(it) else it }
+            .let { if (bracketed) it.bracketed() else it }
             .also { t ->
-                t.style = t.style.withHoverEvent(
-                    HoverEvent(
-                        HoverEvent.Action.SHOW_TEXT,
-                        players.map { Text.literal(it.name) }.joinText(Text.literal("\n"))
+                t.setHoverEvent(
+                    HoverAction.ShowText(
+                        textProvider.joinText(
+                            list = players.map { textProvider.literal(it.name) },
+                            separator = textProvider.literal("\n"),
+                        )
                     )
                 )
             }

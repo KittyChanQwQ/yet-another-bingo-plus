@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.BlockPositionType
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.platform.IPlayerHandle
@@ -46,6 +47,8 @@ class CoordsCommand(
         team: BingoTeam,
         message: ISignedMessage?
     ) {
+        val text = scope.get<TextProvider>()
+
         val entry = CoordinatesEntry(
             player = player.playerName,
             pos = player.blockPos,
@@ -60,25 +63,27 @@ class CoordsCommand(
         // send coordinates to the team
         val chatMessageService = scope.get<ChatMessageService>()
         if (message != null) {
-            val signedMessage = message.withUnsignedContent(Text.literal(entry.formatText()))
+            val signedMessage = message.withUnsignedContent(text.literal(entry.formatText()))
             chatMessageService.sendTeamMessage(signedMessage, player)
         } else {
-            chatMessageService.sendTeamMessage(Text.literal(entry.formatText()), player)
+            chatMessageService.sendTeamMessage(text.literal(entry.formatText()), player)
         }
     }
 
-    private fun listCoordinates(player: IPlayerHandle, team: BingoTeam) {
+    private fun IExecutionContext.listCoordinates(player: IPlayerHandle, team: BingoTeam) {
+        val text = scope.get<TextProvider>()
+
         val coordMessages = team.chatCoordinates
         if (coordMessages.isEmpty()) {
-            player.sendMessage(Text.literal("No coordinates have been saved yet.").formatted(Formatting.GRAY))
+            player.sendMessage(text.literal("No coordinates have been saved yet.").formatted(Formatting.GRAY))
             return
         }
 
-        player.sendMessage(Text.literal("Coordinates:").formatted(Formatting.GRAY, Formatting.BOLD))
+        player.sendMessage(text.literal("Coordinates:").formatted(Formatting.GRAY, Formatting.BOLD))
         for (entry in coordMessages) {
             val duration = Clock.System.now() - entry.created
             player.sendMessage(
-                Text.literal("  • ${entry.player} (${duration.formatStringSmall()} ago): ${entry.formatText()}")
+                text.literal("  • ${entry.player} (${duration.formatStringSmall()} ago): ${entry.formatText()}")
                     .formatted(Formatting.GRAY)
             )
         }

@@ -1,5 +1,6 @@
 package me.jfenn.bingo
 
+import me.jfenn.bingo.client.platform.text.ITextFactory
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.impl.*
 import me.jfenn.bingo.impl.networking.ServerNetworkingImpl
@@ -22,7 +23,7 @@ val sharedModule = module {
 
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
-    single { EntityManagerImpl } bind IEntityManager::class
+    singleOf(::EntityManagerImpl) bind IEntityManager::class
     single { Executors } bind IExecutors::class
     single { ItemStackFactory(get(), null) } bind IItemStackFactory::class
     singleOf(::MapColorServiceImpl) bind IMapColorService::class
@@ -33,6 +34,7 @@ val sharedModule = module {
     singleOf(::ServerWorldFactory) bind IServerWorldFactory::class
     singleOf(::StatManagerImpl) bind IStatManager::class
     singleOf(::TagAccessorImpl) bind ITagAccessor::class
+    singleOf(::TextFactoryImpl) bind ITextFactory::class
     singleOf(::TextSerializer) bind ITextSerializer::class
 
     scope<BingoScope> {

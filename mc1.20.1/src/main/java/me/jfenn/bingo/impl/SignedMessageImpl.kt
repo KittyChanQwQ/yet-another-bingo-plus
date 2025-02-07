@@ -1,8 +1,8 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.commands.ISignedMessage
 import net.minecraft.network.message.SignedMessage
-import net.minecraft.text.Text
 import java.util.*
 
 class SignedMessageImpl(
@@ -10,12 +10,12 @@ class SignedMessageImpl(
 ) : ISignedMessage {
     override val sender: UUID
         get() = message.sender
-    override val text: Text
-        get() = message.content
+    override val text: IText
+        get() = TextImpl(message.content.copy())
     override val raw: String
         get() = message.signedContent
 
-    override fun withUnsignedContent(text: Text): ISignedMessage {
-        return SignedMessageImpl(message.withUnsignedContent(text))
+    override fun withUnsignedContent(text: IText): ISignedMessage {
+        return SignedMessageImpl(message.withUnsignedContent(text.value))
     }
 }

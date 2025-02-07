@@ -16,7 +16,7 @@ class TeamService(
     private val events: ScopedEvents,
     private val state: BingoState,
     private val teamManager: ITeamManager,
-    private val textProvider: TextProvider,
+    private val text: TextProvider,
     private val playerManager: IPlayerManager,
     private val mapService: IMapService,
 ) {
@@ -49,7 +49,7 @@ class TeamService(
     private fun createTeam(team: BingoTeam): ITeamHandle {
         return teamManager.createTeam(
             teamName = team.id,
-            displayName = team.getSimpleName(textProvider),
+            displayName = team.getSimpleName(text),
             color = team.textColor,
         )
     }
@@ -65,7 +65,7 @@ class TeamService(
         teamManager.setPlayerTeam(player.player, createTeam(team))
         team.players.add(playerProfile)
         player.sendMessage(
-            textProvider.string(StringKey.LobbyTeamChanged, team.getName(textProvider))
+            text.string(StringKey.LobbyTeamChanged, team.getName(text))
                 .formatted(Formatting.YELLOW)
         )
 
@@ -95,8 +95,8 @@ class TeamService(
             val temporaryTeam = BingoTeam(
                 id = "temp_bingo_$i",
                 name = null,
-                nameText = textProvider.serialized(
-                    textProvider.string(StringKey.TeamName, "$i")
+                nameText = text.serialized(
+                    text.string(StringKey.TeamName, "$i")
                 ),
                 symbol = null,
                 textColor = extraTeamColors.find { color ->

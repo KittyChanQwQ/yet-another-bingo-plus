@@ -13,9 +13,10 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionProvider
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import me.jfenn.bingo.platform.scope.BingoKoin
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.*
+import me.jfenn.bingo.platform.scope.BingoKoin
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.command.CommandRegistryAccess
 import net.minecraft.command.CommandSource
@@ -173,19 +174,19 @@ open class ExecutionSourceImpl(
         ?: throw IllegalArgumentException("No scope registered for this server!")
     override val player: IPlayerHandle? = source.player?.let { PlayerHandle(it) }
     override val isConsole: Boolean = source.entity == null
-    override fun error(text: Text): Nothing {
-        throw SimpleCommandExceptionType(text).create()
+    override fun error(text: IText): Nothing {
+        throw SimpleCommandExceptionType(text.value).create()
     }
 }
 
 class ExecutionContextImpl(
     private val ctx: CommandContext<ServerCommandSource>,
 ) : ExecutionSourceImpl(ctx.source), IExecutionContext {
-    override fun sendMessage(text: Text) {
-        ctx.source.sendMessage(text)
+    override fun sendMessage(text: IText) {
+        ctx.source.sendMessage(text.value)
     }
-    override fun sendFeedback(text: Text) {
-        ctx.source.sendFeedback({ text }, true)
+    override fun sendFeedback(text: IText) {
+        ctx.source.sendFeedback({ text.value }, true)
     }
     override fun <T> getArgument(arg: CommandArgument<T>): T {
         @Suppress("UNCHECKED_CAST")

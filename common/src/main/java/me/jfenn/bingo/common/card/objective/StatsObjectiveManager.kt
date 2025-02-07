@@ -11,11 +11,11 @@ import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.OfflinePlayerCache
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IStatHandle
 import me.jfenn.bingo.platform.IStatManager
-import net.minecraft.text.Text
 import org.slf4j.Logger
 
 class StatsObjectiveManager(
@@ -26,6 +26,7 @@ class StatsObjectiveManager(
     private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
+    private val text: TextProvider,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
         return data.objectives.rootObjectives
@@ -61,8 +62,8 @@ class StatsObjectiveManager(
 
         val statName = statNamePath
             // This translation key usually only works for 'minecraft:custom' stats
-            ?.let { Text.translatableWithFallback("stat.$statNamespace.$it", statNameFallback) }
-            ?: Text.literal(statNameFallback)
+            ?.let { text.translatable("stat.$statNamespace.$it", statNameFallback) }
+            ?: text.literal(statNameFallback)
 
         val display = ObjectiveDisplay.Resolved(
             name = statName.append(": $FORMAT_MIN"),

@@ -15,7 +15,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
-class StatsSyncController(
+internal class StatsSyncController(
     private val log: Logger,
     private val config: BingoConfig,
     private val packets: ServerPacketEvents,

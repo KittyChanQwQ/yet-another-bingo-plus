@@ -1,12 +1,12 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.common.utils.Interpolate
+import me.jfenn.bingo.client.platform.IDrawService
 import me.jfenn.bingo.client.platform.IDrawServiceFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.team.BingoTeamKey
-import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import org.koin.core.Koin
 import kotlin.math.absoluteValue
@@ -137,7 +137,8 @@ internal class BingoCardsWidget(
         return hoveredView
     }
 
-    fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
+        val context by drawService::context
         if (isInBounds(x.toInt(), mouseY)) {
             val boundaryMin = x - width*.5f
             val boundaryMax = x + width*.5f
@@ -156,8 +157,6 @@ internal class BingoCardsWidget(
             targetScrollX = 0f
             scrollX = 0f
         }
-
-        val drawService = drawServiceFactory.create(context)
 
         val hoveredView = getHoveredView(mouseX, mouseY)
 

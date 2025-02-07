@@ -1,5 +1,6 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.IPacketBuf
@@ -28,8 +29,8 @@ class PacketBufImpl(
     override fun writeItemStack(stack: IItemStack) = buf.writeItemStack(stack.stack).let {}
     override fun readItemStack(): IItemStack = itemStackFactory.forStack(buf.readItemStack())
 
-    override fun writeText(text: Text) = buf.writeText(text).let {}
-    override fun readText(): Text = buf.readText()
+    override fun writeText(text: IText?) = buf.writeText(text?.value ?: Text.empty()).let {}
+    override fun readText(): IText = TextImpl(buf.readText().copy())
 
     override fun writeByteArray(array: ByteArray) = buf.writeByteArray(array).let {}
     override fun readByteArray(): ByteArray = buf.readByteArray()

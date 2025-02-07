@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
@@ -13,18 +14,15 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.truncate
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Style
-import net.minecraft.text.Text
 import kotlin.time.Duration.Companion.seconds
 
-class CardViewService(
+internal class CardViewService(
     private val server: MinecraftServer,
     private val config: BingoConfig,
     private val options: BingoOptions,
@@ -93,7 +91,6 @@ class CardViewService(
             packets.cardUpdateV4.send(player, updatePacket) -> {}
             packets.cardUpdateV3.send(player, updatePacket) -> {}
             packets.cardUpdateV2.send(player, updatePacket) -> {}
-            packets.cardUpdateV1.send(player, updatePacket) -> {}
         }
     }
 
@@ -106,38 +103,38 @@ class CardViewService(
             .filter { isViewingCard(player, it) }
 
         val isViewingSpectatorCards = displayTeams.size > 1
-        val displayCards = displayTeams.associate { team ->
+        val displayCards = displayTeams.mapNotNull { team ->
             val map = team
                 ?.let { teamService.getTeamMap(it) }
                 ?: state.getPreviewMap(mapService)
 
             // If the map view has no tiles, update it first!
             // (this is necessary to populate the display info)
-            if (map.view.tiles.isEmpty()) {
+            if (map.view?.tiles?.isEmpty() != true) {
                 updateCard(team)
             }
 
             val display = when {
                 // When the player is viewing multiple cards, use player names on the card titles
                 // (otherwise, it only shows the team name)
-                isViewingSpectatorCards -> map.view.display.copy(
+                isViewingSpectatorCards -> map.view?.display?.copy(
                     teamName = getMapName(team, playerName = true)
                 )
-                else -> map.view.display
+                else -> map.view?.display
             }
 
-            team?.key to display
+            display?.let { Pair(team?.key, it) }
         }
 
-        sendCardDisplayPacket(player, displayCards)
+        sendCardDisplayPacket(player, displayCards.toMap())
 
         for ((key, display) in displayCards) {
             val map = state.teams[key]
                 ?.let { teamService.getTeamMap(it) }
                 ?: state.getPreviewMap(mapService)
 
-            val view = map.view.copy(display = display)
-            sendEntireCardTilesPacket(player, view)
+            map.view?.copy(display = display)
+                ?.let { sendEntireCardTilesPacket(player, it) }
         }
     }
 
@@ -260,7 +257,7 @@ class CardViewService(
         )
     }
 
-    private fun getMapName(team: BingoTeam?, playerName: Boolean = false): Text {
+    private fun getMapName(team: BingoTeam?, playerName: Boolean = false): IText {
         return team?.getName(
             textProvider,
             playerName = playerName,
@@ -268,8 +265,7 @@ class CardViewService(
             bracketed = false,
             teamNameKey = StringKey.CardTeamCardTitle
         )
-            ?.truncate(12)
-            ?.setStyle(Style.EMPTY)
+            ?.resetStyle()
             ?: textProvider.string(StringKey.CardPreviewCard)
     }
 
@@ -303,16 +299,16 @@ class CardViewService(
 
         if (forceNotFlashing) {
             currentView = currentView.copy(
-                tiles = map.view.tiles.map {
+                tiles = map.view?.tiles?.map {
                     it.copy(isFlashingOnMap = false)
-                }.toMutableList(),
+                }.orEmpty().toMutableList(),
             )
         }
 
         // Determine which tiles have been changed since the last update
         val changedTiles = currentView.tiles
             .withIndex()
-            .filter { (i, tile) -> tile != map.view.tiles.getOrNull(i) }
+            .filter { (i, tile) -> tile != map.view?.tiles?.getOrNull(i) }
             .map { it.index }
 
         if (changedTiles.isEmpty())

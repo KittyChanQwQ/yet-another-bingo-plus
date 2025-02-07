@@ -4,6 +4,7 @@ import com.mojang.brigadier.StringReader
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.platform.IPersistentStateManager
+import me.jfenn.bingo.platform.IPersistentStateType
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.StringNbtReader
 import net.minecraft.server.world.ServerWorld
@@ -14,40 +15,44 @@ import kotlin.reflect.KType
 class PersistentStateManager(
     private val logger: Logger,
 ) : IPersistentStateManager {
-    override fun <T : Any> getFromWorld(
-        world: ServerWorld,
-        id: String,
-        kType: KType,
-        default: () -> T,
-    ): T {
+    override fun <T : Any> register(id: String, kType: KType, default: () -> T): IPersistentStateType<T> {
         @Suppress("UNCHECKED_CAST")
         val serializer = serializer(kType) as KSerializer<T>
+        return PersistentStateType(id, serializer, default)
+    }
+
+    override fun <T : Any> getFromWorld(world: ServerWorld, type: IPersistentStateType<T>): T {
+        require(type is PersistentStateType)
         val state = world.persistentStateManager.getOrCreate(
             { nbt ->
-                logger.info("[PersistentStateManager] Reading $id state from save data...")
+                logger.info("[PersistentStateManager] Reading ${type.id} state from save data...")
                 val obj = IPersistentStateManager.nbtToJson(nbt)
-                val value = IPersistentStateManager.json.decodeFromJsonElement(serializer, obj)
-                PersistentStateImpl(value, serializer, logger)
+                val value = IPersistentStateManager.json.decodeFromJsonElement(type.serializer, obj)
+                PersistentStateImpl(value, type.serializer, logger)
             },
             {
-                logger.info("[PersistentStateManager] Creating default $id state...")
-                PersistentStateImpl(default(), serializer, logger)
+                logger.info("[PersistentStateManager] Creating default ${type.id} state...")
+                PersistentStateImpl(type.default(), type.serializer, logger)
             },
-            id,
+            type.id,
         )
         state.markDirty()
         return state.value
     }
 
-    override fun <T : Any> put(world: ServerWorld, id: String, kType: KType, value: T) {
-        @Suppress("UNCHECKED_CAST")
-        val serializer = serializer(kType) as KSerializer<T>
-
-        val state = PersistentStateImpl(value, serializer, logger)
-        world.persistentStateManager.set(id, state)
+    override fun <T : Any> put(world: ServerWorld, type: IPersistentStateType<T>, value: T) {
+        require(type is PersistentStateType)
+        val state = PersistentStateImpl(value, type.serializer, logger)
+        world.persistentStateManager.set(type.id, state)
         state.markDirty()
     }
 }
+
+class PersistentStateType<T: Any>(
+    val id: String,
+    val serializer: KSerializer<T>,
+    val default: () -> T,
+): IPersistentStateType<T>
 
 class PersistentStateImpl<T: Any>(
     val value: T,

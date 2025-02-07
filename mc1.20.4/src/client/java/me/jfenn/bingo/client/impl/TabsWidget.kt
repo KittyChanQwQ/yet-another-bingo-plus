@@ -2,6 +2,7 @@ package me.jfenn.bingo.client.impl
 
 import me.jfenn.bingo.client.platform.ITabsWidget
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.platform.utils.IEventListener
 import net.minecraft.client.gui.ScreenRect
@@ -60,10 +61,10 @@ class TabImpl(private val text: Text) : Tab {
 }
 
 object TabsWidgetFactory : ITabsWidgetFactory {
-    override fun create(tabs: List<Text>): ITabsWidget {
+    override fun create(tabs: List<IText>): ITabsWidget {
         val onTabUpdate = EventListener<Unit>()
         val manager = TabManager({ onTabUpdate.invoke(Unit) }, {})
-        val tabImpls = tabs.map { TabImpl(it) }
+        val tabImpls = tabs.map { TabImpl(it.value) }
 
         return TabsWidgetImpl(
             tabImpls = tabImpls,

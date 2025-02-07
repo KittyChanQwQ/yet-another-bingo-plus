@@ -3,13 +3,11 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.EntityType
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.ITextDisplayEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
@@ -23,7 +21,6 @@ internal fun MenuComponent.registerItemDistribution(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) {
     var itemDistribution by DelegatedProperty(
         getter = { state.getActiveCard().options.itemDistribution },
@@ -33,7 +30,7 @@ internal fun MenuComponent.registerItemDistribution(
     registerTitlePanel(
         position = position + Vector3d(MENU_ITEM_DISTRIBUTION_WIDTH/2, -MENU_LINE_PADDING - MENU_LINE_HEIGHT, 0.0),
         width = MENU_ITEM_DISTRIBUTION_WIDTH,
-        title = text.string(StringKey.OptionsCardDifficulty)
+        title = this.text.string(StringKey.OptionsCardDifficulty)
     )
 
     fun setItemDistribution(player: IPlayerHandle, dist: List<Int>) {
@@ -56,7 +53,7 @@ internal fun MenuComponent.registerItemDistribution(
             position = position + offset.sub(0.0, MENU_LINE_PADDING + TIER_HEIGHT, 0.0),
             width = TIER_WIDTH,
             height = TIER_HEIGHT,
-            text = Text.literal("+"),
+            text = text.literal("+"),
             tooltip = tooltip,
             isActiveProp = ConstantProperty(true),
         ) { player ->
@@ -90,7 +87,7 @@ internal fun MenuComponent.registerItemDistribution(
                 else -> Formatting.RED
             }
 
-            this.value = Text.literal(itemDistribution[i].toString()).formatted(color)
+            this.value = text.literal(itemDistribution[i].toString()).formatted(color)
 
             billboard = ITextDisplayEntity.Billboard.FIXED
             alignment = ITextDisplayEntity.TextAlignment.CENTER
@@ -102,7 +99,7 @@ internal fun MenuComponent.registerItemDistribution(
             position = position + offset.sub(0.0, MENU_LINE_PADDING + TIER_HEIGHT, 0.0),
             width = TIER_WIDTH,
             height = TIER_HEIGHT,
-            text = Text.literal("-"),
+            text = text.literal("-"),
             tooltip = tooltip,
             isActiveProp = ConstantProperty(true),
         ) { player ->

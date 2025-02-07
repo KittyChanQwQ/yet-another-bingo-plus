@@ -20,7 +20,6 @@ internal fun MenuComponent.registerTeams(
     position: Vector3d,
     teamService: TeamService = koinScope.get(),
     server: MinecraftServer = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) {
     val offsetY = MENU_LINE_PADDING*2 + MENU_LINE_HEIGHT
     registerTitlePanel(
@@ -47,7 +46,7 @@ internal fun MenuComponent.registerTeams(
     ) { player ->
         teamService.shuffleTeams(TeamCountState.teamCount)
         player.sendMessage(
-            Text.literal("ℹ  ")
+            text.literal("ℹ  ")
                 .append(text.string(StringKey.OptionsTeamsShuffleMessage).formatted(Formatting.ITALIC))
                 .formatted(Formatting.AQUA)
         )

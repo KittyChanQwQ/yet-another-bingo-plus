@@ -1,11 +1,11 @@
 package me.jfenn.bingo.common.map
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.player.PlayerProfile
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import java.util.*
@@ -27,7 +27,7 @@ data class CardView(
 
 data class CardDisplay(
     val teamColor: Formatting? = null,
-    val teamName: Text = Text.empty(),
+    val teamName: IText? = null,
     val players: List<PlayerProfile> = emptyList(),
 ) {
     object V1 : PacketConverter<CardDisplay> {

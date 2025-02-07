@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.ready
 
-import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.common.state.GameState
-import net.minecraft.text.Text
+import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.packet.PacketConverter
 import net.minecraft.util.Identifier
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -17,8 +17,8 @@ data class ReadyUpdatePacket(
     val totalDuration: Duration,
     val readyPlayers: Int,
     val totalPlayers: Int,
-    val title: Text?,
-    val subtitle: Text?,
+    val title: IText?,
+    val subtitle: IText?,
     val canSendReady: Boolean = false,
 ) {
     object V1 : PacketConverter<ReadyUpdatePacket> {

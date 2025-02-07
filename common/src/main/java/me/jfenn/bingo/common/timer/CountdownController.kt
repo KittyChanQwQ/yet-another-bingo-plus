@@ -16,7 +16,7 @@ import net.minecraft.server.MinecraftServer
 import org.joml.Vector3d
 import kotlin.time.Duration.Companion.seconds
 
-class CountdownController(
+internal class CountdownController(
     private val server: MinecraftServer,
     private val options: BingoOptions,
     private val state: BingoState,

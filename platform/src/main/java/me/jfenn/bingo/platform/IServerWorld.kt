@@ -1,7 +1,7 @@
 package me.jfenn.bingo.platform
 
-import me.jfenn.bingo.platform.block.IBlockState
 import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.block.IBlockState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.chunk.Chunk

@@ -1,8 +1,7 @@
 package me.jfenn.bingo.platform
 
-import net.minecraft.server.MinecraftServer
+import me.jfenn.bingo.client.platform.text.IText
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 interface ITeamManager {
@@ -11,7 +10,7 @@ interface ITeamManager {
 
     fun getTeam(id: String): ITeamHandle?
 
-    fun createTeam(teamName: String, displayName: Text, color: Formatting): ITeamHandle
+    fun createTeam(teamName: String, displayName: IText, color: Formatting): ITeamHandle
 
     fun deleteTeam(teamName: String)
 
@@ -23,6 +22,6 @@ interface ITeamManager {
 
 interface ITeamHandle {
     val name: String
-    var displayName: Text
+    var displayName: IText
     var color: Formatting
 }

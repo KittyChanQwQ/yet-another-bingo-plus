@@ -1,17 +1,18 @@
 package me.jfenn.bingo.common.text
 
 import me.jfenn.bingo.api.services.TextPlaceholders
+import me.jfenn.bingo.client.platform.text.IText
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 
 class PlaceholderService(
     private val server: MinecraftServer,
+    private val text: TextProvider,
 ) {
-    fun parseText(message: Text): Text {
-        var ret = message
+    fun parseText(message: IText): IText {
+        var ret = message.value
         for (service in TextPlaceholders.services)
             ret = service.parseText(ret, server)
 
-        return ret
+        return text.from(ret)
     }
 }

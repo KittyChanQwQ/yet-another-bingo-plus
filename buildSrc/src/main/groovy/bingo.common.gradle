@@ -19,15 +19,6 @@ tasks.withType(AbstractArchiveTask).configureEach {
     reproducibleFileOrder = true
 }
 
-sourceSets {
-    testmod {
-        compileClasspath += main.compileClasspath
-        runtimeClasspath += main.runtimeClasspath
-        compileClasspath += main.output
-        runtimeClasspath += main.output
-    }
-}
-
 loom {
     splitEnvironmentSourceSets()
 
@@ -47,10 +38,6 @@ loom {
 }
 
 dependencies {
-    testmodCompileOnly libs.mockk
-    testmodImplementation libs.mockk
-    testmodCompileOnly libs.assertk
-    testmodImplementation libs.assertk
     testImplementation libs.mockk
     testImplementation libs.assertk
     testImplementation libs.junit.jupiter

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.card
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.MDC_DEBUG
 import me.jfenn.bingo.common.MDC_FILENAME
 import me.jfenn.bingo.common.MDC_OBJECTIVE
@@ -27,7 +28,6 @@ import me.jfenn.bingo.common.utils.cacheFor
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.toMap
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
 import org.slf4j.Logger
 import java.util.*
 import kotlin.math.ceil
@@ -127,7 +127,7 @@ class CardService(
         state.resetTeamCards()
     }
 
-    fun isSupported(err: (Text) -> Unit): Boolean {
+    fun isSupported(err: (IText) -> Unit): Boolean {
         // Check if every custom objective meets its requirements
         return state.cards
             .flatMap { it.objectives.values }
@@ -135,7 +135,7 @@ class CardService(
                 objective.data
                     ?.validate
                     ?.let {
-                        val listName = objective.display.name ?: Text.literal(objective.id)
+                        val listName = objective.display.name ?: text.literal(objective.id)
                         checkSoftRequirements(listName, it, err)
                     }
                     ?: true
@@ -144,9 +144,9 @@ class CardService(
     }
 
     private fun checkSoftRequirements(
-        listName: Text,
+        listName: IText,
         reqs: ObjectiveRequirements,
-        err: (Text) -> Unit,
+        err: (IText) -> Unit,
     ): Boolean {
         var isSupported = true
 

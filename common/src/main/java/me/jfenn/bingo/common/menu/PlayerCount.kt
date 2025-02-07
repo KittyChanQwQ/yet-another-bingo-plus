@@ -23,7 +23,6 @@ internal fun MenuComponent.registerPlayerCount(
     position: Vector3d,
     width: Double,
     server: MinecraftServer = koinScope.get(),
-    text: TextProvider = koinScope.get(),
     state: BingoState = koinScope.get(),
     options: BingoOptions = koinScope.get(),
     stats: StatsService = koinScope.get(),

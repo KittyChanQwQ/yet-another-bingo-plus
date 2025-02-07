@@ -1,6 +1,7 @@
 package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.platform.ITextSerializer
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.item.*
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -37,7 +38,7 @@ class ItemStackFactory(
             return false
         }
 
-        val features = listOf(FeatureFlags.UPDATE_1_21, FeatureFlags.TRADE_REBALANCE, FeatureFlags.BUNDLE)
+        val features = listOf(FeatureFlags.BUNDLE)
         val requiredFeatures = when {
             // hack: when requesting bundle, pretend that it's behind the BUNDLE feature flag (as it should be)
             item.equals("minecraft:bundle", ignoreCase = true) -> {
@@ -89,15 +90,16 @@ class ItemStackFactory(
         override val identifier: Identifier
             get() = Registries.ITEM.getId(item)
 
-        override val displayName: Text
-            get() = stack.name
+        override val displayName: IText
+            get() = stack.name.let { TextImpl(it.copy()) }
 
-        override val lore: List<Text>
+        override val lore: List<IText>
             get() = stack.nbt
                 ?.takeIf { it.getType("Lore") == NbtElement.LIST_TYPE }
                 ?.getList("Lore", NbtElement.STRING_TYPE.toInt())
                 ?.filterIsInstance<NbtString>()
                 ?.mapNotNull { Text.Serialization.fromJson(it.asString()) }
+                ?.map { TextImpl(it.copy()) }
                 ?: emptyList()
 
         override var count: Int
@@ -121,16 +123,16 @@ class ItemStackFactory(
             return stack.nbt?.contains(tag) == true
         }
 
-        override fun setDisplay(name: Text?, lore: List<Text>?) {
+        override fun setDisplay(name: IText?, lore: List<IText>?) {
             stack.getOrCreateSubNbt("display").apply {
                 if (name != null) {
-                    putString("Name", textSerializer.toJson(name))
+                    putString("Name", textSerializer.toJson(name.value))
                 }
 
                 if (lore != null) {
                     put("Lore", NbtList().apply {
                         for (text in lore) {
-                            add(NbtString.of(textSerializer.toJson(text)))
+                            add(NbtString.of(textSerializer.toJson(text.value)))
                         }
                     })
                 }
@@ -223,11 +225,11 @@ class ItemStackFactory(
                 }
             }
 
-        override fun setPages(pages: List<Text>) {
+        override fun setPages(pages: List<IText>) {
             stack.getOrCreateNbt().apply {
                 put("pages", NbtList().apply {
                     for (page in pages) {
-                        add(NbtString.of(textSerializer.toJson(page)))
+                        add(NbtString.of(textSerializer.toJson(page.value)))
                     }
                 })
             }

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.IBossBar
 import me.jfenn.bingo.platform.IBossBarManager
 import me.jfenn.bingo.platform.IPlayerHandle
@@ -58,7 +59,10 @@ internal class BossBarImpl(
     override val id: String?
         get() = commandBossBar?.id?.toString()
 
-    override var name: Text by bossBar::name
+    override var name: IText
+        get() = TextImpl(bossBar.name.copy())
+        set(value) { bossBar.name = value.value }
+
     override var color: IBossBar.Color
         get() = IBossBar.Color.WHITE
         set(value) {

@@ -4,6 +4,7 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
+import java.net.URI
 
 const val MOD_ID = "bingo"
 
@@ -26,10 +27,10 @@ const val NBT_BINGO_INFO_BOOK = "bingo_info_book"
 
 const val NBT_BINGO_CARD = "bingo_card"
 
-const val URL_WIKI = "https://minecraft.horrific.dev/bingo/"
-const val URL_WIKI_WHAT_IS_BINGO = "https://minecraft.horrific.dev/bingo/what-is-bingo"
-const val URL_WIKI_SERVER_SETUP = "https://minecraft.horrific.dev/bingo/server-setup"
-const val URL_WIKI_GETTING_STARTED = "https://minecraft.horrific.dev/bingo/getting-started"
+internal val URL_WIKI: URI = URI.create("https://minecraft.horrific.dev/bingo/")
+internal val URL_WIKI_WHAT_IS_BINGO: URI = URI.create("https://minecraft.horrific.dev/bingo/what-is-bingo")
+internal val URL_WIKI_SERVER_SETUP: URI = URI.create("https://minecraft.horrific.dev/bingo/server-setup")
+internal val URL_WIKI_GETTING_STARTED: URI = URI.create("https://minecraft.horrific.dev/bingo/getting-started")
 
 val BINGO_WORLD_PREFIX = "${Formatting.GREEN}[BINGO]${Formatting.WHITE}"
 

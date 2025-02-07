@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.game
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
@@ -24,7 +25,6 @@ import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import kotlin.time.Duration.Companion.seconds
@@ -74,7 +74,7 @@ internal class GameService(
     }
 
     fun start(
-        sendFeedback: (Text) -> Unit = {},
+        sendFeedback: (IText) -> Unit = {},
         ignoreWarnings: Boolean = false,
         allowSpectators: Boolean = false,
     ): Boolean {
@@ -212,14 +212,14 @@ internal class GameService(
             val placeholders = mapOf(
                 "%game_start%" to text.string(StringKey.GameStart)
                     .formatted(Formatting.GREEN)
-                    .let { listOf(Text.literal("  ").append(it)) },
+                    .let { listOf(text.literal("  ").append(it)) },
                 "%game_options%" to optionsService.getOptionsSummary(null)
-                    .map { Text.literal("  ").append(it) }
+                    .map { text.literal("  ").append(it) }
                     .toList(),
             )
 
             messageService.getLines(MessageService.MessageType.GAME_START, placeholders)
-                .forEach { log.info(it.string) }
+                .forEach { log.info(it.toString()) }
         }
 
         playerManager.getPlayers()
@@ -228,9 +228,9 @@ internal class GameService(
                 val placeholders = mapOf(
                     "%game_start%" to text.string(StringKey.GameStart)
                         .formatted(Formatting.GREEN)
-                        .let { listOf(Text.literal("  ").append(it)) },
+                        .let { listOf(text.literal("  ").append(it)) },
                     "%game_options%" to optionsService.getOptionsSummary(player)
-                        .map { Text.literal("  ").append(it) }
+                        .map { text.literal("  ").append(it) }
                         .toList(),
                 )
 

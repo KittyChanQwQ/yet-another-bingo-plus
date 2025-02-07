@@ -58,7 +58,7 @@ class SomeOfObjectiveManager(
 
             val isOneOf = objective.valueMin == 1 && objective.valueMax >= objective.someOfObjectives.size
             val isAllOf = objective.valueMin == objective.someOfObjectives.size
-            val contentsName = Text.empty().append(objectives.firstOrNull()?.display?.name ?: Text.empty()).append(", …")
+            val contentsName = text.empty().append(objectives.firstOrNull()?.display?.name ?: text.empty()).append(", …")
             val display = ObjectiveDisplay.Resolved(
                 name = when {
                     isOneOf -> text.string(StringKey.ObjectiveOneOf, contentsName)

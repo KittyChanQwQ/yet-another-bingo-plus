@@ -1,14 +1,14 @@
 package me.jfenn.bingo.common.menu.tooltips
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.IEntity
-import net.minecraft.text.Text
 import java.util.*
 
-class TooltipService {
+internal class TooltipState {
 
-    private val registeredTooltips = mutableMapOf<UUID, List<Text>>()
+    private val registeredTooltips = mutableMapOf<UUID, List<IText>>()
 
-    operator fun set(entity: IEntity, tooltip: List<Text>) {
+    operator fun set(entity: IEntity, tooltip: List<IText>) {
         registeredTooltips[entity.uuid] = tooltip
     }
 

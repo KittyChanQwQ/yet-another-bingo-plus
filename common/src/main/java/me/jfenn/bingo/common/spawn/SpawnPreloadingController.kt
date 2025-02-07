@@ -1,9 +1,6 @@
 package me.jfenn.bingo.common.spawn
 
 import kotlinx.datetime.Clock
-import me.jfenn.bingo.platform.IExecutors
-import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -13,7 +10,9 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IServerWorldFactory
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import kotlin.math.absoluteValue
@@ -24,7 +23,7 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * Wait until chunks around spawn are generated
  */
-class SpawnPreloadingController(
+internal class SpawnPreloadingController(
     events: ScopedEvents,
     private val state: BingoState,
     private val config: BingoConfig,
@@ -104,7 +103,7 @@ class SpawnPreloadingController(
                 .div(totalCount)
                 .let { String.format("%.0f", it) + "%" }
 
-            val message = Text.empty()
+            val message = text.empty()
                 .append(text.string(StringKey.LobbyLoadingTerrain))
                 .append(" $percentage ($doneCount/$totalCount)")
 
@@ -118,7 +117,7 @@ class SpawnPreloadingController(
                 readyPlayers = 0,
                 totalPlayers = 0,
                 title = text.string(StringKey.LobbyLoadingTerrain),
-                subtitle = Text.literal("$percentage ($doneCount/$totalCount)"),
+                subtitle = text.literal("$percentage ($doneCount/$totalCount)"),
                 canSendReady = false,
             )
 

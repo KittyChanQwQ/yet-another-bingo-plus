@@ -1,7 +1,7 @@
 package me.jfenn.bingo.platform
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
-import net.minecraft.text.Text
 
 interface IPacketBuf {
     fun writeString(str: String)
@@ -22,8 +22,8 @@ interface IPacketBuf {
     fun writeItemStack(stack: IItemStack)
     fun readItemStack(): IItemStack
 
-    fun writeText(text: Text)
-    fun readText(): Text
+    fun writeText(text: IText?)
+    fun readText(): IText
 
     fun writeByteArray(array: ByteArray)
     fun readByteArray(): ByteArray

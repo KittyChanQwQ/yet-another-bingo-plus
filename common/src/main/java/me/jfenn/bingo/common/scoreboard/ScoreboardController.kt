@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoreboard
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.options.BingoOptions
@@ -54,13 +55,13 @@ internal class ScoreboardController(
                 val objective = scoreboardService.getScoreboardObjective(team)
                 val teamCard = team?.let { state.getCard(it) } ?: state.getActiveCard()
 
-                val placeholders: Map<String, List<Text>> = buildMap {
+                val placeholders: Map<String, List<IText>> = buildMap {
                     options.formatGameModeIcons(teamCard)
                         .joinToString(" ")
                         .let {
                             when {
                                 it.isEmpty() -> text.string(StringKey.OptionsModeStandard)
-                                else -> Text.literal(it)
+                                else -> text.literal(it)
                             }
                         }
                         .let { text.string(StringKey.ScoreboardMode, it.formatted(Formatting.YELLOW)) }
@@ -71,7 +72,7 @@ internal class ScoreboardController(
                         .let {
                             when {
                                 it.isEmpty() -> text.string(StringKey.OptionsFeaturesNone)
-                                else -> Text.literal(it)
+                                else -> text.literal(it)
                             }
                         }
                         .let { text.string(StringKey.ScoreboardFeatures, it.formatted(Formatting.YELLOW)) }
@@ -157,19 +158,19 @@ internal class ScoreboardController(
 
                 val scoreboardText = messageService.getLines(MessageService.MessageType.SCOREBOARD, placeholders)
                     .let { lines ->
-                        val reducedLines: List<Text> = buildList {
+                        val reducedLines: List<IText> = buildList {
                             for (line in lines) {
-                                if (line.string.isEmpty() && lastOrNull()?.string?.isEmpty() == true)
+                                if (line.toString().isEmpty() && lastOrNull()?.toString()?.isEmpty() == true)
                                     continue
 
                                 add(line)
                             }
                         }
-                        val emptyLines = reducedLines.reversed().indexOfFirst { it.string.isNotEmpty() }
+                        val emptyLines = reducedLines.reversed().indexOfFirst { it.toString().isNotEmpty() }
                         reducedLines.subList(0, reducedLines.size - emptyLines)
                     }
-                    .mapIndexed { index, text ->
-                        if (text.string.isEmpty()) Text.literal(" ".repeat(index)) else text
+                    .mapIndexed { index, line ->
+                        if (line.toString().isEmpty()) text.literal(" ".repeat(index)) else line
                     }
 
                 // Determine which players should be shown the scoreboard

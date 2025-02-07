@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.lobby
 
+import me.jfenn.bingo.client.platform.text.TextAction
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.URL_WIKI_GETTING_STARTED
 import me.jfenn.bingo.common.URL_WIKI_SERVER_SETUP
@@ -15,8 +16,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
 internal class LobbyModeController(
@@ -28,27 +27,28 @@ internal class LobbyModeController(
     private val permissions: IPermissionsApi,
     private val text: TextProvider,
 ) {
-    private val neverShowAgain get() = Text.literal("  > ")
+    private val neverShowAgain get() = text.literal("  > ")
         .append(
             text.string(StringKey.InstalledNeverShowAgain)
                 .formatted(Formatting.GRAY, Formatting.UNDERLINE)
         )
         .apply {
-            style = style.withClickEvent(ClickEvent(
-                ClickEvent.Action.RUN_COMMAND,
-                BingoPrefsCommand.getCommand(PlayerSettings::hideLobbyPrompt, true)
-            ))
+            setClickEvent(
+                TextAction.RunCommand(
+                    BingoPrefsCommand.getCommand(PlayerSettings::hideLobbyPrompt, true)
+                )
+            )
         }
 
     private fun sendLobbyModeHints(player: IPlayerHandle) {
         player.sendMessage(text.string(StringKey.InstalledSmpMode, LOBBY_COMMAND, START_COMMAND))
-        Text.literal("  \uD83D\uDD17 ")
+        text.literal("  \uD83D\uDD17 ")
             .append(
                 text.string(StringKey.InstalledServerSetupWiki)
                     .formatted(Formatting.GREEN, Formatting.UNDERLINE)
             )
             .apply {
-                style = style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, URL_WIKI_SERVER_SETUP))
+                setClickEvent(TextAction.OpenUrl(URL_WIKI_SERVER_SETUP))
             }
             .also { player.sendMessage(it) }
         player.sendMessage(neverShowAgain)
@@ -56,13 +56,13 @@ internal class LobbyModeController(
 
     private fun sendLocalSingleplayerHints(player: IPlayerHandle) {
         player.sendMessage(text.string(StringKey.InstalledLimitedSingleplayerMode, START_COMMAND))
-        Text.literal("  \uD83D\uDD17 ")
+        text.literal("  \uD83D\uDD17 ")
             .append(
                 text.string(StringKey.InstalledGettingStartedWiki)
                     .formatted(Formatting.GREEN, Formatting.UNDERLINE)
             )
             .apply {
-                style = style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, URL_WIKI_GETTING_STARTED))
+                setClickEvent(TextAction.OpenUrl(URL_WIKI_GETTING_STARTED))
             }
             .also { player.sendMessage(it) }
         player.sendMessage(neverShowAgain)

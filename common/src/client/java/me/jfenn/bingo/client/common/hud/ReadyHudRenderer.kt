@@ -49,8 +49,8 @@ internal class ReadyHudRenderer(
             else -> text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
         }
 
-        context.drawText(textRenderer, titleText, x + width/2 - textRenderer.getWidth(titleText)/2, y, LOADING_COLOR, true)
-        context.drawText(textRenderer, bodyText, x + width/2 - textRenderer.getWidth(bodyText)/2, y + textRenderer.fontHeight + 2, TEXT_COLOR, true)
+        drawService.drawText(titleText, x + width/2 - drawService.getTextWidth(titleText)/2, y, LOADING_COLOR, true)
+        drawService.drawText(bodyText, x + width/2 - drawService.getTextWidth(bodyText)/2, y + textRenderer.fontHeight + 2, TEXT_COLOR, true)
 
         val remainingProgress = ready.remainingDuration / ready.totalDuration.coerceAtLeast(1.seconds)
         drawProgressBar(drawService, x, y + (textRenderer.fontHeight * 2) + 5, width, 5, 1f - remainingProgress.toFloat().coerceIn(0f, 1f))

@@ -15,12 +15,12 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
 
 class JoinCommand(
     commandManager: ICommandManager,
+    private val text: TextProvider,
 ) : BingoComponent() {
 
     private fun IExecutionSource.isNotProcessingTeams(): Boolean {
@@ -42,7 +42,7 @@ class JoinCommand(
         // If a player tries to /join during a game, and doesn't have COMMAND_JOIN_PLAYER
         if (state.state != GameState.PREGAME && !hasPermission(Permission.COMMAND_JOIN_PLAYER)) {
             sendMessage(
-                Text.literal("⚠  ")
+                text.literal("⚠  ")
                     .append("Cannot join a team - The game has already started!")
                     .formatted(Formatting.YELLOW)
             )

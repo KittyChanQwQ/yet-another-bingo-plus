@@ -1,10 +1,11 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.menu.tooltips.TooltipService
+import me.jfenn.bingo.common.menu.tooltips.TooltipState
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.*
@@ -17,15 +18,15 @@ import org.slf4j.Logger
 
 internal fun MenuComponent.registerButtonInteraction(
     position: Vector3d,
-    tooltip: List<Text>? = null,
-    tooltipProp: Property<List<Text>?> = ConstantProperty(tooltip),
+    tooltip: List<IText>? = null,
+    tooltipProp: Property<List<IText>?> = ConstantProperty(tooltip),
     width: Float = 1f,
     height: Float = 1f,
     playerManager: IPlayerManager = koinScope.get(),
     permissions: IPermissionsApi = koinScope.get(),
     permissionGetter: ((ServerPlayerEntity) -> Boolean)? = null,
     interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
-    tooltipService: TooltipService = koinScope.get(),
+    tooltipState: TooltipState = koinScope.get(),
     events: ScopedEvents = koinScope.get(),
     executors: IExecutors = koinScope.get(),
     log: Logger = koinScope.get(),
@@ -45,7 +46,7 @@ internal fun MenuComponent.registerButtonInteraction(
         this.height = height
     }.onUpdate { entity ->
         tooltipList?.let {
-            tooltipService[entity] = it
+            tooltipState[entity] = it
         }
 
         interactionEntityEvents.onInteract(entity) { player ->
@@ -76,11 +77,11 @@ internal fun MenuComponent.registerButtonInteraction(
 internal fun MenuComponent.registerTileButton(
     position: Vector3d,
     icon: String? = null,
-    text: Text? = null,
-    textProp: Property<Text> = ConstantProperty(text ?: Text.empty()),
+    text: IText? = null,
+    textProp: Property<IText> = ConstantProperty(text ?: this.text.empty()),
     textScale: Float = MENU_TEXT_SCALE,
-    tooltip: List<Text>? = null,
-    tooltipProp: Property<List<Text>?> = ConstantProperty(tooltip),
+    tooltip: List<IText>? = null,
+    tooltipProp: Property<List<IText>?> = ConstantProperty(tooltip),
     isActiveProp: Property<Boolean> = ConstantProperty(false),
     blockIdentifier: String? = null,
     brightness: IDisplayEntity.Brightness? = null,
@@ -119,8 +120,8 @@ internal fun MenuComponent.registerTileButton(
             pitch = 0f
             yaw = 0f
             this.value = when {
-                isVisible -> Text.literal(icon ?: "◇").formatted(buttonTextColor)
-                else -> Text.empty()
+                isVisible -> this@registerTileButton.text.literal(icon ?: "◇").formatted(buttonTextColor)
+                else -> this@registerTileButton.text.empty()
             }
             billboard = ITextDisplayEntity.Billboard.FIXED
             alignment = ITextDisplayEntity.TextAlignment.CENTER
@@ -134,7 +135,7 @@ internal fun MenuComponent.registerTileButton(
             pos = position + Vector3d(-width/2 + 0.15, height/2 - 0.1, 0.0)
             pitch = 0f
             yaw = 0f
-            this.value = Text.literal(
+            this.value = this@registerTileButton.text.literal(
                 if (isActive) "◆" else ""
             ).formatted(Formatting.DARK_GREEN)
             billboard = ITextDisplayEntity.Billboard.FIXED
@@ -149,7 +150,7 @@ internal fun MenuComponent.registerTileButton(
             pos = position + Vector3d(0.0, height/2.0 - textScale/7.0, 0.0)
             pitch = 0f
             yaw = 0f
-            this.value = Text.empty().append(buttonText).formatted(buttonTextColor)
+            this.value = this@registerTileButton.text.empty().append(buttonText).formatted(buttonTextColor)
             billboard = ITextDisplayEntity.Billboard.FIXED
             alignment = ITextDisplayEntity.TextAlignment.CENTER
             background = 0
@@ -162,9 +163,9 @@ internal fun MenuComponent.registerTileButton(
 internal fun MenuComponent.registerIconButton(
     position: Vector3d,
     icon: String,
-    text: Text,
-    textProp: Property<Text> = computedProperty { text },
-    tooltip: List<Text>? = null,
+    text: IText,
+    textProp: Property<IText> = computedProperty { text },
+    tooltip: List<IText>? = null,
     isActiveProp: Property<Boolean> = ConstantProperty(false),
     width: Double = 0.6,
     height: Double = 0.6,
@@ -189,7 +190,7 @@ internal fun MenuComponent.registerIconButton(
         pos = position + Vector3d(0.0, height/2 - 0.15, 0.0)
         pitch = 0f
         yaw = 0f
-        this.value = Text.literal(icon).formatted(buttonTextColor)
+        this.value = this@registerIconButton.text.literal(icon).formatted(buttonTextColor)
         billboard = ITextDisplayEntity.Billboard.FIXED
         alignment = ITextDisplayEntity.TextAlignment.CENTER
         background = 0
@@ -200,7 +201,7 @@ internal fun MenuComponent.registerIconButton(
         pos = position + Vector3d(0.0, height/2 - 0.25, 0.0)
         pitch = 0f
         yaw = 0f
-        this.value = Text.empty()
+        this.value = this@registerIconButton.text.empty()
             .append(buttonText)
             .formatted(buttonTextColor)
         billboard = ITextDisplayEntity.Billboard.FIXED
@@ -215,10 +216,10 @@ internal fun MenuComponent.registerToggleButton(
     position: Vector3d,
     width: Double = 1.0,
     height: Double = MENU_LINE_HEIGHT,
-    text: Text? = null,
-    textProp: Property<Text> = computedProperty { text ?: Text.empty() },
+    text: IText? = null,
+    textProp: Property<IText> = computedProperty { text ?: this.text.empty() },
     toggleProp: MutableProperty<Boolean>,
-    tooltip: List<Text>? = null,
+    tooltip: List<IText>? = null,
     onClick: (player: IPlayerHandle) -> Unit = {},
 ) {
     var toggle by toggleProp

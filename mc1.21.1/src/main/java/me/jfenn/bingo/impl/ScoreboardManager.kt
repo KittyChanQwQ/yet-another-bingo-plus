@@ -1,18 +1,15 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import me.jfenn.bingo.platform.scoreboard.ScoreChange
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardScoreResetS2CPacket
 import net.minecraft.network.packet.s2c.play.ScoreboardScoreUpdateS2CPacket
-import net.minecraft.scoreboard.ScoreHolder
-import net.minecraft.scoreboard.ScoreboardCriterion
-import net.minecraft.scoreboard.ScoreboardDisplaySlot
-import net.minecraft.scoreboard.ScoreboardObjective
-import net.minecraft.scoreboard.ServerScoreboard
+import net.minecraft.scoreboard.*
 import net.minecraft.scoreboard.number.BlankNumberFormat
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
@@ -21,13 +18,13 @@ import java.util.*
 
 class ScoreboardManager : IScoreboardManager {
 
-    override fun createDummyObjective(server: MinecraftServer, name: String, displayName: Text): IObjectiveHandle {
+    override fun createDummyObjective(server: MinecraftServer, name: String, displayName: IText): IObjectiveHandle {
         val scoreboard: ServerScoreboard = server.scoreboard
         val objective = scoreboard.getNullableObjective(name) ?: run {
             scoreboard.addObjective(
                 name,
                 ScoreboardCriterion.DUMMY,
-                displayName,
+                displayName.value,
                 ScoreboardCriterion.RenderType.INTEGER,
                 false,
                 BlankNumberFormat.INSTANCE,

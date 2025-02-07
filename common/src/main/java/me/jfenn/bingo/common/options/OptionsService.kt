@@ -1,5 +1,8 @@
 package me.jfenn.bingo.common.options
 
+import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.client.platform.text.ITextFactory
+import me.jfenn.bingo.client.platform.text.TextAction
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
@@ -14,13 +17,10 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
-import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.*
@@ -46,34 +46,35 @@ internal class OptionsService(
     private val teamService: TeamService,
     private val playerManager: IPlayerManager,
     private val text: TextProvider,
+    private val textFactory: ITextFactory,
 ) {
     data class Context(
         val player: IPlayerHandle?,
-        val receiveFeedback: ((Text) -> Unit)? = null,
-        val receiveError: ((Text) -> Nothing)? = null,
+        val receiveFeedback: ((IText) -> Unit)? = null,
+        val receiveError: ((IText) -> Nothing)? = null,
     )
 
-    fun broadcastHotbarMessage(player: IPlayerHandle, message: Text) {
+    fun broadcastHotbarMessage(player: IPlayerHandle, message: IText) {
         playerManager.getPlayers()
             .filterNot { it.uuid == player.uuid }
             .forEach {
                 it.sendHotbarMessage(
-                    Text.translatable("chat.type.admin", player.playerName, message)
+                    textFactory.translatable("chat.type.admin", null, player.playerName, message)
                         .formatted(Formatting.GRAY, Formatting.ITALIC)
                 )
             }
     }
 
-    fun Context.sendFeedback(message: Text) {
+    fun Context.sendFeedback(message: IText) {
         receiveFeedback?.invoke(message)
             ?: player?.let { player ->
                 broadcastHotbarMessage(player, message)
             }
     }
 
-    fun Context.error(message: Text) {
+    fun Context.error(message: IText) {
         receiveError?.invoke(message)
-        throw IllegalArgumentException(message.string)
+        throw IllegalArgumentException(message.toString())
     }
 
     fun setGoal(
@@ -119,7 +120,7 @@ internal class OptionsService(
             cardService.generateCard(card)
         }
         ctx.sendFeedback(
-            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsCardDifficulty, card.options.formatItemDist())
+            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsCardDifficulty, card.options.formatItemDist(text))
         )
     }
 
@@ -160,10 +161,10 @@ internal class OptionsService(
             text.string(
                 StringKey.OptionsNotifyChanged,
                 StringKey.OptionsGameMode,
-                options.formatGameMode(card)
-                    .map { text.string(it) }
-                    .joinText()
-                    .formatted(Formatting.WHITE),
+                textFactory.joinText(
+                    options.formatGameMode(card)
+                        .map { text.string(it) }
+                ).formatted(Formatting.WHITE),
             )
         )
     }
@@ -323,20 +324,20 @@ internal class OptionsService(
         ctx.sendFeedback(text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsSpawnDimension, label))
     }
 
-    fun getOptionsSummary(player: IPlayerHandle?): Sequence<MutableText> = sequence {
+    fun getOptionsSummary(player: IPlayerHandle?): Sequence<IText> = sequence {
         val team = player?.let { teamService.getPlayerTeam(it) }
         val card = cardViewService.getPlayerCard(player)
 
         text.string(
             StringKey.ScoreboardMode,
-            options.formatGameMode(card)
-                .map { text.string(it) }
-                .joinText()
-                .formatted(Formatting.YELLOW)
+            textFactory.joinText(
+                options.formatGameMode(card)
+                    .map { text.string(it) }
+            ).formatted(Formatting.YELLOW)
         )
             .formatted(Formatting.GRAY)
-            .also {
-                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo mode"))
+            .apply {
+                setClickEvent(TextAction.SuggestCommand("/bingo mode"))
             }
             .let { yield(it) }
 
@@ -344,7 +345,7 @@ internal class OptionsService(
             StringKey.ScoreboardFeatures,
             options.formatFeatures()
                 .map { text.string(it) }
-                .joinText()
+                .let { textFactory.joinText(it) }
                 .formatted(Formatting.YELLOW)
         )
             .formatted(Formatting.GRAY)
@@ -355,7 +356,7 @@ internal class OptionsService(
             .append(state.formatCardGoalsDescriptive(team, text).formatted(Formatting.YELLOW))
             .formatted(Formatting.GRAY)
             .also {
-                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo goal"))
+                it.setClickEvent(TextAction.SuggestCommand("/bingo goal"))
             }
             .let { yield(it) }
 
@@ -366,12 +367,7 @@ internal class OptionsService(
             )
                 .formatted(Formatting.GRAY)
                 .also {
-                    it.style = it.style.withClickEvent(
-                        ClickEvent(
-                            ClickEvent.Action.SUGGEST_COMMAND,
-                            BingoOptionsCommands.END_WHEN
-                        )
-                    )
+                    it.setClickEvent(TextAction.SuggestCommand(BingoOptionsCommands.END_WHEN))
                 }
                 .let { yield(it) }
         }
@@ -382,17 +378,12 @@ internal class OptionsService(
                 .append(
                     timeLimit.inWholeMinutes.let { minutes ->
                         String.format(Locale.US, "%dh %02dm", minutes / 60, minutes % 60)
-                            .let { Text.literal(it).formatted(Formatting.YELLOW) }
+                            .let { textFactory.literal(it).formatted(Formatting.YELLOW) }
                     }
                 )
                 .formatted(Formatting.GRAY)
                 .also {
-                    it.style = it.style.withClickEvent(
-                        ClickEvent(
-                            ClickEvent.Action.SUGGEST_COMMAND,
-                            "/bingo timelimit"
-                        )
-                    )
+                    it.setClickEvent(TextAction.SuggestCommand("/bingo timelimit"))
                 }
                 .let { yield(it) }
         }
@@ -400,16 +391,17 @@ internal class OptionsService(
         text.string(StringKey.OptionsCardDifficulty)
             .append(": ")
             .append(
-                TierLabel.entries
-                    .mapIndexed { index, label ->
-                        Text.literal(card.options.itemDistribution.getOrNull(index).toString())
-                            .formatted(label.formatting)
-                    }
-                    .joinText(Text.literal(" "))
+                textFactory.joinText(
+                    TierLabel.entries
+                        .mapIndexed { index, label ->
+                            textFactory.literal(card.options.itemDistribution.getOrNull(index).toString())
+                                .formatted(label.formatting)
+                        }
+                )
             )
             .formatted(Formatting.GRAY)
             .also {
-                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo difficulty"))
+                it.setClickEvent(TextAction.SuggestCommand("/bingo difficulty"))
             }
             .let { yield(it) }
 
@@ -418,7 +410,7 @@ internal class OptionsService(
             .append(objectiveFilterService.formatFilter(card.options.itemFilter, false).formatted(Formatting.YELLOW))
             .formatted(Formatting.GRAY)
             .also {
-                it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingo filter"))
+                it.setClickEvent(TextAction.SuggestCommand("/bingo filter"))
             }
             .let { yield(it) }
     }

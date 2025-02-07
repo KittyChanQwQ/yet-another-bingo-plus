@@ -8,10 +8,9 @@ import me.jfenn.bingo.common.card.data.rootObjectives
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.platform.IAdvancementManager
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Style
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 
@@ -23,6 +22,7 @@ class AdvancementObjectiveManager(
     private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
+    private val text: TextProvider,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
         val dataKeys = data.objectives.rootObjectives
@@ -87,14 +87,13 @@ class AdvancementObjectiveManager(
         val display = ObjectiveDisplay.Resolved(
             name = advancement.name
                 ?.let {
-                    Text.empty()
+                    text.empty()
                         .append(it)
-                        .setStyle(Style.EMPTY.withItalic(false).withColor(Formatting.GREEN))
+                        .resetStyle()
+                        .formatted(Formatting.GREEN)
                 },
             lore = advancement.description
-                ?.string
-                ?.split("\n")
-                ?.map { Text.literal(it) }
+                ?.let { listOf(it) }
                 ?: emptyList(),
             item = advancement.displayIcon,
             decoration = CardTile.Decoration.ADVANCEMENT,

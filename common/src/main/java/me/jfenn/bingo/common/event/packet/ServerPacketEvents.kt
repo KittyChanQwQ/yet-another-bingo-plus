@@ -20,14 +20,12 @@ import me.jfenn.bingo.common.timer.CountdownPacket
 import me.jfenn.bingo.common.timer.TimerPacket
 import me.jfenn.bingo.platform.packet.IServerNetworking
 
-class ServerPacketEvents(
+internal class ServerPacketEvents(
     serverNetworking: IServerNetworking,
 ) {
 
     val cardDisplayV1 = serverNetworking.registerS2C(CardDisplayPacket.V1)
     val cardDisplayV2 = serverNetworking.registerS2C(CardDisplayPacket.V2)
-    @Suppress("Deprecation")
-    val cardUpdateV1 = serverNetworking.registerS2C(CardUpdatePacket.V1)
     @Suppress("Deprecation")
     val cardUpdateV2 = serverNetworking.registerS2C(CardUpdatePacket.V2)
     @Suppress("Deprecation")

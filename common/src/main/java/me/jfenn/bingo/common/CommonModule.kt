@@ -41,7 +41,7 @@ import me.jfenn.bingo.common.lobby.LobbyModeService
 import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.menu.tooltips.TooltipController
-import me.jfenn.bingo.common.menu.tooltips.TooltipService
+import me.jfenn.bingo.common.menu.tooltips.TooltipState
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.ready.ReadyCommand
 import me.jfenn.bingo.common.ready.ReadyController
@@ -55,6 +55,7 @@ import me.jfenn.bingo.common.scoring.ScoreUpdateService
 import me.jfenn.bingo.common.scoring.ScoredItemCheck
 import me.jfenn.bingo.common.spawn.*
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.PersistentStates
 import me.jfenn.bingo.common.stats.*
 import me.jfenn.bingo.common.team.*
 import me.jfenn.bingo.common.text.MessageService
@@ -77,8 +78,10 @@ import me.jfenn.bingo.integrations.vanish.DummyVanish
 import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.integrations.vanish.IVanishApiFactory
 import me.jfenn.bingo.platform.ICloseEvent
+import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.scope.IScopeManager
+import net.minecraft.server.MinecraftServer
 import org.koin.core.Koin
 import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
@@ -106,6 +109,7 @@ val commonModule = module {
     singleOf(::EventManager)
     singleOf(::ScopeManager) bind IScopeManager::class
     singleOf(::ServerPacketEvents)
+    singleOf(::PersistentStates)
 
     singleOf(::ReadyTimerState)
 
@@ -169,7 +173,12 @@ val commonModule = module {
         scopedOf(::BingoApiImpl) bind IBingoApi::class
 
         scoped { get<BingoScope>().server }
-        scoped { get<BingoScope>().state }
+        scoped<BingoState> {
+            get<IPersistentStateManager>().getFromWorld(
+                world = get<MinecraftServer>().overworld,
+                type = get<PersistentStates>().bingo,
+            )
+        }
         scoped { get<BingoState>().options }
 
         scopedOf(::PlaceholderService)
@@ -256,7 +265,7 @@ val commonModule = module {
         scopedOf(::ScoredItemCheck)
         scopedOf(::ScoreUpdateService)
 
-        scopedOf(::TooltipService)
+        scopedOf(::TooltipState)
         scopedOf(::TooltipController)
         scopedOf(::MenuController)
 

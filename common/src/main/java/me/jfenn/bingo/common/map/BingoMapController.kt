@@ -11,7 +11,7 @@ import net.minecraft.server.MinecraftServer
 /**
  * Handles re-rolling or generating new BINGO card layouts.
  */
-class BingoMapController(
+internal class BingoMapController(
     events: ScopedEvents,
     private val state: BingoState,
     private val playerManager: IPlayerManager,

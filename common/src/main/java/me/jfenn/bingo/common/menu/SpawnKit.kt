@@ -4,7 +4,6 @@ import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.spawn.SpawnItem
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.item.IItemStackFactory
@@ -19,7 +18,6 @@ internal fun MenuComponent.registerSpawnKit(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     cardService: CardService = koinScope.get(),
-    text: TextProvider = koinScope.get(),
     itemStackFactory: IItemStackFactory = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
 ) {
@@ -77,7 +75,7 @@ internal fun MenuComponent.registerSpawnKit(
                         }
                     }
                 },
-                text.string(StringKey.OptionsSpawnKitPlayer)
+                text.string(StringKey.OptionsSpawnKitPlayer).value
             )
         )
     }
@@ -127,7 +125,7 @@ internal fun MenuComponent.registerSpawnKit(
                         }
                     }
                 },
-                text.string(StringKey.OptionsSpawnKitTeam)
+                text.string(StringKey.OptionsSpawnKitTeam).value
             )
         )
     }

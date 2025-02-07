@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.state
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameOverService
@@ -21,8 +22,6 @@ import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.block.BlockPosition
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.*
 import kotlin.time.Duration
@@ -167,30 +166,30 @@ data class BingoState(
         return timeLimit - duration
     }
 
-    fun formatTimeElapsed(): MutableText {
-        val duration = ingameDuration() ?: return Text.literal("0:00")
-        return Text.literal(duration.formatHHMMSS())
+    fun formatTimeElapsed(): String {
+        val duration = ingameDuration() ?: return "0:00"
+        return duration.formatHHMMSS()
     }
 
     fun formatTimeRemaining(
         textProvider: TextProvider,
         normalColor: Formatting = Formatting.WHITE,
         alertColor: Formatting = Formatting.RED,
-    ): MutableText {
+    ): IText {
         val timeLimit = options.timeLimit
             ?: return textProvider.string(StringKey.TimerNoTimeLimit)
 
-        if (startedAt == null) return Text.literal(timeLimit.formatString()).formatted(normalColor)
-        val secondsRemaining = remainingDuration() ?: return Text.literal(timeLimit.formatString()).formatted(normalColor)
+        if (startedAt == null) return textProvider.literal(timeLimit.formatString()).formatted(normalColor)
+        val secondsRemaining = remainingDuration() ?: return textProvider.literal(timeLimit.formatString()).formatted(normalColor)
 
         if (secondsRemaining <= Duration.ZERO || state == GameState.POSTGAME)
             return textProvider.string(StringKey.TimerGameOver)
 
-        return Text.literal(secondsRemaining.formatString())
+        return textProvider.literal(secondsRemaining.formatString())
             .formatted(if (secondsRemaining.inWholeSeconds <= 30 && secondsRemaining.inWholeSeconds % 2 == 0L) { alertColor } else { normalColor })
     }
 
-    fun formatCardGoals(team: BingoTeam?, text: TextProvider): MutableText {
+    fun formatCardGoals(team: BingoTeam?, text: TextProvider): IText {
         val card = cards.find { it.id == team?.cardId } ?: cards.first()
         val supportsFullCard = options.winCondition !is BingoWinCondition.ReplaceGoals
         val remainingCards = (options.winCondition as? BingoWinCondition.Cards)
@@ -202,13 +201,13 @@ data class BingoState(
         return card.options.goal.format(text, supportsFullCard)
             .also {
                 if (remainingCards != null)
-                    it.append(Text.literal(" +$remainingCards").formatted(Formatting.BOLD))
+                    it.append(text.literal(" +$remainingCards").formatted(Formatting.BOLD))
                 if (options.winCondition is BingoWinCondition.Infinite)
-                    it.append(Text.literal(" + ∞"))
+                    it.append(text.literal(" + ∞"))
             }
     }
 
-    fun formatCardGoalsDescriptive(team: BingoTeam?, text: TextProvider): MutableText {
+    fun formatCardGoalsDescriptive(team: BingoTeam?, text: TextProvider): IText {
         val card = cards.find { it.id == team?.cardId } ?: cards.first()
         val supportsFullCard = options.winCondition !is BingoWinCondition.ReplaceGoals
         val remainingCards = (options.winCondition as? BingoWinCondition.Cards)
@@ -220,11 +219,11 @@ data class BingoState(
         return card.options.goal.format(text, supportsFullCard)
             .also {
                 if (remainingCards != null)
-                    it.append(Text.literal(" + ")
+                    it.append(text.literal(" + ")
                         .append(text.cardCount(remainingCards))
                         .formatted(Formatting.BOLD))
                 if (options.winCondition is BingoWinCondition.Infinite)
-                    it.append(Text.literal(" + ∞"))
+                    it.append(text.literal(" + ∞"))
             }
     }
 

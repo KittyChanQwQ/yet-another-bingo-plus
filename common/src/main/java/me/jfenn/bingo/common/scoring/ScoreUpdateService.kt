@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoring
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.PlayerSettingsService
@@ -18,30 +19,29 @@ import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.PlayerSoundCategory
 import me.jfenn.bingo.platform.PlayerSoundEvent
 import me.jfenn.bingo.platform.player.PlayerProfile
-import net.minecraft.text.Text
-import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 
 internal class ScoreUpdateService(
     private val packetManager: ServerPacketEvents,
     private val options: BingoOptions,
     private val state: BingoState,
-    private val textProvider: TextProvider,
+    private val text: TextProvider,
     private val playerSettingsService: PlayerSettingsService,
     private val playerManager: IPlayerManager,
 ) {
 
-    private fun formatWithTime(message: Text): Text {
-        return Text.empty()
+    private fun formatWithTime(message: IText): IText {
+        return text.empty()
             .append(
-                Texts.bracketed(state.formatTimeElapsed())
+                text.literal(state.formatTimeElapsed())
+                    .bracketed()
                     .formatted(Formatting.GRAY)
             )
             .append(" ")
             .append(message)
     }
 
-    private fun sendScoreMessage(player: IPlayerHandle, packet: ScoreMessagePacket, fallback: Text?): Boolean {
+    private fun sendScoreMessage(player: IPlayerHandle, packet: ScoreMessagePacket, fallback: IText?): Boolean {
         return when {
             packetManager.scoreMessageV3.send(player.player, packet) -> true
             packetManager.scoreMessageV2.send(player.player, packet) -> true
@@ -120,20 +120,18 @@ internal class ScoreUpdateService(
             val isOnTeam = team.includesPlayer(player.player)
             // if playing in hidden items mode, don't reveal the item to the other teams!
             val isItemHidden = card.options.isHiddenItemsMode && !isOnTeam
-            val itemText = Texts.bracketed(
-                when {
-                    isItemHidden -> Text.literal("*****").formatted(Formatting.OBFUSCATED)
-                    else -> objective.display.name ?: Text.literal("[unknown]")
-                }
-            )
+            val itemText = when {
+                isItemHidden -> text.literal("*****").formatted(Formatting.OBFUSCATED)
+                else -> objective.display.name ?: text.literal("unknown")
+            }.bracketed()
 
-            val chatMessage = textProvider.string(
+            val chatMessage = text.string(
                 StringKey.GameMessageCapturedItem,
                 when {
                     packet.player != null ->
-                        Text.literal(team.symbol?.plus(" ").orEmpty() + packet.player.name)
+                        text.literal(team.symbol?.plus(" ").orEmpty() + packet.player.name)
                             .formatted(team.textColor)
-                    else -> team.getName(textProvider, playerName = true, bracketed = false)
+                    else -> team.getName(text, playerName = true, bracketed = false)
                 },
                 itemText,
             ).let { formatWithTime(it) }
@@ -197,16 +195,14 @@ internal class ScoreUpdateService(
             val isOnTeam = team.includesPlayer(player.player)
             // if playing in hidden items mode, don't reveal the item to the other teams!
             val isItemHidden = card.options.isHiddenItemsMode && !isOnTeam
-            val itemText = Texts.bracketed(
-                when {
-                    isItemHidden -> Text.literal("*****").formatted(Formatting.OBFUSCATED)
-                    else -> objective.display.name ?: Text.literal("[unknown]")
-                }
-            )
+            val itemText = when {
+                isItemHidden -> text.literal("*****").formatted(Formatting.OBFUSCATED)
+                else -> objective.display.name ?: text.literal("unknown")
+            }.bracketed()
 
-            val chatMessage = textProvider.string(
+            val chatMessage = text.string(
                 StringKey.GameMessageLostItem,
-                team.getName(textProvider, playerName = true, bracketed = false),
+                team.getName(text, playerName = true, bracketed = false),
                 itemText,
             ).let { formatWithTime(it) }
 
@@ -242,8 +238,8 @@ internal class ScoreUpdateService(
     fun sendLineCaptured(team: BingoTeam) {
         if (!options.showCompletedLines) return
 
-        val teamName = team.getName(textProvider, playerName = true)
-        val message = textProvider.string(StringKey.GameMessageScoredLine, teamName, textProvider.lineCount(team.score.lines))
+        val teamName = team.getName(text, playerName = true)
+        val message = text.string(StringKey.GameMessageScoredLine, teamName, text.lineCount(team.score.lines))
             .formatted(Formatting.YELLOW)
             .let { formatWithTime(it) }
 
@@ -265,7 +261,7 @@ internal class ScoreUpdateService(
     fun sendCardCompleted(team: BingoTeam, completedCard: TeamCompletedCard) {
         if (completedCard.isWinner) {
             val string = if (completedCard.isAutoWin) StringKey.GameMessageCompletedCardByStalemate else StringKey.GameMessageCompletedCard
-            val message = textProvider.string(string, team.getName(textProvider, playerName = true))
+            val message = text.string(string, team.getName(text, playerName = true))
                 .formatted(Formatting.YELLOW)
                 .let { formatWithTime(it) }
 
@@ -296,13 +292,13 @@ internal class ScoreUpdateService(
     }
 
     fun sendTeamLeading(team: BingoTeam) {
-        val teamName = team.getName(textProvider, playerName = true)
+        val teamName = team.getName(text, playerName = true)
         val score = team.score
         val message = when {
             options.showCompletedItems -> {
-                textProvider.string(StringKey.GameMessageLeadingWithScore, teamName, textProvider.itemCount(score.items))
+                text.string(StringKey.GameMessageLeadingWithScore, teamName, text.itemCount(score.items))
             }
-            else -> textProvider.string(StringKey.GameMessageLeading, teamName)
+            else -> text.string(StringKey.GameMessageLeading, teamName)
         }
             .formatted(Formatting.YELLOW)
             .let { formatWithTime(it) }
@@ -323,13 +319,13 @@ internal class ScoreUpdateService(
     }
 
     fun sendTeamTied(team: BingoTeam) {
-        val teamName = team.getName(textProvider, playerName = true)
+        val teamName = team.getName(text, playerName = true)
         val score = team.score
         val message = when {
             options.showCompletedItems -> {
-                textProvider.string(StringKey.GameMessageLeadingTiedWithScore, teamName, textProvider.itemCount(score.items))
+                text.string(StringKey.GameMessageLeadingTiedWithScore, teamName, text.itemCount(score.items))
             }
-            else -> textProvider.string(StringKey.GameMessageLeadingTied, teamName)
+            else -> text.string(StringKey.GameMessageLeadingTied, teamName)
         }
             .formatted(Formatting.YELLOW)
             .let { formatWithTime(it) }

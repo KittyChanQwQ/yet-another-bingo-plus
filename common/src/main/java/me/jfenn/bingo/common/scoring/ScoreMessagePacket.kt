@@ -1,12 +1,12 @@
 package me.jfenn.bingo.common.scoring
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardTileImage
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.player.PlayerProfile
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import java.util.*
 
@@ -15,7 +15,7 @@ data class ScoreMessagePacket(
     val isViewerOnTeam: Boolean,
     val tile: CardTile?,
     val messageType: MessageType?,
-    val message: Text,
+    val message: IText,
 ) {
     enum class MessageType {
         LEADING_TEAM,

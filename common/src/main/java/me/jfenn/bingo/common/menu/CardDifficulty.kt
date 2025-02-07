@@ -4,11 +4,8 @@ import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.joinText
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
 
@@ -19,7 +16,6 @@ internal fun MenuComponent.registerCardDifficulty(
     config: BingoConfig = koinScope.get(),
     state: BingoState = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) {
     registerTitlePanel(
         position = position + Vector3d(0.0, -0.5, 0.0),
@@ -35,22 +31,22 @@ internal fun MenuComponent.registerCardDifficulty(
             position = position + Vector3d(0.0, -(0.5 + (i+1)*(MENU_LINE_PADDING + MENU_LINE_HEIGHT)), 0.0),
             width = CARD_DIFFICULTY_WIDTH,
             height = MENU_LINE_HEIGHT,
-            text = TierLabel.presetText(name),
+            text = TierLabel.presetText(text, name),
             tooltip = buildList {
                 add(
                     text.string(StringKey.OptionsCardDifficulty)
                         .append(": ")
-                        .append(TierLabel.presetText(name))
+                        .append(TierLabel.presetText(text, name))
                         .formatted(Formatting.GREEN)
                 )
                 add(text.string(StringKey.OptionsCardDifficultyTooltip))
                 add(
                     TierLabel.entries
                         .mapIndexed { index, label ->
-                            Text.literal(preset.getOrNull(index).toString())
+                            text.literal(preset.getOrNull(index).toString())
                                 .formatted(label.formatting)
                         }
-                        .joinText(Text.literal(" "))
+                        .let { text.joinText(it, text.literal(" ")) }
                 )
             },
             isActiveProp = computedProperty {

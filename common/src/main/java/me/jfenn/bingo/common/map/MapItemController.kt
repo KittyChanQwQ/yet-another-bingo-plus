@@ -10,7 +10,7 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 
-class MapItemController(
+internal class MapItemController(
     private val state: BingoState,
     private val config: BingoConfig,
     private val cardViewService: CardViewService,

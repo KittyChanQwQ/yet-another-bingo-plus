@@ -1,9 +1,8 @@
 package me.jfenn.bingo.common.infobook
 
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
-import me.jfenn.bingo.platform.item.IItemStackFactory
-import me.jfenn.bingo.platform.item.IWrittenBook
+import me.jfenn.bingo.client.platform.text.HoverAction
+import me.jfenn.bingo.client.platform.text.ITextFactory
+import me.jfenn.bingo.client.platform.text.TextAction
 import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.commands.BingoPrefsCommand
 import me.jfenn.bingo.common.config.BingoConfig
@@ -16,9 +15,10 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Text
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.item.IWrittenBook
+import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import net.minecraft.util.Formatting
 
 internal class InfoBookService(
@@ -30,20 +30,21 @@ internal class InfoBookService(
     private val scoreboardManager: IScoreboardManager,
     private val playerSettingsService: PlayerSettingsService,
     private val itemStackFactory: IItemStackFactory,
+    private val textFactory: ITextFactory,
 ) {
 
     private fun getIntroPage(player: IPlayerHandle) =
-        Text.empty()
+        textFactory.empty()
             .append(
                 text.string(
                     StringKey.IntroWelcome,
                     text.string(StringKey.IntroWelcomeLink).formatted(Formatting.DARK_GREEN, Formatting.UNDERLINE).also {
-                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, URL_WIKI))
+                        it.setClickEvent(TextAction.OpenUrl(URL_WIKI))
                     },
                 ).formatted(Formatting.BOLD)
             )
             .append("\n")
-            .append(Text.literal("v$BINGO_VERSION").formatted(Formatting.GRAY))
+            .append(textFactory.literal("v$BINGO_VERSION").formatted(Formatting.GRAY))
             .also {
                 if (permissions.hasPermission(player, Permission.CONFIGURE_GAME)) {
                     it.append("\n\n").append(
@@ -59,7 +60,7 @@ internal class InfoBookService(
                 text.string(
                     StringKey.IntroReadHowToPlay,
                     text.string(StringKey.IntroReadHowToPlayLink).formatted(Formatting.DARK_GREEN, Formatting.UNDERLINE).also {
-                        it.style = it.style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, URL_WIKI_WHAT_IS_BINGO))
+                        it.setClickEvent(TextAction.OpenUrl(URL_WIKI_WHAT_IS_BINGO))
                     },
                 )
             )
@@ -72,17 +73,17 @@ internal class InfoBookService(
             .append(text.string(StringKey.IntroHaveFun))
 
     private fun getHintsPage(player: IPlayerHandle) =
-        Text.empty()
-            .append(Text.literal("Hints").formatted(Formatting.BOLD))
+        textFactory.empty()
+            .append(text.string(StringKey.IntroHints).formatted(Formatting.BOLD))
             .append("\n\n")
             .append(when {
                 cardViewService.supportsCardHud(player) -> text.string(
                     StringKey.IntroKeybindHud,
-                    Text.keybind(KEYBIND_OPEN_CARD).formatted(Formatting.DARK_GREEN),
+                    textFactory.keybind(KEYBIND_OPEN_CARD).formatted(Formatting.DARK_GREEN),
                 )
                 else -> text.string(
                     StringKey.IntroKeybindMap,
-                    Text.keybind("key.use").formatted(Formatting.DARK_GREEN),
+                    textFactory.keybind("key.use").formatted(Formatting.DARK_GREEN),
                 )
             })
             .also {
@@ -96,9 +97,9 @@ internal class InfoBookService(
         name: StringKey,
         description: StringKey,
     ) =
-        Text.empty()
+        textFactory.empty()
             .append(
-                Text.literal(if (value) "☑" else "☐")
+                textFactory.literal(if (value) "☑" else "☐")
                     .formatted(
                         if (value) Formatting.DARK_GREEN else Formatting.DARK_RED,
                     )
@@ -106,39 +107,30 @@ internal class InfoBookService(
             .append(" ")
             .append(text.string(name))
             .append(
-                Text.literal(" \uD83D\uDEC8").formatted(Formatting.GRAY).also {
-                    it.style = it.style.withHoverEvent(
-                        HoverEvent(
-                        HoverEvent.Action.SHOW_TEXT,
-                        text.string(description)
-                    )
-                    )
+                textFactory.literal(" \uD83D\uDEC8").formatted(Formatting.GRAY).also {
+                    it.setHoverEvent(HoverAction.ShowText(text.string(description)))
                 }
             )
 
     private fun getSettingsPage(player: IPlayerHandle, settings: PlayerSettings) =
-        Text.empty()
+        textFactory.empty()
             .append(text.string(StringKey.PlayerSettings).formatted(Formatting.BOLD))
             .append("\n\n")
             .append(
                 toggleText(settings.bossbar, StringKey.PlayerSettingsBossbar, StringKey.PlayerSettingsBossbarDescription)
                     .also {
-                        it.style = it.style.withClickEvent(
-                            ClickEvent(
-                                ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(
-                                    PlayerSettings::bossbar, !settings.bossbar))
-                        )
+                        it.setClickEvent(TextAction.RunCommand(
+                            BingoPrefsCommand.getCommand(PlayerSettings::bossbar, !settings.bossbar)
+                        ))
                     }
             )
             .append("\n\n")
             .append(
                 toggleText(settings.scoreboard, StringKey.PlayerSettingsScoreboard, StringKey.PlayerSettingsScoreboardDescription)
                     .also {
-                        it.style = it.style.withClickEvent(
-                            ClickEvent(
-                                ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(
-                                    PlayerSettings::scoreboard, !settings.scoreboard))
-                        )
+                        it.setClickEvent(TextAction.RunCommand(
+                            BingoPrefsCommand.getCommand(PlayerSettings::scoreboard, !settings.scoreboard)
+                        ))
                     }
             )
             .also {
@@ -147,11 +139,9 @@ internal class InfoBookService(
                     it.append(
                         toggleText(settings.scoreboardAutoHide, StringKey.PlayerSettingsScoreboardAutoHide, StringKey.PlayerSettingsScoreboardAutoHideDescription)
                             .also {
-                                it.style = it.style.withClickEvent(
-                                    ClickEvent(
-                                        ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(
-                                            PlayerSettings::scoreboardAutoHide, !settings.scoreboardAutoHide))
-                                )
+                                it.setClickEvent(TextAction.RunCommand(
+                                    BingoPrefsCommand.getCommand(PlayerSettings::scoreboardAutoHide, !settings.scoreboardAutoHide)
+                                ))
                             }
                     )
                 }
@@ -162,44 +152,36 @@ internal class InfoBookService(
             .append(
                 toggleText(settings.leadingMessages, StringKey.PlayerSettingsMessagesLeading, StringKey.PlayerSettingsMessagesLeadingDescription)
                     .also {
-                        it.style = it.style.withClickEvent(
-                            ClickEvent(
-                                ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(
-                                    PlayerSettings::leadingMessages, !settings.leadingMessages))
-                        )
+                        it.setClickEvent(TextAction.RunCommand(
+                            BingoPrefsCommand.getCommand(PlayerSettings::leadingMessages, !settings.leadingMessages)
+                        ))
                     }
             )
             .append("\n")
             .append(
                 toggleText(settings.scoreMessages, StringKey.PlayerSettingsMessagesLines, StringKey.PlayerSettingsMessagesLinesDescription)
                     .also {
-                        it.style = it.style.withClickEvent(
-                            ClickEvent(
-                                ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(
-                                    PlayerSettings::scoreMessages, !settings.scoreMessages))
-                        )
+                        it.setClickEvent(TextAction.RunCommand(
+                            BingoPrefsCommand.getCommand(PlayerSettings::scoreMessages, !settings.scoreMessages)
+                        ))
                     }
             )
             .append("\n")
             .append(
                 toggleText(settings.itemMessages, StringKey.PlayerSettingsMessagesItems, StringKey.PlayerSettingsMessagesItemsDescription)
                     .also {
-                        it.style = it.style.withClickEvent(
-                            ClickEvent(
-                                ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(
-                                    PlayerSettings::itemMessages, !settings.itemMessages))
-                        )
+                        it.setClickEvent(TextAction.RunCommand(
+                            BingoPrefsCommand.getCommand(PlayerSettings::itemMessages, !settings.itemMessages)
+                        ))
                     }
             )
             .append("\n\n")
             .append(
                 toggleText(settings.nightVision, StringKey.PlayerSettingsNightVision, StringKey.PlayerSettingsNightVisionDescription)
                     .also {
-                        it.style = it.style.withClickEvent(
-                            ClickEvent(
-                                ClickEvent.Action.RUN_COMMAND, BingoPrefsCommand.getCommand(
-                                    PlayerSettings::nightVision, !settings.nightVision))
-                        )
+                        it.setClickEvent(TextAction.RunCommand(
+                            BingoPrefsCommand.getCommand(PlayerSettings::nightVision, !settings.nightVision)
+                        ))
                     }
             )
 

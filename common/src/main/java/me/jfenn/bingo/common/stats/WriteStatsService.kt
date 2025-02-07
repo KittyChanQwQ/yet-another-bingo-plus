@@ -17,7 +17,7 @@ import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.time.Duration
 
-class WriteStatsService(
+internal class WriteStatsService(
     private val log: Logger,
     private val config: BingoConfig,
     private val state: BingoState,

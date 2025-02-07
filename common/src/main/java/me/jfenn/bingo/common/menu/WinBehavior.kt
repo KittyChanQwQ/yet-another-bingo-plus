@@ -19,7 +19,6 @@ internal fun MenuComponent.registerWinBehavior(
     width: Double = MENU_WIN_BEHAVIOR_WIDTH,
     options: BingoOptions = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) {
     val offset = Vector3d()
 
@@ -43,7 +42,7 @@ internal fun MenuComponent.registerWinBehavior(
         width = width,
         height = TILE_HEIGHT,
         icon = "⇄",
-        text = Text.empty(),
+        text = text.empty(),
         textProp = computedProperty {
             options.stalemateBehavior.string(text)
         },
@@ -54,7 +53,7 @@ internal fun MenuComponent.registerWinBehavior(
                     StringKey.entries
                         .find { it.key == options.stalemateBehavior.string.key + ".tooltip" }
                         ?.let { text.string(it) }
-                        ?: Text.empty()
+                        ?: text.empty()
                 )
             }
         }
@@ -74,7 +73,7 @@ internal fun MenuComponent.registerWinBehavior(
         width = width,
         height = TILE_HEIGHT,
         icon = "⇄",
-        text = Text.empty(),
+        text = text.empty(),
         textProp = computedProperty {
             text.string(StringKey.OptionsEndWhen, options.endGameWhen.string(text))
         },

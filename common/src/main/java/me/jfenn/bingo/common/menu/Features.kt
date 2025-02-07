@@ -7,7 +7,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
 
@@ -25,7 +24,6 @@ internal fun MenuComponent.registerFeatures(
     position: Vector3d,
     state: BingoState = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
-    text: TextProvider = koinScope.get(),
 ) {
     val options by state::options
 
@@ -58,7 +56,7 @@ internal fun MenuComponent.registerFeatures(
         text = text.string(StringKey.OptionsKeepInventory),
         tooltip = listOf(
             text.string(StringKey.OptionsKeepInventory).formatted(Formatting.GREEN),
-            Text.translatable("gamerule.keepInventory"),
+            this.text.translatable("gamerule.keepInventory", null),
         ),
         isActiveProp = computedProperty { options.isKeepInventory },
     ) {

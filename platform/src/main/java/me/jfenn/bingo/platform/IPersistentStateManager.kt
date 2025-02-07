@@ -34,14 +34,15 @@ interface IPersistentStateManager {
         }
     }
 
-    fun <T: Any> getFromWorld(world: ServerWorld, id: String, kType: KType, default: () -> T): T
+    fun <T: Any> register(id: String, kType: KType, default: () -> T): IPersistentStateType<T>
 
-    fun <T: Any> put(world: ServerWorld, id: String, kType: KType, value: T)
+    fun <T: Any> getFromWorld(world: ServerWorld, type: IPersistentStateType<T>): T
+
+    fun <T: Any> put(world: ServerWorld, type: IPersistentStateType<T>, value: T)
 
 }
 
-inline fun <reified T: Any> IPersistentStateManager.getFromWorld(world: ServerWorld, id: String, noinline default: () -> T): T =
-    getFromWorld(world, id, typeOf<T>(), default)
+interface IPersistentStateType<T>
 
-inline fun <reified T: Any> IPersistentStateManager.put(world: ServerWorld, id: String, value: T) =
-    put(world, id, typeOf<T>(), value)
+inline fun <reified T: Any> IPersistentStateManager.register(id: String, noinline default: () -> T): IPersistentStateType<T> =
+    register(id, typeOf<T>(), default)

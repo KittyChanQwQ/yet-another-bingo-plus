@@ -1,7 +1,8 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import me.jfenn.bingo.platform.scoreboard.ScoreChange
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
@@ -17,14 +18,14 @@ import java.util.*
 
 class ScoreboardManager : IScoreboardManager {
 
-    override fun createDummyObjective(server: MinecraftServer, name: String, displayName: Text): IObjectiveHandle {
+    override fun createDummyObjective(server: MinecraftServer, name: String, displayName: IText): IObjectiveHandle {
         val scoreboard: ServerScoreboard = server.scoreboard
 
         val objective = scoreboard.getNullableObjective(name) ?: run {
             scoreboard.addObjective(
                 name,
                 ScoreboardCriterion.DUMMY,
-                displayName,
+                displayName.value,
                 ScoreboardCriterion.RenderType.INTEGER,
                 false,
                 BlankNumberFormat.INSTANCE,
