@@ -1,11 +1,13 @@
 package me.jfenn.bingo.common.datapack
 
-import net.fabricmc.loader.api.FabricLoader
+import me.jfenn.bingo.platform.IModEnvironment
 import kotlin.io.path.readText
 
-object ServerProps {
+class ServerProps(
+    environment: IModEnvironment,
+) {
 
-    private val gameDir = FabricLoader.getInstance().gameDir
+    private val gameDir = environment.gameDir
 
     private val serverProperties = gameDir.resolve("server.properties")
 

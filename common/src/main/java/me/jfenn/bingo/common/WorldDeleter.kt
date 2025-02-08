@@ -44,7 +44,8 @@ object WorldDeleter {
 
         val environment = scope.get<IModEnvironment>()
         val config = scope.get<BingoConfig>()
-        val gameDir = environment.gameDir.resolve(ServerProps.levelName)
+        val serverProps = scope.get<ServerProps>()
+        val gameDir = environment.gameDir.resolve(serverProps.levelName)
         log.info("Deleting world files in dir: ${gameDir.toAbsolutePath()}")
 
         measureTime {

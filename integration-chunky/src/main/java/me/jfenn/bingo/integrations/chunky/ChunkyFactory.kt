@@ -2,6 +2,8 @@ package me.jfenn.bingo.integrations.chunky
 
 import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.platform.config.IConfigManager
+import me.jfenn.bingo.platform.config.read
+import me.jfenn.bingo.platform.config.write
 import org.koin.core.scope.Scope
 
 class ChunkyFactory : IChunkyApiFactory {
@@ -17,11 +19,11 @@ class ChunkyFactory : IChunkyApiFactory {
 
         return if (environment.isModLoaded("chunky")) {
             val config = try {
-                configManager.read(ChunkyConfig::class, CONFIG_PATH)
+                configManager.read(CONFIG_PATH)
             } catch (e: Throwable) {
                 ChunkyConfig()
             }
-            configManager.write(ChunkyConfig::class, CONFIG_PATH, config)
+            configManager.write(CONFIG_PATH, config)
 
             if (config.enabled) {
                 ChunkyImpl(

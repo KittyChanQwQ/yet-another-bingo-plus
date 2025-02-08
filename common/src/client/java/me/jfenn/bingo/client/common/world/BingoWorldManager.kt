@@ -1,24 +1,24 @@
 package me.jfenn.bingo.client.common.world
 
-import me.jfenn.bingo.client.platform.IButtonService
 import me.jfenn.bingo.client.platform.IWorldService
+import me.jfenn.bingo.client.platform.event.IClientEvents
+import me.jfenn.bingo.client.platform.event.model.ScreenType
+import me.jfenn.bingo.client.platform.screen.IButtonFactory
+import me.jfenn.bingo.client.platform.text.ITextFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.scope.IScopeManager
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
-import net.fabricmc.fabric.api.client.screen.v1.Screens
-import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 
 internal class BingoWorldManager(
     scopeManager: IScopeManager,
-    private val buttonService: IButtonService,
+    events: IClientEvents,
+    private val buttonFactory: IButtonFactory,
     private val worldService: IWorldService,
     private val config: BingoConfig,
+    private val text: ITextFactory,
 ) : BingoComponent() {
 
     init {
@@ -32,19 +32,18 @@ internal class BingoWorldManager(
             }
         }
 
-        ScreenEvents.AFTER_INIT.register { _, screen, _, height ->
-            if (screen is TitleScreen && config.client.showQuickStartButton) {
-                val buttons = Screens.getButtons(screen)
-                buttons.add(
-                    buttonService.createButton(
+        events.onScreenAfterInit {
+            if (it.type == ScreenType.TitleScreen && config.client.showQuickStartButton) {
+                it.screen.addButton(
+                    buttonFactory.createButton(
                         x = 10,
-                        y = height - 70,
+                        y = it.screen.height - 70,
                         width = 80,
                         height = 50,
-                        texture = Identifier.of("minecraft", "bingo/button"),
-                        focusedTexture = Identifier.of("minecraft", "bingo/button_focused"),
+                        texture = "minecraft:bingo/button",
+                        focusedTexture = "minecraft:bingo/button_focused",
                         onClick = { worldService.createBingoWorld() },
-                        message = Text.literal("BINGO!"),
+                        message = text.literal("BINGO!"),
                     )
                 )
             }

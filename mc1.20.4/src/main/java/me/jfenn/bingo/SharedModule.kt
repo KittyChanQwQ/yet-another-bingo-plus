@@ -3,6 +3,7 @@ package me.jfenn.bingo
 import me.jfenn.bingo.client.platform.text.ITextFactory
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.impl.*
+import me.jfenn.bingo.impl.event.ServerCloseEvent
 import me.jfenn.bingo.impl.particle.ParticleFactory
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.commands.ICommandManager
@@ -15,6 +16,10 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.binds
 import org.koin.dsl.module
+
+val sharedServerModule = module {
+    single { ServerCloseEvent } bind ICloseEvent::class
+}
 
 val sharedModule = module {
     singleOf(::ModEnvironment) bind IModEnvironment::class

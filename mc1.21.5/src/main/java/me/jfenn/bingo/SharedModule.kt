@@ -3,6 +3,7 @@ package me.jfenn.bingo
 import me.jfenn.bingo.client.platform.text.ITextFactory
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.impl.*
+import me.jfenn.bingo.impl.event.ServerCloseEvent
 import me.jfenn.bingo.impl.networking.ServerNetworkingImpl
 import me.jfenn.bingo.impl.particle.ParticleFactory
 import me.jfenn.bingo.platform.*
@@ -19,6 +20,10 @@ import org.koin.dsl.module
 
 fun sharedInit() {
     ChunkTickets.init()
+}
+
+val sharedServerModule = module {
+    single { ServerCloseEvent } bind ICloseEvent::class
 }
 
 val sharedModule = module {

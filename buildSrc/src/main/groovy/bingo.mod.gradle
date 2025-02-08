@@ -18,7 +18,10 @@ dependencies {
     shade libs.sqldelight.runtime
     include libs.sqlite
 
-    include "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin}"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation libs.fabric.language.kotlin
+    include libs.fabric.language.kotlin
 
     api project(path: ":platform", configuration: "namedElements")
     shade project(path: ":platform")

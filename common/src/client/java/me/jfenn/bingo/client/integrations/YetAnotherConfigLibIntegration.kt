@@ -11,7 +11,7 @@ import me.jfenn.bingo.client.common.sound.SoundService
 import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.fabricmc.loader.api.FabricLoader
+import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
@@ -22,16 +22,17 @@ internal interface YetAnotherConfigLibIntegration {
     fun buildConfigScreen(parent: Screen): Screen?
 
     companion object {
-        fun hasYACL() = FabricLoader.getInstance().isModLoaded("yet_another_config_lib_v3")
+        fun hasYACL(environment: IModEnvironment) = environment.isModLoaded("yet_another_config_lib_v3")
 
         fun create(
+            environment: IModEnvironment,
             configService: ConfigService,
             config: BingoConfig,
             clientSettings: ClientSettingsService,
             soundService: SoundService,
             text: TextProvider,
         ): YetAnotherConfigLibIntegration {
-            return if (hasYACL())
+            return if (hasYACL(environment))
                 YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings, soundService, text)
             else YetAnotherConfigLibIntegrationDummy()
         }

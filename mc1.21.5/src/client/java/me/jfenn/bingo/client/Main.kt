@@ -9,6 +9,7 @@ import me.jfenn.bingo.client.impl.screen.ScreenFactory
 import me.jfenn.bingo.client.platform.*
 import me.jfenn.bingo.client.platform.event.IClientEvents
 import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
+import me.jfenn.bingo.client.platform.screen.IButtonFactory
 import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.world.BingoWorldController
 import me.jfenn.bingo.client.world.BingoWorldState
@@ -40,7 +41,7 @@ object Main : ClientModInitializer {
         single { ClientEventsImpl } bind IClientEvents::class
         singleOf(::ScreenFactory) bind IScreenFactory::class
 
-        singleOf(::ButtonService) bind IButtonService::class
+        singleOf(::ButtonFactory) bind IButtonFactory::class
         singleOf(::ClientNetworkingImpl) bind IClientNetworking::class
         single { DrawService } bind IDrawServiceFactory::class
         singleOf(::HudCallbackImpl) bind IHudCallback::class

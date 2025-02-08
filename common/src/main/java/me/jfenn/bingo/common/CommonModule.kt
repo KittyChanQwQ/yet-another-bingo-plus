@@ -24,6 +24,7 @@ import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.data.*
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
+import me.jfenn.bingo.common.datapack.ServerProps
 import me.jfenn.bingo.common.event.EventManager
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -63,7 +64,6 @@ import me.jfenn.bingo.common.text.PlaceholderService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.timer.*
 import me.jfenn.bingo.common.utils.Build
-import me.jfenn.bingo.impl.ServerCloseEvent
 import me.jfenn.bingo.integrations.chunky.ChunkyController
 import me.jfenn.bingo.integrations.chunky.DummyChunky
 import me.jfenn.bingo.integrations.chunky.IChunkyApiFactory
@@ -77,7 +77,6 @@ import me.jfenn.bingo.integrations.placeholders.PlaceholdersIntegration
 import me.jfenn.bingo.integrations.vanish.DummyVanish
 import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.integrations.vanish.IVanishApiFactory
-import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.scope.IScopeManager
@@ -104,6 +103,7 @@ val commonModule = module {
     single { get<ConfigService>().config }
     single { get<ConfigService>().config.client }
     singleOf(::TextProvider)
+    singleOf(::ServerProps)
 
     singleOf(::ServerDatapackManager)
     singleOf(::EventManager)
@@ -309,10 +309,6 @@ val commonModule = module {
         scoped { get<IChunkyApiFactory>().create(this) }
         scopedOf(::ChunkyController)
     }
-}
-
-val commonServerModule = module {
-    single { ServerCloseEvent } bind ICloseEvent::class
 }
 
 fun Koin.commonInit() {

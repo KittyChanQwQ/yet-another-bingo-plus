@@ -8,6 +8,8 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.IServerEvents
 import me.jfenn.bingo.platform.config.IConfigManager
+import me.jfenn.bingo.platform.config.read
+import me.jfenn.bingo.platform.config.write
 import java.io.Closeable
 import kotlin.reflect.KProperty0
 
@@ -25,11 +27,11 @@ class VoiceGroupController(
     }
 
     val config: VoiceConfig = try {
-        configManager.read(VoiceConfig::class, CONFIG_PATH)
+        configManager.read(CONFIG_PATH)
     } catch (e: Throwable) {
         VoiceConfig()
     }.also {
-        configManager.write(VoiceConfig::class, CONFIG_PATH, it)
+        configManager.write(CONFIG_PATH, it)
     }
 
     private var usingCombinedGroup: Boolean? = null

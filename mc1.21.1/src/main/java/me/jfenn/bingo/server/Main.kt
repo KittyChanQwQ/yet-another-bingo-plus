@@ -3,9 +3,9 @@ package me.jfenn.bingo.server
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.commonModule
-import me.jfenn.bingo.common.commonServerModule
 import me.jfenn.bingo.common.config.MigrationHandler
 import me.jfenn.bingo.sharedModule
+import me.jfenn.bingo.sharedServerModule
 import net.fabricmc.api.DedicatedServerModInitializer
 import org.koin.core.logger.Level
 import org.koin.dsl.koinApplication
@@ -32,7 +32,7 @@ object Main : DedicatedServerModInitializer {
         koinApplication {
             BingoKoin.koinApp = this@koinApplication
             logger(SLF4JLogger(level = Level.DEBUG))
-            modules(sharedModule, commonModule, commonServerModule)
+            modules(sharedModule, sharedServerModule, commonModule)
         }.also {
             it.koin.commonInit()
         }

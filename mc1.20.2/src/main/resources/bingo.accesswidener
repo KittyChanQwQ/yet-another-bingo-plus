@@ -11,4 +11,7 @@ accessible method net/minecraft/client/gui/screen/world/CreateWorldScreen getSca
 accessible method net/minecraft/client/gui/screen/world/CreateWorldScreen applyDataPacks (Lnet/minecraft/resource/ResourcePackManager;ZLjava/util/function/Consumer;)V
 accessible method net/minecraft/client/gui/screen/world/CreateWorldScreen validateDataPacks (Lnet/minecraft/resource/ResourcePackManager;Lnet/minecraft/resource/DataConfiguration;Ljava/util/function/Consumer;)V
 
+accessible method net/minecraft/client/gui/screen/Screen addDrawableChild (Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;
+accessible method net/minecraft/client/gui/screen/Screen clearChildren ()V
+
 accessible method net/minecraft/item/map/MapState markDirty (II)V

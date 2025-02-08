@@ -4,7 +4,7 @@ import kotlinx.datetime.Instant
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path
-import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 interface IConfigManager {
     val configDir: Path
@@ -17,6 +17,12 @@ interface IConfigManager {
      * Otherwise, returns DISTANT_PAST
      */
     fun readLastModified(fileName: String): Instant
-    fun <T: Any> read(clazz: KClass<T>, file: String): T
-    fun <T: Any> write(clazz: KClass<T>, file: String, config: T)
+    fun <T: Any> read(type: KType, file: String): T
+    fun <T: Any> write(type: KType, file: String, config: T)
 }
+
+inline fun <reified T: Any> IConfigManager.read(file: String): T =
+    read(kotlin.reflect.typeOf<T>(), file)
+
+inline fun <reified T: Any> IConfigManager.write(file: String, config: T) =
+    write(kotlin.reflect.typeOf<T>(), file, config)

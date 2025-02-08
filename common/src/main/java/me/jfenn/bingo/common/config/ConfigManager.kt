@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import kotlinx.serialization.serializer
@@ -19,8 +19,9 @@ import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.StandardOpenOption
 import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 class ConfigManager(
     environment: IModEnvironment,
@@ -42,24 +43,28 @@ class ConfigManager(
         return Files.newOutputStream(filePath)
     }
 
-    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-    override fun <T: Any> read(clazz: KClass<T>, file: String): T {
+    @OptIn(ExperimentalSerializationApi::class)
+    override fun <T: Any> read(type: KType, file: String): T {
+        @Suppress("UNCHECKED_CAST")
+        val serializer = serializer(type) as KSerializer<T>
         return try {
-            inputStream(file).use { json.decodeFromStream(clazz.serializer(), it) }
+            inputStream(file).use { json.decodeFromStream(serializer, it) }
         } catch (e: NoSuchFileException) {
             null
         } catch (e: Exception) {
             log.error("Error reading $file", e)
             null
         } ?: run {
-            json.decodeFromString(clazz.serializer(), "{}").also { write(clazz, file, it) }
+            json.decodeFromString(serializer, "{}").also { write(type, file, it) }
         }
     }
 
-    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-    override fun <T: Any> write(clazz: KClass<T>, file: String, config: T) {
+    @OptIn(ExperimentalSerializationApi::class)
+    override fun <T: Any> write(type: KType, file: String, config: T) {
+        @Suppress("UNCHECKED_CAST")
+        val serializer = serializer(type) as KSerializer<T>
         outputStream(file).use {
-            json.encodeToStream(clazz.serializer(), config, it)
+            json.encodeToStream(serializer, config, it)
         }
     }
 
@@ -74,17 +79,17 @@ class ConfigManager(
 
     class ConfigDelegate<T: Any>(
         private val configManager: IConfigManager,
-        private val clazz: KClass<T>,
+        private val type: KType,
         private val file: String,
     ) : ReadWriteProperty<Any, T> {
         var value: T? = null
 
         override fun getValue(thisRef: Any, property: KProperty<*>): T {
-            return value ?: configManager.read(clazz, file).also { value = it }
+            return value ?: configManager.read<T>(type, file).also { value = it }
         }
 
         override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
-            this.value = value.also { configManager.write(clazz, file, value) }
+            this.value = value.also { configManager.write(type, file, value) }
         }
     }
 }
@@ -117,4 +122,5 @@ fun IConfigManager.readStream(
     return FileInputStream(filePath.toFile())
 }
 
-inline fun <reified T: Any> IConfigManager.config(file: String) = ConfigManager.ConfigDelegate(this, T::class, file)
+inline fun <reified T: Any> IConfigManager.config(file: String) =
+    ConfigManager.ConfigDelegate<T>(this, typeOf<T>(), file)

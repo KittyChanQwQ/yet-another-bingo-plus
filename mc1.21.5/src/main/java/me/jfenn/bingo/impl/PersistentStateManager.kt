@@ -20,7 +20,7 @@ class PersistentStateManager(
     private var persistentStateTypes = ConcurrentHashMap<String, PersistentStateTypeImpl<*>>()
 
     override fun <T : Any> register(id: String, kType: KType, default: () -> T): IPersistentStateType<T> {
-        return persistentStateTypes.getOrPut(id) {
+        val type = persistentStateTypes.getOrPut(id) {
             @Suppress("UNCHECKED_CAST")
             val serializer = serializer(kType) as KSerializer<T>
 
@@ -48,7 +48,10 @@ class PersistentStateManager(
             )
 
             PersistentStateTypeImpl(id, type)
-        } as IPersistentStateType<T>
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        return type as IPersistentStateType<T>
     }
 
     override fun <T : Any> getFromWorld(

@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.platform.event
 
 import me.jfenn.bingo.client.platform.event.model.ClientReloadEvent
+import me.jfenn.bingo.client.platform.event.model.ScreenEvent
 import me.jfenn.bingo.platform.utils.IEventListener
 
 interface IClientEvents {
@@ -10,4 +11,5 @@ interface IClientEvents {
     val onInvalidateRenderState: IEventListener<Unit>
     val onClientTickEnd: IEventListener<Unit>
     val onAssetsReload: IEventListener<ClientReloadEvent>
+    val onScreenAfterInit: IEventListener<ScreenEvent>
 }
