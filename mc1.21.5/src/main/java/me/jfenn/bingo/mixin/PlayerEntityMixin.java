@@ -25,8 +25,8 @@ public abstract class PlayerEntityMixin {
         } else {
             if (i == -1) {
                 inv.setSelectedSlot(inv.getSwappableHotbarSlot());
-                if (inv.getStack(inv.method_67532()).isEmpty()) {
-                    inv.setStack(inv.method_67532(), stack);
+                if (inv.getStack(inv.getSelectedSlot()).isEmpty()) {
+                    inv.setStack(inv.getSelectedSlot(), stack);
                 } else {
                     int j = inv.getEmptySlot();
                     if (j != -1) {
@@ -44,7 +44,7 @@ public abstract class PlayerEntityMixin {
         if ((Object) this instanceof ServerPlayerEntity player) {
             if (PlayerEntityMixinHandler.INSTANCE.shouldVanishDrop(player, stack)) {
                 if (PlayerEntityMixinHandler.INSTANCE.shouldKeepDrop(player, stack)) {
-                    ItemStack cur = player.getInventory().getMainHandStack();
+                    ItemStack cur = player.getMainHandStack();
                     if (retainOwnership && (cur == null || cur.isEmpty())) {
                         // The complete stack was dropped
                         addPickBlock(stack.copy());
