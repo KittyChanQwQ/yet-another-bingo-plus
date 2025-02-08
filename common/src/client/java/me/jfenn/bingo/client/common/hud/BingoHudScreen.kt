@@ -2,7 +2,7 @@ package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.integrations.JeiIntegration
 import me.jfenn.bingo.client.integrations.jei.IJeiApi
-import me.jfenn.bingo.client.platform.IDrawService
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.screen.IScreen
 import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.platform.screen.IScreenHelper

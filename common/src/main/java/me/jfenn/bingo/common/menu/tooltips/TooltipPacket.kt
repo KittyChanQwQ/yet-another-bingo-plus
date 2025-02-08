@@ -12,6 +12,10 @@ class TooltipPacket(
     val text: List<IText>,
     val createdAt: Instant = Clock.System.now(),
 ) {
+
+    @Transient
+    var clientWrappedText: List<IText>? = null
+
     object V1 : PacketConverter<TooltipPacket> {
         override val id: Identifier = Identifier.of(MOD_ID_BINGO, "tooltip")!!
 

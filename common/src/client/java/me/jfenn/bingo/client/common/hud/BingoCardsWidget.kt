@@ -1,8 +1,8 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.common.utils.Interpolate
-import me.jfenn.bingo.client.platform.IDrawService
-import me.jfenn.bingo.client.platform.IDrawServiceFactory
+import me.jfenn.bingo.client.platform.renderer.IDrawService
+import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView

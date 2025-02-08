@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.platform.screen
 
-import me.jfenn.bingo.client.platform.IDrawService
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 
 interface IScreen {
     fun init() = Unit

@@ -30,6 +30,13 @@ data class CardDisplay(
     val teamName: IText? = null,
     val players: List<PlayerProfile> = emptyList(),
 ) {
+
+    /**
+     * Client-side truncated team name (to fit within the card GUI)
+     */
+    @Transient
+    var clientTeamName: IText? = null
+
     object V1 : PacketConverter<CardDisplay> {
         override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_view_display")!!
 

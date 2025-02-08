@@ -1,5 +1,6 @@
-package me.jfenn.bingo.client.platform
+package me.jfenn.bingo.client.platform.renderer
 
+import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.font.TextRenderer
@@ -12,11 +13,10 @@ import kotlin.math.roundToInt
 interface IDrawService {
     val context: DrawContext
     val textRenderer: TextRenderer
+    val font: IFont
 
     fun setShaderColor(r: Float, g: Float, b: Float, a: Float)
 
-    fun getTextWidth(text: IText): Int
-    fun getTextHeight(): Int
     fun drawText(text: IText, x: Int, y: Int, color: Int, shadow: Boolean = false)
     fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int)
 

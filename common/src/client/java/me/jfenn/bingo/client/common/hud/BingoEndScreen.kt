@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
-import me.jfenn.bingo.client.platform.IDrawService
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
 import me.jfenn.bingo.client.platform.IWorldService
@@ -256,7 +256,7 @@ internal class BingoEndScreen(
         context.matrices.pop()
 
         val title = text.string(StringKey.StatsGameDuration)
-        drawService.drawText(title, -drawService.getTextWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
+        drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
 
         gameOver.packet.prevBestTime?.let { prevBestTime ->
             context.matrices.push()
@@ -274,10 +274,10 @@ internal class BingoEndScreen(
                     .asIntWithAlpha
 
                 context.matrices.scale(bestScale, bestScale, 1f)
-                drawService.drawText(bestText, -drawService.getTextWidth(bestText)/2, 30, bestColor, true)
+                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, bestColor, true)
             } else {
                 val bestText = text.string(StringKey.StatsBestTime, prevBestTime.formatString())
-                drawService.drawText(bestText, -drawService.getTextWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
+                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
             }
 
             context.matrices.pop()
@@ -317,7 +317,7 @@ internal class BingoEndScreen(
         context.matrices.pop()
 
         val title = text.string(StringKey.StatsWinStreak)
-        drawService.drawText(title, -drawService.getTextWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
+        drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
 
         gameOver.packet.bestWinStreak?.let { bestWinStreak ->
             context.matrices.push()
@@ -333,10 +333,10 @@ internal class BingoEndScreen(
                     .asIntWithAlpha
 
                 context.matrices.scale(bestScale, bestScale, 1f)
-                drawService.drawText(bestText, -drawService.getTextWidth(bestText)/2, 30, bestColor, true)
+                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, bestColor, true)
             } else {
                 val bestText = text.string(StringKey.StatsWinStreakMax, bestWinStreak)
-                drawService.drawText(bestText, -drawService.getTextWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
+                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
             }
 
             context.matrices.pop()
@@ -380,7 +380,7 @@ internal class BingoEndScreen(
         context.matrices.scale(2f, 2f, 2f)
         drawService.drawText(
             gameOver.packet.title,
-            (width/4) - (drawService.getTextWidth(gameOver.packet.title)/2),
+            (width/4) - (drawService.font.getTextWidth(gameOver.packet.title)/2),
             (titleY/2) - 9,
             0xff_ffffff.toInt(),
             true,
@@ -389,7 +389,7 @@ internal class BingoEndScreen(
 
         drawService.drawText(
             gameOver.packet.subtitle,
-            (width/2) - (drawService.getTextWidth(gameOver.packet.subtitle)/2),
+            (width/2) - (drawService.font.getTextWidth(gameOver.packet.subtitle)/2),
             titleY + 4,
             0xff_ffffff.toInt(),
             true,

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.common.hud
 
-import me.jfenn.bingo.client.platform.IDrawService
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
@@ -49,8 +49,8 @@ internal class ReadyHudRenderer(
             else -> text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
         }
 
-        drawService.drawText(titleText, x + width/2 - drawService.getTextWidth(titleText)/2, y, LOADING_COLOR, true)
-        drawService.drawText(bodyText, x + width/2 - drawService.getTextWidth(bodyText)/2, y + textRenderer.fontHeight + 2, TEXT_COLOR, true)
+        drawService.drawText(titleText, x + width/2 - drawService.font.getTextWidth(titleText)/2, y, LOADING_COLOR, true)
+        drawService.drawText(bodyText, x + width/2 - drawService.font.getTextWidth(bodyText)/2, y + textRenderer.fontHeight + 2, TEXT_COLOR, true)
 
         val remainingProgress = ready.remainingDuration / ready.totalDuration.coerceAtLeast(1.seconds)
         drawProgressBar(drawService, x, y + (textRenderer.fontHeight * 2) + 5, width, 5, 1f - remainingProgress.toFloat().coerceIn(0f, 1f))

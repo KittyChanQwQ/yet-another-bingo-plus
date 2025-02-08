@@ -4,8 +4,12 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.utils.Interpolate
-import me.jfenn.bingo.client.platform.*
+import me.jfenn.bingo.client.platform.ClientPacket
+import me.jfenn.bingo.client.platform.IHudCallback
+import me.jfenn.bingo.client.platform.IKeyBindingManager
+import me.jfenn.bingo.client.platform.IOptionsAccessor
 import me.jfenn.bingo.client.platform.event.IClientEvents
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.KEYBIND_TOGGLE_HUD
 import me.jfenn.bingo.common.config.BingoConfig
@@ -218,11 +222,15 @@ internal class BingoHudController(
 
         val now = state.now
         val tooltipPacket = state.tooltip
-        val tooltipText = tooltipPacket?.text
+        val tooltipText = tooltipPacket?.text?.let { tooltipText ->
+            // Get or create clientWrappedText
+            tooltipPacket.clientWrappedText
+                ?: tooltipText.flatMap { line -> drawService.font.wrapLines(line, 200) }
+                    .also { tooltipPacket.clientWrappedText = it }
+        }
         val tooltipStartedAt = state.tooltipStartedAt ?: Instant.DISTANT_PAST
         if (tooltipText != null) {
-            val tooltip = tooltipText // .flatMap { it.wrap(30) }
-            val tooltipSize = tooltip.maxOfOrNull { drawService.getTextWidth(it) } ?: 0
+            val tooltipSize = tooltipText.maxOfOrNull { drawService.font.getTextWidth(it) } ?: 0
             val tooltipX = context.scaledWindowWidth/2 - tooltipSize/2 - 12
             val tooltipY = (context.scaledWindowHeight * 0.5).toInt() + 18 + 12
 
@@ -230,7 +238,7 @@ internal class BingoHudController(
             val fadeOut = 1.0 - ((now - tooltipPacket.createdAt.plus(100.milliseconds)) / 250.milliseconds).coerceIn(0.0, 1.0)
 
             drawService.setShaderColor(1f, 1f, 1f, (fadeIn * fadeOut).toFloat())
-            context.drawTooltip(textRenderer, tooltip.map { it.value }, tooltipX, tooltipY)
+            context.drawTooltip(textRenderer, tooltipText.map { it.value }, tooltipX, tooltipY)
             drawService.setShaderColor(1f, 1f, 1f, 1f)
 
             if (fadeOut <= 0.0) {
@@ -489,6 +497,13 @@ internal class BingoHudController(
 
         clientEvents.onAssetsReload {
             renderer.loadCardColors(it.resourceManager)
+
+            state.views.values.forEach { view ->
+                view.display.clientTeamName = null
+                view.tiles.forEach { tile ->
+                    tile.clientTooltip = null
+                }
+            }
         }
     }
 }

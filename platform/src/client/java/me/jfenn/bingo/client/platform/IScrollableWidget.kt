@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.platform
 
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 import net.minecraft.client.gui.widget.ScrollableWidget
 
 abstract class IScrollableWidget {

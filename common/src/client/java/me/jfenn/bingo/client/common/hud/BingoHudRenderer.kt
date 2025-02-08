@@ -3,7 +3,7 @@ package me.jfenn.bingo.client.common.hud
 import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
-import me.jfenn.bingo.client.platform.IDrawService
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
@@ -33,7 +33,7 @@ internal class BingoHudRenderer(
     companion object {
         const val CARD_WIDTH = 122
         const val CARD_HEIGHT = 132
-        const val TOOLTIP_MAX_LENGTH = 30
+        const val TOOLTIP_MAX_WIDTH = 200
 
         val BLACK_A40 = Color.BLACK.copy(a = 64)
 
@@ -137,7 +137,11 @@ internal class BingoHudRenderer(
         )
 
         view.display.teamName?.let { teamName ->
-            service.drawText(teamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
+            // Get or create clientTeamName (truncated to fit on the card)
+            val clientTeamName = view.display.clientTeamName
+                ?: service.font.truncate(teamName, 70)
+                    .also { view.display.clientTeamName = it }
+            service.drawText(clientTeamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
         }
 
         if (isWinner) {
@@ -293,15 +297,17 @@ internal class BingoHudRenderer(
         z: Int,
     ) {
         val context by service::context
-        val tooltip = buildList {
+        val tooltip = tile.clientTooltip ?: buildList {
             tile.name?.let { add(it) }
             addAll(
                 tile.lore.flatMapIndexed { i, lore ->
                     val isLast = i >= tile.lore.size - 1 // the last item (tile info) should never be wrapped
                     if (isLast) listOf(lore)
-                    else listOf(lore) // .wrap(TOOLTIP_MAX_LENGTH)
+                    else service.font.wrapLines(lore, TOOLTIP_MAX_WIDTH)
                 }
             )
+        }.also {
+            tile.clientTooltip = it
         }
 
         val rows = when (tile.imageList.size) {
@@ -319,7 +325,7 @@ internal class BingoHudRenderer(
             context.matrices.translate(0f, 0f, z + 2000f)
 
             if (tile.imageList.isNotEmpty()) {
-                val tooltipWidth = tooltip.maxOf { service.getTextWidth(it) }
+                val tooltipWidth = tooltip.maxOf { service.font.getTextWidth(it) }
                 val tooltipHeight = 10 * tooltip.size // hardcoded in OrderedTextTooltipComponent
                 val componentHeight = 14 + 20 * rows
                 val componentWidth = 14 + 20 * columns

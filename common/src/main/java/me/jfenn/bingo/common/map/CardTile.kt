@@ -48,6 +48,9 @@ data class CardTile(
         )
     }
 
+    @Transient
+    var clientTooltip: List<IText>? = null
+
     enum class Decoration {
         FREE_SPACE,
         ADVANCEMENT,

@@ -7,6 +7,7 @@ import me.jfenn.bingo.client.impl.event.ClientEventsImpl
 import me.jfenn.bingo.client.impl.screen.ScreenFactory
 import me.jfenn.bingo.client.platform.*
 import me.jfenn.bingo.client.platform.event.IClientEvents
+import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.world.BingoWorldController
 import me.jfenn.bingo.client.world.BingoWorldState

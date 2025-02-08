@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.common.hud
 
-import me.jfenn.bingo.client.platform.IDrawService
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
@@ -111,12 +111,12 @@ internal class BingoMessageRenderer(
         }
 
         val textX = if (isLeftOfCard) {
-            -28 - drawService.getTextWidth(message.packet.message)
+            -28 - drawService.font.getTextWidth(message.packet.message)
         } else 28
 
         drawService.drawText(
             message.packet.message,
-            textX, ITEM_HEIGHT/2 - drawService.getTextHeight()/2,
+            textX, ITEM_HEIGHT/2 - drawService.font.getTextHeight()/2,
             0xFF_FFFFFF.toInt(),
             true,
         )

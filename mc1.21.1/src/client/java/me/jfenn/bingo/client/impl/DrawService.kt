@@ -1,8 +1,10 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.client.platform.IDrawService
-import me.jfenn.bingo.client.platform.IDrawServiceFactory
+import com.mojang.blaze3d.systems.RenderSystem
 import me.jfenn.bingo.client.platform.INativeImage
+import me.jfenn.bingo.client.platform.renderer.IDrawService
+import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
+import me.jfenn.bingo.client.platform.renderer.IFont
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.impl.ItemStackFactory
 import me.jfenn.bingo.platform.item.IItemStack
@@ -17,6 +19,7 @@ class DrawService(
 ) : IDrawService {
 
     override val textRenderer: TextRenderer = MinecraftClient.getInstance().textRenderer
+    override val font: IFont = FontImpl(textRenderer)
 
     companion object : IDrawServiceFactory {
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
@@ -24,14 +27,6 @@ class DrawService(
 
     override fun setShaderColor(r: Float, g: Float, b: Float, a: Float) {
         context.setShaderColor(r, g, b, a)
-    }
-
-    override fun getTextWidth(text: IText): Int {
-        return textRenderer.getWidth(text.value)
-    }
-
-    override fun getTextHeight(): Int {
-        return textRenderer.fontHeight
     }
 
     override fun drawText(text: IText, x: Int, y: Int, color: Int, shadow: Boolean) {
