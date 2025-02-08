@@ -160,9 +160,7 @@
   "bingo.team.yellow": "Amarillo",
   "bingo.timer.game_over": "(Juego terminado)",
   "bingo.timer.no_time_limit": "(Sin límite de tiempo)",
-  "bingo.world.disconnect": "Desconectado",
   "bingo.world.new_game": "Juego Nuevo",
   "bingo.world.next_round": "Siguiente ronda",
-  "bingo.world.preparing": "Preparando un nuevo mundo...",
-  "bingo.world.restart": "Reiniciar Servidor"
+  "bingo.world.preparing": "Preparando un nuevo mundo..."
 }

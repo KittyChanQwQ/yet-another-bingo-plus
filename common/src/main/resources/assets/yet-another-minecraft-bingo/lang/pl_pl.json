@@ -18,14 +18,14 @@
   "bingo.command.lobby.warning3": "Nie ma możliwości odzyskania utraconych danych, jeśli włączysz to ustawienie. Czy na pewno chcesz kontynuować?",
   "bingo.command.lobby.warning4": "(użyj '%s' jeżeli to rozumiesz i chciałbyś kontynuować)",
   "bingo.command.start.already_started": "Gra już się rozpoczęła!",
+  "bingo.command.start.data_recommends": "Tier lista %s rekomenduje %s. (użyj '%s', aby zignorować)",
+  "bingo.command.start.data_recommends.num_teams": "Tier lista %s rekomenduje drużyny %s. (użyj '%s', aby zignorować)",
+  "bingo.command.start.data_recommends.players_per_team": "Tier lista %s rekomenduje %s graczy na drużynę. (użyj '%s', aby zignorować)",
   "bingo.command.start.invalid_distribution": "Suma dystrybucji przedmiotów musi równać się 25!",
   "bingo.command.start.join_a_team": "Dołącz do drużyny!",
   "bingo.command.start.join_a_team_message": "Użyj komendy '%s' lub kliknij drużynę, aby dołączyć!",
   "bingo.command.start.players_missing_teams": "Niektórzy gracze nie wybrali drużyny! (%s)",
   "bingo.command.start.players_missing_teams_hint": "Użyj '%s', aby przypisać drużyny losowo. Użyj '%s' lub kucnij+przyciśnij, aby zignorować.",
-  "bingo.command.start.data_recommends": "Tier lista %s rekomenduje %s. (użyj '%s', aby zignorować)",
-  "bingo.command.start.data_recommends.num_teams": "Tier lista %s rekomenduje drużyny %s. (użyj '%s', aby zignorować)",
-  "bingo.command.start.data_recommends.players_per_team": "Tier lista %s rekomenduje %s graczy na drużynę. (użyj '%s', aby zignorować)",
   "bingo.command.start.will_immediately_end": "Cel jest ustawiony na %s ale karta jest już %s uzupełniona.",
   "bingo.command.stats.player": "Statystyki Bingo dla %s:",
   "bingo.command.stats.reset.all": "Wszystkie najlepsze wyniki (najlepszy czas, najwyższa seria zwycięstw) na tym serwerze zostały usunięte.",
@@ -311,9 +311,7 @@
   "bingo.tier.s.tooltip": "W przypadku wielu z tych przedmiotów musisz ukończyć grę i nawet więcej. Zostałeś ostrzeżony.",
   "bingo.timer.game_over": "(Koniec Gry)",
   "bingo.timer.no_time_limit": "(Brak limitu czasowego)",
-  "bingo.world.disconnect": "Wyjdź z gry",
   "bingo.world.new_game": "Nowa gra",
   "bingo.world.next_round": "Następna runda",
-  "bingo.world.preparing": "Przygotowanie nowego świata Bingo...",
-  "bingo.world.restart": "Uruchom serwer ponownie"
+  "bingo.world.preparing": "Przygotowanie nowego świata Bingo..."
 }
