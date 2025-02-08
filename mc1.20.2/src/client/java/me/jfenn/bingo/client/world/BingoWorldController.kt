@@ -6,7 +6,6 @@ import me.jfenn.bingo.common.datapack.DatapackService
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.screen.ConfirmScreen
-import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.world.CreateWorldScreen
 import net.minecraft.resource.DataConfiguration
 import net.minecraft.resource.DataPackSettings
@@ -42,16 +41,6 @@ class BingoWorldController(
                 state,
                 worldState.isApplyingLobbyDataPack
             )
-
-            if (screen is TitleScreen) {
-                if (state == ScreenState.ImmediatelyReopenBingoWorld) {
-                    worldState.state = ScreenState.CreateBingoWorld
-                    CreateWorldScreen.create(client, screen)
-                    return@register
-                }
-
-                worldState.state = null
-            }
 
             if (worldState.isApplyingLobbyDataPack) {
                 // this flag prevents infinite recursion, as there is a setScreen call in applyDataPacks

@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.autorestart
 
 import me.jfenn.bingo.common.bossbar.BossBarService
-import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
@@ -20,7 +19,6 @@ import kotlin.random.Random
 
 internal class ResetService(
     private val events: ScopedEvents,
-    private val config: BingoConfig,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     private val spawnService: SpawnService,
@@ -36,10 +34,10 @@ internal class ResetService(
 ) {
 
     fun resetGame() {
-        if (config.nextRoundCompatibilityMode) {
-            server.stop(false)
-        } else {
+        if (state.isLobbyMode) {
             resetGameWorlds()
+        } else {
+            error("This shouldn't be happening. Tell fennifith to stop writing bad code.")
         }
     }
 

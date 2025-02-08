@@ -1,10 +1,9 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
-import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
-import me.jfenn.bingo.client.platform.IWorldService
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.screen.IScreen
 import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.platform.screen.IScreenHelper
@@ -47,7 +46,6 @@ internal class BingoEndScreen(
     private val onCloseCallback: (BingoEndScreen) -> Unit,
 ) : IScreen {
 
-    private val worldService = koin.get<IWorldService>()
     private val minecraftClient = MinecraftClient.getInstance()
 
     class Factory(
@@ -149,37 +147,12 @@ internal class BingoEndScreen(
 
     private val scoresWidget = scrollableWidgetFactory.create(BingoEndScoresWidget(koin, gameOver))
 
-    private enum class NextGameButton(val string: StringKey) {
-        NEXT_ROUND(StringKey.WorldNextRound),
-        RESTART(StringKey.WorldRestart),
-        DISCONNECT(StringKey.WorldDisconnect),
-    }
-
-    private fun nextGameButton(): NextGameButton {
-        val canSendReady = state.ready?.canSendReady == true && packets.readySetV1.isSupported()
-        return when {
-            minecraftClient.isInSingleplayer || canSendReady -> NextGameButton.NEXT_ROUND
-            gameOver.packet.canSendRestart -> NextGameButton.RESTART
-            else -> NextGameButton.DISCONNECT
-        }
-    }
-
     private fun reopenWorld() {
-        when (nextGameButton()) {
-            NextGameButton.NEXT_ROUND -> {
-                val isInSingleplayer = client?.isInSingleplayer ?: return
-                if (config.nextRoundCompatibilityMode && isInSingleplayer) {
-                    worldService.disconnectAndReopen()
-                } else {
-                    packets.readySetV1.send(SetReadyPacket(true))
-                    // If the screen is paused, it must be closed so that the server can process the ready packet
-                    if (isInSingleplayer && shouldPause()) {
-                        helper.close()
-                    }
-                }
-            }
-            NextGameButton.RESTART -> worldService.restartServer()
-            NextGameButton.DISCONNECT -> worldService.disconnect()
+        val isInSingleplayer = client?.isInSingleplayer ?: return
+        packets.readySetV1.send(SetReadyPacket(true))
+        // If the screen is paused, it must be closed so that the server can process the ready packet
+        if (isInSingleplayer && shouldPause()) {
+            helper.close()
         }
     }
 
@@ -199,7 +172,7 @@ internal class BingoEndScreen(
         helper.addDrawableChild(dismissButton)
 
         val restartButton = restartButton ?: ButtonWidget.builder(
-            text.string(nextGameButton().string).value
+            text.string(StringKey.WorldNextRound).value
         ) {
             it.active = false
             reopenWorld()
@@ -296,7 +269,7 @@ internal class BingoEndScreen(
             restartButton?.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
                 .value
         } else {
-            restartButton?.message = text.string(nextGameButton().string)
+            restartButton?.message = text.string(StringKey.WorldNextRound)
                 .value
         }
 

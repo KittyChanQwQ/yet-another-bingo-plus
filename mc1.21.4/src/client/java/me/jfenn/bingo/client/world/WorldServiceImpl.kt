@@ -2,11 +2,7 @@ package me.jfenn.bingo.client.world
 
 import me.jfenn.bingo.client.platform.IWorldService
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
-import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.MessageScreen
-import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.world.CreateWorldScreen
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.WorldSavePath
@@ -16,7 +12,6 @@ import kotlin.io.path.name
 class WorldServiceImpl(
     private val log: Logger,
     private val worldState: BingoWorldState,
-    private val text: TextProvider,
 ) : IWorldService {
 
     private val client = MinecraftClient.getInstance()
@@ -39,21 +34,6 @@ class WorldServiceImpl(
         client.levelStorage.createSessionWithoutSymlinkCheck(dirName).use {
             it.deleteSessionLock()
         }
-    }
-
-    override fun disconnect() {
-        client.world?.disconnect()
-        client.disconnect(MessageScreen(text.string(StringKey.WorldPreparing).value))
-        client.setScreen(TitleScreen())
-    }
-
-    override fun disconnectAndReopen() {
-        worldState.state = ScreenState.ImmediatelyReopenBingoWorld
-        disconnect()
-    }
-
-    override fun restartServer() {
-        client.player?.networkHandler?.sendCommand("restart")
     }
 
 }

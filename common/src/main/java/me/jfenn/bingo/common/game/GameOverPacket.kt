@@ -8,7 +8,6 @@ import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -18,7 +17,7 @@ data class GameOverPacket(
     val subtitle: IText,
     val winner: BingoTeamKey?,
     val duration: Duration,
-    val canSendRestart: Boolean,
+    val isOperator: Boolean,
     val isWinner: Boolean,
     /**
      * Whether the packet is sent because of a game state change;
@@ -71,7 +70,7 @@ data class GameOverPacket(
                 subtitle = buf.readText(),
                 winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
                 duration = buf.readLong().milliseconds,
-                canSendRestart = buf.readBoolean(),
+                isOperator = buf.readBoolean(),
                 isWinner = false,
                 isUpdate = false,
                 winStreak = null,
@@ -91,7 +90,7 @@ data class GameOverPacket(
             }
 
             dest.writeLong(source.duration.inWholeMilliseconds)
-            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isOperator)
         }
     }
 
@@ -104,7 +103,7 @@ data class GameOverPacket(
                 subtitle = buf.readText(),
                 winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
                 duration = buf.readLong().milliseconds,
-                canSendRestart = buf.readBoolean(),
+                isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = false,
                 winStreak = null,
@@ -124,7 +123,7 @@ data class GameOverPacket(
             }
 
             dest.writeLong(source.duration.inWholeMilliseconds)
-            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
         }
     }
@@ -138,7 +137,7 @@ data class GameOverPacket(
                 subtitle = buf.readText(),
                 winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
                 duration = buf.readLong().milliseconds,
-                canSendRestart = buf.readBoolean(),
+                isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
                 winStreak = null,
@@ -158,7 +157,7 @@ data class GameOverPacket(
             }
 
             dest.writeLong(source.duration.inWholeMilliseconds)
-            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
         }
@@ -173,7 +172,7 @@ data class GameOverPacket(
                 subtitle = buf.readText(),
                 winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
                 duration = buf.readLong().milliseconds,
-                canSendRestart = buf.readBoolean(),
+                isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
                 winStreak = if (buf.readBoolean()) buf.readInt().toLong() else null,
@@ -193,7 +192,7 @@ data class GameOverPacket(
             }
 
             dest.writeLong(source.duration.inWholeMilliseconds)
-            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
 
@@ -222,7 +221,7 @@ data class GameOverPacket(
                 subtitle = buf.readText(),
                 winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
                 duration = buf.readLong().milliseconds,
-                canSendRestart = buf.readBoolean(),
+                isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
 
@@ -248,7 +247,7 @@ data class GameOverPacket(
             dest.writeNullable(source.winner?.id, dest::writeString)
 
             dest.writeLong(source.duration.inWholeMilliseconds)
-            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
 
@@ -277,7 +276,7 @@ data class GameOverPacket(
                 subtitle = buf.readText(),
                 winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
                 duration = buf.readLong().milliseconds,
-                canSendRestart = buf.readBoolean(),
+                isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
 
@@ -314,7 +313,7 @@ data class GameOverPacket(
             dest.writeNullable(source.winner?.id, dest::writeString)
 
             dest.writeLong(source.duration.inWholeMilliseconds)
-            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
 
@@ -351,7 +350,7 @@ data class GameOverPacket(
                 subtitle = buf.readText(),
                 winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
                 duration = buf.readLong().milliseconds,
-                canSendRestart = buf.readBoolean(),
+                isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
 
@@ -393,7 +392,7 @@ data class GameOverPacket(
             dest.writeNullable(source.winner?.id, dest::writeString)
 
             dest.writeLong(source.duration.inWholeMilliseconds)
-            dest.writeBoolean(source.canSendRestart)
+            dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
 

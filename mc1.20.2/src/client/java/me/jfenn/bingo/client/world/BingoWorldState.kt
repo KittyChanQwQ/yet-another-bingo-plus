@@ -6,7 +6,6 @@ class BingoWorldState {
 }
 
 enum class ScreenState {
-    ImmediatelyReopenBingoWorld,
     CreateBingoWorld,
     OpenBingoWorld,
     ConfirmExperimentalFeatures,

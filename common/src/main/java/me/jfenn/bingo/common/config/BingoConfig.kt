@@ -45,8 +45,6 @@ data class BingoConfig(
     // resets the server once all players log out after a game
     @JsonNames("autoShutDownInPostgame", "shutDownWhenEveryoneDisconnects")
     val nextRoundWhenEveryoneDisconnects: Boolean = true,
-    // resets the server by doing a full restart after each game, instead recreating the world in the same instance
-    val nextRoundCompatibilityMode: Boolean = false,
     // shuts down the server faster, at the risk of bugs or data corruption
     val unsafeSkipWorldClose: Boolean = false,
 

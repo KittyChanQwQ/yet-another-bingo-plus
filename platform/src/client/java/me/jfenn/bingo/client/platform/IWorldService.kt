@@ -10,10 +10,4 @@ interface IWorldService {
 
     fun deleteSave(server: MinecraftServer)
 
-    fun disconnect()
-
-    fun disconnectAndReopen()
-
-    fun restartServer()
-
 }

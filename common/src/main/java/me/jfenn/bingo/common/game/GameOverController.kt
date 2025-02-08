@@ -131,7 +131,7 @@ internal class GameOverController(
                 subtitle = message ?: text.empty(),
                 winner = info.winningTeamKey,
                 duration = state.ingameDuration() ?: Duration.ZERO,
-                canSendRestart = server.isDedicated && state.isLobbyMode && permissions.hasPermission(
+                isOperator = server.isDedicated && state.isLobbyMode && permissions.hasPermission(
                     player,
                     Permission.COMMAND_RESET
                 ),
