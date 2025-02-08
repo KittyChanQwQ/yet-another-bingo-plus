@@ -1,7 +1,10 @@
 {
   "type": "one_of",
   "display": {
-    "name": "Any Concrete",
+    "name": {
+      "translate": "bingo.objective.simplified.one_of_concrete",
+      "fallback": "Any Concrete"
+    },
     "item": "minecraft:red_concrete"
   },
   "objectives": [

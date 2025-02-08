@@ -1,7 +1,10 @@
 {
   "type": "one_of",
   "display": {
-    "name": "Any Bed",
+    "name": {
+      "translate": "bingo.objective.simplified.one_of_bed",
+      "fallback": "Any Bed"
+    },
     "item": "minecraft:red_bed"
   },
   "objectives": [

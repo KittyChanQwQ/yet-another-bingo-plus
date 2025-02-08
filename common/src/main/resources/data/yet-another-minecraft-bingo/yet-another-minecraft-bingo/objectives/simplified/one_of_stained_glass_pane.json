@@ -1,7 +1,10 @@
 {
   "type": "one_of",
   "display": {
-    "name": "Any Stained Glass Pane",
+    "name": {
+      "translate": "bingo.objective.simplified.one_of_stained_glass_pane",
+      "fallback": "Any Stained Glass Pane"
+    },
     "item": "minecraft:red_stained_glass_pane"
   },
   "objectives": [

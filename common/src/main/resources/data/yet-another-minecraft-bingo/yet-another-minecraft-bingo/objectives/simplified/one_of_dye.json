@@ -1,7 +1,10 @@
 {
   "type": "one_of",
   "display": {
-    "name": "Any Dye",
+    "name": {
+      "translate": "bingo.objective.simplified.one_of_dye",
+      "fallback": "Any Dye"
+    },
     "item": "minecraft:red_dye"
   },
   "objectives": [

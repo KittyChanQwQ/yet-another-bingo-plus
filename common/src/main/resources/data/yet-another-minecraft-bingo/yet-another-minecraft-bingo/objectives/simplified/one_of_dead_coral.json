@@ -1,7 +1,10 @@
 {
   "type": "one_of",
   "display": {
-    "name": "Any Dead Coral",
+    "name": {
+      "translate": "bingo.objective.simplified.one_of_dead_coral",
+      "fallback": "Any Dead Coral"
+    },
     "item": "minecraft:dead_brain_coral"
   },
   "objectives": [
