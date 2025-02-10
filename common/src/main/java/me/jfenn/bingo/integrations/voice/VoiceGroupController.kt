@@ -1,10 +1,11 @@
 package me.jfenn.bingo.integrations.voice
 
-import me.jfenn.bingo.api.BingoApi
-import me.jfenn.bingo.api.data.BingoGameStatus
-import me.jfenn.bingo.api.data.IBingoTeam
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.config.IConfigManager
@@ -15,6 +16,8 @@ class VoiceGroupController(
     configManager: IConfigManager,
     private val playerManager: IPlayerManager,
     private val voiceApi: IVoiceApi,
+    private val state: BingoState,
+    private val teamService: TeamService,
     scopedEvents: ScopedEvents,
 ) {
 
@@ -36,7 +39,7 @@ class VoiceGroupController(
     private fun isUsingCombinedGroup(): Boolean {
         usingCombinedGroup?.let { return it }
 
-        val isSingleplayerTeams = BingoApi.teams?.all { it.players.size <= 1 } == true
+        val isSingleplayerTeams = state.getRegisteredTeams().all { it.players.size <= 1 }
         usingCombinedGroup = isSingleplayerTeams && config.useCombinedGroupForSingleplayerTeams
         return isSingleplayerTeams
     }
@@ -57,10 +60,10 @@ class VoiceGroupController(
         }
 
     private val teamGroups = mutableMapOf<String, IGroupHandle?>()
-    private fun createTeamGroup(team: IBingoTeam): IGroupHandle? {
+    private fun createTeamGroup(team: BingoTeam): IGroupHandle? {
         return teamGroups.getOrPut(team.id) {
             val settings = config.teamGroups ?: return@getOrPut null
-            val teamName = team.id.removePrefix("bingo_")
+            val teamName = team.key.label.formatTitle()
             val name = when {
                 settings.name.contains("%s") -> settings.name.replace("%s", teamName)
                 else -> "${settings.name}: $teamName"
@@ -69,23 +72,22 @@ class VoiceGroupController(
         }
     }
 
-    private fun getGroup(team: IBingoTeam?): IGroupHandle? {
-        val status = BingoApi.game?.status
+    private fun getGroup(team: BingoTeam?): IGroupHandle? {
         return when {
-            status == BingoGameStatus.PREGAME -> null
-            status == BingoGameStatus.POSTGAME -> combinedGroup
+            state.state == GameState.PREGAME -> null
+            state.state == GameState.POSTGAME -> combinedGroup
             config.useCombinedGroupAlways -> combinedGroup
             team == null -> spectatorsGroup
             isUsingCombinedGroup() -> combinedGroup
+            // if the game is _not_ using a combined group, move winning teams to spectator
+            team.isWinner() -> spectatorsGroup
             else -> createTeamGroup(team)
         }
     }
 
     private fun updateGroups(players: List<IPlayerHandle>) {
-        val teams = BingoApi.teams ?: return
-
         for (player in players) {
-            val team = teams.find { it.players.contains(player.uuid) }
+            val team = teamService.getPlayerTeam(player)
             getGroup(team)?.addPlayer(player)
         }
     }
@@ -95,10 +97,8 @@ class VoiceGroupController(
         usingCombinedGroup = null
 
         val playersToUpdate = when {
-            BingoApi.config?.isLobbyMode == true -> playerManager.getPlayers()
-            else -> playerManager.getPlayers().filter { player ->
-                BingoApi.teams?.any { it.players.contains(player.uuid) } == true
-            }
+            state.isLobbyMode -> playerManager.getPlayers()
+            else -> playerManager.getPlayers().filter { teamService.isPlaying(it) }
         }
         updateGroups(playersToUpdate)
     }
@@ -140,6 +140,12 @@ class VoiceGroupController(
 
         scopedEvents.onPlayerJoin { player ->
             updateGroups(listOf(player))
+        }
+
+        scopedEvents.onTeamWinner { team ->
+            team.players
+                .mapNotNull { playerManager.getPlayer(it.uuid) }
+                .let { updateGroups(it) }
         }
     }
 }
