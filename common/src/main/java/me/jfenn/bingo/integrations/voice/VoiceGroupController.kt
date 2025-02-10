@@ -1,26 +1,22 @@
 package me.jfenn.bingo.integrations.voice
 
 import me.jfenn.bingo.api.BingoApi
-import me.jfenn.bingo.api.BingoEvents
 import me.jfenn.bingo.api.data.BingoGameStatus
 import me.jfenn.bingo.api.data.IBingoTeam
+import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.IServerEvents
 import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.config.read
 import me.jfenn.bingo.platform.config.write
-import java.io.Closeable
-import kotlin.reflect.KProperty0
 
 class VoiceGroupController(
     configManager: IConfigManager,
     private val playerManager: IPlayerManager,
-    voiceIntegrationProp: KProperty0<VoiceIntegration?>,
-    serverEvents: IServerEvents,
-) : Closeable {
-
-    private val voiceIntegration by voiceIntegrationProp
+    private val voiceApi: IVoiceApi,
+    scopedEvents: ScopedEvents,
+) {
 
     companion object {
         private const val CONFIG_PATH = "yet-another-minecraft-bingo/voicechat.json"
@@ -31,7 +27,9 @@ class VoiceGroupController(
     } catch (e: Throwable) {
         VoiceConfig()
     }.also {
-        configManager.write(CONFIG_PATH, it)
+        if (voiceApi.isInstalled()) {
+            configManager.write(CONFIG_PATH, it)
+        }
     }
 
     private var usingCombinedGroup: Boolean? = null
@@ -46,7 +44,7 @@ class VoiceGroupController(
     private var combinedGroup: IGroupHandle? = null
         get() = field ?: run {
             val settings = config.combinedGroup ?: return@run null
-            field = voiceIntegration?.createGroup(settings)
+            field = voiceApi.createGroup(settings)
             field
         }
 
@@ -54,7 +52,7 @@ class VoiceGroupController(
     private var spectatorsGroup: IGroupHandle? = null
         get() = field ?: run {
             val settings = config.spectatorGroup ?: return@run null
-            field = voiceIntegration?.createGroup(settings)
+            field = voiceApi.createGroup(settings)
             field
         }
 
@@ -67,7 +65,7 @@ class VoiceGroupController(
                 settings.name.contains("%s") -> settings.name.replace("%s", teamName)
                 else -> "${settings.name}: $teamName"
             }
-            voiceIntegration?.createGroup(settings.copy(name = name))
+            voiceApi.createGroup(settings.copy(name = name))
         }
     }
 
@@ -105,21 +103,19 @@ class VoiceGroupController(
         updateGroups(playersToUpdate)
     }
 
-    private val callbacks = mutableListOf<Closeable>()
-
     init {
-        BingoEvents.GAME_STARTING.register {
+        scopedEvents.onEnter(GameState.STARTING) {
             onStateChange()
-        }.let { callbacks.add(it) }
+        }
 
-        BingoEvents.GAME_ENDED.register {
+        scopedEvents.onEnter(GameState.POSTGAME) {
             onStateChange()
             // Clean up the team groups, which should now be unused
             teamGroups.values.forEach { it?.close() }
             teamGroups.clear()
-        }.let { callbacks.add(it) }
+        }
 
-        BingoEvents.GAME_RESET.register {
+        scopedEvents.onEnter(GameState.PREGAME) {
             // Remove players from all groups
             // (as voicechat never deletes groups that have players in them)
             playerManager.getPlayers().forEach { player ->
@@ -135,19 +131,15 @@ class VoiceGroupController(
             spectatorsGroup = null
             teamGroups.values.forEach { it?.close() }
             teamGroups.clear()
-        }.let { callbacks.add(it) }
+        }
 
-        BingoEvents.TEAM_CHANGED.register { event ->
-            playerManager.getPlayer(event.player)
+        scopedEvents.onChangeTeam { player ->
+            playerManager.getPlayer(player.uuid)
                 ?.let { updateGroups(listOf(it)) }
-        }.let { callbacks.add(it) }
+        }
 
-        serverEvents.onPlayerJoin {
-            updateGroups(listOf(it.player))
-        }.let { callbacks.add(it) }
-    }
-
-    override fun close() {
-        callbacks.forEach { it.close() }
+        scopedEvents.onPlayerJoin { player ->
+            updateGroups(listOf(player))
+        }
     }
 }

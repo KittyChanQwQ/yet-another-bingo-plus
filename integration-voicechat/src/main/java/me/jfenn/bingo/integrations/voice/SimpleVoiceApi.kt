@@ -5,29 +5,20 @@ import de.maxhenkel.voicechat.api.VoicechatServerApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import org.slf4j.LoggerFactory
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
-interface VoiceIntegration {
-    fun createGroup(settings: VoiceGroupSettings): IGroupHandle?
-}
-
-interface IGroupHandle {
-    fun addPlayer(player: IPlayerHandle)
-    fun removePlayer(player: IPlayerHandle)
-    fun close()
-}
-
-class SimpleVoiceIntegration(
-    val serverApi: VoicechatServerApi,
-): VoiceIntegration {
+class SimpleVoiceApi: IVoiceApi {
 
     private val log = LoggerFactory.getLogger("bingo")
 
+    override fun isInstalled(): Boolean = true
+
     override fun createGroup(settings: VoiceGroupSettings): IGroupHandle? {
+        val serverApi = SimpleVoiceEntrypoint.api ?: return null
+
         // If the group is already created, return the existing instance
         serverApi.groups
             ?.find { it.name == settings.name }
-            ?.let { return GroupHandle(it.id) }
+            ?.let { return GroupHandle(serverApi, it.id) }
 
         val groupType = when (settings.type) {
             VoiceGroupType.OPEN -> Group.Type.OPEN
@@ -43,18 +34,11 @@ class SimpleVoiceIntegration(
             ?.setHidden(settings.hidden)
             ?.build()
 
-        return group?.let { GroupHandle(it.id) }
-    }
-
-    private val onPlayerConnectedGroups = ConcurrentHashMap<UUID, UUID>()
-
-    fun onPlayerConnected(player: UUID) {
-        onPlayerConnectedGroups.remove(player)
-            ?.let { GroupHandle(it) }
-            ?.addPlayer(player)
+        return group?.let { GroupHandle(serverApi, it.id) }
     }
 
     inner class GroupHandle(
+        private val serverApi: VoicechatServerApi,
         private val groupId: UUID,
     ): IGroupHandle {
         override fun addPlayer(player: IPlayerHandle) {
@@ -71,7 +55,7 @@ class SimpleVoiceIntegration(
                 connection.group = group
             } else {
                 log.info("[VoiceIntegration] Deferring group join for $player")
-                onPlayerConnectedGroups[player] = groupId
+                SimpleVoiceEntrypoint.onPlayerConnectedGroups[player] = groupId
             }
         }
 

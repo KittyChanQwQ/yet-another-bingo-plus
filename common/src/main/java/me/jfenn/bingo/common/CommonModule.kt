@@ -77,6 +77,10 @@ import me.jfenn.bingo.integrations.placeholders.PlaceholdersIntegration
 import me.jfenn.bingo.integrations.vanish.DummyVanish
 import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.integrations.vanish.IVanishApiFactory
+import me.jfenn.bingo.integrations.voice.DummyVoiceApi
+import me.jfenn.bingo.integrations.voice.IVoiceApi
+import me.jfenn.bingo.integrations.voice.IVoiceApiFactory
+import me.jfenn.bingo.integrations.voice.VoiceGroupController
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.scope.IScopeManager
@@ -140,17 +144,15 @@ val commonModule = module {
     singleOf(::PlayerSettingsService)
 
     single<ITextPlaceholdersApi> {
-        ServiceLoader.load(ITextPlaceholdersApiFactory::class.java).findFirst()
-            .getOrNull()
-            ?.create(get())
+        ServiceLoader.load(ITextPlaceholdersApiFactory::class.java)
+            .firstNotNullOfOrNull { it.create(get()) }
             ?: DummyPlaceholders
     }
     singleOf(::PlaceholdersIntegration)
 
     single<IVanishApi> {
-        ServiceLoader.load(IVanishApiFactory::class.java).findFirst()
-            .getOrNull()
-            ?.create(get())
+        ServiceLoader.load(IVanishApiFactory::class.java)
+            .firstNotNullOfOrNull { it.create(get()) }
             ?: DummyVanish
     }
 
@@ -161,10 +163,15 @@ val commonModule = module {
     }
 
     single<IPermissionsApi> {
-        ServiceLoader.load(IPermissionsApiFactory::class.java).findFirst()
-            .getOrNull()
-            ?.create(get())
+        ServiceLoader.load(IPermissionsApiFactory::class.java)
+            .firstNotNullOfOrNull { it.create(get()) }
             ?: FallbackPermissionsApi()
+    }
+
+    single<IVoiceApi> {
+        ServiceLoader.load(IVoiceApiFactory::class.java)
+            .firstNotNullOfOrNull { it.create(get()) }
+            ?: DummyVoiceApi
     }
 
     scope<BingoScope> {
@@ -308,6 +315,8 @@ val commonModule = module {
 
         scoped { get<IChunkyApiFactory>().create(this) }
         scopedOf(::ChunkyController)
+
+        scopedOf(::VoiceGroupController)
     }
 }
 
@@ -389,4 +398,5 @@ fun Scope.commonInit() {
     get<SpawnPreloadingController>()
 
     get<ChunkyController>()
+    get<VoiceGroupController>()
 }
