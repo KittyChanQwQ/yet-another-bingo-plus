@@ -16,7 +16,7 @@ Check out [Yet Another BINGO: Ultimate](https://modrinth.com/modpack/yet-another
 [![Available on GitLab](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/gitlab_vector.svg)](https://gitlab.com/horrificdev/bingo)
 [![Available on Modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/modrinth_vector.svg)](https://modrinth.com/mod/yet-another-minecraft-bingo)
 
-*For an introduction to Minecraft BINGO, read "[What is Minecraft BINGO?](https://horrific.dev/bingo/what-is-bingo.html)" on the wiki!*
+*For an introduction to Minecraft BINGO, read "[What is Minecraft BINGO?](https://horrific.dev/bingo/what-is-bingo/)" on the wiki!*
 
 This is a multiplayer BINGO/Lockout mod + lobby, which works on the client or on a dedicated server.
 

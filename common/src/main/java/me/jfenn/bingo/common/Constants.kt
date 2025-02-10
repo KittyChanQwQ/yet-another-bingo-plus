@@ -28,9 +28,9 @@ const val NBT_BINGO_INFO_BOOK = "bingo_info_book"
 const val NBT_BINGO_CARD = "bingo_card"
 
 internal val URL_WIKI: URI = URI.create("https://horrific.dev/bingo/")
-internal val URL_WIKI_WHAT_IS_BINGO: URI = URI.create("https://horrific.dev/bingo/what-is-bingo")
-internal val URL_WIKI_SERVER_SETUP: URI = URI.create("https://horrific.dev/bingo/server-setup")
-internal val URL_WIKI_GETTING_STARTED: URI = URI.create("https://horrific.dev/bingo/getting-started")
+internal val URL_WIKI_WHAT_IS_BINGO: URI = URI.create("https://horrific.dev/bingo/what-is-bingo/")
+internal val URL_WIKI_SERVER_SETUP: URI = URI.create("https://horrific.dev/bingo/server-setup/")
+internal val URL_WIKI_GETTING_STARTED: URI = URI.create("https://horrific.dev/bingo/getting-started/")
 
 val BINGO_WORLD_PREFIX = "${Formatting.GREEN}[BINGO]${Formatting.WHITE}"
 
