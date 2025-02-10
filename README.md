@@ -10,13 +10,13 @@ Check out [Yet Another BINGO: Ultimate](https://modrinth.com/modpack/yet-another
 </tbody>
 </table>
 
-![Yet Another Bingo for Minecraft](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/banner-with-card.png)
+![Yet Another Bingo for Minecraft](https://gitlab.com/horrificdev/bingo/-/raw/main/docs/banner-with-card.png)
 
 [![Requires Fabric API](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/requires/fabric-api_vector.svg)](https://modrinth.com/mod/fabric-api)
-[![Available on GitLab](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/gitlab_vector.svg)](https://gitlab.com/horrific-tweaks/bingo)
+[![Available on GitLab](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/gitlab_vector.svg)](https://gitlab.com/horrificdev/bingo)
 [![Available on Modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/modrinth_vector.svg)](https://modrinth.com/mod/yet-another-minecraft-bingo)
 
-*For an introduction to Minecraft BINGO, read "[What is Minecraft BINGO?](https://minecraft.horrific.dev/bingo/what-is-bingo.html)" on the wiki!*
+*For an introduction to Minecraft BINGO, read "[What is Minecraft BINGO?](https://horrific.dev/bingo/what-is-bingo.html)" on the wiki!*
 
 This is a multiplayer BINGO/Lockout mod + lobby, which works on the client or on a dedicated server.
 
@@ -27,7 +27,7 @@ This is a multiplayer BINGO/Lockout mod + lobby, which works on the client or on
 <tbody>
 <tr>
 <td>
-<img alt="A screenshot of Minecraft game with a BINGO card in the corner" src="https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/screenshot-with-hud-3.png" />
+<img alt="A screenshot of Minecraft game with a BINGO card in the corner" src="https://gitlab.com/horrificdev/bingo/-/raw/main/docs/screenshot-with-hud-3.png" />
 </td>
 <td>
 
@@ -67,7 +67,7 @@ lines to win the game.
 
 *When using this mod in single-player, make sure to install [Mod Menu](https://modrinth.com/mod/modmenu) and [YetAnotherConfigLib](https://modrinth.com/mod/yacl) to use the built-in config screen!*
 
-![A configuration menu for the Bingo GUI options](https://gitlab.com/horrific-tweaks/bingo/-/raw/main/docs/config-menu-3.png)
+![A configuration menu for the Bingo GUI options](https://gitlab.com/horrificdev/bingo/-/raw/main/docs/config-menu-3.png)
 
 No initial setup is needed  to use the mod; it should run out of the box. The config files live in
 `./config/yet-another-minecraft-bingo`.
@@ -75,14 +75,14 @@ No initial setup is needed  to use the mod; it should run out of the box. The co
 The items used to generate bingo card items at different tiers can be customized in the `*.tierlist.json` files. Once
 placed in the `./config/yet-another-minecraft-bingo/` directory, they can be enabled in-game using the "Tier List" menu.
 
-> There's a nifty [configuration tool](https://minecraft.horrific.dev/bingo/tier-editor.html) I've set up that'll let you
+> There's a nifty [configuration tool](https://horrific.dev/bingo/tier-editor/) I've set up that'll let you
 > change these tier lists in a drag-and-drop interface rather than editing the files in text.
 
-You can find more info about configuring this mod [on the wiki](https://minecraft.horrific.dev/bingo/config.html)!
+You can find more info about configuring this mod [on the wiki](https://horrific.dev/bingo/config/)!
 
 ## ⌨️ Commands
 
-This is a brief summary of the most important commands. See the [Command Cheatsheet](https://minecraft.horrific.dev/bingo/command-cheatsheet) for a complete list of bingo commands and descriptions!
+This is a brief summary of the most important commands. See the [Command Cheatsheet](https://horrific.dev/bingo/command-cheatsheet/) for a complete list of bingo commands and descriptions!
 
 Global commands:
 - `/coords` prints the current player coordinates in the team chat

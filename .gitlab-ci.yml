@@ -31,14 +31,6 @@ Test:
     paths:
       - mc*/build/libs/*.jar
 
-minecraft.horrific.dev:
-  trigger: horrific-tweaks/minecraft.horrific.dev
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - docs/**/*
-      allow_failure: true
-
 Sync README:
   image: gradle:8.11.1-jdk21
   script:
