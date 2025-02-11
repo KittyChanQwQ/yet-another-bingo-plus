@@ -2,7 +2,6 @@
     "values": [],
     "S": [
         "yet-another-minecraft-bingo:challenge/all_dyes",
-        "yet-another-minecraft-bingo:challenge/all_eggs",
         "yet-another-minecraft-bingo:challenge/many_breeze_rods",
         "yet-another-minecraft-bingo:challenge/many_echo_shards",
         "yet-another-minecraft-bingo:challenge/many_shulker_shells",
@@ -33,6 +32,7 @@
         "yet-another-minecraft-bingo:challenge/stat_killed_wither_skeleton"
     ],
     "B": [
+        "yet-another-minecraft-bingo:challenge/all_chicken_eggs",
         "yet-another-minecraft-bingo:challenge/all_filled_buckets",
         "yet-another-minecraft-bingo:challenge/all_golden_armor",
         "yet-another-minecraft-bingo:challenge/all_golden_tools",
