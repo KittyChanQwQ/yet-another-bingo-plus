@@ -41,7 +41,7 @@ internal class PlayerController(
     private val elytraService: ElytraService,
     private val advancementManager: IAdvancementManager,
     private val recipeManager: IRecipeManager,
-    private val vanishIntegration: IVanishApi,
+    private val vanishApi: IVanishApi,
     private val playerManager: IPlayerManager,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
 ) : BingoComponent() {
@@ -54,7 +54,7 @@ internal class PlayerController(
 
         // if the player is not on a team, they should be vanished
         val isVanished = !isOnActiveTeam && (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN || state.state == GameState.PLAYING)
-        vanishIntegration.setVanish(player, isVanished)
+        vanishApi.setVanish(player, isVanished)
         return isVanished
     }
 
@@ -92,7 +92,7 @@ internal class PlayerController(
                     GameState.PLAYING -> PlayerGameMode.SURVIVAL
                     else -> PlayerGameMode.ADVENTURE
                 }
-                !cardViewService.supportsCardHud(player) && vanishIntegration.isInstalled() -> PlayerGameMode.ADVENTURE
+                !cardViewService.supportsCardHud(player) && vanishApi.isInstalled() -> PlayerGameMode.ADVENTURE
                 else -> PlayerGameMode.SPECTATOR
             }
             GameState.POSTGAME -> when {
@@ -126,7 +126,7 @@ internal class PlayerController(
 
         val isVanished = updateVanishStatus(player)
         // allow players in adventure mode to fly
-        if (isVanished && vanishIntegration.isInstalled()) {
+        if (isVanished && vanishApi.isInstalled()) {
             player.player.abilities.allowFlying = true
             player.player.sendAbilitiesUpdate()
         }

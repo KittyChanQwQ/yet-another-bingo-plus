@@ -1,7 +1,7 @@
 package me.jfenn.bingo.integrations.vanish
 
-import me.jfenn.bingo.platform.IModEnvironment
+import org.koin.core.scope.Scope
 
 interface IVanishApiFactory {
-    fun create(environment: IModEnvironment): IVanishApi
+    fun create(scope: Scope): IVanishApi?
 }

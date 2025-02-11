@@ -150,12 +150,6 @@ val commonModule = module {
     }
     singleOf(::PlaceholdersIntegration)
 
-    single<IVanishApi> {
-        ServiceLoader.load(IVanishApiFactory::class.java)
-            .firstNotNullOfOrNull { it.create(get()) }
-            ?: DummyVanish
-    }
-
     single<IChunkyApiFactory> {
         ServiceLoader.load(IChunkyApiFactory::class.java).findFirst()
             .getOrNull()
@@ -312,6 +306,12 @@ val commonModule = module {
         scopedOf(::RestartOnLeaveController)
 
         scopedOf(::CommandTreeHandler)
+
+        scoped<IVanishApi> {
+            ServiceLoader.load(IVanishApiFactory::class.java)
+                .firstNotNullOfOrNull { it.create(this) }
+                ?: DummyVanish
+        }
 
         scoped { get<IChunkyApiFactory>().create(this) }
         scopedOf(::ChunkyController)

@@ -12,7 +12,6 @@ import org.slf4j.Logger
 
 class SpectatorCommand(
     commandManager: ICommandManager,
-    private val vanish: IVanishApi,
     private val log: Logger,
 ) {
 
@@ -40,7 +39,7 @@ class SpectatorCommand(
             requires {
                 val isGameState = when {
                     // If vanish is installed, allow when spectating a game
-                    vanish.isInstalled() -> hasState(GameState.PLAYING, GameState.POSTGAME)
+                    scope.get<IVanishApi>().isInstalled() -> hasState(GameState.PLAYING, GameState.POSTGAME)
                     // Otherwise, only allow in postgame
                     else -> hasState(GameState.POSTGAME)
                 }

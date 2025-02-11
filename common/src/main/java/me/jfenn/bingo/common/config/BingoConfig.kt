@@ -50,8 +50,6 @@ data class BingoConfig(
 
     val chat: ChatConfig = ChatConfig(),
 
-    val integrations: IntegrationsConfig = IntegrationsConfig(),
-
     val databaseUrl: String? = null,
     val databaseUser: String? = null,
     val databasePass: String? = null,
