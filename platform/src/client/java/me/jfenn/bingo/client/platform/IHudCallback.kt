@@ -4,7 +4,7 @@ import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.platform.utils.IEventListener
 
 interface IHudCallback {
-    val onRender: IEventListener<RenderEvent>
+    val onRenderCard: IEventListener<RenderEvent>
 
     class RenderEvent(
         val drawService: IDrawService,

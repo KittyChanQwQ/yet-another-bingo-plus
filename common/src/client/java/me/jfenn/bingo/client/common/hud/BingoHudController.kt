@@ -410,18 +410,18 @@ internal class BingoHudController(
             }
         }
 
-        hud.onRender {
+        hud.onRenderCard {
             state.now = Clock.System.now()
 
             // Do not draw the HUD if the F3 or chat overlay is shown
             if (optionsAccessor.isHudHidden())
-                return@onRender
+                return@onRenderCard
             if (config.client.hideOnF3 && optionsAccessor.isDebugEnabled())
-                return@onRender
+                return@onRenderCard
             if (config.client.hideOnChat && MinecraftClient.getInstance().currentScreen is ChatScreen)
-                return@onRender
+                return@onRenderCard
             if (!config.client.enableHud)
-                return@onRender
+                return@onRenderCard
 
             // Do not draw the HUD if the card screen is open
             if (
@@ -430,7 +430,7 @@ internal class BingoHudController(
                     ?.startsWith("me.jfenn.bingo")
                     == true
             ) {
-                return@onRender
+                return@onRenderCard
             }
 
             drawHud(it.drawService)

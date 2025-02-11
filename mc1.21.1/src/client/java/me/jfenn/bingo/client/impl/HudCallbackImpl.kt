@@ -8,11 +8,11 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 class HudCallbackImpl(
     private val drawServiceFactory: IDrawServiceFactory,
 ) : IHudCallback {
-    override val onRender = EventListener<IHudCallback.RenderEvent>()
+    override val onRenderCard = EventListener<IHudCallback.RenderEvent>()
 
     init {
         HudRenderCallback.EVENT.register { drawContext, renderTickCounter ->
-            onRender.invoke(
+            onRenderCard.invoke(
                 IHudCallback.RenderEvent(
                     drawService = drawServiceFactory.create(drawContext),
                     delta = renderTickCounter.getTickDelta(false)
