@@ -8,18 +8,15 @@
     "item": "minecraft:poppy"
   },
   "objectives": [
-    "#c:flowers",
-    "#minecraft:flowers",
-    "#minecraft:small_flowers",
-    "#minecraft:bee_food",
+    "minecraft:poppy",
+    "minecraft:dandelion",
+    "minecraft:cornflower",
     "minecraft:allium",
     "minecraft:azure_bluet",
     "minecraft:blue_orchid",
     "minecraft:cherry_leaves",
     "minecraft:chorus_flower",
     "minecraft:closed_eyeblossom",
-    "minecraft:cornflower",
-    "minecraft:dandelion",
     "minecraft:flowering_azalea",
     "minecraft:flowering_azalea_leaves",
     "minecraft:lilac",
@@ -32,13 +29,17 @@
     "minecraft:pink_petals",
     "minecraft:pink_tulip",
     "minecraft:pitcher_plant",
-    "minecraft:poppy",
     "minecraft:red_tulip",
     "minecraft:rose_bush",
     "minecraft:spore_blossom",
     "minecraft:sunflower",
     "minecraft:torchflower",
     "minecraft:white_tulip",
-    "minecraft:wither_rose"
+    "minecraft:wildflowers",
+    "minecraft:wither_rose",
+    "#c:flowers",
+    "#minecraft:flowers",
+    "#minecraft:small_flowers",
+    "#minecraft:bee_food"
   ]
 }
