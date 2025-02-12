@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.0.10"
+kotlin = "2.1.10"
 kotlinx-serialization = "1.8.0" # Note: must exactly match the versions in fabric-language-kotlin for each mod impl
 kotlinx-datetime = "0.6.1" # Note: must exactly match the versions in fabric-language-kotlin for each mod impl
 fabric-language-kotlin = "1.13.1+kotlin.2.1.10"
@@ -41,5 +41,5 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
 
 [plugins]
-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.0.10" }
+kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.1.10" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
