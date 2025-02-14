@@ -171,6 +171,7 @@
   "bingo.lobby.starting_time_remaining": "Iniciando em %s",
   "bingo.lobby.team_changed": "➾ Você foi movido para a equipe %s",
   "bingo.objective.all_of": "Tudo de: %s",
+  "bingo.objective.challenge.all_chicken_eggs": "Todos os ovos de galinha",
   "bingo.objective.challenge.all_diamond_armor": "Todas as armaduras de diamante",
   "bingo.objective.challenge.all_diamond_tools": "Todas as ferramentas de diamante",
   "bingo.objective.challenge.all_dyes": "Todos os corantes",
