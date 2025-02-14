@@ -52,4 +52,5 @@
 - New Chinese Traditional translations by Leo_768 and BoredYukolin!
 - New Danish translations by Libreh!
 - New Portuguese translations by Lucasofchirst!
-- New Hungarian translations by petya0927!
+- New Hungarian translations by petya0927 and Remarci!
+  
