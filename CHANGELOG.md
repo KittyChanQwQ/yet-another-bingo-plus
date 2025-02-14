@@ -16,6 +16,10 @@
 
 - Added initial [Placeholders API](https://placeholders.pb4.eu/) support! This only includes two filters for now: `%yet-another-minecraft-bingo:time%` and `%yet-another-minecraft-bingo:time_left%` (to be expanded in future updates).
 
+- [Lobby worlds](https://horrific.dev/bingo/lobby-structure/) now support editing the datapack files for custom dimension/biome settings
+
+- Completely removed the "Disconnect" button from the game over screen (was only used for backwards compatibility)
+
 - (Client) Tiles with multiple items now display each item as part of the hover tooltip.
 
 - (Client) 'Game over' screen now remembers which tab it was on, and only renders the win firework the first time it's opened.
@@ -24,15 +28,28 @@
 
 - Fixed the card occasionally generating with blank spaces when certain filters are applied
 
-- Fixed HUD desync with [Simple Voice Chat](https://modrinth.com/plugin/simple-voice-chat) when relogging
+- Fixed players being respawned when relogging if LAN or force-gamemode is used
 
-- Fix occasional "{team} completed their card!" messages when starting a new game
+- Prevent HUD desync with [Simple Voice Chat](https://modrinth.com/plugin/simple-voice-chat) when relogging
+
+- Fixed occasional "{team} completed their card!" messages when starting a new game
+
+- Fixed the lobby menu entities being affected by night vision/fullbright ([#145](https://gitlab.com/horrificdev/bingo/-/issues/145))
+
+- Prevent failures when generating/rerolling the card with certain game settings
 
 - Fixed compatibility with new versions of [Just Enough Items](https://modrinth.com/mod/jei)
 
+- Fixed tooltip description text wrapping translation support
+
+- Fixed compatibility with new versions of Quilt loader
+
+- Fixed some behavior not working correctly in survival/SMP mode
+
 ### Translations
 
-- New Chinese Simplified translations by Young912!
+- New Chinese Simplified translations by BoredYukolin, teaSummer, nageih, yzy_sheep, and Young912!
+- New Chinese Traditional translations by Leo_768 and BoredYukolin!
 - New Danish translations by Libreh!
 - New Portuguese translations by Lucasofchirst!
 - New Hungarian translations by petya0927!
