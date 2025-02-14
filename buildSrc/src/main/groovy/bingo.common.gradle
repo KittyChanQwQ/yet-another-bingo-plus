@@ -62,15 +62,18 @@ def projectVersion = project.version.toString()
 def supportedMinecraftVersion = project.hasProperty("minecraft_supported_versions")
     ? project.minecraft_supported_versions.toString().split(",").first()
         : project.minecraft_version.toString();
+def fabricLanguageKotlinVersion = libs.fabric.language.kotlin.get().version
 
 processResources {
     inputs.property "version", projectVersion
     inputs.property "minecraft_version", supportedMinecraftVersion
+    inputs.property "fabric_language_kotlin_version", fabricLanguageKotlinVersion
 
     filesMatching("fabric.mod.json") {
         expand(
                 "version": projectVersion,
                 "minecraft_version": supportedMinecraftVersion,
+                "fabric_language_kotlin_version": fabricLanguageKotlinVersion
         )
     }
 }
