@@ -32,7 +32,6 @@ val sharedModule = module {
     singleOf(::MapColorServiceImpl) bind IMapColorService::class
     single { ParticleFactory } bind IParticleFactory::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
-    singleOf(::ScoreboardManager) bind IScoreboardManager::class
     single { ServerEventsImpl } bind IServerEvents::class
     singleOf(::ServerWorldFactory) bind IServerWorldFactory::class
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
@@ -48,6 +47,7 @@ val sharedModule = module {
         scopedOf(::TeamManager) bind ITeamManager::class
         scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, ILevelStorage::class)
         scopedOf(::RecipeManagerImpl) bind IRecipeManager::class
+        scopedOf(::ScoreboardManager) bind IScoreboardManager::class
         scoped { Executors.createServerTaskExecutor(get()) }
     }
 }

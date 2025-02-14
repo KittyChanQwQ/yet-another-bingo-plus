@@ -8,32 +8,28 @@ import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
-import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.ITextSerializer
 import me.jfenn.bingo.platform.PlayerGameMode
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import me.jfenn.bingo.platform.scoreboard.ScoreChange
-import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 
 internal class ScoreboardService(
     private val state: BingoState,
-    private val server: MinecraftServer,
     private val scoreboardManager: IScoreboardManager,
+    private val playerManager: IPlayerManager,
     private val playerSettingsService: PlayerSettingsService,
     private val cardViewService: CardViewService,
     private val mapItemService: MapItemService,
-    private val textProvider: TextProvider,
     private val textSerializer: ITextSerializer,
     private val teamService: TeamService,
 ) {
 
     fun getScoreboardObjective(team: BingoTeam?) : IObjectiveHandle {
         val objectiveName = "bingo_sidebar_" + team?.id?.removePrefix(BINGO_TEAM_PREFIX)
-        val objective = scoreboardManager.createDummyObjective(server, objectiveName, textProvider.string(StringKey.ScoreboardName))
+        val objective = scoreboardManager.createDummyObjective(objectiveName)
         return objective
     }
 
@@ -61,10 +57,25 @@ internal class ScoreboardService(
 
     private val scoreboardViews = mutableMapOf<String, ScoreboardView>()
 
+    fun setScoreboardTitle(
+        objective: IObjectiveHandle,
+        title: IText,
+        players: List<IPlayerHandle>,
+    ) {
+        if (title == objective.displayName) {
+            return
+        }
+
+        objective.displayName = title
+        for (player in players) {
+            scoreboardManager.sendObjectiveDisplayUpdate(player, objective)
+        }
+    }
+
     fun setScoreboardContents(
         objective: IObjectiveHandle,
         contents: List<IText>,
-        players: List<ServerPlayerEntity>,
+        players: List<IPlayerHandle>,
     ) {
         val contentItems = contents.map {
             ScoreboardView.ScoreboardItem(textSerializer.toRawString(it.value), it.value)
@@ -72,7 +83,7 @@ internal class ScoreboardService(
 
         // update the server-side objective
         //   note: the "value" is currently unused in this function
-        scoreboardManager.setScoreboardText(server, objective, contentItems.map { ScoreChange.Create(it.string, it.text, 0) })
+        scoreboardManager.setScoreboardText(objective, contentItems.map { ScoreChange.Create(it.string, it.text, 0) })
 
         val view = scoreboardViews.getOrPut(objective.name) { ScoreboardView(objective.name) }
         val changes = view.updateContents(contentItems)
@@ -82,7 +93,7 @@ internal class ScoreboardService(
                 // ensure that the player is only in one scoreboard view at a time
                 for (otherView in scoreboardViews.values - view) {
                     if (otherView.players.contains(player.uuid)) {
-                        val otherObjective = scoreboardManager.createDummyObjective(server, otherView.objectiveName, textProvider.empty())
+                        val otherObjective = scoreboardManager.createDummyObjective(otherView.objectiveName)
                         scoreboardManager.sendObjectiveDelete(player, otherObjective)
                         otherView.players -= player.uuid
                     }
@@ -100,7 +111,7 @@ internal class ScoreboardService(
         val playerUuids = players.map { it.uuid }.toSet()
         for (removedPlayerUuid in view.players - playerUuids) {
             // if a player is removed, send a delete packet
-            val removedPlayer = server.playerManager.getPlayer(removedPlayerUuid) ?: continue
+            val removedPlayer = playerManager.getPlayer(removedPlayerUuid) ?: continue
             scoreboardManager.sendObjectiveDelete(removedPlayer, objective)
         }
 
@@ -109,12 +120,12 @@ internal class ScoreboardService(
 
     fun clearScoreboards() {
         for (view in scoreboardViews.values) {
-            val objective = scoreboardManager.createDummyObjective(server, view.objectiveName, textProvider.empty())
+            val objective = scoreboardManager.createDummyObjective(view.objectiveName)
             for (playerId in view.players) {
-                val player = server.playerManager.getPlayer(playerId) ?: continue
+                val player = playerManager.getPlayer(playerId) ?: continue
                 scoreboardManager.sendObjectiveDelete(player, objective)
             }
-            scoreboardManager.removeObjective(server, objective)
+            scoreboardManager.removeObjective(objective)
         }
         scoreboardViews.clear()
     }

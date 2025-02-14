@@ -50,7 +50,7 @@ class ScoreboardObjectiveManager(
     private fun init(objective: BingoObjective): Boolean {
         if (objective !is BingoObjective.ScoreboardEntry) return false
 
-        val scoreboard = scoreboardManager.getByName(server, objective.data.scoreboardName)
+        val scoreboard = scoreboardManager.getByName(objective.data.scoreboardName)
 
         if (scoreboard == null) {
             log.objectiveError(objective.id, "Could not find scoreboard ${objective.data.scoreboardName} - is it not created yet?")

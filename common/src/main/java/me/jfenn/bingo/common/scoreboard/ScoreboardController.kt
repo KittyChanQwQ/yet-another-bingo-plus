@@ -52,7 +52,6 @@ internal class ScoreboardController(
             }
 
             for (team in state.teams.values + null) {
-                val objective = scoreboardService.getScoreboardObjective(team)
                 val teamCard = team?.let { state.getCard(it) } ?: state.getActiveCard()
 
                 val placeholders: Map<String, List<IText>> = buildMap {
@@ -114,7 +113,7 @@ internal class ScoreboardController(
                     val leadingTeam = ScoreService.getLeading(state)
                     val leadingTeamName = leadingTeam?.getName(text, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
                         ?: text.string(StringKey.ScoreboardLeadingTeamTie).formatted(Formatting.WHITE)
-                    leadingTeamName?.takeIf { options.showLeadingTeam && isMultipleTeams }
+                    leadingTeamName.takeIf { options.showLeadingTeam && isMultipleTeams }
                         ?.let { text.string(StringKey.ScoreboardLeadingTeam, it) }
                         .also { put("%leading%", listOfNotNull(it)) }
 
@@ -179,7 +178,12 @@ internal class ScoreboardController(
                     .filter { playerSettingsService.getPlayer(it).scoreboard }
                     .filter { scoreboardService.shouldDisplayScoreboard(it) }
 
-                scoreboardService.setScoreboardContents(objective, scoreboardText, players.map { it.player })
+                val objective = scoreboardService.getScoreboardObjective(team)
+                val displayName = scoreboardText.firstOrNull()
+                    ?: text.string(StringKey.ScoreboardName)
+
+                scoreboardService.setScoreboardTitle(objective, displayName, players)
+                scoreboardService.setScoreboardContents(objective, scoreboardText.drop(1), players)
             }
         }
     }

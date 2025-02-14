@@ -233,7 +233,7 @@ internal class InfoBookService(
         for (stack in player.allHeldStacks().mapNotNull { it.second.asWrittenBook() }) {
             if (isBookItem(stack)) {
                 // prevent players from taking someone else's book...
-                if (stack.author != scoreboardManager.getPlayerName(player.player))
+                if (stack.author != scoreboardManager.getPlayerName(player))
                     updateBookItem(player, stack)
 
                 bookCount++

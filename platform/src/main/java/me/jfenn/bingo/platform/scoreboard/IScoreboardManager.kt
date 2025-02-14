@@ -2,30 +2,31 @@ package me.jfenn.bingo.platform.scoreboard
 
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
-import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 
 interface IScoreboardManager {
 
-    fun createDummyObjective(server: MinecraftServer, name: String, displayName: IText): IObjectiveHandle
+    fun createDummyObjective(name: String): IObjectiveHandle
 
-    fun removeObjective(server: MinecraftServer, handle: IObjectiveHandle)
+    fun removeObjective(handle: IObjectiveHandle)
 
-    fun setScoreboardText(server: MinecraftServer, handle: IObjectiveHandle, textLines: List<ScoreChange.Create>)
+    fun setScoreboardText(handle: IObjectiveHandle, textLines: List<ScoreChange.Create>)
 
-    fun sendObjectiveCreate(player: ServerPlayerEntity, handle: IObjectiveHandle)
+    fun sendObjectiveCreate(player: IPlayerHandle, handle: IObjectiveHandle)
 
-    fun sendObjectiveDelete(player: ServerPlayerEntity, handle: IObjectiveHandle)
+    fun sendObjectiveDelete(player: IPlayerHandle, handle: IObjectiveHandle)
 
-    fun sendScoreChanges(player: ServerPlayerEntity, handle: IObjectiveHandle, changes: List<ScoreChange>)
+    fun sendObjectiveDisplayUpdate(player: IPlayerHandle, handle: IObjectiveHandle)
 
-    fun getPlayerName(player: ServerPlayerEntity): String
+    fun sendScoreChanges(player: IPlayerHandle, handle: IObjectiveHandle, changes: List<ScoreChange>)
 
-    fun getByName(server: MinecraftServer, name: String): IObjectiveHandle?
+    fun getPlayerName(player: IPlayerHandle): String
+
+    fun getByName(name: String): IObjectiveHandle?
 
 }
 
 interface IObjectiveHandle {
     val name: String
+    var displayName: IText
     fun getForPlayer(player: IPlayerHandle): Int?
 }

@@ -1,5 +1,9 @@
 {
   "lines": [
+    {
+      "translate": "bingo.scoreboard.name",
+      "fallback": "Minecraft Bingo"
+    },
     "%mode%",
     "%features%",
     "%goal%",
