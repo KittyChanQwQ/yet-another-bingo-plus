@@ -13,8 +13,9 @@ object NativeImageFactory : INativeImageFactory {
     private var id: Int = 0
 
     override fun create(width: Int, height: Int): INativeImage {
-        val texture = NativeImageBackedTexture(width, height, true)
-        val textureId = Identifier.of(MOD_ID_BINGO, "item_${id++}")
+        val id = "item_${id++}"
+        val texture = NativeImageBackedTexture(id, width, height, true)
+        val textureId = Identifier.of(MOD_ID_BINGO, id)
         textureManager.registerTexture(textureId, texture)
         return NativeImageImpl(texture, textureId, width, height)
     }

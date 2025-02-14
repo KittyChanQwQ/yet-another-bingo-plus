@@ -216,7 +216,7 @@ data class BingoState(
             ?.minus(team?.countCards() ?: 0)
             ?.takeIf { it > 0 }
 
-        return card.options.goal.format(text, supportsFullCard)
+        return card.options.goal.format(text, supportsFullCard = supportsFullCard, descriptive = true)
             .also {
                 if (remainingCards != null)
                     it.append(text.literal(" + ")

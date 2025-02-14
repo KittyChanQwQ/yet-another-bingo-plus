@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.menu
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Sounds
-import me.jfenn.bingo.common.config.readStream
+import me.jfenn.bingo.common.datapack.LobbyWorldService
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -38,7 +38,6 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.*
-import java.util.zip.ZipInputStream
 import kotlin.math.atan2
 import kotlin.math.roundToInt
 
@@ -58,16 +57,13 @@ internal class MenuController(
     private val particleFactory: me.jfenn.bingo.platform.particle.IParticleFactory,
     private val serverWorldFactory: IServerWorldFactory,
     private val taskExecutor: IExecutors.IServerTaskExecutor,
+    private val lobbyWorldService: LobbyWorldService,
 ) : BingoComponent() {
 
     private var menu: MenuInstance? = null
     private val koinScope = scopeManager.getScope(server)!!
 
     private val instanceTag = "bingo-${UUID.randomUUID()}"
-
-    companion object {
-        private const val LOBBY_WORLD_ZIP = "lobby_world.zip"
-    }
 
     private object Cache {
         var lobbyWorldModified: Instant = Instant.DISTANT_PAST
@@ -172,7 +168,7 @@ internal class MenuController(
             }
 
         // If the lobby has been modified, clear cached positions
-        val lobbyWorldModified = configManager.readLastModified(LOBBY_WORLD_ZIP)
+        val lobbyWorldModified = lobbyWorldService.readLastModified()
         if (lobbyWorldModified != Cache.lobbyWorldModified) {
             Cache.spawnPosition = null
             Cache.menuPosition = null
@@ -180,36 +176,34 @@ internal class MenuController(
             Cache.lobbyWorldModified = lobbyWorldModified
         }
 
-        configManager.readStream(LOBBY_WORLD_ZIP, shouldWriteDefault = false).use { stream ->
-            ZipInputStream(stream).use { zipStream ->
-                while (true) {
-                    val entry = zipStream.nextEntry ?: break
-                    if (entry.isDirectory) continue
+        lobbyWorldService.openLobbyZip().use { zipStream ->
+            while (true) {
+                val entry = zipStream.nextEntry ?: break
+                if (entry.isDirectory) continue
 
-                    val entryName = entry.name.substringAfter('/')
+                val entryName = entry.name.substringAfter('/')
 
-                    if (
-                        entryName.startsWith("entities/") ||
-                        entryName.startsWith("region/")
-                    ) {
-                        val outPath = storageDir.resolve(entryName)
-                        if (!outPath.startsWith(storageDir)) {
-                            log.error("[MenuController] Tried to create a file outside of the world location: $outPath")
-                            continue
-                        }
-
-                        Files.createDirectories(outPath.parent)
-
-                        log.debug("Copying file -> {}", outPath)
-                        try {
-                            Files.copy(zipStream, outPath, StandardCopyOption.REPLACE_EXISTING)
-                        } catch (e: IOException) {
-                            log.error("[MenuController] Error copying lobby file $entryName", e)
-                        }
+                if (
+                    entryName.startsWith("entities/") ||
+                    entryName.startsWith("region/")
+                ) {
+                    val outPath = storageDir.resolve(entryName)
+                    if (!outPath.startsWith(storageDir)) {
+                        log.error("[MenuController] Tried to create a file outside of the world location: $outPath")
+                        continue
                     }
 
-                    zipStream.closeEntry()
+                    Files.createDirectories(outPath.parent)
+
+                    log.debug("Copying file -> {}", outPath)
+                    try {
+                        Files.copy(zipStream, outPath, StandardCopyOption.REPLACE_EXISTING)
+                    } catch (e: IOException) {
+                        log.error("[MenuController] Error copying lobby file $entryName", e)
+                    }
                 }
+
+                zipStream.closeEntry()
             }
         }
     }

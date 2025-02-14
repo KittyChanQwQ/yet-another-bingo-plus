@@ -23,6 +23,7 @@ import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.data.*
+import me.jfenn.bingo.common.datapack.LobbyWorldService
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.datapack.ServerProps
 import me.jfenn.bingo.common.event.EventManager
@@ -109,6 +110,7 @@ val commonModule = module {
     singleOf(::TextProvider)
     singleOf(::ServerProps)
 
+    singleOf(::LobbyWorldService)
     singleOf(::ServerDatapackManager)
     singleOf(::EventManager)
     singleOf(::ScopeManager) bind IScopeManager::class

@@ -34,9 +34,18 @@ sealed class BingoGoal {
         }
     }
 
-    fun format(textProvider: TextProvider, supportsFullCard: Boolean = true): IText {
+    fun format(textProvider: TextProvider, supportsFullCard: Boolean = true, descriptive: Boolean = false): IText {
         return when {
             supportsFullCard && this.isFullCard() -> textProvider.string(StringKey.GoalFullCard)
+                .also {
+                    if (descriptive) {
+                        it.append(" ")
+                        when (this) {
+                            is Items -> it.append(textProvider.string(StringKey.GoalItems).bracketed())
+                            is Lines -> it.append(textProvider.string(StringKey.GoalLines).bracketed())
+                        }
+                    }
+                }
             else -> when (this) {
                 is Items -> textProvider.itemCount(this.items)
                 is Lines -> textProvider.lineCount(this.lines)

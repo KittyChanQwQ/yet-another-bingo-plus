@@ -50,13 +50,6 @@ dependencies {
     api project(path: ":api", configuration: "namedElements")
 }
 
-tasks.register('bingoDatapack', Zip) {
-    from 'datapack'
-    include '**/*'
-    archiveFileName.set('datapack.zip')
-    destinationDirectory.set(file('src/main/resources/yet-another-minecraft-bingo'))
-}
-
 tasks.register('bingoImages', Copy) {
     from zipTree(file("images.zip"))
     into file("src/main/resources/yet-another-minecraft-bingo/images")
@@ -228,7 +221,6 @@ tasks.register("bingoConstants") {
 }
 
 tasks.processResources.configure {
-    dependsOn(tasks.bingoDatapack)
     dependsOn(tasks.bingoImages)
     dependsOn(tasks.bingoLangServerTranslations)
     dependsOn(tasks.bingoLangFiles)

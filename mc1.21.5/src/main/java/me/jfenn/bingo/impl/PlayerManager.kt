@@ -298,7 +298,10 @@ class PlayerHandle(
         forced: Boolean,
         sendMessage: Boolean
     ) {
-        player.setSpawnPoint(world.registryKey, spawn.toBlockPos(), angle, forced, sendMessage)
+        player.setSpawnPoint(
+            ServerPlayerEntity.class_10766(world.registryKey, spawn.toBlockPos(), angle, forced),
+            sendMessage
+        )
     }
 }
 

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.mixin;
 
-import me.jfenn.bingo.platform.scope.BingoKoin;
 import me.jfenn.bingo.mixinhandler.PlayerManagerMixinHandler;
+import me.jfenn.bingo.platform.scope.BingoKoin;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.RespawnAnchorBlock;
 import net.minecraft.entity.Entity;
@@ -64,15 +64,19 @@ public abstract class PlayerManagerMixin {
             // if the spawnpoint is also in the end, then respawn them in the overworld
             if (PlayerManagerMixinHandler.INSTANCE.shouldOverrideEndRespawn(player.server)) {
                 var overworld = player.server.getOverworld();
-                player.setSpawnPoint(overworld.getRegistryKey(), overworld.getSpawnPos(), overworld.getSpawnAngle(), false, false);
+                player.setSpawnPoint(
+                        new ServerPlayerEntity.class_10766(overworld.getRegistryKey(), overworld.getSpawnPos(), overworld.getSpawnAngle(), false),
+                        false
+                );
             }
             return;
         }
 
         // If the spawnpoint is a respawn anchor, get the current state
         // (this will be affected by getRespawnTarget)
-        ServerWorld respawnAnchorWorld = server.getWorld(player.getSpawnPointDimension());
-        BlockPos respawnAnchorBlockPos = player.getSpawnPointPosition();
+        ServerPlayerEntity.class_10766 respawn = player.method_67564();
+        ServerWorld respawnAnchorWorld = respawn != null ? server.getWorld(respawn.dimension()) : null;
+        BlockPos respawnAnchorBlockPos = respawn != null ? respawn.pos() : null;
         BlockState respawnAnchorBlockState = respawnAnchorWorld != null && respawnAnchorBlockPos != null
                 ? respawnAnchorWorld.getBlockState(respawnAnchorBlockPos)
                 : null;
