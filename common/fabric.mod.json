@@ -41,6 +41,9 @@
     "fabric-api": "*",
     "fabric-language-kotlin": ">=$fabric_language_kotlin_version"
   },
+  "breaks": {
+    "immediatelyfast": "*"
+  },
   "contact": {
     "homepage": "https://horrific.dev/bingo/",
     "sources": "https://gitlab.com/horrificdev/bingo/",
