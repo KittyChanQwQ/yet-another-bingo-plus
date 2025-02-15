@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.text
 
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.platform.text.IText
@@ -101,6 +100,13 @@ class TextProvider(
         return when (number) {
             1 -> string(StringKey.GameCardSingle)
             else -> string(StringKey.GameCardCount, number)
+        }
+    }
+
+    fun teamCount(number: Int): IText {
+        return when (number) {
+            1 -> string(StringKey.GameTeamSingle)
+            else -> string(StringKey.GameTeamCount, number)
         }
     }
 

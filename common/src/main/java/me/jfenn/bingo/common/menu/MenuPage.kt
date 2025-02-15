@@ -6,7 +6,6 @@ import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.util.Formatting
@@ -166,10 +165,20 @@ private fun createGoalPage(
     )
     pos.add(MENU_GOAL_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
 
-    registerWinBehavior(
-        position = pos + Vector3d(MENU_WIN_BEHAVIOR_WIDTH/2, -MENU_LINE_PADDING, 0.0),
+    registerEndGameWhen(
+        position = pos + Vector3d(MENU_END_WHEN_WIDTH/2, -MENU_LINE_PADDING, 0.0),
     )
-    pos.add(MENU_WIN_BEHAVIOR_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+    pos.add(MENU_END_WHEN_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerStalemateBehavior(
+        position = pos + Vector3d(MENU_STALEMATE_WIDTH/2, -MENU_LINE_PADDING, 0.0),
+    )
+    pos.add(MENU_STALEMATE_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+//    registerWinBehavior(
+//        position = pos + Vector3d(MENU_WIN_BEHAVIOR_WIDTH/2, -MENU_LINE_PADDING, 0.0),
+//    )
+//    pos.add(MENU_WIN_BEHAVIOR_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
 
     registerScoreInfo(
         position = pos + Vector3d(MENU_SCORE_INFO_WIDTH/2, -MENU_LINE_PADDING, 0.0),
