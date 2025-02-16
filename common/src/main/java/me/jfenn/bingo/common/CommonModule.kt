@@ -4,7 +4,7 @@ import me.jfenn.bingo.api.BingoApiImpl
 import me.jfenn.bingo.api.IBingoApi
 import me.jfenn.bingo.common.autorestart.ResetCommand
 import me.jfenn.bingo.common.autorestart.ResetService
-import me.jfenn.bingo.common.autorestart.RestartOnLeaveController
+import me.jfenn.bingo.common.autorestart.ResetOnLeaveController
 import me.jfenn.bingo.common.bossbar.BossBarController
 import me.jfenn.bingo.common.bossbar.BossBarService
 import me.jfenn.bingo.common.card.CardService
@@ -305,7 +305,7 @@ val commonModule = module {
         scopedOf(::TimerPacketController)
         scopedOf(::WaitUntilLoadedController)
 
-        scopedOf(::RestartOnLeaveController)
+        scopedOf(::ResetOnLeaveController)
 
         scopedOf(::CommandTreeHandler)
 
@@ -391,7 +391,7 @@ fun Scope.commonInit() {
     get<TimerPacketController>()
     get<WaitUntilLoadedController>()
 
-    get<RestartOnLeaveController>()
+    get<ResetOnLeaveController>()
 
     get<CommandTreeHandler>()
 
