@@ -175,11 +175,24 @@ internal class ScoredItemCheck(
                 is BingoGoal.Lines -> team.score.lines >= goal.lines
             }
 
-            if (isWinner) {
+            if (isWinner && team.cardId == card.id) {
                 log.info("[ScoredItemCheck] Team {} has completed their card", team.id)
                 onCardCompleted(team, card, true)
 
-                if (options.skipCardWhenLost) {
+                // Count the number of teams that have now finished the card
+                val completedTeams = state.getRegisteredTeams().count {
+                    it.completedCards.any { completed -> completed.card.id == card.id }
+                }
+
+                // If the number of teams satisfies the endWhen setting, other teams should move to the next card
+                val shouldSkipCard = when (val endWhen = options.endGameWhen) {
+                    is EndWhen.AllWin -> false
+                    is EndWhen.TeamsWin -> completedTeams >= endWhen.teams
+                    is EndWhen.FirstWin -> true
+                    is EndWhen.Never -> false
+                }
+
+                if (shouldSkipCard) {
                     teams.filter { it.cardId == card.id }
                         .forEach { onCardCompleted(it, card, false) }
                 }

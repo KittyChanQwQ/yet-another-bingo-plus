@@ -1,10 +1,13 @@
 package me.jfenn.bingo.common.commands
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.integrations.permissions.PermissionKey
 import me.jfenn.bingo.platform.commands.IExecutionSource
+import net.minecraft.util.Formatting
 
 val IExecutionSource.runByName get() = when {
     isConsole -> "RCON"
@@ -26,3 +29,8 @@ fun IExecutionSource.hasPermission(key: PermissionKey): Boolean {
 fun IExecutionSource.hasLobby(): Boolean {
     return scope.get<BingoState>().isLobbyMode
 }
+
+fun TextProvider.formatWarning(text: IText, first: Boolean = true) =
+    literal(if (first) "⚠  " else "   ")
+        .append(text)
+        .formatted(Formatting.YELLOW)

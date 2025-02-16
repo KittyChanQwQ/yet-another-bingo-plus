@@ -1,8 +1,10 @@
 package me.jfenn.bingo.common.ready
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.autorestart.ResetService
+import me.jfenn.bingo.common.commands.formatWarning
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -89,7 +91,12 @@ internal class ReadyController(
             if (isComplete) {
                 log.info("[ReadyController] Reached the end of the PREGAME timer - starting the game!")
                 reset()
-                gameService.start(allowSpectators = true)
+                val warnings = mutableListOf<IText>()
+                gameService.start(warnings, allowSpectators = true)
+                warnings.forEachIndexed { i, warning ->
+                    playerManager.getPlayers()
+                        .forEach { it.sendMessage(text.formatWarning(warning, i == 0)) }
+                }
             }
         }
 

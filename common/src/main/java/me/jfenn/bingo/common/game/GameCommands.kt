@@ -1,6 +1,8 @@
 package me.jfenn.bingo.common.game
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.commands.formatWarning
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -11,8 +13,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 
 class GameCommands(
     commandManager: ICommandManager,
@@ -24,17 +24,16 @@ class GameCommands(
 
         scope.get<IExecutors.IServerTaskExecutor>().execute {
             // Start the game!
+            val warnings = mutableListOf<IText>()
             gameService.start(
+                warnings = warnings,
                 ignoreWarnings = ignoreWarnings,
                 allowSpectators = ignoreWarnings,
-                sendFeedback = { feedback ->
-                    sendMessage(
-                        text.literal("⚠  ")
-                            .append(feedback.copy().formatted(Formatting.ITALIC))
-                            .formatted(Formatting.YELLOW),
-                    )
-                }
             )
+
+            warnings.forEachIndexed { i, warning ->
+                sendMessage(text.formatWarning(warning, i == 0))
+            }
         }
 
         sendFeedback(text.string(StringKey.CommandStartSuccess))

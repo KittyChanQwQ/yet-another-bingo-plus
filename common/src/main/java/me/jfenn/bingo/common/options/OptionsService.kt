@@ -96,6 +96,7 @@ internal class OptionsService(
         val goalName = coercedGoal.format(
             textProvider = text,
             supportsFullCard = supportsFullCard,
+            descriptive = true,
         )
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsGoal, goalName.formatted(Formatting.WHITE))

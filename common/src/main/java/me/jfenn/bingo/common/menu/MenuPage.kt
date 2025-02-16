@@ -1,6 +1,8 @@
 package me.jfenn.bingo.common.menu
 
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.commands.formatWarning
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.options.BingoOptions
@@ -8,7 +10,6 @@ import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.util.Formatting
 import org.joml.Vector3d
 import org.koin.core.scope.Scope
 
@@ -87,15 +88,14 @@ private fun createRootPage(
     ) { player ->
         // Start the game!
         optionsService.broadcastHotbarMessage(player, text.string(StringKey.CommandStartSuccess))
+        val warnings = mutableListOf<IText>()
         gameService.start(
-            sendFeedback = { feedback ->
-                text.literal("⚠  ")
-                    .append(feedback.copy().formatted(Formatting.ITALIC))
-                    .formatted(Formatting.YELLOW)
-                    .also { player.sendMessage(it) }
-            },
+            warnings = warnings,
             allowSpectators = player.isSneaking,
         )
+        warnings.forEachIndexed { i, warning ->
+            player.sendMessage(text.formatWarning(warning, i == 0))
+        }
     }
 }
 

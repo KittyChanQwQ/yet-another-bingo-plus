@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.options
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.menu.*
@@ -20,7 +19,6 @@ data class BingoOptions(
     var winCondition: BingoWinCondition = BingoWinCondition.Cards(1),
     var cards: List<BingoCardOptions> = listOf(BingoCardOptions()),
 
-    var skipCardWhenLost: Boolean = true,
     var stalemateBehavior: StalemateBehavior = StalemateBehavior.END_GAME,
     var endGameWhen: EndWhen = EndWhen.FirstWin,
 

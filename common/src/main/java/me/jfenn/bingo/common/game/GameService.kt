@@ -3,14 +3,17 @@ package me.jfenn.bingo.common.game
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.client.platform.text.TextAction
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
+import me.jfenn.bingo.common.commands.BingoOptionsCommands
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.options.BingoGoal
 import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.SpawnService
@@ -74,7 +77,7 @@ internal class GameService(
     }
 
     fun start(
-        sendFeedback: (IText) -> Unit = {},
+        warnings: MutableList<IText>,
         ignoreWarnings: Boolean = false,
         allowSpectators: Boolean = false,
     ): Boolean {
@@ -84,8 +87,8 @@ internal class GameService(
         if (playersWithoutATeam.isNotEmpty() && !allowSpectators) {
             // If there's more than one player, teams need to be set up manually!
             if (playerManager.getPlayers().size > 1) {
-                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeams, playersWithoutATeam.joinToString { it.playerName }))
-                sendFeedback(text.string(StringKey.CommandStartPlayersMissingTeamsHint, ShuffleTeamsCommand.SHUFFLE_TEAMS_COMMAND, GameCommands.IGNORE_WARNINGS_COMMAND))
+                warnings += text.string(StringKey.CommandStartPlayersMissingTeams, playersWithoutATeam.joinToString { it.playerName })
+                warnings += text.string(StringKey.CommandStartPlayersMissingTeamsHint, ShuffleTeamsCommand.SHUFFLE_TEAMS_COMMAND, GameCommands.IGNORE_WARNINGS_COMMAND)
                 notifyPlayersMissingTeams(playersWithoutATeam)
                 return false
             }
@@ -97,17 +100,39 @@ internal class GameService(
         }
 
         // Ensure that all selected tier lists are supported
-        if (!ignoreWarnings && !cardService.isSupported(sendFeedback))
+        var hasWarning = false
+        if (!ignoreWarnings) {
+            hasWarning = !cardService.isSupported { warnings.add(it) }
+        }
+
+        // Warn if Lockout mode & Lines goal are used together
+        val activeCard = state.getActiveCard()
+        if (!ignoreWarnings && activeCard.options.isLockoutMode && activeCard.options.goal is BingoGoal.Lines) {
+            hasWarning = true
+
+            val goalText = activeCard.options.goal.format(
+                textProvider = text,
+                supportsFullCard = options.winCondition !is BingoWinCondition.ReplaceGoals,
+                descriptive = true,
+            )
+
+            warnings += text.string(StringKey.CommandStartLockoutWithLinesGoal, goalText)
+            warnings += text.literal(BingoOptionsCommands.GOAL_FULL_CARD_ITEMS).formatted(Formatting.UNDERLINE)
+                .also { it.setClickEvent(TextAction.SuggestCommand(BingoOptionsCommands.GOAL_FULL_CARD_ITEMS)) }
+        }
+
+        if (hasWarning) {
             return false
+        }
 
         // if the game has already been started, ignore
         if (state.state != GameState.PREGAME) {
-            sendFeedback(text.string(StringKey.CommandStartAlreadyStarted))
+            warnings.add(text.string(StringKey.CommandStartAlreadyStarted))
             return false
         }
 
         if (!options.isValid()) {
-            sendFeedback(text.string(StringKey.CommandStartInvalidDistribution))
+            warnings.add(text.string(StringKey.CommandStartInvalidDistribution))
             return false
         }
 
@@ -124,13 +149,13 @@ internal class GameService(
             val goal = card.options.goal
             if (goal is BingoGoal.Lines && goal.lines <= initialLines) {
                 val feedback = text.string(StringKey.CommandStartWillImmediatelyEnd, goal.format(text), text.lineCount(initialLines))
-                sendFeedback(feedback)
+                warnings.add(feedback)
                 return false
             }
 
             if (goal is BingoGoal.Items && goal.items <= initialItems) {
                 val feedback = text.string(StringKey.CommandStartWillImmediatelyEnd, goal.format(text), text.itemCount(initialItems))
-                sendFeedback(feedback)
+                warnings.add(feedback)
                 return false
             }
         }

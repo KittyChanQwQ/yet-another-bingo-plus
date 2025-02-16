@@ -84,6 +84,22 @@ class BingoOptionsCommands(
                         }
                     }
                 }
+
+                literal("full_card") {
+                    executes {
+                        setGoal(BingoGoal.Items(BingoGoal.MAX_ITEMS))
+                    }
+                    literal("items") {
+                        executes {
+                            setGoal(BingoGoal.Items(BingoGoal.MAX_ITEMS))
+                        }
+                    }
+                    literal("lines") {
+                        executes {
+                            setGoal(BingoGoal.Lines(BingoGoal.MAX_LINES))
+                        }
+                    }
+                }
             }
 
             literal("mode") {
@@ -247,5 +263,6 @@ class BingoOptionsCommands(
 
     companion object {
         const val END_WHEN = "/bingo options end_when"
+        const val GOAL_FULL_CARD_ITEMS = "/bingo goal full_card items"
     }
 }
