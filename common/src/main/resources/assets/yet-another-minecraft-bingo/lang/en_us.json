@@ -324,7 +324,6 @@
   "bingo.options.spawn_kit_team_edit": "Edit Team Chest",
   "bingo.options.start": "START",
   "bingo.options.teams": "Shufflificator",
-  "bingo.options.teams_count": "%s teams",
   "bingo.options.teams_shuffle": "Shuffle!",
   "bingo.options.teams_shuffle.message": "Teams have been shuffled!",
   "bingo.options.time_limit": "Time Limit",

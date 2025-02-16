@@ -1,12 +1,9 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
 
@@ -35,7 +32,7 @@ internal fun MenuComponent.registerTeams(
         valueProp = propertyRef(TeamCountState::teamCount),
         minValueProp = ConstantProperty(1),
         maxValueProp = ConstantProperty(server.maxPlayerCount.coerceAtMost(50)),
-        format = { text.string(StringKey.OptionsTeamsCount, it) },
+        format = { text.teamCount(it) },
     )
 
     registerTileButton(
