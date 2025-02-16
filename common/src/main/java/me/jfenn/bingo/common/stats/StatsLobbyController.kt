@@ -11,7 +11,6 @@ import me.jfenn.bingo.common.stats.data.PlayerStatsSummary
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
-import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.item.IItemStackFactory
@@ -21,6 +20,8 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
+import org.joml.Vector3f
+import org.joml.Vector4f
 import org.slf4j.Logger
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -47,7 +48,16 @@ class StatsLobbyController(
 
     private var pendingStats: CompletableFuture<PlayerStatsSummary>? = null
 
-    private var statsPos: Vector3d? = null
+    private var statsTransform: Matrix4f? = null
+
+    private fun IEntity.transformPos(matrix: Matrix4f, pos: Vector3d) {
+        val pos4f = with(pos) { Vector4f(x.toFloat(), y.toFloat(), z.toFloat(), 1f) }
+        this.pos = matrix.transform(pos4f).let { Vector3d(it.x.toDouble(), it.y.toDouble(), it.z.toDouble()) }
+
+        val angles = Vector3f()
+        matrix.getEulerAnglesXYZ(angles)
+        yaw += Math.toDegrees(-angles.y.toDouble()).toFloat()
+    }
 
     private var nameEntityUuid: UUID? = null
     private val nameEntity: ITextDisplayEntity? get() {
@@ -57,11 +67,12 @@ class StatsLobbyController(
             ?.let { entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity }
             ?.let { return it }
 
-        val pos = statsPos ?: return null
+        val transform = statsTransform ?: return null
 
         val entity = entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
-                this.pos = pos + Vector3d(0.0, 2.2, 0.0)
+                transformPos(transform, Vector3d(0.0, 2.2, 0.0))
+
                 value = text.empty()
                 billboard = ITextDisplayEntity.Billboard.FIXED
                 alignment = ITextDisplayEntity.TextAlignment.RIGHT
@@ -83,11 +94,12 @@ class StatsLobbyController(
             ?.let { entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity }
             ?.let { return it }
 
-        val pos = statsPos ?: return null
+        val transform = statsTransform ?: return null
 
         val entity = entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
-                this.pos = pos + Vector3d(-1.8, 0.5, 0.0)
+                transformPos(transform, Vector3d(-1.8, 0.5, 0.0))
+
                 value = text.empty()
                 billboard = ITextDisplayEntity.Billboard.FIXED
                 alignment = ITextDisplayEntity.TextAlignment.RIGHT
@@ -110,11 +122,12 @@ class StatsLobbyController(
             ?.let { entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity }
             ?.let { return it }
 
-        val pos = statsPos ?: return null
+        val transform = statsTransform ?: return null
 
         val entity = entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
-                this.pos = pos + Vector3d(1.8, 0.5, 0.0)
+                transformPos(transform, Vector3d(1.8, 0.5, 0.0))
+
                 value = text.empty()
                 billboard = ITextDisplayEntity.Billboard.FIXED
                 alignment = ITextDisplayEntity.TextAlignment.LEFT
@@ -144,7 +157,9 @@ class StatsLobbyController(
             return
         }
 
-        statsPos = armorStand.pos.let { Vector3d(it.x, it.y, it.z) }
+        statsTransform = Matrix4f()
+            .translate(armorStand.pos.let { Vector3f(it.x.toFloat(), it.y.toFloat(), it.z.toFloat()) })
+            .rotateY(Math.toRadians(-armorStand.yaw.toDouble()).toFloat())
 
         val playerHead = itemStackFactory.createPlayerHead()
         playerHead.setSkullOwner(player)
