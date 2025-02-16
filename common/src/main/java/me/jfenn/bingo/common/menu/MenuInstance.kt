@@ -84,7 +84,7 @@ internal class MenuInstance(
             // If the entity cannot be spawned, discard it and return null
             // (the MenuComponent should then be marked dirty, and will try again on the next tick)
             if (!isSuccess) {
-                log.error("Unable to spawn ${info.type} menu entity - discarding...")
+                log.debug("Unable to spawn {} menu entity - discarding...", info.type)
                 entity.discard()
                 return null
             }

@@ -15,14 +15,18 @@ interface IEntityManager {
     fun iterateEntities(world: ServerWorld): Sequence<IEntity>
 }
 
-class EntityType<T: IEntity> {
+class EntityType<T: IEntity>(val name: String) {
     companion object {
-        val TEXT_DISPLAY = EntityType<ITextDisplayEntity>()
-        val BLOCK_DISPLAY = EntityType<IBlockDisplayEntity>()
-        val INTERACTION = EntityType<IInteractionEntity>()
-        val ARMOR_STAND = EntityType<IArmorStandEntity>()
-        val BAT = EntityType<IBatEntity>()
-        val OTHER = EntityType<IBatEntity>()
+        val TEXT_DISPLAY = EntityType<ITextDisplayEntity>("TEXT_DISPLAY")
+        val BLOCK_DISPLAY = EntityType<IBlockDisplayEntity>("BLOCK_DISPLAY")
+        val INTERACTION = EntityType<IInteractionEntity>("INTERACTION")
+        val ARMOR_STAND = EntityType<IArmorStandEntity>("ARMOR_STAND")
+        val BAT = EntityType<IBatEntity>("BAT")
+        val OTHER = EntityType<IBatEntity>("OTHER")
+    }
+
+    override fun toString(): String {
+        return name
     }
 }
 
