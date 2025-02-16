@@ -1,7 +1,11 @@
 {
   "type": "stats",
   "display": {
-    "item": "minecraft:zombie_head"
+    "item": "minecraft:zombie_head",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_zombie",
+      "fallback": "Kill a Zombie"
+    }
   },
   "statType": "minecraft:killed",
   "statName": "minecraft:zombie"

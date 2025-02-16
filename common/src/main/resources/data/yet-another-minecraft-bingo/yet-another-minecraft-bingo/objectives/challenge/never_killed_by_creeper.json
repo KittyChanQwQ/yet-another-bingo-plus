@@ -1,10 +1,14 @@
 {
   "type": "inverse",
+  "display": {
+    "item": "minecraft:creeper_head",
+    "name": {
+      "translate": "bingo.objective.challenge.never_killed_by_creeper",
+      "fallback": "Never get Killed by a Creeper"
+    }
+  },
   "objective": {
     "type": "stats",
-    "display": {
-      "item": "minecraft:creeper_head"
-    },
     "statType": "minecraft:killed_by",
     "statName": "minecraft:creeper"
   }
