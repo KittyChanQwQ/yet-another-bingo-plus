@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.event
 
+import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -16,6 +17,7 @@ import net.minecraft.server.world.ServerWorld
 import org.koin.core.scope.Scope
 import org.koin.core.scope.ScopeCallback
 import org.slf4j.Logger
+import java.util.UUID
 
 class ScopedEvents(
     private val log: Logger,
@@ -47,6 +49,7 @@ class ScopedEvents(
     val onChangePlayerSettings: IEventListener<IPlayerHandle> by EventListenerFactory()
     val onChangeTeam: IEventListener<IPlayerHandle> by EventListenerFactory()
 
+    val onCardShuffled: IEventListener<UUID> by EventListenerFactory()
     val onTeamWinner: IEventListener<BingoTeam> by EventListenerFactory()
 
     val onDataReload: IEventListener<ReloadEvent> by EventListenerFactory()

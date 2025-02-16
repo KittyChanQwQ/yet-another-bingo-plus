@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.commands
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
+import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.objective.ObjectiveListService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.BingoConfig
@@ -93,8 +94,14 @@ class BingoCardCommand(
 
     private fun IExecutionContext.rerollCard() {
         val card = cardViewService.getPlayerCard(player)
-        cardService.shuffleCard(card)
+        val excludedObjectives = if (hasState(GameState.PLAYING)) {
+            scope.get<BingoObjectiveManager>().listExcludedIds().toSet()
+        } else {
+            emptySet()
+        }
+        cardService.shuffleCard(card, excludedObjectives)
         sendFeedback(text.string(StringKey.OptionsRerollCardSuccess))
+        scope.get<ScopedEvents>().onCardShuffled(card.id)
     }
 
     private fun IExecutionContext.getCardTags() = buildMap {

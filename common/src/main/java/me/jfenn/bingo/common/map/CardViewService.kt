@@ -20,6 +20,7 @@ import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import net.minecraft.server.MinecraftServer
+import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
 internal class CardViewService(
@@ -91,6 +92,27 @@ internal class CardViewService(
             packets.cardUpdateV4.send(player, updatePacket) -> {}
             packets.cardUpdateV3.send(player, updatePacket) -> {}
             packets.cardUpdateV2.send(player, updatePacket) -> {}
+        }
+    }
+
+    fun sendCardShuffledPacket(cardId: UUID) {
+        val affectedTeams = buildList {
+            if (state.getActiveCard().id == cardId)
+                add(null)
+            addAll(
+                state.getRegisteredTeams()
+                    .filter { it.cardId == cardId }
+            )
+        }
+
+        for (player in playerManager.getPlayers()) {
+            val playerTeams = affectedTeams
+                .filter { isViewingCard(player, it) }
+
+            for (team in playerTeams) {
+                val packet = CardShuffledPacket(team?.key)
+                packets.cardShuffledV1.send(player, packet)
+            }
         }
     }
 

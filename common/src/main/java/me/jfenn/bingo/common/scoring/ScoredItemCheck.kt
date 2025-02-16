@@ -490,6 +490,7 @@ internal class ScoredItemCheck(
             }
 
             onCardAssigned(newCard, teamsWithoutCards)
+            events.onCardShuffled(newCard.id)
         }
 
         // Only run onTeamWinner events after the card tick is complete

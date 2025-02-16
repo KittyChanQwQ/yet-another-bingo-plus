@@ -60,6 +60,10 @@ internal class BingoMapController(
                 .forEach { cardViewService.sendUpdatePackets(it) }
         }
 
+        events.onCardShuffled { cardId ->
+            cardViewService.sendCardShuffledPacket(cardId)
+        }
+
         events.onChangeOptions {
             updateCards()
             playerManager.getPlayers().forEach { cardViewService.sendUpdatePackets(it) }

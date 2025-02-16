@@ -41,7 +41,7 @@
     "fabric-api": "*",
     "fabric-language-kotlin": ">=$fabric_language_kotlin_version"
   },
-  "breaks": {
+  "conflicts": {
     "immediatelyfast": "*"
   },
   "contact": {

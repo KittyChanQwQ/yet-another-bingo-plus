@@ -97,7 +97,7 @@ class TextImpl(
         return this
     }
 
-    override fun equals(other: Any?): Boolean = value.equals(other)
+    override fun equals(other: Any?): Boolean = other is TextImpl && value == other.value
     override fun hashCode(): Int = value.hashCode()
     override fun toString(): String = value.string
 

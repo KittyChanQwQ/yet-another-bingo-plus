@@ -179,12 +179,20 @@ class CardService(
         return newCard
     }
 
-    fun shuffleCard(card: BingoCard) {
+    fun shuffleCard(
+        card: BingoCard,
+        excludeObjectives: Set<String> = emptySet(),
+    ) {
         if (!card.options.isValid()) throw IllegalArgumentException("Cannot reroll card; invalid options")
 
         // Change the BINGO seed to a new value
         val newSeed = Random.nextLong()
-        val newCard = generate(card.id, newSeed, card.options)
+        val newCard = generate(
+            id = card.id,
+            seed = newSeed,
+            cardOptions = card.options,
+            excludeObjectives = excludeObjectives,
+        )
         objectiveManager.init(newCard)
         state.replaceCard(newCard)
     }

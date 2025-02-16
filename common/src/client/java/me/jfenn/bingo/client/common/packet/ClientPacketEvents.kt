@@ -3,10 +3,7 @@ package me.jfenn.bingo.client.common.packet
 import me.jfenn.bingo.client.platform.IClientNetworking
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.game.GameOverPacket
-import me.jfenn.bingo.common.map.CardDisplayPacket
-import me.jfenn.bingo.common.map.CardImagePacket
-import me.jfenn.bingo.common.map.CardTilesPacket
-import me.jfenn.bingo.common.map.CardUpdatePacket
+import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.ready.SetReadyPacket
@@ -37,6 +34,7 @@ internal class ClientPacketEvents(
     @Suppress("Deprecation")
     val cardUpdateV6 = clientNetworking.registerS2C(CardUpdatePacket.V6)
     val cardTilesV1 = clientNetworking.registerS2C(CardTilesPacket.V1)
+    val cardShuffledV1 = clientNetworking.registerS2C(CardShuffledPacket.V1)
     val cardCompletedV1 = clientNetworking.registerS2C(CardCompletedPacket.V1)
     val cardImageV1 = clientNetworking.registerS2C(CardImagePacket.V1)
     val gameOverV1 = clientNetworking.registerS2C(GameOverPacket.V1)

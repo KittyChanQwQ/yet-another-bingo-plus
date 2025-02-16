@@ -3,6 +3,7 @@ package me.jfenn.bingo.client.common.hud
 import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
+import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.map.CardTile
@@ -22,6 +23,7 @@ import org.joml.AxisAngle4f
 import org.joml.Quaternionf
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.ceil
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 internal class BingoHudRenderer(
@@ -42,6 +44,8 @@ internal class BingoHudRenderer(
         val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")!!
         val CARD_TOOLTIP_ID = Identifier.of("minecraft", "bingo/card_tooltip")!!
 
+        val SHUFFLE_DURATION = 280.milliseconds
+
         private val winColors = listOf(
             0xFF_F5C0A3.toInt(),
             0xFF_A3F5A3.toInt(),
@@ -58,6 +62,8 @@ internal class BingoHudRenderer(
     }
 
     private var cardColors = BingoCardColors()
+
+    var shufflePositions = (0 until 25).toList()
 
     fun getItem(
         x: Int,
@@ -154,18 +160,43 @@ internal class BingoHudRenderer(
             context.matrices.pop()
         }
 
-        for (tileX in 0..4) for (tileY in 0..4) {
-            val tile = view.tile(tileX, tileY) ?: continue
-            val itemX = 12 + tileX*20
-            val itemY = 22 + tileY*20
+        for (tileIndex in 0 until 25) {
+            val tileX = tileIndex % 5
+            val tileY = tileIndex / 5
+
+            val tile = view.tiles.getOrNull(tileIndex) ?: continue
+
+            val interpolateFrom = shufflePositions[tileIndex % shufflePositions.size]
+                .let { Pair(it % 5, it / 5) }
+                .let { (x, y) -> Pair(12 + x*20, 22 + y*20) }
+            val interpolateTo = Pair(12 + tileX*20, 22 + tileY*20)
+            val interpolateX = Interpolate(
+                from = interpolateFrom.first.toFloat(),
+                to = interpolateTo.first.toFloat(),
+                duration = SHUFFLE_DURATION,
+                startedAt = view.shuffledAt,
+            )
+            val interpolateY = Interpolate(
+                from = interpolateFrom.second.toFloat(),
+                to = interpolateTo.second.toFloat(),
+                duration = SHUFFLE_DURATION,
+                startedAt = view.shuffledAt,
+            )
+
+            val itemX = interpolateX.get(Interpolate.Easing.IN_OUT, state.now)
+            val itemY = interpolateY.get(Interpolate.Easing.IN_OUT, state.now)
+
+            // BEGIN: TILE DRAW
+            context.matrices.push()
+            context.matrices.translate(itemX, itemY, 0f)
 
             val isFlashing = showFlashingTiles && shouldRenderFlashing(tile)
             when {
-                isFlashing -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileFlashingColor.asInt)
-                tile.isAchieved -> context.fill(itemX, itemY, itemX + 18, itemY + 18, colors.tileAchievedColor.asInt)
+                isFlashing -> context.fill(0, 0, 18, 18, colors.tileFlashingColor.asInt)
+                tile.isAchieved -> context.fill(0, 0, 18, 18, colors.tileAchievedColor.asInt)
                 tile.progress >= (1/18f) -> context.fill(
-                    itemX, itemY + (18 * (1f - tile.progress)).toInt().coerceIn(0, 18),
-                    itemX + 18, itemY + 18,
+                    0, (18 * (1f - tile.progress)).toInt().coerceIn(0, 18),
+                    18, 18,
                     colors.tileProgressColor.asInt
                 )
             }
@@ -177,7 +208,7 @@ internal class BingoHudRenderer(
 
                 service.drawGuiTexture(
                     texture = texture,
-                    x = itemX + 1, y = itemY + 1,
+                    x = 1, y = 1,
                     u = 0f, v = 0f,
                     width = 16, height = 16,
                     textureWidth = 16, textureHeight = 16,
@@ -187,25 +218,25 @@ internal class BingoHudRenderer(
             val isReplacing = showFlashingTiles && shouldRenderReplacing(tile)
             if (isReplacing) continue
 
-            cardTileRenderer.renderTile(service, tile, itemX + 1, itemY + 1)
+            cardTileRenderer.renderTile(service, tile, 1, 1)
 
             if (tile.isAchieved && !isFlashing && mouseX == -1 && mouseY == -1) {
                 context.fill(
                     RenderLayer.getGuiOverlay(),
-                    itemX,
-                    itemY,
-                    itemX + 18,
-                    itemY + 18,
+                    0,
+                    0,
+                    18,
+                    18,
                     colors.tileAchievedColor.copy(a = colors.tileAchievedColor.a / 4).asIntWithAlpha
                 )
             }
 
-            cardTileRenderer.renderTileDecorations(service, tile, itemX + 1, itemY + 1)
+            cardTileRenderer.renderTileDecorations(service, tile, 1, 1)
 
             if (tile.isLocked) {
                 service.drawGuiTexture(
                     texture = FRAME_LOCKED_ID,
-                    x = itemX - 1, y = itemY - 1, z = 301,
+                    x = -1, y = -1, z = 301,
                     u = 0f, v = 0f,
                     width = 20, height = 20,
                     textureWidth = 20, textureHeight = 20,
@@ -223,15 +254,15 @@ internal class BingoHudRenderer(
                 if (start < 19f) {
                     val lineStart = start.toInt()
                     val lineEnd = end.toInt().coerceAtMost(19)
-                    context.drawHorizontalLine((itemX-1) + lineStart, (itemX-1) + lineEnd, (itemY-1), colorValue)
-                    context.drawVerticalLine((itemX-1), (itemY-1) + lineStart, (itemY-1) + lineEnd, colorValue)
+                    context.drawHorizontalLine((-1) + lineStart, (-1) + lineEnd, (-1), colorValue)
+                    context.drawVerticalLine((-1), (-1) + lineStart, (-1) + lineEnd, colorValue)
                 }
 
                 if (end > 19f) {
                     val lineStart = (start.toInt() - 19).coerceAtLeast(0)
                     val lineEnd = end.toInt() - 19
-                    context.drawHorizontalLine((itemX-1) + lineStart, (itemX-1) + lineEnd, (itemY-1) + 19, colorValueDark)
-                    context.drawVerticalLine((itemX-1) + 19, (itemY-1) + lineStart, (itemY-1) + lineEnd, colorValueDark)
+                    context.drawHorizontalLine((-1) + lineStart, (-1) + lineEnd, (-1) + 19, colorValueDark)
+                    context.drawVerticalLine((-1) + 19, (-1) + lineStart, (-1) + lineEnd, colorValueDark)
                 }
 
                 val start2 = i * 34f / tile.teamKeys.size
@@ -240,17 +271,20 @@ internal class BingoHudRenderer(
                 if (start2 < 17f) {
                     val lineStart = start2.toInt()
                     val lineEnd = end2.toInt().coerceAtMost(17)
-                    context.drawHorizontalLine((itemX) + lineStart, (itemX) + lineEnd, itemY, colorValueDark)
-                    context.drawVerticalLine(itemX, (itemY) + lineStart, (itemY) + lineEnd, colorValueDark)
+                    context.drawHorizontalLine(lineStart, lineEnd, 0, colorValueDark)
+                    context.drawVerticalLine(0, lineStart, lineEnd, colorValueDark)
                 }
 
                 if (end2 > 17f) {
                     val lineStart = (start2.toInt() - 17).coerceAtLeast(0)
                     val lineEnd = end2.toInt() - 17
-                    context.drawHorizontalLine((itemX) + lineStart, (itemX) + lineEnd, (itemY) + 17, colorValue)
-                    context.drawVerticalLine((itemX) + 17, (itemY) + lineStart, (itemY) + lineEnd, colorValue)
+                    context.drawHorizontalLine(lineStart, lineEnd, 17, colorValue)
+                    context.drawVerticalLine(17, lineStart, lineEnd, colorValue)
                 }
             }
+
+            // END: TILE DRAW
+            context.matrices.pop()
         }
 
         if (isFocused) {

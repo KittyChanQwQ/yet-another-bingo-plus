@@ -369,6 +369,15 @@ internal class BingoHudController(
         updateGameOverViews()
     }
 
+    private fun onCardShuffled(clientPacket: ClientPacket<CardShuffledPacket>) {
+        val packet = clientPacket.packet
+        val view = state.views[packet.teamKey]
+        if (view != null && (state.now - view.shuffledAt) > BingoHudRenderer.SHUFFLE_DURATION) {
+            view.shuffledAt = state.now
+            renderer.shufflePositions = renderer.shufflePositions.shuffled()
+        }
+    }
+
     init {
         packetEvents.cardDisplayV1.onPacket(::onCardDisplayV1)
         packetEvents.cardDisplayV2.onPacket(::onCardDisplayV2)
@@ -380,6 +389,7 @@ internal class BingoHudController(
         packetEvents.cardUpdateV6.onPacket(::onCardUpdate)
 
         packetEvents.cardTilesV1.onPacket(::onCardTiles)
+        packetEvents.cardShuffledV1.onPacket(::onCardShuffled)
 
         packetEvents.cardCompletedV1.onPacket {
             if (it.packet.isWinner) {
