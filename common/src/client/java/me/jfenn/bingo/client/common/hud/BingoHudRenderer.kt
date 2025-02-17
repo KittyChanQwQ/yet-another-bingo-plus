@@ -42,7 +42,7 @@ internal class BingoHudRenderer(
         val CARD_COLORS_ID = Identifier.of(MOD_ID_BINGO, "gui/card_colors.json")!!
         val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")!!
         val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")!!
-        val CARD_TOOLTIP_ID = Identifier.of("minecraft", "bingo/card_tooltip")!!
+        val CARD_TOOLTIP_ID = Identifier.of("minecraft", "bingo/tooltip")!!
 
         val SHUFFLE_DURATION = 280.milliseconds
 
