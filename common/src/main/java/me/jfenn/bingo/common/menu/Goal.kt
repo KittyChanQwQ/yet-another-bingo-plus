@@ -105,15 +105,24 @@ internal fun MenuComponent.registerCardGoal(
         icon = "⇄",
         text = this.text.empty(),
         textProp = computedProperty { text.string(cardOptions.goal.string()) },
-    ) {
+    ) { player ->
         val newGoal = when (val goal = cardOptions.goal) {
             is BingoGoal.Items -> BingoGoal.Lines(
-                if (supportsFullCard) goal.items.coerceAtMost(BingoGoal.MAX_LINES) else goal.items
+                when {
+                    supportsFullCard && goal.isFullCard() -> BingoGoal.MAX_LINES
+                    supportsFullCard -> goal.items.coerceAtMost(BingoGoal.MAX_LINES)
+                    else -> goal.items.coerceAtMost(BingoGoal.MAX_LINES)
+                }
             )
-            is BingoGoal.Lines -> BingoGoal.Items(goal.lines)
+            is BingoGoal.Lines -> BingoGoal.Items(
+                when {
+                    supportsFullCard && goal.isFullCard() -> BingoGoal.MAX_ITEMS
+                    else -> goal.lines
+                }
+            )
         }
         optionsService.setGoal(
-            ctx = OptionsService.Context(it),
+            ctx = OptionsService.Context(player),
             card = state.getActiveCard(),
             goal = newGoal,
         )
