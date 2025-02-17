@@ -24,6 +24,14 @@ class DrawService(
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
     }
 
+    override fun enableBlend() {
+        RenderSystem.enableBlend()
+    }
+
+    override fun disableBlend() {
+        RenderSystem.disableBlend()
+    }
+
     override fun setShaderColor(r: Float, g: Float, b: Float, a: Float) {
         context.setShaderColor(r, g, b, a)
     }

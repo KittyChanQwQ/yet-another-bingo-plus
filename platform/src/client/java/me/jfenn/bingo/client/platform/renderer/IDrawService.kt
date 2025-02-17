@@ -15,6 +15,9 @@ interface IDrawService {
     val textRenderer: TextRenderer
     val font: IFont
 
+    fun enableBlend()
+    fun disableBlend()
+
     fun setShaderColor(r: Float, g: Float, b: Float, a: Float)
 
     fun drawText(text: IText, x: Int, y: Int, color: Int, shadow: Boolean = false)

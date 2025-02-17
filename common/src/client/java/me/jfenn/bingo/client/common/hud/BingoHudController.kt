@@ -443,7 +443,9 @@ internal class BingoHudController(
                 return@onRenderCard
             }
 
+            it.drawService.enableBlend()
             drawHud(it.drawService)
+            it.drawService.disableBlend()
         }
 
         clientEvents.onServerJoin {

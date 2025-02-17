@@ -82,7 +82,10 @@ internal class BingoMessageRenderer(
         visibility: Float,
         isLeftOfCard: Boolean,
     ) {
-        drawService.setShaderColor(1f, 1f, 1f, visibility.pow(2))
+        val usingShaderColor = visibility < 0.99f
+        if (usingShaderColor) {
+            drawService.setShaderColor(1f, 1f, 1f, visibility.pow(2))
+        }
 
         val itemX = if (isLeftOfCard) -8 - ITEM_HEIGHT else 8
         val itemY = ITEM_HEIGHT/2 - 8
@@ -121,7 +124,9 @@ internal class BingoMessageRenderer(
             true,
         )
 
-        drawService.setShaderColor(1f, 1f, 1f, 1f)
+        if (usingShaderColor) {
+            drawService.setShaderColor(1f, 1f, 1f, 1f)
+        }
     }
 
 }
