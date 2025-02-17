@@ -299,7 +299,7 @@ class PlayerHandle(
         sendMessage: Boolean
     ) {
         player.setSpawnPoint(
-            ServerPlayerEntity.class_10766(world.registryKey, spawn.toBlockPos(), angle, forced),
+            ServerPlayerEntity.Respawn(world.registryKey, spawn.toBlockPos(), angle, forced),
             sendMessage
         )
     }

@@ -65,7 +65,7 @@ public abstract class PlayerManagerMixin {
             if (PlayerManagerMixinHandler.INSTANCE.shouldOverrideEndRespawn(player.server)) {
                 var overworld = player.server.getOverworld();
                 player.setSpawnPoint(
-                        new ServerPlayerEntity.class_10766(overworld.getRegistryKey(), overworld.getSpawnPos(), overworld.getSpawnAngle(), false),
+                        new ServerPlayerEntity.Respawn(overworld.getRegistryKey(), overworld.getSpawnPos(), overworld.getSpawnAngle(), false),
                         false
                 );
             }
@@ -74,7 +74,7 @@ public abstract class PlayerManagerMixin {
 
         // If the spawnpoint is a respawn anchor, get the current state
         // (this will be affected by getRespawnTarget)
-        ServerPlayerEntity.class_10766 respawn = player.method_67564();
+        ServerPlayerEntity.Respawn respawn = player.getRespawn();
         ServerWorld respawnAnchorWorld = respawn != null ? server.getWorld(respawn.dimension()) : null;
         BlockPos respawnAnchorBlockPos = respawn != null ? respawn.pos() : null;
         BlockState respawnAnchorBlockState = respawnAnchorWorld != null && respawnAnchorBlockPos != null
