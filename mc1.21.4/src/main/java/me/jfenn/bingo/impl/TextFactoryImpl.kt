@@ -42,6 +42,10 @@ class TextFactoryImpl : ITextFactory {
 class TextImpl(
     override val value: MutableText
 ) : IText {
+    override fun isEmpty(): Boolean {
+        return value.string.isEmpty()
+    }
+
     override fun setClickEvent(event: TextAction) {
         value.setStyle(
             value.style.withClickEvent(

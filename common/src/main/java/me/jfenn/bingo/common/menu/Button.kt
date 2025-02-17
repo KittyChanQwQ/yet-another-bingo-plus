@@ -10,7 +10,6 @@ import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.*
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
@@ -93,7 +92,7 @@ internal fun MenuComponent.registerTileButton(
     val isActive by isActiveProp
     val buttonText by textProp
     val buttonTextColor by computedProperty { if (isActive) Formatting.BLACK else Formatting.GRAY }
-    val isVisible by computedProperty { text == null || buttonText != Text.empty() }
+    val isVisible by computedProperty { text == null || !buttonText.isEmpty() }
 
     registerButtonInteraction(
         position = position,

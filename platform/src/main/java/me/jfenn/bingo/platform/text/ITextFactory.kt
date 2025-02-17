@@ -27,6 +27,7 @@ interface ITextFactory {
 
 interface IText {
     val value: Text
+    fun isEmpty(): Boolean
     fun formatted(vararg formatting: Formatting): IText
     fun setColor(color: Int)
     fun append(text: IText): IText
