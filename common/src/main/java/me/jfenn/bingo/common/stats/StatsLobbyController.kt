@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.stats
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
@@ -31,6 +32,7 @@ class StatsLobbyController(
     private val log: Logger,
     private val server: MinecraftServer,
     private val state: BingoState,
+    private val data: ScopedData,
     private val stats: StatsService,
     private val text: TextProvider,
     private val playerManager: IPlayerManager,
@@ -167,8 +169,9 @@ class StatsLobbyController(
 
         nameEntity?.value = text.literal(playerManager.forPlayer(player).playerName)
 
-        val favoriteTeam = BingoTeam.TEAM_BLOCKS.values
-            .find { it.key == summary.favoriteTeam }
+        val favoriteTeam = summary.favoriteTeam
+            ?.let { data.teamPresets[it] }
+            ?.let { BingoTeam.fromPreset(summary.favoriteTeam, it) }
             ?.let { team ->
                 text.empty()
                     .append(

@@ -49,8 +49,8 @@ class TeamController(
                     log.info("[TeamController] Creating a bingo team for '$teamId'")
                     val newTeam = BingoTeam(
                         id = mcTeam.name,
-                        name = null,
                         nameText = text.serialized(mcTeam.displayName),
+                        shouldFormatName = false,
                         symbol = null,
                         textColor = mcTeam.color,
                     )

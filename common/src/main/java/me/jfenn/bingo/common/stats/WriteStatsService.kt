@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.stats
 
 import kotlinx.datetime.Clock
-import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -12,6 +11,7 @@ import me.jfenn.bingo.common.stats.data.GameTeamInfo
 import me.jfenn.bingo.common.stats.data.PlayerGameSummary
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.common.utils.measureTime
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
@@ -75,7 +75,7 @@ internal class WriteStatsService(
             val insertTeam = GameTeamInfo(
                 id = team.key,
                 gameId = insertGame.id,
-                name = team.name?.key.orEmpty(),
+                name = team.nameText,
                 isWinner = team.isWinner()
             ).also { insertTeams.add(it) }
 

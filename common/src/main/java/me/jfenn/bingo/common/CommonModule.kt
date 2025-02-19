@@ -191,6 +191,7 @@ val commonModule = module {
         scopedOf(::ObjectiveLoader)
         scopedOf(::TierListLoader)
         scopedOf(::TagLoader)
+        scopedOf(::TeamPresetLoader)
         scopedOf(::UnobtainableItemsLoader)
         scopedOf(::ScopedData)
         scopedOf(::DataLoaderManager)

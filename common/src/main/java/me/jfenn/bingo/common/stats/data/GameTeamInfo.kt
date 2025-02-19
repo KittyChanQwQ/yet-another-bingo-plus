@@ -1,8 +1,10 @@
 package me.jfenn.bingo.common.stats.data
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.UuidAsString
+import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.stats.sql.GameTeam
 import java.util.*
 
@@ -10,20 +12,20 @@ import java.util.*
 data class GameTeamInfo(
     val id: BingoTeamKey,
     val gameId: UuidAsString,
-    val name: String,
+    val name: JsonElement,
     val isWinner: Boolean
 ) {
     constructor(team: GameTeam) : this(
         id = BingoTeamKey(team.id),
         gameId = UUID.fromString(team.game_id),
-        name = team.name,
+        name = jsonUnpretty.decodeFromString(team.name),
         isWinner = team.is_winner == 1L,
     )
 
     fun toGameTeam() = GameTeam(
         id = this.id.id,
         game_id = this.gameId.toString(),
-        name = this.name,
+        name = jsonUnpretty.encodeToString(this.name),
         is_winner = if (this.isWinner) 1L else 0L
     )
 }

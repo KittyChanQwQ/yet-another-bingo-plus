@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.menu
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Sounds
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.datapack.LobbyWorldService
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -13,6 +14,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.team.BingoTeamPreset
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.measureTime
@@ -21,7 +23,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.IWallSignBlockState
-import me.jfenn.bingo.platform.config.IConfigManager
 import net.minecraft.block.Blocks
 import net.minecraft.block.PlayerSkullBlock
 import net.minecraft.server.MinecraftServer
@@ -46,10 +47,10 @@ internal class MenuController(
     scopeManager: ScopeManager,
     private val log: Logger,
     private val server: MinecraftServer,
-    private val configManager: IConfigManager,
     private val entityManager: IEntityManager,
     private val interactionEntityEvents: InteractionEntityEvents,
     private val state: BingoState,
+    private val data: ScopedData,
     private val teamService: TeamService,
     private val text: TextProvider,
     private val playerManager: IPlayerManager,
@@ -327,6 +328,8 @@ internal class MenuController(
     }
 
     private fun spawnTeamEntities(lobbyWorld: ServerWorld) {
+        val lobbyWorldImpl: IServerWorld = serverWorldFactory.forWorld(lobbyWorld)
+
         val teamPositions = Cache.teamPositions ?: log.measureTime("[MenuController] Locating team entities...") {
             val ret = mutableMapOf<BingoTeamKey, BlockPosition>()
             // Search for team join entities
@@ -334,19 +337,22 @@ internal class MenuController(
                 val isLodestone = lobbyWorld.getBlockState(BlockPos(x, y-1, z)).block == Blocks.LODESTONE
                 if (!isLodestone) continue
 
-                val blockPos = BlockPos(x, y, z)
-                val blockState = lobbyWorld.getBlockState(blockPos)
+                val blockPos = BlockPosition(x, y, z)
+                val blockState = lobbyWorldImpl.getBlockState(blockPos)
 
-                val team = BingoTeam.TEAM_BLOCKS[blockState.block] ?: continue
-                ret[team.key] = BlockPosition.fromBlockPos(blockPos)
+                val (teamId, _) = data.teamPresets.entries
+                    .find { it.value.blockId == blockState.identifier }
+                    ?: continue
+
+                ret[teamId] = blockPos
             }
 
             ret
         }
 
         for ((teamKey, blockPos) in teamPositions) {
-            val team = BingoTeam.TEAM_BLOCKS.values.find { it.key == teamKey } ?: continue
-            spawnTeamEntity(lobbyWorld, Vector3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), team, instanceTag)
+            val team = data.teamPresets[teamKey] ?: continue
+            spawnTeamEntity(lobbyWorld, Vector3d(blockPos.x + 0.5, blockPos.y.toDouble(), blockPos.z + 0.5), teamKey, team, instanceTag)
 
             taskExecutor.execute {
                 // schedule the blockstate change, as the chunk might not be loaded yet
@@ -358,16 +364,18 @@ internal class MenuController(
     private fun spawnTeamEntity(
         lobbyWorld: ServerWorld,
         position: Vector3d,
-        team: BingoTeam,
+        teamKey: BingoTeamKey,
+        teamPreset: BingoTeamPreset,
         instanceTag: String,
     ) {
         entityManager.createEntity(EntityType.TEXT_DISPLAY, lobbyWorld)
             .apply {
                 pos = position + Vector3d(0.0, 1.5, 0.0)
-                value = team.getName(
-                    textProvider = text,
-                    symbol = true,
-                )
+                value = BingoTeam.fromPreset(teamKey, teamPreset)
+                    .getName(
+                        textProvider = text,
+                        symbol = true,
+                    )
                 billboard = ITextDisplayEntity.Billboard.VERTICAL
                 alignment = ITextDisplayEntity.TextAlignment.CENTER
                 background = 0
@@ -397,6 +405,7 @@ internal class MenuController(
 
         interactionEntityEvents.onInteract(interactionListenerEntity) { player ->
             val playerImpl = playerManager.forPlayer(player)
+            val team = BingoTeam.fromPreset(teamKey, teamPreset)
 
             particleFactory.createDustParticle(team.textColor.colorValue ?: 0, 1f)
                 .spawn(playerImpl, position, 10, Vector3d(1.0), 0.2)

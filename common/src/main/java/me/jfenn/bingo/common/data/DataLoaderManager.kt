@@ -18,6 +18,7 @@ internal class DataLoaderManager(
     private val objectiveLoader: ObjectiveLoader,
     private val tierListLoader: TierListLoader,
     private val tagLoader: TagLoader,
+    private val teamPresetLoader: TeamPresetLoader,
     private val unobtainableItemsLoader: UnobtainableItemsLoader,
     private val cardService: CardService,
     private val datapackFunctionService: DatapackFunctionService,
@@ -27,6 +28,7 @@ internal class DataLoaderManager(
     init {
         events.onDataReload { (_, manager) ->
             log.measureTime("[DataLoader] Reloading bingo data...") {
+                scopedData.teamPresets = teamPresetLoader.loadTeamPresets(manager)
                 scopedData.filterPresets = filterPresetsLoader.loadFilterPresets(manager)
                 scopedData.objectives = objectiveLoader.loadObjectives(manager)
                 scopedData.tierLists = tierListLoader.loadTierLists(manager)

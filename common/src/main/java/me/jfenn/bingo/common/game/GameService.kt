@@ -20,7 +20,10 @@ import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.WriteStatsService
-import me.jfenn.bingo.common.team.*
+import me.jfenn.bingo.common.team.JoinCommand
+import me.jfenn.bingo.common.team.ShuffleTeamsCommand
+import me.jfenn.bingo.common.team.TeamCompletedCard
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -94,9 +97,7 @@ internal class GameService(
             }
 
             // Otherwise, we can just auto-assign a team
-            for (player in playersWithoutATeam) {
-                teamService.joinTeam(player, BingoTeam.TEAM_BLOCKS.values.random())
-            }
+            teamService.shuffleTeams(1)
         }
 
         // Ensure that all selected tier lists are supported

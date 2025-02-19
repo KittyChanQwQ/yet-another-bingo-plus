@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.team
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.PlayerController
@@ -30,7 +31,7 @@ class JoinCommand(
 
     private fun IExecutionContext.joinTeam(
         player: IPlayerHandle,
-        team: BingoTeam,
+        teamLabelStr: String,
     ) {
         val state = scope.get<BingoState>()
         val teamService = scope.get<TeamService>()
@@ -38,6 +39,13 @@ class JoinCommand(
         val playerController = scope.get<PlayerController>()
         val chestService = scope.get<ChestService>()
         val taskExecutor = scope.get<IExecutors.IServerTaskExecutor>()
+        val data = scope.get<ScopedData>()
+
+        val (teamKey, teamPreset) = data.teamPresets.entries
+            .find { it.key.label == teamLabelStr }
+            ?: throw IllegalArgumentException("Team not found")
+
+        val team = state.registerTeam(BingoTeam.fromPreset(teamKey, teamPreset))
 
         // If a player tries to /join during a game, and doesn't have COMMAND_JOIN_PLAYER
         if (state.state != GameState.PREGAME && !hasPermission(Permission.COMMAND_JOIN_PLAYER)) {
@@ -80,21 +88,23 @@ class JoinCommand(
         }
     }
 
+    private fun IExecutionContext.listTeams(): List<String> {
+        return scope.get<ScopedData>().teamPresets.keys.map { it.label }
+    }
+
     init {
         commandManager.register("join") {
-            for (team in BingoTeam.TEAM_BLOCKS.values) {
-                literal(team.id.removePrefix("bingo_")) {
-                    requires { hasPermission(Permission.COMMAND_JOIN) && isNotProcessingTeams() }
-                    executes {
-                        joinTeam(playerOrThrow, team)
-                    }
+            string("team", { listTeams() }) { teamArg ->
+                requires { hasPermission(Permission.COMMAND_JOIN) && isNotProcessingTeams() }
+                executes {
+                    joinTeam(playerOrThrow, getArgument(teamArg))
+                }
 
-                    player("player") { playerArg ->
-                        requires { hasPermission(Permission.COMMAND_JOIN_PLAYER) && isNotProcessingTeams() }
-                        executes {
-                            val player = getArgument(playerArg)
-                            joinTeam(player, team)
-                        }
+                player("player") { playerArg ->
+                    requires { hasPermission(Permission.COMMAND_JOIN_PLAYER) && isNotProcessingTeams() }
+                    executes {
+                        val player = getArgument(playerArg)
+                        joinTeam(player, getArgument(teamArg))
                     }
                 }
             }

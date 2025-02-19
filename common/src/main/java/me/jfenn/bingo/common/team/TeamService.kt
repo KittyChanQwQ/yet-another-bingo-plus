@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.team
 
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.state.BingoState
@@ -15,6 +16,7 @@ class TeamService(
     private val log: Logger,
     private val events: ScopedEvents,
     private val state: BingoState,
+    private val data: ScopedData,
     private val teamManager: ITeamManager,
     private val text: TextProvider,
     private val playerManager: IPlayerManager,
@@ -84,25 +86,26 @@ class TeamService(
         // Since teams are being shuffled, all existing teams should be cleared
         state.teams.clear()
 
-        val teams = BingoTeam.TEAM_BLOCKS.values
+        val teams = data.teamPresets.entries
             .shuffled()
             // Prefer shuffling onto teams that have the most players
             .sortedByDescending { state.teams[it.key]?.players?.size ?: 0 }
+            .map { BingoTeam.fromPreset(it.key, it.value) }
             .toMutableList()
 
         // If numTeams is more than the default team list, create temporary teams until full
         for (i in teams.size..numTeams) {
             val temporaryTeam = BingoTeam(
                 id = "temp_bingo_$i",
-                name = null,
                 nameText = text.serialized(
                     text.string(StringKey.TeamName, "$i")
                 ),
+                shouldFormatName = false,
                 symbol = null,
                 textColor = extraTeamColors.find { color ->
                     teams.none { it.textColor == color }
                 } ?: run {
-                    (BingoTeam.TEAM_BLOCKS.values.map { it.textColor } + extraTeamColors).random()
+                    (data.teamPresets.values.map { it.color } + extraTeamColors).random()
                 },
                 isTemporary = true,
             )
@@ -123,8 +126,8 @@ class TeamService(
     }
 
     fun clearTeams() {
-        for (team in BingoTeam.TEAM_BLOCKS.values + state.teams.values) {
-            teamManager.deleteTeam(team.key.id)
+        for (team in data.teamPresets.keys + state.teams.keys) {
+            teamManager.deleteTeam(team.id)
         }
         state.teams.clear()
     }

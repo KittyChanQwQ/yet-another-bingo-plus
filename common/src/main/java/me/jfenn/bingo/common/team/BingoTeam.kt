@@ -17,8 +17,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.block.BlockPosition
-import me.jfenn.bingo.platform.scope.BingoKoin
-import net.minecraft.block.Blocks
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
@@ -34,8 +32,8 @@ value class BingoTeamKey(
 @Serializable
 data class BingoTeam(
     val id: String,
-    val name: StringKey?,
-    var nameText: JsonElement? = null,
+    var nameText: JsonElement,
+    val shouldFormatName: Boolean,
     val symbol: String?,
     @Serializable(with = FormattingSerializer::class)
     var textColor: Formatting,
@@ -110,10 +108,7 @@ data class BingoTeam(
         return players.any { it.uuid == player.uuid }
     }
 
-    fun getSimpleName(textProvider: TextProvider) =
-        name?.let { textProvider.string(name) }
-            ?: nameText?.let { textProvider.deserialized(it) }
-            ?: textProvider.empty()
+    fun getSimpleName(textProvider: TextProvider) = textProvider.deserialized(nameText)
 
     fun getName(
         textProvider: TextProvider,
@@ -123,9 +118,7 @@ data class BingoTeam(
         teamNameKey: StringKey? = StringKey.TeamName,
     ): IText {
         val teamName = (if (playerName) singlePlayer?.let { textProvider.literal(it.name) } else null)
-            ?: name?.let { textProvider.string(name) }?.let {
-                if (teamNameKey != null) textProvider.string(teamNameKey, it) else it
-            }
+            ?: (if (shouldFormatName && teamNameKey != null) textProvider.string(teamNameKey, getSimpleName(textProvider)) else null)
             ?: getSimpleName(textProvider)
 
         return teamName
@@ -147,31 +140,14 @@ data class BingoTeam(
     fun countCards(): Int = completedCards.count { it.isWinner }
 
     companion object {
-
-        val BLUE get() = BingoTeam("bingo_blue", StringKey.TeamBlue, null, "\uD83C\uDF0A", Formatting.BLUE)
-        val RED get() = BingoTeam("bingo_red", StringKey.TeamRed, null, "\uD83D\uDD25", Formatting.RED)
-        val GREEN get() = BingoTeam("bingo_green", StringKey.TeamGreen, null, "\uD83C\uDF42", Formatting.GREEN)
-        val YELLOW get() = BingoTeam("bingo_yellow", StringKey.TeamYellow, null, "\uD83D\uDC1D", Formatting.YELLOW)
-        val PINK get() = BingoTeam("bingo_pink", StringKey.TeamPink, null, "\uD83C\uDF3A", Formatting.LIGHT_PURPLE)
-        val AQUA get() = BingoTeam("bingo_aqua", StringKey.TeamAqua, null, "\uD83C\uDF44", Formatting.AQUA)
-        val ORANGE get() = BingoTeam("bingo_orange", StringKey.TeamOrange, null, "\uD83C\uDFF0", Formatting.GOLD)
-        val GRAY get() = BingoTeam("bingo_gray", StringKey.TeamGray, null, "\uD83E\uDEA8", Formatting.GRAY)
-
-        val TEAM_BLOCKS get() = mapOf(
-            Blocks.BLUE_CARPET to BLUE,
-            Blocks.RED_CARPET to RED,
-            Blocks.GREEN_CARPET to GREEN,
-            Blocks.YELLOW_CARPET to YELLOW,
-            Blocks.PINK_CARPET to PINK,
-            Blocks.CYAN_CARPET to AQUA,
-            Blocks.ORANGE_CARPET to ORANGE,
-            Blocks.LIGHT_GRAY_CARPET to GRAY,
-        )
-
-        fun fromPlayer(player: ServerPlayerEntity): BingoTeam? {
-            val scope = BingoKoin.getScope(player.server) ?: return null
-            val teamService = scope.get<TeamService>()
-            return teamService.getPlayerTeam(player)
+        fun fromPreset(key: BingoTeamKey, preset: BingoTeamPreset): BingoTeam {
+            return BingoTeam(
+                id = key.id,
+                nameText = preset.name,
+                shouldFormatName = preset.shouldFormatName,
+                symbol = preset.symbol,
+                textColor = preset.color,
+            )
         }
     }
 
