@@ -41,6 +41,8 @@ dependencies {
     shade project(path: ":integration-vanish")
     api project(path: ":integration-voicechat", configuration: "namedElements")
     shade project(path: ":integration-voicechat")
+    api project(path: ":integration-waystones", configuration: "namedElements")
+    shade project(path: ":integration-waystones")
 }
 
 processResources {
@@ -66,6 +68,7 @@ shadowJar {
         include(project(":integration-placeholders"))
         include(project(":integration-vanish"))
         include(project(":integration-voicechat"))
+        include(project(":integration-waystones"))
         include(project(":platform"))
         include { it.moduleGroup == "io.insert-koin" }
         include { it.moduleGroup == "app.cash.sqldelight" }

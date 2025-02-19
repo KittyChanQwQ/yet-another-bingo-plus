@@ -65,6 +65,13 @@ allprojects {
 				includeGroup("eu.pb4")
 			}
 		}
+		maven {
+			name = "CurseMaven"
+			url = "https://www.cursemaven.com"
+			content {
+				includeGroup("curse.maven")
+			}
+		}
 		// maven {
 		// 	// https://plasmovoice.com/docs/api/
 		// 	name = "Plasmo Voice"
