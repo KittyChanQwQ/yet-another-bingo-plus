@@ -1,36 +1,34 @@
-package me.jfenn.bingo.impl
+package me.jfenn.bingo.impl.networking
 
-import me.jfenn.bingo.platform.packet.IServerNetworking
-import me.jfenn.bingo.platform.packet.IServerPacketHandlerC2S
-import me.jfenn.bingo.platform.packet.IServerPacketHandlerS2C
-import me.jfenn.bingo.platform.packet.ServerPacket
+import me.jfenn.bingo.impl.PlayerHandle
+import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import me.jfenn.bingo.platform.packet.PacketConverter
-import me.jfenn.bingo.common.utils.EventListener
+import me.jfenn.bingo.platform.packet.*
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
 
 class ServerNetworkingImpl(
     private val itemStackFactory: IItemStackFactory,
+    private val eventBus: IEventBus,
 ) : IServerNetworking {
     override fun <T> registerC2S(converter: PacketConverter<T>): IServerPacketHandlerC2S<T>
-        = ServerPacketHandlerC2S(converter)
+            = ServerPacketHandlerC2S(converter)
 
     override fun <T> registerS2C(converter: PacketConverter<T>): IServerPacketHandlerS2C<T>
-        = ServerPacketHandlerS2C(converter)
+            = ServerPacketHandlerS2C(converter)
 
     inner class ServerPacketHandlerC2S<T>(
         private val converter: PacketConverter<T>
     ) : IServerPacketHandlerC2S<T> {
-        override val onPacket = EventListener<ServerPacket<T>>()
+        override val name: String = "packetC2S=${converter.id}"
 
         init {
             ServerPlayNetworking.registerGlobalReceiver(converter.id) { server, player, _, buf, _ ->
                 val packet = converter.fromPacketBuf(PacketBufImpl(buf, itemStackFactory))
                 val data = ServerPacket(PlayerHandle(player), packet)
                 server.execute {
-                    onPacket(data)
+                    eventBus.emit(this, data)
                 }
             }
         }

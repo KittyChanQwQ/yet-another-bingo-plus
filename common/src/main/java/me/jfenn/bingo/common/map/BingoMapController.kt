@@ -5,6 +5,9 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.ReloadEvent
+import me.jfenn.bingo.platform.event.model.TickEvent
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.server.MinecraftServer
 
@@ -13,6 +16,7 @@ import net.minecraft.server.MinecraftServer
  */
 internal class BingoMapController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     private val cardViewService: CardViewService,
@@ -37,16 +41,16 @@ internal class BingoMapController(
     init {
         mapRenderService.validateItems(itemStackFactory.listItems(server))
 
-        events.onGameTick {
+        eventBus.register(TickEvent.Start) {
             cardImageService.sendNecessaryImages()
             updateCards()
         }
 
-        events.onPlayerJoin { player ->
+        events.onPlayerJoin { (player) ->
             cardImageService.clearPlayerState(player.uuid)
         }
 
-        events.onPlayerChannelRegister { player ->
+        events.onPlayerChannelRegister { (player) ->
             cardViewService.sendUpdatePackets(player)
         }
 
@@ -82,7 +86,7 @@ internal class BingoMapController(
             }
         }
 
-        events.onDataReload {
+        eventBus.register(ReloadEvent) {
             cardImageService.clearPlayerStates()
             mapRenderService.clearCache()
         }

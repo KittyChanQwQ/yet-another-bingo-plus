@@ -1,14 +1,15 @@
 package me.jfenn.bingo.common.chat
 
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.platform.IServerEvents
 import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.AllowChatMessageEvent
+import me.jfenn.bingo.platform.scope.BingoKoin
 
 class ChatCommand(
     commandManager: ICommandManager,
-    serverEvents: IServerEvents,
+    eventBus: IEventBus,
     private val config: BingoConfig,
 ) {
     companion object {
@@ -45,9 +46,9 @@ class ChatCommand(
         }
 
         // override default chat to only send team-specific messages
-        serverEvents.onAllowChatMessage { (message, player) ->
-            if (bypassAllowMessageCheck) return@onAllowChatMessage true
-            val scope = BingoKoin.getScope(player.player.server) ?: return@onAllowChatMessage true
+        eventBus.register(AllowChatMessageEvent) { (message, player) ->
+            if (bypassAllowMessageCheck) return@register true
+            val scope = BingoKoin.getScope(player.player.server) ?: return@register true
             val state = scope.get<BingoState>()
 
             if (state.state.isPlayingOrCountdown && config.chat.defaultToTeamChat) {

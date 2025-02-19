@@ -193,12 +193,12 @@ internal class PlayerController(
     }
 
     init {
-        events.onPlayerInit { player ->
+        events.onPlayerInit { (player) ->
             // update vanish status on init, so that players are hidden before the login message
             updateVanishStatus(player)
         }
 
-        events.onPlayerJoin { player ->
+        events.onPlayerJoin { (player) ->
             val lobbyWorld = server.lobbyWorld ?: return@onPlayerJoin
 
             // if in pregame, move to the lobby world

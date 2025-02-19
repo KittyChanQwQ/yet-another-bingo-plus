@@ -43,7 +43,13 @@ class JoinCommand(
 
         val (teamKey, teamPreset) = data.teamPresets.entries
             .find { it.key.label == teamLabelStr }
-            ?: throw IllegalArgumentException("Team not found")
+            ?: error(text.string(StringKey.CommandJoinDoesNotExist, teamLabelStr))
+
+        teamService.getPlayerTeam(player)
+            ?.takeIf { it.key == teamKey }
+            ?.let { existingTeam ->
+                error(text.string(StringKey.CommandJoinAlreadyOnTeam, existingTeam.getName(text)))
+            }
 
         val team = state.registerTeam(BingoTeam.fromPreset(teamKey, teamPreset))
 

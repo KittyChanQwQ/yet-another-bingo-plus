@@ -1,6 +1,7 @@
-package me.jfenn.bingo.impl
+package me.jfenn.bingo.impl.networking
 
 import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.impl.TextImpl
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory

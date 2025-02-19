@@ -5,10 +5,9 @@ import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.ClientPacket
-import me.jfenn.bingo.client.platform.IHudCallback
 import me.jfenn.bingo.client.platform.IKeyBindingManager
 import me.jfenn.bingo.client.platform.IOptionsAccessor
-import me.jfenn.bingo.client.platform.event.IClientEvents
+import me.jfenn.bingo.client.platform.event.model.*
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.KEYBIND_TOGGLE_HUD
@@ -23,7 +22,8 @@ import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.platform.IServerEvents
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.ServerEvent
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ChatScreen
 import org.lwjgl.glfw.GLFW
@@ -41,10 +41,8 @@ internal class BingoHudController(
     private val state: BingoHudState,
     private val text: TextProvider,
     keyBindingManager: IKeyBindingManager,
-    hud: IHudCallback,
     packetEvents: ClientPacketEvents,
-    serverEvents: IServerEvents,
-    clientEvents: IClientEvents,
+    eventBus: IEventBus,
 ) : BingoComponent() {
 
     private val client = MinecraftClient.getInstance()
@@ -379,59 +377,60 @@ internal class BingoHudController(
     }
 
     init {
-        packetEvents.cardDisplayV1.onPacket(::onCardDisplayV1)
-        packetEvents.cardDisplayV2.onPacket(::onCardDisplayV2)
+        eventBus.register(packetEvents.cardDisplayV1, ::onCardDisplayV1)
+        eventBus.register(packetEvents.cardDisplayV1, ::onCardDisplayV1)
+        eventBus.register(packetEvents.cardDisplayV2, ::onCardDisplayV2)
 
-        packetEvents.cardUpdateV2.onPacket(::onCardUpdate)
-        packetEvents.cardUpdateV3.onPacket(::onCardUpdate)
-        packetEvents.cardUpdateV4.onPacket(::onCardUpdate)
-        packetEvents.cardUpdateV5.onPacket(::onCardUpdate)
-        packetEvents.cardUpdateV6.onPacket(::onCardUpdate)
+        eventBus.register(packetEvents.cardUpdateV2, ::onCardUpdate)
+        eventBus.register(packetEvents.cardUpdateV3, ::onCardUpdate)
+        eventBus.register(packetEvents.cardUpdateV4, ::onCardUpdate)
+        eventBus.register(packetEvents.cardUpdateV5, ::onCardUpdate)
+        eventBus.register(packetEvents.cardUpdateV6, ::onCardUpdate)
 
-        packetEvents.cardTilesV1.onPacket(::onCardTiles)
-        packetEvents.cardShuffledV1.onPacket(::onCardShuffled)
+        eventBus.register(packetEvents.cardTilesV1, ::onCardTiles)
+        eventBus.register(packetEvents.cardShuffledV1, ::onCardShuffled)
 
-        packetEvents.cardCompletedV1.onPacket {
+        eventBus.register(packetEvents.cardCompletedV1) {
             if (it.packet.isWinner) {
                 fireworkRenderer = BingoEndFireworkRenderer(range = (100 * config.client.cardScale).toInt())
             }
         }
 
-        packetEvents.scoreMessageV1.onPacket(::onScoreMessage)
-        packetEvents.scoreMessageV2.onPacket(::onScoreMessage)
-        packetEvents.scoreMessageV3.onPacket(::onScoreMessage)
+        eventBus.register(packetEvents.scoreMessageV1, ::onScoreMessage)
+        eventBus.register(packetEvents.scoreMessageV2, ::onScoreMessage)
+        eventBus.register(packetEvents.scoreMessageV3, ::onScoreMessage)
 
-        packetEvents.gameOverV1.onPacket(::onGameOver)
-        packetEvents.gameOverV2.onPacket(::onGameOver)
-        packetEvents.gameOverV3.onPacket(::onGameOver)
-        packetEvents.gameOverV4.onPacket(::onGameOver)
-        packetEvents.gameOverV5.onPacket(::onGameOver)
-        packetEvents.gameOverV6.onPacket(::onGameOver)
-        packetEvents.gameOverV7.onPacket(::onGameOver)
+        eventBus.register(packetEvents.gameOverV1, ::onGameOver)
+        eventBus.register(packetEvents.gameOverV2, ::onGameOver)
+        eventBus.register(packetEvents.gameOverV3, ::onGameOver)
+        eventBus.register(packetEvents.gameOverV4, ::onGameOver)
+        eventBus.register(packetEvents.gameOverV5, ::onGameOver)
+        eventBus.register(packetEvents.gameOverV6, ::onGameOver)
+        eventBus.register(packetEvents.gameOverV7, ::onGameOver)
 
-        packetEvents.readyUpdateV1.onPacket(::onReadyUpdate)
-        packetEvents.readyUpdateV2.onPacket(::onReadyUpdate)
-        packetEvents.readyUpdateV3.onPacket(::onReadyUpdate)
+        eventBus.register(packetEvents.readyUpdateV1, ::onReadyUpdate)
+        eventBus.register(packetEvents.readyUpdateV2, ::onReadyUpdate)
+        eventBus.register(packetEvents.readyUpdateV3, ::onReadyUpdate)
 
-        packetEvents.tooltipV1.onPacket {
+        eventBus.register(packetEvents.tooltipV1) {
             state.tooltip = it.packet
             if (state.tooltipStartedAt == null) {
                 state.tooltipStartedAt = it.packet.createdAt
             }
         }
 
-        hud.onRenderCard {
+        eventBus.register(HudRenderEvent) {
             state.now = Clock.System.now()
 
             // Do not draw the HUD if the F3 or chat overlay is shown
             if (optionsAccessor.isHudHidden())
-                return@onRenderCard
+                return@register
             if (config.client.hideOnF3 && optionsAccessor.isDebugEnabled())
-                return@onRenderCard
+                return@register
             if (config.client.hideOnChat && MinecraftClient.getInstance().currentScreen is ChatScreen)
-                return@onRenderCard
+                return@register
             if (!config.client.enableHud)
-                return@onRenderCard
+                return@register
 
             // Do not draw the HUD if the card screen is open
             if (
@@ -440,7 +439,7 @@ internal class BingoHudController(
                     ?.startsWith("me.jfenn.bingo")
                     == true
             ) {
-                return@onRenderCard
+                return@register
             }
 
             it.drawService.enableBlend()
@@ -448,28 +447,28 @@ internal class BingoHudController(
             it.drawService.disableBlend()
         }
 
-        clientEvents.onServerJoin {
+        eventBus.register(ClientServerEvent.Join) {
             client.execute { state.reset() }
         }
 
-        clientEvents.onServerDisconnect {
+        eventBus.register(ClientServerEvent.Disconnect) {
             client.execute { state.resetAll() }
         }
 
-        serverEvents.onServerStarted {
+        eventBus.register(ServerEvent.Started) {
             client.execute { state.reset() }
         }
 
-        serverEvents.onServerStopped {
+        eventBus.register(ServerEvent.Stopped) {
             client.execute { state.resetAll() }
         }
 
-        clientEvents.onInvalidateRenderState {
+        eventBus.register(InvalidateRenderStateEvent) {
             client.execute { state.reset() }
         }
 
-        clientEvents.onClientTickEnd {
-            if (client.isPaused) return@onClientTickEnd
+        eventBus.register(ClientTickEvent.End) {
+            if (client.isPaused) return@register
 
             if (openCardKey.wasPressed()) {
                 if (optionsAccessor.isSneakPressed() && state.ready?.isRunning == true) {
@@ -477,7 +476,7 @@ internal class BingoHudController(
                 } else {
                     if (state.views.isEmpty()) {
                         client.player?.sendMessage(text.string(StringKey.CardNoCards).value, true)
-                        return@onClientTickEnd
+                        return@register
                     }
 
                     val gameOver = state.gameOver
@@ -507,7 +506,7 @@ internal class BingoHudController(
             }
         }
 
-        clientEvents.onAssetsReload {
+        eventBus.register(ClientReloadEvent) {
             renderer.loadCardColors(it.resourceManager)
 
             state.views.values.forEach { view ->

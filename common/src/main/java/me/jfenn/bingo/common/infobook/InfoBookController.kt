@@ -41,7 +41,7 @@ internal class InfoBookController(
             bookService.updateBookItem(player)
         }
 
-        events.onPlayerChannelRegister { player ->
+        events.onPlayerChannelRegister { (player) ->
             // Update the book to reflect whether the player uses the bingo HUD
             bookService.updateBookItem(player)
         }

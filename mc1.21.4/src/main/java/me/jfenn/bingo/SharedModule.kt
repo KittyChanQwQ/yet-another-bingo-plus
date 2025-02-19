@@ -12,8 +12,10 @@ import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.packet.IServerNetworking
 import me.jfenn.bingo.platform.particle.IParticleFactory
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
+import org.koin.core.module.dsl.createdAtStart
 import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.withOptions
 import org.koin.dsl.bind
 import org.koin.dsl.binds
 import org.koin.dsl.module
@@ -34,7 +36,7 @@ val sharedModule = module {
     singleOf(::MapColorServiceImpl) bind IMapColorService::class
     single { ParticleFactory } bind IParticleFactory::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
-    single { ServerEventsImpl } bind IServerEvents::class
+    singleOf(::ServerEventsImpl) withOptions { createdAtStart() }
     singleOf(::ServerWorldFactory) bind IServerWorldFactory::class
     singleOf(::StatManagerImpl) bind IStatManager::class
     singleOf(::TagAccessorImpl) bind ITagAccessor::class

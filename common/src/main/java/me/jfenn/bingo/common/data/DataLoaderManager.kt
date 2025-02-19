@@ -2,16 +2,17 @@ package me.jfenn.bingo.common.data
 
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.controller.DatapackFunctionService
-import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.ReloadEvent
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 internal class DataLoaderManager(
-    events: ScopedEvents,
+    events: IEventBus,
     private val log: Logger,
     private val scopedData: ScopedData,
     private val filterPresetsLoader: FilterPresetsLoader,
@@ -26,7 +27,7 @@ internal class DataLoaderManager(
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
 ) {
     init {
-        events.onDataReload { (_, manager) ->
+        events.register(ReloadEvent) { (manager) ->
             log.measureTime("[DataLoader] Reloading bingo data...") {
                 scopedData.teamPresets = teamPresetLoader.loadTeamPresets(manager)
                 scopedData.filterPresets = filterPresetsLoader.loadFilterPresets(manager)

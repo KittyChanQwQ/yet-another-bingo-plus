@@ -97,7 +97,7 @@ internal class StatsSyncController(
     }
 
     init {
-        events.onPlayerChannelRegister { player ->
+        events.onPlayerChannelRegister { (player) ->
             if (!config.syncStats) return@onPlayerChannelRegister
             if (!packets.statsHashV1S2C.isSupported(player)) return@onPlayerChannelRegister
             // Ensure that broadcastHash is only started once per login
@@ -107,7 +107,7 @@ internal class StatsSyncController(
             broadcastHash(player)
         }
 
-        events.onPlayerDisconnect { player ->
+        events.onPlayerDisconnect { (player) ->
             pendingPlayerIds.remove(player.uuid)
         }
 

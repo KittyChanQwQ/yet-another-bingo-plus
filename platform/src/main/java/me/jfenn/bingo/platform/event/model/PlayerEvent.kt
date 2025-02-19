@@ -1,9 +1,17 @@
 package me.jfenn.bingo.platform.event.model
 
 import me.jfenn.bingo.platform.IPlayerHandle
-import net.minecraft.server.MinecraftServer
+import me.jfenn.bingo.platform.event.IEvent
 
-open class PlayerEvent(
-    val server: MinecraftServer,
+data class PlayerEvent(
     val player: IPlayerHandle
-)
+) {
+    object AfterRespawn: IEvent<PlayerEvent>
+    object ChannelRegister: IEvent<PlayerEvent>
+    object Disconnect: IEvent<PlayerEvent>
+    /**
+     * Note: this event is NOT called on the server thread!
+     */
+    object Init: IEvent<PlayerEvent>
+    object Join: IEvent<PlayerEvent>
+}

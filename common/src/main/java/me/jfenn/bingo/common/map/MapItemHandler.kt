@@ -1,21 +1,25 @@
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.common.card.CardScreenHandler
-import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.TickEvent
+import me.jfenn.bingo.platform.event.model.UseBlockEvent
+import me.jfenn.bingo.platform.event.model.UseEntityEvent
+import me.jfenn.bingo.platform.event.model.UseItemEvent
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import java.util.*
 
 internal class MapItemHandler(
-    events: ScopedEvents,
-    private val server: MinecraftServer,
+    eventBus: IEventBus,
+    private val playerManager: IPlayerManager,
     private val mapItemService: MapItemService,
     private val itemStackFactory: IItemStackFactory,
     private val teamService: TeamService,
@@ -29,35 +33,35 @@ internal class MapItemHandler(
 
     private val itemCooldown = mutableMapOf<UUID, Int>()
 
-    private fun showInventory(player: ServerPlayerEntity) {
+    private fun showInventory(player: IPlayerHandle) {
         val team = teamService.getPlayerTeam(player)
         val view = when {
             team == null -> state.previewMap?.view
             else -> team.map?.view
         } ?: return
 
-        player.openHandledScreen(
+        player.player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
-            { syncId, inv, _ ->
-                CardScreenHandler(
-                    syncId = syncId,
-                    view = view,
-                    itemStackFactory = itemStackFactory,
-                    playerInventory = inv,
-                )
-            },
-            Text.literal("BINGO Card")
-        )
+                { syncId, inv, _ ->
+                    CardScreenHandler(
+                        syncId = syncId,
+                        view = view,
+                        itemStackFactory = itemStackFactory,
+                        playerInventory = inv,
+                    )
+                },
+                Text.literal("BINGO Card")
+            )
         )
     }
 
     init {
-        events.onUseItem { event ->
+        eventBus.register(UseItemEvent) { event ->
             val player = event.player.player
             val hand = event.hand
             val itemStack = player.getStackInHand(hand)
                 ?.let { itemStackFactory.forStack(it) }
-                ?: return@onUseItem null
+                ?: return@register null
 
             usedAnyItem.add(player.uuid)
 
@@ -69,13 +73,13 @@ internal class MapItemHandler(
                 }).let { itemStackFactory.forStack(it) }
 
                 if (hand == Hand.OFF_HAND && !otherItemStack.isEmpty)
-                    return@onUseItem me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
+                    return@register me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
 
                 if (hand == Hand.MAIN_HAND && event.player.canUseItem(otherItemStack))
-                    return@onUseItem me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
+                    return@register me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
 
                 usedBingoMap.add(player.uuid)
-                return@onUseItem me.jfenn.bingo.platform.event.model.ActionResult.Success(itemStack)
+                return@register me.jfenn.bingo.platform.event.model.ActionResult.Success(itemStack)
             }
 
             // if the item *can* be used, and *isn't* a bingo map, it should prevent the bingo map from being used
@@ -87,13 +91,13 @@ internal class MapItemHandler(
             me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
         }
 
-        events.onUseBlock { event ->
+        eventBus.register(UseBlockEvent) { event ->
             val player = event.player
             usedAnyItem.add(player.uuid)
 
             val itemStack = player.player.getStackInHand(event.hand)
                 ?.let { itemStackFactory.forStack(it) }
-                ?: return@onUseBlock null
+                ?: return@register null
 
             if (
                 usedBingoMap.contains(player.uuid)
@@ -107,13 +111,13 @@ internal class MapItemHandler(
             me.jfenn.bingo.platform.event.model.ActionResult.Pass(Unit)
         }
 
-        events.onUseEntity { event ->
+        eventBus.register(UseEntityEvent) { event ->
             val player = event.player
             usedAnyItem.add(player.uuid)
 
             val itemStack = player.player.getStackInHand(event.hand)
                 ?.let { itemStackFactory.forStack(it) }
-                ?: return@onUseEntity null
+                ?: return@register null
 
             if (
                 usedBingoMap.contains(player.uuid)
@@ -127,18 +131,18 @@ internal class MapItemHandler(
             me.jfenn.bingo.platform.event.model.ActionResult.Pass(Unit)
         }
 
-        events.onGameTick {
-            for (player in server.playerManager.playerList) {
+        eventBus.register(TickEvent.Start) {
+            for (player in playerManager.getPlayers()) {
                 // ensure the player waits at least 10 ticks before using the map
                 // - if the use button is held, this will continually update the cooldown, and never exit this state until released
-                val isInCooldown = server.ticks < (itemCooldown[player.uuid] ?: 0) + 10
+                val isInCooldown = it.ticks < (itemCooldown[player.uuid] ?: 0) + 10
 
                 if (usedBingoMap.contains(player.uuid) && !isInCooldown && !player.isSneaking) {
                     showInventory(player)
                 }
 
-                if (usedAnyItem.contains(player.uuid) || player.itemUseTimeLeft > 0)
-                    itemCooldown[player.uuid] = server.ticks
+                if (usedAnyItem.contains(player.uuid) || player.player.itemUseTimeLeft > 0)
+                    itemCooldown[player.uuid] = it.ticks
             }
 
             usedBingoMap.clear()

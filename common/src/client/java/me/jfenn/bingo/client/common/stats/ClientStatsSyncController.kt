@@ -1,8 +1,7 @@
 package me.jfenn.bingo.client.common.stats
 
-import me.jfenn.bingo.platform.IExecutors
-import me.jfenn.bingo.client.platform.ISessionAccessor
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
+import me.jfenn.bingo.client.platform.ISessionAccessor
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.stats.StatsService
@@ -10,6 +9,8 @@ import me.jfenn.bingo.common.stats.data.PlayerGameSummary
 import me.jfenn.bingo.common.stats.packets.StatsCheckPacket
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
 import java.util.*
 import kotlin.random.Random
@@ -21,6 +22,7 @@ internal class ClientStatsSyncController(
     private val stats: StatsService,
     executors: IExecutors,
     sessionAccessor: ISessionAccessor,
+    eventBus: IEventBus,
 ) : BingoComponent() {
 
     private val playerUuid = sessionAccessor.getPlayerUuid()
@@ -104,21 +106,21 @@ internal class ClientStatsSyncController(
     }
 
     init {
-        packets.statsHashV1S2C.onPacket {
-            if (!config.syncStats) return@onPacket
+        eventBus.register(packets.statsHashV1S2C) {
+            if (!config.syncStats) return@register
             sendKnownIdsIfMismatch(it.packet)
         }
 
-        packets.statsIndexV1S2C.onPacket {
-            if (!config.syncStats) return@onPacket
+        eventBus.register(packets.statsIndexV1S2C) {
+            if (!config.syncStats) return@register
             when (it.packet.action) {
                 StatsIndexPacket.Action.BROADCAST -> checkForMissingIds(it.packet.games)
                 StatsIndexPacket.Action.REQUEST -> sendRequestedIds(it.packet.games)
             }
         }
 
-        packets.statsGameV1S2C.onPacket {
-            if (!config.syncStats) return@onPacket
+        eventBus.register(packets.statsGameV1S2C) {
+            if (!config.syncStats) return@register
             insertReceivedGame(it.packet.game)
         }
     }

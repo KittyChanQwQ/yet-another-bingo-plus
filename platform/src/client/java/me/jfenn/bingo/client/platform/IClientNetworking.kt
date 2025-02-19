@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.platform
 
+import me.jfenn.bingo.platform.event.IEvent
 import me.jfenn.bingo.platform.packet.PacketConverter
 
 interface IClientNetworking {
@@ -12,9 +13,7 @@ interface IClientPacketHandlerC2S<T> {
     fun send(packet: T): Boolean
 }
 
-interface IClientPacketHandlerS2C<T> {
-    fun onPacket(receiver: (ClientPacket<T>) -> Unit)
-}
+interface IClientPacketHandlerS2C<T> : IEvent<ClientPacket<T>>
 
 data class ClientPacket<T>(
     val packet: T

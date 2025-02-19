@@ -1,9 +1,10 @@
 package me.jfenn.bingo.client.common.hud
 
+import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.platform.ClientPacket
 import me.jfenn.bingo.client.platform.INativeImageFactory
-import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.common.map.CardImagePacket
+import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
 import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
@@ -13,6 +14,7 @@ internal class BingoCardImageController(
     private val nativeImageFactory: INativeImageFactory,
     private val hudState: BingoHudState,
     packetEvents: ClientPacketEvents,
+    eventBus: IEventBus,
 ) {
     private fun updateCardImage(packet: ClientPacket<CardImagePacket>) {
         val (image) = packet
@@ -42,6 +44,6 @@ internal class BingoCardImageController(
     }
 
     init {
-        packetEvents.cardImageV1.onPacket(::updateCardImage)
+        eventBus.register(packetEvents.cardImageV1, ::updateCardImage)
     }
 }

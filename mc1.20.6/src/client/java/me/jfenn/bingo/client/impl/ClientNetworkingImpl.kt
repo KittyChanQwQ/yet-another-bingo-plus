@@ -1,14 +1,14 @@
 package me.jfenn.bingo.client.impl
 
-import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.client.platform.ClientPacket
 import me.jfenn.bingo.client.platform.IClientNetworking
 import me.jfenn.bingo.client.platform.IClientPacketHandlerC2S
 import me.jfenn.bingo.client.platform.IClientPacketHandlerS2C
-import me.jfenn.bingo.platform.packet.PacketConverter
-import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.impl.networking.BingoPayload
 import me.jfenn.bingo.impl.networking.PacketBufImpl
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.packet.PacketConverter
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.minecraft.network.RegistryByteBuf
@@ -19,6 +19,7 @@ import org.slf4j.Logger
 class ClientNetworkingImpl(
     private val log: Logger,
     private val itemStackFactory: IItemStackFactory,
+    private val eventBus: IEventBus,
 ) : IClientNetworking {
 
     override fun <T> registerC2S(converter: PacketConverter<T>): IClientPacketHandlerC2S<T>
@@ -64,7 +65,7 @@ class ClientNetworkingImpl(
     inner class ClientPacketHandlerS2C<T>(
         private val converter: PacketConverter<T>,
     ) : IClientPacketHandlerS2C<T> {
-        private val event = EventListener<ClientPacket<T>>()
+        override val name: String = "packetS2C=${converter.id}"
 
         private val id = CustomPayload.id<BingoPayload<T>>(converter.id.toString())
         private val codec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
@@ -85,13 +86,9 @@ class ClientNetworkingImpl(
                 val client = ctx.client()
                 val data = ClientPacket(packet.value)
                 client.execute {
-                    event(data)
+                    eventBus.emit(this, data)
                 }
             }
-        }
-
-        override fun onPacket(receiver: (ClientPacket<T>) -> Unit) {
-            event(receiver)
         }
     }
 }

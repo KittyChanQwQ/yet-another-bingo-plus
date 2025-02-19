@@ -1,19 +1,19 @@
 package me.jfenn.bingo.client.impl
 
+import me.jfenn.bingo.client.platform.event.model.HudRenderEvent
 import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
-import me.jfenn.bingo.client.platform.IHudCallback
-import me.jfenn.bingo.common.utils.EventListener
+import me.jfenn.bingo.platform.event.IEventBus
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 
 class HudCallbackImpl(
     private val drawServiceFactory: IDrawServiceFactory,
-) : IHudCallback {
-    override val onRenderCard = EventListener<IHudCallback.RenderEvent>()
-
+    private val eventBus: IEventBus,
+) {
     init {
         HudRenderCallback.EVENT.register { drawContext, renderTickCounter ->
-            onRenderCard.invoke(
-                IHudCallback.RenderEvent(
+            eventBus.emit(
+                HudRenderEvent,
+                HudRenderEvent(
                     drawService = drawServiceFactory.create(drawContext),
                     delta = renderTickCounter.getTickDelta(false)
                 )

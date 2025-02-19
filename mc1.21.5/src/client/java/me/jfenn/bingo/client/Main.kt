@@ -4,10 +4,8 @@ import me.jfenn.bingo.client.common.commonClientModule
 import me.jfenn.bingo.client.impl.*
 import me.jfenn.bingo.client.impl.event.ClientCloseEvent
 import me.jfenn.bingo.client.impl.event.ClientEventsImpl
-import me.jfenn.bingo.client.impl.DrawService
 import me.jfenn.bingo.client.impl.screen.ScreenFactory
 import me.jfenn.bingo.client.platform.*
-import me.jfenn.bingo.client.platform.event.IClientEvents
 import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.client.platform.screen.IButtonFactory
 import me.jfenn.bingo.client.platform.screen.IScreenFactory
@@ -38,13 +36,13 @@ object Main : ClientModInitializer {
 
     private val clientModule = module {
         single { ClientCloseEvent } bind ICloseEvent::class
-        single { ClientEventsImpl } bind IClientEvents::class
+        singleOf(::ClientEventsImpl) withOptions { createdAtStart() }
         singleOf(::ScreenFactory) bind IScreenFactory::class
 
         singleOf(::ButtonFactory) bind IButtonFactory::class
         singleOf(::ClientNetworkingImpl) bind IClientNetworking::class
         single { DrawService } bind IDrawServiceFactory::class
-        singleOf(::HudCallbackImpl) bind IHudCallback::class
+        singleOf(::HudCallbackImpl) withOptions { createdAtStart() }
         singleOf(::KeyBindingManager) bind IKeyBindingManager::class
         single { NativeImageFactory } bind INativeImageFactory::class
         single { ScrollableWidgetFactory } bind IScrollableWidgetFactory::class

@@ -9,6 +9,8 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.TickEvent
 
 internal class MapItemController(
     private val state: BingoState,
@@ -18,6 +20,7 @@ internal class MapItemController(
     private val playerManager: IPlayerManager,
     private val teamService: TeamService,
     events: ScopedEvents,
+    eventBus: IEventBus,
 ) : BingoComponent() {
 
     private fun removePreviewCardItem(player: IPlayerHandle) {
@@ -123,7 +126,7 @@ internal class MapItemController(
             }
         }
 
-        events.onGameTick {
+        eventBus.register(TickEvent.Start) {
             for (player in playerManager.getPlayers()) {
                 val playerTeam = teamService.getPlayerTeam(player)
                 val canHaveCards = player.isAlive && !player.isSpectator

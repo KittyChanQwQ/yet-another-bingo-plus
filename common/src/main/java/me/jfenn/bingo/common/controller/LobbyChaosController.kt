@@ -1,20 +1,23 @@
 package me.jfenn.bingo.common.controller
 
-import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.ActionResult
+import me.jfenn.bingo.platform.event.model.UseBlockEvent
 import net.minecraft.block.Blocks
 
 class LobbyChaosController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     private val config: BingoConfig,
     private val state: BingoState,
     private val permissions: IPermissionsApi,
@@ -32,15 +35,15 @@ class LobbyChaosController(
     )
 
     init {
-        events.onPlayerJoin { player ->
+        events.onPlayerJoin { (player) ->
             if (!state.isLobbyMode) return@onPlayerJoin
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
                 player.sendMessage(textProvider.string(StringKey.LobbySoundsMuted))
             }
         }
 
-        events.onUseBlock {
-            if (!state.isLobbyMode) return@onUseBlock null
+        eventBus.register(UseBlockEvent) {
+            if (!state.isLobbyMode) return@register null
             val player = it.player
 
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
@@ -55,7 +58,7 @@ class LobbyChaosController(
             if (shouldPreventLobbyChaos(player)) {
                 val blockState = player.player.world.getBlockState(it.hit.blockPos)
                 if (blockState.block == Blocks.BREWING_STAND)
-                    return@onUseBlock me.jfenn.bingo.platform.event.model.ActionResult.Fail(Unit)
+                    return@register ActionResult.Fail(Unit)
             }
 
             null

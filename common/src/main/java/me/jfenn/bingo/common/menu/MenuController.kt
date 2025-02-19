@@ -23,6 +23,9 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.IWallSignBlockState
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.EntityLoadEvent
+import me.jfenn.bingo.platform.event.model.TickEvent
 import net.minecraft.block.Blocks
 import net.minecraft.block.PlayerSkullBlock
 import net.minecraft.server.MinecraftServer
@@ -44,6 +47,7 @@ import kotlin.math.roundToInt
 
 internal class MenuController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     scopeManager: ScopeManager,
     private val log: Logger,
     private val server: MinecraftServer,
@@ -120,18 +124,18 @@ internal class MenuController(
             spawnTeamEntities(lobbyWorld)
         }
 
-        events.onEntityLoad { (entity, world) ->
-            val lobbyWorld = server.lobbyWorld ?: return@onEntityLoad
-            val bingoTag = entity.commandTags.find { it.startsWith("bingo-") }
-                ?: return@onEntityLoad
+        eventBus.register(EntityLoadEvent) {
+            val lobbyWorld = server.lobbyWorld ?: return@register
+            val bingoTag = it.entity.commandTags.find { it.startsWith("bingo-") }
+                ?: return@register
 
-            if (world == lobbyWorld && !entity.isPlayer && bingoTag != instanceTag) {
-                log.warn("Discarding an existing lobby world entity: ${entity.type}")
-                entity.discard()
+            if (it.world == lobbyWorld && !it.entity.isPlayer && bingoTag != instanceTag) {
+                log.warn("Discarding an existing lobby world entity: ${it.entity.type}")
+                it.entity.discard()
             }
         }
 
-        events.onGameTick {
+        eventBus.register(TickEvent.Start) {
             menu?.tick()
         }
 

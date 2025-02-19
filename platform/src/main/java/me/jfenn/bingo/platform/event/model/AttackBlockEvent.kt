@@ -1,6 +1,7 @@
 package me.jfenn.bingo.platform.event.model
 
 import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.event.IReturnEvent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Hand
 import net.minecraft.util.math.BlockPos
@@ -14,4 +15,6 @@ class AttackBlockEvent(
     val hand: Hand,
     val blockPos: BlockPos,
     val direction: Direction,
-)
+) {
+    companion object : IReturnEvent<AttackBlockEvent, ActionResult<Unit>>
+}

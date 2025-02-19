@@ -1,10 +1,12 @@
 package me.jfenn.bingo.client.common.sound
 
-import me.jfenn.bingo.client.platform.ClientPacket
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
+import me.jfenn.bingo.client.platform.ClientPacket
 import me.jfenn.bingo.common.game.GameOverPacket
+import me.jfenn.bingo.platform.event.IEventBus
 
 internal class ScorePacketReceiver(
+    eventBus: IEventBus,
     clientPacketEvents: ClientPacketEvents,
     private val soundService: SoundService,
 ) {
@@ -19,7 +21,7 @@ internal class ScorePacketReceiver(
     }
 
     init {
-        clientPacketEvents.scoredItemV1.onPacket { (packet) ->
+        eventBus.register(clientPacketEvents.scoredItemV1) { (packet) ->
             val score = packet.score.items
             soundService.play(
                 sound = when {
@@ -30,7 +32,7 @@ internal class ScorePacketReceiver(
             )
         }
 
-        clientPacketEvents.scoredItemLostV1.onPacket { _ ->
+        eventBus.register(clientPacketEvents.scoredItemLostV1) { _ ->
             soundService.play(
                 sound = ClientSounds.Key.ITEM_LOST,
                 volume = 0.8f,
@@ -38,21 +40,21 @@ internal class ScorePacketReceiver(
             )
         }
 
-        clientPacketEvents.cardCompletedV1.onPacket { (packet) ->
+        eventBus.register(clientPacketEvents.cardCompletedV1) { (packet) ->
             soundService.play(
                 if (packet.isWinner) ClientSounds.Key.GAME_WON else ClientSounds.Key.GAME_LOST
             )
         }
 
-        clientPacketEvents.gameOverV1.onPacket(::onGameOver)
-        clientPacketEvents.gameOverV2.onPacket(::onGameOver)
-        clientPacketEvents.gameOverV3.onPacket(::onGameOver)
-        clientPacketEvents.gameOverV4.onPacket(::onGameOver)
-        clientPacketEvents.gameOverV5.onPacket(::onGameOver)
-        clientPacketEvents.gameOverV6.onPacket(::onGameOver)
-        clientPacketEvents.gameOverV7.onPacket(::onGameOver)
+        eventBus.register(clientPacketEvents.gameOverV1, ::onGameOver)
+        eventBus.register(clientPacketEvents.gameOverV2, ::onGameOver)
+        eventBus.register(clientPacketEvents.gameOverV3, ::onGameOver)
+        eventBus.register(clientPacketEvents.gameOverV4, ::onGameOver)
+        eventBus.register(clientPacketEvents.gameOverV5, ::onGameOver)
+        eventBus.register(clientPacketEvents.gameOverV6, ::onGameOver)
+        eventBus.register(clientPacketEvents.gameOverV7, ::onGameOver)
 
-        clientPacketEvents.timerV1.onPacket { (packet) ->
+        eventBus.register(clientPacketEvents.timerV1) { (packet) ->
             if (packet.secondsRemaining in 1..20 && packet.secondsRemaining % 2 != 0) {
                 val volume = 1f - (packet.secondsRemaining / 20f)
 
@@ -64,7 +66,7 @@ internal class ScorePacketReceiver(
             }
         }
 
-        clientPacketEvents.countdownV1.onPacket { (packet) ->
+        eventBus.register(clientPacketEvents.countdownV1) { (packet) ->
             when (packet.secondsRemaining) {
                 in 1..3 -> soundService.play(ClientSounds.Key.START_COUNTDOWN)
                 0 -> soundService.play(ClientSounds.Key.START_RELEASE)

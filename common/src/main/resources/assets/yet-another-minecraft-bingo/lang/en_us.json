@@ -25,6 +25,8 @@
   "bingo.command.end.success": "Stopped the game!",
   "bingo.command.filter.includes_unobtainable": "This filter could include unobtainable items! You might want this instead:",
   "bingo.command.join.success": "Moved player %s onto team %s!",
+  "bingo.command.join.already_on_team": "The player is already on team %s!",
+  "bingo.command.join.does_not_exist": "Team '%s' does not exist!",
   "bingo.command.lobby.must_run": "Error: You must run '%s' before this command.",
   "bingo.command.lobby.restarting": "Restarting the server...",
   "bingo.command.lobby.warning1": "Bingo is currently running in survival mode - which will not overwrite your world save.",

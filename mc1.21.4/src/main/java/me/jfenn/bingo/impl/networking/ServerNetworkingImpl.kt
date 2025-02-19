@@ -1,13 +1,9 @@
 package me.jfenn.bingo.impl.networking
 
-import me.jfenn.bingo.platform.packet.IServerNetworking
-import me.jfenn.bingo.platform.packet.IServerPacketHandlerC2S
-import me.jfenn.bingo.platform.packet.IServerPacketHandlerS2C
-import me.jfenn.bingo.platform.packet.ServerPacket
-import me.jfenn.bingo.platform.item.IItemStackFactory
-import me.jfenn.bingo.platform.packet.PacketConverter
-import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.impl.PlayerHandle
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.packet.*
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.RegistryByteBuf
@@ -19,6 +15,7 @@ import org.slf4j.Logger
 class ServerNetworkingImpl(
     private val log: Logger,
     private val itemStackFactory: IItemStackFactory,
+    private val eventBus: IEventBus,
 ) : IServerNetworking {
 
     override fun <T> registerC2S(converter: PacketConverter<T>): IServerPacketHandlerC2S<T>
@@ -30,7 +27,7 @@ class ServerNetworkingImpl(
     inner class ServerPacketHandlerC2S<T>(
         private val converter: PacketConverter<T>,
     ) : IServerPacketHandlerC2S<T> {
-        override val onPacket = EventListener<ServerPacket<T>>()
+        override val name: String = "packetC2S=${converter.id}"
 
         private val id = CustomPayload.id<BingoPayload<T>>(converter.id.let { "${it.namespace}_${it.path}" })
         private val codec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
@@ -51,7 +48,7 @@ class ServerNetworkingImpl(
                 val player = PlayerHandle(ctx.player())
                 val data = ServerPacket(player, packet.value)
                 ctx.server().execute {
-                    onPacket(data)
+                    eventBus.emit(this, data)
                 }
             }
         }

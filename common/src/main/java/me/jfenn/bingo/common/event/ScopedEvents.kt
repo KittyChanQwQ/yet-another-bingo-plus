@@ -1,47 +1,46 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.EventListenerFactory
 import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.event.model.*
-import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.PlayerEvent
+import me.jfenn.bingo.platform.event.model.TickEvent
 import me.jfenn.bingo.platform.packet.IServerPacketHandlerC2S
 import me.jfenn.bingo.platform.packet.ServerPacket
 import me.jfenn.bingo.platform.utils.IEventListener
-import me.jfenn.bingo.platform.utils.IReturnEventListener
-import net.minecraft.entity.Entity
-import net.minecraft.server.world.ServerWorld
 import org.koin.core.scope.Scope
 import org.koin.core.scope.ScopeCallback
 import org.slf4j.Logger
-import java.util.UUID
+import java.util.*
 
 class ScopedEvents(
     private val log: Logger,
+    private val eventBus: IEventBus,
 ) : BingoComponent(), ScopeCallback {
 
-    val onGameTick: IEventListener<Unit> by EventListenerFactory()
-    val onGameTickEnd: IEventListener<Unit> by EventListenerFactory()
-    val onUpdateTick: IEventListener<Unit> by EventListenerFactory()
+    fun onGameTick(callback: (TickEvent) -> Unit) {
+        eventBus.register(TickEvent.Start, callback)
+    }
+
+    fun onUpdateTick(callback: (TickEvent) -> Unit) {
+        eventBus.register(TickEvent.Start) {
+            if (it.ticks % 10 == 0) {
+                callback(it)
+            }
+        }
+    }
 
     /**
      * Note: this event is NOT called on the server thread!
      */
-    val onPlayerInit: IEventListener<IPlayerHandle> by EventListenerFactory()
-    val onPlayerJoin: IEventListener<IPlayerHandle> by EventListenerFactory()
-    val onPlayerDisconnect: IEventListener<IPlayerHandle> by EventListenerFactory()
-    val onPlayerRespawn: IEventListener<PlayerEvent> by EventListenerFactory()
-    val onPlayerChannelRegister: IEventListener<IPlayerHandle> by EventListenerFactory()
-
-    val onEntityLoad: IEventListener<Pair<Entity, ServerWorld>> by EventListenerFactory()
-    val onUseBlock: IReturnEventListener<UseBlockEvent, ActionResult<Unit>?> by EventListenerFactory()
-    val onUseEntity: IReturnEventListener<UseEntityEvent, ActionResult<Unit>?> by EventListenerFactory()
-    val onUseItem: IReturnEventListener<UseItemEvent, ActionResult<IItemStack?>?> by EventListenerFactory()
-    val onAttackEntity: IReturnEventListener<AttackEntityEvent, ActionResult<Unit>?> by EventListenerFactory()
-    val onAttackBlock: IReturnEventListener<AttackBlockEvent, ActionResult<Unit>?> by EventListenerFactory()
+    fun onPlayerInit(callback: (PlayerEvent) -> Unit) = eventBus.register(PlayerEvent.Init, callback)
+    fun onPlayerJoin(callback: (PlayerEvent) -> Unit) = eventBus.register(PlayerEvent.Join, callback)
+    fun onPlayerDisconnect(callback: (PlayerEvent) -> Unit) = eventBus.register(PlayerEvent.Disconnect, callback)
+    fun onPlayerRespawn(callback: (PlayerEvent) -> Unit) = eventBus.register(PlayerEvent.AfterRespawn, callback)
+    fun onPlayerChannelRegister(callback: (PlayerEvent) -> Unit) = eventBus.register(PlayerEvent.ChannelRegister, callback)
 
     val onStateChange: IEventListener<Pair<GameState, GameState>> by EventListenerFactory()
 
@@ -51,8 +50,6 @@ class ScopedEvents(
 
     val onCardShuffled: IEventListener<UUID> by EventListenerFactory()
     val onTeamWinner: IEventListener<BingoTeam> by EventListenerFactory()
-
-    val onDataReload: IEventListener<ReloadEvent> by EventListenerFactory()
 
     val onClose: IEventListener<Unit> by EventListenerFactory()
 
@@ -75,8 +72,7 @@ class ScopedEvents(
     }
 
     fun <T> onPacket(packet: IServerPacketHandlerC2S<T>, callback: (ServerPacket<T>) -> Unit) {
-        val handle = packet.onPacket(callback)
-        onClose { packet.onPacket.unregister(handle) }
+        eventBus.register(packet, callback)
     }
 
     override fun onScopeClose(scope: Scope) {

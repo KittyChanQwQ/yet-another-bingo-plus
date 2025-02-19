@@ -6,6 +6,8 @@ import assertk.assertions.isNull
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.datetime.Instant
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.stats.data.GameInfo
@@ -82,7 +84,9 @@ class StatsServiceTest {
                 GameTeamInfo(
                     id = BingoTeamKey("bingo_blue"),
                     gameId = gameId,
-                    name = "bingo.team.blue",
+                    name = buildJsonObject {
+                        put("translate", JsonPrimitive("bingo.team.blue"))
+                    },
                     isWinner = true,
                 )
             ),
@@ -143,7 +147,9 @@ class StatsServiceTest {
                 GameTeamInfo(
                     id = BingoTeamKey("bingo_blue"),
                     gameId = gameId,
-                    name = "bingo.team.blue",
+                    name = buildJsonObject {
+                        put("translate", JsonPrimitive("bingo.team.blue"))
+                    },
                     isWinner = true,
                 )
             ),
@@ -205,7 +211,9 @@ class StatsServiceTest {
                 GameTeamInfo(
                     id = BingoTeamKey("bingo_blue"),
                     gameId = wonGameId,
-                    name = "bingo.team.blue",
+                    name = buildJsonObject {
+                        put("translate", JsonPrimitive("bingo.team.blue"))
+                    },
                     isWinner = true,
                 )
             ),
@@ -240,7 +248,9 @@ class StatsServiceTest {
                 GameTeamInfo(
                     id = BingoTeamKey("bingo_blue"),
                     gameId = lostGameId,
-                    name = "bingo.team.blue",
+                    name = buildJsonObject {
+                        put("translate", JsonPrimitive("bingo.team.blue"))
+                    },
                     isWinner = false,
                 )
             ),

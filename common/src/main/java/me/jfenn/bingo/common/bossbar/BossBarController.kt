@@ -22,7 +22,7 @@ internal class BossBarController(
 ) : BingoComponent() {
 
     init {
-        events.onPlayerJoin { player -> bossBarService.updateBossBar(player) }
+        events.onPlayerJoin { (player) -> bossBarService.updateBossBar(player) }
         events.onChangeTeam { player -> bossBarService.updateBossBar(player) }
         events.onChangePlayerSettings { player -> bossBarService.updateBossBar(player) }
 

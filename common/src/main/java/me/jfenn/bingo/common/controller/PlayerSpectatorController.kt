@@ -1,14 +1,17 @@
 package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spectator.SpectatorInventoryScreenHandler
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
+import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ActionResult
+import me.jfenn.bingo.platform.event.model.AttackEntityEvent
+import me.jfenn.bingo.platform.event.model.UseBlockEvent
+import me.jfenn.bingo.platform.event.model.UseEntityEvent
 import net.minecraft.block.*
 import net.minecraft.entity.vehicle.ChestBoatEntity
 import net.minecraft.entity.vehicle.ChestMinecartEntity
@@ -19,19 +22,19 @@ import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.world.GameMode
 
 class PlayerSpectatorController(
-    events: ScopedEvents,
+    eventBus: IEventBus,
     private val state: BingoState,
     private val teamService: TeamService,
     private val permissions: IPermissionsApi,
 ) : BingoComponent() {
 
     init {
-        events.onUseBlock {
-            if (!state.isLobbyMode) return@onUseBlock null
+        eventBus.register(UseBlockEvent) {
+            if (!state.isLobbyMode) return@register null
             val player = it.player
-            if (state.state != GameState.PLAYING) return@onUseBlock null
-            if (teamService.isPlaying(player)) return@onUseBlock null
-            if (player.player.interactionManager.gameMode != GameMode.ADVENTURE) return@onUseBlock null
+            if (state.state != GameState.PLAYING) return@register null
+            if (teamService.isPlaying(player)) return@register null
+            if (player.player.interactionManager.gameMode != GameMode.ADVENTURE) return@register null
 
             // if the player is spectating a game, do not
             // allow them to modify any inventory
@@ -42,8 +45,8 @@ class PlayerSpectatorController(
             // if the player has permission to open doors...
             if (permissions.hasPermission(player, Permission.SPECTATOR_USE_DOORS)) {
                 when (block) {
-                    is DoorBlock -> return@onUseBlock null
-                    is TrapdoorBlock -> return@onUseBlock null
+                    is DoorBlock -> return@register null
+                    is TrapdoorBlock -> return@register null
                 }
             }
 
@@ -89,15 +92,15 @@ class PlayerSpectatorController(
                 )
             }
 
-            me.jfenn.bingo.platform.event.model.ActionResult.Fail(Unit)
+            ActionResult.Fail(Unit)
         }
 
-        events.onUseEntity {
-            if (!state.isLobbyMode) return@onUseEntity null
+        eventBus.register(UseEntityEvent) {
+            if (!state.isLobbyMode) return@register null
             val player = it.player
-            if (state.state != GameState.PLAYING) return@onUseEntity null
-            if (teamService.isPlaying(player)) return@onUseEntity null
-            if (player.player.interactionManager.gameMode != GameMode.ADVENTURE) return@onUseEntity null
+            if (state.state != GameState.PLAYING) return@register null
+            if (teamService.isPlaying(player)) return@register null
+            if (player.player.interactionManager.gameMode != GameMode.ADVENTURE) return@register null
 
             // if the player is spectating a game, do not
             // allow them to modify any inventory
@@ -131,20 +134,20 @@ class PlayerSpectatorController(
                 )
             }
 
-            me.jfenn.bingo.platform.event.model.ActionResult.Fail(Unit)
+            ActionResult.Fail(Unit)
         }
 
-        events.onAttackEntity {
-            if (!state.isLobbyMode) return@onAttackEntity null
+        eventBus.register(AttackEntityEvent) {
+            if (!state.isLobbyMode) return@register null
             val player = it.player
-            if (state.state != GameState.PLAYING) return@onAttackEntity null
-            if (teamService.isPlaying(player)) return@onAttackEntity null
-            if (player.player.interactionManager.gameMode != GameMode.ADVENTURE) return@onAttackEntity null
+            if (state.state != GameState.PLAYING) return@register null
+            if (teamService.isPlaying(player)) return@register null
+            if (player.player.interactionManager.gameMode != GameMode.ADVENTURE) return@register null
 
             // if the player is spectating a game, do not
             // allow them to attack any entity
 
-            me.jfenn.bingo.platform.event.model.ActionResult.Fail(Unit)
+            ActionResult.Fail(Unit)
         }
     }
 

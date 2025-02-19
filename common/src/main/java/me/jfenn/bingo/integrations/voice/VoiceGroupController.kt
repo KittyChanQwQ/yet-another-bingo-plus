@@ -138,7 +138,7 @@ class VoiceGroupController(
                 ?.let { updateGroups(listOf(it)) }
         }
 
-        scopedEvents.onPlayerJoin { player ->
+        scopedEvents.onPlayerJoin { (player) ->
             updateGroups(listOf(player))
         }
 

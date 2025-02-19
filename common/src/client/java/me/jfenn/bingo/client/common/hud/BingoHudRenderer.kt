@@ -166,6 +166,9 @@ internal class BingoHudRenderer(
 
             val tile = view.tiles.getOrNull(tileIndex) ?: continue
 
+            val isReplacing = showFlashingTiles && shouldRenderReplacing(tile)
+            if (isReplacing) continue
+
             val interpolateFrom = shufflePositions[tileIndex % shufflePositions.size]
                 .let { Pair(it % 5, it / 5) }
                 .let { (x, y) -> Pair(12 + x*20, 22 + y*20) }
@@ -214,9 +217,6 @@ internal class BingoHudRenderer(
                     textureWidth = 16, textureHeight = 16,
                 )
             }
-
-            val isReplacing = showFlashingTiles && shouldRenderReplacing(tile)
-            if (isReplacing) continue
 
             cardTileRenderer.renderTile(service, tile, 1, 1)
 

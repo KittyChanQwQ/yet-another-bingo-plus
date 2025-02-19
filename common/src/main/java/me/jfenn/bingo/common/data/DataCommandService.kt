@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.data
 import me.jfenn.bingo.common.card.tag.TagData
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.card.tierlist.TierListConfig
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ReloadEvent
 import net.minecraft.server.MinecraftServer
 
@@ -11,11 +11,11 @@ class DataCommandService(
     private val scopedData: ScopedData,
     private val tagLoader: TagLoader,
     private val tierListLoader: TierListLoader,
-    private val events: ScopedEvents,
+    private val eventBus: IEventBus,
     private val server: MinecraftServer,
 ) {
     private fun reload() {
-        events.onDataReload(ReloadEvent(server, server.resourceManager))
+        eventBus.emit(ReloadEvent, ReloadEvent(server.resourceManager))
     }
 
     fun addToTag(tagName: String, objective: String) {

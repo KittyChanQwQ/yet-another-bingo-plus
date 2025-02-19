@@ -215,7 +215,7 @@ internal class ReadyController(
         }
 
         events.onPlayerChannelRegister {
-            update(listOf(it))
+            update(listOf(it.player))
         }
 
         events.onUpdateTick {

@@ -3,8 +3,8 @@ package me.jfenn.bingo.common
 import me.jfenn.bingo.api.BingoApiImpl
 import me.jfenn.bingo.api.IBingoApi
 import me.jfenn.bingo.common.autorestart.ResetCommand
-import me.jfenn.bingo.common.autorestart.ResetService
 import me.jfenn.bingo.common.autorestart.ResetOnLeaveController
+import me.jfenn.bingo.common.autorestart.ResetService
 import me.jfenn.bingo.common.bossbar.BossBarController
 import me.jfenn.bingo.common.bossbar.BossBarService
 import me.jfenn.bingo.common.card.CardService
@@ -26,9 +26,7 @@ import me.jfenn.bingo.common.data.*
 import me.jfenn.bingo.common.datapack.LobbyWorldService
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.datapack.ServerProps
-import me.jfenn.bingo.common.event.EventManager
-import me.jfenn.bingo.common.event.InteractionEntityEvents
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.*
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameOverController
@@ -49,6 +47,7 @@ import me.jfenn.bingo.common.ready.ReadyCommand
 import me.jfenn.bingo.common.ready.ReadyController
 import me.jfenn.bingo.common.ready.ReadyService
 import me.jfenn.bingo.common.ready.ReadyTimerState
+import me.jfenn.bingo.common.scope.BingoPluginHolder
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.scoreboard.ScoreboardController
@@ -84,7 +83,9 @@ import me.jfenn.bingo.integrations.voice.IVoiceApiFactory
 import me.jfenn.bingo.integrations.voice.VoiceGroupController
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.config.IConfigManager
+import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.scope.IScopeManager
+import me.jfenn.bingo.plugin.IBingoInternalPlugin
 import net.minecraft.server.MinecraftServer
 import org.koin.core.Koin
 import org.koin.core.module.dsl.scopedOf
@@ -112,7 +113,7 @@ val commonModule = module {
 
     singleOf(::LobbyWorldService)
     singleOf(::ServerDatapackManager)
-    singleOf(::EventManager)
+    singleOf(::EventBus) bind IEventBus::class
     singleOf(::ScopeManager) bind IScopeManager::class
     singleOf(::ServerPacketEvents)
     singleOf(::PersistentStates)
@@ -170,7 +171,16 @@ val commonModule = module {
             ?: DummyVoiceApi
     }
 
+    single {
+        BingoPluginHolder(
+            getKoin(),
+            ServiceLoader.load(IBingoInternalPlugin::class.java)
+                .toList()
+        )
+    }
+
     scope<BingoScope> {
+        scoped { ScopedEventBus(getKoin().get(), this) } bind IEventBus::class
         scopedOf(::ScopedEvents)
         scopedOf(::InteractionEntityEvents)
         scopedOf(::BingoApiImpl) bind IBingoApi::class
@@ -324,9 +334,10 @@ val commonModule = module {
 }
 
 fun Koin.commonInit() {
+    get<BingoPluginHolder>()
+
     get<MapColors>()
     get<ServerDatapackManager>()
-    get<EventManager>()
     get<IScopeManager>()
     get<ServerPacketEvents>()
 

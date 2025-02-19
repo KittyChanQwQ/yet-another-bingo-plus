@@ -13,12 +13,15 @@ import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.game.GameResetEvent
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.random.Random
 
 internal class ResetService(
     private val events: ScopedEvents,
+    private val eventBus: IEventBus,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     private val spawnService: SpawnService,
@@ -71,6 +74,8 @@ internal class ResetService(
             spawnService.teleportToLobby(player)
             state.playersJoinedIds += player.uuid
         }
+
+        eventBus.emit(GameResetEvent, GameResetEvent())
     }
 
 }

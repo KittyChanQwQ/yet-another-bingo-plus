@@ -1,6 +1,7 @@
 package me.jfenn.bingo.platform.event.model
 
 import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.event.IReturnEvent
 import net.minecraft.entity.Entity
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Hand
@@ -14,4 +15,6 @@ class UseEntityEvent(
     val hand: Hand,
     val entity: Entity,
     val hitResult: EntityHitResult?,
-)
+) {
+    companion object : IReturnEvent<UseEntityEvent, ActionResult<Unit>?>
+}

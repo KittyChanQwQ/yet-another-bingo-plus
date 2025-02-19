@@ -69,7 +69,7 @@ internal class LobbyModeController(
     }
 
     init {
-        events.onPlayerJoin { player ->
+        events.onPlayerJoin { (player) ->
             if (state.isLobbyMode) return@onPlayerJoin
             if (playerSettingsService.getPlayer(player).hideLobbyPrompt) return@onPlayerJoin
 

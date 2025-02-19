@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.common.world
 
 import me.jfenn.bingo.client.platform.IWorldService
-import me.jfenn.bingo.client.platform.event.IClientEvents
+import me.jfenn.bingo.client.platform.event.model.ScreenEvent
 import me.jfenn.bingo.client.platform.event.model.ScreenType
 import me.jfenn.bingo.client.platform.screen.IButtonFactory
 import me.jfenn.bingo.client.platform.text.ITextFactory
@@ -9,12 +9,12 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.platform.scope.IScopeManager
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.game.ScopeStopped
 import net.minecraft.server.MinecraftServer
 
 internal class BingoWorldManager(
-    scopeManager: IScopeManager,
-    events: IClientEvents,
+    eventBus: IEventBus,
     private val buttonFactory: IButtonFactory,
     private val worldService: IWorldService,
     private val config: BingoConfig,
@@ -22,9 +22,9 @@ internal class BingoWorldManager(
 ) : BingoComponent() {
 
     init {
-        scopeManager.onCleanup { scope ->
-            val state = scope.get<BingoState>()
-            val server = scope.get<MinecraftServer>()
+        eventBus.register(ScopeStopped) {
+            val state = it.scope.get<BingoState>()
+            val server = it.scope.get<MinecraftServer>()
 
             if (state.state != GameState.PLAYING && worldService.isBingoWorld(server) && state.isLobbyMode) {
                 // If the game is not in progress, delete it!
@@ -32,7 +32,7 @@ internal class BingoWorldManager(
             }
         }
 
-        events.onScreenAfterInit {
+        eventBus.register(ScreenEvent.AfterInit) {
             if (it.type == ScreenType.TitleScreen && config.client.showQuickStartButton) {
                 it.screen.addButton(
                     buttonFactory.createButton(

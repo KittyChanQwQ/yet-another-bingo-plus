@@ -1,15 +1,9 @@
 package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.utils.EventListenerFactory
 import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.IServerEvents
+import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.*
-import me.jfenn.bingo.platform.item.IItemStack
-import me.jfenn.bingo.platform.scope.BingoKoin
-import me.jfenn.bingo.platform.utils.IEventListener
-import me.jfenn.bingo.platform.utils.IReturnEventListener
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -22,37 +16,15 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceType
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import net.minecraft.util.TypedActionResult
-import java.lang.ref.WeakReference
 
-object ServerEventsImpl : IServerEvents {
-    override val onServerStarted: IEventListener<MinecraftServer> by EventListenerFactory()
-    override val onServerStopped: IEventListener<MinecraftServer> by EventListenerFactory()
-    override val onTickStart: IEventListener<MinecraftServer> by EventListenerFactory()
-    override val onTickEnd: IEventListener<MinecraftServer> by EventListenerFactory()
-    override val onPlayerInit: IEventListener<PlayerEvent> by EventListenerFactory()
-    override val onPlayerJoin: IEventListener<PlayerEvent> by EventListenerFactory()
-    override val onPlayerDisconnect: IEventListener<PlayerEvent> by EventListenerFactory()
-    override val onAfterRespawn: IEventListener<PlayerEvent> by EventListenerFactory()
-    override val onEntityLoad: IEventListener<EntityLoadEvent> by EventListenerFactory()
-    override val onUseBlock: IReturnEventListener<UseBlockEvent, ActionResult<Unit>> by EventListenerFactory()
-    override val onUseEntity: IReturnEventListener<UseEntityEvent, ActionResult<Unit>> by EventListenerFactory()
-    override val onUseItem: IReturnEventListener<UseItemEvent, ActionResult<IItemStack?>> by EventListenerFactory()
-    override val onAttackEntity: IReturnEventListener<AttackEntityEvent, ActionResult<Unit>> by EventListenerFactory()
-    override val onAttackBlock: IReturnEventListener<AttackBlockEvent, ActionResult<Unit>> by EventListenerFactory()
-    override val onPlayerChannelRegister: IEventListener<PlayerEvent> by EventListenerFactory()
-    override val onDataReload: IEventListener<ReloadEvent> by EventListenerFactory()
-    override val onAllowChatMessage: IReturnEventListener<AllowChatMessageEvent, Boolean> by EventListenerFactory()
-
-    private var serverRef: WeakReference<MinecraftServer>? = null
-
-    private fun getPlayerImpl(player: ServerPlayerEntity): IPlayerHandle? {
-        val koinApp = BingoKoin.getScope(player.server) ?: return null
-        val playerManager = koinApp.get<IPlayerManager>()
-        return playerManager.forPlayer(player)
+class ServerEventsImpl(
+    eventBus: IEventBus,
+) {
+    private fun getPlayerImpl(player: ServerPlayerEntity): IPlayerHandle {
+        return PlayerHandle(player, null)
     }
 
     private fun ActionResult<Unit>.toActionResult(): net.minecraft.util.ActionResult {
@@ -72,54 +44,51 @@ object ServerEventsImpl : IServerEvents {
     }
 
     init {
-        ServerLifecycleEvents.SERVER_STARTING.register { server ->
-            serverRef = WeakReference(server)
-        }
-
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
-            onServerStarted(server)
+            eventBus.emit(ServerEvent.Started, ServerEvent(server))
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
-            onServerStopped(server)
+            eventBus.emit(ServerEvent.Stopped, ServerEvent(server))
         }
 
         ServerTickEvents.START_SERVER_TICK.register {
-            onTickStart(it)
+            val event = TickEvent(it.ticks)
+            eventBus.emit(TickEvent.Start, event)
         }
 
         ServerTickEvents.END_SERVER_TICK.register {
-            onTickEnd(it)
+            eventBus.emit(TickEvent.End, TickEvent(it.ticks))
         }
 
-        ServerPlayConnectionEvents.INIT.register { handler, server ->
-            val player = getPlayerImpl(handler.player) ?: return@register
-            onPlayerInit(PlayerEvent(server, player))
+        ServerPlayConnectionEvents.INIT.register { handler, _ ->
+            val player = getPlayerImpl(handler.player)
+            eventBus.emit(PlayerEvent.Init, PlayerEvent(player))
         }
 
-        ServerPlayConnectionEvents.JOIN.register { handler, _, server ->
-            val player = getPlayerImpl(handler.player) ?: return@register
-            onPlayerJoin(PlayerEvent(server, player))
+        ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
+            val player = getPlayerImpl(handler.player)
+            eventBus.emit(PlayerEvent.Join, PlayerEvent(player))
         }
 
-        ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
-            val player = getPlayerImpl(handler.player) ?: return@register
-            onPlayerDisconnect(PlayerEvent(server, player))
+        ServerPlayConnectionEvents.DISCONNECT.register { handler, _ ->
+            val player = getPlayerImpl(handler.player)
+            eventBus.emit(PlayerEvent.Disconnect, PlayerEvent(player))
         }
 
         ServerPlayerEvents.AFTER_RESPAWN.register { _, player, _ ->
-            val playerImpl = getPlayerImpl(player) ?: return@register
-            onAfterRespawn(PlayerEvent(player.server, playerImpl))
+            val playerImpl = getPlayerImpl(player)
+            eventBus.emit(PlayerEvent.AfterRespawn, PlayerEvent(playerImpl))
         }
 
         ServerEntityEvents.ENTITY_LOAD.register { entity, world ->
-            onEntityLoad(EntityLoadEvent(world.server, entity, world))
+            eventBus.emit(EntityLoadEvent, EntityLoadEvent(world.server, entity, world))
         }
 
         UseBlockCallback.EVENT.register { player, world, hand, hit ->
             if (player !is ServerPlayerEntity) return@register net.minecraft.util.ActionResult.PASS
-            val playerImpl = getPlayerImpl(player) ?: return@register net.minecraft.util.ActionResult.PASS
-            val results = onUseBlock(UseBlockEvent(player.server, playerImpl, world, hand, hit))
+            val playerImpl = getPlayerImpl(player)
+            val results = eventBus.emit(UseBlockEvent, UseBlockEvent(player.server, playerImpl, world, hand, hit))
             ActionResult.collapse(results)
                 ?.toActionResult()
                 ?: net.minecraft.util.ActionResult.PASS
@@ -127,8 +96,8 @@ object ServerEventsImpl : IServerEvents {
 
         UseEntityCallback.EVENT.register { player, world, hand, entity, hit ->
             if (player !is ServerPlayerEntity) return@register net.minecraft.util.ActionResult.PASS
-            val playerImpl = getPlayerImpl(player) ?: return@register net.minecraft.util.ActionResult.PASS
-            val results = onUseEntity(UseEntityEvent(player.server, playerImpl, world, hand, entity, hit))
+            val playerImpl = getPlayerImpl(player)
+            val results = eventBus.emit(UseEntityEvent, UseEntityEvent(player.server, playerImpl, world, hand, entity, hit))
             ActionResult.collapse(results)
                 ?.toActionResult()
                 ?: net.minecraft.util.ActionResult.PASS
@@ -136,8 +105,8 @@ object ServerEventsImpl : IServerEvents {
 
         UseItemCallback.EVENT.register { player, world, hand ->
             if (player !is ServerPlayerEntity) return@register TypedActionResult.pass(null)
-            val playerImpl = getPlayerImpl(player) ?: return@register TypedActionResult.pass(null)
-            val results = onUseItem(UseItemEvent(player.server, playerImpl, world, hand))
+            val playerImpl = getPlayerImpl(player)
+            val results = eventBus.emit(UseItemEvent, UseItemEvent(player.server, playerImpl, world, hand))
             ActionResult.collapse(results)
                 ?.map { it?.stack }
                 ?.toTypedActionResult()
@@ -146,8 +115,8 @@ object ServerEventsImpl : IServerEvents {
 
         AttackEntityCallback.EVENT.register { player, world, hand, entity, hit ->
             if (player !is ServerPlayerEntity) return@register net.minecraft.util.ActionResult.PASS
-            val playerImpl = getPlayerImpl(player) ?: return@register net.minecraft.util.ActionResult.PASS
-            val results = onAttackEntity(AttackEntityEvent(player.server, playerImpl, world, hand, entity, hit))
+            val playerImpl = getPlayerImpl(player)
+            val results = eventBus.emit(AttackEntityEvent, AttackEntityEvent(player.server, playerImpl, world, hand, entity, hit))
             ActionResult.collapse(results)
                 ?.toActionResult()
                 ?: net.minecraft.util.ActionResult.PASS
@@ -155,8 +124,9 @@ object ServerEventsImpl : IServerEvents {
 
         AttackBlockCallback.EVENT.register { player, world, hand, blockPos, direction ->
             if (player !is ServerPlayerEntity) return@register net.minecraft.util.ActionResult.PASS
-            val playerImpl = getPlayerImpl(player) ?: return@register net.minecraft.util.ActionResult.PASS
-            val results = onAttackBlock(
+            val playerImpl = getPlayerImpl(player)
+            val results = eventBus.emit(
+                AttackBlockEvent,
                 AttackBlockEvent(
                     player.server,
                     playerImpl,
@@ -171,17 +141,15 @@ object ServerEventsImpl : IServerEvents {
                 ?: net.minecraft.util.ActionResult.PASS
         }
 
-        S2CPlayChannelEvents.REGISTER.register { handler, _, server, _ ->
-            val player = getPlayerImpl(handler.player) ?: return@register
-            onPlayerChannelRegister(PlayerEvent(server, player))
+        S2CPlayChannelEvents.REGISTER.register { handler, _, _, _ ->
+            val player = getPlayerImpl(handler.player)
+            eventBus.emit(PlayerEvent.ChannelRegister, PlayerEvent(player))
         }
 
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(
             object : SimpleSynchronousResourceReloadListener {
                 override fun reload(manager: ResourceManager) {
-                    serverRef?.get()?.let {
-                        onDataReload(ReloadEvent(it, manager))
-                    }
+                    eventBus.emit(ReloadEvent, ReloadEvent(manager))
                 }
 
                 override fun getFabricId(): Identifier = Identifier.of(MOD_ID_BINGO, "server_reload")!!
@@ -191,10 +159,10 @@ object ServerEventsImpl : IServerEvents {
         ServerMessageEvents.ALLOW_CHAT_MESSAGE.register { message, player, _ ->
             val event = AllowChatMessageEvent(
                 message = SignedMessageImpl(message),
-                player = getPlayerImpl(player) ?: return@register true,
+                player = getPlayerImpl(player),
             )
-            val isAllowed = onAllowChatMessage.invoke(event)
-                .all { it == true }
+            val isAllowed = eventBus.emit(AllowChatMessageEvent, event)
+                .all { it }
 
             isAllowed
         }

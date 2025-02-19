@@ -1,7 +1,7 @@
 package me.jfenn.bingo.platform.packet
 
 import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.utils.IEventListener
+import me.jfenn.bingo.platform.event.IEvent
 import net.minecraft.server.network.ServerPlayerEntity
 
 interface IServerNetworking {
@@ -9,9 +9,7 @@ interface IServerNetworking {
     fun <T> registerS2C(converter: PacketConverter<T>): IServerPacketHandlerS2C<T>
 }
 
-interface IServerPacketHandlerC2S<T> {
-    val onPacket: IEventListener<ServerPacket<T>>
-}
+interface IServerPacketHandlerC2S<T> : IEvent<ServerPacket<T>>
 
 interface IServerPacketHandlerS2C<T> {
     fun isSupported(player: IPlayerHandle): Boolean = isSupported(player.player)
