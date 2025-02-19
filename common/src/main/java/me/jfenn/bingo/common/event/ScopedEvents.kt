@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.EventListenerFactory
 import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.event.IEvent
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.PlayerEvent
 import me.jfenn.bingo.platform.event.model.TickEvent
@@ -21,16 +22,22 @@ class ScopedEvents(
     private val eventBus: IEventBus,
 ) : BingoComponent(), ScopeCallback {
 
+    private object UpdateTick: IEvent<TickEvent>
+
+    init {
+        eventBus.register(TickEvent.Start) {
+            if (it.ticks % 10 == 0) {
+                eventBus.emit(UpdateTick, it)
+            }
+        }
+    }
+
     fun onGameTick(callback: (TickEvent) -> Unit) {
         eventBus.register(TickEvent.Start, callback)
     }
 
     fun onUpdateTick(callback: (TickEvent) -> Unit) {
-        eventBus.register(TickEvent.Start) {
-            if (it.ticks % 10 == 0) {
-                callback(it)
-            }
-        }
+        eventBus.register(UpdateTick, callback)
     }
 
     /**
