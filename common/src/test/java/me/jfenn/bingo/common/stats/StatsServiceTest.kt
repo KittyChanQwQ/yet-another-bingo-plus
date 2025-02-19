@@ -9,14 +9,14 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.event.EventBus
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.stats.data.GameInfo
 import me.jfenn.bingo.common.stats.data.GamePlayerInfo
 import me.jfenn.bingo.common.stats.data.GameTeamInfo
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.utils.EventListener
-import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.platform.IModEnvironment
+import me.jfenn.bingo.platform.event.model.ApplicationCloseEvent
 import me.jfenn.bingo.sql.BingoDatabase
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -32,9 +32,7 @@ class StatsServiceTest {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    private val closeEvent = object : ICloseEvent {
-        override val onClose: EventListener<Unit> = EventListener()
-    }
+    private val eventBus = EventBus(logger)
 
     private val connectionFactory = ConnectionFactory(
         log = logger,
@@ -44,7 +42,7 @@ class StatsServiceTest {
         environment = mockk<IModEnvironment>().also {
             every { it.configDir } returns tempDir
         },
-        closeEvent = closeEvent,
+        eventBus = eventBus,
     )
 
     private fun createStatsService(
@@ -528,7 +526,7 @@ class StatsServiceTest {
 
     @AfterEach
     fun afterEach() {
-        closeEvent.onClose(Unit)
+        eventBus.emit(ApplicationCloseEvent, Unit)
     }
 
     companion object {

@@ -15,7 +15,6 @@ import me.jfenn.bingo.client.world.WorldServiceImpl
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.commonModule
 import me.jfenn.bingo.common.config.MigrationHandler
-import me.jfenn.bingo.platform.ICloseEvent
 import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.sharedModule
 import net.fabricmc.api.ClientModInitializer
@@ -34,7 +33,7 @@ object Main : ClientModInitializer {
     private val log = LoggerFactory.getLogger(this::class.java)
 
     private val clientModule = module {
-        single { ClientCloseEvent } bind ICloseEvent::class
+        singleOf(::ClientCloseEvent) withOptions { createdAtStart() }
         singleOf(::ClientEventsImpl) withOptions { createdAtStart() }
         singleOf(::ScreenFactory) bind IScreenFactory::class
 

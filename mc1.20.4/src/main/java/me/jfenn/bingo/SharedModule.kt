@@ -21,7 +21,7 @@ import org.koin.dsl.binds
 import org.koin.dsl.module
 
 val sharedServerModule = module {
-    single { ServerCloseEvent } bind ICloseEvent::class
+    singleOf(::ServerCloseEvent) withOptions { createdAtStart() }
 }
 
 val sharedModule = module {

@@ -1,16 +1,15 @@
 package me.jfenn.bingo.impl.event
 
-import me.jfenn.bingo.common.utils.EventListenerFactory
-import me.jfenn.bingo.platform.ICloseEvent
-import me.jfenn.bingo.platform.utils.IEventListener
+import me.jfenn.bingo.platform.event.model.ApplicationCloseEvent
+import me.jfenn.bingo.platform.event.IEventBus
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 
-object ServerCloseEvent : ICloseEvent {
-    override val onClose: IEventListener<Unit> by EventListenerFactory()
-
+class ServerCloseEvent(
+    private val eventBus: IEventBus,
+) {
     init {
         ServerLifecycleEvents.SERVER_STOPPING.register {
-            onClose(Unit)
+            eventBus.emit(ApplicationCloseEvent, Unit)
         }
     }
 }
