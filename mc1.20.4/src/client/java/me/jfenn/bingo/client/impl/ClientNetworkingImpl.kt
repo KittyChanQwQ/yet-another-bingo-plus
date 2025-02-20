@@ -4,14 +4,10 @@ import me.jfenn.bingo.client.platform.ClientPacket
 import me.jfenn.bingo.client.platform.IClientNetworking
 import me.jfenn.bingo.client.platform.IClientPacketHandlerC2S
 import me.jfenn.bingo.client.platform.IClientPacketHandlerS2C
-<<<<<<<
-import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.impl.networking.PacketBufImpl
-=======
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.item.IItemStackFactory
-
->>>>>>>
+import me.jfenn.bingo.platform.packet.PacketConverter
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 
@@ -48,10 +44,6 @@ class ClientNetworkingImpl(
         private val converter: PacketConverter<T>
     ) : IClientPacketHandlerS2C<T> {
         override val name: String = "packetS2C=${converter.id}"
-
-        override fun onPacket(receiver: (ClientPacket<T>) -> Unit) {
-            event(receiver)
-        }
 
         init {
             ClientPlayNetworking.registerGlobalReceiver(converter.id) { client, _, buf, _ ->

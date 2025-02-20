@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.impl
 
+import com.mojang.blaze3d.systems.RenderSystem
 import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
