@@ -123,7 +123,7 @@ Vanilla entity/challenge goal textures are from [minecraft-heads.com](https://mi
 Chinese Simplified translations were contributed by Fishlanding, tovv3r, Young912, BoredYukolin, yzy_sheep, nageih, and teaSummer!<br>
 Chinese Traditional translations were contributed by Leo_768 and BoredYukolin!<br>
 Danish translations were contributed by Libreh!<br>
-French translations were contributed by Yosh64!<br>
+French translations were contributed by Yosh64 and Guillarda!<br>
 Hungarian translations were contributed by petya0927 and Remarci!<br>
 Polish translations were contributed by Toniemax!<br>
 Portuguese translations were contributed by Lucasofchirst!<br>
