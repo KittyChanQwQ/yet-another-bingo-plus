@@ -20,9 +20,13 @@
 
 - Completely removed the "Disconnect" button from the game over screen (was only used for backwards compatibility)
 
+- Removed the confusing "Skip Card when Lost" setting, which is now inferred from the "End When" menu
+
 - (Client) Tiles with multiple items now display each item as part of the hover tooltip.
 
 - (Client) 'Game over' screen now remembers which tab it was on, and only renders the win firework the first time it's opened.
+
+- (Client) Added an animation for card shuffle/reroll
 
 ### Bugs Squashed:
 
@@ -51,6 +55,8 @@
 - New Chinese Simplified translations by BoredYukolin, teaSummer, nageih, yzy_sheep, and Young912!
 - New Chinese Traditional translations by Leo_768 and BoredYukolin!
 - New Danish translations by Libreh!
+- New French translations by Guillarda!
 - New Portuguese translations by Lucasofchirst!
 - New Hungarian translations by petya0927 and Remarci!
+- New Russian translations by Mrpavel!
   
