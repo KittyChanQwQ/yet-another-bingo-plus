@@ -82,9 +82,7 @@ class StatsServiceTest {
                 GameTeamInfo(
                     id = BingoTeamKey("bingo_blue"),
                     gameId = gameId,
-                    name = buildJsonObject {
-                        put("translate", JsonPrimitive("bingo.team.blue"))
-                    },
+                    name = "{}",
                     isWinner = true,
                 )
             ),
@@ -145,9 +143,7 @@ class StatsServiceTest {
                 GameTeamInfo(
                     id = BingoTeamKey("bingo_blue"),
                     gameId = gameId,
-                    name = buildJsonObject {
-                        put("translate", JsonPrimitive("bingo.team.blue"))
-                    },
+                    name = "{}",
                     isWinner = true,
                 )
             ),
@@ -209,9 +205,7 @@ class StatsServiceTest {
                 GameTeamInfo(
                     id = BingoTeamKey("bingo_blue"),
                     gameId = wonGameId,
-                    name = buildJsonObject {
-                        put("translate", JsonPrimitive("bingo.team.blue"))
-                    },
+                    name = "{}",
                     isWinner = true,
                 )
             ),
@@ -246,9 +240,7 @@ class StatsServiceTest {
                 GameTeamInfo(
                     id = BingoTeamKey("bingo_blue"),
                     gameId = lostGameId,
-                    name = buildJsonObject {
-                        put("translate", JsonPrimitive("bingo.team.blue"))
-                    },
+                    name = "{}",
                     isWinner = false,
                 )
             ),
