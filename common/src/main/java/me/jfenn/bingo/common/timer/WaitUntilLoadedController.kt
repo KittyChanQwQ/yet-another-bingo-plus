@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.mixinhandler.ServerPlayNetworkHandlerMixinHandler
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.time.Duration.Companion.milliseconds
@@ -19,6 +20,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 internal class WaitUntilLoadedController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     private val options: BingoOptions,
     private val state: BingoState,
     private val countdownService: CountdownService,
@@ -54,9 +56,9 @@ internal class WaitUntilLoadedController(
 
             // change to the playing state
             if (options.startCountdownSeconds > 0) {
-                state.changeState(events, GameState.COUNTDOWN)
+                state.changeState(eventBus, GameState.COUNTDOWN)
             } else {
-                state.changeState(events, GameState.PLAYING)
+                state.changeState(eventBus, GameState.PLAYING)
 
                 val packet = CountdownPacket(0)
                 for (player in playerManager.getPlayers()) {

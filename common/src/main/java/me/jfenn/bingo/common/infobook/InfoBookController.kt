@@ -1,11 +1,13 @@
 package me.jfenn.bingo.common.infobook
 
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.PlayerSettingsEvent
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.event.IEventBus
 
 /**
  * Gives the player a tutorial/lobby book when they join the game.
@@ -17,6 +19,7 @@ import me.jfenn.bingo.common.state.GameState
  */
 internal class InfoBookController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     private val state: BingoState,
     private val config: BingoConfig,
     private val bookService: InfoBookService,
@@ -37,7 +40,7 @@ internal class InfoBookController(
             }
         }
 
-        events.onChangePlayerSettings { player ->
+        eventBus.register(PlayerSettingsEvent) { (player) ->
             bookService.updateBookItem(player)
         }
 

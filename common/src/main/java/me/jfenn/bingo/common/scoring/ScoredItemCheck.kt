@@ -9,6 +9,8 @@ import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.objective.ItemObjectiveManager
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.CardShuffledEvent
+import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.game.GameService
@@ -22,6 +24,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
@@ -44,6 +47,7 @@ internal class ScoredItemCheck(
     private val text: TextProvider,
     private val permission: IPermissionsApi,
     private val events: ScopedEvents,
+    private val eventBus: IEventBus,
 ) : BingoComponent() {
 
     // Card completed packets should only be sent if the game continues and does not end
@@ -490,14 +494,15 @@ internal class ScoredItemCheck(
             }
 
             onCardAssigned(newCard, teamsWithoutCards)
-            events.onCardShuffled(newCard.id)
+
+            eventBus.emit(CardShuffledEvent, CardShuffledEvent(newCard.id))
         }
 
         // Only run onTeamWinner events after the card tick is complete
         // and we know that the game is still running
         teamWinners
             .mapNotNull { state.teams[it] }
-            .forEach { events.onTeamWinner(it) }
+            .forEach { eventBus.emit(TeamWinnerEvent, TeamWinnerEvent(it)) }
     }
 
     private fun onCardAssigned(card: BingoCard, removeTeams: List<BingoTeam>) {

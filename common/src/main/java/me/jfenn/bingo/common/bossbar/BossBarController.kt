@@ -1,12 +1,14 @@
 package me.jfenn.bingo.common.bossbar
 
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.PlayerSettingsEvent
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.util.Formatting
 
 /**
@@ -14,6 +16,7 @@ import net.minecraft.util.Formatting
  */
 internal class BossBarController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     private val options: BingoOptions,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
@@ -24,7 +27,7 @@ internal class BossBarController(
     init {
         events.onPlayerJoin { (player) -> bossBarService.updateBossBar(player) }
         events.onChangeTeam { player -> bossBarService.updateBossBar(player) }
-        events.onChangePlayerSettings { player -> bossBarService.updateBossBar(player) }
+        eventBus.register(PlayerSettingsEvent) { (player) -> bossBarService.updateBossBar(player) }
 
         events.onUpdateTick {
             for (player in playerManager.getPlayers())

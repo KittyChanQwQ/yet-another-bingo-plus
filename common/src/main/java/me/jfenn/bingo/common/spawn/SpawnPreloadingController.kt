@@ -13,6 +13,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import kotlin.math.absoluteValue
@@ -25,6 +26,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 internal class SpawnPreloadingController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     private val state: BingoState,
     private val config: BingoConfig,
     private val spawnService: SpawnService,
@@ -89,7 +91,7 @@ internal class SpawnPreloadingController(
                 .whenCompleteAsync({ _, _ ->
                     log.info("[SpawnPreloadingController] Finished preloading spawn chunks in ${Clock.System.now() - startedLoading}")
                     chunkFutureList = emptyList()
-                    state.changeState(events, GameState.LOADING)
+                    state.changeState(eventBus, GameState.LOADING)
                 }, serverTaskExecutor)
         }
 

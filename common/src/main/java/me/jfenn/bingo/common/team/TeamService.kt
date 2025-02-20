@@ -2,11 +2,13 @@ package me.jfenn.bingo.common.team
 
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
@@ -15,6 +17,7 @@ import kotlin.math.ceil
 class TeamService(
     private val log: Logger,
     private val events: ScopedEvents,
+    private val eventBus: IEventBus,
     private val state: BingoState,
     private val data: ScopedData,
     private val teamManager: ITeamManager,
@@ -71,7 +74,7 @@ class TeamService(
                 .formatted(Formatting.YELLOW)
         )
 
-        events.onChangeTeam(player)
+        eventBus.emit(TeamChangedEvent, TeamChangedEvent(player))
     }
 
     private val extraTeamColors = arrayOf(

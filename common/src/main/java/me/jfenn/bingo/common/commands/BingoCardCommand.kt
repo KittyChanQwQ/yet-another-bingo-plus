@@ -7,7 +7,8 @@ import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.objective.ObjectiveListService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.CardShuffledEvent
+import me.jfenn.bingo.common.event.model.OptionsChangedEvent
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.options.optionsContext
@@ -20,6 +21,7 @@ import me.jfenn.bingo.platform.commands.CommandArgument
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.text.Texts
 import net.minecraft.util.Formatting
 
@@ -27,6 +29,7 @@ class BingoCardCommand(
     commandManager: ICommandManager,
     private val config: BingoConfig,
     private val text: TextProvider,
+    private val eventBus: IEventBus,
 ) : BingoComponent() {
 
     companion object {
@@ -89,7 +92,7 @@ class BingoCardCommand(
             ctx = optionsContext,
             itemDistInput = itemDistInput,
         )
-        scope.get<ScopedEvents>().onChangeOptions(Unit)
+        eventBus.emit(OptionsChangedEvent, Unit)
     }
 
     private fun IExecutionContext.rerollCard() {
@@ -101,7 +104,7 @@ class BingoCardCommand(
         }
         cardService.shuffleCard(card, excludedObjectives)
         sendFeedback(text.string(StringKey.OptionsRerollCardSuccess))
-        scope.get<ScopedEvents>().onCardShuffled(card.id)
+        eventBus.emit(CardShuffledEvent, CardShuffledEvent(card.id))
     }
 
     private fun IExecutionContext.getCardTags() = buildMap {

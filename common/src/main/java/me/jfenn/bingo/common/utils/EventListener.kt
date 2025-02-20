@@ -51,20 +51,3 @@ class ReturnEventListener<T, R>(
 }
 
 typealias EventListener<T> = ReturnEventListener<T, Unit>
-
-class EventListenerFactory<T, R> {
-    private var listener: ReturnEventListener<T, R>? = null
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): ReturnEventListener<T, R> {
-        listener?.let { return it }
-
-        return synchronized(this) {
-            // this seems redundant, but it isn't
-            listener?.let { return it }
-
-            // construct a new listener if one doesn't exist
-            val newListener = ReturnEventListener<T, R>(label = property.name)
-            listener = newListener
-            newListener
-        }
-    }
-}

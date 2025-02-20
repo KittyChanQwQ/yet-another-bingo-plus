@@ -1,6 +1,8 @@
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.CardShuffledEvent
+import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -58,14 +60,14 @@ internal class BingoMapController(
             cardViewService.sendUpdatePackets(player)
         }
 
-        events.onTeamWinner { team ->
-            team.players
+        eventBus.register(TeamWinnerEvent) {
+            it.team.players
                 .mapNotNull { playerManager.getPlayer(it.uuid) }
                 .forEach { cardViewService.sendUpdatePackets(it) }
         }
 
-        events.onCardShuffled { cardId ->
-            cardViewService.sendCardShuffledPacket(cardId)
+        eventBus.register(CardShuffledEvent) {
+            cardViewService.sendCardShuffledPacket(it.cardId)
         }
 
         events.onChangeOptions {

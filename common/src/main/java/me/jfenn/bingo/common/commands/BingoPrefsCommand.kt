@@ -3,20 +3,21 @@ package me.jfenn.bingo.common.commands
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.PlayerSettingsEvent
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
-import kotlin.reflect.KMutableProperty1
+import me.jfenn.bingo.platform.event.IEventBus
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
 class BingoPrefsCommand(
     commandManager: ICommandManager,
     private val text: TextProvider,
+    private val eventBus: IEventBus,
 ) : BingoComponent() {
 
     data class SettingEntry(
@@ -44,7 +45,7 @@ class BingoPrefsCommand(
     ) {
         val handler = scope.get<PlayerSettingsService>()
         handler.write(player.uuid, field, value, seenTutorial = true)
-        scope.get<ScopedEvents>().onChangePlayerSettings(player)
+        eventBus.emit(PlayerSettingsEvent, PlayerSettingsEvent(player))
 
         if (string != null) {
             sendMessage(

@@ -2,14 +2,16 @@ package me.jfenn.bingo.common.ready
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.OptionsChangedEvent
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.event.IEventBus
 
 class ReadyCommand(
     commandManager: ICommandManager,
     private val text: TextProvider,
+    private val eventBus: IEventBus,
 ) {
     init {
         commandManager.register("ready") {
@@ -28,7 +30,7 @@ class ReadyCommand(
                     if (timerState.isRunning) {
                         timerState.reset()
                         // call onChangeOptions to refresh the player list
-                        scope.get<ScopedEvents>().onChangeOptions.invoke(Unit)
+                        eventBus.emit(OptionsChangedEvent, Unit)
                     }
 
                     sendFeedback(text.string(StringKey.CommandReadyCancelled))

@@ -4,7 +4,7 @@ import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.OptionsChangedEvent
 import me.jfenn.bingo.common.menu.tooltips.TooltipState
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
@@ -26,7 +26,6 @@ internal fun MenuComponent.registerButtonInteraction(
     permissionGetter: ((ServerPlayerEntity) -> Boolean)? = null,
     interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
     tooltipState: TooltipState = koinScope.get(),
-    events: ScopedEvents = koinScope.get(),
     executors: IExecutors = koinScope.get(),
     log: Logger = koinScope.get(),
     clickSound: (() -> PlayerSoundEvent)? = null,
@@ -66,7 +65,7 @@ internal fun MenuComponent.registerButtonInteraction(
                 // Schedule an options changed event
                 // (this clears the ready state & redraws the menu)
                 executors.createServerTaskExecutor(player.server).execute {
-                    events.onChangeOptions.invoke(Unit)
+                    eventBus.emit(OptionsChangedEvent, Unit)
                 }
             }
         }

@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.autorestart
 
 import me.jfenn.bingo.common.bossbar.BossBarService
-import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.spawn.SpawnService
@@ -20,7 +19,6 @@ import org.slf4j.Logger
 import kotlin.random.Random
 
 internal class ResetService(
-    private val events: ScopedEvents,
     private val eventBus: IEventBus,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
@@ -67,7 +65,7 @@ internal class ResetService(
         )
 
         log.info("[Reset] Teleporting players back to lobby")
-        state.changeState(events, GameState.PREGAME) // invokes createInitialCards in ScoredItemCheck
+        state.changeState(eventBus, GameState.PREGAME) // invokes createInitialCards in ScoredItemCheck
 
         // if any player is still in the world, teleport to the lobby
         for (player in playerManager.getPlayers()) {

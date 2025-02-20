@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.client.platform.text.IText
-import me.jfenn.bingo.client.platform.text.ITextFactory
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.EntityType
 import me.jfenn.bingo.platform.IDisplayEntity
 import me.jfenn.bingo.platform.IEntity
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.util.Formatting
 import org.koin.core.scope.Scope
 import java.util.*
@@ -75,6 +75,7 @@ internal open class MenuComponent(
 ) {
 
     val text: TextProvider by koinScope.inject()
+    val eventBus: IEventBus by koinScope.inject()
 
     private var tracker: MenuInstance? = null
     private val entities: MutableList<MenuEntityHandle<*>> = mutableListOf()

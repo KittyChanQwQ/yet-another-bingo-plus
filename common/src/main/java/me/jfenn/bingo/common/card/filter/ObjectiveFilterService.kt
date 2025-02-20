@@ -29,7 +29,7 @@ class ObjectiveFilterService(
                 val name = filter.name(text)
                 when {
                     includePresetDetails -> name.append(" ")
-                        .append(text.literal("($filter)").formatted(Formatting.GRAY))
+                        .append(text.literal("(${filter.value})").formatted(Formatting.GRAY))
                     else -> name
                 }
             }

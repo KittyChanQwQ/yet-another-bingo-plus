@@ -4,14 +4,17 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.PlayerSettingsEvent
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
 
 internal class PlayerSettingsController(
     private val events: ScopedEvents,
+    private val eventBus: IEventBus,
     private val log: Logger,
     private val permissions: IPermissionsApi,
     private val playerSettingsService: PlayerSettingsService,
@@ -29,7 +32,7 @@ internal class PlayerSettingsController(
             )
 
             playerSettingsService.writeAll(player.uuid, newSettings)
-            events.onChangePlayerSettings(player)
+            eventBus.emit(PlayerSettingsEvent, PlayerSettingsEvent(player))
         } else {
             log.debug(
                 "[PlayerSettingsController] Server - denying settings change from {} due to permissions",
@@ -39,7 +42,7 @@ internal class PlayerSettingsController(
     }
 
     init {
-        events.onChangePlayerSettings { player ->
+        eventBus.register(PlayerSettingsEvent) { (player) ->
             val settings = playerSettingsService.getPlayer(player)
             when {
                 packetManager.receivePlayerSettingsV2.send(player, settings) -> {}

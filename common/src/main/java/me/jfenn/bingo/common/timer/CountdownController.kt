@@ -12,15 +12,17 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.platform.*
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.server.MinecraftServer
 import org.joml.Vector3d
 import kotlin.time.Duration.Companion.seconds
 
 internal class CountdownController(
+    events: ScopedEvents,
     private val server: MinecraftServer,
     private val options: BingoOptions,
     private val state: BingoState,
-    private val events: ScopedEvents,
+    private val eventBus: IEventBus,
     private val countdownService: CountdownService,
     private val teamService: TeamService,
     private val tickManager: ITickManager,
@@ -137,7 +139,7 @@ internal class CountdownController(
 
                 // When the countdown ends, start the game!
                 if (seconds <= 0) {
-                    state.changeState(events, GameState.PLAYING)
+                    state.changeState(eventBus, GameState.PLAYING)
                     countdownUntil = null
                 }
             }

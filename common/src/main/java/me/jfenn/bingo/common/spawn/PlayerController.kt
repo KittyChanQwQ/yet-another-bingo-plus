@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.spawn
 
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
@@ -11,6 +12,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.platform.*
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.server.MinecraftServer
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
@@ -30,6 +32,7 @@ import org.slf4j.Logger
  */
 internal class PlayerController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     private val log: Logger,
     private val server: MinecraftServer,
     private val state: BingoState,
@@ -251,7 +254,7 @@ internal class PlayerController(
             }
         }
 
-        events.onTeamWinner { team ->
+        eventBus.register(TeamWinnerEvent) { (team) ->
             val teamPlayers = team.players.mapNotNull { playerManager.getPlayer(it.uuid) }
             for (player in teamPlayers) {
                 if (state.isLobbyMode) {

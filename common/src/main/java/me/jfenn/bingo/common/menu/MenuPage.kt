@@ -4,7 +4,7 @@ import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commands.formatWarning
 import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.CardShuffledEvent
 import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.OptionsService
@@ -55,7 +55,7 @@ private fun createRootPage(
         val card = state.getActiveCard()
         cardService.shuffleCard(card)
         optionsService.broadcastHotbarMessage(it, text.string(StringKey.OptionsRerollCardSuccess))
-        koinScope.get<ScopedEvents>().onCardShuffled(card.id)
+        eventBus.emit(CardShuffledEvent, CardShuffledEvent(card.id))
     }
     registerTileButton(
         position = pos + Vector3d(MENU_TEAMS_WIDTH/2, -0.5 - 2*MENU_LINE_HEIGHT - 3*MENU_LINE_PADDING - 1.2, 0.0),

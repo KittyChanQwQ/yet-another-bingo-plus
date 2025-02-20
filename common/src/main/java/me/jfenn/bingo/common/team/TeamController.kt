@@ -2,11 +2,13 @@ package me.jfenn.bingo.common.team
 
 import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.ITeamManager
+import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
 
 class TeamController(
@@ -16,6 +18,7 @@ class TeamController(
     private val teamManager: ITeamManager,
     private val text: TextProvider,
     private val events: ScopedEvents,
+    private val eventBus: IEventBus,
     private val log: Logger,
 ) {
     init {
@@ -78,7 +81,7 @@ class TeamController(
 
                 if (isTeamLeft || isTeamJoined) {
                     log.info("[TeamController] Manually updated teams for '${player.playerName}'")
-                    events.onChangeTeam(player)
+                    eventBus.emit(TeamChangedEvent, TeamChangedEvent(player))
                     state.playersJoinedIds.add(player.uuid)
                 }
             }

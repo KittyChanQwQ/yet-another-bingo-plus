@@ -1,6 +1,7 @@
 package me.jfenn.bingo.integrations.voice
 
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -11,6 +12,7 @@ import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.config.read
 import me.jfenn.bingo.platform.config.write
+import me.jfenn.bingo.platform.event.IEventBus
 
 class VoiceGroupController(
     configManager: IConfigManager,
@@ -19,6 +21,7 @@ class VoiceGroupController(
     private val state: BingoState,
     private val teamService: TeamService,
     scopedEvents: ScopedEvents,
+    eventBus: IEventBus,
 ) {
 
     companion object {
@@ -142,7 +145,7 @@ class VoiceGroupController(
             updateGroups(listOf(player))
         }
 
-        scopedEvents.onTeamWinner { team ->
+        eventBus.register(TeamWinnerEvent) { (team) ->
             team.players
                 .mapNotNull { playerManager.getPlayer(it.uuid) }
                 .let { updateGroups(it) }

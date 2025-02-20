@@ -10,7 +10,6 @@ import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.commands.BingoOptionsCommands
 import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.options.BingoGoal
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.BingoWinCondition
@@ -30,6 +29,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
@@ -39,7 +39,7 @@ internal class GameService(
     private val state: BingoState,
     private val options: BingoOptions,
     private val server: MinecraftServer,
-    private val events: ScopedEvents,
+    private val eventBus: IEventBus,
     private val spawnService: SpawnService,
     private val chestService: ChestService,
     private val teamService: TeamService,
@@ -173,7 +173,7 @@ internal class GameService(
         }
 
         // change to the starting state (ensures that start cannot be used again, if this is async)
-        state.changeState(events, GameState.STARTING)
+        state.changeState(eventBus, GameState.STARTING)
 
         if (state.isLobbyMode) {
             // spread player teams to spawnpoint
@@ -182,11 +182,11 @@ internal class GameService(
                     chestService.createChestSpawnpoints()
 
                     // change to the loading state (until all players have loaded terrain)
-                    state.changeState(events, GameState.PRELOADING)
+                    state.changeState(eventBus, GameState.PRELOADING)
                 }, server)
         } else {
             // change to the loading state (until all players have loaded terrain)
-            state.changeState(events, GameState.PRELOADING)
+            state.changeState(eventBus, GameState.PRELOADING)
         }
 
         broadcastStart()
@@ -224,12 +224,12 @@ internal class GameService(
         writeStatsService.writeGame()
 
         // Finally, change state to POSTGAME (announces in GameOverController)
-        state.changeState(events, GameState.POSTGAME)
+        state.changeState(eventBus, GameState.POSTGAME)
 
         // if lobbyMode=false, immediately change state back to PREGAME once the POSTGAME events are sent
         if (!state.isLobbyMode) {
             state.reset()
-            state.changeState(events, GameState.PREGAME)
+            state.changeState(eventBus, GameState.PREGAME)
         }
     }
 

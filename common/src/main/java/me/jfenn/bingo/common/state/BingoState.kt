@@ -4,7 +4,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.card.BingoCard
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.menu.MenuPage
@@ -22,6 +22,7 @@ import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.util.Formatting
 import java.util.*
 import kotlin.time.Duration
@@ -146,10 +147,16 @@ data class BingoState(
         }
     }
 
-    fun changeState(events: ScopedEvents, newState: GameState) {
+    fun changeState(eventBus: IEventBus, newState: GameState) {
         val prevState = this.state
         this.state = newState
-        events.onStateChange(prevState to newState)
+        eventBus.emit(
+            StateChangedEvent,
+            StateChangedEvent(
+                from = prevState,
+                to = newState
+            )
+        )
     }
 
     fun ingameDuration(): Duration? {

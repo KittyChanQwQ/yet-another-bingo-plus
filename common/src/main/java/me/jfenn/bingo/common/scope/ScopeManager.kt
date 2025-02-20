@@ -7,7 +7,7 @@ import me.jfenn.bingo.common.MOD_ID
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -60,16 +60,13 @@ class ScopeManager(
             state.isLobbyMode = isLobbyMode
 
             scope.commonInit()
-
-            val events = scope.get<ScopedEvents>()
-            scope.registerCallback(events)
             eventBus.emit(ReloadEvent, ReloadEvent(server.resourceManager))
 
             // re-run state entry listeners
             if (state.state == GameState.UNINITIALIZED) {
-                state.changeState(events, GameState.PREGAME)
+                state.changeState(eventBus, GameState.PREGAME)
             } else {
-                events.onStateChange(state.state to state.state)
+                eventBus.emit(StateChangedEvent, StateChangedEvent(state.state, state.state))
             }
 
             // If the state somehow does not have any cards (save error), fix that
