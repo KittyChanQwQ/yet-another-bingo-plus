@@ -91,7 +91,6 @@ internal class BingoEndScreen(
     private val width by helper::width
     private val height by helper::height
     private val client = MinecraftClient.getInstance()
-    private val textRenderer = client.textRenderer
 
     private val cardsWidget = BingoCardsWidget(
         koin,
@@ -122,7 +121,7 @@ internal class BingoEndScreen(
         }
     }
 
-    private val fireworkRenderer = BingoEndFireworkRenderer()
+    private val fireworkRenderer = BingoEndFireworkRenderer(text)
         .takeIf { gameOver.isFirstOpen }
         ?.also { gameOver.isFirstOpen = false }
 
@@ -209,30 +208,27 @@ internal class BingoEndScreen(
     }
 
     private fun renderGameDuration(drawService: IDrawService, titleY: Int) {
-        val context by drawService::context
+        drawService.matrices.push()
+        drawService.matrices.translate(width * 0.2f - 20f, titleY.toFloat(), 0f)
+        drawService.matrices.multiply(Quaternionf(AxisAngle4f(-.25f, 0f, 0f, 1f)))
+        drawService.matrices.push()
+        drawService.matrices.scale(2f, 2f, 1f)
 
-        context.matrices.push()
-        context.matrices.translate(width * 0.2f - 20f, titleY.toFloat(), 0f)
-        context.matrices.multiply(Quaternionf(AxisAngle4f(-.25f, 0f, 0f, 1f)))
-        context.matrices.push()
-        context.matrices.scale(2f, 2f, 1f)
-
-        val gameDuration = gameOver.packet.duration.formatString()
-        context.drawText(
-            textRenderer,
+        val gameDuration = text.literal(gameOver.packet.duration.formatString())
+        drawService.drawText(
             gameDuration,
-            -textRenderer.getWidth(gameDuration)/2, 0,
+            -drawService.font.getTextWidth(gameDuration)/2, 0,
             0xFF_A3F5A3.toInt(),
             true,
         )
 
-        context.matrices.pop()
+        drawService.matrices.pop()
 
         val title = text.string(StringKey.StatsGameDuration)
         drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
 
         gameOver.packet.prevBestTime?.let { prevBestTime ->
-            context.matrices.push()
+            drawService.matrices.push()
 
             if (gameOver.packet.isBestTime) {
                 // Animate in a "New best time!" message
@@ -246,21 +242,20 @@ internal class BingoEndScreen(
                     .copy(a = (animProgress * 255).toInt().coerceAtLeast(6))
                     .asIntWithAlpha
 
-                context.matrices.scale(bestScale, bestScale, 1f)
+                drawService.matrices.scale(bestScale, bestScale, 1f)
                 drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, bestColor, true)
             } else {
                 val bestText = text.string(StringKey.StatsBestTime, prevBestTime.formatString())
                 drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
             }
 
-            context.matrices.pop()
+            drawService.matrices.pop()
         }
 
-        context.matrices.pop()
+        drawService.matrices.pop()
     }
 
     private fun renderWinStreak(drawService: IDrawService, titleY: Int) {
-        val context by drawService::context
         val winStreak = gameOver.packet.winStreak ?: return
         val now = state.now
 
@@ -273,27 +268,27 @@ internal class BingoEndScreen(
                 .value
         }
 
-        context.matrices.push()
-        context.matrices.translate(width * 0.8f + 20f, titleY.toFloat(), 0f)
-        context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
-        context.matrices.push()
-        context.matrices.scale(2f, 2f, 1f)
+        drawService.matrices.push()
+        drawService.matrices.translate(width * 0.8f + 20f, titleY.toFloat(), 0f)
+        drawService.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
+        drawService.matrices.push()
+        drawService.matrices.scale(2f, 2f, 1f)
 
-        context.drawText(
-            textRenderer,
-            "$winStreak",
-            -textRenderer.getWidth("$winStreak")/2, 0,
+        val winStreakText = text.literal("$winStreak")
+        drawService.drawText(
+            winStreakText,
+            -drawService.font.getTextWidth(winStreakText)/2, 0,
             0xFF_F5A3D6.toInt(),
             true,
         )
 
-        context.matrices.pop()
+        drawService.matrices.pop()
 
         val title = text.string(StringKey.StatsWinStreak)
         drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
 
         gameOver.packet.bestWinStreak?.let { bestWinStreak ->
-            context.matrices.push()
+            drawService.matrices.push()
 
             if (gameOver.packet.isBestWinStreak) {
                 // Animate in a "New max streak!" message
@@ -305,52 +300,50 @@ internal class BingoEndScreen(
                     .copy(a = (animProgress * 255).toInt().coerceAtLeast(6))
                     .asIntWithAlpha
 
-                context.matrices.scale(bestScale, bestScale, 1f)
+                drawService.matrices.scale(bestScale, bestScale, 1f)
                 drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, bestColor, true)
             } else {
                 val bestText = text.string(StringKey.StatsWinStreakMax, bestWinStreak)
                 drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
             }
 
-            context.matrices.pop()
+            drawService.matrices.pop()
         }
 
-        context.matrices.pop()
+        drawService.matrices.pop()
 
         if (winStreak > 1 && gameOver.packet.isWinner) {
-            context.matrices.push()
-            context.matrices.translate(width * 0.8f + 20f, titleY.toFloat() + 12, 0f)
-            context.matrices.multiply(Quaternionf(AxisAngle4f(
+            drawService.matrices.push()
+            drawService.matrices.translate(width * 0.8f + 20f, titleY.toFloat() + 12, 0f)
+            drawService.matrices.multiply(Quaternionf(AxisAngle4f(
                 now.toEpochMilliseconds()
                     .mod(2000)
                     .div(2000f)
                     .times(2*PI.toFloat()),
                 0f, 0f, 1f
             )))
-            context.matrices.scale(8f, 8f, 1f)
-            context.matrices.push()
-            context.matrices.translate(-2.5, -3.5, 0.0)
+            drawService.matrices.scale(8f, 8f, 1f)
+            drawService.matrices.push()
+            drawService.matrices.translate(-2.5f, -3.5f, 0f)
 
-            context.drawText(
-                textRenderer,
-                "◆",
+            drawService.drawText(
+                text.literal("◆"),
                 0, 0,
                 0x30_F5A3D6,
                 false,
             )
 
-            context.matrices.pop()
-            context.matrices.pop()
+            drawService.matrices.pop()
+            drawService.matrices.pop()
         }
     }
 
     override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
-        val context by drawService::context
         val cardTop = (height/2) - (BingoHudRenderer.CARD_HEIGHT/2)
         val titleY = min((cardTop * 0.75f).roundToInt(), cardTop - 11*2) + tabsHeight
 
-        context.matrices.push()
-        context.matrices.scale(2f, 2f, 2f)
+        drawService.matrices.push()
+        drawService.matrices.scale(2f, 2f, 2f)
         drawService.drawText(
             gameOver.packet.title,
             (width/4) - (drawService.font.getTextWidth(gameOver.packet.title)/2),
@@ -358,7 +351,7 @@ internal class BingoEndScreen(
             0xff_ffffff.toInt(),
             true,
         )
-        context.matrices.pop()
+        drawService.matrices.pop()
 
         drawService.drawText(
             gameOver.packet.subtitle,
@@ -381,7 +374,7 @@ internal class BingoEndScreen(
         }
 
         if (gameOver.packet.isWinner) {
-            fireworkRenderer?.render(context, textRenderer, width/2, height/2, state.now)
+            fireworkRenderer?.render(drawService, width/2, height/2, state.now)
         }
     }
 

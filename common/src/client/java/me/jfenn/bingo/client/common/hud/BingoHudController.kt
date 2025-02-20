@@ -141,8 +141,7 @@ internal class BingoHudController(
             fireworkRenderer = null
         } else {
             fireworkRenderer?.render(
-                context = context,
-                textRenderer = textRenderer,
+                drawService = drawService,
                 centerX = x.toInt() + (BingoHudRenderer.CARD_WIDTH/2),
                 centerY = y.toInt() + (BingoHudRenderer.CARD_HEIGHT/2),
                 now = state.now,
@@ -392,7 +391,7 @@ internal class BingoHudController(
 
         eventBus.register(packetEvents.cardCompletedV1) {
             if (it.packet.isWinner) {
-                fireworkRenderer = BingoEndFireworkRenderer(range = (100 * config.client.cardScale).toInt())
+                fireworkRenderer = BingoEndFireworkRenderer(text, range = (100 * config.client.cardScale).toInt())
             }
         }
 

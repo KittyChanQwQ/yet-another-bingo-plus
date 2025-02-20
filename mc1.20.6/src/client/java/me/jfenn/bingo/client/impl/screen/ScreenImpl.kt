@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.impl.screen
 
-import me.jfenn.bingo.client.impl.DrawService
+import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.platform.screen.IScreen
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext

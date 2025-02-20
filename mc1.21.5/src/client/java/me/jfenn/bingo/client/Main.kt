@@ -2,6 +2,7 @@ package me.jfenn.bingo.client
 
 import me.jfenn.bingo.client.common.commonClientModule
 import me.jfenn.bingo.client.impl.*
+import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.impl.event.ClientCloseEvent
 import me.jfenn.bingo.client.impl.event.ClientEventsImpl
 import me.jfenn.bingo.client.impl.screen.ScreenFactory

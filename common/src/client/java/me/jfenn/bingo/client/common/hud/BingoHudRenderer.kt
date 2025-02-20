@@ -125,9 +125,9 @@ internal class BingoHudRenderer(
     ) {
         val colors = cardColors.getTeamColors(view.teamKey ?: BingoTeamKey("preview"), view.display.teamColor)
 
-        context.matrices.push()
-        context.matrices.translate(x, y, z.toFloat())
-        context.matrices.scale(cardScale, cardScale, 1f)
+        service.matrices.push()
+        service.matrices.translate(x, y, z.toFloat())
+        service.matrices.scale(cardScale, cardScale, 1f)
 
         // Draw a translucent background behind all card items
         context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.backgroundColor.asIntWithAlpha)
@@ -151,13 +151,13 @@ internal class BingoHudRenderer(
         }
 
         if (isWinner) {
-            context.matrices.push()
-            context.matrices.translate(90.0, -4.0, 1000.0)
-            context.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
+            service.matrices.push()
+            service.matrices.translate(90f, -4f, 1000f)
+            service.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
 
             service.drawText(text.string(StringKey.CardWinner), 0, 0, getWinColor(state.now), true)
 
-            context.matrices.pop()
+            service.matrices.pop()
         }
 
         for (tileIndex in 0 until 25) {
@@ -190,8 +190,8 @@ internal class BingoHudRenderer(
             val itemY = interpolateY.get(Interpolate.Easing.IN_OUT, state.now)
 
             // BEGIN: TILE DRAW
-            context.matrices.push()
-            context.matrices.translate(itemX, itemY, 0f)
+            service.matrices.push()
+            service.matrices.translate(itemX, itemY, 0f)
 
             val isFlashing = showFlashingTiles && shouldRenderFlashing(tile)
             when {
@@ -284,7 +284,7 @@ internal class BingoHudRenderer(
             }
 
             // END: TILE DRAW
-            context.matrices.pop()
+            service.matrices.pop()
         }
 
         if (isFocused) {
@@ -299,7 +299,7 @@ internal class BingoHudRenderer(
             )
         }
 
-        context.matrices.pop()
+        service.matrices.pop()
 
         // Render the team's player list if the title is hovered over
         if (
@@ -308,10 +308,10 @@ internal class BingoHudRenderer(
             mouseY in y.toInt()..(y+20*cardScale).toInt() &&
             view.display.players.isNotEmpty()
         ) {
-            context.matrices.push()
-            context.matrices.translate(0f, 0f, z + 2000f)
+            service.matrices.push()
+            service.matrices.translate(0f, 0f, z + 2000f)
             context.drawTooltip(service.textRenderer, view.display.players.map { Text.literal(it.name) }, mouseX, mouseY)
-            context.matrices.pop()
+            service.matrices.pop()
         }
 
         if (isMouseOver) {
@@ -355,8 +355,8 @@ internal class BingoHudRenderer(
         val columns = ceil(tile.imageList.size / rows.toFloat()).toInt()
 
         if (tooltip.isNotEmpty()) {
-            context.matrices.push()
-            context.matrices.translate(0f, 0f, z + 2000f)
+            service.matrices.push()
+            service.matrices.translate(0f, 0f, z + 2000f)
 
             if (tile.imageList.isNotEmpty()) {
                 val tooltipWidth = tooltip.maxOf { service.font.getTextWidth(it) }
@@ -402,7 +402,7 @@ internal class BingoHudRenderer(
             }
 
             context.drawTooltip(service.textRenderer, tooltip.map { it.value }, mouseX, mouseY)
-            context.matrices.pop()
+            service.matrices.pop()
         }
     }
 

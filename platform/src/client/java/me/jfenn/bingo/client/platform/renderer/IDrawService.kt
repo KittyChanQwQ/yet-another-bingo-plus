@@ -14,6 +14,7 @@ interface IDrawService {
     val context: DrawContext
     val textRenderer: TextRenderer
     val font: IFont
+    val matrices: IMatrixStack
 
     fun enableBlend()
     fun disableBlend()

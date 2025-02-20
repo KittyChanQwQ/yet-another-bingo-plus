@@ -2,9 +2,9 @@ package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.map.Color
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.DrawContext
+import me.jfenn.bingo.common.text.TextProvider
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
 import org.joml.Vector2d
@@ -14,6 +14,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 
 internal class BingoEndFireworkRenderer(
+    text: TextProvider,
     private val startedAt: Instant = Clock.System.now(),
     private var range: Int = 500,
 ) {
@@ -55,9 +56,10 @@ internal class BingoEndFireworkRenderer(
 
     fun isDone() = stars.isEmpty()
 
+    private val starText = text.literal("★")
+
     fun render(
-        context: DrawContext,
-        textRenderer: TextRenderer,
+        drawService: IDrawService,
         centerX: Int,
         centerY: Int,
         now: Instant,
@@ -76,18 +78,18 @@ internal class BingoEndFireworkRenderer(
                 continue
             }
 
-            context.matrices.push()
-            context.matrices.translate(centerX.toDouble(), centerY.toDouble(), 0.0)
-            context.matrices.translate(x, y, 2000.0)
-            context.matrices.multiply(Quaternionf(AxisAngle4f(rot.toFloat(), 0f, 0f, 1f)))
+            drawService.matrices.push()
+            drawService.matrices.translate(centerX.toFloat(), centerY.toFloat(), 0f)
+            drawService.matrices.translate(x.toFloat(), y.toFloat(), 2000f)
+            drawService.matrices.multiply(Quaternionf(AxisAngle4f(rot.toFloat(), 0f, 0f, 1f)))
 
             val color = star.color
                 .copy(a = (alpha * 255).toInt().coerceIn(1, 255))
                 .asIntWithAlpha
 
-            context.drawText(textRenderer, "★", -4, -4, color, false)
+            drawService.drawText(starText, -4, -4, color, false)
 
-            context.matrices.pop()
+            drawService.matrices.pop()
         }
     }
 

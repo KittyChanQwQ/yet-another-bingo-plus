@@ -1,10 +1,12 @@
-package me.jfenn.bingo.client.impl
+package me.jfenn.bingo.client.impl.draw
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.jfenn.bingo.client.impl.NativeImageImpl
 import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.client.platform.renderer.IFont
+import me.jfenn.bingo.client.platform.renderer.IMatrixStack
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.impl.ItemStackFactory
 import me.jfenn.bingo.platform.item.IItemStack
@@ -22,6 +24,7 @@ class DrawService(
 
     override val textRenderer: TextRenderer = MinecraftClient.getInstance().textRenderer
     override val font: IFont = FontImpl(textRenderer)
+    override val matrices: IMatrixStack = MatrixStackImpl(context.matrices)
 
     companion object : IDrawServiceFactory {
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)

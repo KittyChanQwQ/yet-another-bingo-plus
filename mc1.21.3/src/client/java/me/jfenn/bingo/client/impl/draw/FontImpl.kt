@@ -1,4 +1,4 @@
-package me.jfenn.bingo.client.impl
+package me.jfenn.bingo.client.impl.draw
 
 import me.jfenn.bingo.client.platform.renderer.IFont
 import me.jfenn.bingo.client.platform.text.IText

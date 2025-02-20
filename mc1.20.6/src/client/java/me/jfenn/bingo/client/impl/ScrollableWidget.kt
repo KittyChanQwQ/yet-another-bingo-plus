@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.impl
 
+import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.platform.IScrollableWidget
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import net.minecraft.client.gui.DrawContext
