@@ -21,6 +21,7 @@ class KeyBindingManager : IKeyBindingManager {
     class KeyBindingImpl(
         private val binding: KeyBinding,
     ) : IKeyBinding {
+        override fun isPressed(): Boolean = binding.isPressed
         override fun wasPressed(): Boolean = binding.wasPressed()
     }
 }

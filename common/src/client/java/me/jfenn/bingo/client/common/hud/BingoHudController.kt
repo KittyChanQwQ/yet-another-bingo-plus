@@ -47,6 +47,7 @@ internal class BingoHudController(
 
     private val client = MinecraftClient.getInstance()
 
+    private var openCardKeyAlreadyPressed: Boolean = false
     private val openCardKey = keyBindingManager.registerKey(
         KEYBIND_OPEN_CARD,
         GLFW.GLFW_KEY_Y,
@@ -469,9 +470,14 @@ internal class BingoHudController(
         eventBus.register(ClientTickEvent.End) {
             if (client.isPaused) return@register
 
-            if (openCardKey.wasPressed()) {
-                if (optionsAccessor.isSneakPressed() && state.ready?.isRunning == true) {
-                    packetEvents.readySetV1.send(SetReadyPacket(!(state.ready?.isReady ?: false)))
+            var openCardKeyWasPressed = false
+            while (openCardKey.wasPressed()) openCardKeyWasPressed = true
+
+            if (openCardKeyWasPressed && !openCardKeyAlreadyPressed) {
+                if (state.ready?.canSendReady == true && optionsAccessor.isSneakPressed()) {
+                    if (state.ready?.isRunning == true) {
+                        packetEvents.readySetV1.send(SetReadyPacket(!(state.ready?.isReady ?: false)))
+                    }
                 } else {
                     if (state.views.isEmpty()) {
                         client.player?.sendMessage(text.string(StringKey.CardNoCards).value, true)
@@ -497,6 +503,11 @@ internal class BingoHudController(
 
                     client.setScreen(hudScreen)
                 }
+
+                // Prevent holding down the "Ready" keybind from toggling the ready packet multiple times
+                openCardKeyAlreadyPressed = true
+            } else if (!openCardKey.isPressed()) {
+                openCardKeyAlreadyPressed = false
             }
 
             if (toggleHudKey.wasPressed()) {

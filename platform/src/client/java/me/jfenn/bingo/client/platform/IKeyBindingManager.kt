@@ -9,5 +9,6 @@ interface IKeyBindingManager {
 }
 
 interface IKeyBinding {
+    fun isPressed(): Boolean
     fun wasPressed(): Boolean
 }
