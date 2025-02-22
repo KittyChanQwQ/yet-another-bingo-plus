@@ -25,6 +25,8 @@
   "bingo.command.end.success": "Jogo parado!",
   "bingo.command.filter.includes_unobtainable": "Este filtro pode incluir itens indisponíveis! Ao invés disso, você talvez queira:",
   "bingo.command.join.success": "O jogador %s foi movido para a equipe %s!",
+  "bingo.command.join.already_on_team": "O jogador já está na equipe %s!",
+  "bingo.command.join.does_not_exist": "A equipe '%s' não existe!",
   "bingo.command.lobby.must_run": "Erro: Você deve executar '%s' antes desse comando.",
   "bingo.command.lobby.restarting": "Reiniciando o servidor...",
   "bingo.command.lobby.warning1": "O bingo está atualmente executando no modo sobrevivência - em que não substituirá seu salvamento.",
