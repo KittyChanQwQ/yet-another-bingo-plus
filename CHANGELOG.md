@@ -18,6 +18,8 @@
 
 - [Lobby worlds](https://horrific.dev/bingo/lobby-structure/) now support editing the datapack files for custom dimension/biome settings
 
+- The preset lobby teams are also now [customizable via datapacks](https://gitlab.com/horrificdev/bingo/-/tree/main/common/src/main/resources/data/yet-another-minecraft-bingo/yet-another-minecraft-bingo/teams?ref_type=heads)!
+
 - Completely removed the "Disconnect" button from the game over screen (was only used for backwards compatibility)
 
 - Removed the confusing "Skip Card when Lost" setting, which is now inferred from the "End When" menu
@@ -27,6 +29,8 @@
 - (Client) 'Game over' screen now remembers which tab it was on, and only renders the win firework the first time it's opened.
 
 - (Client) Added an animation for card shuffle/reroll
+
+- (Client) Slight changes to the "Ready up" HUD/keybind behavior
 
 ### Bugs Squashed:
 
@@ -50,13 +54,20 @@
 
 - Fixed some behavior not working correctly in survival/SMP mode
 
+- Fixed the `nextRoundWhenEveryoneDisconnects` setting just not working at all
+
+- The lobby menu no longer breaks in custom lobbies when north-facing signs are used
+
+- Fixed [Waystones](https://modrinth.com/mod/waystones) keeping previous teleport locations after the world is reset
+
 ### Translations
 
 - New Chinese Simplified translations by BoredYukolin, teaSummer, nageih, yzy_sheep, and Young912!
 - New Chinese Traditional translations by Leo_768 and BoredYukolin!
 - New Danish translations by Libreh!
-- New French translations by Guillarda!
+- New French translations by Yosh64, Guillarda, and Narkotiqu!
 - New Portuguese translations by Lucasofchirst!
 - New Hungarian translations by petya0927 and Remarci!
 - New Russian translations by Mrpavel!
+- New Turkish translations by Erkin_!
   
