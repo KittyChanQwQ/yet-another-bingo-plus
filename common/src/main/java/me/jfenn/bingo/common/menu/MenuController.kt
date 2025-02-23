@@ -33,10 +33,9 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.Heightmap
 import net.minecraft.world.chunk.ChunkStatus
-import org.joml.Matrix4f
+import org.joml.Matrix4d
 import org.joml.Vector3d
-import org.joml.Vector3f
-import org.joml.Vector4f
+import org.joml.Vector4d
 import org.slf4j.Logger
 import java.io.IOException
 import java.nio.file.Files
@@ -73,7 +72,7 @@ internal class MenuController(
     private object Cache {
         var lobbyWorldModified: Instant = Instant.DISTANT_PAST
         var spawnPosition: Pair<BlockPosition, Float>? = null
-        var menuPosition: Matrix4f? = null
+        var menuPosition: Matrix4d? = null
         var teamPositions: Map<BingoTeamKey, BlockPosition>? = null
     }
 
@@ -106,7 +105,7 @@ internal class MenuController(
 
             val menuPos = getMenuPosition(lobbyWorld)
             if (menuPos != null) {
-                log.info("[MenuController] Spawning lobby menu at ${menuPos.getTranslation(Vector3f())}")
+                log.info("[MenuController] Spawning lobby menu at ${menuPos.getTranslation(Vector3d())}")
                 val menuInstance = MenuInstance(
                     log = log,
                     koinScope = koinScope,
@@ -243,7 +242,7 @@ internal class MenuController(
         }
     }
 
-    private fun getMenuPosition(lobbyWorld: ServerWorld): Matrix4f? = run {
+    private fun getMenuPosition(lobbyWorld: ServerWorld): Matrix4d? = run {
         Cache.menuPosition?.let { return@run it }
 
         log.measureTime("[MenuController] Locating menu position...") {
@@ -267,12 +266,13 @@ internal class MenuController(
 
                 if (isMenuPos && centerState != null) {
                     val directionVec = centerState.facing
-                    val yaw = atan2(directionVec.x.toFloat(), directionVec.z.toFloat())
+                    val yaw = atan2(directionVec.x.toDouble(), directionVec.z.toDouble())
 
-                    val matrix4f = Matrix4f()
-                    matrix4f.translate(pos.toVector3f())
-                    matrix4f.rotateY(yaw)
-                    return@measureTime matrix4f
+                    val matrix4d = Matrix4d()
+                    matrix4d.translate(pos.toVector3f())
+                    matrix4d.rotateY(yaw)
+
+                    return@measureTime matrix4d
                 }
             }
 
@@ -280,10 +280,10 @@ internal class MenuController(
         }
     }.also { menuPosition ->
         Cache.menuPosition = menuPosition
-        log.info("Set menu position to ${menuPosition?.transform(Vector4f())}")
+        log.info("Set menu position to ${menuPosition?.transform(Vector4d())}")
 
         if (menuPosition != null) {
-            val blockPos = Vector4f()
+            val blockPos = Vector4d()
                 .also { menuPosition.transform(it) }
                 .let { BlockPosition(it.x.roundToInt(), it.y.roundToInt(), it.z.roundToInt()) }
 
