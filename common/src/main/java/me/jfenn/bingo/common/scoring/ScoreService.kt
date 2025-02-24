@@ -66,8 +66,8 @@ internal object ScoreService {
 
         // if noone can beat or tie with the leading team, then it is a lockout (the leading team has won)
         val isStalemate = leadingTeamOrTie != null && teams
-            // for teams that are _not_ tied with the leading team...
-            .filter { comparator.compare(it.currentScore, leadingTeamOrTie.currentScore) < 0 }
+            // for all teams other than the leading team...
+            .filter { it.key != leadingTeamOrTie.key }
             .takeIf { it.isNotEmpty() }
             // at least one team can tie or beat the leading score
             ?.none { team ->
