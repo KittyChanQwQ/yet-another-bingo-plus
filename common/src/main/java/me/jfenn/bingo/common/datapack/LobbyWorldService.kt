@@ -26,8 +26,7 @@ class LobbyWorldService(
     }
 
     fun copyDataPack(toPath: Path) {
-        toPath.parent.toFile().mkdirs()
-
+        Files.createDirectories(toPath.parent)
         Files.deleteIfExists(toPath)
         Files.createFile(toPath)
 

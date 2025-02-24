@@ -21,5 +21,6 @@ class ServerProps(
     val levelName = readServerProperties()
         ?.find { it.startsWith("level-name=") }
         ?.removePrefix("level-name=")
+        ?.ifEmpty { "." }
         ?: "world"
 }
