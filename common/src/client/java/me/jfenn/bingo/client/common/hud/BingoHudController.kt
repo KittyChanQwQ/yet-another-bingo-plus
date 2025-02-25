@@ -34,6 +34,7 @@ internal class BingoHudController(
     private val configService: ConfigService,
     private val config: BingoConfig,
     private val renderer: BingoHudRenderer,
+    private val cardBufferService: CardBufferService,
     private val itemScoredRenderer: BingoMessageRenderer,
     private val readyHudRenderer: ReadyHudRenderer,
     private val hudScreenFactory: BingoHudScreen.Factory,
@@ -65,6 +66,8 @@ internal class BingoHudController(
     private val interpolateCardX = Interpolate(0f, 0f)
     private val interpolateCardY = Interpolate(0f, 0f)
     private val interpolateCardScale = Interpolate(0f, 0f)
+
+    private val dirtyCardKeys = mutableSetOf<BingoTeamKey?>()
 
     private fun onCardHudClosed(
         cardPositions: Map<BingoTeamKey?, Pair<Float, Float>>,
@@ -155,7 +158,16 @@ internal class BingoHudController(
         val mouseX = (mouse.x / scaleFactor).toInt()
         val mouseY = (mouse.y / scaleFactor).toInt()
         val isMouseOver = client.currentScreen is ChatScreen
-        renderer.drawCard(
+
+        drawService.matrices.push()
+        drawService.matrices.translate(x, y, config.client.cardOverlap.z.toFloat())
+        drawService.matrices.scale(cardScale, cardScale, 1f)
+
+        cardBufferService.draw(drawService, view.teamKey, BingoHudRenderer.CARD_WIDTH, BingoHudRenderer.CARD_HEIGHT)
+
+        drawService.matrices.pop()
+
+        renderer.drawAll(
             context,
             drawService,
             view,
@@ -195,7 +207,7 @@ internal class BingoHudController(
                 // if the card would go off-screen, don't bother rendering it...
                 if (cardEndX < 0 || cardEndX > context.scaledWindowWidth) continue
 
-                renderer.drawCard(
+                renderer.drawAll(
                     context,
                     drawService,
                     remainingView,
@@ -318,6 +330,8 @@ internal class BingoHudController(
                 ?: CardView(key, display, mutableListOf())
         }
 
+        dirtyCardKeys.addAll(displays.keys)
+
         updateGameOverViews()
 
         // if there are no teams being displayed (BingoMapController sends when entering PREGAME)
@@ -335,6 +349,8 @@ internal class BingoHudController(
                 ?.copy(display = display)
                 ?: CardView(key, display, mutableListOf())
         }
+
+        dirtyCardKeys.addAll(displays.keys)
 
         updateGameOverViews()
 
@@ -365,6 +381,7 @@ internal class BingoHudController(
 
         state.views += (packet.teamKey to view.copy(tiles = tiles))
         updateGameOverViews()
+        dirtyCardKeys.add(packet.teamKey)
     }
 
     private fun onCardShuffled(clientPacket: ClientPacket<CardShuffledPacket>) {
@@ -441,6 +458,12 @@ internal class BingoHudController(
             ) {
                 return@register
             }
+
+            cardBufferService.resize() // TODO: move to resize event?
+            cardBufferService.update(null)
+            dirtyCardKeys.clear()
+
+            it.drawService.context.draw()
 
             it.drawService.enableBlend()
             drawHud(it.drawService)

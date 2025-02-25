@@ -107,27 +107,15 @@ internal class BingoHudRenderer(
     }
 
     fun drawCard(
-        context: DrawContext,
         service: IDrawService,
         view: CardView,
-        x: Float,
-        y: Float,
-        z: Int = 0,
-        cardScale: Float,
-        mouseX: Int = -1,
-        mouseY: Int = -1,
         showTeamOutlines: Boolean = true,
         showFlashingTiles: Boolean = true,
-        isFocused: Boolean = false,
-        isMouseOver: Boolean = false,
         isGui: Boolean = false,
-        isWinner: Boolean = false,
     ) {
-        val colors = cardColors.getTeamColors(view.teamKey ?: BingoTeamKey("preview"), view.display.teamColor)
+        val context by service::context
 
-        service.matrices.push()
-        service.matrices.translate(x, y, z.toFloat())
-        service.matrices.scale(cardScale, cardScale, 1f)
+        val colors = cardColors.getTeamColors(view.teamKey ?: BingoTeamKey("preview"), view.display.teamColor)
 
         // Draw a translucent background behind all card items
         context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.backgroundColor.asIntWithAlpha)
@@ -148,16 +136,6 @@ internal class BingoHudRenderer(
                 ?: service.font.truncate(teamName, 70)
                     .also { view.display.clientTeamName = it }
             service.drawText(clientTeamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
-        }
-
-        if (isWinner) {
-            service.matrices.push()
-            service.matrices.translate(90f, -4f, 1000f)
-            service.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
-
-            service.drawText(text.string(StringKey.CardWinner), 0, 0, getWinColor(state.now), true)
-
-            service.matrices.pop()
         }
 
         for (tileIndex in 0 until 25) {
@@ -220,7 +198,7 @@ internal class BingoHudRenderer(
 
             cardTileRenderer.renderTile(service, tile, 1, 1)
 
-            if (tile.isAchieved && !isFlashing && mouseX == -1 && mouseY == -1) {
+            if (tile.isAchieved && !isFlashing && !isGui) {
                 context.fill(
                     RenderLayer.getGuiOverlay(),
                     0,
@@ -284,6 +262,50 @@ internal class BingoHudRenderer(
             }
 
             // END: TILE DRAW
+            service.matrices.pop()
+        }
+    }
+
+    fun drawAll(
+        context: DrawContext,
+        service: IDrawService,
+        view: CardView,
+        x: Float,
+        y: Float,
+        z: Int = 0,
+        cardScale: Float,
+        mouseX: Int = -1,
+        mouseY: Int = -1,
+        showTeamOutlines: Boolean = true,
+        showFlashingTiles: Boolean = true,
+        isFocused: Boolean = false,
+        isMouseOver: Boolean = false,
+        isGui: Boolean = false,
+        isWinner: Boolean = false,
+    ) {
+        val colors = cardColors.getTeamColors(view.teamKey ?: BingoTeamKey("preview"), view.display.teamColor)
+
+        service.matrices.push()
+        service.matrices.translate(x, y, z.toFloat())
+        service.matrices.scale(cardScale, cardScale, 1f)
+
+        if (isGui) {
+            drawCard(
+                service = service,
+                view = view,
+                showTeamOutlines = showTeamOutlines,
+                showFlashingTiles = showFlashingTiles,
+                isGui = isGui,
+            )
+        }
+
+        if (isWinner) {
+            service.matrices.push()
+            service.matrices.translate(90f, -4f, 1000f)
+            service.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
+
+            service.drawText(text.string(StringKey.CardWinner), 0, 0, getWinColor(state.now), true)
+
             service.matrices.pop()
         }
 

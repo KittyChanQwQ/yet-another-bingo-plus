@@ -6,6 +6,7 @@ import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
+import java.io.Closeable
 import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -142,4 +143,13 @@ interface IDrawService {
 
 interface IDrawServiceFactory {
     fun create(drawContext: DrawContext): IDrawService
+
+    fun newBuffer(width: Int, height: Int): IFramebuffer
+}
+
+interface IFramebuffer : Closeable {
+    fun resize(width: Int, height: Int)
+    fun beginWrite(): IDrawService
+    fun endWrite()
+    fun draw(service: IDrawService, width: Int, height: Int)
 }

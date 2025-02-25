@@ -24,6 +24,7 @@ import java.util.*
 val commonClientModule = module {
     singleOf(::ClientPacketEvents) withOptions { createdAtStart() }
 
+    singleOf(::CardBufferService)
     single { BingoHudState() }
     singleOf(::BingoHudRenderer)
     singleOf(::BingoMessageRenderer)

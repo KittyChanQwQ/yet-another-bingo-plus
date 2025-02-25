@@ -2,7 +2,6 @@ package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.renderer.IDrawService
-import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
@@ -35,7 +34,6 @@ internal class BingoCardsWidget(
     val onViewClick: ((CardView) -> Boolean)?,
 
     private val screen: Screen,
-    private val drawServiceFactory: IDrawServiceFactory = koin.get(),
     private val renderer: BingoHudRenderer = koin.get(),
     private val config: BingoConfig = koin.get()
 ) {
@@ -163,7 +161,7 @@ internal class BingoCardsWidget(
         viewsWithPositions { view, x, y, z ->
             val isHovered = hoveredView != null && hoveredView.teamKey == view.teamKey
             val isSingleView = views.size <= 1
-            renderer.drawCard(
+            renderer.drawAll(
                 context,
                 drawService,
                 view,

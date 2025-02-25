@@ -6,6 +6,7 @@
   "mixins": [
     "InteractionEntityMixin",
     "LevelPropertiesAccessor",
+    "MinecraftClientFramebuffer",
     "MinecraftServerSkipStartRegionMixin",
     "MinecraftServerUnsafeSkipCloseMixin",
     "PlayerEntityMixin",
