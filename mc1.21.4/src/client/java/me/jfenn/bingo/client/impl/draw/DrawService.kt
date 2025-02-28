@@ -27,17 +27,20 @@ class DrawService(
     override val matrices: IMatrixStack = MatrixStackImpl(context.matrices)
 
     companion object : IDrawServiceFactory {
+
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
+
+        private val vertexConsumers by lazy {
+            VertexConsumerProvider.immediate(BufferAllocator(786432))
+        }
 
         override fun newBuffer(width: Int, height: Int): IFramebuffer {
             val client = MinecraftClient.getInstance()
             val buffer = SimpleFramebuffer(width, height, true)
-            val vertexConsumers = VertexConsumerProvider.immediate(BufferAllocator(786432))
-            // val vertexConsumers = client.bufferBuilders.entityVertexConsumers
             val context = DrawContext(client, vertexConsumers)
 
             return FramebufferImpl(
-                buffer, vertexConsumers, DrawService(context)
+                buffer, DrawService(context)
             )
         }
     }

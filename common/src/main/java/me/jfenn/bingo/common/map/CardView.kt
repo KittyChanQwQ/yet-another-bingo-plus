@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.map
 
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -15,8 +14,6 @@ data class CardView(
     val teamKey: BingoTeamKey?,
     val display: CardDisplay,
     val tiles: MutableList<CardTile>,
-    @Transient
-    var shuffledAt: Instant = Instant.DISTANT_PAST,
 ) {
 
     fun tile(x: Int, y: Int): CardTile? {

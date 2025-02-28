@@ -1,12 +1,17 @@
 package me.jfenn.bingo.client.common
 
 import me.jfenn.bingo.client.common.hud.*
+import me.jfenn.bingo.client.common.hud.card.CardTileRenderer
+import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
+import me.jfenn.bingo.client.common.hud.card.ClientCardManager
+import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.settings.ClientSettingsController
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
 import me.jfenn.bingo.client.common.sound.ClientSounds
 import me.jfenn.bingo.client.common.sound.ScorePacketReceiver
 import me.jfenn.bingo.client.common.sound.SoundService
+import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.stats.ClientStatsSyncController
 import me.jfenn.bingo.client.common.world.BingoWorldManager
 import me.jfenn.bingo.client.integrations.JeiIntegration
@@ -24,9 +29,10 @@ import java.util.*
 val commonClientModule = module {
     singleOf(::ClientPacketEvents) withOptions { createdAtStart() }
 
-    singleOf(::CardBufferService)
     single { BingoHudState() }
-    singleOf(::BingoHudRenderer)
+    singleOf(::ClientCardBufferRenderer)
+    singleOf(::ClientCardRenderer)
+    singleOf(::ClientCardManager)
     singleOf(::BingoMessageRenderer)
     singleOf(::CardTileRenderer)
     singleOf(::ReadyHudRenderer)

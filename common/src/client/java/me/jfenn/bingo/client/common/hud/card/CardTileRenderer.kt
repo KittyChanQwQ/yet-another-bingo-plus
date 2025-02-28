@@ -1,6 +1,7 @@
-package me.jfenn.bingo.client.common.hud
+package me.jfenn.bingo.client.common.hud.card
 
-import me.jfenn.bingo.client.common.hud.BingoHudRenderer.Companion.CARD_WIDTH
+import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer.Companion.CARD_WIDTH
+import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardTileImage
@@ -117,7 +118,7 @@ internal class CardTileRenderer(
             )
         }
 
-        if (tile.decoration == @Suppress("Deprecation") CardTile.Decoration.MULTI_ITEM) {
+        if (tile.decoration == @Suppress("Deprecation") (CardTile.Decoration.MULTI_ITEM)) {
             drawService.drawGuiTexture(
                 texture = FRAME_MULTI_ID,
                 x = itemX - 2, y = itemY - 2, z = 300,

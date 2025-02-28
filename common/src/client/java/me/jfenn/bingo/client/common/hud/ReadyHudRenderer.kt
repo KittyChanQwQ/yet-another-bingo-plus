@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.common.hud
 
+import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.map.rgba

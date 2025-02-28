@@ -1,9 +1,9 @@
-package me.jfenn.bingo.client.common.hud
+package me.jfenn.bingo.client.common.state
 
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.client.common.hud.BingoCardColors
 import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.common.game.GameOverPacket
-import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 internal class BingoHudState(
     var now: Instant = Instant.DISTANT_PAST,
-    var views: Map<BingoTeamKey?, CardView> = emptyMap(),
+    var cards: MutableMap<BingoTeamKey?, ClientCardBase> = mutableMapOf(),
     var selectedTeam: BingoTeamKey? = null,
     var gameOver: GameOver? = null,
     val messages: MutableList<ScoreMessage> = mutableListOf(),
@@ -20,6 +20,7 @@ internal class BingoHudState(
     var tooltip: TooltipPacket? = null,
     var tooltipStartedAt: Instant? = null,
     var ready: ReadyUpdatePacket? = null,
+    var cardColors: BingoCardColors = BingoCardColors(),
 ) {
     fun reset() {
         selectedTeam = null
@@ -32,7 +33,8 @@ internal class BingoHudState(
 
     fun resetAll() {
         reset()
-        views = emptyMap()
+        cards.values.forEach { it.close() }
+        cards = mutableMapOf()
 
         val clearedImages = images.values.toList()
         images.clear()
@@ -43,7 +45,7 @@ internal class BingoHudState(
 
     class GameOver(
         var packet: GameOverPacket,
-        var views: List<CardView>,
+        var cards: List<ClientCardBase>,
         var tab: GameOverPacket.EndScreenTab = packet.defaultTab,
         var isFirstOpen: Boolean = true,
     )

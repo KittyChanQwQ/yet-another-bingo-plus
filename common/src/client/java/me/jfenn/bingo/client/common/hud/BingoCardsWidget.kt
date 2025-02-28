@@ -1,10 +1,12 @@
 package me.jfenn.bingo.client.common.hud
 
+import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
+import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
+import me.jfenn.bingo.client.common.state.ClientCard
+import me.jfenn.bingo.client.common.state.ClientCardBase
 import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.renderer.IDrawService
-import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
-import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.client.gui.screen.Screen
 import org.koin.core.Koin
@@ -26,16 +28,14 @@ internal class BingoCardsWidget(
     interpolateFromScale: Float = 1f,
     interpolateDuration: Duration = Duration.ZERO,
 
-    val showFlashingTiles: Boolean,
-    var views: Collection<CardView> = emptyList(),
+    var views: Collection<ClientCardBase> = emptyList(),
     var winner: BingoTeamKey? = null,
 
     val onTileClick: (CardTile) -> Boolean,
-    val onViewClick: ((CardView) -> Boolean)?,
+    val onViewClick: ((ClientCard) -> Boolean)?,
 
     private val screen: Screen,
-    private val renderer: BingoHudRenderer = koin.get(),
-    private val config: BingoConfig = koin.get()
+    private val renderer: ClientCardRenderer = koin.get(),
 ) {
 
     val interpolateX = Interpolate(
@@ -61,15 +61,15 @@ internal class BingoCardsWidget(
 
     private val cardsAreaMargin get() = screen.width * 2/10
     private val cardsAreaWidth get() = screen.width - cardsAreaMargin*2
-    private val cardsTotalWidth get() =  views.size * BingoHudRenderer.CARD_WIDTH
+    private val cardsTotalWidth get() =  views.size * ClientCardBufferRenderer.CARD_WIDTH
 
     fun viewsWithPositions(
-        callback: (view: CardView, x: Float, y: Float, z: Int) -> Unit
+        callback: (view: ClientCard, x: Float, y: Float, z: Int) -> Unit
     ) {
         if (views.isEmpty()) return
 
         val xMin = x - (width/2)
-        val xMax = x + (width/2) - BingoHudRenderer.CARD_WIDTH
+        val xMax = x + (width/2) - ClientCardBufferRenderer.CARD_WIDTH
 
         val widthDiff = (cardsTotalWidth - cardsAreaWidth).coerceAtLeast(0) / 2
 
@@ -77,18 +77,18 @@ internal class BingoCardsWidget(
         val widthOffset = scrollCenterX * widthDiff
 
         val screenX = x - cardsTotalWidth/2
-        val screenY = y - BingoHudRenderer.CARD_HEIGHT/2
+        val screenY = y - ClientCardBufferRenderer.CARD_HEIGHT/2
 
         val zOrder = views.indices.toList()
             .sortedBy { i ->
-                val xOffset = i * BingoHudRenderer.CARD_WIDTH + widthOffset + (BingoHudRenderer.CARD_WIDTH/2)
+                val xOffset = i * ClientCardBufferRenderer.CARD_WIDTH + widthOffset + (ClientCardBufferRenderer.CARD_WIDTH/2)
                 val x = screenX + xOffset.roundToInt()
                 val distanceToCenter = x - this.x
                 distanceToCenter.absoluteValue
             }
 
         for ((i, view) in views.withIndex()) {
-            val xOffset = i * BingoHudRenderer.CARD_WIDTH + widthOffset
+            val xOffset = i * ClientCardBufferRenderer.CARD_WIDTH + widthOffset
 
             val x = screenX + xOffset
             val y = screenY
@@ -114,17 +114,17 @@ internal class BingoCardsWidget(
                 else -> Pair(xCoerced, y)
             }
 
-            callback(view, currentX, currentY, z)
+            callback(view.guiCard, currentX, currentY, z)
         }
     }
 
-    private fun getHoveredView(mouseX: Int, mouseY: Int): CardView? {
-        var hoveredView: CardView? = null
+    private fun getHoveredView(mouseX: Int, mouseY: Int): ClientCard? {
+        var hoveredView: ClientCard? = null
         var hoveredZ = 0
         viewsWithPositions { view, x, y, z ->
             if (
-                mouseX in x.toInt()..(x.toInt() + BingoHudRenderer.CARD_WIDTH) &&
-                mouseY in y.toInt()..(y.toInt() + BingoHudRenderer.CARD_HEIGHT) &&
+                mouseX in x.toInt()..(x.toInt() + ClientCardBufferRenderer.CARD_WIDTH) &&
+                mouseY in y.toInt()..(y.toInt() + ClientCardBufferRenderer.CARD_HEIGHT) &&
                 z > hoveredZ
             ) {
                 hoveredView = view
@@ -161,7 +161,7 @@ internal class BingoCardsWidget(
         viewsWithPositions { view, x, y, z ->
             val isHovered = hoveredView != null && hoveredView.teamKey == view.teamKey
             val isSingleView = views.size <= 1
-            renderer.drawAll(
+            renderer.draw(
                 context,
                 drawService,
                 view,
@@ -171,11 +171,8 @@ internal class BingoCardsWidget(
                 cardScale = interpolateScale.get(Interpolate.Easing.IN_OUT),
                 mouseX = mouseX,
                 mouseY = mouseY,
-                showTeamOutlines = isSingleView && config.client.cardTeamOutlines,
-                showFlashingTiles = showFlashingTiles,
                 isFocused = isHovered && !isSingleView && onViewClick != null,
                 isMouseOver = interpolateX.isDone() && isHovered,
-                isGui = true, // uses an alternative card texture with a shadow to reduce clutter when overlapped
                 isWinner = winner != null && winner == view.teamKey,
             )
         }
@@ -226,7 +223,7 @@ internal class BingoCardsWidget(
                 mouseX = mouseX.toInt(),
                 mouseY = mouseY.toInt(),
             ) ?: return@viewsWithPositions
-            val tile = view.tile(tileX, tileY) ?: return@viewsWithPositions
+            val tile = view.view.tile(tileX, tileY) ?: return@viewsWithPositions
 
             isHandled = onTileClick(tile)
         }

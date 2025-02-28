@@ -1,5 +1,8 @@
 package me.jfenn.bingo.client.common.hud
 
+import me.jfenn.bingo.client.common.hud.card.CardTileRenderer
+import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
+import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
@@ -61,7 +64,7 @@ internal class BingoMessageRenderer(
 
             context.matrices.push()
             context.matrices.translate(
-                if (isLeftOfCard) BingoHudRenderer.CARD_WIDTH.toFloat() else 0f,
+                if (isLeftOfCard) ClientCardBufferRenderer.CARD_WIDTH.toFloat() else 0f,
                 itemY.toFloat() + (1f - fadeOut).pow(2) * ITEM_HEIGHT * direction,
                 0f
             )

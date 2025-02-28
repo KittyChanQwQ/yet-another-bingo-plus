@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
+import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.IScrollableWidget
 import me.jfenn.bingo.common.text.TextProvider
@@ -87,7 +88,7 @@ internal class BingoEndScoresWidget(
             val isTextHovered = mouseX in teamCol..textRenderer.getWidth(teamText.value)
                     && mouseY in (y - yOffset)..(y - yOffset + entryHeight)
             if (isTextHovered) {
-                val view = gameOver.views.find { it.teamKey == score.key }
+                val view = gameOver.cards.find { it.teamKey == score.key }
                 if (view != null) {
                     drawService.context.matrices.push()
                     drawService.context.matrices.translate(0f, 0f, 2000f)

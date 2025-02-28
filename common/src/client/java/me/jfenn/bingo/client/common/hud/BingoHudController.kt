@@ -2,7 +2,14 @@ package me.jfenn.bingo.client.common.hud
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.decodeFromStream
+import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
+import me.jfenn.bingo.client.common.hud.card.ClientCardManager
+import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
+import me.jfenn.bingo.client.common.state.BingoHudState
+import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.ClientPacket
 import me.jfenn.bingo.client.platform.IKeyBindingManager
@@ -11,6 +18,7 @@ import me.jfenn.bingo.client.platform.event.model.*
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.KEYBIND_TOGGLE_HUD
+import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameOverPacket
@@ -21,20 +29,26 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ServerEvent
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ChatScreen
+import net.minecraft.resource.ResourceManager
+import net.minecraft.util.Identifier
 import org.lwjgl.glfw.GLFW
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration.Companion.milliseconds
 
 internal class BingoHudController(
     private val optionsAccessor: IOptionsAccessor,
     private val configService: ConfigService,
     private val config: BingoConfig,
-    private val renderer: BingoHudRenderer,
-    private val cardBufferService: CardBufferService,
+    private val renderer: ClientCardRenderer,
+    private val clientCardManager: ClientCardManager,
     private val itemScoredRenderer: BingoMessageRenderer,
     private val readyHudRenderer: ReadyHudRenderer,
     private val hudScreenFactory: BingoHudScreen.Factory,
@@ -66,8 +80,6 @@ internal class BingoHudController(
     private val interpolateCardX = Interpolate(0f, 0f)
     private val interpolateCardY = Interpolate(0f, 0f)
     private val interpolateCardScale = Interpolate(0f, 0f)
-
-    private val dirtyCardKeys = mutableSetOf<BingoTeamKey?>()
 
     private fun onCardHudClosed(
         cardPositions: Map<BingoTeamKey?, Pair<Float, Float>>,
@@ -101,8 +113,8 @@ internal class BingoHudController(
         val offsetX = config.client.cardOffsetX * (if (cardAlignment.x > 0) -1 else 1)
         val offsetY = config.client.cardOffsetY * (if (cardAlignment.y > 0) -1 else 1)
 
-        val x = cardAlignment.x * (client.window.scaledWidth - (BingoHudRenderer.CARD_WIDTH * cardScale)) + offsetX
-        val y = cardAlignment.y * (client.window.scaledHeight - (BingoHudRenderer.CARD_HEIGHT * cardScale)) + offsetY
+        val x = cardAlignment.x * (client.window.scaledWidth - (ClientCardBufferRenderer.CARD_WIDTH * cardScale)) + offsetX
+        val y = cardAlignment.y * (client.window.scaledHeight - (ClientCardBufferRenderer.CARD_HEIGHT * cardScale)) + offsetY
         interpolateCardX.to = x
         interpolateCardY.to = y
 
@@ -112,16 +124,16 @@ internal class BingoHudController(
         )
     }
 
-    private fun getSelectedCard(): CardView? {
-        val teamKeys = state.views.keys
+    private fun getSelectedCard(): ClientCard? {
+        val teamKeys = state.cards.keys
         if (teamKeys.isEmpty()) return null
 
         val selectedTeam = state.selectedTeam
         return when {
             // If the selected team is one of the displayed cards, try to find its view state...
-            selectedTeam in teamKeys -> state.views[selectedTeam]
+            selectedTeam in teamKeys -> state.cards[selectedTeam]
             // otherwise, find a different card to display
-            else -> state.views.keys.firstOrNull().let { state.views[it] } // firstOrNull() falls back to preview card
+            else -> state.cards.keys.firstOrNull().let { state.cards[it] } // firstOrNull() falls back to preview card
         }
     }
 
@@ -146,8 +158,8 @@ internal class BingoHudController(
         } else {
             fireworkRenderer?.render(
                 drawService = drawService,
-                centerX = x.toInt() + (BingoHudRenderer.CARD_WIDTH/2),
-                centerY = y.toInt() + (BingoHudRenderer.CARD_HEIGHT/2),
+                centerX = x.toInt() + (ClientCardBufferRenderer.CARD_WIDTH/2),
+                centerY = y.toInt() + (ClientCardBufferRenderer.CARD_HEIGHT/2),
                 now = state.now,
             )
         }
@@ -159,15 +171,7 @@ internal class BingoHudController(
         val mouseY = (mouse.y / scaleFactor).toInt()
         val isMouseOver = client.currentScreen is ChatScreen
 
-        drawService.matrices.push()
-        drawService.matrices.translate(x, y, config.client.cardOverlap.z.toFloat())
-        drawService.matrices.scale(cardScale, cardScale, 1f)
-
-        cardBufferService.draw(drawService, view.teamKey, BingoHudRenderer.CARD_WIDTH, BingoHudRenderer.CARD_HEIGHT)
-
-        drawService.matrices.pop()
-
-        renderer.drawAll(
+        renderer.draw(
             context,
             drawService,
             view,
@@ -175,11 +179,6 @@ internal class BingoHudController(
             y = y,
             z = config.client.cardOverlap.z,
             cardScale = cardScale,
-            // if the client can only see one card, enable team outlines
-            // inverse: if the client can see every card, we don't need to show the outlines
-            showTeamOutlines = config.client.cardTeamOutlines && (
-                !config.client.showMultipleCards || state.views.size <= 1
-            ),
             isMouseOver = isMouseOver,
             mouseX = mouseX,
             mouseY = mouseY,
@@ -189,7 +188,7 @@ internal class BingoHudController(
             itemScoredRenderer.drawMessages(
                 drawService,
                 x = x.toInt(),
-                y = y.toInt() + (BingoHudRenderer.CARD_HEIGHT * cardScale * (1 - config.client.cardAlignment.y)).toInt(),
+                y = y.toInt() + (ClientCardBufferRenderer.CARD_HEIGHT * cardScale * (1 - config.client.cardAlignment.y)).toInt(),
                 z = config.client.cardOverlap.z,
                 messageScale = config.client.messageScale,
                 cardAlignment = config.client.cardAlignment,
@@ -199,15 +198,15 @@ internal class BingoHudController(
         // Attempt to draw additional cards if showMultipleCards=true
         val xDirection = if (cardAlignment.x > 0) -1 else 1
         if (config.client.showMultipleCards) {
-            val remainingViews = state.views.values - view
+            val remainingViews = state.cards.values - view
 
             for ((i, remainingView) in remainingViews.withIndex()) {
-                val cardX = x + ((i+1) * xDirection * BingoHudRenderer.CARD_WIDTH * cardScale)
-                val cardEndX = x + ((i+2) * xDirection * BingoHudRenderer.CARD_WIDTH * cardScale)
+                val cardX = x + ((i+1) * xDirection * ClientCardBufferRenderer.CARD_WIDTH * cardScale)
+                val cardEndX = x + ((i+2) * xDirection * ClientCardBufferRenderer.CARD_WIDTH * cardScale)
                 // if the card would go off-screen, don't bother rendering it...
                 if (cardEndX < 0 || cardEndX > context.scaledWindowWidth) continue
 
-                renderer.drawAll(
+                renderer.draw(
                     context,
                     drawService,
                     remainingView,
@@ -215,7 +214,6 @@ internal class BingoHudController(
                     y = y,
                     z = config.client.cardOverlap.z,
                     cardScale =  cardScale,
-                    showTeamOutlines = false,
                     isMouseOver = isMouseOver,
                     mouseX = mouseX,
                     mouseY = mouseY,
@@ -264,7 +262,7 @@ internal class BingoHudController(
         // Add any new views to the gameOver screen, but do not take away previously-seen views
         // - this is a compatibility fix for previous server versions
         //   that do not ensure all cards are sent before the game over screen
-        gameOver.views = (state.views.values + gameOver.views)
+        gameOver.cards = (state.cards.values + gameOver.cards)
             // do not show the preview card on the Game Over screen
             .filter { it.teamKey != null }
             // prevent any duplicate cards (uses newly-sent cards first)
@@ -306,7 +304,11 @@ internal class BingoHudController(
     @Suppress("Deprecation")
     private fun onCardUpdate(clientPacket: ClientPacket<CardUpdatePacket>) {
         val packet = clientPacket.packet
-        state.views += packet.view.teamKey to packet.view
+        val clientCard = state.cards.getOrPut(packet.view.teamKey) {
+            clientCardManager.newCard(packet.view)
+        }
+        clientCard.view = packet.view
+
         updateGameOverViews()
     }
 
@@ -317,20 +319,31 @@ internal class BingoHudController(
 
     private fun onCardDisplayV1(clientPacket: ClientPacket<CardDisplayPacket>) {
         val displays = clientPacket.packet.display
-        state.views = displays.mapValues { (key, display) ->
-            state.views[key]
-                ?.let {
-                    // only overwrite teamColor from display, as the rest will come from card update packets
-                    it.copy(
-                        display = it.display.copy(
-                            teamColor = display.teamColor,
-                        )
-                    )
-                }
-                ?: CardView(key, display, mutableListOf())
+
+        // Remove cards that are no longer displayed
+        val cardsIterator = state.cards.iterator()
+        for ((key, card) in cardsIterator) {
+            if (key !in displays) {
+                card.close()
+                cardsIterator.remove()
+            }
         }
 
-        dirtyCardKeys.addAll(displays.keys)
+        for ((key, display) in displays) {
+            val clientCard = state.cards.getOrPut(key) {
+                clientCardManager.newCard(CardView(key, display, mutableListOf()))
+            }
+            // only overwrite teamColor from display, as the rest will come from card update packets
+            clientCard.view = clientCard.view.copy(
+                display = clientCard.view.display.copy(
+                    teamColor = display.teamColor,
+                )
+            )
+        }
+
+        displays.keys.forEach {
+            clientCardManager.markDirty(it)
+        }
 
         updateGameOverViews()
 
@@ -344,13 +357,26 @@ internal class BingoHudController(
 
     private fun onCardDisplayV2(clientPacket: ClientPacket<CardDisplayPacket>) {
         val displays = clientPacket.packet.display
-        state.views = displays.mapValues { (key, display) ->
-            state.views[key]
-                ?.copy(display = display)
-                ?: CardView(key, display, mutableListOf())
+
+        // Remove cards that are no longer displayed
+        val cardsIterator = state.cards.iterator()
+        for ((key, card) in cardsIterator) {
+            if (key !in displays) {
+                card.close()
+                cardsIterator.remove()
+            }
         }
 
-        dirtyCardKeys.addAll(displays.keys)
+        for ((key, display) in displays) {
+            val clientCard = state.cards.getOrPut(key) {
+                clientCardManager.newCard(CardView(key, display, mutableListOf()))
+            }
+            clientCard.view = clientCard.view.copy(display = display)
+        }
+
+        displays.keys.forEach {
+            clientCardManager.markDirty(it)
+        }
 
         updateGameOverViews()
 
@@ -362,11 +388,23 @@ internal class BingoHudController(
         }
     }
 
+    private fun scheduleCardUpdates(teamKey: BingoTeamKey?) {
+        // Schedule card redraws that occur when a tile is flashing on the card
+        for (delay in 500L..4500L step 500L) {
+            CompletableFuture.delayedExecutor(delay, TimeUnit.MILLISECONDS, client)
+                .execute {
+                    clientCardManager.markDirty(teamKey)
+                }
+        }
+    }
+
     private fun onCardTiles(clientPacket: ClientPacket<CardTilesPacket>) {
         val packet = clientPacket.packet
-        val view = state.views[packet.teamKey] ?: CardView(packet.teamKey, CardDisplay(), mutableListOf())
+        val clientCard = state.cards.getOrPut(packet.teamKey) {
+            clientCardManager.newCard(CardView(packet.teamKey, CardDisplay(), mutableListOf()))
+        }
         val tiles = MutableList(25) {
-            val existingTile = view.tiles.getOrNull(it)
+            val existingTile = clientCard.tiles.getOrNull(it)
             val newTile = packet.tiles[it] ?: existingTile ?: CardTile.EMPTY
 
             newTile.updatedAt = when {
@@ -379,18 +417,34 @@ internal class BingoHudController(
             newTile
         }
 
-        state.views += (packet.teamKey to view.copy(tiles = tiles))
+        if (tiles.any { it.updatedAt == state.now })
+            scheduleCardUpdates(packet.teamKey)
+
+        clientCard.view = clientCard.view.copy(tiles = tiles)
         updateGameOverViews()
-        dirtyCardKeys.add(packet.teamKey)
+        clientCardManager.markDirty(packet.teamKey)
     }
 
     private fun onCardShuffled(clientPacket: ClientPacket<CardShuffledPacket>) {
         val packet = clientPacket.packet
-        val view = state.views[packet.teamKey]
-        if (view != null && (state.now - view.shuffledAt) > BingoHudRenderer.SHUFFLE_DURATION) {
-            view.shuffledAt = state.now
-            renderer.shufflePositions = renderer.shufflePositions.shuffled()
+        val clientCard = state.cards[packet.teamKey]
+        if (clientCard != null && (state.now - clientCard.shuffledAt) > ClientCardBufferRenderer.SHUFFLE_DURATION) {
+            clientCard.shuffledAt = state.now
+            clientCard.shufflePositions = clientCard.shufflePositions.shuffled()
         }
+    }
+
+    private val cardColorsId = Identifier.of(MOD_ID_BINGO, "gui/card_colors.json")!!
+
+    private fun loadCardColors(manager: ResourceManager) {
+        state.cardColors = manager.getResource(cardColorsId)
+            .getOrNull()
+            ?.inputStream
+            ?.use {
+                @OptIn(ExperimentalSerializationApi::class)
+                json.decodeFromStream<BingoCardColors>(it)
+            }
+            ?: BingoCardColors()
     }
 
     init {
@@ -438,6 +492,17 @@ internal class BingoHudController(
 
         eventBus.register(HudRenderEvent) {
             state.now = Clock.System.now()
+            // TODO: move to resize event?
+            state.cards.values.forEach { card ->
+                clientCardManager.resizeCard(card)
+                clientCardManager.resizeCard(card.guiCard, 1f)
+            }
+
+            clientCardManager.updateCards()
+        }
+
+        eventBus.register(HudRenderEvent) {
+            state.now = Clock.System.now()
 
             // Do not draw the HUD if the F3 or chat overlay is shown
             if (optionsAccessor.isHudHidden())
@@ -458,10 +523,6 @@ internal class BingoHudController(
             ) {
                 return@register
             }
-
-            cardBufferService.resize() // TODO: move to resize event?
-            cardBufferService.update(null)
-            dirtyCardKeys.clear()
 
             it.drawService.context.draw()
 
@@ -502,7 +563,7 @@ internal class BingoHudController(
                         packetEvents.readySetV1.send(SetReadyPacket(!(state.ready?.isReady ?: false)))
                     }
                 } else {
-                    if (state.views.isEmpty()) {
+                    if (state.cards.isEmpty()) {
                         client.player?.sendMessage(text.string(StringKey.CardNoCards).value, true)
                         return@register
                     }
@@ -540,9 +601,9 @@ internal class BingoHudController(
         }
 
         eventBus.register(ClientReloadEvent) {
-            renderer.loadCardColors(it.resourceManager)
+            loadCardColors(it.resourceManager)
 
-            state.views.values.forEach { view ->
+            state.cards.values.forEach { view ->
                 view.display.clientTeamName = null
                 view.tiles.forEach { tile ->
                     tile.clientTooltip = null

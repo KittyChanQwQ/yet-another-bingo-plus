@@ -1,6 +1,9 @@
 package me.jfenn.bingo.client.common.hud
 
+import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
+import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
+import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
 import me.jfenn.bingo.client.platform.renderer.IDrawService
@@ -45,8 +48,6 @@ internal class BingoEndScreen(
     tabsWidgetFactory: ITabsWidgetFactory = koin.get(),
     private val onCloseCallback: (BingoEndScreen) -> Unit,
 ) : IScreen {
-
-    private val minecraftClient = MinecraftClient.getInstance()
 
     class Factory(
         private val koin: Koin,
@@ -98,9 +99,7 @@ internal class BingoEndScreen(
         x = width/2f,
         y = height/2f,
         width = width * 6/10,
-        height = BingoHudRenderer.CARD_HEIGHT,
-        // If the game is paused, the client cannot receive updates for flashing tiles
-        showFlashingTiles = !(minecraftClient.isInSingleplayer && shouldPause()),
+        height = ClientCardBufferRenderer.CARD_HEIGHT,
         screen = helper.screen,
 
         interpolateKey = originalCardKey,
@@ -167,7 +166,7 @@ internal class BingoEndScreen(
             }
 
         dismissButton.x = (width/2) - 4 - BUTTON_WIDTH
-        dismissButton.y = (height/2) + (BingoHudRenderer.CARD_HEIGHT/2) + tabsHeight + 8
+        dismissButton.y = (height/2) + (ClientCardBufferRenderer.CARD_HEIGHT/2) + tabsHeight + 8
         helper.addDrawableChild(dismissButton)
 
         val restartButton = restartButton ?: ButtonWidget.builder(
@@ -184,7 +183,7 @@ internal class BingoEndScreen(
             }
 
         restartButton.x = (width/2) + 4
-        restartButton.y = (height/2) + (BingoHudRenderer.CARD_HEIGHT/2) + tabsHeight + 8
+        restartButton.y = (height/2) + (ClientCardBufferRenderer.CARD_HEIGHT/2) + tabsHeight + 8
         helper.addDrawableChild(restartButton)
 
         tabsWidget.width = width
@@ -192,9 +191,9 @@ internal class BingoEndScreen(
 
         if (tab == EndScreenTab.SCORES) {
             scoresWidget.x = (width * 0.1f).toInt()
-            scoresWidget.y = (height/2) - (BingoHudRenderer.CARD_HEIGHT/2) + tabsHeight
+            scoresWidget.y = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT/2) + tabsHeight
             scoresWidget.width = (width * 0.8f).toInt()
-            scoresWidget.height = BingoHudRenderer.CARD_HEIGHT
+            scoresWidget.height = ClientCardBufferRenderer.CARD_HEIGHT
             helper.addDrawableChild(scoresWidget.widget!!)
         }
     }
@@ -238,7 +237,7 @@ internal class BingoEndScreen(
                 val bestScale = 2f - animProgress
                 val bestDiff = gameOver.packet.duration - prevBestTime
                 val bestText = text.string(StringKey.StatsBestTimeNew, bestDiff.formatStringSmall())
-                val bestColor = Color.fromInt(BingoHudRenderer.getWinColor(now))
+                val bestColor = Color.fromInt(ClientCardRenderer.getWinColor(now))
                     .copy(a = (animProgress * 255).toInt().coerceAtLeast(6))
                     .asIntWithAlpha
 
@@ -296,7 +295,7 @@ internal class BingoEndScreen(
                 val animProgress = (animTimeSince / NEW_BEST_DURATION).toFloat().coerceIn(0f, 1f).pow(2)
                 val bestScale = 2f - animProgress
                 val bestText = text.string(StringKey.StatsWinStreakNewMax)
-                val bestColor = Color.fromInt(BingoHudRenderer.getWinColor(now))
+                val bestColor = Color.fromInt(ClientCardRenderer.getWinColor(now))
                     .copy(a = (animProgress * 255).toInt().coerceAtLeast(6))
                     .asIntWithAlpha
 
@@ -339,7 +338,7 @@ internal class BingoEndScreen(
     }
 
     override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
-        val cardTop = (height/2) - (BingoHudRenderer.CARD_HEIGHT/2)
+        val cardTop = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT/2)
         val titleY = min((cardTop * 0.75f).roundToInt(), cardTop - 11*2) + tabsHeight
 
         drawService.matrices.push()
@@ -365,7 +364,7 @@ internal class BingoEndScreen(
         renderWinStreak(drawService, titleY - 20)
 
         if (tab == EndScreenTab.CARDS) {
-            cardsWidget.views = gameOver.views
+            cardsWidget.views = gameOver.cards
             cardsWidget.winner = gameOver.packet.winner
             cardsWidget.x = width/2f
             cardsWidget.y = height/2f + tabsHeight

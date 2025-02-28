@@ -11,15 +11,12 @@ import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.DiffuseLighting
 import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.util.Identifier
 import org.joml.Matrix4f
 import java.util.*
-import kotlin.math.roundToInt
 
 class FramebufferImpl(
     private val fb: SimpleFramebuffer,
-    private val vertexConsumerProvider: VertexConsumerProvider.Immediate,
     private val service: DrawService,
 ) : IFramebuffer {
 
@@ -27,21 +24,25 @@ class FramebufferImpl(
     private val fbTexture = FramebufferTexture(fb)
     private val fbTextureId = Identifier.of(MOD_ID_BINGO, "framebuffer/" + UUID.randomUUID().toString())
 
+    override val width: Int
+        get() = fb.textureWidth
+
+    override val height: Int
+        get() = fb.textureHeight
+
+    override fun register() {
+        client.textureManager.registerTexture(fbTextureId, fbTexture)
+    }
+
     override fun resize(width: Int, height: Int) {
-        val window = client.window
-        val textureWidth = (width.toFloat() * window.scaleFactor).roundToInt()
-        val textureHeight = (height.toFloat() * window.scaleFactor).roundToInt()
-        if (textureWidth != fb.textureWidth || textureHeight != fb.textureHeight) {
-            fb.resize(textureWidth, textureHeight)
-            client.textureManager.registerTexture(fbTextureId, fbTexture)
-        }
+        fb.resize(width, height)
     }
 
     private var backupProjMat = Matrix4f()
     private var backupProjType = ProjectionType.ORTHOGRAPHIC
 
     override fun beginWrite(): IDrawService {
-        fb.setClearColor(0f, 1f, 0f, 1f)
+        fb.setClearColor(0f, 0f, 0f, 0f)
         fb.clear()
 
         val window = MinecraftClient.getInstance().window
@@ -95,8 +96,8 @@ class FramebufferImpl(
         val context: DrawContext = service.context
         context.matrices.push()
 
-        val window = client.window
-        context.matrices.scale(1f/window.scaleFactor.toFloat(), 1f/window.scaleFactor.toFloat(), 1f)
+        val scaleFactor = fb.textureWidth.toFloat() / width
+        context.matrices.scale(1f/scaleFactor, 1f/scaleFactor, 1f)
 
         val matrix4f = context.matrices.peek().positionMatrix
         val vertexConsumer = context.vertexConsumers.getBuffer(RenderLayer.getGuiTextured(fbTextureId))
@@ -104,9 +105,9 @@ class FramebufferImpl(
         // The framebuffer renders upside down, so we need to flip v1 and v2 here
         // otherwise, this could just be a context.drawTexture call...
         val x1 = 0f
-        val x2 = (width * window.scaleFactor).toFloat()
+        val x2 = width * scaleFactor
         val y1 = 0f
-        val y2 = (height * window.scaleFactor).toFloat()
+        val y2 = height * scaleFactor
         val u1 = 0f
         val u2 = 1f
         val v1 = 1f

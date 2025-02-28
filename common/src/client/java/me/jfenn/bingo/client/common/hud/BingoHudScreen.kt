@@ -1,5 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
+import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
+import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.integrations.JeiIntegration
 import me.jfenn.bingo.client.integrations.jei.IJeiApi
 import me.jfenn.bingo.client.platform.renderer.IDrawService
@@ -11,7 +13,6 @@ import me.jfenn.bingo.common.map.CardTileAction
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.client.MinecraftClient
 import org.koin.core.Koin
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -62,9 +63,7 @@ internal class BingoHudScreen(
         x = width/2f,
         y = height/2f,
         width = width * 6/10,
-        height = BingoHudRenderer.CARD_HEIGHT,
-        // If the game is paused, the client cannot receive updates for flashing tiles
-        showFlashingTiles = !(MinecraftClient.getInstance().isInSingleplayer && shouldPause()),
+        height = ClientCardBufferRenderer.CARD_HEIGHT,
         screen = helper.screen,
 
         interpolateKey = originalCardKey,
@@ -93,7 +92,7 @@ internal class BingoHudScreen(
     }
 
     override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
-        cardsWidget.views = state.views.values
+        cardsWidget.views = state.cards.values
         cardsWidget.x = width/2f
         cardsWidget.y = height/2f
         cardsWidget.width = width * 6/10

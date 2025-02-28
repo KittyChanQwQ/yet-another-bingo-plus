@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
+import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.ClientPacket
 import me.jfenn.bingo.client.platform.INativeImageFactory
 import me.jfenn.bingo.common.map.CardImagePacket
