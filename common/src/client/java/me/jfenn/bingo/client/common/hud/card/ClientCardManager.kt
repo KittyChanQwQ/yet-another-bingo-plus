@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.client.MinecraftClient
 import org.slf4j.Logger
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 internal class ClientCardManager(
     private val log: Logger,
@@ -77,7 +78,7 @@ internal class ClientCardManager(
         for (card in state.cards.values) {
             val isDirty = card.isDirty ||
                     // Always rerender cards while shuffling
-                    (state.now - card.shuffledAt) < ClientCardBufferRenderer.SHUFFLE_DURATION
+                    (state.now - card.shuffledAt) < (ClientCardBufferRenderer.SHUFFLE_DURATION + 50.milliseconds)
 
             if (!isDirty) continue
 
