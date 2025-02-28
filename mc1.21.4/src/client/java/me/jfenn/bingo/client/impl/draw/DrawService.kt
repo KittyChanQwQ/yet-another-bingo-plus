@@ -9,6 +9,7 @@ import me.jfenn.bingo.impl.ItemStackFactory
 import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gl.Framebuffer
 import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer

@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(MinecraftClient.class)
+@Mixin(value = MinecraftClient.class, priority = 1001)
 public class MinecraftClientFramebuffer {
     @Inject(
             at = @At(value = "HEAD"),

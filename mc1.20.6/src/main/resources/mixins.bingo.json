@@ -18,6 +18,7 @@
     "ThreadedAnvilChunkStorageAccessor"
   ],
   "client": [
+    "MinecraftClientFramebuffer"
   ],
   "injectors": {
     "defaultRequire": 1

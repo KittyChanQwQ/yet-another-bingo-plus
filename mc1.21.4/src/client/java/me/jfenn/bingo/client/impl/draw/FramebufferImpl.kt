@@ -71,16 +71,14 @@ class FramebufferImpl(
         fb.beginWrite(true)
         FramebufferOverride.framebuffer = fb
 
-        val context: DrawContext = service.context
         service.matrices.push()
-        // service.matrices.scale(1f/window.scaleFactor.toFloat(), 1f/window.scaleFactor.toFloat(), 1f)
-        // service.matrices.translate(0f, bottom * 0.5f * window.scaleFactor.toFloat(), 0f)
-
         return service
     }
 
     override fun endWrite() {
-        service.context.draw()
+        val context: DrawContext = service.context
+        context.draw()
+
         fb.endWrite()
 
         service.matrices.pop()

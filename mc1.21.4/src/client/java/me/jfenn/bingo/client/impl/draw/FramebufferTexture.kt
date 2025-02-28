@@ -3,7 +3,7 @@ package me.jfenn.bingo.client.impl.draw
 import net.minecraft.client.gl.Framebuffer
 import net.minecraft.client.texture.AbstractTexture
 
-class FramebufferTexture(val fb: Framebuffer) : AbstractTexture() {
+class FramebufferTexture(private val fb: Framebuffer) : AbstractTexture() {
     override fun getGlId(): Int {
         return fb.colorAttachment
     }

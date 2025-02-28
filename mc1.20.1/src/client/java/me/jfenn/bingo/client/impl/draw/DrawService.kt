@@ -3,16 +3,16 @@ package me.jfenn.bingo.client.impl.draw
 import com.mojang.blaze3d.systems.RenderSystem
 import me.jfenn.bingo.client.impl.NativeImageImpl
 import me.jfenn.bingo.client.platform.INativeImage
-import me.jfenn.bingo.client.platform.renderer.IDrawService
-import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
-import me.jfenn.bingo.client.platform.renderer.IFont
-import me.jfenn.bingo.client.platform.renderer.IMatrixStack
+import me.jfenn.bingo.client.platform.renderer.*
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.impl.ItemStackFactory
 import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.render.BufferBuilder
+import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 
@@ -26,6 +26,20 @@ class DrawService(
 
     companion object : IDrawServiceFactory {
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
+
+        private val vertexConsumers by lazy {
+            VertexConsumerProvider.immediate(BufferBuilder(1536))
+        }
+
+        override fun newBuffer(width: Int, height: Int): IFramebuffer {
+            val client = MinecraftClient.getInstance()
+            val buffer = SimpleFramebuffer(width, height, true, false)
+            val context = DrawContext(client, vertexConsumers)
+
+            return FramebufferImpl(
+                buffer, DrawService(context)
+            )
+        }
     }
 
     override fun enableBlend() {
