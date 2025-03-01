@@ -1,14 +1,12 @@
 package me.jfenn.bingo.client.common.hud.card
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.client.common.hud.BingoCardColors
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer.Companion.CARD_HEIGHT
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer.Companion.CARD_WIDTH
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.map.CardTile
-import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.gui.DrawContext
@@ -44,8 +42,6 @@ internal class ClientCardRenderer(
             return winColors[winIndex.toInt()]
         }
     }
-
-    private var cardColors = BingoCardColors()
 
     fun getItem(
         x: Int,
@@ -88,8 +84,6 @@ internal class ClientCardRenderer(
         isMouseOver: Boolean = false,
         isWinner: Boolean = false,
     ) {
-        val colors = cardColors.getTeamColors(card.teamKey ?: BingoTeamKey("preview"), card.display.teamColor)
-
         service.matrices.push()
         service.matrices.translate(x, y, z.toFloat())
         service.matrices.scale(cardScale, cardScale, 1f)
@@ -108,7 +102,7 @@ internal class ClientCardRenderer(
 
         if (isFocused) {
             service.drawGuiTexture(
-                texture = colors.cardTextureOutline,
+                texture = card.colors.cardTextureOutline,
                 x = 0, y = 0,
                 u = 0f, v = 0f,
                 width = CARD_WIDTH,

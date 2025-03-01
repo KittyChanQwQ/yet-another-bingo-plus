@@ -5,6 +5,7 @@ import dev.isxander.yacl3.api.controller.BooleanControllerBuilder
 import dev.isxander.yacl3.api.controller.EnumControllerBuilder
 import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder
 import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder
+import me.jfenn.bingo.client.common.event.ClientConfigChangedEvent
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
 import me.jfenn.bingo.client.common.sound.ClientSounds
 import me.jfenn.bingo.client.common.sound.SoundService
@@ -12,6 +13,7 @@ import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IModEnvironment
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
@@ -31,9 +33,10 @@ internal interface YetAnotherConfigLibIntegration {
             clientSettings: ClientSettingsService,
             soundService: SoundService,
             text: TextProvider,
+            eventBus: IEventBus,
         ): YetAnotherConfigLibIntegration {
             return if (hasYACL(environment))
-                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings, soundService, text)
+                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings, soundService, text, eventBus)
             else YetAnotherConfigLibIntegrationDummy()
         }
     }
@@ -50,12 +53,17 @@ internal class YetAnotherConfigLibIntegrationImpl(
     private val clientSettings: ClientSettingsService,
     private val soundService: SoundService,
     private val text: TextProvider,
+    private val eventBus: IEventBus,
 ) : YetAnotherConfigLibIntegration {
 
     private val defaultConfig = BingoConfig()
     private val defaultPlayerSettings = PlayerSettings()
 
     private val playerSettings get() = clientSettings.getSettings()
+
+    private fun onConfigChanged() {
+        eventBus.emit(ClientConfigChangedEvent, Unit)
+    }
 
     override fun buildConfigScreen(parent: Screen): Screen {
         return YetAnotherConfigLib.createBuilder()
@@ -119,6 +127,7 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                         {
                                             config.client.cardScale = it
                                             configService.writeConfig(config)
+                                            onConfigChanged()
                                         }
                                     )
                                     .controller {
@@ -225,6 +234,7 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                         {
                                             config.client.showMultipleCards = it
                                             configService.writeConfig(config)
+                                            onConfigChanged()
                                         }
                                     )
                                     .controller { BooleanControllerBuilder.create(it) }
@@ -242,6 +252,7 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                         {
                                             config.client.cardTeamOutlines = it
                                             configService.writeConfig(config)
+                                            onConfigChanged()
                                         }
                                     )
                                     .controller { BooleanControllerBuilder.create(it) }

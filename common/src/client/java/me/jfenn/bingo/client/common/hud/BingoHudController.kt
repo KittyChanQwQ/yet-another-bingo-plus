@@ -4,6 +4,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
+import me.jfenn.bingo.client.common.event.ClientConfigChangedEvent
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardManager
 import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
@@ -317,9 +318,7 @@ internal class BingoHudController(
         state.ready = packet
     }
 
-    private fun onCardDisplayV1(clientPacket: ClientPacket<CardDisplayPacket>) {
-        val displays = clientPacket.packet.display
-
+    private fun onCardDisplay(displays: Map<BingoTeamKey?, CardDisplay>) {
         // Remove cards that are no longer displayed
         val cardsIterator = state.cards.iterator()
         for ((key, card) in cardsIterator) {
@@ -333,12 +332,8 @@ internal class BingoHudController(
             val clientCard = state.cards.getOrPut(key) {
                 clientCardManager.newCard(CardView(key, display, mutableListOf()))
             }
-            // only overwrite teamColor from display, as the rest will come from card update packets
-            clientCard.view = clientCard.view.copy(
-                display = clientCard.view.display.copy(
-                    teamColor = display.teamColor,
-                )
-            )
+            clientCard.view = clientCard.view.copy(display = display)
+            clientCard.colors = state.cardColors.getTeamColors(key, display.teamColor)
         }
 
         displays.keys.forEach {
@@ -355,37 +350,19 @@ internal class BingoHudController(
         }
     }
 
+    private fun onCardDisplayV1(clientPacket: ClientPacket<CardDisplayPacket>) {
+        onCardDisplay(
+            clientPacket.packet.display.mapValues { (key, display) ->
+                state.cards[key]?.display
+                    // only overwrite teamColor from display, as the rest will come from card update packets
+                    ?.copy(teamColor = display.teamColor)
+                    ?: display
+            }
+        )
+    }
+
     private fun onCardDisplayV2(clientPacket: ClientPacket<CardDisplayPacket>) {
-        val displays = clientPacket.packet.display
-
-        // Remove cards that are no longer displayed
-        val cardsIterator = state.cards.iterator()
-        for ((key, card) in cardsIterator) {
-            if (key !in displays) {
-                card.close()
-                cardsIterator.remove()
-            }
-        }
-
-        for ((key, display) in displays) {
-            val clientCard = state.cards.getOrPut(key) {
-                clientCardManager.newCard(CardView(key, display, mutableListOf()))
-            }
-            clientCard.view = clientCard.view.copy(display = display)
-        }
-
-        displays.keys.forEach {
-            clientCardManager.markDirty(it)
-        }
-
-        updateGameOverViews()
-
-        // if there are no teams being displayed (BingoMapController sends when entering PREGAME)
-        // reset the HUD state completely
-        // (which clears the gameOverPacket state)
-        if (displays.isEmpty()) {
-            state.reset()
-        }
+        onCardDisplay(clientPacket.packet.display)
     }
 
     private fun scheduleCardUpdates(teamKey: BingoTeamKey?) {
@@ -445,6 +422,15 @@ internal class BingoHudController(
                 json.decodeFromStream<BingoCardColors>(it)
             }
             ?: BingoCardColors()
+
+        for (card in state.cards.values) {
+            card.colors = state.cardColors.getTeamColors(card.teamKey, card.display.teamColor)
+            card.display.clientTeamName = null
+            card.tiles.forEach { tile ->
+                tile.clientTooltip = null
+            }
+            clientCardManager.markDirty(card.teamKey)
+        }
     }
 
     init {
@@ -492,6 +478,7 @@ internal class BingoHudController(
 
         eventBus.register(HudRenderEvent) {
             state.now = Clock.System.now()
+
             // TODO: move to resize event?
             state.cards.values.forEach { card ->
                 clientCardManager.resizeCard(card)
@@ -502,8 +489,6 @@ internal class BingoHudController(
         }
 
         eventBus.register(HudRenderEvent) {
-            state.now = Clock.System.now()
-
             // Do not draw the HUD if the F3 or chat overlay is shown
             if (optionsAccessor.isHudHidden())
                 return@register
@@ -524,11 +509,7 @@ internal class BingoHudController(
                 return@register
             }
 
-            it.drawService.context.draw()
-
-            it.drawService.enableBlend()
             drawHud(it.drawService)
-            it.drawService.disableBlend()
         }
 
         eventBus.register(ClientServerEvent.Join) {
@@ -602,12 +583,11 @@ internal class BingoHudController(
 
         eventBus.register(ClientReloadEvent) {
             loadCardColors(it.resourceManager)
+        }
 
-            state.cards.values.forEach { view ->
-                view.display.clientTeamName = null
-                view.tiles.forEach { tile ->
-                    tile.clientTooltip = null
-                }
+        eventBus.register(ClientConfigChangedEvent) {
+            state.cards.values.forEach {
+                clientCardManager.markDirty(it.teamKey)
             }
         }
     }

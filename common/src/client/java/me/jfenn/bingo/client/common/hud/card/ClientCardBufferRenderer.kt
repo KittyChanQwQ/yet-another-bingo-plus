@@ -7,7 +7,6 @@ import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.Color
-import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
 import kotlin.time.Duration.Companion.milliseconds
@@ -49,9 +48,8 @@ internal class ClientCardBufferRenderer(
         service: IDrawService,
         card: ClientCard,
     ) {
-        val context by service::context
-
-        val colors = state.cardColors.getTeamColors(card.teamKey ?: BingoTeamKey("preview"), card.display.teamColor)
+        val context = service.context
+        val colors = card.colors
 
         // Draw a translucent background behind all card items
         context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.backgroundColor.asIntWithAlpha)
