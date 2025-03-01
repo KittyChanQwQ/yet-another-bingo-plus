@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.VertexSorter
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.renderer.IFramebuffer
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.mixinhelper.FramebufferOverride
+import me.jfenn.bingo.client.mixinhelper.FramebufferOverride
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
