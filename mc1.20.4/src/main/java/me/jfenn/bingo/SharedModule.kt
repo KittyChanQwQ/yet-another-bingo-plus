@@ -6,12 +6,14 @@ import me.jfenn.bingo.impl.*
 import me.jfenn.bingo.impl.event.ServerCloseEvent
 import me.jfenn.bingo.impl.networking.ServerNetworkingImpl
 import me.jfenn.bingo.impl.particle.ParticleFactory
+import me.jfenn.bingo.impl.world.GameRulesImpl
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.packet.IServerNetworking
 import me.jfenn.bingo.platform.particle.IParticleFactory
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
+import me.jfenn.bingo.platform.world.IGameRules
 import org.koin.core.module.dsl.createdAtStart
 import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
@@ -46,6 +48,7 @@ val sharedModule = module {
     scope<BingoScope> {
         scopedOf(::AdvancementManager) bind IAdvancementManager::class
         scopedOf(::BossBarManager) bind IBossBarManager::class
+        scopedOf(::GameRulesImpl) bind IGameRules::class
         scopedOf(::PlayerManager) bind IPlayerManager::class
         scopedOf(::TeamManager) bind ITeamManager::class
         scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, ILevelStorage::class)

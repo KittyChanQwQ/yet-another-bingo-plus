@@ -5,8 +5,9 @@ import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.mixinhandler.GameRuleOverrideHelper
+import me.jfenn.bingo.platform.world.IGameRules
 import net.minecraft.server.MinecraftServer
-import net.minecraft.world.GameRules
 
 /**
  * Controls server setting and gamerule changes:
@@ -19,29 +20,24 @@ internal class GameRuleController(
     private val options: BingoOptions,
     private val state: BingoState,
     private val datapackFunctionService: DatapackFunctionService,
+    private val gameRules: IGameRules,
 ) : BingoComponent() {
 
     fun readFromServer() {
         options.isPvpEnabled = server.isPvpEnabled
-        options.isKeepInventory = server.gameRules.get(GameRules.KEEP_INVENTORY).get()
+        options.isKeepInventory = gameRules.keepInventory.value
     }
 
     fun writeToServer() {
         if (!state.isLobbyMode) return
         server.isPvpEnabled = options.isPvpEnabled
-        server.gameRules.get(GameRules.KEEP_INVENTORY).set(options.isKeepInventory, server)
+        gameRules.keepInventory.value = options.isKeepInventory
     }
-
-    private var announceAdvancements = false
-    private var showDeathMessages = false
 
     private fun setPregameRules() {
         // hide spammy messages in the lobby
-        announceAdvancements = server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).get()
-        server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(false, server)
-
-        showDeathMessages = server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).get()
-        server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(false, server)
+        GameRuleOverrideHelper.setOverride(gameRules.announceAdvancements, false)
+        GameRuleOverrideHelper.setOverride(gameRules.showDeathMessages, false)
 
         // set up server with the initial config game rules
         writeToServer()
@@ -54,12 +50,11 @@ internal class GameRuleController(
 
     private fun setPlayingRules() {
         // revert the lobby gamerule changes
-        server.gameRules.get(GameRules.ANNOUNCE_ADVANCEMENTS).set(announceAdvancements, server)
-        server.gameRules.get(GameRules.SHOW_DEATH_MESSAGES).set(showDeathMessages, server)
+        GameRuleOverrideHelper.setOverride(gameRules.announceAdvancements, null)
+        GameRuleOverrideHelper.setOverride(gameRules.showDeathMessages, null)
 
         // update server to match config choices
-        server.isPvpEnabled = options.isPvpEnabled
-        server.gameRules.get(GameRules.KEEP_INVENTORY).set(options.isKeepInventory, server)
+        writeToServer()
 
         // reset overworld time
         server.overworld.timeOfDay = 0
@@ -69,7 +64,7 @@ internal class GameRuleController(
         events.onStateChange { (from, to) ->
             if (from != to && state.isLobbyMode) {
                 when (to) {
-                    GameState.PREGAME -> setPregameRules()
+                    GameState.PREGAME, GameState.POSTGAME -> setPregameRules()
                     GameState.COUNTDOWN -> setCountdownRules()
                     GameState.PLAYING -> setPlayingRules()
                     else -> {}
@@ -86,6 +81,10 @@ internal class GameRuleController(
                 // update config with the current game rules (in case /gamerule is used mid-game)
                 readFromServer()
             }
+        }
+
+        events.onClose {
+            GameRuleOverrideHelper.gameRuleOverrides.clear()
         }
     }
 

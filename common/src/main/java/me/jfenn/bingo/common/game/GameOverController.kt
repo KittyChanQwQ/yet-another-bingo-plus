@@ -118,7 +118,6 @@ internal class GameOverController(
         val defaultTab = when {
             // If there are multiple teams & either more than one team completed the game, or the game was a draw
             scoreRankings.size > 1 && scoreRankings.count { it.duration != null } != 1 -> GameOverPacket.EndScreenTab.SCORES
-            options.winCondition == BingoWinCondition.ReplaceGoals -> GameOverPacket.EndScreenTab.SCORES
             else -> GameOverPacket.EndScreenTab.CARDS
         }
 

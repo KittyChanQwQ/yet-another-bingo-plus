@@ -4,6 +4,7 @@
   "package": "me.jfenn.bingo.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "GameRuleOverrideMixin",
     "InteractionEntityMixin",
     "LevelPropertiesAccessor",
     "MinecraftServerSkipStartRegionMixin",
