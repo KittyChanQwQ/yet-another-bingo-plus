@@ -17,9 +17,7 @@
     "ServerPlayNetworkHandlerMixin",
     "ThreadedAnvilChunkStorageAccessor"
   ],
-  "client": [
-    "MinecraftClientFramebuffer"
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }

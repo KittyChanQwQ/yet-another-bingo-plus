@@ -11,8 +11,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.render.BufferBuilder
-import net.minecraft.client.render.VertexConsumerProvider
+import net.minecraft.client.render.BufferBuilderStorage
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 
@@ -27,14 +26,14 @@ class DrawService(
     companion object : IDrawServiceFactory {
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
 
-        private val vertexConsumers by lazy {
-            VertexConsumerProvider.immediate(BufferBuilder(1536))
+        private val bufferBuilderStorage by lazy {
+            BufferBuilderStorage()
         }
 
         override fun newBuffer(width: Int, height: Int): IFramebuffer {
             val client = MinecraftClient.getInstance()
             val buffer = SimpleFramebuffer(width, height, true, MinecraftClient.IS_SYSTEM_MAC)
-            val context = DrawContext(client, vertexConsumers)
+            val context = DrawContext(client, bufferBuilderStorage.entityVertexConsumers)
 
             return FramebufferImpl(
                 buffer, DrawService(context)

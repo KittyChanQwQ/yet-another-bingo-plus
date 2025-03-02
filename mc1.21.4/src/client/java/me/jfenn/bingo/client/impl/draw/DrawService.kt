@@ -9,12 +9,10 @@ import me.jfenn.bingo.impl.ItemStackFactory
 import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gl.Framebuffer
 import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.render.BufferBuilderStorage
 import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.VertexConsumerProvider
-import net.minecraft.client.util.BufferAllocator
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 import org.joml.Matrix4f
@@ -31,14 +29,14 @@ class DrawService(
 
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
 
-        private val vertexConsumers by lazy {
-            VertexConsumerProvider.immediate(BufferAllocator(786432))
+        private val bufferBuilderStorage by lazy {
+            BufferBuilderStorage(Runtime.getRuntime().availableProcessors())
         }
 
         override fun newBuffer(width: Int, height: Int): IFramebuffer {
             val client = MinecraftClient.getInstance()
             val buffer = SimpleFramebuffer(width, height, true)
-            val context = DrawContext(client, vertexConsumers)
+            val context = DrawContext(client, bufferBuilderStorage.entityVertexConsumers)
 
             return FramebufferImpl(
                 buffer, DrawService(context)

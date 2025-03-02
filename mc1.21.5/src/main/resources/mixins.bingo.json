@@ -17,8 +17,7 @@
     "ServerEntityManagerMixin",
     "ServerPlayNetworkHandlerMixin"
   ],
-  "client": [
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }
