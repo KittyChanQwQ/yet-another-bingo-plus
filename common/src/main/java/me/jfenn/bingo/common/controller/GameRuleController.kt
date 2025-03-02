@@ -8,7 +8,6 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.mixinhandler.GameRuleOverrideHelper
 import me.jfenn.bingo.platform.world.IGameRules
 import net.minecraft.server.MinecraftServer
-import net.minecraft.world.GameRules
 
 /**
  * Controls server setting and gamerule changes:
@@ -26,7 +25,7 @@ internal class GameRuleController(
 
     fun readFromServer() {
         options.isPvpEnabled = server.isPvpEnabled
-        options.isKeepInventory = server.gameRules.get(GameRules.KEEP_INVENTORY).get()
+        options.isKeepInventory = gameRules.keepInventory.value
     }
 
     fun writeToServer() {
