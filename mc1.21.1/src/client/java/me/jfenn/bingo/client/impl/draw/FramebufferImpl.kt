@@ -2,10 +2,10 @@ package me.jfenn.bingo.client.impl.draw
 
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.systems.VertexSorter
+import me.jfenn.bingo.client.mixinhelper.FramebufferOverride
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.renderer.IFramebuffer
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.client.mixinhelper.FramebufferOverride
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
@@ -40,7 +40,7 @@ class FramebufferImpl(
     private var backupProjMat = Matrix4f()
     private var backupVertexSorter = VertexSorter.BY_Z
 
-    override fun beginWrite(): IDrawService {
+    override fun write(callback: (IDrawService) -> Unit) {
         fb.setClearColor(0f, 0f, 0f, 0f)
         fb.clear(MinecraftClient.IS_SYSTEM_MAC)
 
@@ -71,10 +71,9 @@ class FramebufferImpl(
         FramebufferOverride.framebuffer = fb
 
         service.matrices.push()
-        return service
-    }
 
-    override fun endWrite() {
+        callback(service)
+
         val context: DrawContext = service.context
         context.draw()
 

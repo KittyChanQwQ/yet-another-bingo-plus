@@ -41,7 +41,7 @@ class FramebufferImpl(
     private var backupProjMat = Matrix4f()
     private var backupVertexSorter = VertexSorter.BY_Z
 
-    override fun beginWrite(): IDrawService {
+    override fun write(callback: (IDrawService) -> Unit) {
         fb.setClearColor(0f, 0f, 0f, 0f)
         fb.clear(MinecraftClient.IS_SYSTEM_MAC)
 
@@ -73,10 +73,9 @@ class FramebufferImpl(
         FramebufferOverride.framebuffer = fb
 
         service.matrices.push()
-        return service
-    }
 
-    override fun endWrite() {
+        callback(service)
+
         val context: DrawContext = service.context
         context.draw()
 

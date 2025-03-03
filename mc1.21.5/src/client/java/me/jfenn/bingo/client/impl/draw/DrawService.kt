@@ -3,25 +3,20 @@ package me.jfenn.bingo.client.impl.draw
 import com.mojang.blaze3d.systems.RenderSystem
 import me.jfenn.bingo.client.impl.NativeImageImpl
 import me.jfenn.bingo.client.platform.INativeImage
-import me.jfenn.bingo.client.platform.renderer.IDrawService
-import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
-import me.jfenn.bingo.client.platform.renderer.IFont
-import me.jfenn.bingo.client.platform.renderer.IMatrixStack
+import me.jfenn.bingo.client.platform.renderer.*
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.impl.ItemStackFactory
 import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
-<<<<<<<
-=======
 import net.minecraft.client.gl.SimpleFramebuffer
->>>>>>>
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.BufferBuilderStorage
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 import org.joml.Matrix4f
+import org.slf4j.LoggerFactory
 
 class DrawService(
     override val context: DrawContext,
@@ -32,10 +27,9 @@ class DrawService(
     override val matrices: IMatrixStack = MatrixStackImpl(context.matrices)
 
     companion object : IDrawServiceFactory {
+        private val log = LoggerFactory.getLogger("bingo")
+
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
-<<<<<<<
-    }
-=======
 
         private val bufferBuilderStorage by lazy {
             BufferBuilderStorage(Runtime.getRuntime().availableProcessors())
@@ -43,9 +37,14 @@ class DrawService(
 
         override fun newBuffer(width: Int, height: Int): IFramebuffer {
             val client = MinecraftClient.getInstance()
-            val buffer = SimpleFramebuffer(width, height, true)
+            val buffer = SimpleFramebuffer(null, width, height, true)
             val context = DrawContext(client, bufferBuilderStorage.entityVertexConsumers)
->>>>>>>
+
+            return FramebufferImpl(
+                buffer, DrawService(context), log
+            )
+        }
+    }
 
     override fun enableBlend() {}
 

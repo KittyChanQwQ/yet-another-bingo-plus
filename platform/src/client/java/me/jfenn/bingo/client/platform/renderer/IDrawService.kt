@@ -152,7 +152,6 @@ interface IFramebuffer : Closeable {
     val height: Int
     fun register()
     fun resize(width: Int, height: Int)
-    fun beginWrite(): IDrawService
-    fun endWrite()
+    fun write(callback: (IDrawService) -> Unit)
     fun draw(service: IDrawService, width: Int, height: Int)
 }

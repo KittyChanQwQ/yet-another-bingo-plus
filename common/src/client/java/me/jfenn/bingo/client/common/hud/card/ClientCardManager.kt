@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.util.ScreenshotRecorder
 import org.slf4j.Logger
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
@@ -56,12 +57,10 @@ internal class ClientCardManager(
     }
 
     private fun updateCard(card: ClientCard) {
-        val drawService = card.framebuffer.beginWrite()
+        card.framebuffer.write { drawService ->
+            val (originalWidth, _) = getCardSize(1f)
+            val cardScale = card.framebuffer.width.toFloat() / originalWidth
 
-        val (originalWidth, _) = getCardSize(1f)
-        val cardScale = card.framebuffer.width.toFloat() / originalWidth
-
-        try {
             drawService.matrices.push()
             drawService.matrices.scale(cardScale, cardScale, 1f)
             clientCardBufferRenderer.drawCard(
@@ -69,8 +68,6 @@ internal class ClientCardManager(
                 card = card,
             )
             drawService.matrices.pop()
-        } finally {
-            card.framebuffer.endWrite()
         }
     }
 
