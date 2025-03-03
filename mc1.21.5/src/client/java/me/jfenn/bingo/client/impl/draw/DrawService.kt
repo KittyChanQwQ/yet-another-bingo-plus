@@ -47,13 +47,9 @@ class DrawService(
             val context = DrawContext(client, bufferBuilderStorage.entityVertexConsumers)
 >>>>>>>
 
-    override fun enableBlend() {
-        RenderSystem.enableBlend()
-    }
+    override fun enableBlend() {}
 
-    override fun disableBlend() {
-        RenderSystem.disableBlend()
-    }
+    override fun disableBlend() {}
 
     override fun setShaderColor(r: Float, g: Float, b: Float, a: Float) {
         context.draw()

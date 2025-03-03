@@ -24,6 +24,7 @@ import net.minecraft.util.Identifier
 import org.joml.Matrix4f
 import org.joml.Vector3d
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 import kotlin.reflect.KProperty
 
 class EntityManagerImpl(
@@ -77,21 +78,21 @@ class EntityManagerImpl(
 }
 
 private class NbtBooleanDelegate(private val name: String) {
-    operator fun getValue(thisRef: EntityImpl, property: KProperty<*>): Boolean = thisRef.nbt.getBoolean(name)
+    operator fun getValue(thisRef: EntityImpl, property: KProperty<*>): Boolean = thisRef.nbt.getBoolean(name, false)
     operator fun setValue(thisRef: EntityImpl, property: KProperty<*>, value: Boolean) {
         return thisRef.patchNbt { putBoolean(name, value) }
     }
 }
 
 private class NbtIntDelegate(private val name: String) {
-    operator fun getValue(thisRef: EntityImpl, property: KProperty<*>): Int = thisRef.nbt.getInt(name)
+    operator fun getValue(thisRef: EntityImpl, property: KProperty<*>): Int = thisRef.nbt.getInt(name, 0)
     operator fun setValue(thisRef: EntityImpl, property: KProperty<*>, value: Int) {
         return thisRef.patchNbt { putInt(name, value) }
     }
 }
 
 private class NbtFloatDelegate(private val name: String) {
-    operator fun getValue(thisRef: EntityImpl, property: KProperty<*>): Float = thisRef.nbt.getFloat(name)
+    operator fun getValue(thisRef: EntityImpl, property: KProperty<*>): Float = thisRef.nbt.getFloat(name, 0f)
     operator fun setValue(thisRef: EntityImpl, property: KProperty<*>, value: Float) {
         return thisRef.patchNbt { putFloat(name, value) }
     }
@@ -171,10 +172,11 @@ open class DisplayEntityImpl(
         get() = nbt
             .takeIf { it.contains("brightness") }
             ?.getCompound("brightness")
+            ?.getOrNull()
             ?.let {
                 IDisplayEntity.Brightness(
-                    block = it.getInt("block"),
-                    sky = it.getInt("sky"),
+                    block = it.getInt("block", 0),
+                    sky = it.getInt("sky", 0),
                 )
             }
         set(value) {
@@ -208,16 +210,20 @@ class TextDisplayEntityImpl(
 
     override var billboard: ITextDisplayEntity.Billboard
         get() = nbt.getString("billboard")
-            .uppercase()
-            .let { ITextDisplayEntity.Billboard.valueOf(it) }
+            .getOrNull()
+            ?.uppercase()
+            ?.let { ITextDisplayEntity.Billboard.valueOf(it) }
+            ?: ITextDisplayEntity.Billboard.FIXED
         set(value) {
             patchNbt { putString("billboard", value.name.lowercase()) }
         }
 
     override var alignment: ITextDisplayEntity.TextAlignment
         get() = nbt.getString("alignment")
-            .uppercase()
-            .let { ITextDisplayEntity.TextAlignment.valueOf(it) }
+            .getOrNull()
+            ?.uppercase()
+            ?.let { ITextDisplayEntity.TextAlignment.valueOf(it) }
+            ?: ITextDisplayEntity.TextAlignment.CENTER
         set(value) {
             patchNbt { putString("alignment", value.name.lowercase()) }
         }
