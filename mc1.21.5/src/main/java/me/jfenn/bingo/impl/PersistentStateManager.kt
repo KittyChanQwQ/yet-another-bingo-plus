@@ -5,7 +5,6 @@ import kotlinx.serialization.serializer
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.IPersistentStateType
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.NbtOps
 import net.minecraft.nbt.StringNbtReader
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.PersistentState
@@ -40,7 +39,7 @@ class PersistentStateManager(
                     {
                         logger.debug("[PersistentStateManager] Encoding $id...")
                         val string = IPersistentStateManager.json.encodeToString(serializer, it.value)
-                        val compound = StringNbtReader.read(NbtOps.INSTANCE, string)
+                        val compound = StringNbtReader.readCompound(string)
                         compound as NbtCompound
                     }
                 ),
