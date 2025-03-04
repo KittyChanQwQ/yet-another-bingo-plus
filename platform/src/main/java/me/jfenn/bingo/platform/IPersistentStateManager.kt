@@ -13,6 +13,7 @@ interface IPersistentStateManager {
             ignoreUnknownKeys = true
             isLenient = true
             encodeDefaults = true
+            explicitNulls = false
             prettyPrint = false
         }
 
