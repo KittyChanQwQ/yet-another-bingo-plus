@@ -17,10 +17,10 @@ import kotlin.time.Duration
 internal class BingoCardsWidget(
     koin: Koin,
 
-    var x: Float,
-    var y: Float,
-    var width: Int,
-    var height: Int,
+    var x: Float = 0f,
+    var y: Float = 0f,
+    var width: Int = 0,
+    var height: Int = 0,
 
     var interpolateKey: BingoTeamKey?,
     interpolateFromX: Float = 0f,

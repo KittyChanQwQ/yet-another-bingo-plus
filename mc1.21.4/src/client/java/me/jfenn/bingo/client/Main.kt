@@ -6,6 +6,7 @@ import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.impl.event.ClientCloseEvent
 import me.jfenn.bingo.client.impl.event.ClientEventsImpl
 import me.jfenn.bingo.client.impl.screen.ScreenFactory
+import me.jfenn.bingo.client.impl.screen.button.ButtonFactory
 import me.jfenn.bingo.client.platform.*
 import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.client.platform.screen.IButtonFactory

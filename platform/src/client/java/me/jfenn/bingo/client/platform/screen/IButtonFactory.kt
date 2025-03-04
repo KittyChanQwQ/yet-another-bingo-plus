@@ -1,7 +1,9 @@
 package me.jfenn.bingo.client.platform.screen
 
 import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.utils.IEventListener
 import net.minecraft.client.gui.widget.ButtonWidget
+import org.joml.Vector2i
 
 interface IButtonFactory {
 
@@ -16,6 +18,18 @@ interface IButtonFactory {
         message: IText,
     ) : IButton
 
+    fun createNinePatchButton(
+        sliceSize: Int,
+        textureSize: Vector2i,
+        texture: String?,
+        focusedTexture: String?,
+    ) : IButton
+
 }
 
-interface IButton
+interface IButton {
+    var position: Vector2i
+    var size: Vector2i
+    var message: IText
+    val onClick: IEventListener<Unit>
+}

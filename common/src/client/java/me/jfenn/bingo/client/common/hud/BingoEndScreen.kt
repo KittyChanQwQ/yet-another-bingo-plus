@@ -4,12 +4,11 @@ import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.state.BingoHudState
+import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
 import me.jfenn.bingo.client.platform.renderer.IDrawService
-import me.jfenn.bingo.client.platform.screen.IScreen
-import me.jfenn.bingo.client.platform.screen.IScreenFactory
-import me.jfenn.bingo.client.platform.screen.IScreenHelper
+import me.jfenn.bingo.client.platform.screen.*
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.game.GameOverPacket.EndScreenTab
 import me.jfenn.bingo.common.map.Color
@@ -21,14 +20,12 @@ import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.widget.ButtonWidget
+import net.minecraft.util.Identifier
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
+import org.joml.Vector2i
 import org.koin.core.Koin
-import kotlin.math.PI
-import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.roundToInt
+import kotlin.math.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -46,6 +43,7 @@ internal class BingoEndScreen(
     originalCardScale: Float = config.client.cardScale,
     scrollableWidgetFactory: IScrollableWidgetFactory = koin.get(),
     tabsWidgetFactory: ITabsWidgetFactory = koin.get(),
+    buttonFactory: IButtonFactory = koin.get(),
     private val onCloseCallback: (BingoEndScreen) -> Unit,
 ) : IScreen {
 
@@ -85,7 +83,6 @@ internal class BingoEndScreen(
     }
 
     companion object {
-        private const val BUTTON_WIDTH = 120
         private val NEW_BEST_DURATION = 2.seconds
     }
 
@@ -93,13 +90,15 @@ internal class BingoEndScreen(
     private val height by helper::height
     private val client = MinecraftClient.getInstance()
 
+    private val sidebarOffsetInterpolate = Interpolate(
+        from = 1f,
+        to = 0f,
+        duration = 150.milliseconds,
+    )
+    private var sidebarWidth = 0
+
     private val cardsWidget = BingoCardsWidget(
         koin,
-
-        x = width/2f,
-        y = height/2f,
-        width = width * 6/10,
-        height = ClientCardBufferRenderer.CARD_HEIGHT,
         screen = helper.screen,
 
         interpolateKey = originalCardKey,
@@ -124,8 +123,27 @@ internal class BingoEndScreen(
         .takeIf { gameOver.isFirstOpen }
         ?.also { gameOver.isFirstOpen = false }
 
-    private var dismissButton: ButtonWidget? = null
-    private var restartButton: ButtonWidget? = null
+    private val dismissButton = buttonFactory.createNinePatchButton(
+        sliceSize = 6,
+        textureSize = Vector2i(200, 20),
+        texture = "minecraft:bingo/button_game_generic",
+        focusedTexture = "minecraft:bingo/button_game_generic_focused"
+    ).also {
+        it.onClick {
+            helper.close()
+        }
+    }
+
+    private val restartButton = buttonFactory.createNinePatchButton(
+        sliceSize = 6,
+        textureSize = Vector2i(200, 40),
+        texture = "minecraft:bingo/button_game_continue",
+        focusedTexture = "minecraft:bingo/button_game_continue_focused"
+    ).also {
+        it.onClick {
+            sendReadyForNextRound()
+        }
+    }
 
     private val tabsWidget = tabsWidgetFactory.create(EndScreenTab.entries.map { text.string(it.title) })
         .apply {
@@ -145,7 +163,7 @@ internal class BingoEndScreen(
 
     private val scoresWidget = scrollableWidgetFactory.create(BingoEndScoresWidget(koin, gameOver))
 
-    private fun reopenWorld() {
+    private fun sendReadyForNextRound() {
         val isInSingleplayer = client?.isInSingleplayer ?: return
         packets.readySetV1.send(SetReadyPacket(true))
         // If the screen is paused, it must be closed so that the server can process the ready packet
@@ -157,42 +175,38 @@ internal class BingoEndScreen(
     private fun updateButtons() {
         helper.clearChildren()
 
-        val dismissButton = dismissButton ?: ButtonWidget.builder(text.string(StringKey.CardClose).value) { helper.close() }
-            .width(BUTTON_WIDTH)
-            .position(0, 0)
-            .build()
-            .also {
-                dismissButton = it
+        sidebarWidth = (width * 0.2f).toInt() + 100
+
+        helper.addDrawable(
+            object : IDrawable {
+                override fun render(drawService: IDrawService) {
+                    drawService.matrices.push()
+                    drawService.matrices.translate(sidebarOffsetInterpolate.get(Interpolate.Easing.IN_OUT) * sidebarWidth, 0f, 0f)
+                    renderSidebar(drawService)
+                    drawService.matrices.pop()
+                }
             }
+        )
 
-        dismissButton.x = (width/2) - 4 - BUTTON_WIDTH
-        dismissButton.y = (height/2) + (ClientCardBufferRenderer.CARD_HEIGHT/2) + tabsHeight + 8
-        helper.addDrawableChild(dismissButton)
+        val margin = 8
 
-        val restartButton = restartButton ?: ButtonWidget.builder(
-            text.string(StringKey.WorldNextRound).value
-        ) {
-            it.active = false
-            reopenWorld()
-        }
-            .width(BUTTON_WIDTH)
-            .position(0, 0)
-            .build()
-            .also {
-                restartButton = it
-            }
+        dismissButton.size = Vector2i(sidebarWidth - margin*2, 20)
+        dismissButton.position = Vector2i(width - sidebarWidth + margin, height - dismissButton.size.y - margin)
+        dismissButton.message = text.string(StringKey.CardClose)
+        helper.addButton(dismissButton)
 
-        restartButton.x = (width/2) + 4
-        restartButton.y = (height/2) + (ClientCardBufferRenderer.CARD_HEIGHT/2) + tabsHeight + 8
-        helper.addDrawableChild(restartButton)
+        restartButton.size = Vector2i(sidebarWidth - margin*2, 40)
+        restartButton.position = Vector2i(width - sidebarWidth + margin, height - dismissButton.size.y - margin - restartButton.size.y - margin)
+        restartButton.message = text.string(StringKey.WorldNextRound)
+        helper.addButton(restartButton)
 
-        tabsWidget.width = width
+        tabsWidget.width = width - sidebarWidth
         if (isShowingTabs) helper.addDrawableChild(tabsWidget.widget)
 
         if (tab == EndScreenTab.SCORES) {
-            scoresWidget.x = (width * 0.1f).toInt()
+            scoresWidget.x = ((width - sidebarWidth) * 0.1f).toInt()
             scoresWidget.y = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT/2) + tabsHeight
-            scoresWidget.width = (width * 0.8f).toInt()
+            scoresWidget.width = ((width - sidebarWidth) * 0.8f).toInt()
             scoresWidget.height = ClientCardBufferRenderer.CARD_HEIGHT
             helper.addDrawableChild(scoresWidget.widget!!)
         }
@@ -206,9 +220,9 @@ internal class BingoEndScreen(
         updateButtons()
     }
 
-    private fun renderGameDuration(drawService: IDrawService, titleY: Int) {
+    private fun renderGameDuration(drawService: IDrawService, titleY: Int, x: Float) {
         drawService.matrices.push()
-        drawService.matrices.translate(width * 0.2f - 20f, titleY.toFloat(), 0f)
+        drawService.matrices.translate(x, titleY.toFloat(), 0f)
         drawService.matrices.multiply(Quaternionf(AxisAngle4f(-.25f, 0f, 0f, 1f)))
         drawService.matrices.push()
         drawService.matrices.scale(2f, 2f, 1f)
@@ -254,21 +268,19 @@ internal class BingoEndScreen(
         drawService.matrices.pop()
     }
 
-    private fun renderWinStreak(drawService: IDrawService, titleY: Int) {
+    private fun renderWinStreak(drawService: IDrawService, titleY: Int, x: Float) {
         val winStreak = gameOver.packet.winStreak ?: return
         val now = state.now
 
         val ready = state.ready
         if (ready != null && ready.isRunning) {
-            restartButton?.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
-                .value
+            restartButton.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
         } else {
-            restartButton?.message = text.string(StringKey.WorldNextRound)
-                .value
+            restartButton.message = text.string(StringKey.WorldNextRound)
         }
 
         drawService.matrices.push()
-        drawService.matrices.translate(width * 0.8f + 20f, titleY.toFloat(), 0f)
+        drawService.matrices.translate(x, titleY.toFloat(), 0f)
         drawService.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
         drawService.matrices.push()
         drawService.matrices.scale(2f, 2f, 1f)
@@ -313,7 +325,7 @@ internal class BingoEndScreen(
 
         if (winStreak > 1 && gameOver.packet.isWinner) {
             drawService.matrices.push()
-            drawService.matrices.translate(width * 0.8f + 20f, titleY.toFloat() + 12, 0f)
+            drawService.matrices.translate(x, titleY.toFloat() + 12, 0f)
             drawService.matrices.multiply(Quaternionf(AxisAngle4f(
                 now.toEpochMilliseconds()
                     .mod(2000)
@@ -323,17 +335,61 @@ internal class BingoEndScreen(
             )))
             drawService.matrices.scale(8f, 8f, 1f)
             drawService.matrices.push()
-            drawService.matrices.translate(-2.5f, -3.5f, 0f)
+            drawService.matrices.translate(-3f, -3f, 0f)
 
+            drawService.context.fill(0, 0, 6, 6, 0x30_F5A3D6)
+
+            drawService.matrices.pop()
+            drawService.matrices.pop()
+        }
+    }
+
+    private fun renderSidebar(drawService: IDrawService) {
+        drawService.drawNinePatch(
+            texture = Identifier.of("minecraft", "bingo/game_sidebar_background")!!,
+            x = width - sidebarWidth,
+            y = 0,
+            width = width,
+            height = height,
+            sliceSize = 32,
+            textureWidth = 128,
+            textureHeight = 128,
+        )
+
+        val marginX = 16
+        val marginY = 24
+
+        val titleText = drawService.font.wrapLines(gameOver.packet.title, (sidebarWidth - marginX*2)/2)
+        var titleY = marginY
+        var titleScale = 2f
+
+        drawService.matrices.push()
+        drawService.matrices.scale(titleScale, titleScale, titleScale)
+        for (line in titleText) {
             drawService.drawText(
-                text.literal("◆"),
-                0, 0,
-                0x30_F5A3D6,
+                line,
+                (width - sidebarWidth + marginX).div(titleScale).toInt(),
+                (titleY/titleScale).toInt(),
+                0xff_ffffff.toInt(),
                 false,
             )
+            titleY += (drawService.font.getTextHeight() + 2).times(titleScale).toInt()
+        }
+        drawService.matrices.pop()
 
-            drawService.matrices.pop()
-            drawService.matrices.pop()
+        titleY += 4
+        titleScale = 1f
+
+        val subtitleText = drawService.font.wrapLines(gameOver.packet.subtitle, sidebarWidth - marginX*2)
+        for (line in subtitleText) {
+            drawService.drawText(
+                line,
+                (width - sidebarWidth + marginX).div(titleScale).toInt(),
+                (titleY/titleScale).toInt(),
+                0xff_ffffff.toInt(),
+                false,
+            )
+            titleY += (drawService.font.getTextHeight() + 2).times(titleScale).toInt()
         }
     }
 
@@ -341,39 +397,21 @@ internal class BingoEndScreen(
         val cardTop = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT/2)
         val titleY = min((cardTop * 0.75f).roundToInt(), cardTop - 11*2) + tabsHeight
 
-        drawService.matrices.push()
-        drawService.matrices.scale(2f, 2f, 2f)
-        drawService.drawText(
-            gameOver.packet.title,
-            (width/4) - (drawService.font.getTextWidth(gameOver.packet.title)/2),
-            (titleY/2) - 9,
-            0xff_ffffff.toInt(),
-            true,
-        )
-        drawService.matrices.pop()
-
-        drawService.drawText(
-            gameOver.packet.subtitle,
-            (width/2) - (drawService.font.getTextWidth(gameOver.packet.subtitle)/2),
-            titleY + 4,
-            0xff_ffffff.toInt(),
-            true,
-        )
-
-        renderGameDuration(drawService, titleY - 20)
-        renderWinStreak(drawService, titleY - 20)
+        val decorationX = max((width - sidebarWidth) * 0.2f - 20f, 40f)
+        renderGameDuration(drawService, titleY - 20, decorationX)
+        renderWinStreak(drawService, titleY - 20, (width - sidebarWidth) - decorationX)
 
         if (tab == EndScreenTab.CARDS) {
             cardsWidget.views = gameOver.cards
             cardsWidget.winner = gameOver.packet.winner
-            cardsWidget.x = width/2f
+            cardsWidget.x = (width - sidebarWidth)/2f
             cardsWidget.y = height/2f + tabsHeight
-            cardsWidget.width = width * 6/10
+            cardsWidget.width = (width - sidebarWidth) * 6/10
             cardsWidget.render(drawService, mouseX, mouseY, delta)
         }
 
         if (gameOver.packet.isWinner) {
-            fireworkRenderer?.render(drawService, width/2, height/2, state.now)
+            fireworkRenderer?.render(drawService, (width - sidebarWidth)/2, height/2, state.now)
         }
     }
 
