@@ -167,7 +167,7 @@
   "bingo.list.unobtainable": "Unobtainable",
   "bingo.lobby.click_to_join": "Click to join!",
   "bingo.lobby.loading_terrain": "Loading terrain...",
-  "bingo.lobby.next_round_time_remaining": "Next round in %s",
+  "bingo.lobby.next_round_time_remaining": "Leaving in %s",
   "bingo.lobby.sounds_muted": "Certain sounds in this lobby may be muted to avoid spam.",
   "bingo.lobby.starting_in_ready": "Starting in %s - %s of %s ready!",
   "bingo.lobby.starting_in_run_command": "Starting in %s - type /ready to speed up!",
@@ -460,8 +460,8 @@
   "bingo.tier.s.tooltip": "For many of these items, you need to literally finish the game and then some. You have been warned.",
   "bingo.timer.game_over": "(Game Over)",
   "bingo.timer.no_time_limit": "(No Time Limit)",
-  "bingo.world.new_game": "New Game",
-  "bingo.world.next_round": "Next Round",
+  "bingo.world.return_to_lobby": "Return to Lobby",
+  "bingo.world.keep_playing": "Keep Playing",
   "bingo.world.preparing": "Preparing a new Bingo world...",
   "biome.bingo.lobby": "Bingo Lobby"
 }
