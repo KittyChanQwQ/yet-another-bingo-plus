@@ -16,6 +16,7 @@ import net.minecraft.client.render.RenderLayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 import org.joml.Matrix4f
+import org.joml.Vector2i
 
 class DrawService(
     override val context: DrawContext,
@@ -24,6 +25,17 @@ class DrawService(
     override val textRenderer: TextRenderer = MinecraftClient.getInstance().textRenderer
     override val font: IFont = FontImpl(textRenderer)
     override val matrices: IMatrixStack = MatrixStackImpl(context.matrices)
+
+    override var delta: Float = 0.5f
+    override val mouse: Vector2i
+        get() {
+            val client = MinecraftClient.getInstance()
+            val mouse = client.mouse
+            return Vector2i(
+                (mouse.x * client.window.scaledWidth.toDouble() / client.window.width.toDouble()).toInt(),
+                (mouse.y * client.window.scaledHeight.toDouble() / client.window.height.toDouble()).toInt(),
+            )
+        }
 
     companion object : IDrawServiceFactory {
 

@@ -188,6 +188,11 @@ internal class BingoEndScreen(
 
         sidebarWidth = (width * 0.2f).toInt() + 100
 
+        cardsWidget.x = (width - sidebarWidth)/2f
+        cardsWidget.y = height/2f + tabsHeight
+        cardsWidget.width = (width - sidebarWidth) * 6/10
+        helper.addDrawable(cardsWidget)
+
         helper.addDrawable(
             object : IDrawable {
                 override fun render(drawService: IDrawService) {
@@ -440,10 +445,6 @@ internal class BingoEndScreen(
         if (tab == EndScreenTab.CARDS) {
             cardsWidget.views = gameOver.cards
             cardsWidget.winner = gameOver.packet.winner
-            cardsWidget.x = (width - sidebarWidth)/2f
-            cardsWidget.y = height/2f + tabsHeight
-            cardsWidget.width = (width - sidebarWidth) * 6/10
-            cardsWidget.render(drawService, mouseX, mouseY, delta)
         }
 
         if (gameOver.packet.isWinner) {

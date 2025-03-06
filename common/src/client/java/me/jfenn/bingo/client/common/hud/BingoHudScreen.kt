@@ -91,12 +91,22 @@ internal class BingoHudScreen(
         }
     }
 
-    override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
-        cardsWidget.views = state.cards.values
+    override fun init() {
+        helper.clearChildren()
+
         cardsWidget.x = width/2f
         cardsWidget.y = height/2f
         cardsWidget.width = width * 6/10
-        cardsWidget.render(drawService, mouseX, mouseY, delta)
+
+        helper.addDrawable(cardsWidget)
+    }
+
+    override fun resize(width: Int, height: Int) {
+        init()
+    }
+
+    override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
+        cardsWidget.views = state.cards.values
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

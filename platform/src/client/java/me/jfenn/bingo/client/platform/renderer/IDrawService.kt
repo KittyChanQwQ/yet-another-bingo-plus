@@ -6,6 +6,7 @@ import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
+import org.joml.Vector2i
 import java.io.Closeable
 import kotlin.math.ceil
 import kotlin.math.min
@@ -16,6 +17,9 @@ interface IDrawService {
     val textRenderer: TextRenderer
     val font: IFont
     val matrices: IMatrixStack
+
+    val delta: Float
+    val mouse: Vector2i
 
     fun enableBlend()
     fun disableBlend()

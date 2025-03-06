@@ -32,38 +32,38 @@ class FontImpl(
 
     private fun createText(visitable: StringVisitable): IText {
         val line = Text.empty()
-        var curStr = ""
+        val curStr = StringBuilder()
         var curStyle: Style = Style.EMPTY
         visitable.visit(
             { style, asString ->
                 if (style != curStyle) {
-                    line.append(Text.literal(curStr).setStyle(curStyle))
-                    curStr = ""
+                    line.append(Text.literal(curStr.toString()).setStyle(curStyle))
+                    curStr.clear()
                     curStyle = style
                 }
-                curStr += asString
+                curStr.append(asString)
                 Optional.empty<Unit>()
             },
             Style.EMPTY
         )
-        line.append(Text.literal(curStr).setStyle(curStyle))
+        line.append(Text.literal(curStr.toString()).setStyle(curStyle))
         return TextImpl(line)
     }
 
     private fun createText(orderedText: OrderedText): IText {
         val line = Text.empty()
-        var curStr = ""
+        val curStr = StringBuilder()
         var curStyle: Style = Style.EMPTY
         orderedText.accept { _, style, codePoint ->
             if (style != curStyle) {
-                line.append(Text.literal(curStr).setStyle(curStyle))
-                curStr = ""
+                line.append(Text.literal(curStr.toString()).setStyle(curStyle))
+                curStr.clear()
                 curStyle = style
             }
-            curStr += codePoint.toChar()
+            curStr.appendCodePoint(codePoint)
             true
         }
-        line.append(Text.literal(curStr).setStyle(curStyle))
+        line.append(Text.literal(curStr.toString()).setStyle(curStyle))
         return TextImpl(line)
     }
 }

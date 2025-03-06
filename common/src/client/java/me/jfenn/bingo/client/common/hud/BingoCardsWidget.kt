@@ -6,6 +6,7 @@ import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.common.state.ClientCardBase
 import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.renderer.IDrawService
+import me.jfenn.bingo.client.platform.screen.IDrawable
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.team.BingoTeamKey
 import net.minecraft.client.gui.screen.Screen
@@ -36,7 +37,7 @@ internal class BingoCardsWidget(
 
     private val screen: Screen,
     private val renderer: ClientCardRenderer = koin.get(),
-) {
+) : IDrawable {
 
     val interpolateX = Interpolate(
         from = interpolateFromX,
@@ -135,7 +136,11 @@ internal class BingoCardsWidget(
         return hoveredView
     }
 
-    fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun render(drawService: IDrawService) {
+        val mouse = drawService.mouse
+        val mouseX = mouse.x
+        val mouseY = mouse.y
+
         val context by drawService::context
         if (isInBounds(x.toInt(), mouseY)) {
             val boundaryMin = x - width*.5f
@@ -146,7 +151,7 @@ internal class BingoCardsWidget(
                 mouseX > boundaryMax -> (mouseX - boundaryMax) * baseVelocity
                 else -> 0f
             }
-            targetScrollX = (targetScrollX + velocity * delta).coerceIn(0f, 1f)
+            targetScrollX = (targetScrollX + velocity * drawService.delta).coerceIn(0f, 1f)
         }
 
         // Animate scrollX towards targetScrollX
