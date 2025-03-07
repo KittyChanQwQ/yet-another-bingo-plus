@@ -204,23 +204,24 @@ internal class BingoEndScreen(
             }
         )
 
-        val margin = 4
+        val marginX = 12
+        val marginY = 4
 
-        dismissButton.size = Vector2i(sidebarWidth - margin*2, 20)
+        dismissButton.size = Vector2i(sidebarWidth - marginX*2, 20)
         var buttonY = height - dismissButton.size.y - 12
-        dismissButton.position = Vector2i(width - sidebarWidth + margin, buttonY)
+        dismissButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
         dismissButton.message = text.string(StringKey.CardClose)
         helper.addButton(dismissButton)
 
-        keepPlayingButton.size = Vector2i(sidebarWidth - margin*2, 20)
-        buttonY -= margin + keepPlayingButton.size.y
-        keepPlayingButton.position = Vector2i(width - sidebarWidth + margin, buttonY)
+        keepPlayingButton.size = Vector2i(sidebarWidth - marginX*2, 20)
+        buttonY -= marginY + keepPlayingButton.size.y
+        keepPlayingButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
         keepPlayingButton.message = text.string(StringKey.WorldKeepPlaying)
         helper.addButton(keepPlayingButton)
 
-        restartButton.size = Vector2i(sidebarWidth - margin*2, 40)
-        buttonY -= margin + restartButton.size.y
-        restartButton.position = Vector2i(width - sidebarWidth + margin, buttonY)
+        restartButton.size = Vector2i(sidebarWidth - marginX*2, 40)
+        buttonY -= marginY + restartButton.size.y
+        restartButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
         restartButton.message = text.string(StringKey.WorldReturnToLobby)
         helper.addButton(restartButton)
 
@@ -373,16 +374,16 @@ internal class BingoEndScreen(
         val evenOffset = if (sidebarWidth % 2 == 0) 0 else 1
         drawService.drawNinePatch(
             texture = Identifier.of("minecraft", "bingo/game_sidebar_background")!!,
-            x = width - sidebarWidth - 6 - evenOffset,
+            x = width - sidebarWidth - evenOffset,
             y = 0,
-            width = sidebarWidth + 12 + evenOffset,
+            width = sidebarWidth + evenOffset,
             height = height,
             sliceSize = 32,
             textureWidth = 128,
             textureHeight = 128,
         )
 
-        val marginX = 16
+        val marginX = 24
         val marginY = 24
 
         val titleText = drawService.font.wrapLines(gameOver.packet.title, (sidebarWidth - marginX*2)/2)
@@ -393,9 +394,9 @@ internal class BingoEndScreen(
 
         drawService.drawNinePatch(
             texture = Identifier.of("minecraft", "bingo/game_container")!!,
-            x = width - sidebarWidth + 4,
+            x = width - sidebarWidth + 10,
             y = 12,
-            width = sidebarWidth - 8,
+            width = sidebarWidth - 20,
             height = (titleText.size * (drawService.font.getTextHeight() + 2) * 2) +
                     (subtitleText.size * (drawService.font.getTextHeight() + 2)) +
                     4 + 12 + 8,
