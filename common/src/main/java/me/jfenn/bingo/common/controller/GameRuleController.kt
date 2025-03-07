@@ -48,7 +48,7 @@ internal class GameRuleController(
         server.overworld.timeOfDay = 0
     }
 
-    private fun setPlayingRules() {
+    private fun setPlayingRules(setTimeOfDay: Boolean) {
         // revert the lobby gamerule changes
         GameRuleOverrideHelper.setOverride(gameRules.announceAdvancements, null)
         GameRuleOverrideHelper.setOverride(gameRules.showDeathMessages, null)
@@ -57,7 +57,9 @@ internal class GameRuleController(
         writeToServer()
 
         // reset overworld time
-        server.overworld.timeOfDay = 0
+        if (setTimeOfDay) {
+            server.overworld.timeOfDay = 0
+        }
     }
 
     init {
@@ -66,12 +68,15 @@ internal class GameRuleController(
                 when (to) {
                     GameState.PREGAME, GameState.POSTGAME -> setPregameRules()
                     GameState.COUNTDOWN -> setCountdownRules()
-                    GameState.PLAYING -> setPlayingRules()
+                    GameState.PLAYING -> setPlayingRules(
+                        // Don't change the time of day if resuming from POSTGAME
+                        setTimeOfDay = from != GameState.POSTGAME
+                    )
                     else -> {}
                 }
             }
 
-            if (from != to) {
+            if (from != to && from != GameState.POSTGAME) {
                 datapackFunctionService.runStateChange(to)
             }
         }

@@ -39,6 +39,7 @@ data class BingoState(
     var lobbySpawnPos: BlockPositionType = BlockPosition(0, 0, 0),
     var lobbySpawnYaw: Float = 0f,
     var timeOffline: Duration = Duration.ZERO,
+    var timeAdjustment: Duration = Duration.ZERO,
     val options: BingoOptions,
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
     var previewMap: BingoMap? = null,
@@ -161,10 +162,10 @@ data class BingoState(
 
     fun ingameDuration(): Duration? {
         val started = startedAt ?: return null
-        val updated = updatedAt ?: return null
+        val updated = endedAt ?: updatedAt ?: return null
         val duration = updated - started
         // subtract any offline server time from the game duration
-        return duration - timeOffline
+        return duration + timeAdjustment - timeOffline
     }
 
     fun remainingDuration(): Duration? {
@@ -246,6 +247,7 @@ data class BingoState(
         updatedAt = null
         endedAt = null
         timeOffline = Duration.ZERO
+        timeAdjustment = Duration.ZERO
         teams.clear()
         previewMap = null
         // [ScoredItemCheck] calls createInitialCards when entering PREGAME, so this card should be immediately replaced

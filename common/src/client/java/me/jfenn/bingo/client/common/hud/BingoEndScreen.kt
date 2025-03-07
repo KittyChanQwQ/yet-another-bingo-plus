@@ -213,11 +213,13 @@ internal class BingoEndScreen(
         dismissButton.message = text.string(StringKey.CardClose)
         helper.addButton(dismissButton)
 
-        keepPlayingButton.size = Vector2i(sidebarWidth - marginX*2, 20)
-        buttonY -= marginY + keepPlayingButton.size.y
-        keepPlayingButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
-        keepPlayingButton.message = text.string(StringKey.WorldKeepPlaying)
-        helper.addButton(keepPlayingButton)
+        if (gameOver.packet.isResumeAvailable) {
+            keepPlayingButton.size = Vector2i(sidebarWidth - marginX*2, 20)
+            buttonY -= marginY + keepPlayingButton.size.y
+            keepPlayingButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
+            keepPlayingButton.message = text.string(StringKey.WorldKeepPlaying)
+            helper.addButton(keepPlayingButton)
+        }
 
         restartButton.size = Vector2i(sidebarWidth - marginX*2, 40)
         buttonY -= marginY + restartButton.size.y

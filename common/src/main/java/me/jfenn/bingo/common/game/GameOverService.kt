@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.game
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.BingoWinCondition
@@ -15,10 +16,16 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import org.joml.Vector3d
+import java.util.*
 import kotlin.time.Duration
 
 class GameOverService(
@@ -27,19 +34,24 @@ class GameOverService(
     private val textProvider: TextProvider,
     private val stats: StatsService,
     private val server: MinecraftServer,
+    private val playerManager: IPlayerManager,
 ) {
 
     @Serializable
     class GameOverInfo(
         val reason: GameEndReason?,
         val endedAt: Instant,
+        val duration: Duration,
         val winningTeamKey: BingoTeamKey?,
         val leadingTeamKey: LeadingTeam?,
         val playerInfo: Map<UuidAsString, GameOverPlayerInfo>,
         val isBestTime: Boolean,
         val prevBestTime: Duration?,
         val scoreRankings: List<GameOverScoreRanking>,
-    )
+    ) {
+        @Transient
+        val playerStates = mutableMapOf<UUID, PlayerState>()
+    }
 
     @Serializable
     class GameOverPlayerInfo(
@@ -50,6 +62,14 @@ class GameOverService(
         val capturedItems: Int,
         val bestCapturedItems: Int?,
         val isBestCapturedItems: Boolean,
+    )
+
+    class PlayerState(
+        val world: ServerWorld,
+        val position: Vector3d,
+        val pitch: Float,
+        val yaw: Float,
+        val inventory: Map<Int, IItemStack>,
     )
 
     @Serializable
@@ -130,6 +150,8 @@ class GameOverService(
                 val duration = team.winner?.instant?.let { completedAt ->
                     completedAt - (state.startedAt ?: completedAt)
                 }
+                    ?.plus(state.timeAdjustment)
+                    ?.minus(state.timeOffline)
 
                 GameOverScoreRanking(
                     index = 0,
@@ -172,11 +194,20 @@ class GameOverService(
             winningTeamKey = winningTeam?.key,
             leadingTeamKey = leadingTeam,
             playerInfo = playerInfo,
+            duration = state.ingameDuration() ?: Duration.ZERO,
             endedAt = endedAt,
             isBestTime = isBestTime,
             prevBestTime = prevBestTime,
             scoreRankings = scoreRankings,
-        )
+        ).also { info ->
+            if (state.isLobbyMode) {
+                // Record player positions/inventory when the game is ended
+                // (for "Keep Playing" feature)
+                playerInfo.keys
+                    .mapNotNull { playerManager.getPlayer(it) }
+                    .forEach { info.playerStates[it.uuid] = getPlayerState(it) }
+            }
+        }
     }
 
     private fun getPlayerInfo(team: BingoTeam, player: PlayerProfile): GameOverPlayerInfo {
@@ -209,6 +240,17 @@ class GameOverService(
             capturedItems = capturedItems,
             bestCapturedItems = bestCapturedItems,
             isBestCapturedItems = bestCapturedItems?.let { capturedItems > it } == true,
+        )
+    }
+
+    private fun getPlayerState(player: IPlayerHandle): PlayerState {
+        return PlayerState(
+            world = player.world,
+            position = player.pos,
+            pitch = player.pitch,
+            yaw = player.yaw,
+            inventory = player.allInventorySlots()
+                .associate { (slot, item) -> slot to item.copy() },
         )
     }
 }

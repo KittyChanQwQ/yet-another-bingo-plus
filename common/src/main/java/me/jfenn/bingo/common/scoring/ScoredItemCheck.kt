@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoring
 
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
@@ -325,7 +326,7 @@ internal class ScoredItemCheck(
     }
 
     private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean, isAutoWin: Boolean = false) {
-        val now = state.updatedAt ?: Instant.DISTANT_PAST
+        val now = state.updatedAt ?: Clock.System.now()
 
         val completedCard = team.completedCards.find { it.card.id == card.id } ?: run {
             TeamCompletedCard(
@@ -390,7 +391,7 @@ internal class ScoredItemCheck(
 
     private fun tickCard(card: BingoCard) {
         if (state.endedAt != null) return
-        val tickStart = state.updatedAt ?: Instant.DISTANT_PAST
+        val tickStart = state.updatedAt ?: return
 
         // Update all objectives
         objectiveManager.tick(card)

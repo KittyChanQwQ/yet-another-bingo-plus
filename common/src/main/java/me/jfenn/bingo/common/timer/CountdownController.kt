@@ -99,7 +99,7 @@ internal class CountdownController(
         }
 
         events.onStateChange { (_, toState) ->
-            val isLockedState = toState == GameState.LOADING || toState == GameState.COUNTDOWN
+            val isLockedState = toState == GameState.LOADING || toState == GameState.COUNTDOWN || toState == GameState.POSTGAME
 
             if (state.isLobbyMode)
                 tickManager.setFrozen(isLockedState)

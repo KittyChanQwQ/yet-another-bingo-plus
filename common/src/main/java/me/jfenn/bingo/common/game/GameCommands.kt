@@ -74,6 +74,14 @@ class GameCommands(
                     sendFeedback(text.string(StringKey.CommandEndSuccess))
                 }
             }
+
+            literal("resume") {
+                requires { hasState(GameState.POSTGAME) && hasPermission(Permission.CONFIGURE_GAME) }
+                executes {
+                    val gameService = scope.get<GameService>()
+                    gameService.resume()
+                }
+            }
         }
     }
 

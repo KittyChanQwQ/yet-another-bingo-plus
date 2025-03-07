@@ -130,10 +130,9 @@ internal class GameOverController(
                 subtitle = message ?: text.empty(),
                 winner = info.winningTeamKey,
                 duration = state.ingameDuration() ?: Duration.ZERO,
-                isOperator = server.isDedicated && state.isLobbyMode && permissions.hasPermission(
-                    player,
-                    Permission.COMMAND_RESET
-                ),
+                isResumeAvailable = permissions.hasPermission(player, Permission.COMMAND_RESET)
+                        // If a team won because of an auto-win (stalemate in lockout mode), the game cannot be resumed
+                        && state.teams.values.none { it.completedCards.lastOrNull()?.isAutoWin == true },
                 isWinner = isWinner,
                 isUpdate = isUpdate,
 
@@ -156,6 +155,7 @@ internal class GameOverController(
             )
 
             when {
+                packetManager.gameOverV8.send(player.player, packet) -> {}
                 packetManager.gameOverV7.send(player.player, packet) -> {}
                 packetManager.gameOverV6.send(player.player, packet) -> {}
                 packetManager.gameOverV5.send(player.player, packet) -> {}

@@ -249,8 +249,13 @@ internal class PlayerController(
         events.onEnter(GameState.PLAYING) { prevState ->
             if (prevState == GameState.PLAYING) return@onEnter
 
+            // Don't forceReset if resumed from POSTGAME (Keep Playing)
+            val forceReset = prevState != GameState.POSTGAME
+
             for (player in playerManager.getPlayers()) {
-                if (state.isLobbyMode) updateGameMode(player, forceReset = true)
+                if (state.isLobbyMode) {
+                    updateGameMode(player, forceReset = forceReset)
+                }
             }
         }
 
