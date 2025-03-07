@@ -89,5 +89,6 @@ class GameCommands(
         const val START_COMMAND = "/bingo start"
         const val IGNORE_WARNINGS_COMMAND = "/bingo start ignore_warnings"
         const val END_COMMAND = "/bingo end"
+        const val RESUME_COMMAND = "/bingo resume"
     }
 }

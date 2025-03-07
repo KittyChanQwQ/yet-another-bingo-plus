@@ -5,11 +5,13 @@ import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.utils.Interpolate
+import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.screen.*
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameOverPacket.EndScreenTab
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.ready.SetReadyPacket
@@ -19,7 +21,6 @@ import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.client.MinecraftClient
 import net.minecraft.util.Identifier
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
@@ -36,6 +37,7 @@ internal class BingoEndScreen(
     private val text: TextProvider = koin.get(),
     private val packets: ClientPacketEvents = koin.get(),
     private val state: BingoHudState = koin.get(),
+    private val client: IClient = koin.get(),
     private val config: BingoConfig = koin.get(),
     private val helper: IScreenHelper,
     originalCardKey: BingoTeamKey?,
@@ -88,7 +90,6 @@ internal class BingoEndScreen(
 
     private val width by helper::width
     private val height by helper::height
-    private val client = MinecraftClient.getInstance()
 
     private val sidebarOffsetInterpolate = Interpolate(
         from = 1f,
@@ -141,6 +142,7 @@ internal class BingoEndScreen(
         focusedTexture = "minecraft:bingo/button_game_generic_focused"
     ).also {
         it.onClick {
+            client.player.sendCommand(GameCommands.RESUME_COMMAND)
             helper.close()
         }
     }

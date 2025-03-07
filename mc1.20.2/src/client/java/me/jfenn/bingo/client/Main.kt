@@ -40,6 +40,7 @@ object Main : ClientModInitializer {
         singleOf(::ScreenFactory) bind IScreenFactory::class
 
         singleOf(::ButtonFactory) bind IButtonFactory::class
+        singleOf(::ClientImpl) bind IClient::class
         singleOf(::ClientNetworkingImpl) bind IClientNetworking::class
         single { DrawService } bind IDrawServiceFactory::class
         singleOf(::HudCallbackImpl) withOptions { createdAtStart() }
