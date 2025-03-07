@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.commands.BingoOptionsCommands
 import me.jfenn.bingo.common.config.ConfigService
+import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.options.*
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.SpawnService
@@ -24,6 +25,7 @@ import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
+import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.PlayerGameMode
@@ -51,6 +53,8 @@ internal class GameService(
     private val gameOverService: GameOverService,
     private val writeStatsService: WriteStatsService,
     private val messageService: MessageService,
+    private val cardViewService: CardViewService,
+    private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
     private val text: TextProvider,
     private val log: Logger,
 ) {
@@ -331,6 +335,12 @@ internal class GameService(
         state.endedAt = null
         state.timeAdjustment = gameOverInfo.duration
         state.timeOffline = Duration.ZERO
+
+        // Send an empty card display packet to reset the HUD state
+        // (this is needed to clear the client gameOver state)
+        for (player in playerManager.getPlayers()) {
+            cardViewService.sendClearDisplayPacket(player)
+        }
 
         // Resume the game
         state.changeState(eventBus, GameState.PLAYING)
