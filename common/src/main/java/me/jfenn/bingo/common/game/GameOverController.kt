@@ -130,7 +130,10 @@ internal class GameOverController(
                 subtitle = message ?: text.empty(),
                 winner = info.winningTeamKey,
                 duration = state.ingameDuration() ?: Duration.ZERO,
-                isResumeAvailable = permissions.hasPermission(player, Permission.COMMAND_RESET)
+                isReturnToLobbyAvailable = permissions.hasPermission(player, Permission.COMMAND_READY)
+                        && state.isLobbyMode,
+                isResumeAvailable = permissions.hasPermission(player, Permission.CONFIGURE_GAME)
+                        && state.isLobbyMode
                         // If a team won because of an auto-win (stalemate in lockout mode), the game cannot be resumed
                         && state.teams.values.none { it.completedCards.lastOrNull()?.isAutoWin == true },
                 isWinner = isWinner,

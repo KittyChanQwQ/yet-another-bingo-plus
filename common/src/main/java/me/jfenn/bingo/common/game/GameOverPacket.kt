@@ -18,6 +18,7 @@ data class GameOverPacket(
     val winner: BingoTeamKey?,
     val duration: Duration,
     val isOperator: Boolean = false,
+    val isReturnToLobbyAvailable: Boolean = false,
     val isResumeAvailable: Boolean = false,
     val isWinner: Boolean,
     /**
@@ -431,6 +432,7 @@ data class GameOverPacket(
                 subtitle = buf.readText(),
                 winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
                 duration = buf.readLong().milliseconds,
+                isReturnToLobbyAvailable = buf.readBoolean(),
                 isResumeAvailable = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
@@ -473,6 +475,7 @@ data class GameOverPacket(
             dest.writeNullable(source.winner?.id, dest::writeString)
 
             dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeBoolean(source.isReturnToLobbyAvailable)
             dest.writeBoolean(source.isResumeAvailable)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)

@@ -123,7 +123,7 @@ internal class BingoEndScreen(
         .takeIf { gameOver.isFirstOpen }
         ?.also { gameOver.isFirstOpen = false }
 
-    private val dismissButton = buttonFactory.createNinePatchButton(
+    private val closeButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 20),
         texture = "minecraft:bingo/button_game_generic",
@@ -146,7 +146,7 @@ internal class BingoEndScreen(
         }
     }
 
-    private val restartButton = buttonFactory.createNinePatchButton(
+    private val primaryButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 40),
         texture = "minecraft:bingo/button_game_continue",
@@ -221,11 +221,11 @@ internal class BingoEndScreen(
         val marginX = 12
         val marginY = 4
 
-        dismissButton.size = Vector2i(sidebarWidth - marginX*2, 20)
-        var buttonY = height - dismissButton.size.y - 12
-        dismissButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
-        dismissButton.message = text.string(StringKey.CardClose)
-        helper.addButton(dismissButton)
+        closeButton.size = Vector2i(sidebarWidth - marginX*2, 20)
+        var buttonY = height - closeButton.size.y - 12
+        closeButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
+        closeButton.message = text.string(StringKey.CardClose)
+        helper.addButton(closeButton)
 
         if (gameOver.packet.isResumeAvailable) {
             keepPlayingButton.size = Vector2i(sidebarWidth - marginX*2, 20)
@@ -235,11 +235,13 @@ internal class BingoEndScreen(
             helper.addButton(keepPlayingButton)
         }
 
-        restartButton.size = Vector2i(sidebarWidth - marginX*2, 40)
-        buttonY -= marginY + restartButton.size.y
-        restartButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
-        restartButton.message = text.string(StringKey.WorldReturnToLobby)
-        helper.addButton(restartButton)
+        if (gameOver.packet.isReturnToLobbyAvailable) {
+            primaryButton.size = Vector2i(sidebarWidth - marginX*2, 40)
+            buttonY -= marginY + primaryButton.size.y
+            primaryButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
+            primaryButton.message = text.string(StringKey.WorldReturnToLobby)
+            helper.addButton(primaryButton)
+        }
     }
 
     override fun init() {
@@ -304,9 +306,9 @@ internal class BingoEndScreen(
 
         val ready = state.ready
         if (ready != null && ready.isRunning) {
-            restartButton.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
+            primaryButton.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
         } else {
-            restartButton.message = text.string(StringKey.WorldReturnToLobby)
+            primaryButton.message = text.string(StringKey.WorldReturnToLobby)
         }
 
         drawService.matrices.push()
