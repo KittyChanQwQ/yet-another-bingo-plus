@@ -33,8 +33,8 @@ class ButtonFactory : IButtonFactory {
         width,
         height,
         ButtonTextures(
-            texture?.let { Identifier.of(it) },
-            focusedTexture?.let { Identifier.of(it) },
+            texture?.let { Identifier(it) },
+            focusedTexture?.let { Identifier(it) },
         ),
         onClick,
         message.value,
@@ -88,8 +88,8 @@ class NinePatchButton(
 ) : ButtonImpl {
 
     private val textures = ButtonTextures(
-        texture?.let { Identifier.of(it) },
-        focusedTexture?.let { Identifier.of(it) },
+        texture?.let { Identifier(it) },
+        focusedTexture?.let { Identifier(it) },
     )
 
     override val button = object : ButtonWidget(
