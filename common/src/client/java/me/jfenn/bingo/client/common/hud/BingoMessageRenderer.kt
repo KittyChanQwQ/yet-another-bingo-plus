@@ -3,11 +3,13 @@ package me.jfenn.bingo.client.common.hud
 import me.jfenn.bingo.client.common.hud.card.CardTileRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.state.BingoHudState
+import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import net.minecraft.util.Identifier
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
@@ -17,6 +19,7 @@ internal class BingoMessageRenderer(
     private val state: BingoHudState,
     private val config: BingoConfig,
     private val cardTileRenderer: CardTileRenderer,
+    private val client: IClient,
 ) {
 
     companion object {
@@ -36,6 +39,7 @@ internal class BingoMessageRenderer(
         z: Int,
         messageScale: Float,
         cardAlignment: CardAlignment,
+        width: Int,
     ) {
         val isAboveCard = cardAlignment.y > 0
         val isLeftOfCard = cardAlignment.x > 0
@@ -65,21 +69,40 @@ internal class BingoMessageRenderer(
             context.matrices.push()
             context.matrices.translate(
                 if (isLeftOfCard) ClientCardBufferRenderer.CARD_WIDTH.toFloat() else 0f,
-                itemY.toFloat() + (1f - fadeOut).pow(2) * ITEM_HEIGHT * direction,
+                itemY.toFloat() + (1f - fadeOut).pow(2) * message.height * direction,
                 0f
             )
 
-            drawMessage(drawService, message, visibility, isLeftOfCard)
+            drawMessage(
+                drawService = drawService,
+                message = message,
+                visibility = visibility,
+                isLeftOfCard = isLeftOfCard,
+            )
 
             context.matrices.pop()
 
-            itemY += (ITEM_HEIGHT * direction * fadeIn.pow(2)).roundToInt()
+            itemY += (message.height * direction * fadeIn.pow(2)).roundToInt()
         }
 
         context.matrices.pop()
     }
 
-    private fun drawMessage(
+    fun getMessageWrapped(message: BingoHudState.ScoreMessage, width: Int): BingoHudState.ScoreMessage {
+        val messageWidth = client.font.getTextWidth(message.packet.message)
+
+        val textLines = when {
+            messageWidth > width - 28 -> client.font.wrapLines(message.packet.message, width - 28)
+            else -> listOf(message.packet.message)
+        }
+
+        val textHeight = textLines.size*client.font.getTextHeight() + (textLines.size-1)*2
+        val messageHeight = max(textHeight + 6, ITEM_HEIGHT)
+
+        return message.copy(messageLines = textLines, height = messageHeight)
+    }
+
+    fun drawMessage(
         drawService: IDrawService,
         message: BingoHudState.ScoreMessage,
         visibility: Float,
@@ -90,8 +113,8 @@ internal class BingoMessageRenderer(
             drawService.setShaderColor(1f, 1f, 1f, visibility.pow(2))
         }
 
-        val itemX = if (isLeftOfCard) -8 - ITEM_HEIGHT else 8
-        val itemY = ITEM_HEIGHT/2 - 8
+        val itemX = if (isLeftOfCard) -8 - message.height else 8
+        val itemY = message.height/2 - 8
         val tile = message.packet.tile
         if (tile != null) {
             cardTileRenderer.renderTile(drawService, tile, itemX, itemY)
@@ -116,16 +139,26 @@ internal class BingoMessageRenderer(
             }
         }
 
+        val messageWidth = message.messageLines.maxOf {
+            drawService.font.getTextWidth(it)
+        }
+
         val textX = if (isLeftOfCard) {
-            -28 - drawService.font.getTextWidth(message.packet.message)
+            -28 - messageWidth
         } else 28
 
-        drawService.drawText(
-            message.packet.message,
-            textX, ITEM_HEIGHT/2 - drawService.font.getTextHeight()/2,
-            0xFF_FFFFFF.toInt(),
-            true,
-        )
+        val textLines = message.messageLines
+
+        val textY = message.height/2 - (textLines.size*drawService.font.getTextHeight() + (textLines.size-1)*2)/2
+
+        textLines.forEachIndexed { index, text ->
+            drawService.drawText(
+                text,
+                textX, textY + (drawService.font.getTextHeight() + 2)*index,
+                0xFF_FFFFFF.toInt(),
+                true,
+            )
+        }
 
         if (usingShaderColor) {
             drawService.setShaderColor(1f, 1f, 1f, 1f)

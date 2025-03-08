@@ -42,8 +42,11 @@ class ScrollableWidget(
 
     override fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val drawService = DrawService(context)
+        drawService.delta = delta
 
-        context.fill(x, y, x + width, y + height, 0, 0x40_000000)
+        if (content.background != 0) {
+            context.fill(x, y, x + width, y + contentsHeight, 0, content.background)
+        }
 
         context.matrices.push()
         context.matrices.translate((x + contentPadding).toFloat(), (y + contentPadding).toFloat(), 0.0f)

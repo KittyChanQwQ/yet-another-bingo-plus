@@ -8,6 +8,8 @@ import me.jfenn.bingo.client.common.event.ClientConfigChangedEvent
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardManager
 import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
+import me.jfenn.bingo.client.common.hud.screen.BingoEndScreen
+import me.jfenn.bingo.client.common.hud.screen.BingoHudScreen
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.state.ClientCard
@@ -193,6 +195,7 @@ internal class BingoHudController(
                 z = config.client.cardOverlap.z,
                 messageScale = config.client.messageScale,
                 cardAlignment = config.client.cardAlignment,
+                width = client.window.width/2
             )
         }
 
@@ -300,6 +303,7 @@ internal class BingoHudController(
         )
 
         state.messages.add(scoreMessage)
+        state.pastMessages.add(scoreMessage)
     }
 
     @Suppress("Deprecation")

@@ -2,7 +2,9 @@ package me.jfenn.bingo.client.common.state
 
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.common.hud.BingoCardColors
+import me.jfenn.bingo.client.common.hud.BingoMessageRenderer
 import me.jfenn.bingo.client.platform.INativeImage
+import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
@@ -16,6 +18,7 @@ internal class BingoHudState(
     var selectedTeam: BingoTeamKey? = null,
     var gameOver: GameOver? = null,
     val messages: MutableList<ScoreMessage> = mutableListOf(),
+    val pastMessages: MutableList<ScoreMessage> = mutableListOf(),
     val images: MutableMap<String, INativeImage> = ConcurrentHashMap(),
     var tooltip: TooltipPacket? = null,
     var tooltipStartedAt: Instant? = null,
@@ -26,6 +29,7 @@ internal class BingoHudState(
         selectedTeam = null
         gameOver = null
         messages.clear()
+        pastMessages.clear()
         tooltip = null
         tooltipStartedAt = null
         ready = null
@@ -50,8 +54,10 @@ internal class BingoHudState(
         var isFirstOpen: Boolean = true,
     )
 
-    class ScoreMessage(
+    data class ScoreMessage(
         val createdAt: Instant,
         val packet: ScoreMessagePacket,
+        val messageLines: List<IText> = listOf(packet.message),
+        val height: Int = BingoMessageRenderer.ITEM_HEIGHT,
     )
 }

@@ -1,9 +1,9 @@
-package me.jfenn.bingo.client.common.hud
+package me.jfenn.bingo.client.common.hud.screen
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.common.state.BingoHudState
-import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.IScrollableWidget
+import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey

@@ -1,4 +1,4 @@
-package me.jfenn.bingo.client.common.hud
+package me.jfenn.bingo.client.common.hud.screen
 
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
@@ -76,11 +76,11 @@ internal class BingoCardsWidget(
         val widthOffset = scrollCenterX * widthDiff
 
         val screenX = x - cardsTotalWidth/2
-        val screenY = y - ClientCardBufferRenderer.CARD_HEIGHT/2
+        val screenY = y - ClientCardBufferRenderer.CARD_HEIGHT /2
 
         val zOrder = views.indices.toList()
             .sortedBy { i ->
-                val xOffset = i * ClientCardBufferRenderer.CARD_WIDTH + widthOffset + (ClientCardBufferRenderer.CARD_WIDTH/2)
+                val xOffset = i * ClientCardBufferRenderer.CARD_WIDTH + widthOffset + (ClientCardBufferRenderer.CARD_WIDTH /2)
                 val x = screenX + xOffset.roundToInt()
                 val distanceToCenter = x - this.x
                 distanceToCenter.absoluteValue

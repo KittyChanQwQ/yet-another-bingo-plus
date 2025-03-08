@@ -1,4 +1,4 @@
-package me.jfenn.bingo.client.common.hud
+package me.jfenn.bingo.client.common.hud.screen
 
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.state.BingoHudState
@@ -60,8 +60,8 @@ internal class BingoHudScreen(
     private val cardsWidget = BingoCardsWidget(
         koin,
 
-        x = width/2f,
-        y = height/2f,
+        x = width / 2f,
+        y = height / 2f,
         width = width,
         height = ClientCardBufferRenderer.CARD_HEIGHT,
 

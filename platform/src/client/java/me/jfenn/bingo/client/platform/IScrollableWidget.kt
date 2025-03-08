@@ -9,6 +9,7 @@ abstract class IScrollableWidget {
     var width: Int = 0
     var height: Int = 0
     var padding: Int = 4
+    var background: Int = 0x40_000000
     var widget: ScrollableWidget? = null
 
     val contentWidth get() = width - padding*2
