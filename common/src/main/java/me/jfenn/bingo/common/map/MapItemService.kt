@@ -103,7 +103,7 @@ class MapItemService(
             mapId = teamMap.mapId
             mapColor = team.textColor.colorValue
             setDisplay(
-                name = textProvider.string(StringKey.CardTeamCard, team.getSimpleName(textProvider))
+                name = textProvider.string(StringKey.CardTeamCard, team.name)
                     .formatted(team.textColor, Formatting.ITALIC),
                 lore = null,
             )

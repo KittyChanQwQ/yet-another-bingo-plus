@@ -2,12 +2,14 @@ package me.jfenn.bingo.mixinhandler
 
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.scope.BingoKoin
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtFloat
@@ -65,7 +67,7 @@ object PlayerManagerMixinHandler {
         val state = scope.get<BingoState>()
         val spawnService = scope.get<SpawnService>()
         val dimension = spawnService.getSpawnDimension()
-        return state.isLobbyMode && dimension.registryKey.value.path == "the_end"
+        return state.isLobbyMode && dimension.identifier.substringAfter(':') == "the_end"
     }
 
     fun setPlayerSpawnpoint(player: ServerPlayerEntity) {
@@ -73,6 +75,7 @@ object PlayerManagerMixinHandler {
         val state = scope.get<BingoState>()
         val spawnService = scope.get<SpawnService>()
         val teamService = scope.get<TeamService>()
+        val playerManager = scope.get<IPlayerManager>()
 
         if (!state.isLobbyMode) {
             // if isLobbyMode=false, mixins should never overwrite the player spawnpoint
@@ -85,7 +88,13 @@ object PlayerManagerMixinHandler {
 
         // change the player's spawnpoint back to the team spawn location
         val dimension = spawnService.getSpawnDimension()
-        player.setSpawnPoint(dimension.registryKey, spawn, 0f, true, false)
+        playerManager.forPlayer(player).setSpawnPoint(
+            world = dimension,
+            spawn = BlockPosition.fromBlockPos(spawn),
+            angle = 0f,
+            forced = true,
+            sendMessage = false,
+        )
     }
 
 }

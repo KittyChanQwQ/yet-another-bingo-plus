@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.mojang.serialization.JsonOps
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
+import me.jfenn.bingo.platform.IJsonSerializers
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.IPersistentStateType
 import net.minecraft.nbt.NbtCompound
@@ -18,6 +19,7 @@ import kotlin.reflect.KType
 
 class PersistentStateManager(
     private val logger: Logger,
+    private val serializers: IJsonSerializers,
 ) : IPersistentStateManager {
     private var persistentStateTypes = ConcurrentHashMap<String, PersistentStateTypeImpl<*>>()
     private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
@@ -38,12 +40,12 @@ class PersistentStateManager(
                         logger.debug("[PersistentStateManager] Decoding $id...")
                         val jsonElement = NbtOps.INSTANCE.convertTo(JsonOps.INSTANCE, nbt)
                         val jsonString = gson.toJson(jsonElement)
-                        val value = IPersistentStateManager.json.decodeFromString(serializer, jsonString)
+                        val value = serializers.json.decodeFromString(serializer, jsonString)
                         PersistentStateImpl(value)
                     },
                     {
                         logger.debug("[PersistentStateManager] Encoding $id...")
-                        val jsonString = IPersistentStateManager.json.encodeToString(serializer, it.value)
+                        val jsonString = serializers.json.encodeToString(serializer, it.value)
                         val jsonElement = gson.fromJson(jsonString, com.google.gson.JsonElement::class.java)
                         val nbtElement = JsonOps.INSTANCE.convertTo(NbtOps.INSTANCE, jsonElement)
                         nbtElement as NbtCompound

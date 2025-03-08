@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.serialization.encodeToString
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.platform.ITextSerializer

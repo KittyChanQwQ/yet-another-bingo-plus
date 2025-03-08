@@ -5,7 +5,6 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.ITeamManager
 import me.jfenn.bingo.platform.event.IEventBus
@@ -16,8 +15,7 @@ class TeamController(
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     private val teamManager: ITeamManager,
-    private val text: TextProvider,
-    private val events: ScopedEvents,
+    events: ScopedEvents,
     private val eventBus: IEventBus,
     private val log: Logger,
 ) {
@@ -46,13 +44,13 @@ class TeamController(
                         continue
                     }
 
-                    bingoTeam.nameText = text.serialized(mcTeam.displayName)
+                    bingoTeam.name = mcTeam.displayName
                     bingoTeam.textColor = mcTeam.color
                 } else if (mcTeam != null && state.isLobbyMode && !teamId.startsWith(BINGO_TEAM_PREFIX)) {
                     log.info("[TeamController] Creating a bingo team for '$teamId'")
                     val newTeam = BingoTeam(
                         id = mcTeam.name,
-                        nameText = text.serialized(mcTeam.displayName),
+                        name = mcTeam.displayName,
                         shouldFormatName = false,
                         symbol = null,
                         textColor = mcTeam.color,

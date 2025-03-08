@@ -74,9 +74,8 @@ internal class SpawnPreloadingController(
                 .toSet()
 
             log.info("[SpawnPreloadingController] Pre-generating ${chunks.size} chunks within a view distance of ${viewDistance}...")
-            val worldImpl = serverWorldFactory.forWorld(world)
             val futures = chunks.map { chunk ->
-                worldImpl.getChunkAsync(chunk)
+                world.getChunkAsync(chunk)
                     .whenComplete { _, _ ->
                         log.debug(
                             "[SpawnPreloadingController] Finished chunk {} in {}",

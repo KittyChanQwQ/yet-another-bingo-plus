@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
+import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.platform.event.model.AttackEntityEvent
@@ -39,7 +40,7 @@ class PlayerSpectatorController(
             // if the player is spectating a game, do not
             // allow them to modify any inventory
 
-            val blockState = player.world.getBlockState(it.hit.blockPos)
+            val blockState = player.world.world.getBlockState(it.hit.blockPos)
             val block = blockState.block
 
             // if the player has permission to open doors...
@@ -54,17 +55,17 @@ class PlayerSpectatorController(
             var rows = 0
             val inventory: Inventory? = when (block) {
                 is ChestBlock -> { // includes TrappedChestBlock and double-chests
-                    val inventory = ChestBlock.getInventory(block, blockState, player.world, it.hit.blockPos, true)
+                    val inventory = ChestBlock.getInventory(block, blockState, player.world.world, it.hit.blockPos, true)
                     rows = if (inventory is DoubleInventory) 6 else 3
                     inventory
                 }
                 is BarrelBlock -> {
                     rows = 3
-                    player.world.getBlockEntity(it.hit.blockPos) as? Inventory
+                    player.world.world.getBlockEntity(it.hit.blockPos) as? Inventory
                 }
                 is ShulkerBoxBlock -> {
                     rows = 3
-                    player.world.getBlockEntity(it.hit.blockPos) as? Inventory
+                    player.world.world.getBlockEntity(it.hit.blockPos) as? Inventory
                 }
                 else -> null
             }

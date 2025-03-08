@@ -1,11 +1,10 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.platform.IExecutors
-import me.jfenn.bingo.platform.IServerWorld
-import me.jfenn.bingo.platform.IServerWorldFactory
-import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.block.BlockPosition
 import net.minecraft.block.Blocks
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
@@ -34,13 +33,12 @@ class SpreadPlayers(
     class Factory(
         private val log: Logger,
         private val taskExecutor: IExecutors.IServerTaskExecutor,
-        private val serverWorldFactory: IServerWorldFactory,
     ) {
-        fun forWorld(world: ServerWorld) = SpreadPlayers(
+        fun forWorld(world: IServerWorld) = SpreadPlayers(
             log = log,
             taskExecutor = taskExecutor,
-            world = world,
-            worldImpl = serverWorldFactory.forWorld(world)
+            world = world.world,
+            worldImpl = world
         )
     }
 

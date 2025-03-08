@@ -2,11 +2,14 @@ package me.jfenn.bingo.common.text
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.client.platform.text.ITextSerialized
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.IJsonSerializers
 import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.resource.ResourceManager
 import net.minecraft.util.Identifier
@@ -17,7 +20,7 @@ class MessageService(
     private val trackedFileService: TrackedFileService,
     private val environment: IModEnvironment,
     private val placeholderService: PlaceholderService,
-    private val text: TextProvider,
+    private val serializers: IJsonSerializers,
     private val log: Logger,
 ) {
 
@@ -56,7 +59,7 @@ class MessageService(
         ).config ?: MessageData(emptyList())
 
         try {
-            result.lines.forEach { text.deserialized(it) }
+            result.lines.forEach { serializers.json.decodeFromJsonElement<ITextSerialized>(it) }
         } catch (e: Throwable) {
             log.error("[messages/${type.name.lowercase()}.json] Could not parse text:", e)
             return MessageData(emptyList())
@@ -80,7 +83,7 @@ class MessageService(
                 line
                     .takeIf { it is JsonPrimitive && it.isString }
                     ?.let { replacements[(it as? JsonPrimitive)?.content] }
-                    ?: listOf(text.deserialized(line))
+                    ?: listOf(serializers.json.decodeFromJsonElement<ITextSerialized>(line))
             }
 
         return lines.map { line ->

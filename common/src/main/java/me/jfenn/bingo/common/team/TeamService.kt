@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.team
 
 import me.jfenn.bingo.common.data.ScopedData
-import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.state.BingoState
@@ -16,7 +15,6 @@ import kotlin.math.ceil
 
 class TeamService(
     private val log: Logger,
-    private val events: ScopedEvents,
     private val eventBus: IEventBus,
     private val state: BingoState,
     private val data: ScopedData,
@@ -54,7 +52,7 @@ class TeamService(
     private fun createTeam(team: BingoTeam): ITeamHandle {
         return teamManager.createTeam(
             teamName = team.id,
-            displayName = team.getSimpleName(text),
+            displayName = team.name,
             color = team.textColor,
         )
     }
@@ -100,9 +98,7 @@ class TeamService(
         for (i in teams.size..numTeams) {
             val temporaryTeam = BingoTeam(
                 id = "temp_bingo_$i",
-                nameText = text.serialized(
-                    text.string(StringKey.TeamName, "$i")
-                ),
+                name = text.string(StringKey.TeamName, "$i"),
                 shouldFormatName = false,
                 symbol = null,
                 textColor = extraTeamColors.find { color ->

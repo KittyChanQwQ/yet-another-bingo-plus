@@ -11,8 +11,8 @@ import me.jfenn.bingo.common.stats.data.GameTeamInfo
 import me.jfenn.bingo.common.stats.data.PlayerGameSummary
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.utils.json
-import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.common.utils.measureTime
+import me.jfenn.bingo.platform.IJsonSerializers
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.time.Duration
@@ -24,6 +24,7 @@ internal class WriteStatsService(
     private val stats: StatsService,
     private val packets: ServerPacketEvents,
     private val server: MinecraftServer,
+    private val serializers: IJsonSerializers,
 ) : BingoComponent() {
     private fun broadcastResult(
         gameInfo: GameInfo,
@@ -75,7 +76,7 @@ internal class WriteStatsService(
             val insertTeam = GameTeamInfo(
                 id = team.key,
                 gameId = insertGame.id,
-                name = jsonUnpretty.encodeToString(team.nameText),
+                name = serializers.json.encodeToString(team.name),
                 isWinner = team.isWinner()
             ).also { insertTeams.add(it) }
 

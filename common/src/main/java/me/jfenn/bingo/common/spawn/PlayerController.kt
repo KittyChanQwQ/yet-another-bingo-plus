@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.spawn
 
+import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.lobbyWorld
@@ -47,6 +48,7 @@ internal class PlayerController(
     private val vanishApi: IVanishApi,
     private val playerManager: IPlayerManager,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
+    private val serverWorldFactory: IServerWorldFactory,
 ) : BingoComponent() {
 
     private fun updateVanishStatus(
@@ -202,7 +204,9 @@ internal class PlayerController(
         }
 
         events.onPlayerJoin { (player) ->
-            val lobbyWorld = server.lobbyWorld ?: return@onPlayerJoin
+            val lobbyWorld = serverWorldFactory.listWorlds(server)
+                .find { it.identifier == LOBBY_WORLD_IDENTIFIER }
+                ?: return@onPlayerJoin
 
             // if in pregame, move to the lobby world
             if (state.state == GameState.PREGAME) {
@@ -215,7 +219,10 @@ internal class PlayerController(
 
         events.onPlayerRespawn { event ->
             if (!state.isLobbyMode) return@onPlayerRespawn
-            val lobbyWorld = server.lobbyWorld ?: return@onPlayerRespawn
+            val lobbyWorld = serverWorldFactory.listWorlds(server)
+                .find { it.identifier == LOBBY_WORLD_IDENTIFIER }
+                ?: return@onPlayerRespawn
+
             val player = event.player
 
             // if in pregame, move to the lobby world

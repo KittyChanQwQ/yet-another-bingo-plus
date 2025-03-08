@@ -52,7 +52,7 @@ class CoordsCommand(
         val entry = CoordinatesEntry(
             player = player.playerName,
             pos = player.blockPos,
-            dimension = player.world.registryKey.value.path.removePrefix("the_"),
+            dimension = player.world.identifier.substringAfter(':').removePrefix("the_"),
             message = message?.raw,
             created = Clock.System.now(),
         )

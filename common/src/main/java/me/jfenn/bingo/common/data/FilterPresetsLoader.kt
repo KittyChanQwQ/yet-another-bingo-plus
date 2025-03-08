@@ -5,11 +5,12 @@ import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterPreset
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterPresets
-import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.IJsonSerializers
 import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
 
 class FilterPresetsLoader(
+    private val serializers: IJsonSerializers,
     private val log: Logger,
 ) {
     fun loadFilterPresets(
@@ -25,7 +26,7 @@ class FilterPresetsLoader(
                 val data = try {
                     file.inputStream.use {
                         @OptIn(ExperimentalSerializationApi::class)
-                        json.decodeFromStream<ObjectiveFilterPresets>(it)
+                        serializers.json.decodeFromStream<ObjectiveFilterPresets>(it)
                     }
                 } catch (e: Throwable) {
                     log.error("[FilterPresetsLoader] Error reading filter presets $id: ${e.message}")

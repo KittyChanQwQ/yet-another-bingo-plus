@@ -1,19 +1,19 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.platform.IExecutors
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IServerWorldFactory
-import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.platform.block.BlockPosition
-import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.world.ServerWorld
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
@@ -34,12 +34,14 @@ class SpawnService(
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
 ) {
 
-    fun getSpawnDimension(): ServerWorld {
-        return server.worlds.find {
-            it.registryKey.value.toString() == options.spawnDimension
+    fun getSpawnDimension(): IServerWorld {
+        val worlds = serverWorldFactory.listWorlds(server)
+        return worlds.find {
+            it.identifier == options.spawnDimension
         } ?: run {
             log.error("[SpawnService] Could not find spawnDimension '${options.spawnDimension}'; defaulting to minecraft:overworld")
-            server.overworld
+            worlds.find { it.identifier == "minecraft:overworld" }
+                ?: worlds.first()
         }
     }
 
@@ -61,7 +63,7 @@ class SpawnService(
         team.spawnpointFuture = null
         team.spawnpointTicket?.close()
 
-        val worldImpl = serverWorldFactory.forWorld(getSpawnDimension())
+        val worldImpl = getSpawnDimension()
         val newTicket = worldImpl.addTicket(spawnPos.toChunkPos())
         team.spawnpointTicket = newTicket
         team.spawnpoint = spawnPos
@@ -101,7 +103,9 @@ class SpawnService(
     }
 
     fun teleportToLobby(player: IPlayerHandle) {
-        val lobbyWorld = server.lobbyWorld
+        val lobbyWorld = serverWorldFactory.listWorlds(server)
+            .find { it.identifier == LOBBY_WORLD_IDENTIFIER }
+
         if (lobbyWorld == null) {
             log.error("[SpawnService] Attempted teleportToLobby, but the lobby world is null!")
             return
@@ -130,7 +134,7 @@ class SpawnService(
         val spawn = team?.let {
             getTeamSpawnpoint(team)
         } ?: run {
-            BlockPosition.fromBlockPos(world.spawnPos)
+            BlockPosition.fromBlockPos(world.world.spawnPos)
         }
 
         // if the player already has the exact block position, don't teleport them again
@@ -174,11 +178,11 @@ class SpawnService(
 
         val pos = spawnpoint.toBlockPos().mutableCopy()
         while (
-            !isEmptyBlock(world, pos, world.getBlockState(pos))
-            || !isEmptyBlock(world, pos.up(), world.getBlockState(pos.up()))
+            !isEmptyBlock(world.world, pos, world.world.getBlockState(pos))
+            || !isEmptyBlock(world.world, pos.up(), world.world.getBlockState(pos.up()))
         ) {
             pos.y += 1
-            if (pos.y >= world.logicalHeight) {
+            if (pos.y >= world.world.logicalHeight) {
                 log.warn("[SpawnService] Spawn position for team $team is obstructed up to build height! Finding a new spawn position...")
                 return GetSpawnpointResult.SearchChunk(spawnpoint.toChunkPos())
             }

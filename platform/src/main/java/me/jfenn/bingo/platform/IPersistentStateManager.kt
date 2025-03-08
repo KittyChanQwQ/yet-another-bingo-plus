@@ -9,14 +9,6 @@ import kotlin.reflect.typeOf
 interface IPersistentStateManager {
 
     companion object {
-        val json = Json {
-            ignoreUnknownKeys = true
-            isLenient = true
-            encodeDefaults = true
-            explicitNulls = false
-            prettyPrint = false
-        }
-
         fun nbtToJson(nbt: NbtElement?): JsonElement {
             if (nbt == null) return JsonNull
             return when (nbt) {

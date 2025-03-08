@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.platform.text
 
+import kotlinx.serialization.Contextual
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.net.URI
@@ -38,6 +39,8 @@ interface IText {
     fun bracketed(): IText
     fun copy(): IText
 }
+
+typealias ITextSerialized = @Contextual IText
 
 sealed interface TextAction {
     class OpenUrl(val url: URI): TextAction

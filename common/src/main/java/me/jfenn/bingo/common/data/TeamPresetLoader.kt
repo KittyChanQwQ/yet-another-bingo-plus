@@ -5,11 +5,12 @@ import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.BingoTeamPreset
-import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.IJsonSerializers
 import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
 
 class TeamPresetLoader(
+    private val serializers: IJsonSerializers,
     private val log: Logger,
 ) {
 
@@ -26,7 +27,7 @@ class TeamPresetLoader(
             val config = try {
                 file.inputStream.use {
                     @OptIn(ExperimentalSerializationApi::class)
-                    json.decodeFromStream<BingoTeamPreset>(it)
+                    serializers.json.decodeFromStream<BingoTeamPreset>(it)
                 }
             } catch (e: Throwable) {
                 log.error("[TagLoader] Error reading tag file $id: ${e.message}")

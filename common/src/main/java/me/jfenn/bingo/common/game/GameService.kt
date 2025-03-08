@@ -25,9 +25,9 @@ import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
-import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.PlayerGameMode
 import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.server.MinecraftServer
@@ -54,7 +54,7 @@ internal class GameService(
     private val writeStatsService: WriteStatsService,
     private val messageService: MessageService,
     private val cardViewService: CardViewService,
-    private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
+    private val serverWorldFactory: IServerWorldFactory,
     private val text: TextProvider,
     private val log: Logger,
 ) {
@@ -265,11 +265,14 @@ internal class GameService(
 
                     playerImpl.gameMode = PlayerGameMode.SURVIVAL
                     playerImpl.teleport(
-                        world = playerData.world,
+                        world = serverWorldFactory.listWorlds(server)
+                            .find { it.identifier == playerData.world }
+                            ?: continue,
                         pos = playerData.position,
                         yaw = playerData.yaw,
                         pitch = playerData.pitch,
                     )
+
                     playerData.inventory.forEach { (slot, stack) ->
                         playerImpl.setStack(slot, stack)
                     }

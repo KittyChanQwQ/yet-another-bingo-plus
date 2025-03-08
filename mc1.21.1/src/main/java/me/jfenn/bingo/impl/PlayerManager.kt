@@ -10,7 +10,6 @@ import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.platform.scope.BingoKoin
 import net.minecraft.command.CommandSource
-import net.minecraft.entity.Entity
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.item.*
 import net.minecraft.network.message.MessageType
@@ -102,8 +101,8 @@ class PlayerHandle(
     private fun getItemStackFactory() = itemStackFactory
         ?: BingoKoin.getScope(player.server)!!.get<IItemStackFactory>()
 
-    override val world: ServerWorld
-        get() = player.serverWorld
+    override val world: IServerWorld
+        get() = ServerWorldImpl(player.serverWorld)
 
     override val isAlive: Boolean
         get() = player.isAlive
@@ -282,18 +281,19 @@ class PlayerHandle(
         return PlayerHandle(networkHandler.player, itemStackFactory)
     }
 
-    override fun teleport(world: ServerWorld, pos: Vector3d, yaw: Float, pitch: Float) {
-        player.teleport(world, pos.x, pos.y, pos.z, yaw, pitch)
+    override fun teleport(world: IServerWorld, pos: Vector3d, yaw: Float, pitch: Float) {
+        player.teleport(world.world, pos.x, pos.y, pos.z, emptySet(), yaw, pitch)
     }
 
     override fun setSpawnPoint(
-        world: ServerWorld,
+        world: IServerWorld,
         spawn: BlockPosition,
         angle: Float,
         forced: Boolean,
         sendMessage: Boolean
     ) {
-        player.setSpawnPoint(world.registryKey, spawn.toBlockPos(), angle, forced, sendMessage)
+        val serverWorld: ServerWorld = world.world
+        player.setSpawnPoint(serverWorld.registryKey, spawn.toBlockPos(), angle, forced, sendMessage)
     }
 }
 

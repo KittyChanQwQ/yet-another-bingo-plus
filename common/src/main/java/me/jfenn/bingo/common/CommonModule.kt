@@ -26,7 +26,10 @@ import me.jfenn.bingo.common.data.*
 import me.jfenn.bingo.common.datapack.LobbyWorldService
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.datapack.ServerProps
-import me.jfenn.bingo.common.event.*
+import me.jfenn.bingo.common.event.EventBus
+import me.jfenn.bingo.common.event.InteractionEntityEvents
+import me.jfenn.bingo.common.event.ScopedEventBus
+import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameOverController
@@ -116,7 +119,6 @@ val commonModule = module {
     singleOf(::EventBus) bind IEventBus::class
     singleOf(::ScopeManager) bind IScopeManager::class
     singleOf(::ServerPacketEvents)
-    singleOf(::PersistentStates)
 
     singleOf(::ReadyTimerState)
 
@@ -184,6 +186,7 @@ val commonModule = module {
         scopedOf(::ScopedEvents)
         scopedOf(::InteractionEntityEvents)
         scopedOf(::BingoApiImpl) bind IBingoApi::class
+        scopedOf(::PersistentStates)
 
         scoped { get<BingoScope>().server }
         scoped<BingoState> {

@@ -58,7 +58,7 @@ internal class CountdownController(
             val entity = entityMap.getOrPut(team.key) {
                 // Create a new bat entity in the spawn dimension
                 val world = spawnService.getSpawnDimension()
-                val marker = entityManager.createEntity(EntityType.BAT, world)
+                val marker = entityManager.createEntity(EntityType.BAT, world.world)
                 marker.apply {
                     invulnerable = true
                     noGravity = true
@@ -69,7 +69,7 @@ internal class CountdownController(
 
                 val spawnPoint = team.spawnpoint ?: return@forEach
                 marker.pos = spawnPoint.toVector3d() + Vector3d(0.5, -0.4, 0.5)
-                entityManager.spawnEntity(world, marker)
+                entityManager.spawnEntity(world.world, marker)
 
                 // Make the bat invisible
                 marker.addEffect(

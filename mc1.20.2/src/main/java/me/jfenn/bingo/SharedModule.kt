@@ -34,9 +34,10 @@ val sharedModule = module {
     singleOf(::EntityManagerImpl) bind IEntityManager::class
     single { Executors } bind IExecutors::class
     singleOf(::ItemStackFactory) bind IItemStackFactory::class
+    singleOf(::JsonSerializers) bind IJsonSerializers::class
     singleOf(::MapColorServiceImpl) bind IMapColorService::class
-    single { ParticleFactory } bind IParticleFactory::class
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
+    single { ParticleFactory } bind IParticleFactory::class
     singleOf(::ServerEventsImpl) withOptions { createdAtStart() }
     singleOf(::ServerWorldFactory) bind IServerWorldFactory::class
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class

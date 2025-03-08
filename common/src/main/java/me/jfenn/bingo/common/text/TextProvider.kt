@@ -1,21 +1,17 @@
 package me.jfenn.bingo.common.text
 
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.client.platform.text.ITextFactory
 import me.jfenn.bingo.common.utils.json
-import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.platform.ITextSerializer
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
 
 class TextProvider(
     private val logger: Logger,
-    private val textSerializer: ITextSerializer,
     private val textFactory: ITextFactory,
 ): ITextFactory by textFactory {
 
@@ -70,10 +66,6 @@ class TextProvider(
 
         return textFactory.translatable(str.key, fallback, *mappedArgs)
     }
-
-    fun serialized(text: IText): JsonElement = jsonUnpretty.decodeFromString(textSerializer.toJson(text.value))
-
-    fun deserialized(text: JsonElement) = textFactory.from(textSerializer.fromJson(jsonUnpretty.encodeToString(text)).copy())
 
     fun boolean(value: Boolean): IText {
         return when (value) {

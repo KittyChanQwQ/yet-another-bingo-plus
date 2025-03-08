@@ -3,9 +3,9 @@ package me.jfenn.bingo.common.team
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.json.JsonElement
 import me.jfenn.bingo.client.platform.text.HoverAction
 import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.client.platform.text.ITextSerialized
 import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.text.TextProvider
@@ -32,7 +32,7 @@ value class BingoTeamKey(
 @Serializable
 data class BingoTeam(
     val id: String,
-    var nameText: JsonElement,
+    var name: ITextSerialized,
     val shouldFormatName: Boolean,
     val symbol: String?,
     @Serializable(with = FormattingSerializer::class)
@@ -108,7 +108,7 @@ data class BingoTeam(
         return players.any { it.uuid == player.uuid }
     }
 
-    fun getSimpleName(textProvider: TextProvider) = textProvider.deserialized(nameText)
+    fun getSimpleName() = name
 
     fun getName(
         textProvider: TextProvider,
@@ -118,8 +118,8 @@ data class BingoTeam(
         teamNameKey: StringKey? = StringKey.TeamName,
     ): IText {
         val teamName = (if (playerName) singlePlayer?.let { textProvider.literal(it.name) } else null)
-            ?: (if (shouldFormatName && teamNameKey != null) textProvider.string(teamNameKey, getSimpleName(textProvider)) else null)
-            ?: getSimpleName(textProvider)
+            ?: (if (shouldFormatName && teamNameKey != null) textProvider.string(teamNameKey, getSimpleName()) else null)
+            ?: getSimpleName()
 
         return teamName
             .let { if (symbol && this.symbol != null) textProvider.empty().append("${this.symbol} ").append(it) else it }
@@ -143,7 +143,7 @@ data class BingoTeam(
         fun fromPreset(key: BingoTeamKey, preset: BingoTeamPreset): BingoTeam {
             return BingoTeam(
                 id = key.id,
-                nameText = preset.name,
+                name = preset.name,
                 shouldFormatName = preset.shouldFormatName,
                 symbol = preset.symbol,
                 textColor = preset.color,
