@@ -80,6 +80,7 @@ class GameCommands(
                 executes {
                     val gameService = scope.get<GameService>()
                     gameService.resume()
+                    sendFeedback(text.string(StringKey.CommandResumeSuccess))
                 }
             }
         }

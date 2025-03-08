@@ -35,6 +35,7 @@
   "bingo.command.lobby.warning4": "(run '%s' if you understand this and would like to proceed)",
   "bingo.command.ready.cancelled": "Cancelled the ready-up timer!",
   "bingo.command.reset.success": "Resetting the game...",
+  "bingo.command.resume.success": "Resumed the game!",
   "bingo.command.shuffleteams.success": "Teams have been shuffled!",
   "bingo.command.start.already_started": "The game has already been started!",
   "bingo.command.start.data_recommends": "Datapack objective %s requires %s. (use '%s' to ignore)",
