@@ -100,7 +100,6 @@ internal class BingoEndScreen(
 
     private val cardsWidget = BingoCardsWidget(
         koin,
-        screen = helper.screen,
 
         interpolateKey = originalCardKey,
         interpolateFromX = originalCardPos.first,
@@ -190,10 +189,23 @@ internal class BingoEndScreen(
 
         sidebarWidth = (width * 0.2f).toInt() + 100
 
-        cardsWidget.x = (width - sidebarWidth)/2f
-        cardsWidget.y = height/2f + tabsHeight
-        cardsWidget.width = (width - sidebarWidth) * 6/10
-        helper.addDrawable(cardsWidget)
+        tabsWidget.width = width - sidebarWidth
+        if (isShowingTabs) helper.addDrawableChild(tabsWidget.widget)
+
+        if (tab == EndScreenTab.CARDS) {
+            cardsWidget.x = (width - sidebarWidth)/2f
+            cardsWidget.y = height/2f + tabsHeight
+            cardsWidget.width = width - sidebarWidth
+            cardsWidget.height = ClientCardBufferRenderer.CARD_HEIGHT
+            helper.addDrawable(cardsWidget)
+        }
+        if (tab == EndScreenTab.SCORES) {
+            scoresWidget.x = ((width - sidebarWidth) * 0.1f).toInt()
+            scoresWidget.y = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT/2) + tabsHeight
+            scoresWidget.width = ((width - sidebarWidth) * 0.8f).toInt()
+            scoresWidget.height = ClientCardBufferRenderer.CARD_HEIGHT
+            helper.addDrawableChild(scoresWidget.widget!!)
+        }
 
         helper.addDrawable(
             object : IDrawable {
@@ -228,17 +240,6 @@ internal class BingoEndScreen(
         restartButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
         restartButton.message = text.string(StringKey.WorldReturnToLobby)
         helper.addButton(restartButton)
-
-        tabsWidget.width = width - sidebarWidth
-        if (isShowingTabs) helper.addDrawableChild(tabsWidget.widget)
-
-        if (tab == EndScreenTab.SCORES) {
-            scoresWidget.x = ((width - sidebarWidth) * 0.1f).toInt()
-            scoresWidget.y = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT/2) + tabsHeight
-            scoresWidget.width = ((width - sidebarWidth) * 0.8f).toInt()
-            scoresWidget.height = ClientCardBufferRenderer.CARD_HEIGHT
-            helper.addDrawableChild(scoresWidget.widget!!)
-        }
     }
 
     override fun init() {

@@ -62,9 +62,8 @@ internal class BingoHudScreen(
 
         x = width/2f,
         y = height/2f,
-        width = width * 6/10,
+        width = width,
         height = ClientCardBufferRenderer.CARD_HEIGHT,
-        screen = helper.screen,
 
         interpolateKey = originalCardKey,
         interpolateFromX = originalCardPos.first,
@@ -96,7 +95,7 @@ internal class BingoHudScreen(
 
         cardsWidget.x = width/2f
         cardsWidget.y = height/2f
-        cardsWidget.width = width * 6/10
+        cardsWidget.width = width
 
         helper.addDrawable(cardsWidget)
     }

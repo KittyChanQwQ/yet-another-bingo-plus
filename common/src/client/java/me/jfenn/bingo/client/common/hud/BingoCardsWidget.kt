@@ -9,7 +9,6 @@ import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.screen.IDrawable
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.team.BingoTeamKey
-import net.minecraft.client.gui.screen.Screen
 import org.koin.core.Koin
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -35,7 +34,6 @@ internal class BingoCardsWidget(
     val onTileClick: (CardTile) -> Boolean,
     val onViewClick: ((ClientCard) -> Boolean)?,
 
-    private val screen: Screen,
     private val renderer: ClientCardRenderer = koin.get(),
 ) : IDrawable {
 
@@ -59,9 +57,9 @@ internal class BingoCardsWidget(
 
     private var targetScrollX: Float = 0f
     private var scrollX: Float = 0f // 0-1
+    private var preventMovementScrolling = false
 
-    private val cardsAreaMargin get() = screen.width * 2/10
-    private val cardsAreaWidth get() = screen.width - cardsAreaMargin*2
+    private val cardsAreaWidth get() = width * 6/10
     private val cardsTotalWidth get() =  views.size * ClientCardBufferRenderer.CARD_WIDTH
 
     fun viewsWithPositions(
@@ -69,8 +67,8 @@ internal class BingoCardsWidget(
     ) {
         if (views.isEmpty()) return
 
-        val xMin = x - (width/2)
-        val xMax = x + (width/2) - ClientCardBufferRenderer.CARD_WIDTH
+        val xMin = x - (cardsAreaWidth/2)
+        val xMax = x + (cardsAreaWidth/2) - ClientCardBufferRenderer.CARD_WIDTH
 
         val widthDiff = (cardsTotalWidth - cardsAreaWidth).coerceAtLeast(0) / 2
 
@@ -142,16 +140,23 @@ internal class BingoCardsWidget(
         val mouseY = mouse.y
 
         val context by drawService::context
-        if (isInBounds(x.toInt(), mouseY)) {
-            val boundaryMin = x - width*.5f
-            val boundaryMax = x + width*.5f
+        if (isInBounds(mouseX, mouseY)) {
+            val boundaryMin = x - cardsAreaWidth*.5f
+            val boundaryMax = x + cardsAreaWidth*.5f
             val baseVelocity = 0.01f / (1 + views.size)
             val velocity = when {
                 mouseX < boundaryMin -> (mouseX - boundaryMin) * baseVelocity
                 mouseX > boundaryMax -> (mouseX - boundaryMax) * baseVelocity
                 else -> 0f
             }
-            targetScrollX = (targetScrollX + velocity * drawService.delta).coerceIn(0f, 1f)
+
+            if (!preventMovementScrolling) {
+                targetScrollX = (targetScrollX + velocity * drawService.delta).coerceIn(0f, 1f)
+            } else if (velocity == 0f) {
+                preventMovementScrolling = false
+            }
+        } else {
+            preventMovementScrolling = false
         }
 
         // Animate scrollX towards targetScrollX
@@ -183,12 +188,12 @@ internal class BingoCardsWidget(
         }
 
         if (cardsTotalWidth > cardsAreaWidth) {
-            val barX = x.toInt() - (width/2)
+            val barX = x.toInt() - (cardsAreaWidth/2)
             val barY = y.toInt() + (height/2) + 3
 
             val barHeight = 2
-            val barFilledWidth = width * cardsAreaWidth / cardsTotalWidth.coerceAtLeast(1)
-            val barOffsetMax = width - barFilledWidth
+            val barFilledWidth = cardsAreaWidth * cardsAreaWidth / cardsTotalWidth.coerceAtLeast(1)
+            val barOffsetMax = cardsAreaWidth - barFilledWidth
             val barOffsetScrolled = (scrollX * barOffsetMax).roundToInt()
 
             val barColorBg = 0x80000000.toInt()
@@ -196,7 +201,7 @@ internal class BingoCardsWidget(
 
             context.fill(barX, barY, barX + barOffsetScrolled, barY + barHeight, 0, barColorBg)
             context.fill(barX + barOffsetScrolled, barY, barX + barOffsetScrolled + barFilledWidth, barY + barHeight, 0, barColorFilled)
-            context.fill(barX + barOffsetScrolled + barFilledWidth, barY, barX + width, barY + barHeight, 0, barColorBg)
+            context.fill(barX + barOffsetScrolled + barFilledWidth, barY, barX + cardsAreaWidth, barY + barHeight, 0, barColorBg)
         }
     }
 
@@ -207,6 +212,10 @@ internal class BingoCardsWidget(
 
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
         if (isInBounds(mouseX.toInt(), mouseY.toInt())) {
+            if (amount.absoluteValue > 0.1) {
+                preventMovementScrolling = true
+            }
+
             targetScrollX = (targetScrollX + amount.toFloat() * -0.5f / views.size.coerceAtLeast(1)).coerceIn(0f, 1f)
             return true
         } else {
