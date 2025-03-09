@@ -217,7 +217,7 @@ fun Int.colorDistanceEuclidian(other: Int): Double {
 }*/
 
 class MapColors(
-    mapService: me.jfenn.bingo.platform.IMapColorService,
+    mapService: IMapColorService,
 ) {
     companion object {
         var mapColors = mapOf<Byte, Int>()

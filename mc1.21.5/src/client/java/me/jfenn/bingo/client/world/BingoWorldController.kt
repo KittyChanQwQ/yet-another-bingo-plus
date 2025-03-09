@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.world
 
 import com.google.common.collect.ImmutableList
+import me.jfenn.bingo.client.impl.accessor
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
 import me.jfenn.bingo.common.datapack.LobbyWorldService
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
@@ -52,16 +53,16 @@ class BingoWorldController(
                 // Copy the built-in lobby data pack to the world creator's temp dir
                 // - we want this to happen on every world creation, so that the pack is available
                 //   even if the user has not specifically pressed the "BINGO!" button.
-                screen.getOrCreateDataPackTempDir()?.let {
+                screen.accessor.invokeGetDataPackTempDir()?.let {
                     lobbyWorldService.copyDataPack(it.resolve(DATAPACK_FILE))
                 }
 
-                val pair = screen.getScannedPack(screen.worldCreator.generatorOptionsHolder.dataConfiguration)
+                val pair = screen.accessor.invokeGetScannedPack(screen.worldCreator.generatorOptionsHolder.dataConfiguration)
                     ?: return@register
 
                 // this flag prevents infinite recursion, as there is a setScreen call in applyDataPacks
                 worldState.isApplyingLobbyDataPack = true
-                screen.applyDataPacks(pair.second, false) {}
+                screen.accessor.invokeApplyDataPacks(pair.second, false) {}
                 worldState.isApplyingLobbyDataPack = false
 
                 if (state == ScreenState.CreateBingoWorld) {
@@ -83,7 +84,7 @@ class BingoWorldController(
                     )
 
                     worldState.state = ScreenState.OpenBingoWorld
-                    screen.validateDataPacks(pair.second, dataConfiguration) {}
+                    screen.accessor.invokeValidateDataPacks(pair.second, dataConfiguration) {}
 
                     return@register
                 }

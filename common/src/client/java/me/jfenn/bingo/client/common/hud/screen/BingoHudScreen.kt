@@ -5,6 +5,7 @@ import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.integrations.JeiIntegration
 import me.jfenn.bingo.client.integrations.jei.IJeiApi
 import me.jfenn.bingo.client.platform.renderer.IDrawService
+import me.jfenn.bingo.client.platform.screen.IMutableScreenHelper
 import me.jfenn.bingo.client.platform.screen.IScreen
 import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.platform.screen.IScreenHelper
@@ -21,7 +22,7 @@ internal class BingoHudScreen(
     private val config: BingoConfig,
     private val state: BingoHudState,
     private val jei: IJeiApi,
-    private val helper: IScreenHelper,
+    private val helper: IMutableScreenHelper,
     originalCardKey: BingoTeamKey?,
     originalCardPos: Pair<Float, Float>,
     originalCardScale: Float = config.client.cardScale,

@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.map
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import net.minecraft.item.map.MapState
+import me.jfenn.bingo.platform.IMapState
 
 @Serializable
 data class BingoMap(
@@ -13,6 +13,6 @@ data class BingoMap(
     var view: CardView? = null
 
     @Transient
-    var mapState: MapState? = null
+    var mapState: IMapState? = null
 
 }

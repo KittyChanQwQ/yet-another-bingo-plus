@@ -12,7 +12,6 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
@@ -30,7 +29,6 @@ internal class SpawnPreloadingController(
     private val state: BingoState,
     private val config: BingoConfig,
     private val spawnService: SpawnService,
-    private val serverWorldFactory: IServerWorldFactory,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
     private val playerManager: IPlayerManager,
     private val packet: ServerPacketEvents,

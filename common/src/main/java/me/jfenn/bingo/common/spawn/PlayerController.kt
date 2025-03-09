@@ -204,7 +204,7 @@ internal class PlayerController(
         }
 
         events.onPlayerJoin { (player) ->
-            val lobbyWorld = serverWorldFactory.listWorlds(server)
+            val lobbyWorld = serverWorldFactory.listWorlds()
                 .find { it.identifier == LOBBY_WORLD_IDENTIFIER }
                 ?: return@onPlayerJoin
 
@@ -219,7 +219,7 @@ internal class PlayerController(
 
         events.onPlayerRespawn { event ->
             if (!state.isLobbyMode) return@onPlayerRespawn
-            val lobbyWorld = serverWorldFactory.listWorlds(server)
+            val lobbyWorld = serverWorldFactory.listWorlds()
                 .find { it.identifier == LOBBY_WORLD_IDENTIFIER }
                 ?: return@onPlayerRespawn
 

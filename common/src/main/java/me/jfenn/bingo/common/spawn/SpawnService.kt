@@ -35,7 +35,7 @@ class SpawnService(
 ) {
 
     fun getSpawnDimension(): IServerWorld {
-        val worlds = serverWorldFactory.listWorlds(server)
+        val worlds = serverWorldFactory.listWorlds()
         return worlds.find {
             it.identifier == options.spawnDimension
         } ?: run {
@@ -103,7 +103,7 @@ class SpawnService(
     }
 
     fun teleportToLobby(player: IPlayerHandle) {
-        val lobbyWorld = serverWorldFactory.listWorlds(server)
+        val lobbyWorld = serverWorldFactory.listWorlds()
             .find { it.identifier == LOBBY_WORLD_IDENTIFIER }
 
         if (lobbyWorld == null) {

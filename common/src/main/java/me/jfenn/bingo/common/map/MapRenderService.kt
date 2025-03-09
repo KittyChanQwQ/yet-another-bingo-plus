@@ -8,9 +8,9 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.utils.LruHashMap
 import me.jfenn.bingo.platform.IMapService
+import me.jfenn.bingo.platform.IMapState
+import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.config.IConfigManager
-import net.minecraft.item.map.MapState
-import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,7 +22,7 @@ import kotlin.time.measureTime
 
 internal class MapRenderService(
     private val log: Logger,
-    private val server: MinecraftServer,
+    private val worldFactory: IServerWorldFactory,
     private val mapService: IMapService,
     private val imageService: CardImageService,
     private val state: BingoState,
@@ -304,7 +304,7 @@ internal class MapRenderService(
     }
 
     private fun drawMapBorders(
-        mapState: MapState,
+        mapState: IMapState,
         team: BingoTeam?,
     ) {
         val borderLight = (getMapColor(team?.textColor)*4 + 2).toUByte().toByte()
@@ -357,7 +357,7 @@ internal class MapRenderService(
     }
 
     private fun drawMapTile(
-        mapState: MapState,
+        mapState: IMapState,
         tile: CardTile,
         itemX: Int,
         itemY: Int,
@@ -399,7 +399,7 @@ internal class MapRenderService(
             }
 
             // Uses System.arraycopy, which is a lot faster than manually setting each byte
-            arr.copyInto(mapState.colors, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
+            mapState.copyFrom(arr, mapStateStart, tileImageStart, tileImageStart + IMAGE_SIZE)
         }
 
         if (tile.isLocked) {
@@ -450,7 +450,7 @@ internal class MapRenderService(
         changedTiles: List<Int>,
     ) = measureTime {
         val state = map.mapState ?: kotlin.run {
-            val state = MapState.of(1, true, server.overworld.registryKey)
+            val state = mapService.createMapState(1, true, worldFactory.overworld)
             drawMapBorders(state, team)
 
             mapService.putMapState(map.mapId, state)

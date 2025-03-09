@@ -22,11 +22,6 @@ tasks.withType(AbstractArchiveTask).configureEach {
 loom {
     splitEnvironmentSourceSets()
 
-    def accessWidenerFile = file("src/main/resources/bingo.accesswidener")
-    if (accessWidenerFile.exists()) {
-        accessWidenerPath = accessWidenerFile
-    }
-
     mods {
         "${group}" {
             sourceSet sourceSets.main

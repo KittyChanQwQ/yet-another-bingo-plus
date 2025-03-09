@@ -231,7 +231,7 @@ class BingoOptionsCommands(
                         name = "dimension",
                         suggestions = {
                             scope.get<IServerWorldFactory>()
-                                .listWorlds(server)
+                                .listWorlds()
                                 .map { it.identifier }
                                 .minus(LOBBY_WORLD_ID.toString())
                         },
@@ -241,7 +241,7 @@ class BingoOptionsCommands(
                             val dimension = getArgument(dimensionArg)
 
                             scope.get<IServerWorldFactory>()
-                                .listWorlds(server)
+                                .listWorlds()
                                 .find { it.identifier == dimension }
                                 ?: error("Dimension '$dimension' does not exist!")
 

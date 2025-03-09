@@ -265,7 +265,7 @@ internal class GameService(
 
                     playerImpl.gameMode = PlayerGameMode.SURVIVAL
                     playerImpl.teleport(
-                        world = serverWorldFactory.listWorlds(server)
+                        world = serverWorldFactory.listWorlds()
                             .find { it.identifier == playerData.world }
                             ?: continue,
                         pos = playerData.position,

@@ -6,7 +6,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IServerWorldFactory
-import net.minecraft.server.MinecraftServer
 import org.joml.Vector3d
 
 internal const val MENU_DIMENSION_WIDTH = 2.0
@@ -16,11 +15,10 @@ internal fun MenuComponent.registerDimensionMenu(
     width: Double = MENU_DIMENSION_WIDTH,
     height: Double,
     state: BingoState = koinScope.get(),
-    server: MinecraftServer = koinScope.get(),
     serverWorldFactory: IServerWorldFactory = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
 ) {
-    val dimensions = serverWorldFactory.listWorlds(server)
+    val dimensions = serverWorldFactory.listWorlds()
         .map { it.identifier }
         .filter { it != LOBBY_WORLD_ID.toString() }
         .sorted()

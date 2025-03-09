@@ -4,6 +4,7 @@ import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.impl.screen.button.ButtonImpl
 import me.jfenn.bingo.client.platform.screen.IButton
 import me.jfenn.bingo.client.platform.screen.IDrawable
+import me.jfenn.bingo.client.platform.screen.IMutableScreenHelper
 import me.jfenn.bingo.client.platform.screen.IScreenHelper
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.DrawContext
@@ -13,7 +14,7 @@ import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 
-class ScreenHelperImpl(
+open class ScreenHelperImpl(
     override val screen: Screen,
 ) : IScreenHelper {
     override val width get() = screen.width
@@ -24,8 +25,16 @@ class ScreenHelperImpl(
         Screens.getButtons(screen).add(button.button)
     }
 
+    override fun close() {
+        screen.close()
+    }
+}
+
+class MutableScreenHelperImpl(
+    private val screenImpl: ScreenImpl,
+) : ScreenHelperImpl(screenImpl), IMutableScreenHelper {
     override fun addDrawable(drawable: IDrawable) {
-        screen.addDrawableChild(object : Drawable, Element, Selectable {
+        screenImpl.bingoAddDrawableChild(object : Drawable, Element, Selectable {
             override fun render(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
                 drawable.render(DrawService(context))
             }
@@ -38,16 +47,10 @@ class ScreenHelperImpl(
     }
 
     override fun addDrawableChild(drawable: Drawable) {
-        require(drawable is Element) { "${drawable::class.simpleName} is not Element!" }
-        require(drawable is Selectable) { "${drawable::class.simpleName} is not Element!" }
-        screen.addDrawableChild(drawable)
+        screenImpl.bingoAddDrawableChild(drawable)
     }
 
     override fun clearChildren() {
-        screen.clearChildren()
-    }
-
-    override fun close() {
-        screen.close()
+        screenImpl.bingoClearChildren()
     }
 }

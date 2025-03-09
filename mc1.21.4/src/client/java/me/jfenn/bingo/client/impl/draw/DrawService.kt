@@ -2,6 +2,7 @@ package me.jfenn.bingo.client.impl.draw
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.jfenn.bingo.client.impl.NativeImageImpl
+import me.jfenn.bingo.client.impl.accessor
 import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.client.platform.renderer.*
 import me.jfenn.bingo.client.platform.text.IText
@@ -89,7 +90,7 @@ class DrawService(
             .let { Matrix4f(it) }
             .translate(x.toFloat(), y.toFloat(), 0f)
 
-        val vertexConsumer = context.vertexConsumers.getBuffer(texture.renderLayer)
+        val vertexConsumer = context.accessor.vertexConsumers.getBuffer(texture.renderLayer)
         vertexConsumer.vertex(matrix, 0f, height.toFloat(), 0f).color(-1).texture(0.0f, 1.0f)
         vertexConsumer.vertex(matrix, width.toFloat(), height.toFloat(), 0f).color(-1).texture(1.0f, 1.0f)
         vertexConsumer.vertex(matrix, width.toFloat(), 0f, 0f).color(-1).texture(1.0f, 0.0f)

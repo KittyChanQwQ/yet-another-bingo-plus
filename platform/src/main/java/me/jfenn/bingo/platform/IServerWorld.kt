@@ -10,9 +10,10 @@ import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
 interface IServerWorldFactory {
+    val overworld: IServerWorld
     fun forWorld(world: ServerWorld): IServerWorld
-    fun listWorlds(server: MinecraftServer): List<IServerWorld>
-    fun recreateWorlds(server: MinecraftServer, seed: Long, callback: () -> Unit)
+    fun listWorlds(): List<IServerWorld>
+    fun recreateWorlds(seed: Long, callback: () -> Unit)
 }
 
 interface IServerWorld {

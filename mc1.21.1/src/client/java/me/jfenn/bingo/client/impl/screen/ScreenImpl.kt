@@ -4,17 +4,30 @@ import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.platform.screen.IScreen
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.Drawable
+import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
 import kotlin.math.absoluteValue
 
 class ScreenImpl(title: Text) : Screen(title) {
     var impl: IScreen? = null
-    val helper = ScreenHelperImpl(this)
+    val helper = MutableScreenHelperImpl(this)
 
     override fun init() {
         super.init()
         impl?.init()
+    }
+
+    fun bingoAddDrawableChild(drawable: Drawable) {
+        require(drawable is Element) { "${drawable::class.simpleName} is not Element!" }
+        require(drawable is Selectable) { "${drawable::class.simpleName} is not Element!" }
+        addDrawableChild(drawable)
+    }
+
+    fun bingoClearChildren() {
+        clearChildren()
     }
 
     override fun resize(client: MinecraftClient?, width: Int, height: Int) {

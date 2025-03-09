@@ -2,10 +2,11 @@ package me.jfenn.bingo.client.impl.draw
 
 import com.mojang.blaze3d.systems.ProjectionType
 import com.mojang.blaze3d.systems.RenderSystem
+import me.jfenn.bingo.client.impl.accessor
+import me.jfenn.bingo.client.mixinhelper.FramebufferOverride
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.renderer.IFramebuffer
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.client.mixinhelper.FramebufferOverride
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
@@ -97,7 +98,7 @@ class FramebufferImpl(
         context.matrices.scale(1f/scaleFactor, 1f/scaleFactor, 1f)
 
         val matrix4f = context.matrices.peek().positionMatrix
-        val vertexConsumer = context.vertexConsumers.getBuffer(RenderLayer.getGuiTextured(fbTextureId))
+        val vertexConsumer = context.accessor.vertexConsumers.getBuffer(RenderLayer.getGuiTextured(fbTextureId))
 
         // The framebuffer renders upside down, so we need to flip v1 and v2 here
         // otherwise, this could just be a context.drawTexture call...

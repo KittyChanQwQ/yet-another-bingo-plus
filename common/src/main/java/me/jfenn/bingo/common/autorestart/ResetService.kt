@@ -51,7 +51,7 @@ internal class ResetService(
         state.reset()
 
         log.info("[Reset] Recreating worlds")
-        serverWorldFactory.recreateWorlds(server, Random.Default.nextLong()) {
+        serverWorldFactory.recreateWorlds(Random.Default.nextLong()) {
             menuController.prepareLobbyFiles()
         }
 

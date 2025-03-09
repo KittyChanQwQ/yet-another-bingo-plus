@@ -128,7 +128,7 @@ class PlayerHandle(
 
     override var foodLevel: Int by player.hungerManager::foodLevel
     override var saturationLevel: Float by player.hungerManager::saturationLevel
-    override var exhaustion: Float by player.hungerManager::exhaustion
+    override var exhaustion: Float by player.hungerManager.accessor::exhaustion
 
     override val isSneaking: Boolean
         get() = player.isSneaking

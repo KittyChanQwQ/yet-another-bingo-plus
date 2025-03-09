@@ -39,7 +39,6 @@ val sharedModule = module {
     singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     single { ParticleFactory } bind IParticleFactory::class
     singleOf(::ServerEventsImpl) withOptions { createdAtStart() }
-    singleOf(::ServerWorldFactory) bind IServerWorldFactory::class
     singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
     singleOf(::StatManagerImpl) bind IStatManager::class
     singleOf(::TagAccessorImpl) bind ITagAccessor::class
@@ -52,9 +51,14 @@ val sharedModule = module {
         scopedOf(::GameRulesImpl) bind IGameRules::class
         scopedOf(::PlayerManager) bind IPlayerManager::class
         scopedOf(::TeamManager) bind ITeamManager::class
-        scopedOf(::MinecraftServerImpl) binds arrayOf(IMapService::class, ITickManager::class, ILevelStorage::class)
+        scopedOf(::MapServiceImpl) bind IMapService::class
+        scopedOf(::MinecraftServerImpl) binds arrayOf(ITickManager::class, ILevelStorage::class)
+        scopedOf(::ItemStackFactory) bind IItemStackFactory::class
+        scopedOf(::JsonSerializers) bind IJsonSerializers::class
+        scopedOf(::PersistentStateManager) bind IPersistentStateManager::class
         scopedOf(::RecipeManagerImpl) bind IRecipeManager::class
         scopedOf(::ScoreboardManager) bind IScoreboardManager::class
+        scopedOf(::ServerWorldFactory) bind IServerWorldFactory::class
         scoped { Executors.createServerTaskExecutor(get()) }
     }
 }

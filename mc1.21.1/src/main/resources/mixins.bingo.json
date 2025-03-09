@@ -5,8 +5,11 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "GameRuleOverrideMixin",
+    "HungerManagerAccessor",
     "InteractionEntityMixin",
     "LevelPropertiesAccessor",
+    "MapStateAccessor",
+    "MinecraftServerAccessor",
     "MinecraftServerSkipStartRegionMixin",
     "MinecraftServerUnsafeSkipCloseMixin",
     "PlayerEntityMixin",
@@ -16,7 +19,8 @@
     "ServerChunkManagerAccessor",
     "ServerChunkManagerMixin",
     "ServerEntityManagerMixin",
-    "ServerPlayNetworkHandlerMixin"
+    "ServerPlayNetworkHandlerMixin",
+    "ThreadExecutorAccessor"
   ],
   "client": [],
   "injectors": {

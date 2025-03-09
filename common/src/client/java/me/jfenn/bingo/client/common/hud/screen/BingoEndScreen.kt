@@ -40,7 +40,7 @@ internal class BingoEndScreen(
     private val state: BingoHudState = koin.get(),
     private val client: IClient = koin.get(),
     private val config: BingoConfig = koin.get(),
-    private val helper: IScreenHelper,
+    private val helper: IMutableScreenHelper,
     originalCardKey: BingoTeamKey?,
     originalCardPos: Pair<Float, Float>,
     originalCardScale: Float = config.client.cardScale,

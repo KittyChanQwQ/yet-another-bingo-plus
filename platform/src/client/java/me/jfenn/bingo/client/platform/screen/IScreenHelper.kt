@@ -8,11 +8,14 @@ interface IScreenHelper {
     val screen: Screen
     val width: Int
     val height: Int
+    fun addButton(button: IButton)
+    fun close()
+}
+
+interface IMutableScreenHelper : IScreenHelper {
     fun addDrawableChild(drawable: Drawable)
     fun addDrawable(drawable: IDrawable)
-    fun addButton(button: IButton)
     fun clearChildren()
-    fun close()
 }
 
 interface IDrawable {
