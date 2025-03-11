@@ -56,12 +56,17 @@ internal class BingoMapController(
             cardViewService.sendUpdatePackets(player)
         }
 
-        events.onChangeTeam { player ->
-            cardViewService.sendUpdatePackets(player)
+        events.onChangeTeam { event ->
+            cardViewService.sendUpdatePackets(event.player)
+
+            // Send updates to spectators whenever a player changes team
+            playerManager.getPlayers()
+                .filter { cardViewService.isViewingSpectatorCards(it) }
+                .forEach { cardViewService.sendUpdatePackets(it) }
         }
 
-        eventBus.register(TeamWinnerEvent) {
-            it.team.players
+        eventBus.register(TeamWinnerEvent) { event ->
+            event.team.players
                 .mapNotNull { playerManager.getPlayer(it.uuid) }
                 .forEach { cardViewService.sendUpdatePackets(it) }
         }

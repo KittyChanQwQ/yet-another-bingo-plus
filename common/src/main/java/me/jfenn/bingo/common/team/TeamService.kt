@@ -72,7 +72,7 @@ class TeamService(
                 .formatted(Formatting.YELLOW)
         )
 
-        eventBus.emit(TeamChangedEvent, TeamChangedEvent(player))
+        eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, team))
     }
 
     private val extraTeamColors = arrayOf(

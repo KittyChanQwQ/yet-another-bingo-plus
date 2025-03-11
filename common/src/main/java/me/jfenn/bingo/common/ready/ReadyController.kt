@@ -205,7 +205,7 @@ internal class ReadyController(
             reset()
         }
 
-        events.onChangeTeam { player ->
+        events.onChangeTeam { (player) ->
             if (readyState.isReady(player.uuid))
                 playerManager.updatePlayerListName(player)
         }

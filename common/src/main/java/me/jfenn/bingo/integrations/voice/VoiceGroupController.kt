@@ -136,7 +136,7 @@ class VoiceGroupController(
             teamGroups.clear()
         }
 
-        scopedEvents.onChangeTeam { player ->
+        scopedEvents.onChangeTeam { (player) ->
             playerManager.getPlayer(player.uuid)
                 ?.let { updateGroups(listOf(it)) }
         }

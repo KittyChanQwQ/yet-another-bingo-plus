@@ -71,8 +71,8 @@ internal class BingoApiImpl(
             BingoEvents.GAME_ENDED.invoke(GameEndedEvent(game.id))
         }
 
-        events.onChangeTeam { player ->
-            BingoEvents.TEAM_CHANGED.invoke(TeamChangedEvent(player.uuid))
+        events.onChangeTeam { event ->
+            BingoEvents.TEAM_CHANGED.invoke(TeamChangedEvent(event.player.uuid))
         }
     }
 }

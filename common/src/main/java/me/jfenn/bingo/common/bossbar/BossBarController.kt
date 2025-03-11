@@ -26,7 +26,7 @@ internal class BossBarController(
 
     init {
         events.onPlayerJoin { (player) -> bossBarService.updateBossBar(player) }
-        events.onChangeTeam { player -> bossBarService.updateBossBar(player) }
+        events.onChangeTeam { (player) -> bossBarService.updateBossBar(player) }
         eventBus.register(PlayerSettingsEvent) { (player) -> bossBarService.updateBossBar(player) }
 
         events.onUpdateTick {

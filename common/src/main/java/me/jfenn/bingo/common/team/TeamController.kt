@@ -79,7 +79,8 @@ class TeamController(
 
                 if (isTeamLeft || isTeamJoined) {
                     log.info("[TeamController] Manually updated teams for '${player.playerName}'")
-                    eventBus.emit(TeamChangedEvent, TeamChangedEvent(player))
+                    val newTeam = teamService.getPlayerTeam(player)
+                    eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, newTeam))
                     state.playersJoinedIds.add(player.uuid)
                 }
             }

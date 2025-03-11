@@ -10,7 +10,6 @@ import org.joml.Matrix4d
 import org.joml.Vector3d
 import org.koin.core.scope.Scope
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import kotlin.math.roundToInt
 
 internal class MenuInstance(
@@ -22,10 +21,6 @@ internal class MenuInstance(
     private val matrix: Matrix4d,
     private val instanceTag: String,
 ) {
-
-    companion object {
-        val log = LoggerFactory.getLogger(this::class.java)!!
-    }
 
     private val menuComponent = component(koinScope) {
         val translation = Vector3d(0.5, 2.0, 0.05)

@@ -588,7 +588,7 @@ internal class ScoredItemCheck(
             }
         }
 
-        events.onChangeTeam { player ->
+        events.onChangeTeam { (player) ->
             // Remove any of the player's held/scored items from the card
             for (card in state.cards) {
                 card.removePlayer(player.uuid)

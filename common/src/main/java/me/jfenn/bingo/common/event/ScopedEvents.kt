@@ -5,7 +5,6 @@ import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.event.IEvent
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.ScopeStopped
@@ -49,8 +48,8 @@ class ScopedEvents(
 
     fun onStateChange(callback: (StateChangedEvent) -> Unit) = eventBus.register(StateChangedEvent, callback)
     fun onChangeOptions(callback: (Unit) -> Unit) = eventBus.register(OptionsChangedEvent, callback)
-    fun onChangeTeam(callback: (IPlayerHandle) -> Unit) {
-        eventBus.register(TeamChangedEvent) { callback(it.player) }
+    fun onChangeTeam(callback: (TeamChangedEvent) -> Unit) {
+        eventBus.register(TeamChangedEvent, callback)
     }
 
     fun onClose(callback: (ScopeStopped) -> Unit) = eventBus.register(ScopeStopped, callback)
