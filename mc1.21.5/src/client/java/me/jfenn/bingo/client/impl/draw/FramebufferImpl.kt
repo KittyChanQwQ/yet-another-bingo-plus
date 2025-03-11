@@ -45,10 +45,10 @@ class FramebufferImpl(
     private var backupProjType = ProjectionType.ORTHOGRAPHIC
 
     override fun write(callback: (IDrawService) -> Unit) {
-        RenderSystem.getDevice().resourceManager.clearFramebuffer(
-            fb.colorAttachment,
+        RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(
+            fb.method_30277(), // fb.colorAttachment
             0,
-            fb.depthAttachment,
+            fb.method_30278(), // fb.depthAttachment
             1.0
         )
 
