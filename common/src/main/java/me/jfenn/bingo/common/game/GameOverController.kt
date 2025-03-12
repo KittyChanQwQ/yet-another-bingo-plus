@@ -29,6 +29,7 @@ internal class GameOverController(
     private val options: BingoOptions,
     private val text: TextProvider,
     private val gameOverService: GameOverService,
+    private val gameResumeService: GameResumeService,
     private val cardViewService: CardViewService,
     private val playerManager: IPlayerManager,
     private val permissions: IPermissionsApi,
@@ -132,10 +133,7 @@ internal class GameOverController(
                 duration = state.ingameDuration() ?: Duration.ZERO,
                 isReturnToLobbyAvailable = permissions.hasPermission(player, Permission.COMMAND_READY)
                         && state.isLobbyMode,
-                isResumeAvailable = permissions.hasPermission(player, Permission.CONFIGURE_GAME)
-                        && state.isLobbyMode
-                        // If a team won because of an auto-win (stalemate in lockout mode), the game cannot be resumed
-                        && state.teams.values.none { it.completedCards.lastOrNull()?.isAutoWin == true },
+                isResumeAvailable = gameResumeService.isResumeAvailable(player),
                 isWinner = isWinner,
                 isUpdate = isUpdate,
 

@@ -31,10 +31,7 @@ import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEventBus
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
-import me.jfenn.bingo.common.game.GameCommands
-import me.jfenn.bingo.common.game.GameOverController
-import me.jfenn.bingo.common.game.GameOverService
-import me.jfenn.bingo.common.game.GameService
+import me.jfenn.bingo.common.game.*
 import me.jfenn.bingo.common.infobook.InfoBookCommand
 import me.jfenn.bingo.common.infobook.InfoBookController
 import me.jfenn.bingo.common.infobook.InfoBookService
@@ -264,6 +261,7 @@ val commonModule = module {
         scopedOf(::GameService)
         scopedOf(::GameOverService)
         scopedOf(::GameOverController)
+        scopedOf(::GameResumeService)
 
         scopedOf(::InfoBookController)
         scopedOf(::InfoBookService)
