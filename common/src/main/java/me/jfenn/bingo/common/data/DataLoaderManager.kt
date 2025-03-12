@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.data
 
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.controller.DatapackFunctionService
+import me.jfenn.bingo.common.spawn.SpawnKitLoader
 import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.IExecutors
@@ -17,6 +18,7 @@ internal class DataLoaderManager(
     private val scopedData: ScopedData,
     private val filterPresetsLoader: FilterPresetsLoader,
     private val objectiveLoader: ObjectiveLoader,
+    private val spawnKitLoader: SpawnKitLoader,
     private val tierListLoader: TierListLoader,
     private val tagLoader: TagLoader,
     private val teamPresetLoader: TeamPresetLoader,
@@ -32,6 +34,7 @@ internal class DataLoaderManager(
                 scopedData.teamPresets = teamPresetLoader.loadTeamPresets(manager)
                 scopedData.filterPresets = filterPresetsLoader.loadFilterPresets(manager)
                 scopedData.objectives = objectiveLoader.loadObjectives(manager)
+                scopedData.spawnKits = spawnKitLoader.loadSpawnKits(manager)
                 scopedData.tierLists = tierListLoader.loadTierLists(manager)
                 scopedData.tags = tagLoader.loadTags(manager)
                 scopedData.unobtainableItems = emptySet()

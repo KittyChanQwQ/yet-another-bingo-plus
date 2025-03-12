@@ -27,6 +27,7 @@ val sharedServerModule = module {
 }
 
 val sharedModule = module {
+    singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
     singleOf(::ModEnvironment) bind IModEnvironment::class
 
     singleOf(::CommandManagerImpl) bind ICommandManager::class
@@ -40,7 +41,6 @@ val sharedModule = module {
     single { ParticleFactory } bind IParticleFactory::class
     singleOf(::ServerEventsImpl) withOptions { createdAtStart() }
     singleOf(::ServerWorldFactory) bind IServerWorldFactory::class
-    singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
     singleOf(::StatManagerImpl) bind IStatManager::class
     singleOf(::TagAccessorImpl) bind ITagAccessor::class
     singleOf(::TextFactoryImpl) bind ITextFactory::class

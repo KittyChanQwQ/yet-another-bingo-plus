@@ -7,7 +7,7 @@ import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ReloadEvent
 import net.minecraft.server.MinecraftServer
 
-class DataCommandService(
+internal class DataCommandService(
     private val scopedData: ScopedData,
     private val tagLoader: TagLoader,
     private val tierListLoader: TierListLoader,

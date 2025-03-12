@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.menu.*
-import me.jfenn.bingo.common.spawn.SpawnItem
 import me.jfenn.bingo.common.utils.copyMemberProperties
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
@@ -46,97 +45,9 @@ data class BingoOptions(
     var showPreviewCard: Boolean = true,
     var showHiddenTiers: Boolean = false,
 
+    // spawn kit settings
     var isPlayerKit: Boolean = false,
-    var playerKitItems: List<SpawnItem> = listOf(
-        SpawnItem(
-            id = "minecraft:netherite_helmet",
-            nbt = "{Enchantments:[{lvl:4,id:protection},{lvl:1,id:aqua_affinity},{lvl:3,id:respiration}],Unbreakable:1}",
-            components = mapOf(
-                "minecraft:enchantments" to """{"levels":{"protection":4,"aqua_affinity":1,"respiration":3}}""",
-                "minecraft:unbreakable" to "{}",
-            )
-        ),
-        SpawnItem(
-            id = "minecraft:netherite_chestplate",
-            nbt = "{Enchantments:[{lvl:4,id:protection}],Unbreakable:1}",
-            components = mapOf(
-                "minecraft:enchantments" to """{"levels":{"protection":4}}""",
-                "minecraft:unbreakable" to "{}",
-            )
-        ),
-        SpawnItem(
-            id = "minecraft:netherite_leggings",
-            nbt = "{Enchantments:[{lvl:4,id:protection},{lvl:3,id:swift_sneak}],Unbreakable:1}",
-            components = mapOf(
-                "minecraft:enchantments" to """{"levels":{"protection":4,"swift_sneak":3}}""",
-                "minecraft:unbreakable" to "{}",
-            )
-        ),
-        SpawnItem(
-            id = "minecraft:netherite_boots",
-            nbt = "{Enchantments:[{lvl:4,id:protection},{lvl:4,id:feather_falling},{lvl:3,id:depth_strider}],Unbreakable:1}",
-            components = mapOf(
-                "minecraft:enchantments" to """{"levels":{"protection":4,"feather_falling":4,"depth_strider":3}}""",
-                "minecraft:unbreakable" to "{}",
-            )
-        ),
-        SpawnItem(
-            id = "minecraft:netherite_pickaxe",
-            nbt = "{Enchantments:[{lvl:5,id:efficiency},{lvl:3,id:fortune}],Unbreakable:1}",
-            components = mapOf(
-                "minecraft:enchantments" to """{"levels":{"efficiency":5,"fortune":3}}""",
-                "minecraft:unbreakable" to "{}",
-            )
-        ),
-        SpawnItem(
-            id = "minecraft:netherite_axe",
-            nbt = "{Enchantments:[{lvl:5,id:efficiency},{lvl:5,id:sharpness}],Unbreakable:1}",
-            components = mapOf(
-                "minecraft:enchantments" to """{"levels":{"efficiency":5,"sharpness":5}}""",
-                "minecraft:unbreakable" to "{}",
-            )
-        ),
-        SpawnItem(
-            id = "minecraft:netherite_sword",
-            nbt = "{Enchantments:[{lvl:2,id:knockback},{lvl:3,id:looting},{lvl:5,id:sharpness}],Unbreakable:1}",
-            components = mapOf(
-                "minecraft:enchantments" to """{"levels":{"knockback":2,"looting":3,"sharpness":5}}""",
-                "minecraft:unbreakable" to "{}",
-            )
-        ),
-        SpawnItem(
-            id = "minecraft:netherite_shovel",
-            nbt = "{Enchantments:[{lvl:5,id:efficiency}],Unbreakable:1}",
-            components = mapOf(
-                "minecraft:enchantments" to """{"levels":{"efficiency":5}}""",
-                "minecraft:unbreakable" to "{}",
-            )
-        ),
-        SpawnItem(
-            id = "minecraft:iron_pickaxe",
-            nbt = "{Enchantments:[{lvl:1,id:silk_touch}],Unbreakable:1}",
-            components = mapOf(
-                "minecraft:enchantments" to """{"levels":{"silk_touch":1}}""",
-                "minecraft:unbreakable" to "{}",
-            )
-        ),
-        SpawnItem(
-            id = "minecraft:shield",
-            components = mapOf(
-                "minecraft:unbreakable" to "{}",
-            )
-        ),
-        SpawnItem("minecraft:torch", count = 64),
-        SpawnItem("minecraft:golden_carrot", count = 64),
-        SpawnItem("minecraft:oak_log", count = 16),
-    ),
-
     var isTeamKit: Boolean = false,
-    var teamKitItems: List<SpawnItem> = listOf(
-        SpawnItem("minecraft:iron_ingot", count = 64),
-        SpawnItem("minecraft:oak_log", count = 64),
-        SpawnItem("minecraft:torch", count = 64),
-    ),
 
     // amount of time to wait before starting the game
     var startCountdownSeconds: Int = 8,

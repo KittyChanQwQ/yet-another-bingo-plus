@@ -17,7 +17,7 @@ class TeamPresetLoader(
     fun loadTeamPresets(
         manager: ResourceManager,
     ): Map<BingoTeamKey, BingoTeamPreset> {
-        log.info("[TagLoader] Reloading BINGO objective tags...")
+        log.info("[TeamPresetLoader] Reloading BINGO team presets...")
 
         val newTeamPresets = mutableMapOf<BingoTeamKey, BingoTeamPreset>()
 
@@ -30,7 +30,7 @@ class TeamPresetLoader(
                     serializers.json.decodeFromStream<BingoTeamPreset>(it)
                 }
             } catch (e: Throwable) {
-                log.error("[TagLoader] Error reading tag file $id: ${e.message}")
+                log.error("[TeamPresetLoader] Error reading team preset $id: ${e.message}")
                 continue
             }
 

@@ -7,6 +7,10 @@
     "overlays": {
         "entries": [
             {
+                "formats": [41, 100],
+                "directory": "overlay-1-20-6"
+            },
+            {
                 "formats": [65, 100],
                 "directory": "overlay-1-21-5"
             }

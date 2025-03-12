@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.data
 
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierListConfig
@@ -12,7 +11,7 @@ import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
 import java.io.IOException
 
-class TierListLoader(
+internal class TierListLoader(
     private val trackedFileService: TrackedFileService,
     private val environment: IModEnvironment,
     private val log: Logger,

@@ -1,8 +1,10 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.options.OptionsService
-import me.jfenn.bingo.common.spawn.SpawnItem
+import me.jfenn.bingo.common.spawn.SpawnKit
+import me.jfenn.bingo.common.spawn.SpawnKitLoader
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
@@ -17,9 +19,11 @@ private const val EDIT_HEIGHT = 0.55
 internal fun MenuComponent.registerSpawnKit(
     position: Vector3d,
     state: BingoState = koinScope.get(),
+    data: ScopedData = koinScope.get(),
     cardService: CardService = koinScope.get(),
     itemStackFactory: IItemStackFactory = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
+    spawnKitLoader: SpawnKitLoader = koinScope.get(),
 ) {
     val options by state::options
     val offset = Vector3d()
@@ -65,12 +69,13 @@ internal fun MenuComponent.registerSpawnKit(
         player.player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
                 { syncId, inv, _ ->
-                    InventoryScreenHandler(syncId, options.playerKitItems.flatMap { it.toItemStacks(itemStackFactory) }, inv).apply {
+                    InventoryScreenHandler(syncId, data.spawnKits.playerKit.items, inv).apply {
                         onClose { stacks ->
-                            options.playerKitItems = stacks
-                                .map { itemStackFactory.forStack(it) }
-                                .map { SpawnItem.fromItemStack(it) }
-
+                            val spawnKit = SpawnKit(
+                                stacks.map { itemStackFactory.forStack(it) }
+                            )
+                            data.spawnKits.playerKit = spawnKit
+                            spawnKitLoader.writeSpawnKit(SpawnKitLoader.KIT_PLAYER, spawnKit)
                             cardService.generateCard()
                         }
                     }
@@ -115,12 +120,13 @@ internal fun MenuComponent.registerSpawnKit(
         player.player.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
                 { syncId, inv, _ ->
-                    InventoryScreenHandler(syncId, options.teamKitItems.flatMap { it.toItemStacks(itemStackFactory) }, inv).apply {
+                    InventoryScreenHandler(syncId, data.spawnKits.teamKit.items, inv).apply {
                         onClose { stacks ->
-                            options.teamKitItems = stacks
-                                .map { itemStackFactory.forStack(it) }
-                                .map { SpawnItem.fromItemStack(it) }
-
+                            val spawnKit = SpawnKit(
+                                stacks.map { itemStackFactory.forStack(it) }
+                            )
+                            data.spawnKits.teamKit = spawnKit
+                            spawnKitLoader.writeSpawnKit(SpawnKitLoader.KIT_TEAM, spawnKit)
                             cardService.generateCard()
                         }
                     }

@@ -16,7 +16,7 @@ import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import kotlin.jvm.optionals.getOrNull
 
-class MessageService(
+internal class MessageService(
     private val trackedFileService: TrackedFileService,
     private val environment: IModEnvironment,
     private val placeholderService: PlaceholderService,

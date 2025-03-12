@@ -12,7 +12,7 @@ import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
 import java.io.IOException
 
-class TagLoader(
+internal class TagLoader(
     private val trackedFileService: TrackedFileService,
     private val environment: IModEnvironment,
     private val log: Logger,

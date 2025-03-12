@@ -447,9 +447,9 @@ class CardService(
         val excludedObjectives = if (configService.config.excludeSpawnKitItemsFromCards) {
             buildSet {
                 if (options.isPlayerKit)
-                    addAll(options.playerKitItems.map { it.id })
+                    addAll(data.spawnKits.playerKit.items.map { it.identifier.toString() })
                 if (options.isTeamKit)
-                    addAll(options.teamKitItems.map { it.id })
+                    addAll(data.spawnKits.teamKit.items.map { it.identifier.toString() })
                 if (options.isElytra) {
                     add("minecraft:elytra")
                     add("minecraft:firework_rocket")

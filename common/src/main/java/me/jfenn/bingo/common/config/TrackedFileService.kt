@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.config
 
 import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.MOD_ID_BINGO
@@ -16,7 +17,7 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import kotlin.io.path.deleteIfExists
 
-class TrackedFileService(
+internal class TrackedFileService(
     private val configService: ConfigService,
     private val environment: IModEnvironment,
     private val log: Logger,
@@ -37,15 +38,16 @@ class TrackedFileService(
     inline fun <reified T: Any> readFileOrResource(
         path: Path,
         resource: T?,
+        jsonInstance: Json = json
     ): Result<T> {
         val serializer = serializer<T>()
         return readFileOrResource(
             path = path,
             resource = resource,
-            serialize = { json.encodeToString(serializer, it) },
+            serialize = { jsonInstance.encodeToString(serializer, it) },
             deserialize = {
                 @OptIn(ExperimentalSerializationApi::class)
-                json.decodeFromStream(serializer, it)
+                jsonInstance.decodeFromStream(serializer, it)
             },
         )
     }

@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.spawn
 import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -12,8 +13,6 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.block.BlockPosition
-import me.jfenn.bingo.platform.item.IItemStackFactory
-import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
@@ -23,12 +22,11 @@ import kotlin.random.Random
 
 class SpawnService(
     private val log: Logger,
-    private val server: MinecraftServer,
     private val options: BingoOptions,
     private val state: BingoState,
     private val config: BingoConfig,
+    private val data: ScopedData,
     private val teamService: TeamService,
-    private val itemStackFactory: IItemStackFactory,
     private val spreadPlayersFactory: SpreadPlayers.Factory,
     private val serverWorldFactory: IServerWorldFactory,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
@@ -253,8 +251,7 @@ class SpawnService(
 
         if (!options.isPlayerKit) return
 
-        val itemStacks = options.playerKitItems
-            .flatMap { it.toItemStacks(itemStackFactory) }
+        val itemStacks = data.spawnKits.playerKit.items.map { it.copy() }
 
         if (config.preventScoringSpawnKitItems) {
             for (itemStack in itemStacks) {

@@ -108,7 +108,6 @@ val commonModule = module {
 
     singleOf(::ConfigManager) bind IConfigManager::class
     singleOf(::ConfigService)
-    singleOf(::TrackedFileService)
     single { get<ConfigService>().config }
     single { get<ConfigService>().config.client }
     singleOf(::TextProvider)
@@ -200,8 +199,10 @@ val commonModule = module {
         scopedOf(::PlaceholderService)
         scopedOf(::MessageService)
 
+        scopedOf(::TrackedFileService)
         scopedOf(::FilterPresetsLoader)
         scopedOf(::ObjectiveLoader)
+        scopedOf(::SpawnKitLoader)
         scopedOf(::TierListLoader)
         scopedOf(::TagLoader)
         scopedOf(::TeamPresetLoader)
