@@ -45,6 +45,9 @@ class FramebufferImpl(
     private var backupProjType = ProjectionType.ORTHOGRAPHIC
 
     override fun write(callback: (IDrawService) -> Unit) {
+        val context: DrawContext = service.context
+        context.draw()
+
         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(
             fb.method_30277(), // fb.colorAttachment
             0,
@@ -79,7 +82,6 @@ class FramebufferImpl(
 
         callback(service)
 
-        val context: DrawContext = service.context
         context.draw()
 
         service.matrices.pop()

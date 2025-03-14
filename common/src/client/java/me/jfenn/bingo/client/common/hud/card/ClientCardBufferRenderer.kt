@@ -51,8 +51,7 @@ internal class ClientCardBufferRenderer(
         val context = service.context
         val colors = card.colors
 
-        // Draw a translucent background behind all card items
-        context.fill(10, 20, 10 + 5*20, 20 + 5*20, colors.backgroundColor.asIntWithAlpha)
+        service.enableBlend()
 
         service.drawGuiTexture(
             texture = if (card.isGui) colors.cardTextureGui else colors.cardTexture,
@@ -137,6 +136,7 @@ internal class ClientCardBufferRenderer(
             cardTileRenderer.renderTile(service, tile, 1, 1)
 
             if (tile.isAchieved && !isFlashing && !card.isGui) {
+                context.draw()
                 context.fill(
                     RenderLayer.getGuiOverlay(),
                     0,

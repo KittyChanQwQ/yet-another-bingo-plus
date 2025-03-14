@@ -43,6 +43,9 @@ class FramebufferImpl(
     private var backupProjType = ProjectionType.ORTHOGRAPHIC
 
     override fun write(callback: (IDrawService) -> Unit) {
+        val context: DrawContext = service.context
+        context.draw()
+
         fb.setClearColor(0f, 0f, 0f, 0f)
         fb.clear()
 
@@ -76,7 +79,6 @@ class FramebufferImpl(
 
         callback(service)
 
-        val context: DrawContext = service.context
         context.draw()
 
         fb.endWrite()

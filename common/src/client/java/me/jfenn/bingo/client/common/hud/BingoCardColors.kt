@@ -23,7 +23,6 @@ internal data class BingoCardColors(
         val tileAchievedColor: ColorType? = null,
         val tileFlashingColor: ColorType? = null,
         val tileProgressColor: ColorType? = null,
-        val backgroundColor: ColorType? = null,
         val textX: Int? = null,
         val textY: Int? = null,
         val textColor: ColorType? = null,
@@ -37,7 +36,6 @@ internal data class BingoCardColors(
         val tileAchievedColor: Color = Color.fromInt(0xff55ff55.toInt()),
         val tileFlashingColor: Color = Color.fromInt(0xffb24cd8.toInt()),
         val tileProgressColor: Color = Color.fromInt(0xff309f30.toInt()),
-        val backgroundColor: Color = Color.BLACK,
         val textX: Int = 12,
         val textY: Int = 10,
         val textColor: Color = Color.BLACK,
@@ -72,9 +70,6 @@ internal data class BingoCardColors(
             tileProgressColor = getValue(colors, Team::tileProgressColor)
                 ?.let { Color.fromInt(it.rgb) }
                 ?: DEFAULTS.tileProgressColor,
-            backgroundColor = getValue(colors, Team::backgroundColor)
-                ?.let { Color.fromInt(it.rgb) }
-                ?: DEFAULTS.backgroundColor,
             textX = getValue(colors, Team::textX) ?: DEFAULTS.textX,
             textY = getValue(colors, Team::textY) ?: DEFAULTS.textY,
             textColor = getValue(colors, Team::textColor)
