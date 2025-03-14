@@ -118,6 +118,8 @@
     "minecraft:tall_grass",
     "minecraft:tipped_arrow",
     "minecraft:farmland",
-    "minecraft:frogspawn"
+    "minecraft:frogspawn",
+    "minecraft:test_block",
+    "minecraft:test_instance_block"
   ]
 }
