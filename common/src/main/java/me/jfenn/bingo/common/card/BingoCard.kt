@@ -8,8 +8,8 @@ import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamScore
-import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.utils.UuidAsString
 import java.util.*
 import kotlin.random.Random
 

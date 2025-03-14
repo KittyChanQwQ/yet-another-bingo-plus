@@ -11,12 +11,12 @@ import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.BlockPositionType
 import me.jfenn.bingo.common.utils.FormattingSerializer
-import me.jfenn.bingo.common.utils.PlayerProfileType
-import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.player.PlayerProfile
+import me.jfenn.bingo.platform.utils.UuidAsString
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
@@ -50,7 +50,7 @@ data class BingoTeam(
     var chestSpawnpoint: BlockPositionType? = null,
     val chatCoordinates: MutableList<CoordsCommand.CoordinatesEntry> = mutableListOf(),
     var map: BingoMap? = null,
-    val players: MutableSet<PlayerProfileType> = mutableSetOf(),
+    val players: MutableSet<PlayerProfile> = mutableSetOf(),
 ) {
 
     @Transient

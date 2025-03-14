@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.tierlist.TierLabel
-import me.jfenn.bingo.common.utils.UuidAsString
+import me.jfenn.bingo.platform.utils.UuidAsString
 import java.util.*
 
 @Serializable

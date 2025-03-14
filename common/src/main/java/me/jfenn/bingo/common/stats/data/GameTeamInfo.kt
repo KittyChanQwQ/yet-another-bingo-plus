@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.stats.data
 
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.utils.UuidAsString
+import me.jfenn.bingo.platform.utils.UuidAsString
 import me.jfenn.bingo.stats.sql.GameTeam
 import java.util.*
 

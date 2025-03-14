@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.utils
+package me.jfenn.bingo.platform.utils
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable

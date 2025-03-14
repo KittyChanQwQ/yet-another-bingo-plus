@@ -16,13 +16,13 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.BlockPositionType
-import me.jfenn.bingo.common.utils.UuidAsString
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.utils.UuidAsString
 import net.minecraft.util.Formatting
 import java.util.*
 import kotlin.time.Duration

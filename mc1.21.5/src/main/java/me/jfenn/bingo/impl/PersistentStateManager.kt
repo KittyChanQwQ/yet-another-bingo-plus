@@ -1,15 +1,11 @@
 package me.jfenn.bingo.impl
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.mojang.serialization.JsonOps
+import com.mojang.serialization.Codec
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.platform.IJsonSerializers
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.IPersistentStateType
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.NbtOps
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.PersistentState
 import net.minecraft.world.PersistentStateType
@@ -22,7 +18,6 @@ class PersistentStateManager(
     private val serializers: IJsonSerializers,
 ) : IPersistentStateManager {
     private var persistentStateTypes = ConcurrentHashMap<String, PersistentStateTypeImpl<*>>()
-    private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
 
     override fun <T : Any> register(id: String, kType: KType, default: () -> T): IPersistentStateType<T> {
         val type = persistentStateTypes.getOrPut(id) {
@@ -35,20 +30,18 @@ class PersistentStateManager(
                     logger.info("[PersistentStateManager] Creating default $id state...")
                     PersistentStateImpl(default())
                 },
-                NbtCompound.CODEC.xmap(
-                    { nbt ->
+                Codec.STRING.xmap(
+                    { jsonString ->
                         logger.debug("[PersistentStateManager] Decoding $id...")
-                        val jsonElement = NbtOps.INSTANCE.convertTo(JsonOps.INSTANCE, nbt)
-                        val jsonString = gson.toJson(jsonElement)
+                        logger.debug(jsonString)
                         val value = serializers.json.decodeFromString(serializer, jsonString)
                         PersistentStateImpl(value)
                     },
                     {
                         logger.debug("[PersistentStateManager] Encoding $id...")
                         val jsonString = serializers.json.encodeToString(serializer, it.value)
-                        val jsonElement = gson.fromJson(jsonString, com.google.gson.JsonElement::class.java)
-                        val nbtElement = JsonOps.INSTANCE.convertTo(NbtOps.INSTANCE, jsonElement)
-                        nbtElement as NbtCompound
+                        logger.debug(jsonString)
+                        jsonString
                     }
                 ),
                 null,

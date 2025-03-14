@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.spawn
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.utils.UuidAsString
+import me.jfenn.bingo.platform.utils.UuidAsString
 
 @Serializable
 data class PlayerState(
