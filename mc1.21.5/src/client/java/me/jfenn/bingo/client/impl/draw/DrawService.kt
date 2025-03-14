@@ -18,7 +18,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 import org.joml.Matrix4f
 import org.joml.Vector2i
-import org.slf4j.LoggerFactory
 
 class DrawService(
     override val context: DrawContext,
@@ -40,8 +39,6 @@ class DrawService(
         }
 
     companion object : IDrawServiceFactory {
-        private val log = LoggerFactory.getLogger("bingo")
-
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
 
         private val bufferBuilderStorage by lazy {
@@ -54,7 +51,7 @@ class DrawService(
             val context = DrawContext(client, bufferBuilderStorage.entityVertexConsumers)
 
             return FramebufferImpl(
-                buffer, DrawService(context), log
+                buffer, DrawService(context)
             )
         }
     }

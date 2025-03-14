@@ -5,8 +5,8 @@ import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.texture.AbstractTexture
 
 class FramebufferTexture(private val fb: SimpleFramebuffer) : AbstractTexture() {
-    override fun method_68004(): GpuTexture? { // getGlTexture
-        return fb.method_30277() // fb.colorAttachment
+    override fun getGlTexture(): GpuTexture {
+        return fb.colorAttachment ?: throw IllegalStateException("Color attachment is null!")
     }
 
     override fun setFilter(bilinear: Boolean, mipmap: Boolean) {

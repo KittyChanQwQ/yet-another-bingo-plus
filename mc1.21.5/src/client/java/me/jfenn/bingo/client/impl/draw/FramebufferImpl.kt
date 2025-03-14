@@ -14,13 +14,11 @@ import net.minecraft.client.render.DiffuseLighting
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
 import org.joml.Matrix4f
-import org.slf4j.Logger
 import java.util.*
 
 class FramebufferImpl(
     private val fb: SimpleFramebuffer,
     private val service: DrawService,
-    private val log: Logger,
 ) : IFramebuffer {
 
     private val client = MinecraftClient.getInstance()
@@ -49,9 +47,9 @@ class FramebufferImpl(
         context.draw()
 
         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(
-            fb.method_30277(), // fb.colorAttachment
+            fb.colorAttachment,
             0,
-            fb.method_30278(), // fb.depthAttachment
+            fb.depthAttachment,
             1.0
         )
 
