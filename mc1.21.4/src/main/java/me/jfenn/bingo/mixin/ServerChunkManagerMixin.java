@@ -17,7 +17,7 @@ public class ServerChunkManagerMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "save(Z)V", cancellable = true)
     public void save(boolean flush, CallbackInfo ci) {
-        if (ServerChunkManagerMixinHelper.INSTANCE.getShouldCancelSaving()) {
+        if (ServerChunkManagerMixinHelper.getShouldCancelSaving()) {
             logger.debug("Skipping chunk manager save() call, because Yet Another Bingo will discard the save data.");
             ci.cancel();
         }

@@ -20,6 +20,7 @@
     "ServerChunkManagerMixin",
     "ServerEntityManagerMixin",
     "ServerPlayNetworkHandlerMixin",
+    "ServerRecipeBookMixin",
     "ThreadExecutorAccessor"
   ],
   "client": [],

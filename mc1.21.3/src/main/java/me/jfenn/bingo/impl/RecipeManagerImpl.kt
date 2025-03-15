@@ -1,5 +1,6 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.mixinhelper.ServerRecipeBookMixinHelper
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IRecipe
 import me.jfenn.bingo.platform.IRecipeManager
@@ -21,7 +22,13 @@ class RecipeManagerImpl(
             .map { it.recipe }
 
         val playerEntity: ServerPlayerEntity = player.player
-        playerEntity.unlockRecipes(recipeEntries)
+
+        try {
+            ServerRecipeBookMixinHelper.hideRecipeNotifications = true
+            playerEntity.unlockRecipes(recipeEntries)
+        } finally {
+            ServerRecipeBookMixinHelper.hideRecipeNotifications = false
+        }
     }
 }
 
