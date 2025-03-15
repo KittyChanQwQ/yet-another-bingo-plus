@@ -50,11 +50,6 @@ internal class ResetService(
         teamService.clearTeams()
         scoreboardService.clearScoreboards()
         bossBarService.clearBossBars()
-        recipeManager.listRecipes().let { recipes ->
-            playerManager.getPlayers().forEach {
-                recipeManager.lockRecipes(it, recipes)
-            }
-        }
         state.reset()
 
         log.info("[Reset] Recreating worlds")

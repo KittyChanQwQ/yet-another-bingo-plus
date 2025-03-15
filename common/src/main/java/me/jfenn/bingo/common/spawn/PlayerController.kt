@@ -40,6 +40,7 @@ internal class PlayerController(
     private val options: BingoOptions,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
+    private val statManager: IStatManager,
     private val cardViewService: CardViewService,
     private val mapItemService: MapItemService,
     private val elytraService: ElytraService,
@@ -178,8 +179,16 @@ internal class PlayerController(
             }
 
         // unlock all crafting recipes, if set
-        if (state.state == GameState.PLAYING && options.isUnlockRecipes)
-            recipeManager.unlockRecipes(player, recipeManager.listRecipes())
+        if (state.state == GameState.PLAYING) {
+            if (options.isUnlockRecipes) {
+                recipeManager.unlockRecipes(player, recipeManager.listRecipes())
+            } else {
+                recipeManager.lockRecipes(player, recipeManager.listRecipes())
+            }
+        }
+
+        // reset statistics
+        statManager.list().forEach { it.reset(player) }
 
         // reset advancements state
         advancementManager.clearAdvancements(player.player)
