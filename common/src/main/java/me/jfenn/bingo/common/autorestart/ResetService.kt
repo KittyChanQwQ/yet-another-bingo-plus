@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IRecipeManager
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.GameResetEvent
@@ -22,6 +23,7 @@ internal class ResetService(
     private val eventBus: IEventBus,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
+    private val recipeManager: IRecipeManager,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
     private val scoreboardService: ScoreboardService,
@@ -48,6 +50,11 @@ internal class ResetService(
         teamService.clearTeams()
         scoreboardService.clearScoreboards()
         bossBarService.clearBossBars()
+        recipeManager.listRecipes().let { recipes ->
+            playerManager.getPlayers().forEach {
+                recipeManager.lockRecipes(it, recipes)
+            }
+        }
         state.reset()
 
         log.info("[Reset] Recreating worlds")

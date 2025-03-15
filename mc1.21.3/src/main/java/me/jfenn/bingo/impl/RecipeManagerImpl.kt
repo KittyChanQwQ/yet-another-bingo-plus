@@ -16,6 +16,15 @@ class RecipeManagerImpl(
             .map { RecipeImpl(it) }
     }
 
+    override fun lockRecipes(player: IPlayerHandle, recipes: List<IRecipe>) {
+        val recipeEntries = recipes
+            .filterIsInstance<RecipeImpl>()
+            .map { it.recipe }
+
+        val playerEntity: ServerPlayerEntity = player.player
+        playerEntity.lockRecipes(recipeEntries)
+    }
+
     override fun unlockRecipes(player: IPlayerHandle, recipes: List<IRecipe>) {
         val recipeEntries = recipes
             .filterIsInstance<RecipeImpl>()
