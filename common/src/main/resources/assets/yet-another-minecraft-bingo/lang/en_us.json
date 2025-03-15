@@ -54,6 +54,7 @@
   "bingo.command.stats.reset.all": "All high scores (best time, max win streak) on this server have been cleared.",
   "bingo.command.stats.reset.game": "High scores (best time) for the current game configuration have been cleared.",
   "bingo.command.stats.reset.player": "High scores (max win streak) for player %s have been cleared.",
+  "bingo.command.teammsg.spectators": "Spectators",
   "bingo.config.card_alignment": "Card Alignment",
   "bingo.config.card_alignment.bottom_left": "Bottom Left",
   "bingo.config.card_alignment.bottom_right": "Bottom Right",

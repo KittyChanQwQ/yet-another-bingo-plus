@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.card.tag.ObjectiveTagProvider
 import me.jfenn.bingo.common.card.tag.TagService
 import me.jfenn.bingo.common.card.tag.TierListTagProvider
 import me.jfenn.bingo.common.chat.ChatCommand
+import me.jfenn.bingo.common.chat.ChatMessageController
 import me.jfenn.bingo.common.chat.ChatMessageService
 import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.commands.*
@@ -271,6 +272,7 @@ val commonModule = module {
         scopedOf(::ReadyController)
 
         scopedOf(::ChatMessageService)
+        scopedOf(::ChatMessageController)
 
         scopedOf(::MapItemService)
         scopedOf(::MapRenderService)
@@ -388,6 +390,7 @@ fun Scope.commonInit() {
     get<NightVisionController>()
     get<PlayerSettingsController>()
     get<PlayerSpectatorController>()
+    get<ChatMessageController>()
     get<ReadyController>()
     get<ScoreboardController>()
 
