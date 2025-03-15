@@ -241,7 +241,7 @@ internal class BingoHudController(
                     .also { tooltipPacket.clientWrappedText = it }
         }
         val tooltipStartedAt = state.tooltipStartedAt ?: Instant.DISTANT_PAST
-        if (tooltipText != null) {
+        if (tooltipText != null && MinecraftClient.getInstance().currentScreen == null) {
             val tooltipSize = tooltipText.maxOfOrNull { drawService.font.getTextWidth(it) } ?: 0
             val tooltipX = context.scaledWindowWidth/2 - tooltipSize/2 - 12
             val tooltipY = (context.scaledWindowHeight * 0.5).toInt() + 18 + 12
