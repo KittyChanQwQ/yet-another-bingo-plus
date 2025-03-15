@@ -12,6 +12,7 @@
     "MinecraftServerAccessor",
     "MinecraftServerSkipStartRegionMixin",
     "MinecraftServerUnsafeSkipCloseMixin",
+    "PlayerAdvancementTrackerPreventSpectatorsMixin",
     "PlayerEntityMixin",
     "PlayerManagerMixin",
     "ServerBossBarMixin",
