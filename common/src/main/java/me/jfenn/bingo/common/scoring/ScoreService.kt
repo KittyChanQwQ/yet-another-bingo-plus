@@ -156,7 +156,7 @@ internal object ScoreService {
 
     fun getLeadingByCards(state: BingoState, allowTies: Boolean = false): BingoTeam? {
         var max: BingoTeam? = null
-        var maxCards = 0
+        var maxCards = -1
         for (team in state.getRegisteredTeams()) {
             val teamCards = team.score.cards
 
@@ -184,7 +184,7 @@ internal object ScoreService {
             return null
 
         var max: BingoTeam? = null
-        var maxLines = 0
+        var maxLines = -1
         for (team in leadingTeams) {
             val teamLines = team.score.lines
 
@@ -216,7 +216,7 @@ internal object ScoreService {
         }
 
         var max: BingoTeam? = null
-        var maxItems = 0
+        var maxItems = -1
         for (team in leadingTeams) {
             val teamItems = team.score.items
 

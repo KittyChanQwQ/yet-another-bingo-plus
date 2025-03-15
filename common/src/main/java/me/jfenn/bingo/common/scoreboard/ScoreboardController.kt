@@ -134,7 +134,7 @@ internal class ScoreboardController(
                         else -> leadingTeam.score
                     }
 
-                    val showLeadingScore = (options.showCompletedItems || options.showCompletedLines) && isMultipleTeams && team != leadingTeam
+                    val showLeadingScore = (options.showCompletedItems || options.showCompletedLines) && team != leadingTeam
                     val showLeadingScoreCards = isMultiCardWinCondition && leadingTeamScore.cards != team?.score?.cards
 
                     leadingTeamScore
