@@ -577,17 +577,6 @@ internal class ScoredItemCheck(
             }
         }
 
-        events.onEnter(GameState.POSTGAME) {
-            // Mark all goals as "seen" when game ends
-            // (if hidden items is true, players should see all items after the game)
-            val teamKeys = state.teams.keys
-            for (card in state.cards) {
-                for (goal in card.objectives.values) {
-                    goal.teamsSeen = teamKeys.toMutableSet()
-                }
-            }
-        }
-
         events.onChangeTeam { (player) ->
             // Remove any of the player's held/scored items from the card
             for (card in state.cards) {

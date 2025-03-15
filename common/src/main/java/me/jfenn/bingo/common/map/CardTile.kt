@@ -414,7 +414,7 @@ data class CardTile(
         override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_tile_v6")!!
 
         override fun fromPacketBuf(buf: IPacketBuf): CardTile {
-            val id = buf.readString()
+            val id = buf.readString().takeIf { it.isNotEmpty() }
             val image = CardTileImage.V1.fromPacketBuf(buf)
             val imageList = buf.readList { CardTileImage.V1.fromPacketBuf(buf) }
             val action = CardTileAction.V1.fromPacketBuf(buf)

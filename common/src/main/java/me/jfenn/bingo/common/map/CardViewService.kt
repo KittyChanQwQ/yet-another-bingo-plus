@@ -206,7 +206,12 @@ internal class CardViewService(
         val actualObjective = actualCard?.objectives?.get(objective.id)
 
         val isFreeSpace = objective is BingoObjective.FreeSpace
-        val isHidden = card.options.isHiddenItemsMode && (team == null || !objective.hasSeen(team.key)) && !isFreeSpace
+        val isHidden = card.options.isHiddenItemsMode &&
+                (team == null || !objective.hasSeen(team.key)) &&
+                !isFreeSpace &&
+                // If the team has won or the state is POSTGAME, tiles are no longer hidden
+                state.state != GameState.POSTGAME &&
+                team?.isWinner() != true
         val isLocked =
             card.options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key)
         val isAchieved = team != null && objective.hasAchieved(team.key)
@@ -253,7 +258,7 @@ internal class CardViewService(
         val isFlashing = objective.isFlashing(team?.key, FLASHING_DURATION)
 
         return CardTile(
-            id = objective.id,
+            id = objective.id.takeIf { !isHidden },
             image = image,
             imageList = imageList,
             action = action.takeIf { !isHidden } ?: CardTileAction.None,
