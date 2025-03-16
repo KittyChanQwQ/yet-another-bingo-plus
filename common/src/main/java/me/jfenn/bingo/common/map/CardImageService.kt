@@ -46,7 +46,7 @@ internal class CardImageService(
 
     fun sendNecessaryImages() {
         val images = state.cards
-            .flatMap { card -> card.entries.mapNotNull { it.display.image } }
+            .flatMap { card -> card.objectives.values.mapNotNull { it.display.image } }
             .toSet()
 
         val players = playerManager.getPlayers()
