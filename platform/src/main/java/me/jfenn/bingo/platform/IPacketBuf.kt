@@ -1,7 +1,9 @@
 package me.jfenn.bingo.platform
 
+import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
+import java.util.*
 
 interface IPacketBuf {
     fun writeString(str: String)
@@ -46,4 +48,31 @@ interface IPacketBuf {
     fun <T> readList(callback: () -> T): List<T> {
         return List(readInt()) { callback() }
     }
+
+    fun writeInstant(value: Instant) {
+        writeLong(value.toEpochMilliseconds())
+    }
+
+    fun readInstant(): Instant {
+        return Instant.fromEpochMilliseconds(readLong())
+    }
+
+    fun writeUUID(value: UUID) {
+        writeLong(value.mostSignificantBits)
+        writeLong(value.leastSignificantBits)
+    }
+
+    fun readUUID(): UUID {
+        return UUID(readLong(), readLong())
+    }
+
+    fun <T: Enum<T>> writeEnum(value: T) {
+        writeInt(value.ordinal)
+    }
+}
+
+inline fun <reified T: Enum<T>> IPacketBuf.readEnum(): T {
+    val ordinal = readInt()
+    val values = enumValues<T>()
+    return values.getOrElse(ordinal) { values.first() }
 }

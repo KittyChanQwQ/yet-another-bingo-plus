@@ -29,6 +29,7 @@ import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.ready.SetReadyPacket
 import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.common.scoring.GameMessagePacket
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
@@ -293,17 +294,28 @@ internal class BingoHudController(
         }
     }
 
-    private fun onScoreMessage(packet: ClientPacket<ScoreMessagePacket>) {
-        if (!packet.packet.isViewerOnTeam && !config.client.messageFromOtherTeams)
-            return
-
+    private fun onMessagePacket(packet: GameMessagePacket) {
         val scoreMessage = BingoHudState.ScoreMessage(
             createdAt = Clock.System.now(),
-            packet = packet.packet,
+            packet = packet,
         )
 
-        state.messages.add(scoreMessage)
+        if (!packet.isUpdate) {
+            state.messages.add(scoreMessage)
+        }
+
+        state.pastMessages.removeIf { it.packet.id == packet.id }
         state.pastMessages.add(scoreMessage)
+    }
+
+    private fun onScoreMessage(packet: ClientPacket<ScoreMessagePacket>) {
+        if (packet.packet.isViewerOnTeam || config.client.messageFromOtherTeams) {
+            onMessagePacket(packet.packet.toGameMessagePacket())
+        }
+    }
+
+    private fun onGameMessage(packet: ClientPacket<GameMessagePacket>) {
+        onMessagePacket(packet.packet)
     }
 
     @Suppress("Deprecation")
@@ -460,6 +472,12 @@ internal class BingoHudController(
         eventBus.register(packetEvents.scoreMessageV1, ::onScoreMessage)
         eventBus.register(packetEvents.scoreMessageV2, ::onScoreMessage)
         eventBus.register(packetEvents.scoreMessageV3, ::onScoreMessage)
+
+        eventBus.register(packetEvents.gameMessageV1, ::onGameMessage)
+        eventBus.register(packetEvents.gameMessageClearV1) {
+            state.messages.clear()
+            state.pastMessages.clear()
+        }
 
         eventBus.register(packetEvents.gameOverV1, ::onGameOver)
         eventBus.register(packetEvents.gameOverV2, ::onGameOver)

@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.menu.MenuPage
 import me.jfenn.bingo.common.menu.MenuState
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.BingoWinCondition
+import me.jfenn.bingo.common.scoring.GameMessage
 import me.jfenn.bingo.common.spawn.PlayerState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -46,6 +47,7 @@ data class BingoState(
     // This is a temporary list that should be overwritten by `CardService.generate()`
     val cards: MutableList<BingoCard> = mutableListOf(),
     var gameOverInfo: GameOverService.GameOverInfo? = null,
+    var gameMessages: MutableList<GameMessage> = mutableListOf(),
     /**
      * Stores a set of recently-joined player UUIDs for PlayerController
      */
@@ -253,6 +255,7 @@ data class BingoState(
         // [ScoredItemCheck] calls createInitialCards when entering PREGAME, so this card should be immediately replaced
         cards.clear()
         gameOverInfo = null
+        gameMessages.clear()
         isForfeit = false
         menu.page = MenuPage.ROOT
     }

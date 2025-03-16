@@ -8,7 +8,7 @@ import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
-import me.jfenn.bingo.common.scoring.ScoreMessagePacket
+import me.jfenn.bingo.common.scoring.GameMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import java.util.concurrent.ConcurrentHashMap
 
@@ -56,7 +56,7 @@ internal class BingoHudState(
 
     data class ScoreMessage(
         val createdAt: Instant,
-        val packet: ScoreMessagePacket,
+        val packet: GameMessagePacket,
         val messageLines: List<IText> = listOf(packet.message),
         val height: Int = BingoMessageRenderer.ITEM_HEIGHT,
     )

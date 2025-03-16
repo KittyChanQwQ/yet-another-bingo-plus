@@ -4,6 +4,7 @@ import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardTileImage
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.player.PlayerProfile
@@ -22,6 +23,40 @@ data class ScoreMessagePacket(
         LINE_SCORED,
         ITEM_SCORED,
         CARD_COMPLETED,
+    }
+
+    companion object {
+        fun fromGameMessage(gameMessagePacket: GameMessagePacket, isViewerOnTeam: Boolean): ScoreMessagePacket {
+            return ScoreMessagePacket(
+                player = null,
+                isViewerOnTeam = isViewerOnTeam,
+                tile = CardTile(
+                    image = CardTileImage(
+                        item = (gameMessagePacket.icon as? GameMessagePacket.MessageIcon.Item)?.item,
+                        texture = (gameMessagePacket.icon as? GameMessagePacket.MessageIcon.Texture)?.texture,
+                    ),
+                    decoration = gameMessagePacket.decoration,
+                ),
+                messageType = gameMessagePacket.messageType,
+                message = gameMessagePacket.message,
+            )
+        }
+    }
+
+    fun toGameMessagePacket(): GameMessagePacket {
+        return GameMessagePacket(
+            id = UUID.randomUUID(),
+            team = BingoTeamKey(""),
+            icon = tile?.image?.texture
+                ?.let { GameMessagePacket.MessageIcon.Texture(it) }
+                ?: tile?.image?.item
+                    ?.let { item ->
+                        GameMessagePacket.MessageIcon.Item(item, tile.imageList.mapNotNull { it.item })
+                    },
+            decoration = tile?.decoration,
+            messageType = messageType ?: MessageType.ITEM_SCORED,
+            message = message,
+        )
     }
 
     object V1 : PacketConverter<ScoreMessagePacket> {

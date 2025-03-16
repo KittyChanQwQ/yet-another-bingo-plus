@@ -47,7 +47,7 @@ internal class ScoredItemCheck(
     private val playerManager: IPlayerManager,
     private val text: TextProvider,
     private val permission: IPermissionsApi,
-    private val events: ScopedEvents,
+    events: ScopedEvents,
     private val eventBus: IEventBus,
 ) : BingoComponent() {
 

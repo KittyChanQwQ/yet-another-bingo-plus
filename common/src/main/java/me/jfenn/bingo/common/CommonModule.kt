@@ -53,6 +53,8 @@ import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.scoreboard.ScoreboardController
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
+import me.jfenn.bingo.common.scoring.GameMessageController
+import me.jfenn.bingo.common.scoring.GameMessageService
 import me.jfenn.bingo.common.scoring.ScoreUpdateService
 import me.jfenn.bingo.common.scoring.ScoredItemCheck
 import me.jfenn.bingo.common.spawn.*
@@ -280,6 +282,9 @@ val commonModule = module {
         scopedOf(::CardImageService)
         scopedOf(::ScoreboardService)
 
+        scopedOf(::GameMessageService)
+        scopedOf(::GameMessageController)
+
         scopedOf(::ScoredItemCheck)
         scopedOf(::ScoreUpdateService)
 
@@ -394,6 +399,7 @@ fun Scope.commonInit() {
     get<ReadyController>()
     get<ScoreboardController>()
 
+    get<GameMessageController>()
     get<GameOverController>()
 
     get<LobbyModeController>()

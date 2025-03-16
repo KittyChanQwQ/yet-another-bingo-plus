@@ -6,10 +6,7 @@ import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.ready.SetReadyPacket
-import me.jfenn.bingo.common.scoring.CardCompletedPacket
-import me.jfenn.bingo.common.scoring.ScoreMessagePacket
-import me.jfenn.bingo.common.scoring.ScoredItemLostPacket
-import me.jfenn.bingo.common.scoring.ScoredItemPacket
+import me.jfenn.bingo.common.scoring.*
 import me.jfenn.bingo.common.stats.packets.StatsCheckPacket
 import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
@@ -50,6 +47,8 @@ internal class ServerPacketEvents(
     val scoreMessageV1 = serverNetworking.registerS2C(ScoreMessagePacket.V1)
     val scoreMessageV2 = serverNetworking.registerS2C(ScoreMessagePacket.V2)
     val scoreMessageV3 = serverNetworking.registerS2C(ScoreMessagePacket.V3)
+    val gameMessageV1 = serverNetworking.registerS2C(GameMessagePacket.V1)
+    val gameMessageClearV1 = serverNetworking.registerS2C(GameMessageClearPacket.V1)
     val timerV1 = serverNetworking.registerS2C(TimerPacket.V1)
     val countdownV1 = serverNetworking.registerS2C(CountdownPacket.V1)
     val tooltipV1 = serverNetworking.registerS2C(TooltipPacket.V1)
