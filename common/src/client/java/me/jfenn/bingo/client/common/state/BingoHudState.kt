@@ -29,7 +29,6 @@ internal class BingoHudState(
 ) {
     fun reset() {
         selectedTeam = null
-        gameStatus = GameStatusPacket.DEFAULT
         gameOver = null
         messages.clear()
         pastMessages.clear()
@@ -40,6 +39,7 @@ internal class BingoHudState(
 
     fun resetAll() {
         reset()
+        gameStatus = GameStatusPacket.DEFAULT
         cards.values.forEach { it.close() }
         cards = mutableMapOf()
 

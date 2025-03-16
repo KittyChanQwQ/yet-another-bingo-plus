@@ -29,7 +29,7 @@ class Interpolate(
         }
     }
 
-    fun isDone() = progress() > 0.99f
+    fun isDone() = progress() > 0.9999f
 
     fun get(
         easing: Easing = Easing.LINEAR,
@@ -37,5 +37,12 @@ class Interpolate(
     ): Float {
         val progress = progress(easing, now)
         return (from * (1f - progress)) + (to * progress)
+    }
+
+    private var isFinished = false
+    fun update(): Boolean {
+        val ret = !isFinished
+        isFinished = isDone()
+        return ret
     }
 }

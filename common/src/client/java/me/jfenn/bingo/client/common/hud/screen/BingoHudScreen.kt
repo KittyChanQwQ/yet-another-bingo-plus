@@ -196,7 +196,7 @@ internal class BingoHudScreen(
     }
 
     override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
-        if (state.now - sidebarOffsetInterpolate.startedAt < sidebarOffsetInterpolate.duration + 50.milliseconds) {
+        if (sidebarOffsetInterpolate.update()) {
             updatePositions()
         }
 
