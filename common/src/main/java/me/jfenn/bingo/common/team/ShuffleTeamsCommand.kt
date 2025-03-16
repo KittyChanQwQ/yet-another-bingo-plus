@@ -20,7 +20,7 @@ class ShuffleTeamsCommand(
                     hasState(GameState.PREGAME) && hasPermission(Permission.CONFIGURE_GAME)
                 }
 
-                integer("teams", min = 1) { teamsArg ->
+                integer("num_teams", min = 1) { teamsArg ->
                     executes {
                         scope.get<TeamService>().shuffleTeams(getArgument(teamsArg))
                         sendFeedback(text.string(StringKey.CommandShuffleteamsSuccess))
