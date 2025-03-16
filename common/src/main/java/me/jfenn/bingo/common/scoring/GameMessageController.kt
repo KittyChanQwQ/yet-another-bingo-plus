@@ -18,15 +18,18 @@ internal class GameMessageController(
     eventBus: IEventBus
 ) {
     private fun scheduleResendMessages(player: IPlayerHandle) {
-        for (message in state.gameMessages) {
-            if (gameMessageService.isEnabled(player, message)) {
+        state.gameMessages
+            .filter { gameMessageService.isEnabled(player, it) }
+            .chunked(16)
+            .forEach { messages ->
                 serverTaskExecutor.execute {
-                    gameMessageService.createMessagePacket(player, message)
-                        ?.copy(isUpdate = true)
-                        ?.let { gameMessageService.sendMessagePacket(player, it) }
+                    for (message in messages) {
+                        gameMessageService.createMessagePacket(player, message)
+                            ?.copy(isUpdate = true)
+                            ?.let { gameMessageService.sendMessagePacket(player, it) }
+                    }
                 }
             }
-        }
     }
 
     init {
