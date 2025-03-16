@@ -74,8 +74,8 @@ internal class BingoHudScreen(
     val height by helper::height
 
     private val sidebarOffsetInterpolate = Interpolate(
-        from = 1f,
-        to = 0f,
+        from = 0f,
+        to = 1f,
         duration = 150.milliseconds,
     )
     private var sidebarWidth = 0
@@ -125,7 +125,7 @@ internal class BingoHudScreen(
     private val sidebarDrawable = object : IDrawable {
         override fun render(drawService: IDrawService) {
             drawService.matrices.push()
-            drawService.matrices.translate(sidebarOffsetInterpolate.get(Interpolate.Easing.IN_OUT) * sidebarWidth, 0f, 0f)
+            drawService.matrices.translate((1f-sidebarOffsetInterpolate.get(Interpolate.Easing.IN_OUT)) * sidebarWidth, 0f, 0f)
 
             // Ensure that the texture is rendered with an even width
             val evenOffset = if (sidebarWidth % 2 == 0) 0 else 1
@@ -196,6 +196,10 @@ internal class BingoHudScreen(
     }
 
     override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
+        if (state.now - sidebarOffsetInterpolate.startedAt < sidebarOffsetInterpolate.duration + 50.milliseconds) {
+            updatePositions()
+        }
+
         cardsWidget.views = state.cards.values
     }
 

@@ -6,6 +6,7 @@ import me.jfenn.bingo.client.common.hud.BingoMessageRenderer
 import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.game.GameOverPacket
+import me.jfenn.bingo.common.game.GameStatusPacket
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.scoring.GameMessagePacket
@@ -16,6 +17,7 @@ internal class BingoHudState(
     var now: Instant = Instant.DISTANT_PAST,
     var cards: MutableMap<BingoTeamKey?, ClientCardBase> = mutableMapOf(),
     var selectedTeam: BingoTeamKey? = null,
+    var gameStatus: GameStatusPacket = GameStatusPacket.DEFAULT,
     var gameOver: GameOver? = null,
     val messages: MutableList<ScoreMessage> = mutableListOf(),
     val pastMessages: MutableList<ScoreMessage> = mutableListOf(),
@@ -27,6 +29,7 @@ internal class BingoHudState(
 ) {
     fun reset() {
         selectedTeam = null
+        gameStatus = GameStatusPacket.DEFAULT
         gameOver = null
         messages.clear()
         pastMessages.clear()

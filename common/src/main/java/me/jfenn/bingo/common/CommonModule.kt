@@ -282,6 +282,7 @@ val commonModule = module {
         scopedOf(::CardImageService)
         scopedOf(::ScoreboardService)
 
+        scopedOf(::GameStatusController)
         scopedOf(::GameMessageService)
         scopedOf(::GameMessageController)
 
@@ -399,6 +400,7 @@ fun Scope.commonInit() {
     get<ReadyController>()
     get<ScoreboardController>()
 
+    get<GameStatusController>()
     get<GameMessageController>()
     get<GameOverController>()
 

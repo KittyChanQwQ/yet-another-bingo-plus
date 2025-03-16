@@ -96,6 +96,7 @@
   "bingo.game.announce.starting": "Game is starting!",
   "bingo.game.card_count": "%s cards",
   "bingo.game.card_single": "1 card",
+  "bingo.game.waiting_to_start": "Waiting to start...",
   "bingo.game.end.completed_card": "%s completed their card!",
   "bingo.game.end.completed_card_by_stalemate": "%s won by stalemate.",
   "bingo.game.end.draw": "The game is a draw!",

@@ -484,10 +484,15 @@ internal class BingoHudController(
         eventBus.register(packetEvents.scoreMessageV2, ::onScoreMessage)
         eventBus.register(packetEvents.scoreMessageV3, ::onScoreMessage)
 
+        eventBus.register(packetEvents.gameStatusV1) {
+            state.gameStatus = it.packet
+            eventBus.emit(HudStateChangedEvent, Unit)
+        }
         eventBus.register(packetEvents.gameMessageV1, ::onGameMessage)
         eventBus.register(packetEvents.gameMessageClearV1) {
             state.messages.clear()
             state.pastMessages.clear()
+            eventBus.emit(HudStateChangedEvent, Unit)
         }
 
         eventBus.register(packetEvents.gameOverV1, ::onGameOver)

@@ -3,6 +3,7 @@ package me.jfenn.bingo.client.common.packet
 import me.jfenn.bingo.client.platform.IClientNetworking
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.game.GameOverPacket
+import me.jfenn.bingo.common.game.GameStatusPacket
 import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
@@ -47,6 +48,7 @@ internal class ClientPacketEvents(
     val scoreMessageV1 = clientNetworking.registerS2C(ScoreMessagePacket.V1)
     val scoreMessageV2 = clientNetworking.registerS2C(ScoreMessagePacket.V2)
     val scoreMessageV3 = clientNetworking.registerS2C(ScoreMessagePacket.V3)
+    val gameStatusV1 = clientNetworking.registerS2C(GameStatusPacket.V1)
     val gameMessageV1 = clientNetworking.registerS2C(GameMessagePacket.V1)
     val gameMessageClearV1 = clientNetworking.registerS2C(GameMessageClearPacket.V1)
     val timerV1 = clientNetworking.registerS2C(TimerPacket.V1)
