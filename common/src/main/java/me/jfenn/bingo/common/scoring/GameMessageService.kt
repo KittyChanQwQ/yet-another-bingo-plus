@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
@@ -53,7 +54,7 @@ internal class GameMessageService(
 
         val isOnTeamOrSpectator = team.includesPlayer(player) || !teamService.isPlaying(player)
         // if playing in hidden items mode, don't reveal the item to the other teams!
-        val isItemHidden = card.options.isHiddenItemsMode && !isOnTeamOrSpectator
+        val isItemHidden = card.options.isHiddenItemsMode && !isOnTeamOrSpectator && state.state != GameState.POSTGAME
         val itemText = when {
             isItemHidden -> text.literal("*****").formatted(Formatting.OBFUSCATED)
             else -> message.itemName

@@ -10,6 +10,7 @@ import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.util.Identifier
 import java.util.*
+import kotlin.time.Duration
 
 data class ScoreMessagePacket(
     val player: PlayerProfile?,
@@ -44,6 +45,7 @@ data class ScoreMessagePacket(
     fun toGameMessagePacket(): GameMessagePacket {
         return GameMessagePacket(
             id = UUID.randomUUID(),
+            timeElapsed = Duration.ZERO,
             team = BingoTeamKey(""),
             image = tile?.image ?: CardTileImage.EMPTY,
             imageList = tile?.imageList.orEmpty(),

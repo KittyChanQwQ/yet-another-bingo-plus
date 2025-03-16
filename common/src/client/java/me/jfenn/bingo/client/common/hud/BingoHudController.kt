@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.common.event.ClientConfigChangedEvent
+import me.jfenn.bingo.client.common.event.HudStateChangedEvent
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardManager
 import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
@@ -61,7 +62,7 @@ internal class BingoHudController(
     private val text: TextProvider,
     keyBindingManager: IKeyBindingManager,
     packetEvents: ClientPacketEvents,
-    eventBus: IEventBus,
+    private val eventBus: IEventBus,
 ) : BingoComponent() {
 
     private val client = MinecraftClient.getInstance()
@@ -307,6 +308,8 @@ internal class BingoHudController(
         state.pastMessages.removeIf { it.packet.id == packet.id }
         state.pastMessages.add(scoreMessage)
         state.pastMessages.sortBy { it.packet.timeElapsed }
+        // Notify the screens to update, if open
+        eventBus.emit(HudStateChangedEvent, Unit)
     }
 
     private fun onScoreMessage(packet: ClientPacket<ScoreMessagePacket>) {
@@ -332,7 +335,14 @@ internal class BingoHudController(
 
     private fun onReadyUpdate(clientPacket: ClientPacket<ReadyUpdatePacket>) {
         val packet = clientPacket.packet
+        val isStateChanged = state.ready?.canSendReady != packet.canSendReady ||
+                state.ready?.isReady != packet.isReady ||
+                state.ready?.isRunning != packet.isRunning
+
         state.ready = packet
+        if (isStateChanged) {
+            eventBus.emit(HudStateChangedEvent, Unit)
+        }
     }
 
     private fun onCardDisplay(displays: Map<BingoTeamKey?, CardDisplay>) {

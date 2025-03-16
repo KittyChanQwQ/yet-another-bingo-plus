@@ -48,6 +48,11 @@ internal class GameMessageController(
                     gameMessageService.sendClearMessagesPacket(player)
                 }
             }
+            if (it.to == GameState.POSTGAME) {
+                for (player in playerManager.getPlayers()) {
+                    scheduleResendMessages(player)
+                }
+            }
         }
     }
 }

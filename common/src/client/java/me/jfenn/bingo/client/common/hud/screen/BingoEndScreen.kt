@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.common.hud.screen
 
+import me.jfenn.bingo.client.common.event.HudStateChangedEvent
 import me.jfenn.bingo.client.common.hud.BingoEndFireworkRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
@@ -22,6 +23,7 @@ import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.util.Identifier
 import org.joml.AxisAngle4f
 import org.joml.Quaternionf
@@ -48,17 +50,19 @@ internal class BingoEndScreen(
     tabsWidgetFactory: ITabsWidgetFactory = koin.get(),
     buttonFactory: IButtonFactory = koin.get(),
     private val onCloseCallback: (BingoEndScreen) -> Unit,
+    eventBus: IEventBus,
 ) : IScreen {
 
     class Factory(
         private val koin: Koin,
-        private val text: TextProvider = koin.get(),
-        private val packets: ClientPacketEvents = koin.get(),
-        private val state: BingoHudState = koin.get(),
-        private val config: BingoConfig = koin.get(),
+        private val text: TextProvider,
+        private val packets: ClientPacketEvents,
+        private val state: BingoHudState,
+        private val config: BingoConfig,
         private val scrollableWidgetFactory: IScrollableWidgetFactory,
         private val tabsWidgetFactory: ITabsWidgetFactory,
         private val screenFactory: IScreenFactory,
+        private val eventBus: IEventBus,
     ) {
         fun create(
             gameOver: BingoHudState.GameOver,
@@ -81,6 +85,7 @@ internal class BingoEndScreen(
                 scrollableWidgetFactory = scrollableWidgetFactory,
                 tabsWidgetFactory = tabsWidgetFactory,
                 onCloseCallback = onClose,
+                eventBus = eventBus,
             )
         }
     }
@@ -130,6 +135,7 @@ internal class BingoEndScreen(
         texture = "minecraft:bingo/button_game_generic",
         focusedTexture = "minecraft:bingo/button_game_generic_focused"
     ).also {
+        it.message = text.string(StringKey.CardClose)
         it.onClick {
             helper.close()
         }
@@ -141,6 +147,7 @@ internal class BingoEndScreen(
         texture = "minecraft:bingo/button_game_generic",
         focusedTexture = "minecraft:bingo/button_game_generic_focused"
     ).also {
+        it.message = text.string(StringKey.WorldKeepPlaying)
         it.onClick {
             client.player.sendCommand(GameCommands.RESUME_COMMAND)
             helper.close()
@@ -153,6 +160,7 @@ internal class BingoEndScreen(
         texture = "minecraft:bingo/button_game_continue",
         focusedTexture = "minecraft:bingo/button_game_continue_focused"
     ).also {
+        it.message = text.string(StringKey.WorldReturnToLobby)
         it.onClick {
             sendReadyForNextRound()
         }
@@ -161,7 +169,7 @@ internal class BingoEndScreen(
     private val tabsWidget = tabsWidgetFactory.create(GameOverPacket.EndScreenTab.entries.map { text.string(it.title) })
         .apply {
             currentTab = GameOverPacket.EndScreenTab.entries.indexOf(gameOver.tab)
-            onTabChanged { this@BingoEndScreen.onTabChanged() }
+            onTabChanged(::onTabChanged)
         }
 
     // If multiple teams have a duration (i.e. have completed the game), show the score list by default
@@ -169,8 +177,8 @@ internal class BingoEndScreen(
     private val isShowingTabs get() = gameOver.packet.scores.size > 1 || tab != GameOverPacket.EndScreenTab.CARDS || gameOver.packet.defaultTab != GameOverPacket.EndScreenTab.CARDS
     private val tabsHeight get() = tabsWidget.height / 2
 
-    private fun onTabChanged() {
-        updateButtons()
+    private fun onTabChanged(newTab: Int) {
+        init()
         tab?.let { gameOver.tab = it }
     }
 
@@ -178,6 +186,10 @@ internal class BingoEndScreen(
 
     private val messagesWidgetImpl = MessageHistoryWidget(koin, gameOver)
     private val messagesWidget = scrollableWidgetFactory.create(messagesWidgetImpl)
+
+    private val hudStateListener = eventBus.register(HudStateChangedEvent) {
+        init()
+    }
 
     private fun sendReadyForNextRound() {
         packets.readySetV1.send(SetReadyPacket(true))
@@ -187,79 +199,102 @@ internal class BingoEndScreen(
         }
     }
 
-    private fun updateButtons() {
-        helper.clearChildren()
+    private val sidebarDrawable = object : IDrawable {
+        override fun render(drawService: IDrawService) {
+            drawService.matrices.push()
+            drawService.matrices.translate(sidebarOffsetInterpolate.get(Interpolate.Easing.IN_OUT) * sidebarWidth, 0f, 0f)
 
+            // Ensure that the texture is rendered with an even width
+            val evenOffset = if (sidebarWidth % 2 == 0) 0 else 1
+            drawService.drawNinePatch(
+                texture = Identifier.of("minecraft", "bingo/game_sidebar_background")!!,
+                x = width - sidebarWidth - evenOffset,
+                y = 0,
+                width = sidebarWidth + evenOffset,
+                height = height,
+                sliceSize = 32,
+                textureWidth = 128,
+                textureHeight = 128,
+            )
+
+            drawService.matrices.pop()
+        }
+    }
+
+    private fun updatePositions() {
         sidebarWidth = (width * 0.2f).toInt() + 100
+        val interpolatedSidebarWidth = sidebarOffsetInterpolate.get(Interpolate.Easing.IN_OUT)
+            .times(sidebarWidth)
+            .roundToInt()
 
         tabsWidget.width = width - sidebarWidth
-        if (isShowingTabs) helper.addDrawableChild(tabsWidget.widget)
 
-        if (tab == GameOverPacket.EndScreenTab.CARDS) {
-            cardsWidget.x = (width - sidebarWidth)/2f
-            cardsWidget.y = height/2f + tabsHeight
-            cardsWidget.width = width - sidebarWidth
-            cardsWidget.height = ClientCardBufferRenderer.CARD_HEIGHT
-            helper.addDrawable(cardsWidget)
-        }
-        if (tab == GameOverPacket.EndScreenTab.SCORES) {
-            scoresWidget.x = ((width - sidebarWidth) * 0.1f).toInt()
-            scoresWidget.y = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT /2) + tabsHeight
-            scoresWidget.width = ((width - sidebarWidth) * 0.8f).toInt()
-            scoresWidget.height = ClientCardBufferRenderer.CARD_HEIGHT
-            helper.addDrawableChild(scoresWidget.widget!!)
-        }
+        cardsWidget.x = (width - sidebarWidth)/2f
+        cardsWidget.y = height/2f + tabsHeight
+        cardsWidget.width = width - sidebarWidth
+        cardsWidget.height = ClientCardBufferRenderer.CARD_HEIGHT
 
-        helper.addDrawable(
-            object : IDrawable {
-                override fun render(drawService: IDrawService) {
-                    drawService.matrices.push()
-                    drawService.matrices.translate(sidebarOffsetInterpolate.get(Interpolate.Easing.IN_OUT) * sidebarWidth, 0f, 0f)
-                    renderSidebar(drawService)
-                    drawService.matrices.pop()
-                }
-            }
-        )
+        scoresWidget.x = ((width - sidebarWidth) * 0.1f).toInt()
+        scoresWidget.y = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT /2) + tabsHeight
+        scoresWidget.width = ((width - sidebarWidth) * 0.8f).toInt()
+        scoresWidget.height = ClientCardBufferRenderer.CARD_HEIGHT
 
         val marginX = 12
         val marginY = 4
 
         closeButton.size = Vector2i(sidebarWidth - marginX * 2, 20)
         var buttonY = height - closeButton.size.y - 12
-        closeButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
-        closeButton.message = text.string(StringKey.CardClose)
-        helper.addButton(closeButton)
+        closeButton.position = Vector2i(width - interpolatedSidebarWidth + marginX, buttonY)
 
         if (gameOver.packet.isResumeAvailable) {
             keepPlayingButton.size = Vector2i(sidebarWidth - marginX * 2, 20)
             buttonY -= marginY + keepPlayingButton.size.y
-            keepPlayingButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
-            keepPlayingButton.message = text.string(StringKey.WorldKeepPlaying)
-            helper.addButton(keepPlayingButton)
+            keepPlayingButton.position = Vector2i(width - interpolatedSidebarWidth + marginX, buttonY)
         }
 
-        if (gameOver.packet.isReturnToLobbyAvailable) {
+        if (gameOver.packet.isReturnToLobbyAvailable || state.ready?.canSendReady == true) {
             primaryButton.size = Vector2i(sidebarWidth - marginX * 2, 40)
             buttonY -= marginY + primaryButton.size.y
-            primaryButton.position = Vector2i(width - sidebarWidth + marginX, buttonY)
-            primaryButton.message = text.string(StringKey.WorldReturnToLobby)
-            helper.addButton(primaryButton)
+            primaryButton.position = Vector2i(width - interpolatedSidebarWidth + marginX, buttonY)
         }
 
-        messagesWidget.x = width - sidebarWidth + marginX
+        messagesWidget.x = width - interpolatedSidebarWidth + marginX
         messagesWidget.y = 0
         messagesWidget.width = sidebarWidth - marginX*2
         messagesWidget.height = buttonY
+    }
+
+    override fun init() {
+        helper.clearChildren()
+        updatePositions()
+
+        if (isShowingTabs) helper.addDrawableChild(tabsWidget.widget)
+
+        if (tab == GameOverPacket.EndScreenTab.CARDS) {
+            helper.addDrawable(cardsWidget)
+        }
+        if (tab == GameOverPacket.EndScreenTab.SCORES) {
+            helper.addDrawableChild(scoresWidget.widget!!)
+        }
+
+        helper.addDrawable(sidebarDrawable)
+
+        helper.addButton(closeButton)
+
+        if (gameOver.packet.isResumeAvailable) {
+            helper.addButton(keepPlayingButton)
+        }
+
+        if (gameOver.packet.isReturnToLobbyAvailable || state.ready?.canSendReady == true) {
+            helper.addButton(primaryButton)
+        }
+
         messagesWidgetImpl.resize()
         helper.addDrawableChild(messagesWidget.widget!!)
     }
 
-    override fun init() {
-        updateButtons()
-    }
-
     override fun resize(width: Int, height: Int) {
-        updateButtons()
+        init()
     }
 
     private fun renderGameDuration(drawService: IDrawService, titleY: Int, x: Float) {
@@ -313,13 +348,6 @@ internal class BingoEndScreen(
     private fun renderWinStreak(drawService: IDrawService, titleY: Int, x: Float) {
         val winStreak = gameOver.packet.winStreak ?: return
         val now = state.now
-
-        val ready = state.ready
-        if (ready != null && ready.isRunning) {
-            primaryButton.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
-        } else {
-            primaryButton.message = text.string(StringKey.WorldReturnToLobby)
-        }
 
         drawService.matrices.push()
         drawService.matrices.translate(x, titleY.toFloat(), 0f)
@@ -381,31 +409,27 @@ internal class BingoEndScreen(
             )
             drawService.matrices.scale(8f, 8f, 1f)
             drawService.matrices.push()
-            drawService.matrices.translate(-3f, -3f, 0f)
+            drawService.matrices.translate(-2f, -2f, 0f)
 
-            drawService.context.fill(0, 0, 6, 6, 0x30_F5A3D6)
+            drawService.context.fill(0, 0, 4, 4, 0x30_F5A3D6)
 
             drawService.matrices.pop()
             drawService.matrices.pop()
         }
     }
 
-    private fun renderSidebar(drawService: IDrawService) {
-        // Ensure that the texture is rendered with an even width
-        val evenOffset = if (sidebarWidth % 2 == 0) 0 else 1
-        drawService.drawNinePatch(
-            texture = Identifier.of("minecraft", "bingo/game_sidebar_background")!!,
-            x = width - sidebarWidth - evenOffset,
-            y = 0,
-            width = sidebarWidth + evenOffset,
-            height = height,
-            sliceSize = 32,
-            textureWidth = 128,
-            textureHeight = 128,
-        )
-    }
-
     override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
+        if (state.now - sidebarOffsetInterpolate.startedAt < sidebarOffsetInterpolate.duration + 50.milliseconds) {
+            updatePositions()
+        }
+
+        val ready = state.ready
+        if (ready != null && ready.isRunning) {
+            primaryButton.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
+        } else {
+            primaryButton.message = text.string(StringKey.WorldReturnToLobby)
+        }
+
         val cardTop = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT /2)
         val titleY = min((cardTop * 0.75f).roundToInt(), cardTop - 11 * 2) + tabsHeight
 
@@ -433,6 +457,7 @@ internal class BingoEndScreen(
 
     override fun onClose() {
         onCloseCallback.invoke(this)
+        hudStateListener.close()
     }
 
 }
