@@ -4,6 +4,8 @@ import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
 import java.util.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 interface IPacketBuf {
     fun writeString(str: String)
@@ -47,6 +49,14 @@ interface IPacketBuf {
 
     fun <T> readList(callback: () -> T): List<T> {
         return List(readInt()) { callback() }
+    }
+
+    fun writeDuration(value: Duration) {
+        writeLong(value.inWholeMilliseconds)
+    }
+
+    fun readDuration(): Duration {
+        return readLong().milliseconds
     }
 
     fun writeInstant(value: Instant) {

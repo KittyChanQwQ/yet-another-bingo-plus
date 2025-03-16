@@ -115,10 +115,15 @@ internal class BingoMessageRenderer(
 
         val itemX = if (isLeftOfCard) -8 - message.height else 8
         val itemY = message.height/2 - 8
-        val tile = message.packet.tile
-        if (tile != null) {
-            cardTileRenderer.renderTile(drawService, tile, itemX, itemY)
-            cardTileRenderer.renderTileDecorations(drawService, tile, itemX, itemY)
+        if (message.packet.image.let { it.item != null || it.texture != null }) {
+            cardTileRenderer.renderTile(
+                drawService,
+                message.packet.image,
+                message.packet.imageList,
+                message.packet.decoration,
+                itemX, itemY
+            )
+            cardTileRenderer.renderTileDecorations(drawService, message.packet.decoration, itemX, itemY)
         } else {
             val iconTexture = when (message.packet.messageType) {
                 ScoreMessagePacket.MessageType.LEADING_TEAM -> ICON_LEADING_ID

@@ -31,10 +31,8 @@ data class ScoreMessagePacket(
                 player = null,
                 isViewerOnTeam = isViewerOnTeam,
                 tile = CardTile(
-                    image = CardTileImage(
-                        item = (gameMessagePacket.icon as? GameMessagePacket.MessageIcon.Item)?.item,
-                        texture = (gameMessagePacket.icon as? GameMessagePacket.MessageIcon.Texture)?.texture,
-                    ),
+                    image = gameMessagePacket.image,
+                    imageList = gameMessagePacket.imageList,
                     decoration = gameMessagePacket.decoration,
                 ),
                 messageType = gameMessagePacket.messageType,
@@ -47,12 +45,8 @@ data class ScoreMessagePacket(
         return GameMessagePacket(
             id = UUID.randomUUID(),
             team = BingoTeamKey(""),
-            icon = tile?.image?.texture
-                ?.let { GameMessagePacket.MessageIcon.Texture(it) }
-                ?: tile?.image?.item
-                    ?.let { item ->
-                        GameMessagePacket.MessageIcon.Item(item, tile.imageList.mapNotNull { it.item })
-                    },
+            image = tile?.image ?: CardTileImage.EMPTY,
+            imageList = tile?.imageList.orEmpty(),
             decoration = tile?.decoration,
             messageType = messageType ?: MessageType.ITEM_SCORED,
             message = message,

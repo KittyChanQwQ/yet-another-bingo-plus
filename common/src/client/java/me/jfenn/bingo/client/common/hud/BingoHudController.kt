@@ -306,6 +306,7 @@ internal class BingoHudController(
 
         state.pastMessages.removeIf { it.packet.id == packet.id }
         state.pastMessages.add(scoreMessage)
+        state.pastMessages.sortBy { it.packet.timeElapsed }
     }
 
     private fun onScoreMessage(packet: ClientPacket<ScoreMessagePacket>) {

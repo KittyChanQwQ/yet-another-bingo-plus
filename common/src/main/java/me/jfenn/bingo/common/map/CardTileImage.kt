@@ -1,15 +1,21 @@
 package me.jfenn.bingo.common.map
 
+import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.platform.IPacketBuf
-import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStackSerialized
 import me.jfenn.bingo.platform.packet.PacketConverter
 import net.minecraft.util.Identifier
 
+@Serializable
 class CardTileImage(
-    val item: IItemStack? = null,
+    val item: IItemStackSerialized? = null,
     val texture: String? = null,
 ) {
+
+    companion object {
+        val EMPTY = CardTileImage(null, null)
+    }
 
     override fun hashCode(): Int {
         return arrayOf(item?.identifier, texture).contentHashCode()

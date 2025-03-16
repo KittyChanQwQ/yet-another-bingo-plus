@@ -71,15 +71,11 @@ internal class GameMessageService(
         ).let { formatWithTime(message, it) }
 
         return GameMessagePacket(
+            id = message.id,
+            timeElapsed = message.timeElapsed,
             team = team.key,
-            icon = if (isItemHidden) {
-                null
-            } else {
-                message.texture
-                    ?.let { GameMessagePacket.MessageIcon.Texture(it) }
-                    ?: message.item
-                        ?.let { GameMessagePacket.MessageIcon.Item(it, message.itemList.orEmpty()) }
-            },
+            image = message.image,
+            imageList = message.imageList,
             decoration = message.decoration.takeIf { !isItemHidden },
             messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
             message = chatMessage,
@@ -96,8 +92,9 @@ internal class GameMessageService(
             .let { formatWithTime(message, it) }
 
         return GameMessagePacket(
+            id = message.id,
+            timeElapsed = message.timeElapsed,
             team = team.key,
-            icon = null,
             decoration = null,
             messageType = ScoreMessagePacket.MessageType.LINE_SCORED,
             message = chatMessage,
@@ -114,8 +111,9 @@ internal class GameMessageService(
             .let { formatWithTime(message, it) }
 
         return GameMessagePacket(
+            id = message.id,
+            timeElapsed = message.timeElapsed,
             team = team.key,
-            icon = null,
             decoration = null,
             messageType = ScoreMessagePacket.MessageType.CARD_COMPLETED,
             message = chatMessage,
@@ -142,8 +140,9 @@ internal class GameMessageService(
             .let { formatWithTime(message, it) }
 
         return GameMessagePacket(
+            id = message.id,
+            timeElapsed = message.timeElapsed,
             team = team.key,
-            icon = null,
             decoration = null,
             messageType = ScoreMessagePacket.MessageType.LEADING_TEAM,
             message = chatMessage,

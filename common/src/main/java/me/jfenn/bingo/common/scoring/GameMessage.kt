@@ -3,8 +3,8 @@ package me.jfenn.bingo.common.scoring
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.client.platform.text.ITextSerialized
 import me.jfenn.bingo.common.map.CardTile
+import me.jfenn.bingo.common.map.CardTileImage
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.platform.item.IItemStackSerialized
 import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.platform.utils.UuidAsString
 import java.util.*
@@ -18,26 +18,12 @@ sealed class GameMessage {
     abstract val team: BingoTeamKey?
 
     @Serializable
-    sealed interface MessageIcon {
-        @Serializable
-        class Item(
-            val item: IItemStackSerialized,
-            val itemList: List<IItemStackSerialized>,
-        ) : MessageIcon
-        @Serializable
-        class Texture(
-            val texture: String,
-        ) : MessageIcon
-    }
-
-    @Serializable
     data class ItemScored(
         override val timeElapsed: Duration,
         override val team: BingoTeamKey,
         val cardId: UuidAsString,
-        val item: IItemStackSerialized?,
-        val itemList: List<IItemStackSerialized>?,
-        val texture: String?,
+        val image: CardTileImage,
+        val imageList: List<CardTileImage>,
         val decoration: CardTile.Decoration?,
         val itemName: ITextSerialized,
         val player: PlayerProfile?,
