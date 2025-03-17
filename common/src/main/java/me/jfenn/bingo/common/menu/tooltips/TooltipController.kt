@@ -1,10 +1,14 @@
 package me.jfenn.bingo.common.menu.tooltips
 
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
-import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.event.ICallbackHandle
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.TickEvent
 import net.minecraft.entity.projectile.ProjectileUtil
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
@@ -18,7 +22,7 @@ internal class TooltipController(
     private val tooltipState: TooltipState,
     private val packets: ServerPacketEvents,
     private val playerManager: IPlayerManager,
-    events: ScopedEvents
+    private val eventBus: IEventBus,
 ) {
 
     private val lookingAtTicks = mutableMapOf<Pair<UUID, UUID>, Int>()
@@ -79,9 +83,16 @@ internal class TooltipController(
         }
     }
 
+    var callback: ICallbackHandle? = null
+
     init {
-        events.onGameTick {
-            tick()
+        eventBus.register(StateChangedEvent) {
+            callback?.close()
+            callback = if (it.to == GameState.PREGAME) {
+                eventBus.register(TickEvent.Start) { tick() }
+            } else {
+                null
+            }
         }
     }
 }

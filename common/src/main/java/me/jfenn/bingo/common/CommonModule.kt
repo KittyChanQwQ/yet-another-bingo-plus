@@ -84,6 +84,9 @@ import me.jfenn.bingo.integrations.voice.DummyVoiceApi
 import me.jfenn.bingo.integrations.voice.IVoiceApi
 import me.jfenn.bingo.integrations.voice.IVoiceApiFactory
 import me.jfenn.bingo.integrations.voice.VoiceGroupController
+import me.jfenn.bingo.mixinhandler.PlayerAdvancementTrackerMixinHelper
+import me.jfenn.bingo.mixinhandler.PlayerEntityMixinHandler
+import me.jfenn.bingo.mixinhandler.PlayerManagerMixinHelper
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.event.IEventBus
@@ -340,6 +343,10 @@ val commonModule = module {
         scopedOf(::ChunkyController)
 
         scopedOf(::VoiceGroupController)
+
+        scopedOf(::PlayerAdvancementTrackerMixinHelper)
+        scopedOf(::PlayerEntityMixinHandler)
+        scopedOf(::PlayerManagerMixinHelper)
     }
 }
 
@@ -426,4 +433,8 @@ fun Scope.commonInit() {
 
     get<ChunkyController>()
     get<VoiceGroupController>()
+
+    get<PlayerAdvancementTrackerMixinHelper>()
+    get<PlayerEntityMixinHandler>()
+    get<PlayerManagerMixinHelper>()
 }

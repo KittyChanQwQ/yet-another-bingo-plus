@@ -1,11 +1,15 @@
 package me.jfenn.bingo.mixin;
 
-import me.jfenn.bingo.platform.scope.BingoKoin;
-import me.jfenn.bingo.mixinhandler.PlayerManagerMixinHandler;
+import me.jfenn.bingo.common.spawn.SpawnData;
+import me.jfenn.bingo.mixinhandler.PlayerManagerMixinHelper;
+import me.jfenn.bingo.platform.block.BlockPosition;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.RespawnAnchorBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtDouble;
+import net.minecraft.nbt.NbtFloat;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.registry.RegistryKey;
@@ -41,7 +45,7 @@ public abstract class PlayerManagerMixin {
     @Inject(at = @At(value = "HEAD"), method = "sendToAround", cancellable = true)
     private void sendToAround(@Nullable PlayerEntity player, double x, double y, double z, double distance, RegistryKey<World> worldKey, Packet<?> packet, CallbackInfo ci) {
         // If the game is in PREGAME, prevent chaos by cancelling sound packets while in the lobby
-        if (packet instanceof PlaySoundS2CPacket && PlayerManagerMixinHandler.INSTANCE.shouldPreventLobbyChaos(server)) {
+        if (packet instanceof PlaySoundS2CPacket && PlayerManagerMixinHelper.Companion.shouldPreventLobbyChaos()) {
             ci.cancel();
         }
     }
@@ -49,8 +53,25 @@ public abstract class PlayerManagerMixin {
     @Inject(at = @At(value = "RETURN"), method = "loadPlayerData", cancellable = true)
     private void loadPlayerData(ServerPlayerEntity player, CallbackInfoReturnable<NbtCompound> ci) {
         // Provide default player data (for the lobby dimension / spawnpoint) if null
-        if (ci.getReturnValue() == null && PlayerManagerMixinHandler.INSTANCE.shouldSpawnInLobby(server)) {
-            NbtCompound nbt = PlayerManagerMixinHandler.INSTANCE.getPregameSpawnData(server);
+        if (ci.getReturnValue() == null && PlayerManagerMixinHelper.Companion.shouldSpawnInLobby()) {
+            SpawnData spawn = PlayerManagerMixinHelper.Companion.getPregameSpawnData();
+            if (spawn == null) return;
+
+            NbtCompound nbt = new NbtCompound();
+            nbt.putString("Dimension", spawn.getDimension());
+
+            NbtList position = new NbtList();
+            BlockPosition blockPosition = spawn.getPosition();
+            position.add(NbtDouble.of(blockPosition.getX() + 0.5));
+            position.add(NbtDouble.of(blockPosition.getY()));
+            position.add(NbtDouble.of(blockPosition.getZ() + 0.5));
+            nbt.put("Pos", position);
+
+            NbtList rotation = new NbtList();
+            rotation.add(NbtFloat.of(spawn.getYaw())); // yaw
+            rotation.add(NbtFloat.of(0f)); // pitch
+            nbt.put("Rotation", rotation);
+
             player.readNbt(nbt);
             ci.setReturnValue(nbt);
         }
@@ -58,12 +79,12 @@ public abstract class PlayerManagerMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "respawnPlayer")
     private void respawnPlayer(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> info) {
-        if (BingoKoin.INSTANCE.getScope(server) == null) return;
+        if (!PlayerManagerMixinHelper.Companion.exists()) return;
 
         if (alive) {
             // the player is exiting through the end portal...
             // if the spawnpoint is also in the end, then respawn them in the overworld
-            if (PlayerManagerMixinHandler.INSTANCE.shouldOverrideEndRespawn(player.server)) {
+            if (PlayerManagerMixinHelper.Companion.shouldOverrideEndRespawn()) {
                 var overworld = player.server.getOverworld();
                 player.setSpawnPoint(overworld.getRegistryKey(), overworld.getSpawnPos(), overworld.getSpawnAngle(), false, false);
             }
@@ -108,7 +129,7 @@ public abstract class PlayerManagerMixin {
         // if the targeted spawnpoint is invalid (i.e. a broken bed, or otherwise somewhere that would reset to the world spawn) ...
         if (targetRespawn.isEmpty()) {
             // change the player's spawnpoint back to the team spawn location
-            PlayerManagerMixinHandler.INSTANCE.setPlayerSpawnpoint(player);
+            PlayerManagerMixinHelper.Companion.setPlayerSpawnpoint(player);
         }
     }
 }

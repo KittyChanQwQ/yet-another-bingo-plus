@@ -25,7 +25,7 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
     private final Logger log = LoggerFactory.getLogger(MinecraftServerUnsafeSkipCloseMixin.class);
 
     @Shadow
-    public boolean saving;
+    private boolean saving;
 
     @Shadow @Final
     private ServerNetworkIo networkIo;

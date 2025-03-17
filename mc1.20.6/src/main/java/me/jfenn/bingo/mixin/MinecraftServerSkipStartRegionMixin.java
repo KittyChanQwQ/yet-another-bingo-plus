@@ -16,7 +16,7 @@ public class MinecraftServerSkipStartRegionMixin {
         MinecraftServer server = (MinecraftServer) (Object) this;
         if (
                 server.isDedicated()
-                        || ServerChunkManagerMixinHelper.INSTANCE.getShouldCancelSaving()
+                        || ServerChunkManagerMixinHelper.getShouldCancelSaving()
                         || server.getSaveProperties().getLevelName().startsWith(ConstantsKt.getBINGO_WORLD_PREFIX())
         ) {
             // The start region worldgen isn't all that useful in bingo, since the game starts at random coords anyway. So it doesn't really help.

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.mixin;
 
+import me.jfenn.bingo.impl.TextImpl;
 import me.jfenn.bingo.mixinhandler.PlayerEntityMixinHandler;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
@@ -16,8 +17,8 @@ public abstract class PlayerEntityMixin {
     @Inject(at = @At(value = "HEAD"), method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;", cancellable = true)
     public void dropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> ci) {
         if ((Object) this instanceof ServerPlayerEntity player) {
-            if (PlayerEntityMixinHandler.INSTANCE.shouldVanishDrop(player, stack)) {
-                if (PlayerEntityMixinHandler.INSTANCE.shouldKeepDrop(player, stack)) {
+            if (PlayerEntityMixinHandler.Companion.shouldVanishDrop(stack)) {
+                if (PlayerEntityMixinHandler.Companion.shouldKeepDrop(stack)) {
                     ItemStack cur = player.getInventory().getMainHandStack();
                     if (retainOwnership && (cur == null || cur.isEmpty())) {
                         // The complete stack was dropped
@@ -38,13 +39,12 @@ public abstract class PlayerEntityMixin {
     public void getPlayerListName(CallbackInfoReturnable<Text> ci) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         var originalName = player.getDisplayName();
-        var name = PlayerEntityMixinHandler.INSTANCE.getPlayerListName(
-                player.server,
+        var name = PlayerEntityMixinHandler.Companion.getPlayerListName(
                 player.getUuid(),
-                originalName != null ? originalName : Text.literal(player.getNameForScoreboard())
+                new TextImpl(originalName != null ? originalName.copy() : Text.literal(player.getNameForScoreboard()))
         );
         if (name != null) {
-            ci.setReturnValue(name);
+            ci.setReturnValue(name.getValue());
             ci.cancel();
         }
     }

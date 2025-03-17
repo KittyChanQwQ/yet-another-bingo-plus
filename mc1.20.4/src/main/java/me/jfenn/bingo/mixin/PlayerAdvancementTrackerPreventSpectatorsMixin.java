@@ -22,8 +22,8 @@ public class PlayerAdvancementTrackerPreventSpectatorsMixin {
     public void grantCriterion(CallbackInfoReturnable<Boolean> ci) {
         if (
                 owner.isSpectator() &&
-                        PlayerAdvancementTrackerMixinHelper.INSTANCE
-                                .shouldPreventSpectatorAdvancements(owner.server, owner)
+                        PlayerAdvancementTrackerMixinHelper.Companion
+                                .shouldPreventSpectatorAdvancements(owner)
         ) {
             ci.setReturnValue(false);
             ci.cancel();
