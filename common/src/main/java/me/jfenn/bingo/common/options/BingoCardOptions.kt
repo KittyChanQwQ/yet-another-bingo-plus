@@ -9,7 +9,7 @@ import me.jfenn.bingo.generated.StringKey
 
 @Serializable
 data class BingoCardOptions(
-    var goal: BingoGoal = BingoGoal.Lines(3),
+    var goal: BingoGoal = BingoGoal.Lines(1),
     var itemDistribution: List<Int> = TierLabel.DIFFICULTY_EASY,
     var itemFilter: ObjectiveFilterList = ObjectiveFilterList.EVERYTHING,
 
