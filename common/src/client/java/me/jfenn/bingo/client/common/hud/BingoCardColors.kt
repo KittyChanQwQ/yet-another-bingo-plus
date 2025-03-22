@@ -56,8 +56,10 @@ internal data class BingoCardColors(
         teamKey: BingoTeamKey?,
         formatting: Formatting?,
     ): TeamColors {
-        val colors = teams[teamKey?.label ?: "preview"]
+        val colors = teamKey?.id?.let { teams[it] }
+            ?: teamKey?.label?.let { teams[it] }
             ?: formatting?.name?.lowercase()?.let { teams[it] }
+            ?: teams["preview"]
             ?: default
 
         return TeamColors(

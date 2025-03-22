@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture
 value class BingoTeamKey(
     val id: String,
 ) {
-    val label get() = id.split('_').last()
+    val label get() = id.removePrefix("bingo_")
 }
 
 @Serializable
