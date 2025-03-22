@@ -88,6 +88,7 @@ internal class ClientCardRenderer(
         service.matrices.translate(x, y, z.toFloat())
         service.matrices.scale(cardScale, cardScale, 1f)
 
+        service.enableBlend()
         card.framebuffer.draw(service, CARD_WIDTH, CARD_HEIGHT)
 
         if (isWinner) {
