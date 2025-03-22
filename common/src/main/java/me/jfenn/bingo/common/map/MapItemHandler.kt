@@ -7,10 +7,7 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
-import me.jfenn.bingo.platform.event.model.TickEvent
-import me.jfenn.bingo.platform.event.model.UseBlockEvent
-import me.jfenn.bingo.platform.event.model.UseEntityEvent
-import me.jfenn.bingo.platform.event.model.UseItemEvent
+import me.jfenn.bingo.platform.event.model.*
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.text.Text
@@ -73,13 +70,13 @@ internal class MapItemHandler(
                 }).let { itemStackFactory.forStack(it) }
 
                 if (hand == Hand.OFF_HAND && !otherItemStack.isEmpty)
-                    return@register me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
+                    return@register ActionResult.Pass(itemStack)
 
                 if (hand == Hand.MAIN_HAND && event.player.canUseItem(otherItemStack))
-                    return@register me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
+                    return@register ActionResult.Pass(itemStack)
 
                 usedBingoMap.add(player.uuid)
-                return@register me.jfenn.bingo.platform.event.model.ActionResult.Success(itemStack)
+                return@register ActionResult.Success(itemStack)
             }
 
             // if the item *can* be used, and *isn't* a bingo map, it should prevent the bingo map from being used
@@ -88,7 +85,7 @@ internal class MapItemHandler(
                 usedBingoMap.remove(player.uuid)
             }
 
-            me.jfenn.bingo.platform.event.model.ActionResult.Pass(itemStack)
+            ActionResult.Pass(itemStack)
         }
 
         eventBus.register(UseBlockEvent) { event ->
@@ -108,7 +105,7 @@ internal class MapItemHandler(
                 usedBingoMap.remove(player.uuid)
             }
 
-            me.jfenn.bingo.platform.event.model.ActionResult.Pass(Unit)
+            ActionResult.Pass(Unit)
         }
 
         eventBus.register(UseEntityEvent) { event ->
@@ -128,7 +125,7 @@ internal class MapItemHandler(
                 usedBingoMap.remove(player.uuid)
             }
 
-            me.jfenn.bingo.platform.event.model.ActionResult.Pass(Unit)
+            ActionResult.Pass(Unit)
         }
 
         eventBus.register(TickEvent.Start) {
