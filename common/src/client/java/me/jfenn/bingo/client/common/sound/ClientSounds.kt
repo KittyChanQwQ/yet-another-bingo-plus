@@ -1,8 +1,6 @@
 package me.jfenn.bingo.client.common.sound
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.Identifier
 
@@ -28,11 +26,5 @@ internal class ClientSounds {
     }
 
     operator fun get(key: Key) = soundEvents[key]!!
-
-    init {
-        for ((key, event) in soundEvents) {
-            Registry.register(Registries.SOUND_EVENT, key.id, event)
-        }
-    }
 
 }
