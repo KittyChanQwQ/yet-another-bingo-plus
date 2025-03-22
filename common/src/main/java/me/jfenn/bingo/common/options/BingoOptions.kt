@@ -48,9 +48,6 @@ data class BingoOptions(
     // spawn kit settings
     var isPlayerKit: Boolean = false,
     var isTeamKit: Boolean = false,
-
-    // amount of time to wait before starting the game
-    var startCountdownSeconds: Int = 8,
 ) {
 
     fun isValid(): Boolean {

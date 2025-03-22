@@ -42,6 +42,10 @@ data class BingoConfig(
     val nextRoundWhenReadySeconds: Int? = 600,
     val nextRoundWhenReadyWaitsForFirstVote: Boolean = true,
 
+    // amount of time to wait before starting the game
+    val countdownDelayTicks: Int = 100,
+    val countdownSeconds: Int = 3,
+
     // resets the server once all players log out after a game
     @JsonNames("autoShutDownInPostgame", "shutDownWhenEveryoneDisconnects")
     val nextRoundWhenEveryoneDisconnects: Boolean = true,

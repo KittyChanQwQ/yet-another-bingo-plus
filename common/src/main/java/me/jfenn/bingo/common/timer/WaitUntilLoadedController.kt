@@ -2,8 +2,8 @@ package me.jfenn.bingo.common.timer
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.seconds
 internal class WaitUntilLoadedController(
     events: ScopedEvents,
     eventBus: IEventBus,
-    private val options: BingoOptions,
+    private val config: BingoConfig,
     private val state: BingoState,
     private val countdownService: CountdownService,
     private val teamService: TeamService,
@@ -55,7 +55,7 @@ internal class WaitUntilLoadedController(
             log.info("Waiting until all players have loaded spawn terrain... Done! (${(Clock.System.now() - startedLoading)})")
 
             // change to the playing state
-            if (options.startCountdownSeconds > 0) {
+            if (config.countdownDelayTicks > 0 || config.countdownSeconds > 0) {
                 state.changeState(eventBus, GameState.COUNTDOWN)
             } else {
                 state.changeState(eventBus, GameState.PLAYING)

@@ -15,7 +15,7 @@ internal class CountdownService(
 ) {
 
     fun sendCountdownPacket(player: IPlayerHandle, packet: CountdownPacket) {
-        if (packet.secondsRemaining in 1..3) {
+        if (packet.secondsRemaining > 0) {
             player.sendTitle(
                 title = textProvider.literal(packet.secondsRemaining.toString()),
                 subtitle = null,

@@ -1,9 +1,7 @@
 package me.jfenn.bingo.common.timer
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
@@ -13,14 +11,16 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.*
 import net.minecraft.server.MinecraftServer
 import org.joml.Vector3d
-import kotlin.time.Duration.Companion.seconds
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 internal class CountdownController(
     events: ScopedEvents,
     private val server: MinecraftServer,
-    private val options: BingoOptions,
+    private val config: BingoConfig,
     private val state: BingoState,
     private val eventBus: IEventBus,
     private val countdownService: CountdownService,
@@ -29,10 +29,10 @@ internal class CountdownController(
     private val spawnService: SpawnService,
     private val entityManager: IEntityManager,
     private val playerManager: IPlayerManager,
+    private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
 ) : BingoComponent() {
 
-    private var countdownUntil: Instant? = null
-    private var prevSeconds: Int = -1
+    private var countdownDelayTicks: Int? = null
 
     private val entityMap = mutableMapOf<BingoTeamKey, IBatEntity>()
 
@@ -89,10 +89,33 @@ internal class CountdownController(
         }
     }
 
+    private fun scheduleCountdown() {
+        for (seconds in 0..config.countdownSeconds) {
+            val remainingSeconds = config.countdownSeconds - seconds
+
+            CompletableFuture.delayedExecutor(seconds.toLong(), TimeUnit.SECONDS, serverTaskExecutor)
+                .execute {
+                    if (state.state != GameState.COUNTDOWN)
+                        return@execute
+
+                    val packet = CountdownPacket(remainingSeconds)
+                    for (player in playerManager.getPlayers()) {
+                        countdownService.sendCountdownPacket(player, packet)
+                    }
+
+                    // When the countdown ends, start the game!
+                    if (remainingSeconds == 0) {
+                        state.changeState(eventBus, GameState.PLAYING)
+                    }
+                }
+        }
+    }
+
+    fun shouldPreventActions() = state.state == GameState.LOADING || state.state == GameState.COUNTDOWN
+
     init {
         events.onEnter(GameState.COUNTDOWN) {
-            countdownUntil = Clock.System.now() + options.startCountdownSeconds.seconds
-            prevSeconds = -1
+            countdownDelayTicks = config.countdownDelayTicks
 
             if (state.isLobbyMode)
                 forcePlayersInvisible()
@@ -113,35 +136,44 @@ internal class CountdownController(
             }
         }
 
-        events.onGameTick {
-            if (state.isLobbyMode) {
-                if (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN) {
-                    forcePlayersOnBats()
-                }
+        eventBus.register(TickEvent.Start) {
+            if (state.isLobbyMode && shouldPreventActions()) {
+                forcePlayersOnBats()
             }
 
-            if (state.state != GameState.COUNTDOWN) return@onGameTick
-
-            if (server.ticks % 20 != 0) return@onGameTick
-
-            val until = countdownUntil ?: return@onGameTick
-            val now = Clock.System.now()
-
-            val seconds = (until - now).inWholeSeconds.toInt()
-
-            if (prevSeconds != seconds) {
-                prevSeconds = seconds
-
-                val packet = CountdownPacket(seconds.coerceAtLeast(0))
-                for (player in playerManager.getPlayers()) {
-                    countdownService.sendCountdownPacket(player, packet)
+            countdownDelayTicks?.minus(1)?.let { delay ->
+                if (delay < 0) {
+                    scheduleCountdown()
+                    countdownDelayTicks = null
+                } else {
+                    countdownDelayTicks = delay
                 }
+            }
+        }
 
-                // When the countdown ends, start the game!
-                if (seconds <= 0) {
-                    state.changeState(eventBus, GameState.PLAYING)
-                    countdownUntil = null
-                }
+        if (state.isLobbyMode) {
+            eventBus.register(UseBlockEvent) {
+                if (shouldPreventActions())
+                    ActionResult.Fail(Unit)
+                else null
+            }
+
+            eventBus.register(UseEntityEvent) {
+                if (shouldPreventActions())
+                    ActionResult.Fail(Unit)
+                else null
+            }
+
+            eventBus.register(UseItemEvent) {
+                if (shouldPreventActions())
+                    ActionResult.Fail(null)
+                else null
+            }
+
+            eventBus.register(AttackEntityEvent) {
+                if (shouldPreventActions())
+                    ActionResult.Fail(Unit)
+                else null
             }
         }
     }
