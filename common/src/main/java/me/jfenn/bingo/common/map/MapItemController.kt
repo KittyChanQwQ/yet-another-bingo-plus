@@ -37,10 +37,13 @@ internal class MapItemController(
     private fun giveMapCardItem(player: IPlayerHandle, team: BingoTeam?) {
         if (cardViewService.supportsCardHud(player)) return
 
-        var previousSlot: Int? = null
+        val previousSlot = player.allInventorySlots()
+            .find { (_, stack) -> mapItemService.isMapItem(stack) }
+            ?.first
+
         val hasMap = player.allHeldStacks()
-            .filter { mapItemService.isMapItem(it.second) }
-            .count { (slot, stack) ->
+            .filter { mapItemService.isMapItem(it) }
+            .count { stack ->
                 val isItemValid = when (team) {
                     null -> mapItemService.isPreviewMapItem(stack)
                     else -> mapItemService.isMapTeamItem(stack, team)
@@ -51,7 +54,6 @@ internal class MapItemController(
                 } else {
                     // if the player has another team's map item, remove it!
                     stack.count = 0
-                    previousSlot = slot
                     false
                 }
             } > 0
@@ -80,7 +82,7 @@ internal class MapItemController(
             .take(9*4)
             .forEachIndexed { i, team ->
                 val hasMap = player.allHeldStacks()
-                    .any { mapItemService.isMapTeamItem(it.second, team) }
+                    .any { mapItemService.isMapTeamItem(it, team) }
 
                 if (!hasMap) {
                     val stack = mapItemService.createMapItem(team)
@@ -100,8 +102,8 @@ internal class MapItemController(
      */
     private fun removeAllMapItems(player: IPlayerHandle) {
         player.allHeldStacks()
-            .filter { mapItemService.isMapItem(it.second) }
-            .forEach { it.second.count = 0 }
+            .filter { mapItemService.isMapItem(it) }
+            .forEach { it.count = 0 }
     }
 
     init {

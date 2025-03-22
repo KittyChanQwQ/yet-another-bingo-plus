@@ -168,13 +168,13 @@ internal class PlayerController(
         val team = teamService.getPlayerTeam(player)
         val isViewingCard = cardViewService.isViewingCard(player, team)
         player.allHeldStacks()
-            .filterNot { (_, stack) ->
+            .filterNot { stack ->
                 isViewingCard && when (team) {
                     null -> mapItemService.isPreviewMapItem(stack)
                     else -> mapItemService.isMapTeamItem(stack, team)
                 }
             }
-            .forEach { (_, stack) ->
+            .forEach { stack ->
                 stack.count = 0
             }
 

@@ -10,12 +10,9 @@ import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.platform.scope.BingoKoin
 import net.minecraft.command.CommandSource
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.mob.MobEntity
-import net.minecraft.item.BlockItem
-import net.minecraft.item.BoatItem
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
+import net.minecraft.item.*
 import net.minecraft.network.message.MessageType
 import net.minecraft.network.message.SentMessage
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions
@@ -25,6 +22,7 @@ import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.registry.Registries
+import net.minecraft.screen.PlayerScreenHandler
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
@@ -214,14 +212,39 @@ class PlayerHandle(
     override val offHandStack: IItemStack
         get() = getItemStackFactory().forStack(player.offHandStack)
 
-    override fun allHeldStacks(): Sequence<Pair<Int?, IItemStack>> {
+    private fun allNestedStacks(stack: ItemStack): Sequence<ItemStack> = sequence {
+        yield(stack)
+        stack[DataComponentTypes.CONTAINER]?.iterateNonEmpty()
+            ?.forEach { yieldAll(allNestedStacks(it)) }
+        stack[DataComponentTypes.BUNDLE_CONTENTS]?.iterate()
+            ?.forEach { yieldAll(allNestedStacks(it)) }
+    }
+
+    override fun allHeldStacks(): Sequence<IItemStack> {
+        val itemStackFactory = getItemStackFactory()
         return sequence {
             // yield all items in inventory
-            yieldAll(allInventorySlots())
+            for (i in 0 until player.inventory.size()) {
+                yield(player.inventory.getStack(i))
+            }
 
             // yield the current cursor stack
-            yield(null to getItemStackFactory().forStack(player.currentScreenHandler.cursorStack))
+            yield(player.currentScreenHandler.cursorStack)
+
+            // yield items held in crafting inputs
+            player.currentScreenHandler?.let { screenHandler ->
+                if (screenHandler is PlayerScreenHandler) {
+                    yieldAll(screenHandler.craftingInput.heldStacks)
+                }
+            }
+
+            // yield ender chest inventory
+            yieldAll(player.enderChestInventory.heldStacks)
         }
+            .filter { !it.isEmpty }
+            .flatMap { allNestedStacks(it) }
+            .filter { !it.isEmpty }
+            .map { itemStackFactory.forStack(it) }
     }
 
     override fun allInventorySlots(): Sequence<Pair<Int, IItemStack>> {
@@ -240,7 +263,7 @@ class PlayerHandle(
         val itemStack = stack.stack
 
         // if the item can be equipped (e.g. iron chestplate), put it in an equipment slot
-        val slot = MobEntity.getPreferredEquipmentSlot(itemStack)
+        val slot = Equipment.fromStack(itemStack)?.slotType
         if (slot != null && player.canEquip(itemStack) && slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND) {
             player.equipStack(slot, itemStack)
         } else {

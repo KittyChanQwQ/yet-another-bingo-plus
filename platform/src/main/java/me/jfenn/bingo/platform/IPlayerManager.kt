@@ -64,7 +64,7 @@ interface IPlayerHandle : ILivingEntity {
     var gameMode: PlayerGameMode
     val mainHandStack: IItemStack
     val offHandStack: IItemStack
-    fun allHeldStacks(): Sequence<Pair<Int?, IItemStack>>
+    fun allHeldStacks(): Sequence<IItemStack>
     fun allInventorySlots(): Sequence<Pair<Int, IItemStack>>
 
     /**

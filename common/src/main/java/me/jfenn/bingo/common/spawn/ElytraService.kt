@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.spawn
 
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_KEEP
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.item.Items
 
 class ElytraService(
@@ -17,7 +17,6 @@ class ElytraService(
      */
     fun giveElytra(player: IPlayerHandle) {
         val hasElytra = player.allHeldStacks()
-            .map { it.second }
             .any { it.item == Items.ELYTRA && it.hasCustomTag(NBT_BINGO_VANISH) }
 
         if (!hasElytra) {
@@ -35,7 +34,6 @@ class ElytraService(
 
         // also give rocket
         val rocketStack = player.allHeldStacks()
-            .map { it.second }
             .find {
                 it.item == Items.FIREWORK_ROCKET && it.hasCustomTag(NBT_BINGO_VANISH)
             }
@@ -58,7 +56,6 @@ class ElytraService(
 
     fun takeElytra(player: IPlayerHandle) {
         player.allHeldStacks()
-            .map { it.second }
             .filter { it.item == Items.ELYTRA || it.item == Items.FIREWORK_ROCKET }
             .filter { it.hasCustomTag(NBT_BINGO_VANISH) }
             .forEach {

@@ -214,13 +214,18 @@ class PlayerHandle(
     override val offHandStack: IItemStack
         get() = getItemStackFactory().forStack(player.offHandStack)
 
-    override fun allHeldStacks(): Sequence<Pair<Int?, IItemStack>> {
+    override fun allHeldStacks(): Sequence<IItemStack> {
+        val itemStackFactory = getItemStackFactory()
         return sequence {
             // yield all items in inventory
-            yieldAll(allInventorySlots())
+            for (i in 0 until player.inventory.size()) {
+                yield(player.inventory.getStack(i))
+            }
 
             // yield the current cursor stack
-            yield(null to getItemStackFactory().forStack(player.currentScreenHandler.cursorStack))
+            yield(player.currentScreenHandler.cursorStack)
+        }.map {
+            itemStackFactory.forStack(it)
         }
     }
 
