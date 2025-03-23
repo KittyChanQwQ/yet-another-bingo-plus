@@ -124,7 +124,7 @@ internal class MessageHistoryWidget(
     }
 
     private fun renderGameStatus(drawService: IDrawService) {
-        var titleY = 8
+        var titleY = 9
 
         drawService.drawNinePatch(
             texture = Identifier.of("minecraft", "bingo/game_container")!!,
@@ -140,7 +140,7 @@ internal class MessageHistoryWidget(
         for ((line, lineWidth) in statusText.zip(statusTextWidths)) {
             drawService.drawText(
                 line,
-                2 + (width - lineWidth)/2,
+                (width - lineWidth)/2,
                 titleY,
                 0xff_ffffff.toInt(),
                 false,

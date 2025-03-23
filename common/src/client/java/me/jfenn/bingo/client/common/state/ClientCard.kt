@@ -14,7 +14,6 @@ internal interface ClientCard {
     var shuffledAt: Instant
     var shufflePositions: List<Int>
     var colors: BingoCardColors.TeamColors
-    val showTeamOutlines: Boolean
     val isGui: Boolean
     var isDirty: Boolean
 
@@ -30,7 +29,6 @@ internal class ClientCardBase(
     override var shuffledAt: Instant = Instant.DISTANT_PAST,
     override var shufflePositions: List<Int> = (0 until 25).toList(),
     override var colors: BingoCardColors.TeamColors = BingoCardColors.TeamColors(),
-    override val showTeamOutlines: Boolean = true,
     override val isGui: Boolean = false,
     override var isDirty: Boolean = true,
     guiFramebuffer: IFramebuffer,
@@ -47,7 +45,6 @@ internal class ClientCardBase(
 internal class ClientCardProxy(
     base: ClientCard,
     override val framebuffer: IFramebuffer,
-    override val showTeamOutlines: Boolean = false,
     override val isGui: Boolean = true,
     override var isDirty: Boolean = true,
 ) : ClientCard by base

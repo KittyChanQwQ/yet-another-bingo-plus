@@ -22,7 +22,7 @@ class ObjectiveFilterPreset(
     val name: ITextSerialized?,
     val value: ObjectiveFilterList,
 ) {
-    fun name(text: TextProvider) = name ?: formatName(text, id)
+    fun name(text: TextProvider) = name?.copy() ?: formatName(text, id)
 
     companion object {
         fun formatName(textFactory: ITextFactory, name: String): IText =

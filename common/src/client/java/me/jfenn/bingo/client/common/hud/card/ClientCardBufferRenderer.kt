@@ -71,8 +71,8 @@ internal class ClientCardBufferRenderer(
             service.drawText(clientTeamName, colors.textX, colors.textY, colors.textColor.asIntWithAlpha, false)
         }
 
-        val showTeamOutlines = card.showTeamOutlines && config.client.cardTeamOutlines && (
-            !config.client.showMultipleCards || state.cards.size <= 1
+        val showTeamOutlines = config.client.cardTeamOutlines && (
+                (!card.isGui && !config.client.showMultipleCards) || state.cards.size <= 1
         )
 
         for (tileIndex in 0 until 25) {

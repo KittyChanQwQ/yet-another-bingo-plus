@@ -45,7 +45,7 @@ class ScrollableWidget(
         drawService.delta = delta
 
         if (content.background != 0) {
-            context.fill(x, y, x + width, y + contentsHeight, 0, content.background)
+            context.fill(x, y, x + width, y + contentsHeight + contentPadding*2, 0, content.background)
         }
 
         context.matrices.push()
