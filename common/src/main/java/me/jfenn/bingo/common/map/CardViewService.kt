@@ -54,7 +54,10 @@ internal class CardViewService(
      * Send an empty CardDisplayPacket to clear the HUD state
      */
     fun sendClearDisplayPacket(player: IPlayerHandle) {
-        sendCardDisplayPacket(player, emptyMap())
+        when {
+            packets.cardResetV1.send(player, CardResetPacket()) -> {}
+            else -> sendCardDisplayPacket(player, emptyMap())
+        }
     }
 
     private fun sendCardDisplayPacket(

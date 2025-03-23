@@ -8,7 +8,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.mixinhandler.ServerPlayNetworkHandlerMixinHandler
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
@@ -26,7 +25,6 @@ internal class WaitUntilLoadedController(
     private val countdownService: CountdownService,
     private val teamService: TeamService,
     private val server: MinecraftServer,
-    private val playerManager: IPlayerManager,
     private val log: Logger,
 ) {
 
@@ -59,11 +57,7 @@ internal class WaitUntilLoadedController(
                 state.changeState(eventBus, GameState.COUNTDOWN)
             } else {
                 state.changeState(eventBus, GameState.PLAYING)
-
-                val packet = CountdownPacket(0)
-                for (player in playerManager.getPlayers()) {
-                    countdownService.sendCountdownPacket(player, packet)
-                }
+                countdownService.sendCountdownPacket(CountdownPacket(0))
             }
         }
     }

@@ -57,6 +57,7 @@ internal class BingoMapController(
         }
 
         events.onChangeTeam { event ->
+            cardViewService.sendClearDisplayPacket(event.player)
             cardViewService.sendUpdatePackets(event.player)
 
             // Send updates to spectators whenever a player changes team
@@ -83,7 +84,7 @@ internal class BingoMapController(
         events.onStateChange { (_, to) ->
             val players = playerManager.getPlayers()
 
-            if (to == GameState.PREGAME) {
+            if (to == GameState.PREGAME && state.isLobbyMode) {
                 players.forEach { cardViewService.sendClearDisplayPacket(it) }
             }
 

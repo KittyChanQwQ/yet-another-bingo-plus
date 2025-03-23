@@ -350,7 +350,10 @@ internal class BingoHudController(
         val cardsIterator = state.cards.iterator()
         for ((key, card) in cardsIterator) {
             if (key !in displays) {
-                card.close()
+                // If the gameOver screen is still showing the card, don't close it!
+                if (state.gameOver?.cards?.contains(card) != true) {
+                    card.close()
+                }
                 cardsIterator.remove()
             }
         }
@@ -372,7 +375,7 @@ internal class BingoHudController(
         // if there are no teams being displayed (BingoMapController sends when entering PREGAME)
         // reset the HUD state completely
         // (which clears the gameOverPacket state)
-        if (displays.isEmpty()) {
+        if (displays.isEmpty() && state.gameStatus.isDefaultInstance) {
             state.reset()
         }
     }
@@ -461,6 +464,10 @@ internal class BingoHudController(
     }
 
     init {
+        eventBus.register(packetEvents.cardResetV1) {
+            state.reset()
+        }
+
         eventBus.register(packetEvents.cardDisplayV1, ::onCardDisplayV1)
         eventBus.register(packetEvents.cardDisplayV1, ::onCardDisplayV1)
         eventBus.register(packetEvents.cardDisplayV2, ::onCardDisplayV2)
@@ -490,8 +497,7 @@ internal class BingoHudController(
         }
         eventBus.register(packetEvents.gameMessageV1, ::onGameMessage)
         eventBus.register(packetEvents.gameMessageClearV1) {
-            state.messages.clear()
-            state.pastMessages.clear()
+            state.clearMessages()
             eventBus.emit(HudStateChangedEvent, Unit)
         }
 
@@ -583,11 +589,6 @@ internal class BingoHudController(
                         packetEvents.readySetV1.send(SetReadyPacket(!(state.ready?.isReady ?: false)))
                     }
                 } else {
-                    if (state.cards.isEmpty()) {
-                        client.player?.sendMessage(text.string(StringKey.CardNoCards).value, true)
-                        return@register
-                    }
-
                     val gameOver = state.gameOver
                     val hudScreen = if (gameOver != null) {
                         endScreenFactory.create(
@@ -597,12 +598,15 @@ internal class BingoHudController(
                             canEscape = true,
                             onClose = { onCardHudClosed(it.getCardPositions()) }
                         )
-                    } else {
+                    } else if (state.cards.isNotEmpty()) {
                         hudScreenFactory.create(
                             originalCardKey = getSelectedCard()?.teamKey,
                             originalCardPos = getCardPos(),
                             onClose = { onCardHudClosed(it.getCardPositions()) }
                         )
+                    } else {
+                        client.player?.sendMessage(text.string(StringKey.CardNoCards).value, true)
+                        return@register
                     }
 
                     client.setScreen(hudScreen)

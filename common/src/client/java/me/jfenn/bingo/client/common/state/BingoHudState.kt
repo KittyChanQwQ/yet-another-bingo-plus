@@ -29,16 +29,29 @@ internal class BingoHudState(
 ) {
     fun reset() {
         selectedTeam = null
-        gameOver = null
-        messages.clear()
-        pastMessages.clear()
+        resetGameOver()
         tooltip = null
         tooltipStartedAt = null
         ready = null
     }
 
+    fun resetGameOver() {
+        gameOver?.cards?.forEach { card ->
+            // If the card is only used in the gameOver screen, close it!
+            if (!cards.containsValue(card))
+                card.close()
+        }
+        gameOver = null
+    }
+
+    fun clearMessages() {
+        messages.clear()
+        pastMessages.clear()
+    }
+
     fun resetAll() {
         reset()
+        clearMessages()
         gameStatus = GameStatusPacket.DEFAULT
         cards.values.forEach { it.close() }
         cards = mutableMapOf()

@@ -19,6 +19,7 @@ internal class ServerPacketEvents(
     serverNetworking: IServerNetworking,
 ) {
 
+    val cardResetV1 = serverNetworking.registerS2C(CardResetPacket.V1)
     val cardDisplayV1 = serverNetworking.registerS2C(CardDisplayPacket.V1)
     val cardDisplayV2 = serverNetworking.registerS2C(CardDisplayPacket.V2)
     @Suppress("Deprecation")

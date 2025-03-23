@@ -98,10 +98,7 @@ internal class CountdownController(
                     if (state.state != GameState.COUNTDOWN)
                         return@execute
 
-                    val packet = CountdownPacket(remainingSeconds)
-                    for (player in playerManager.getPlayers()) {
-                        countdownService.sendCountdownPacket(player, packet)
-                    }
+                    countdownService.sendCountdownPacket(CountdownPacket(remainingSeconds))
 
                     // When the countdown ends, start the game!
                     if (remainingSeconds == 0) {

@@ -8,7 +8,6 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.MinecraftClient
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.koin.core.Koin
 
@@ -92,7 +91,7 @@ internal class BingoEndScoresWidget(
                 if (view != null) {
                     drawService.context.matrices.push()
                     drawService.context.matrices.translate(0f, 0f, 2000f)
-                    drawService.context.drawTooltip(textRenderer, view.display.players.map { Text.literal(it.name) }, mouseX, mouseY)
+                    drawService.context.drawTooltip(textRenderer, view.display.players.map { text.literal(it.name).value }, mouseX, mouseY)
                     drawService.context.matrices.pop()
                 }
             }

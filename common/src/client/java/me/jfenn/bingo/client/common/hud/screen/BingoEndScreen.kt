@@ -419,6 +419,11 @@ internal class BingoEndScreen(
     }
 
     override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
+        // If the gameOver state is cleared, close the screen!
+        if (state.gameOver == null) {
+            helper.close()
+        }
+
         if (sidebarOffsetInterpolate.update()) {
             updatePositions()
         }
