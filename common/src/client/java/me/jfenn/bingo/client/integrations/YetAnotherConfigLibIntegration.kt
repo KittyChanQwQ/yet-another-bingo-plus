@@ -21,6 +21,8 @@ import net.minecraft.util.Formatting
 
 internal interface YetAnotherConfigLibIntegration {
 
+    fun isInstalled(): Boolean
+
     fun buildConfigScreen(parent: Screen): Screen?
 
     companion object {
@@ -44,6 +46,7 @@ internal interface YetAnotherConfigLibIntegration {
 }
 
 internal class YetAnotherConfigLibIntegrationDummy : YetAnotherConfigLibIntegration {
+    override fun isInstalled(): Boolean = false
     override fun buildConfigScreen(parent: Screen): Screen? = null
 }
 
@@ -64,6 +67,8 @@ internal class YetAnotherConfigLibIntegrationImpl(
     private fun onConfigChanged() {
         eventBus.emit(ClientConfigChangedEvent, Unit)
     }
+
+    override fun isInstalled(): Boolean = true
 
     override fun buildConfigScreen(parent: Screen): Screen {
         return YetAnotherConfigLib.createBuilder()

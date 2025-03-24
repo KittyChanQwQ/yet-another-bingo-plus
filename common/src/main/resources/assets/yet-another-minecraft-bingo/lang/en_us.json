@@ -1,5 +1,6 @@
 {
   "bingo.bossbar.time_remaining_or_goal": "Time Remaining: %s or %s",
+  "bingo.card.settings_button": "Settings",
   "bingo.card.close": "Close",
   "bingo.card.free_space": "Free Space",
   "bingo.card.no_cards": "There are no Bingo Cards to display...",

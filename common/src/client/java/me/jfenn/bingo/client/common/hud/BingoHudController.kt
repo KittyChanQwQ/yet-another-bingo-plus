@@ -9,7 +9,6 @@ import me.jfenn.bingo.client.common.event.HudStateChangedEvent
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardManager
 import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
-import me.jfenn.bingo.client.common.hud.screen.BingoEndScreen
 import me.jfenn.bingo.client.common.hud.screen.BingoHudScreen
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.state.BingoHudState
@@ -56,8 +55,7 @@ internal class BingoHudController(
     private val clientCardManager: ClientCardManager,
     private val itemScoredRenderer: BingoMessageRenderer,
     private val readyHudRenderer: ReadyHudRenderer,
-    private val hudScreenFactory: BingoHudScreen.Factory,
-    private val endScreenFactory: BingoEndScreen.Factory,
+    private val endScreenFactory: BingoHudScreen.Factory,
     private val state: BingoHudState,
     private val text: TextProvider,
     keyBindingManager: IKeyBindingManager,
@@ -590,18 +588,12 @@ internal class BingoHudController(
                     }
                 } else {
                     val gameOver = state.gameOver
-                    val hudScreen = if (gameOver != null) {
+                    val hudScreen = if (gameOver != null || state.cards.isNotEmpty()) {
                         endScreenFactory.create(
                             gameOver = gameOver,
                             originalCardKey = getSelectedCard()?.teamKey,
                             originalCardPos = getCardPos(),
                             canEscape = true,
-                            onClose = { onCardHudClosed(it.getCardPositions()) }
-                        )
-                    } else if (state.cards.isNotEmpty()) {
-                        hudScreenFactory.create(
-                            originalCardKey = getSelectedCard()?.teamKey,
-                            originalCardPos = getCardPos(),
                             onClose = { onCardHudClosed(it.getCardPositions()) }
                         )
                     } else {
