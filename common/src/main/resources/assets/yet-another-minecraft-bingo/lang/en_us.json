@@ -140,6 +140,7 @@
   "bingo.goal.full_card": "Full Card",
   "bingo.goal.items": "Items",
   "bingo.goal.lines": "Lines",
+  "bingo.goal.cards": "Cards",
   "bingo.installed.getting_started_wiki": "Wiki: Getting Started",
   "bingo.installed.limited_singleplayer_mode": "Yet Another Bingo is running in limited (singleplayer) mode! Use '%s' to start a game, or enable the 'bingo' datapack for full functionality.",
   "bingo.installed.never_show_again": "Never show this again",

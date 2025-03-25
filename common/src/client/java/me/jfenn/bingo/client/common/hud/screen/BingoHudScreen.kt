@@ -6,6 +6,7 @@ import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.state.BingoHudState
+import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.integrations.YetAnotherConfigLibIntegration
 import me.jfenn.bingo.client.integrations.jei.IJeiApi
@@ -127,12 +128,11 @@ internal class BingoHudScreen(
                 else -> false
             }
         },
-        onViewClick = { view ->
-            if (gameOver != null) return@BingoCardsWidget false
+        onViewClick = { view: ClientCard ->
             state.selectedTeam = view.teamKey
             helper.close()
             true
-        },
+        }.takeIf { gameOver == null },
     )
 
     fun getCardPositions() = buildMap {

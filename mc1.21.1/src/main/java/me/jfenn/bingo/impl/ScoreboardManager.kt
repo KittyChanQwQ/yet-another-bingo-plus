@@ -14,7 +14,7 @@ import net.minecraft.scoreboard.number.BlankNumberFormat
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import java.util.Optional
+import java.util.*
 
 class ScoreboardManager(
     private val server: MinecraftServer,
@@ -150,5 +150,12 @@ class ObjectiveHandle(
     override fun getForPlayer(player: IPlayerHandle): Int? {
         val playerImpl = player as PlayerHandle
         return scoreboard.getScore(playerImpl.player, objective)?.score
+    }
+
+    override fun setPlayer(player: IPlayerHandle, value: Int) {
+        val playerImpl = player as PlayerHandle
+        scoreboard.getOrCreateScore(playerImpl.player, objective).apply {
+            score = value
+        }
     }
 }

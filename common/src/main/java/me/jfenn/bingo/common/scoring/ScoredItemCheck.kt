@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.objective.ItemObjectiveManager
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.CardShuffledEvent
+import me.jfenn.bingo.common.event.model.ScoreChangedEvent
 import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameEndReason
@@ -119,6 +120,7 @@ internal class ScoredItemCheck(
                 team.currentScore = scoreAfter
                 team.scoreUpdatedAt = tickStart
                 log.info("[ScoredItemCheck] Updated score for team {}: {}", team.id, scoreAfter)
+                eventBus.emit(ScoreChangedEvent, ScoreChangedEvent(team.key, scoreBefore, scoreAfter))
             }
 
             // if the team has scored a line, post a message

@@ -141,4 +141,11 @@ class ObjectiveHandle(
         val playerImpl = player as PlayerHandle
         return scoreboard.getPlayerScore(playerImpl.player.entityName, objective)?.score
     }
+
+    override fun setPlayer(player: IPlayerHandle, value: Int) {
+        val playerImpl = player as PlayerHandle
+        scoreboard.getPlayerScore(playerImpl.player.entityName, objective).apply {
+            score = value
+        }
+    }
 }

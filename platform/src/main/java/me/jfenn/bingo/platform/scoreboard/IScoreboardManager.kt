@@ -29,4 +29,5 @@ interface IObjectiveHandle {
     val name: String
     var displayName: IText
     fun getForPlayer(player: IPlayerHandle): Int?
+    fun setPlayer(player: IPlayerHandle, value: Int)
 }

@@ -52,6 +52,7 @@ import me.jfenn.bingo.common.scope.BingoPluginHolder
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.common.scope.ScopeManager
 import me.jfenn.bingo.common.scoreboard.ScoreboardController
+import me.jfenn.bingo.common.scoreboard.ScoreboardDataController
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.scoring.GameMessageController
 import me.jfenn.bingo.common.scoring.GameMessageService
@@ -309,6 +310,8 @@ val commonModule = module {
         scopedOf(::NightVisionController)
         scopedOf(::PlayerSettingsController)
         scopedOf(::PlayerSpectatorController)
+
+        scopedOf(::ScoreboardDataController)
         scopedOf(::ScoreboardController)
 
         scopedOf(::ChestService)
@@ -405,6 +408,8 @@ fun Scope.commonInit() {
     get<PlayerSpectatorController>()
     get<ChatMessageController>()
     get<ReadyController>()
+
+    get<ScoreboardDataController>()
     get<ScoreboardController>()
 
     get<GameStatusController>()

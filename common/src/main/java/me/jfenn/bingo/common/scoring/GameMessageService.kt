@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.scoring
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.map.CardTileImage
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -75,8 +76,8 @@ internal class GameMessageService(
             id = message.id,
             timeElapsed = message.timeElapsed,
             team = team.key,
-            image = message.image,
-            imageList = message.imageList,
+            image = message.image.takeIf { !isItemHidden } ?: CardTileImage.EMPTY,
+            imageList = message.imageList.takeIf { !isItemHidden }.orEmpty(),
             decoration = message.decoration.takeIf { !isItemHidden },
             messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
             message = chatMessage,
