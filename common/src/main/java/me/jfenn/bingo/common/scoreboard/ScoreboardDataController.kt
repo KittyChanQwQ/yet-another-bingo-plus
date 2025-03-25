@@ -60,26 +60,28 @@ class ScoreboardDataController(
     }
 
     init {
-        eventBus.register(StateChangedEvent) {
-            createItemsObjective()
-            createLinesObjective()
-            createCardsObjective()
-        }
+        if (state.isLobbyMode) {
+            eventBus.register(StateChangedEvent) {
+                createItemsObjective()
+                createLinesObjective()
+                createCardsObjective()
+            }
 
-        eventBus.register(ScoreChangedEvent) { event ->
-            state.teams[event.team]?.players
-                ?.mapNotNull { playerManager.getPlayer(it.uuid) }
-                ?.let { updatePlayers(it) }
-        }
+            eventBus.register(ScoreChangedEvent) { event ->
+                state.teams[event.team]?.players
+                    ?.mapNotNull { playerManager.getPlayer(it.uuid) }
+                    ?.let { updatePlayers(it) }
+            }
 
-        eventBus.register(PlayerEvent.Join) {
-            serverTaskExecutor.execute {
+            eventBus.register(PlayerEvent.Join) {
+                serverTaskExecutor.execute {
+                    updatePlayers(listOf(it.player))
+                }
+            }
+
+            eventBus.register(TeamChangedEvent) {
                 updatePlayers(listOf(it.player))
             }
-        }
-
-        eventBus.register(TeamChangedEvent) {
-            updatePlayers(listOf(it.player))
         }
     }
 }
