@@ -460,8 +460,6 @@
   "bingo.tier.s.tooltip": "Pour la plupart de ces objets, vous avez besoin de finir le jeu. Vous avez été prévenu.",
   "bingo.timer.game_over": "(Partie Terminé)",
   "bingo.timer.no_time_limit": "(Pas de Temps Limite)",
-  "bingo.world.new_game": "Nouvelle partie",
-  "bingo.world.next_round": "Manche Suivante",
   "bingo.world.preparing": "Préparation d'un nouveau monde Bingo...",
   "biome.bingo.lobby": "Lobby de Bingo"
 }

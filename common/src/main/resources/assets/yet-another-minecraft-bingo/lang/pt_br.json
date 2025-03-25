@@ -35,6 +35,7 @@
   "bingo.command.lobby.warning4": "(execute '%s' se você entende isso e deseja continuar)",
   "bingo.command.ready.cancelled": "Temporizador de início cancelado!",
   "bingo.command.reset.success": "Reiniciando partida...",
+  "bingo.command.resume.success": "Resumiu o jogo!",
   "bingo.command.shuffleteams.success": "As equipes foram mescladas!",
   "bingo.command.start.already_started": "O jogo já começou!",
   "bingo.command.start.data_recommends": "O objetivo de pacote de dados %s requer %s. (Use '%s' para ignorar)",
@@ -460,8 +461,8 @@
   "bingo.tier.s.tooltip": "Para muito desses itens, você precisará literalmente finalizar o jogo. Você foi avisado.",
   "bingo.timer.game_over": "(Fim de jogo)",
   "bingo.timer.no_time_limit": "(Sem limite de tempo)",
-  "bingo.world.new_game": "Novo jogo",
-  "bingo.world.next_round": "Próxima rodada",
+  "bingo.world.return_to_lobby": "Retornar ao lobby",
+  "bingo.world.keep_playing": "Continuar jogando",
   "bingo.world.preparing": "Preparando um novo mundo Bingo...",
   "biome.bingo.lobby": "Lobby do Bingo"
 }

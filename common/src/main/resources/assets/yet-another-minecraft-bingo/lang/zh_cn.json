@@ -35,6 +35,7 @@
   "bingo.command.lobby.warning4": "（如果你理解并希望继续，请运行“%s”）",
   "bingo.command.ready.cancelled": "准备就绪计时器已取消！",
   "bingo.command.reset.success": "正在重置游戏...",
+  "bingo.command.resume.success": "游戏已恢复！",
   "bingo.command.shuffleteams.success": "队伍已重新分配！",
   "bingo.command.start.already_started": "游戏已经开始了！",
   "bingo.command.start.data_recommends": "此数据包的目标 %s 建议 %s。（使用 '%s' 来忽略）",
@@ -460,8 +461,8 @@
   "bingo.tier.s.tooltip": "对于许多这类物品，你需要通关游戏甚至还需要做更多。请三思而行。",
   "bingo.timer.game_over": "（游戏结束）",
   "bingo.timer.no_time_limit": "（无时间限制）",
-  "bingo.world.new_game": "新游戏",
-  "bingo.world.next_round": "下一轮",
+  "bingo.world.return_to_lobby": "返回大厅",
+  "bingo.world.keep_playing": "继续游玩",
   "bingo.world.preparing": "生成新的Bingo世界中……",
   "biome.bingo.lobby": "Bingo 大厅"
 }

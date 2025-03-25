@@ -309,7 +309,5 @@
   "bingo.tier.s.tooltip": "W przypadku wielu z tych przedmiotów musisz ukończyć grę i nawet więcej. Zostałeś ostrzeżony.",
   "bingo.timer.game_over": "(Koniec Gry)",
   "bingo.timer.no_time_limit": "(Brak limitu czasowego)",
-  "bingo.world.new_game": "Nowa gra",
-  "bingo.world.next_round": "Następna runda",
   "bingo.world.preparing": "Przygotowanie nowego świata Bingo..."
 }

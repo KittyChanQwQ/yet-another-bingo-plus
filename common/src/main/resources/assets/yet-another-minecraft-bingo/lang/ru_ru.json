@@ -327,7 +327,5 @@
   "bingo.team.yellow": "Жёлтая",
   "bingo.timer.game_over": "(Игра окончена)",
   "bingo.timer.no_time_limit": "(Без ограничения времени)",
-  "bingo.world.new_game": "Новая игра",
-  "bingo.world.next_round": "Следующий Раунд",
   "bingo.world.preparing": "Подготовка нового мира Бинго..."
 }
