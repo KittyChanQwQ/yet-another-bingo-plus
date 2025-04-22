@@ -1,11 +1,13 @@
 package me.jfenn.bingo.common.team
 
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.server.network.ServerPlayerEntity
@@ -22,6 +24,7 @@ class TeamService(
     private val text: TextProvider,
     private val playerManager: IPlayerManager,
     private val mapService: IMapService,
+    private val permissions: IPermissionsApi,
 ) {
 
     fun getPlayerTeam(player: IPlayerHandle) = getPlayerTeam(player.player)
@@ -36,6 +39,8 @@ class TeamService(
     fun isPlaying(player: ServerPlayerEntity): Boolean {
         return getPlayerTeam(player) != null
     }
+
+    fun isTeamChosen(player: IPlayerHandle) = isPlaying(player) || state.playersSpectatingIds.contains(player.uuid)
 
     fun getTeamMap(team: BingoTeam): BingoMap {
         return team.map ?: run {
@@ -65,6 +70,7 @@ class TeamService(
         // Remove player from their existing team
         getPlayerTeam(player)?.players?.remove(playerProfile)
 
+        state.playersSpectatingIds.remove(player.uuid)
         teamManager.setPlayerTeam(player.player, createTeam(team))
         team.players.add(playerProfile)
         player.sendMessage(
@@ -112,6 +118,7 @@ class TeamService(
         }
 
         val players = playerManager.getPlayers()
+            .filter { !state.playersSpectatingIds.contains(it.uuid) }
         val playersPerTeam = ceil(players.size / numTeams.coerceIn(1, teams.size).toDouble()).toInt()
 
         players.shuffled()
@@ -129,6 +136,15 @@ class TeamService(
             teamManager.deleteTeam(team.id)
         }
         state.teams.clear()
+    }
+
+    fun notifyMissingTeam(player: IPlayerHandle) {
+        val title = text.string(StringKey.CommandStartJoinATeam)
+        val message = text.string(StringKey.CommandStartJoinATeamMessage, JoinCommand.JOIN_COMMAND)
+
+        if (permissions.hasPermission(player, Permission.COMMAND_JOIN)) {
+            player.sendTitle(title, message)
+        }
     }
 
 }

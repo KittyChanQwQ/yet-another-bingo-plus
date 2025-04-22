@@ -1,15 +1,17 @@
 package me.jfenn.bingo.common.ready
 
-import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.IPlayerManager
 
 class ReadyService(
     private val state: BingoState,
+    private val teamService: TeamService,
     private val config: BingoConfig,
     private val readyTimerState: ReadyTimerState,
     private val playerManager: IPlayerManager,
@@ -30,6 +32,13 @@ class ReadyService(
     }
 
     fun toggleReady(player: IPlayerHandle) {
-        setReady(player, !readyTimerState.isReady(player.uuid))
+        val isReady = !readyTimerState.isReady(player.uuid)
+        // If a player is trying to ready-up and has not chosen a team, ask them to do so!
+        if (isReady && !teamService.isTeamChosen(player)) {
+            teamService.notifyMissingTeam(player)
+            return
+        }
+
+        setReady(player, isReady)
     }
 }

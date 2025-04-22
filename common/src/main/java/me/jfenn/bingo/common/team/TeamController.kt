@@ -82,6 +82,7 @@ class TeamController(
                     val newTeam = teamService.getPlayerTeam(player)
                     eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, newTeam))
                     state.playersJoinedIds.add(player.uuid)
+                    state.playersSpectatingIds.remove(player.uuid)
                 }
             }
         }

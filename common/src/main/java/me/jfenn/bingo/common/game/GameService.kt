@@ -4,7 +4,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.client.platform.text.TextAction
-import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
@@ -19,14 +18,12 @@ import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.WriteStatsService
-import me.jfenn.bingo.common.team.JoinCommand
 import me.jfenn.bingo.common.team.ShuffleTeamsCommand
 import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
@@ -47,7 +44,6 @@ internal class GameService(
     private val cardService: CardService,
     private val objectiveManager: BingoObjectiveManager,
     private val playerManager: IPlayerManager,
-    private val permissions: IPermissionsApi,
     private val optionsService: OptionsService,
     private val gameOverService: GameOverService,
     private val writeStatsService: WriteStatsService,
@@ -69,13 +65,8 @@ internal class GameService(
 
         notifySpamTime = now
 
-        val title = text.string(StringKey.CommandStartJoinATeam)
-        val message = text.string(StringKey.CommandStartJoinATeamMessage, JoinCommand.JOIN_COMMAND)
-
         for (player in playersWithoutATeam) {
-            if (permissions.hasPermission(player, Permission.COMMAND_JOIN)) {
-                player.sendTitle(title, message)
-            }
+            teamService.notifyMissingTeam(player)
         }
     }
 
@@ -85,7 +76,8 @@ internal class GameService(
         allowSpectators: Boolean = false,
     ): Boolean {
         val playersWithoutATeam = playerManager.getPlayers()
-            .filter { teamService.getPlayerTeam(it.player) == null }
+            // filter for players that have not chosen a team
+            .filter { !teamService.isTeamChosen(it) }
 
         if (playersWithoutATeam.isNotEmpty() && !allowSpectators) {
             // If there's more than one player, teams need to be set up manually!

@@ -58,6 +58,11 @@ data class BingoState(
      */
     val players: MutableMap<UuidAsString, PlayerState> = mutableMapOf(),
     /**
+     * Stores players that have opted into spectating with "/join spectators"
+     * (will not be warned when starting the game, do not block ready-up)
+     */
+    val playersSpectatingIds: MutableSet<UuidAsString> = mutableSetOf(),
+    /**
      * Stores if the game was ended manually (with "/bingo end")
      */
     var isForfeit: Boolean = false,
@@ -251,6 +256,7 @@ data class BingoState(
         timeOffline = Duration.ZERO
         timeAdjustment = Duration.ZERO
         teams.clear()
+        playersSpectatingIds.clear()
         previewMap = null
         // [ScoredItemCheck] calls createInitialCards when entering PREGAME, so this card should be immediately replaced
         cards.clear()
