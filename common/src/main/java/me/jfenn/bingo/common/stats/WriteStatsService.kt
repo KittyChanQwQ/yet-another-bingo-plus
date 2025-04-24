@@ -76,7 +76,7 @@ internal class WriteStatsService(
             val insertTeam = GameTeamInfo(
                 id = team.key,
                 gameId = insertGame.id,
-                name = serializers.json.encodeToString(team.name),
+                name = serializers.json.encodeToString(team.getSimpleName()),
                 isWinner = team.isWinner()
             ).also { insertTeams.add(it) }
 

@@ -108,7 +108,7 @@ data class BingoTeam(
         return players.any { it.uuid == player.uuid }
     }
 
-    fun getSimpleName() = name
+    fun getSimpleName() = name.copy()
 
     fun getName(
         textProvider: TextProvider,

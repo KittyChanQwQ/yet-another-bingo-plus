@@ -57,7 +57,7 @@ class TeamService(
     private fun createTeam(team: BingoTeam): ITeamHandle {
         return teamManager.createTeam(
             teamName = team.id,
-            displayName = team.name,
+            displayName = team.getSimpleName(),
             color = team.textColor,
         )
     }

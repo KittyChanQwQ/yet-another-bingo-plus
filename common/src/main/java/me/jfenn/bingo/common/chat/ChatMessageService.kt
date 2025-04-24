@@ -53,7 +53,7 @@ internal class ChatMessageService(
     ): Boolean {
         val team = teamService.getPlayerTeam(sender) ?: return false
 
-        val teamName = team.name.bracketed().formatted(team.textColor)
+        val teamName = team.getSimpleName().bracketed().formatted(team.textColor)
 
         playerManager.getPlayers()
             .filter { team.includesPlayer(it) }

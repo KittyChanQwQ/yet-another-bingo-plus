@@ -59,8 +59,10 @@ internal data class BingoCardColors(
         val colors = teamKey?.id?.let { teams[it] }
             ?: teamKey?.label?.let { teams[it] }
             ?: formatting?.name?.lowercase()?.let { teams[it] }
-            ?: teams["preview"]
-            ?: default
+            ?: default.copy(
+                outlineColor = formatting?.colorValue?.let { java.awt.Color(it) }
+                    ?: default.outlineColor,
+            )
 
         return TeamColors(
             tileAchievedColor = getValue(colors, Team::tileAchievedColor)
