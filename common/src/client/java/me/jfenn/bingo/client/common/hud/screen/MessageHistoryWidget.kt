@@ -65,7 +65,7 @@ internal class MessageHistoryWidget(
                 8 + 8
 
         messages = state.pastMessages.map {
-            messageRenderer.getMessageWrapped(it, width)
+            messageRenderer.getMessageWrapped(it, width - 4)
         }
     }
 
@@ -171,7 +171,7 @@ internal class MessageHistoryWidget(
         messages.reversed().forEach { scoreMessage ->
             drawService.matrices.push()
             drawService.matrices.translate(
-                -8f,
+                -6f,
                 drawY.toFloat(),
                 0f
             )
