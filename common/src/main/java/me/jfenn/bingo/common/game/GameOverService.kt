@@ -7,6 +7,8 @@ import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.options.EndWhen
+import me.jfenn.bingo.common.scoring.ScoreRanking
+import me.jfenn.bingo.common.scoring.ScoreRankingService
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
@@ -45,7 +47,7 @@ class GameOverService(
         val playerStates: Map<UuidAsString, PlayerState>,
         val isBestTime: Boolean,
         val prevBestTime: Duration?,
-        val scoreRankings: List<GameOverScoreRanking>,
+        val scoreRankings: List<ScoreRanking>,
     )
 
     @Serializable
@@ -111,6 +113,14 @@ class GameOverService(
         )?.formatted(Formatting.YELLOW)
     }
 
+    private fun getTeamDuration(team: BingoTeam): Duration? {
+        return team.winner?.instant?.let { completedAt ->
+            completedAt - (state.startedAt ?: completedAt)
+        }
+            ?.plus(state.timeAdjustment)
+            ?.minus(state.timeOffline)
+    }
+
     fun getGameInfo(reason: GameEndReason?, endedAt: Instant): GameOverInfo {
         val winningTeams = state.getRegisteredTeams()
             .filter { it.isWinner() }
@@ -151,44 +161,11 @@ class GameOverService(
                 && !state.isForfeit
                 && winningTeams.isNotEmpty()
 
-        val scoreRankingScores = state.getRegisteredTeams()
-            .map { team ->
-                val duration = team.winner?.instant?.let { completedAt ->
-                    completedAt - (state.startedAt ?: completedAt)
-                }
-                    ?.plus(state.timeAdjustment)
-                    ?.minus(state.timeOffline)
-
-                GameOverScoreRanking(
-                    index = 0,
-                    key = team.key,
-                    score = team.score,
-                    duration = duration,
-                )
-            }
-            .sortedWith(
-                Comparator.comparingLong<GameOverScoreRanking> { it.duration?.inWholeMilliseconds ?: Long.MAX_VALUE }
-                    .thenComparingInt { -it.score.cards }
-                    .thenComparingInt { -it.score.lines }
-                    .thenComparingInt { -it.score.items }
-            )
-
-        val scoreRankings = buildList<GameOverScoreRanking> {
-            var index = -1
-            for (ranking in scoreRankingScores) {
-                // Only increment the index if the teams are not tied
-                val prevRanking = lastOrNull()
-                if (prevRanking?.score != ranking.score || prevRanking.duration != ranking.duration) {
-                    index++
-                }
-
-                add(ranking.copy(index = index))
-            }
-        }
+        val scoreRankings = ScoreRankingService.getScoreRankings(state)
             .let { rankings ->
                 // If we're in infinite mode, then there isn't a "finish"
                 // - use the game duration as each team's completion time, instead of showing DNF
-                if (options.winCondition is BingoWinCondition.Infinite) {
+                if (state.options.winCondition is BingoWinCondition.Infinite) {
                     rankings.map { it.copy(duration = gameDuration) }
                 } else {
                     rankings

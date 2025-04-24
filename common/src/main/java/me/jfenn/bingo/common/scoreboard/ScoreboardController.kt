@@ -1,18 +1,23 @@
 package me.jfenn.bingo.common.scoreboard
 
 import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.options.BingoGoal
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.common.scoring.ScoreRankingService
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerManager
@@ -34,6 +39,83 @@ internal class ScoreboardController(
     private val messageService: MessageService,
     private val text: TextProvider,
 ) : BingoComponent() {
+
+    val isMultipleTeams get() = state.state == GameState.PREGAME || state.getRegisteredTeams().size > 1
+
+    val isMultiCardWinCondition get() = when (
+        val winCondition = options.winCondition
+    ) {
+        is BingoWinCondition.Cards -> winCondition.cards > 1
+        is BingoWinCondition.Infinite -> true
+        is BingoWinCondition.ReplaceGoals -> false
+    }
+
+    private fun getTeam(team: BingoTeam?) = team?.takeIf { isMultipleTeams }
+        ?.getName(text, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
+        ?.let { text.string(StringKey.ScoreboardTeam, it) }
+
+    private fun getTeamScore(team: BingoTeam?) = team?.score
+        ?.let { score ->
+            listOfNotNull(
+                text.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}")
+                    .formatted(team.textColor)),
+                text.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}")
+                    .formatted(team.textColor)),
+                text.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}")
+                    .formatted(team.textColor))
+                    .takeIf { isMultiCardWinCondition },
+            )
+        }
+
+    private fun getTeamScores(team: BingoTeam?, teamCard: BingoCard): List<IText> {
+        val rankings = ScoreRankingService.getScoreRankings(state)
+        return ScoreRankingService.getScoreRankings(state)
+            .filter { options.showLeadingTeam || it.key == team?.key || team == null }
+            .take(8)
+            .let { list ->
+                // Ensure that the current team is included in the scoreboard
+                val teamRanking = rankings.find { it.key == team?.key }
+                if (teamRanking == null || list.contains(teamRanking)) {
+                    list
+                } else {
+                    list.dropLast(1) + teamRanking
+                }
+            }
+            .map { ranking ->
+                val isTeamVisible = ranking.key == team?.key || team == null
+                val score = ranking.duration?.formatHHMMSS()
+                    ?.let { text.literal(it) }
+                    ?: ranking.score.cards
+                        .takeIf { it > 0 && (options.showCompletedItems || options.showCompletedLines || isTeamVisible) }
+                        ?.let { text.cardCount(it) }
+                    ?: ranking.score.lines
+                        .takeIf { it > 0 && teamCard.options.goal is BingoGoal.Lines && (options.showCompletedLines || isTeamVisible) }
+                        ?.let { text.lineCount(it) }
+                    ?: ranking.score.items
+                        .takeIf { options.showCompletedItems || isTeamVisible }
+                        ?.let { text.itemCount(it) }
+
+                text.literal("${ranking.index+1}. ")
+                    .append(
+                        state.teams[ranking.key]
+                            ?.getName(
+                                textProvider = text,
+                                playerName = true,
+                                symbol = true,
+                                bracketed = false,
+                                teamNameKey = null,
+                            )
+                            ?: text.empty()
+                    )
+                    .let {
+                        if (score != null) {
+                            it.append(" · ").append(score)
+                        } else {
+                            it
+                        }
+                    }
+            }
+    }
 
     init {
         events.onEnter(GameState.PREGAME) {
@@ -91,24 +173,15 @@ internal class ScoreboardController(
                         put("%time%", emptyList())
                     }
 
-                    team?.takeIf { isMultipleTeams }
-                        ?.getName(text, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
-                        ?.let { text.string(StringKey.ScoreboardTeam, it) }
-                        .also { put("%team%", listOfNotNull(it)) }
+                    put("%team%", listOfNotNull(getTeam(team)))
+                    put("%team_score%", getTeamScore(team).orEmpty())
 
-                    team?.score
-                        ?.let { score ->
-                            listOfNotNull(
-                                text.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}")
-                                    .formatted(team.textColor)),
-                                text.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}")
-                                    .formatted(team.textColor)),
-                                text.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}")
-                                    .formatted(team.textColor))
-                                    .takeIf { isMultiCardWinCondition },
-                            )
-                        }
-                        .also { put("%team_score%", it.orEmpty()) }
+                    if (state.getRegisteredTeams().size <= 1) {
+                        // if in singleplayer, fall back to the explicit "Team:" and "Lines:" score text
+                        put("%team_scores%", get("%team%").orEmpty() + get("%team_score%").orEmpty())
+                    } else {
+                        put("%team_scores%", getTeamScores(team, teamCard))
+                    }
 
                     val leadingTeam = ScoreService.getLeading(state)
                     val leadingTeamName = leadingTeam?.getName(text, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
