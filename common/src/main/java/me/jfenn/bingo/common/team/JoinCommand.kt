@@ -2,8 +2,8 @@ package me.jfenn.bingo.common.team
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
+import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.data.ScopedData
-import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.ChestService
 import me.jfenn.bingo.common.spawn.PlayerController
@@ -16,8 +16,6 @@ import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
-import me.jfenn.bingo.platform.commands.IExecutionSource
-import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.util.Formatting
 import java.util.concurrent.CompletableFuture
 
@@ -26,16 +24,11 @@ class JoinCommand(
     private val text: TextProvider,
 ) : BingoComponent() {
 
-    private fun IExecutionSource.isNotProcessingTeams(): Boolean {
-        val state = scope.get<BingoState>()
-        return state.state != GameState.STARTING && state.state != GameState.PRELOADING
-    }
-
     private fun IExecutionContext.joinTeam(
         player: IPlayerHandle,
         teamLabelStr: String,
     ) {
-        if (teamLabelStr == "spectators") {
+        if (teamLabelStr == SPECTATORS) {
             joinSpectators(player)
             return
         }
@@ -105,43 +98,39 @@ class JoinCommand(
     ) {
         val state = scope.get<BingoState>()
         val teamService = scope.get<TeamService>()
-        val eventBus = scope.get<IEventBus>()
+        val playerController = scope.get<PlayerController>()
 
-        val playerProfile = player.profile
-        val team = teamService.getPlayerTeam(player)
-        if (team != null) {
-            team.players.remove(playerProfile)
-            eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, null))
+        teamService.joinSpectators(player)
+
+        if (state.state == GameState.PLAYING) {
+            // if a player moves to spectator while in-game, update their gamemode/spawnpoint
+            playerController.updateGameMode(player, forceReset = true)
         }
 
-        state.playersSpectatingIds.add(player.uuid)
-        player.sendMessage(
-            text.string(StringKey.LobbyTeamSpectators)
-                .formatted(Formatting.YELLOW)
-        )
-
-        sendFeedback(
-            text.string(
-                StringKey.CommandJoinSpectators,
-                player.playerName,
+        if (player != this.player) {
+            sendFeedback(
+                text.string(
+                    StringKey.CommandJoinSpectators,
+                    player.playerName,
+                )
             )
-        )
+        }
     }
 
     private fun IExecutionContext.listTeams(): List<String> {
-        return scope.get<ScopedData>().teamPresets.keys.map { it.label } + "spectators"
+        return scope.get<ScopedData>().teamPresets.keys.map { it.label } + SPECTATORS
     }
 
     init {
         commandManager.register("join") {
             string("team", { listTeams() }) { teamArg ->
-                requires { hasPermission(Permission.COMMAND_JOIN) && isNotProcessingTeams() }
+                requires { hasPermission(Permission.COMMAND_JOIN) && hasState(GameState.PREGAME, GameState.PLAYING) }
                 executes {
                     joinTeam(playerOrThrow, getArgument(teamArg))
                 }
 
                 player("player") { playerArg ->
-                    requires { hasPermission(Permission.COMMAND_JOIN_PLAYER) && isNotProcessingTeams() }
+                    requires { hasPermission(Permission.COMMAND_JOIN_PLAYER) && hasState(GameState.PREGAME, GameState.PLAYING) }
                     executes {
                         val player = getArgument(playerArg)
                         joinTeam(player, getArgument(teamArg))
@@ -153,5 +142,6 @@ class JoinCommand(
 
     companion object {
         const val JOIN_COMMAND = "/join"
+        const val SPECTATORS = "spectators"
     }
 }

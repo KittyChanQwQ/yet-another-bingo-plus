@@ -81,6 +81,26 @@ class TeamService(
         eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, team))
     }
 
+    fun joinSpectators(player: IPlayerHandle) {
+        val team = getPlayerTeam(player)
+
+        if (team != null) {
+            teamManager.setPlayerTeam(player.player, null)
+            val removed = team.players.remove(player.profile)
+            if (removed) {
+                eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, null))
+            }
+        }
+
+        val addedToSpectators = state.playersSpectatingIds.add(player.uuid)
+        if (addedToSpectators) {
+            player.sendMessage(
+                text.string(StringKey.LobbyTeamSpectators)
+                    .formatted(Formatting.YELLOW)
+            )
+        }
+    }
+
     private val extraTeamColors = arrayOf(
         Formatting.DARK_AQUA,
         Formatting.DARK_BLUE,
