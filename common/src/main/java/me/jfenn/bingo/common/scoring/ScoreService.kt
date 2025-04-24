@@ -149,8 +149,8 @@ internal object ScoreService {
     }
 
     fun getLeading(state: BingoState, allowTies: Boolean = false): BingoTeam? {
-        return getLeadingByCards(state, allowTies)
-                ?: getLeadingByLines(state, allowTies)
+        return getLeadingByCards(state, false)
+                ?: getLeadingByLines(state, false)
                     ?: getLeadingByItems(state, allowTies)
     }
 
