@@ -1,5 +1,9 @@
 {
   "type": "item",
   "item": "minecraft:blaze_rod",
-  "count": [4, 8, 12, 16]
+  "count": {
+    "type": "random",
+    "min": 3,
+    "max": 8
+  }
 }
