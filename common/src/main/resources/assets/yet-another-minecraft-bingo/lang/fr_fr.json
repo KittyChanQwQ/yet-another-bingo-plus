@@ -1,5 +1,6 @@
 {
   "bingo.bossbar.time_remaining_or_goal": "Temps Restant : %s ou %s",
+  "bingo.card.settings_button": "Options",
   "bingo.card.close": "Fermer",
   "bingo.card.free_space": "Case Libre",
   "bingo.card.no_cards": "Il n'y a pas de Carte de Bingo à afficher...",
@@ -35,6 +36,7 @@
   "bingo.command.lobby.warning4": "(Lancer '%s' si vous comprenez cela et que vous voulez continuer)",
   "bingo.command.ready.cancelled": "Chrono de préparation annulé !",
   "bingo.command.reset.success": "Réinitialisation de la partie...",
+  "bingo.command.resume.success": "La partie continue !",
   "bingo.command.shuffleteams.success": "Les équipes ont été mélangées !",
   "bingo.command.start.already_started": "La partie a déjà commencé !",
   "bingo.command.start.data_recommends": "Le pack de données %s recommande %s. (utilisez '%s' pour ignorer)",
@@ -53,6 +55,7 @@
   "bingo.command.stats.reset.all": "Tous les meilleurs scores (meilleurs temps, victoire d'affilés max) sur ce serveur ont été effacés.",
   "bingo.command.stats.reset.game": "Les meilleurs scores (meilleurs temps) pour la configuration de jeu actuel ont été effacés.",
   "bingo.command.stats.reset.player": "Les meilleurs scores (victoire d'affilés max) pour le joueur %s ont été effacés.",
+  "bingo.command.teammsg.spectators": "Spectateurs",
   "bingo.config.card_alignment": "Alignement de la Carte de Bingo",
   "bingo.config.card_alignment.bottom_left": "En Bas à Gauche",
   "bingo.config.card_alignment.bottom_right": "En Bas à Droite",
@@ -94,6 +97,7 @@
   "bingo.game.announce.starting": "La partie va commencer !",
   "bingo.game.card_count": "%s cartes",
   "bingo.game.card_single": "1 carte",
+  "bingo.game.waiting_to_start": "En attente…",
   "bingo.game.end.completed_card": "%s a complété leur carte !",
   "bingo.game.end.completed_card_by_stalemate": "%s a gagné par blocage.",
   "bingo.game.end.draw": "Égalité !",
@@ -136,6 +140,7 @@
   "bingo.goal.full_card": "Carte Pleine",
   "bingo.goal.items": "Objets",
   "bingo.goal.lines": "Lignes",
+  "bingo.goal.cards": "Cartes",
   "bingo.installed.getting_started_wiki": "Wiki : Pour commencer (en)",
   "bingo.installed.limited_singleplayer_mode": "Encore un Autre Bingo est lancé en mode limité ! (monde solo) Utilisez '%s' pour lancer une partie, ou activez le pack de données 'bingo' pour un fonctionnement complet.",
   "bingo.installed.never_show_again": "Ne plus afficher ce message",
@@ -460,6 +465,8 @@
   "bingo.tier.s.tooltip": "Pour la plupart de ces objets, vous avez besoin de finir le jeu. Vous avez été prévenu.",
   "bingo.timer.game_over": "(Partie Terminé)",
   "bingo.timer.no_time_limit": "(Pas de Temps Limite)",
+  "bingo.world.return_to_lobby": "Retour au lobby",
+  "bingo.world.keep_playing": "Continuer à Jouer",
   "bingo.world.preparing": "Préparation d'un nouveau monde Bingo...",
   "biome.bingo.lobby": "Lobby de Bingo"
 }

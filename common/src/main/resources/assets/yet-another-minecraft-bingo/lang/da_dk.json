@@ -36,6 +36,7 @@
   "bingo.command.start.invalid_distribution": "Vare fordeling skal løbe op til 25!",
   "bingo.command.start.join_a_team": "Bliv en del af et hold!",
   "bingo.command.start.join_a_team_message": "Brug '%s' kommandoen eller klik på et hold for at blive en del af det!",
+  "bingo.command.start.lockout_with_lines_goal": "Lockout er aktiveret, men kortmålet er '%s' - det kan føre til et dødvande. Du vil måske hellere have dette i stedet:",
   "bingo.command.start.players_missing_teams": "Nogle spillere har ikke valgt et hold! (%s)",
   "bingo.command.start.players_missing_teams_hint": "Kør '%s' for at tildele hold. Brug '%s' eller snig+klik for at ignorere.",
   "bingo.command.start.success": "Starter spillet...",
@@ -66,8 +67,13 @@
   "bingo.config.enable_client_hud.description": "Om klient-sidens Bingo Kort HUD er gengivet.",
   "bingo.config.gui": "Grafisk brugergrænseflade muligheder",
   "bingo.config.gui.hud_settings": "HUD indstillinger",
+  "bingo.config.hide_on_chat.description": "Skjuler Bingo Kortets overlay, når chat-skærmen er åben.",
+  "bingo.config.quick_start_button.description2": "Uden dette, så kan du lave et Bingo spil ved at tilføje den indbyggede 'bingo.zip' data pakke i 'Lav verden' menuen.",
+  "bingo.config.show_multiple_cards": "Vis Flere Kort",
   "bingo.installed.getting_started_wiki": "Wiki: Kom Godt i Gang",
   "bingo.installed.never_show_again": "Aldrig hvis dette igen",
   "bingo.installed.server_setup_wiki": "Wiki: Server Setup",
-  "bingo.installed.smp_mode": "Endnu En Bingo kører i SMP Tilstand! Brug '%s' til opsætning af Lobby Tilstand, eller '%s' for at starte et spil."
+  "bingo.installed.smp_mode": "Endnu En Bingo kører i SMP Tilstand! Brug '%s' til opsætning af Lobby Tilstand, eller '%s' for at starte et spil.",
+  "bingo.intro.use_coords": "Brug \"/coords\" til at holde styr på koordinater og del dem med dit hold.",
+  "bingo.options.mode_lockout": "Lockout"
 }
