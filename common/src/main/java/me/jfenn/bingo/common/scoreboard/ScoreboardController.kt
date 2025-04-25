@@ -50,7 +50,7 @@ internal class ScoreboardController(
         is BingoWinCondition.ReplaceGoals -> false
     }
 
-    private fun getTeam(team: BingoTeam?) = team?.takeIf { isMultipleTeams }
+    private fun getTeamName(team: BingoTeam?) = team?.takeIf { isMultipleTeams }
         ?.getName(text, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
         ?.let { text.string(StringKey.ScoreboardTeam, it) }
 
@@ -95,7 +95,15 @@ internal class ScoreboardController(
                         .takeIf { options.showCompletedItems || isTeamVisible }
                         ?.let { text.itemCount(it) }
 
-                text.literal("${ranking.index+1}. ")
+                text.empty()
+                    .append(
+                        if (ranking.key == team?.key) {
+                            text.literal("➤ ").formatted(team.textColor)
+                        } else {
+                            text.empty()
+                        }
+                    )
+                    .append("${ranking.index+1}. ")
                     .append(
                         state.teams[ranking.key]
                             ?.getName(
@@ -114,7 +122,54 @@ internal class ScoreboardController(
                             it
                         }
                     }
+                    .formatted(if (ranking.key == team?.key) Formatting.WHITE else Formatting.GRAY)
             }
+    }
+
+    private fun getLeadingName(leadingTeam: BingoTeam?): IText? {
+        val leadingTeamName = leadingTeam?.getName(text, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
+            ?: text.string(StringKey.ScoreboardLeadingTeamTie).formatted(Formatting.WHITE)
+        return leadingTeamName.takeIf { options.showLeadingTeam && isMultipleTeams }
+            ?.let { text.string(StringKey.ScoreboardLeadingTeam, it) }
+    }
+
+    private fun getLeadingScore(team: BingoTeam?, leadingTeam: BingoTeam?): List<IText> {
+        val leadingTeamFormatting = when {
+            // if the leading team should be hidden, don't use its formatting
+            !options.showLeadingTeam -> Formatting.WHITE
+            // otherwise, default to WHITE if the team is tied
+            else -> leadingTeam?.textColor ?: Formatting.WHITE
+        }
+
+        val leadingTeamScore = when {
+            leadingTeam == null -> TeamScore(
+                // if the leading team is a tie, find one of the tied teams to get the item/line/card count
+                items = ScoreService.getLeadingByItems(state, allowTies = true)?.score?.items ?: 0,
+                lines = ScoreService.getLeadingByLines(state, allowTies = true)?.score?.lines ?: 0,
+                cards = ScoreService.getLeadingByCards(state, allowTies = true)?.score?.cards ?: 0,
+            )
+            else -> leadingTeam.score
+        }
+
+        val showLeadingScore = (options.showCompletedItems || options.showCompletedLines) && team != leadingTeam
+        val showLeadingScoreCards = isMultiCardWinCondition && leadingTeamScore.cards != team?.score?.cards
+
+        return leadingTeamScore
+            .takeIf { showLeadingScore }
+            ?.let { score ->
+                listOfNotNull(
+                    text.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}")
+                        .formatted(leadingTeamFormatting))
+                        .takeUnless { showLeadingScoreCards },
+                    text.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}")
+                        .formatted(leadingTeamFormatting))
+                        .takeUnless { showLeadingScoreCards },
+                    text.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}")
+                        .formatted(leadingTeamFormatting))
+                        .takeIf { showLeadingScoreCards },
+                )
+            }
+            .orEmpty()
     }
 
     init {
@@ -124,15 +179,6 @@ internal class ScoreboardController(
         }
 
         events.onUpdateTick {
-            val isMultipleTeams = state.state == GameState.PREGAME || state.getRegisteredTeams().size > 1
-            val isMultiCardWinCondition = when (
-                val winCondition = options.winCondition
-            ) {
-                is BingoWinCondition.Cards -> winCondition.cards > 1
-                is BingoWinCondition.Infinite -> true
-                is BingoWinCondition.ReplaceGoals -> false
-            }
-
             for (team in state.teams.values + null) {
                 val teamCard = team?.let { state.getCard(it) } ?: state.getActiveCard()
 
@@ -173,59 +219,28 @@ internal class ScoreboardController(
                         put("%time%", emptyList())
                     }
 
-                    put("%team%", listOfNotNull(getTeam(team)))
+                    put("%team%", listOfNotNull(getTeamName(team)))
                     put("%team_score%", getTeamScore(team).orEmpty())
+
+                    val leadingTeam = ScoreService.getLeading(state)
+                    put("%leading%", listOfNotNull(getLeadingName(leadingTeam)))
+                    put("%leading_score%", getLeadingScore(team, leadingTeam))
 
                     if (state.getRegisteredTeams().size <= 1) {
                         // if in singleplayer, fall back to the explicit "Team:" and "Lines:" score text
-                        put("%team_scores%", get("%team%").orEmpty() + get("%team_score%").orEmpty())
-                    } else {
-                        put("%team_scores%", getTeamScores(team, teamCard))
-                    }
-
-                    val leadingTeam = ScoreService.getLeading(state)
-                    val leadingTeamName = leadingTeam?.getName(text, playerName = true, symbol = true, bracketed = false, teamNameKey = null)
-                        ?: text.string(StringKey.ScoreboardLeadingTeamTie).formatted(Formatting.WHITE)
-                    leadingTeamName.takeIf { options.showLeadingTeam && isMultipleTeams }
-                        ?.let { text.string(StringKey.ScoreboardLeadingTeam, it) }
-                        .also { put("%leading%", listOfNotNull(it)) }
-
-                    val leadingTeamFormatting = when {
-                        // if the leading team should be hidden, don't use its formatting
-                        !options.showLeadingTeam -> Formatting.WHITE
-                        // otherwise, default to WHITE if the team is tied
-                        else -> leadingTeam?.textColor ?: Formatting.WHITE
-                    }
-
-                    val leadingTeamScore = when {
-                        leadingTeam == null -> TeamScore(
-                            // if the leading team is a tie, find one of the tied teams to get the item/line/card count
-                            items = ScoreService.getLeadingByItems(state, allowTies = true)?.score?.items ?: 0,
-                            lines = ScoreService.getLeadingByLines(state, allowTies = true)?.score?.lines ?: 0,
-                            cards = ScoreService.getLeadingByCards(state, allowTies = true)?.score?.cards ?: 0,
-                        )
-                        else -> leadingTeam.score
-                    }
-
-                    val showLeadingScore = (options.showCompletedItems || options.showCompletedLines) && team != leadingTeam
-                    val showLeadingScoreCards = isMultiCardWinCondition && leadingTeamScore.cards != team?.score?.cards
-
-                    leadingTeamScore
-                        .takeIf { showLeadingScore }
-                        ?.let { score ->
+                        put(
+                            "%scores_list%",
                             listOfNotNull(
-                                text.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}")
-                                    .formatted(leadingTeamFormatting))
-                                    .takeUnless { showLeadingScoreCards },
-                                text.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}")
-                                    .formatted(leadingTeamFormatting))
-                                    .takeUnless { showLeadingScoreCards },
-                                text.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}")
-                                    .formatted(leadingTeamFormatting))
-                                    .takeIf { showLeadingScoreCards },
-                            )
-                        }
-                        .also { put("%leading_score%", it.orEmpty()) }
+                                get("%team%"),
+                                get("%team_score%"),
+                                listOf(text.empty()),
+                                get("%leading%"),
+                                get("%leading_score%"),
+                            ).flatten()
+                        )
+                    } else {
+                        put("%scores_list%", getTeamScores(team, teamCard))
+                    }
                 }
 
                 val scoreboardText = messageService.getLines(MessageService.MessageType.SCOREBOARD, placeholders)
