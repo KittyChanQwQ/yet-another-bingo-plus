@@ -43,6 +43,8 @@ internal class ReadyController(
 
     private fun isPregameReady(): Boolean {
         val players = playerManager.getPlayers()
+            .filterNot { state.playersSpectatingIds.contains(it.player.uuid) }
+
         val isReady = players.all { teamService.isPlaying(it) } || players.any { readyState.isReady(it.uuid) }
         return isReady && players.size > 1 && state.options.isValid()
     }
@@ -205,9 +207,16 @@ internal class ReadyController(
             reset()
         }
 
-        events.onChangeTeam { (player) ->
-            if (readyState.isReady(player.uuid))
-                playerManager.updatePlayerListName(player)
+        events.onChangeTeam {
+            // If the player leaves their team, un-ready them
+            if (it.team == null) {
+                readyState.setReady(it.player.uuid, false)
+                playerManager.updatePlayerListName(it.player)
+            }
+            // If the player changes team while ready, update the tab name
+            if (readyState.isReady(it.player.uuid)) {
+                playerManager.updatePlayerListName(it.player)
+            }
         }
 
         events.onPacket(packets.readySetV1) {
