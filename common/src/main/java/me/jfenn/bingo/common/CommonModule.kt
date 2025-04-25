@@ -60,6 +60,7 @@ import me.jfenn.bingo.common.scoring.ScoreUpdateService
 import me.jfenn.bingo.common.scoring.ScoredItemCheck
 import me.jfenn.bingo.common.spawn.*
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.PersistentStateManager
 import me.jfenn.bingo.common.state.PersistentStates
 import me.jfenn.bingo.common.stats.*
 import me.jfenn.bingo.common.team.*
@@ -93,7 +94,6 @@ import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.scope.IScopeManager
 import me.jfenn.bingo.plugin.IBingoInternalPlugin
-import net.minecraft.server.MinecraftServer
 import org.koin.core.Koin
 import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
@@ -189,15 +189,16 @@ val commonModule = module {
         scopedOf(::ScopedEvents)
         scopedOf(::InteractionEntityEvents)
         scopedOf(::BingoApiImpl) bind IBingoApi::class
-        scopedOf(::PersistentStates)
 
-        scoped { get<BingoScope>().server }
+        scopedOf(::PersistentStateManager) bind IPersistentStateManager::class
+        scopedOf(::PersistentStates)
         scoped<BingoState> {
             get<IPersistentStateManager>().getFromWorld(
-                world = get<MinecraftServer>().overworld,
                 type = get<PersistentStates>().bingo,
             )
         }
+
+        scoped { get<BingoScope>().server }
         scoped { get<BingoState>().options }
 
         scopedOf(::PlaceholderService)

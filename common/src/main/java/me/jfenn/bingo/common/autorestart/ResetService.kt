@@ -11,11 +11,9 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.IRecipeManager
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.GameResetEvent
-import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.random.Random
 
@@ -23,14 +21,12 @@ internal class ResetService(
     private val eventBus: IEventBus,
     private val state: BingoState,
     private val playerManager: IPlayerManager,
-    private val recipeManager: IRecipeManager,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
     private val scoreboardService: ScoreboardService,
     private val bossBarService: BossBarService,
     private val serverWorldFactory: IServerWorldFactory,
     private val menuController: MenuController,
-    private val server: MinecraftServer,
     private val persistentStateManager: IPersistentStateManager,
     private val persistentStates: PersistentStates,
     private val log: Logger,
@@ -61,7 +57,6 @@ internal class ResetService(
         // This is important! Otherwise the bingo persistent state does not get copied into the new world data
         // (ScopeManager does this on initial setup, but it gets lost when the world is replaced)
         persistentStateManager.put(
-            world = server.overworld,
             type = persistentStates.bingo,
             value = state,
         )

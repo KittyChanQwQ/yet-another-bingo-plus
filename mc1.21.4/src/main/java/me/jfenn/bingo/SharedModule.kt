@@ -53,7 +53,6 @@ val sharedModule = module {
         scopedOf(::MinecraftServerImpl) binds arrayOf(ITickManager::class, ILevelStorage::class)
         scopedOf(::ItemStackFactory) bind IItemStackFactory::class
         scopedOf(::JsonSerializers) bind IJsonSerializers::class
-        scopedOf(::PersistentStateManager) bind IPersistentStateManager::class
         scopedOf(::RecipeManagerImpl) bind IRecipeManager::class
         scopedOf(::ScoreboardManager) bind IScoreboardManager::class
         scopedOf(::ServerWorldFactory) bind IServerWorldFactory::class

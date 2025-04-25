@@ -37,7 +37,6 @@ val sharedModule = module {
     singleOf(::ItemStackFactory) bind IItemStackFactory::class
     singleOf(::JsonSerializers) bind IJsonSerializers::class
     singleOf(::MapColorServiceImpl) bind IMapColorService::class
-    singleOf(::PersistentStateManager) bind IPersistentStateManager::class
     single { ParticleFactory } bind IParticleFactory::class
     singleOf(::ServerEventsImpl) withOptions { createdAtStart() }
     singleOf(::StatManagerImpl) bind IStatManager::class
@@ -55,7 +54,6 @@ val sharedModule = module {
         scopedOf(::MinecraftServerImpl) binds arrayOf(ITickManager::class, ILevelStorage::class)
         scopedOf(::ItemStackFactory) bind IItemStackFactory::class
         scopedOf(::JsonSerializers) bind IJsonSerializers::class
-        scopedOf(::PersistentStateManager) bind IPersistentStateManager::class
         scopedOf(::RecipeManagerImpl) bind IRecipeManager::class
         scopedOf(::ScoreboardManager) bind IScoreboardManager::class
         scopedOf(::ServerWorldFactory) bind IServerWorldFactory::class

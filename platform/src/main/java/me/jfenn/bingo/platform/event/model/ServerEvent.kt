@@ -8,4 +8,5 @@ data class ServerEvent(
 ) {
     object Started: IEvent<ServerEvent>
     object Stopped: IEvent<ServerEvent>
+    object Saved: IEvent<ServerEvent>
 }
