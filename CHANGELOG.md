@@ -1,35 +1,26 @@
 ### New Features:
 
-- **Updated to support 1.21.5!**
+- **Added a `/join spectators` command**, which leaves any team and excludes the player from shuffling.
 
-- **Added a "Keep Playing" button!**
+- **Redesigned the multiplayer scoreboard** to display a list of abbreviated team scores. 
 
-  Ever lost a game and wished you could complete the rest of the card anyway? Now you can!
+- Slightly optimized persistent data saving/serialization
 
-- The "Game Over" screen now lists all items scored during the game!
-
-- (1.20.6+) For inventory mode, items that are stored inside bundles, shulker boxes, or ender chests will remain on the card! 
-
-- **Spectators now use an isolated chat** by default (meaning players can't see your messages!)
-
-  You can change this in `config.json` with `"defaultToSpectatorChat": true`.
-
-- (1.21.3+) Crafting recipe toasts are no longer shown when starting a game with "Unlock recipes" enabled
-
-- Added `bingo_items`, `bingo_lines`, and `bingo_cards` scoreboards for tracking team scores via datapack
-
-- (Client) Various HUD rendering optimizations
+- Some assorted tier list adjustments
 
 ### Bugs Squashed:
 
-- Fixed vanilla clients not being compatible with modded players hosting on LAN (due to the registered sound events)
+- Fixed a (lobby mode) compatibility issue with GeyserMC
+- Fixed item textures getting cut off by 1px on the end screen
+- Fixed the incorrect leading team occasionally being announced when two teams are tied
+- Fixed some text formatting issues for custom teams
 
-- Fixed hidden items not being shown when the game is over
+### Translations:
 
-- Fixed card desync for spectators when players switch teams during a game
-
-- Fixed scores not being shown to spectators when there's only one team
-
-- Player statistics (and phantom/sleep timer) now properly reset after each (lobby mode) game
-
-- Players can no longer whack each other during the countdown
+- New Danish translations by Libreh!
+- New Korean translations by LegendLier!
+- New French translations by Yosh64!
+- New Finnish translations by Diamonddevv!
+- New Portuguese translations by Lucasofchirst!
+- New Hungarian translations by Remarci!
+- New Chinese translations by Young912!
