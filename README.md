@@ -1,22 +1,12 @@
-<table>
-<tbody>
-<td>
-
-### Looking for a modpack?
-
-Check out [Yet Another BINGO: Ultimate](https://modrinth.com/modpack/yet-another-bingo-ultimate) for an opinionated collection of helpful bingo mods!
-
-</td>
-</tbody>
-</table>
-
-![Yet Another Bingo for Minecraft](https://gitlab.com/horrificdev/bingo/-/raw/main/docs/banner-with-card.png)
+<center>
+<br><br><img src="https://gitlab.com/horrificdev/bingo/-/raw/main/docs/banner.png" alt="" width="380"><br><br>
 
 [![Requires Fabric API](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/requires/fabric-api_vector.svg)](https://modrinth.com/mod/fabric-api)
 [![Available on GitLab](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/gitlab_vector.svg)](https://gitlab.com/horrificdev/bingo)
-[![Available on Modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@2/assets/cozy/available/modrinth_vector.svg)](https://modrinth.com/mod/yet-another-minecraft-bingo)
 
-*For an introduction to Minecraft BINGO, read "[What is Minecraft BINGO?](https://horrific.dev/bingo/what-is-bingo/)" on the wiki!*
+</center>
+
+#### Looking for a modpack? <br>Check out [Yet Another Bingo: Ultimate](https://modrinth.com/modpack/yet-another-bingo-ultimate)!
 
 This is a multiplayer BINGO/Lockout mod + lobby, which works on the client or on a dedicated server.
 
@@ -31,7 +21,7 @@ This is a multiplayer BINGO/Lockout mod + lobby, which works on the client or on
 </td>
 <td>
 
-Up to 8 teams can compete to collect items on the BINGO card. Score items in horizontal, vertical, or diagonal
+Teams can compete to collect items on the BINGO card. Score items in horizontal, vertical, or diagonal
 lines to win the game.
 
 ---
@@ -45,42 +35,35 @@ lines to win the game.
 </tbody>
 </table>
 
-### Gamemodes:
+*For an introduction to Minecraft BINGO, read "[What is Minecraft BINGO?](https://horrific.dev/bingo/what-is-bingo/)" on the wiki!*
 
-- **Standard**: Collecting an item scores the tile. Normal BINGO behavior.
-- **Lockout**: Once an item is collected by any team, that tile is locked and no other teams can collect it.
-- **Inventory**: Items must remain in a team member's inventory to hold a tile. Losing an item un-marks its tile on the
-  card (meaning you need to stay alive with your items in order to win).
-- **Hidden Items**: Items are not shown on the bingo card until a player discovers them.
-- **Consume Items**: Items are taken from the player whenever they are captured on a card.
+<img src="https://gitlab.com/horrificdev/bingo/-/raw/main/docs/divider.png" width="100%" style="image-rendering: pixelated" alt="">
 
-### Extra Options:
+<center><h3>Features</h3></center>
 
-- **Unlock Recipes**: Gives players all crafting recipes at the start of the game.
-- **Keep Inventory**: Sets the `keepInventory` gamerule. (players keep their items on respawn)
-- **Elytra**: Gives all players an elytra and infinite rockets throughout the game.
-- **Night Vision**: Gives all players the night vision effect. (can be toggled individually with `/bingoprefs`)
-- **Allow PvP**: Toggles whether players can attack each other.
-- **Spawn Kit**: Give teams or players a configurable set of starting gear.
+![](https://gitlab.com/horrificdev/bingo/-/raw/main/docs/screenshot_banner.png)
 
-## 📖 Configuration
+*Make sure to install [Mod Menu](https://modrinth.com/mod/modmenu) and [YetAnotherConfigLib](https://modrinth.com/mod/yacl) to use the built-in config screen!*
 
-*When using this mod in single-player, make sure to install [Mod Menu](https://modrinth.com/mod/modmenu) and [YetAnotherConfigLib](https://modrinth.com/mod/yacl) to use the built-in config screen!*
+- #### Unique gamemodes
 
-![A configuration menu for the Bingo GUI options](https://gitlab.com/horrificdev/bingo/-/raw/main/docs/config-menu-3.png)
+  The gamemode toggles and goal options offer some interesting combinations. Try the "Lockout", "Hidden Items", or "Replace Goals" settings for a fun time!
 
-No initial setup is needed  to use the mod; it should run out of the box. The config files live in
-`./config/yet-another-minecraft-bingo`.
+- #### Unnecessary polish
 
-The items used to generate bingo card items at different tiers can be customized in the `*.tierlist.json` files. Once
-placed in the `./config/yet-another-minecraft-bingo/` directory, they can be enabled in-game using the "Tier List" menu.
+  Features an interactive lobby, ready-up timer, and score notifications. Integrates with [Simple Voice Chat](https://modrinth.com/plugin/simple-voice-chat) to manage team groups. Use your choice of [JEI](https://modrinth.com/mod/jei)/[REI](https://modrinth.com/mod/rei)/[EMI](https://modrinth.com/mod/emi) to see crafting recipes by clicking the bingo card!
 
-> There's a nifty [configuration tool](https://horrific.dev/bingo/tier-editor/) I've set up that'll let you
-> change these tier lists in a drag-and-drop interface rather than editing the files in text.
+- #### A ton of settings
 
-You can find more info about configuring this mod [on the wiki](https://horrific.dev/bingo/config/)!
+  Give players infinite elytra, provide a spawn kit, and individually tune the items and difficulty of the bingo card - all without leaving the lobby.
 
-## ⌨️ Commands
+- #### Configure literally anything!
+
+  Supports customizing the [lobby build](https://horrific.dev/bingo/lobby-structure/), changing textures in [resource packs](https://horrific.dev/bingo/resource-pack-guide/), adding [custom objectives](https://horrific.dev/bingo/custom-objectives/), and more!
+
+<img src="https://gitlab.com/horrificdev/bingo/-/raw/main/docs/divider.png" width="100%" style="image-rendering: pixelated" alt="">
+
+<center><h3>Commands</h3></center>
 
 This is a brief summary of the most important commands. See the [Command Cheatsheet](https://horrific.dev/bingo/command-cheatsheet/) for a complete list of bingo commands and descriptions!
 
@@ -90,13 +73,15 @@ Global commands:
 - `/all` or `/g` sends a message to the global chat (sending a regular chat message defaults to team chat when in-game)
 - `/join <team>` (when in the lobby) allows a player to join the specified team
 
-BINGO commands (operator-only):
+BINGO commands (operator-only, unless you use [LuckPerms](https://modrinth.com/plugin/luckperms)):
 - `/bingo reroll` rerolls for a new Bingo Card with different items
 - `/bingo seed` shows or sets the random seed used to generate the current Bingo Card
 - `/bingo end` immediately ends the current game and displays the winner (or a draw)
 - `/join <team> <player>` assigns a player to a different team - will respawn them if in-game
 
-## Credits
+<img src="https://gitlab.com/horrificdev/bingo/-/raw/main/docs/divider.png" width="100%" style="image-rendering: pixelated" alt="">
+
+<center><h3>Credits</h3></center>
 
 The very pretty Bingo Card HUD and "Bingo!" button textures were made by [@marceles](https://marceles.carrd.co)!
 
@@ -106,18 +91,12 @@ The logo design was inspired by [Aikoyori/ProgrammingVTuberLogos](https://github
 
 Vanilla entity/challenge goal textures are from [minecraft-heads.com](https://minecraft-heads.com/)
 
+
 ### Translations
 
-<table>
-<tbody>
-<td>
-
 [![Localized on CrowdIn](https://img.shields.io/badge/Localized_On-Crowdin-373d4c?style=for-the-badge&labelColor=464e62&logoColor=white&logo=Crowdin)](https://crowdin.com/project/yet-another-bingo)
-<br>**Help translate this mod into your language!** All text in this project is available [on CrowdIn](https://crowdin.com/project/yet-another-bingo) for anyone to submit translations.
 
-</td>
-</tbody>
-</table>
+**Help translate this mod into your language!** <br>All text in this project is available [on CrowdIn](https://crowdin.com/project/yet-another-bingo) for anyone to submit translations.
 
 
 Chinese Simplified translations were contributed by Fishlanding, tovv3r, Young912, BoredYukolin, yzy_sheep, nageih, and teaSummer!<br>
