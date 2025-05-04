@@ -122,7 +122,7 @@ internal class ScoreboardController(
                             it
                         }
                     }
-                    .formatted(if (ranking.key == team?.key) Formatting.WHITE else Formatting.GRAY)
+                    .formatted(if (ranking.key == team?.key || team == null) Formatting.WHITE else Formatting.GRAY)
             }
     }
 
