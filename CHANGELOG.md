@@ -1,26 +1,12 @@
-### New Features:
-
-- **Added a `/join spectators` command**, which leaves any team and excludes the player from shuffling.
-
-- **Redesigned the multiplayer scoreboard** to display a list of abbreviated team scores. 
-
-- Slightly optimized persistent data saving/serialization
-
-- Some assorted tier list adjustments
-
 ### Bugs Squashed:
 
-- Fixed a (lobby mode) compatibility issue with GeyserMC
-- Fixed item textures getting cut off by 1px on the end screen
-- Fixed the incorrect leading team occasionally being announced when two teams are tied
-- Fixed some text formatting issues for custom teams
+- Fixed tag references not affecting filters when used in a tag or tier list
+- Fixed leading team messages only showing the most recent scores on the game over screen
+- Fixed broken minecart rails in the lobby build (oops)
+- Changed ready-up behavior to include players that have used `/join spectators`
 
 ### Translations:
 
-- New Danish translations by Libreh!
-- New Korean translations by LegendLier!
-- New French translations by Yosh64!
+- New Dutch translations by GrangerTheDog!
 - New Finnish translations by Diamonddevv!
-- New Portuguese translations by Lucasofchirst!
-- New Hungarian translations by Remarci!
-- New Chinese translations by Young912!
+- New German translations by Butterkeks!
