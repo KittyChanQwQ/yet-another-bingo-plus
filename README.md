@@ -39,7 +39,7 @@ lines to win the game.
 
 <img src="https://gitlab.com/horrificdev/bingo/-/raw/main/docs/divider.png" width="100%" style="image-rendering: pixelated" alt="">
 
-<center><h3>Features</h3></center>
+<center><h3>Features</h3></center><br>
 
 ![](https://gitlab.com/horrificdev/bingo/-/raw/main/docs/screenshot_banner.png)
 
@@ -63,7 +63,7 @@ lines to win the game.
 
 <img src="https://gitlab.com/horrificdev/bingo/-/raw/main/docs/divider.png" width="100%" style="image-rendering: pixelated" alt="">
 
-<center><h3>Commands</h3></center>
+<center><h3>Commands</h3></center><br>
 
 This is a brief summary of the most important commands. See the [Command Cheatsheet](https://horrific.dev/bingo/command-cheatsheet/) for a complete list of bingo commands and descriptions!
 
@@ -81,7 +81,7 @@ BINGO commands (operator-only, unless you use [LuckPerms](https://modrinth.com/p
 
 <img src="https://gitlab.com/horrificdev/bingo/-/raw/main/docs/divider.png" width="100%" style="image-rendering: pixelated" alt="">
 
-<center><h3>Credits</h3></center>
+<center><h3>Credits</h3></center><br>
 
 The very pretty Bingo Card HUD and "Bingo!" button textures were made by [@marceles](https://marceles.carrd.co)!
 
@@ -102,8 +102,10 @@ Vanilla entity/challenge goal textures are from [minecraft-heads.com](https://mi
 Chinese Simplified translations were contributed by Fishlanding, tovv3r, Young912, BoredYukolin, yzy_sheep, nageih, and teaSummer!<br>
 Chinese Traditional translations were contributed by Leo_768 and BoredYukolin!<br>
 Danish translations were contributed by Libreh!<br>
+Dutch translations were contributed by GrangerTheDog!<br>
 Finnish translations were contributed by Diamonddevv!<br>
 French translations were contributed by Yosh64, Guillarda, and Narkotiqu!<br>
+German translations were contributed by Butterkeks!<br>
 Hungarian translations were contributed by petya0927 and Remarci!<br>
 Korean translations were contributed by LegendLier!<br>
 Polish translations were contributed by Toniemax!<br>
