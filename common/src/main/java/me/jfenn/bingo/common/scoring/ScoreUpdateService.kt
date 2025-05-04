@@ -4,6 +4,7 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardTileImage
+import me.jfenn.bingo.common.options.BingoGoal
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -176,12 +177,13 @@ internal class ScoreUpdateService(
     }
 
     fun sendTeamLeading(team: BingoTeam) {
+        val isLinesGoal = state.getCard(team)?.options?.goal is BingoGoal.Lines
         gameMessageService.addGameMessage(
             GameMessage.LeadingTeam(
                 timeElapsed = state.ingameDuration() ?: Duration.ZERO,
                 team = team.key,
-                cards = null, // TODO: enable cards/lines depending on which the team is leading by
-                lines = null,
+                cards = team.score.cards.takeIf { it > 0 },
+                lines = team.score.lines.takeIf { isLinesGoal && it > 0 },
                 items = team.score.items,
                 isTied = false,
             )
@@ -189,12 +191,13 @@ internal class ScoreUpdateService(
     }
 
     fun sendTeamTied(team: BingoTeam) {
+        val isLinesGoal = state.getCard(team)?.options?.goal is BingoGoal.Lines
         gameMessageService.addGameMessage(
             GameMessage.LeadingTeam(
                 timeElapsed = state.ingameDuration() ?: Duration.ZERO,
                 team = team.key,
-                cards = null,
-                lines = null,
+                cards = team.score.cards.takeIf { it > 0 },
+                lines = team.score.lines.takeIf { isLinesGoal && it > 0 },
                 items = team.score.items,
                 isTied = true,
             )

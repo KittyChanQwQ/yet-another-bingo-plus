@@ -89,7 +89,7 @@ internal class GameMessageService(
     ) : GameMessagePacket? {
         val team = state.teams[message.team] ?: return null
         val teamName = team.getName(text, playerName = true)
-        val chatMessage = text.string(StringKey.GameMessageScoredLine, teamName, text.lineCount(team.score.lines))
+        val chatMessage = text.string(StringKey.GameMessageScoredLine, teamName, text.lineCount(message.lines))
             .formatted(Formatting.YELLOW)
             .let { formatWithTime(message, it) }
 
@@ -127,14 +127,19 @@ internal class GameMessageService(
     ) : GameMessagePacket? {
         val team = state.teams[message.team] ?: return null
         val teamName = team.getName(text, playerName = true)
-        val score = team.score
+        val scoreText = when {
+            message.cards != null -> text.cardCount(message.cards)
+            message.lines != null -> text.lineCount(message.lines)
+            message.items != null -> text.itemCount(message.items)
+            else -> error("Invalid leading team GameMessage")
+        }
         val chatMessage = when {
             message.isTied && options.showCompletedItems -> {
-                text.string(StringKey.GameMessageLeadingTiedWithScore, teamName, text.itemCount(score.items))
+                text.string(StringKey.GameMessageLeadingTiedWithScore, teamName, scoreText)
             }
             message.isTied -> text.string(StringKey.GameMessageLeadingTied, teamName)
             options.showCompletedItems -> {
-                text.string(StringKey.GameMessageLeadingWithScore, teamName, text.itemCount(score.items))
+                text.string(StringKey.GameMessageLeadingWithScore, teamName, scoreText)
             }
             else -> text.string(StringKey.GameMessageLeading, teamName)
         }
