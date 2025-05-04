@@ -43,10 +43,12 @@ internal class ReadyController(
 
     private fun isPregameReady(): Boolean {
         val players = playerManager.getPlayers()
-            .filterNot { state.playersSpectatingIds.contains(it.player.uuid) }
 
-        val isReady = players.all { teamService.isPlaying(it) } || players.any { readyState.isReady(it.uuid) }
-        return isReady && players.size > 1 && state.options.isValid()
+        val isTeams = !config.startWhenReadyWaitsForTeams || players
+            .filterNot { state.playersSpectatingIds.contains(it.player.uuid) }
+            .all { teamService.isPlaying(it) }
+        val isFirstVote = !config.startWhenReadyWaitsForFirstVote || players.any { readyState.isReady(it.uuid) }
+        return isTeams && isFirstVote && players.size > 1 && state.options.isValid()
     }
 
     private fun reset() {
@@ -77,7 +79,7 @@ internal class ReadyController(
 
         if (state.state == GameState.PREGAME) {
             // If the game can start, begin the timer!
-            if (!readyState.isRunning && isPregameReady()) {
+            if (!readyState.isRunning && !readyState.isCancelled && isPregameReady()) {
                 config.startWhenReadySeconds?.let {
                     log.info("[ReadyController] Starting the PREGAME timer for $it seconds")
                     readyState.startTimer(it.seconds)
@@ -105,7 +107,7 @@ internal class ReadyController(
         if (state.state == GameState.POSTGAME) {
             val hasAnyoneVoted = playerManager.getPlayers().any { readyState.isReady(it.uuid) }
             if (
-                !readyState.isRunning &&
+                !readyState.isRunning && !readyState.isCancelled &&
                 (hasAnyoneVoted || !config.nextRoundWhenReadyWaitsForFirstVote)
             ) {
                 config.nextRoundWhenReadySeconds?.let {
@@ -138,10 +140,11 @@ internal class ReadyController(
             val isPlayerReady = readyState.isReady(player.uuid)
             val title = when {
                 isPlayerReady -> text.string(StringKey.LobbyStartingPlayersReady, updatePacket.readyPlayers, updatePacket.totalPlayers)
-                else -> text.string(
+                readyService.canUseReady(player) -> text.string(
                     StringKey.LobbyStartingReadyUp,
                     Text.keybind("key.sneak"), Text.keybind(KEYBIND_OPEN_CARD)
                 )
+                else -> text.empty()
             }
             val subtitle = when {
                 state.state == GameState.PREGAME -> text.string(StringKey.LobbyStartingTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())

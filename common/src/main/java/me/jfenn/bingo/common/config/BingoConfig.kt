@@ -38,6 +38,8 @@ data class BingoConfig(
 
     // starts the game after the time limit - reduced when players vote /ready
     val startWhenReadySeconds: Int? = 600,
+    val startWhenReadyWaitsForTeams: Boolean = true,
+    val startWhenReadyWaitsForFirstVote: Boolean = false,
     // resets after a time limit - reduced when players vote /ready
     val nextRoundWhenReadySeconds: Int? = 600,
     val nextRoundWhenReadyWaitsForFirstVote: Boolean = true,

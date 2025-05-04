@@ -14,6 +14,12 @@ class ReadyTimerState {
     private var startedAt: Instant? = null
     private var totalDuration: Duration? = null
 
+    /**
+     * If the timer is cancelled with /ready cancel
+     * Don't start it again until /ready is used
+     */
+    var isCancelled: Boolean = false
+
     val isRunning: Boolean get() = startedAt != null
 
     fun updatePlayers(players: List<IPlayerHandle>) {
@@ -23,7 +29,12 @@ class ReadyTimerState {
     fun isReady(player: UUID): Boolean = player in readyPlayers
 
     fun setReady(player: UUID, ready: Boolean) {
-        if (ready) readyPlayers.add(player) else readyPlayers.remove(player)
+        if (ready) {
+            isCancelled = false
+            readyPlayers.add(player)
+        } else {
+            readyPlayers.remove(player)
+        }
     }
 
     fun startTimer(duration: Duration) {

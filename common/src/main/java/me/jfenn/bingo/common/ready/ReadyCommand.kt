@@ -29,6 +29,7 @@ class ReadyCommand(
 
                     if (timerState.isRunning) {
                         timerState.reset()
+                        timerState.isCancelled = true
                         // call onChangeOptions to refresh the player list
                         eventBus.emit(OptionsChangedEvent, Unit)
                     }

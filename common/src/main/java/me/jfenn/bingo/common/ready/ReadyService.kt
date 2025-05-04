@@ -22,8 +22,11 @@ class ReadyService(
         val isPregameCountdown = state.state == GameState.PREGAME && config.startWhenReadySeconds != null
         val isPostgameCountdown = state.state == GameState.POSTGAME && config.nextRoundWhenReadySeconds != null
         val isPermission = permissions.hasPermission(player, Permission.COMMAND_READY)
-        val isPlaying = teamService.isPlaying(player) || state.state == GameState.PLAYING
-        return isLobbyMode && (isPregameCountdown || isPostgameCountdown) && isPermission && isPlaying
+        val isTeamChosen = !config.startWhenReadyWaitsForTeams ||
+                teamService.isPlaying(player) ||
+                state.playersSpectatingIds.contains(player.uuid) ||
+                isPostgameCountdown
+        return isLobbyMode && (isPregameCountdown || isPostgameCountdown) && isPermission && isTeamChosen
     }
 
     fun setReady(player: IPlayerHandle, isReady: Boolean) {
