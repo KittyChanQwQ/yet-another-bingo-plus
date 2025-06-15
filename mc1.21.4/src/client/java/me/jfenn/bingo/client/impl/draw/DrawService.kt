@@ -26,6 +26,7 @@ class DrawService(
     override val textRenderer: TextRenderer = MinecraftClient.getInstance().textRenderer
     override val font: IFont = FontImpl(textRenderer)
     override val matrices: IMatrixStack = MatrixStackImpl(context.matrices)
+    override val window: IWindow = Companion
 
     override var delta: Float = 0.5f
     override val mouse: Vector2i
@@ -38,7 +39,14 @@ class DrawService(
             )
         }
 
-    companion object : IDrawServiceFactory {
+    companion object : IDrawServiceFactory, IWindow {
+        override val window: IWindow = this
+
+        override val scaleFactor: Double get() = MinecraftClient.getInstance().window.scaleFactor
+        override val scaledWindowWidth: Int
+            get() = MinecraftClient.getInstance().window.scaledWidth
+        override val scaledWindowHeight: Int
+            get() = MinecraftClient.getInstance().window.scaledHeight
 
         override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
 
@@ -55,6 +63,26 @@ class DrawService(
                 buffer, DrawService(context)
             )
         }
+    }
+
+    override fun draw() {
+        context.draw()
+    }
+
+    override fun fill(x1: Int, y1: Int, x2: Int, y2: Int, color: Int) {
+        context.fill(x1, y1, x2, y2, color)
+    }
+
+    override fun overlayFill(x1: Int, y1: Int, x2: Int, y2: Int, color: Int) {
+        context.fill(RenderLayer.getGuiOverlay(), x1, y1, x2, y2, color)
+    }
+
+    override fun drawHorizontalLine(x1: Int, x2: Int, y: Int, color: Int) {
+        context.drawHorizontalLine(x1, x2, y, color)
+    }
+
+    override fun drawVerticalLine(x: Int, y1: Int, y2: Int, color: Int) {
+        context.drawVerticalLine(x, y1, y2, color)
     }
 
     override fun enableBlend() {
@@ -82,6 +110,12 @@ class DrawService(
         // draws the item count + durability bar
         val textRenderer = MinecraftClient.getInstance().textRenderer
         context.drawStackOverlay(textRenderer, stack.stack, x, y)
+    }
+
+    override fun drawTooltip(text: List<IText>, x: Int, y: Int) {
+        val textRenderer = MinecraftClient.getInstance().textRenderer
+        val textList = text.map { it.value }.toMutableList()
+        context.drawTooltip(textRenderer, textList, x, y)
     }
 
     override fun drawDynamicTexture(texture: INativeImage, x: Int, y: Int, width: Int, height: Int) {

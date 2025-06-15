@@ -17,9 +17,18 @@ interface IDrawService {
     val textRenderer: TextRenderer
     val font: IFont
     val matrices: IMatrixStack
+    val window: IWindow
 
     val delta: Float
     val mouse: Vector2i
+
+    fun draw()
+
+    fun fill(x1: Int, y1: Int, x2: Int, y2: Int, color: Int)
+    fun overlayFill(x1: Int, y1: Int, x2: Int, y2: Int, color: Int)
+
+    fun drawHorizontalLine(x1: Int, x2: Int, y: Int, color: Int)
+    fun drawVerticalLine(x: Int, y1: Int, y2: Int, color: Int)
 
     fun enableBlend()
     fun disableBlend()
@@ -28,6 +37,7 @@ interface IDrawService {
 
     fun drawText(text: IText, x: Int, y: Int, color: Int, shadow: Boolean = false)
     fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int)
+    fun drawTooltip(text: List<IText>, x: Int, y: Int)
 
     fun drawDynamicTexture(
         texture: INativeImage,
@@ -146,6 +156,8 @@ interface IDrawService {
 }
 
 interface IDrawServiceFactory {
+    val window: IWindow
+
     fun create(drawContext: DrawContext): IDrawService
 
     fun newBuffer(width: Int, height: Int): IFramebuffer

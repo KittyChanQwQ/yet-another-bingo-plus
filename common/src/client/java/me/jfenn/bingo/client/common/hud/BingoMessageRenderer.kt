@@ -8,6 +8,7 @@ import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
 import kotlin.math.max
 import kotlin.math.pow
@@ -39,19 +40,17 @@ internal class BingoMessageRenderer(
         z: Int,
         messageScale: Float,
         cardAlignment: CardAlignment,
-        width: Int,
     ) {
         val isAboveCard = cardAlignment.y > 0
         val isLeftOfCard = cardAlignment.x > 0
 
-        val context = drawService.context
         val direction = if (isAboveCard) -1 else 1
         val now = state.now
         val duration = config.client.messageDurationSeconds.seconds
 
-        context.matrices.push()
-        context.matrices.translate(x.toFloat(), y.toFloat(), z.toFloat())
-        context.matrices.scale(messageScale, messageScale, 1f)
+        drawService.matrices.push()
+        drawService.matrices.translate(x.toFloat(), y.toFloat(), z.toFloat())
+        drawService.matrices.scale(messageScale, messageScale, 1f)
 
         var itemY = if (isAboveCard) -ITEM_HEIGHT else 0
         for (message in state.messages.reversed().take(5)) {
@@ -66,8 +65,8 @@ internal class BingoMessageRenderer(
                 continue
             }
 
-            context.matrices.push()
-            context.matrices.translate(
+            drawService.matrices.push()
+            drawService.matrices.translate(
                 if (isLeftOfCard) ClientCardBufferRenderer.CARD_WIDTH.toFloat() else 0f,
                 itemY.toFloat() + (1f - fadeOut).pow(2) * message.height * direction,
                 0f
@@ -80,12 +79,12 @@ internal class BingoMessageRenderer(
                 isLeftOfCard = isLeftOfCard,
             )
 
-            context.matrices.pop()
+            drawService.matrices.pop()
 
             itemY += (message.height * direction * fadeIn.pow(2)).roundToInt()
         }
 
-        context.matrices.pop()
+        drawService.matrices.pop()
     }
 
     fun getMessageWrapped(message: BingoHudState.ScoreMessage, width: Int): BingoHudState.ScoreMessage {

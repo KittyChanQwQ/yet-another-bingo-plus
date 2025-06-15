@@ -6,7 +6,7 @@ class FallbackPermissionsApi : IPermissionsApi {
     override fun hasPermission(player: IPlayerHandle, key: PermissionKey): Boolean {
         return when (key.default) {
             PermissionDefault.ALLOW -> true
-            PermissionDefault.OPERATORS -> player.player.server.isSingleplayer || player.hasPermissionLevel(2)
+            PermissionDefault.OPERATORS -> (player.server?.isSingleplayer ?: false) || player.hasPermissionLevel(2)
             PermissionDefault.DENY -> false
         }
     }

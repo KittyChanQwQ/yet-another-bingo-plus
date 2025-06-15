@@ -42,20 +42,19 @@ internal class CardTileRenderer(
         itemX: Int,
         itemY: Int,
     ) {
-        val context by drawService::context
         if (imageList.size > 1 && decoration == CardTile.Decoration.ONE_OF) {
-            context.matrices.push()
-            context.matrices.translate(itemX.toDouble(), itemY.toDouble(), 0.0)
+            drawService.matrices.push()
+            drawService.matrices.translate(itemX.toFloat(), itemY.toFloat(), 0f)
             val scale = (12f / 16f)
-            val translate = (4.0 / scale) / 2.0
-            context.matrices.scale(scale, scale, 1f)
+            val translate = (4f / scale) / 2f
+            drawService.matrices.scale(scale, scale, 1f)
 
             for (i in 0..2) {
                 val imageListImage = imageList.getOrNull(i)
                     ?: continue
 
-                context.matrices.push()
-                context.matrices.translate(translate*i, translate*i, 10.0 * (3-i))
+                drawService.matrices.push()
+                drawService.matrices.translate(translate*i, translate*i, 10f * (3-i))
                 val tint = 0.5f + (1f - i/2f)*0.5f
                 drawService.setShaderColor(tint, tint, tint, 1f)
                 renderTileImage(
@@ -64,16 +63,16 @@ internal class CardTileRenderer(
                     itemX = 0,
                     itemY = 0,
                 )
-                context.matrices.pop()
+                drawService.matrices.pop()
             }
 
             drawService.setShaderColor(1f, 1f, 1f, 1f)
-            context.matrices.pop()
+            drawService.matrices.pop()
         } else if (imageList.size > 1 && decoration == CardTile.Decoration.MANY_OF) {
-            context.matrices.push()
-            context.matrices.translate(itemX.toDouble(), itemY.toDouble(), 0.0)
+            drawService.matrices.push()
+            drawService.matrices.translate(itemX.toFloat(), itemY.toFloat(), 0f)
             val scale = (9f / 16f)
-            context.matrices.scale(scale, scale, 1f)
+            drawService.matrices.scale(scale, scale, 1f)
 
             for (i in 0..3) {
                 val imageListImage = imageList.getOrNull(i)
@@ -87,7 +86,7 @@ internal class CardTileRenderer(
                 )
             }
 
-            context.matrices.pop()
+            drawService.matrices.pop()
         } else {
             renderTileImage(drawService, image, itemX, itemY)
         }

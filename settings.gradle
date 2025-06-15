@@ -46,5 +46,6 @@ include 'mc1.21.1'
 include 'mc1.21.3'
 include 'mc1.21.4'
 include 'mc1.21.5'
+include 'mc1.21.6'
 include 'platform'
 

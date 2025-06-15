@@ -106,6 +106,9 @@ class PlayerHandle(
     override val world: IServerWorld
         get() = ServerWorldImpl(player.serverWorld)
 
+    override val server: IMinecraftServer?
+        get() = player.server?.let { MinecraftServerImpl(it) }
+
     override val isAlive: Boolean
         get() = player.isAlive
     override val isSpectator: Boolean

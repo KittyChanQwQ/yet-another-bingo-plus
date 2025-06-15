@@ -38,6 +38,7 @@ interface IPlayerManager {
 
 interface IPlayerHandle : ILivingEntity {
     val player: ServerPlayerEntity
+    val server: IMinecraftServer?
     val world: IServerWorld
     val isAlive: Boolean
     val isSpectator: Boolean

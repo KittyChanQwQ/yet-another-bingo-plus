@@ -89,10 +89,7 @@ internal class BingoEndScoresWidget(
             if (isTextHovered) {
                 val view = gameOver.cards.find { it.teamKey == score.key }
                 if (view != null) {
-                    drawService.context.matrices.push()
-                    drawService.context.matrices.translate(0f, 0f, 2000f)
-                    drawService.context.drawTooltip(textRenderer, view.display.players.map { text.literal(it.name).value }, mouseX, mouseY)
-                    drawService.context.matrices.pop()
+                    drawService.drawTooltip(view.display.players.map { text.literal(it.name) }, mouseX, mouseY)
                 }
             }
         }

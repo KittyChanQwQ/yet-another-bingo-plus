@@ -86,7 +86,13 @@ internal class ReadyHudRenderer(
         val charWidth = textRenderer.getWidth(charReady)
         val charTotalWidth = charWidth * chars.size
         for ((i, char) in chars.withIndex()) {
-            context.drawText(textRenderer, Text.literal(char.char), x + width/2 - charTotalWidth/2 + (i*charWidth) + (charWidth-char.width)/2, y + (textRenderer.fontHeight * 2) + 12, char.color, true)
+            drawService.drawText(
+                text = text.literal(char.char),
+                x = x + width/2 - charTotalWidth/2 + (i*charWidth) + (charWidth-char.width)/2,
+                y = y + (textRenderer.fontHeight * 2) + 12,
+                color = char.color,
+                shadow = true,
+            )
         }
     }
 

@@ -4,10 +4,10 @@ import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.renderer.IDrawService
+import me.jfenn.bingo.client.platform.renderer.use
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.Color
-import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -48,7 +48,6 @@ internal class ClientCardBufferRenderer(
         service: IDrawService,
         card: ClientCard,
     ) {
-        val context = service.context
         val colors = card.colors
 
         service.enableBlend()
@@ -105,104 +104,103 @@ internal class ClientCardBufferRenderer(
             val itemY = interpolateY.get(Interpolate.Easing.IN_OUT, state.now)
 
             // BEGIN: TILE DRAW
-            service.matrices.push()
-            service.matrices.translate(itemX, itemY, 0f)
+            service.matrices.use {
+                translate(itemX, itemY, 0f)
 
-            val isFlashing = shouldRenderFlashing(tile)
-            when {
-                isFlashing -> context.fill(0, 0, 18, 18, colors.tileFlashingColor.asInt)
-                tile.isAchieved -> context.fill(0, 0, 18, 18, colors.tileAchievedColor.asInt)
-                tile.progress >= (1/18f) -> context.fill(
-                    0, (18 * (1f - tile.progress)).toInt().coerceIn(0, 18),
-                    18, 18,
-                    colors.tileProgressColor.asInt
-                )
-            }
+                val isFlashing = shouldRenderFlashing(tile)
+                when {
+                    isFlashing -> service.fill(0, 0, 18, 18, colors.tileFlashingColor.asInt)
+                    tile.isAchieved -> service.fill(0, 0, 18, 18, colors.tileAchievedColor.asInt)
+                    tile.progress >= (1/18f) -> service.fill(
+                        0, (18 * (1f - tile.progress)).toInt().coerceIn(0, 18),
+                        18, 18,
+                        colors.tileProgressColor.asInt
+                    )
+                }
 
-            if (tile.isHidden) {
-                val texture = tile.itemTier
-                    ?.let { Identifier.of("minecraft", "bingo/image_hidden_${it.name.lowercase()}")!! }
-                    ?: IMAGE_HIDDEN_ID
+                if (tile.isHidden) {
+                    val texture = tile.itemTier
+                        ?.let { Identifier.of("minecraft", "bingo/image_hidden_${it.name.lowercase()}")!! }
+                        ?: IMAGE_HIDDEN_ID
 
-                service.drawGuiTexture(
-                    texture = texture,
-                    x = 1, y = 1,
-                    u = 0f, v = 0f,
-                    width = 16, height = 16,
-                    textureWidth = 16, textureHeight = 16,
-                )
-            }
+                    service.drawGuiTexture(
+                        texture = texture,
+                        x = 1, y = 1,
+                        u = 0f, v = 0f,
+                        width = 16, height = 16,
+                        textureWidth = 16, textureHeight = 16,
+                    )
+                }
 
-            cardTileRenderer.renderTile(service, tile, 1, 1)
+                cardTileRenderer.renderTile(service, tile, 1, 1)
 
-            if (tile.isAchieved && !isFlashing && !card.isGui) {
-                context.draw()
-                context.fill(
-                    RenderLayer.getGuiOverlay(),
-                    0,
-                    0,
-                    18,
-                    18,
-                    colors.tileAchievedColor.copy(a = colors.tileAchievedColor.a / 4).asIntWithAlpha
-                )
-            }
+                if (tile.isAchieved && !isFlashing && !card.isGui) {
+                    service.draw()
+                    service.overlayFill(
+                        0,
+                        0,
+                        18,
+                        18,
+                        colors.tileAchievedColor.copy(a = colors.tileAchievedColor.a / 4).asIntWithAlpha
+                    )
+                }
 
-            cardTileRenderer.renderTileDecorations(service, tile, 1, 1)
+                cardTileRenderer.renderTileDecorations(service, tile, 1, 1)
 
-            if (tile.isLocked) {
-                service.drawGuiTexture(
-                    texture = FRAME_LOCKED_ID,
-                    x = -1, y = -1, z = 301,
-                    u = 0f, v = 0f,
-                    width = 20, height = 20,
-                    textureWidth = 20, textureHeight = 20,
-                )
-            }
+                if (tile.isLocked) {
+                    service.drawGuiTexture(
+                        texture = FRAME_LOCKED_ID,
+                        x = -1, y = -1, z = 301,
+                        u = 0f, v = 0f,
+                        width = 20, height = 20,
+                        textureWidth = 20, textureHeight = 20,
+                    )
+                }
 
-            if (showTeamOutlines) {
-                for ((i, team) in tile.teamKeys.withIndex()) {
-                    val color = state.cardColors.getTeamColors(team, card.display.teamColor).outlineColor
-                    val colorValue = color.asInt
-                    val colorValueDark = color.mix(BLACK_A40).asInt
+                if (showTeamOutlines) {
+                    for ((i, team) in tile.teamKeys.withIndex()) {
+                        val color = state.cardColors.getTeamColors(team, card.display.teamColor).outlineColor
+                        val colorValue = color.asInt
+                        val colorValueDark = color.mix(BLACK_A40).asInt
 
-                    val start = i * 38f / tile.teamKeys.size
-                    val end = (i+1) * 38f / tile.teamKeys.size
+                        val start = i * 38f / tile.teamKeys.size
+                        val end = (i+1) * 38f / tile.teamKeys.size
 
-                    if (start < 19f) {
-                        val lineStart = start.toInt()
-                        val lineEnd = end.toInt().coerceAtMost(19)
-                        context.drawHorizontalLine((-1) + lineStart, (-1) + lineEnd, (-1), colorValue)
-                        context.drawVerticalLine((-1), (-1) + lineStart, (-1) + lineEnd, colorValue)
-                    }
+                        if (start < 19f) {
+                            val lineStart = start.toInt()
+                            val lineEnd = end.toInt().coerceAtMost(19)
+                            service.drawHorizontalLine((-1) + lineStart, (-1) + lineEnd, (-1), colorValue)
+                            service.drawVerticalLine((-1), (-1) + lineStart, (-1) + lineEnd, colorValue)
+                        }
 
-                    if (end > 19f) {
-                        val lineStart = (start.toInt() - 19).coerceAtLeast(0)
-                        val lineEnd = end.toInt() - 19
-                        context.drawHorizontalLine((-1) + lineStart, (-1) + lineEnd, (-1) + 19, colorValueDark)
-                        context.drawVerticalLine((-1) + 19, (-1) + lineStart, (-1) + lineEnd, colorValueDark)
-                    }
+                        if (end > 19f) {
+                            val lineStart = (start.toInt() - 19).coerceAtLeast(0)
+                            val lineEnd = end.toInt() - 19
+                            service.drawHorizontalLine((-1) + lineStart, (-1) + lineEnd, (-1) + 19, colorValueDark)
+                            service.drawVerticalLine((-1) + 19, (-1) + lineStart, (-1) + lineEnd, colorValueDark)
+                        }
 
-                    val start2 = i * 34f / tile.teamKeys.size
-                    val end2 = (i+1) * 34f / tile.teamKeys.size
+                        val start2 = i * 34f / tile.teamKeys.size
+                        val end2 = (i+1) * 34f / tile.teamKeys.size
 
-                    if (start2 < 17f) {
-                        val lineStart = start2.toInt()
-                        val lineEnd = end2.toInt().coerceAtMost(17)
-                        context.drawHorizontalLine(lineStart, lineEnd, 0, colorValueDark)
-                        context.drawVerticalLine(0, lineStart, lineEnd, colorValueDark)
-                    }
+                        if (start2 < 17f) {
+                            val lineStart = start2.toInt()
+                            val lineEnd = end2.toInt().coerceAtMost(17)
+                            service.drawHorizontalLine(lineStart, lineEnd, 0, colorValueDark)
+                            service.drawVerticalLine(0, lineStart, lineEnd, colorValueDark)
+                        }
 
-                    if (end2 > 17f) {
-                        val lineStart = (start2.toInt() - 17).coerceAtLeast(0)
-                        val lineEnd = end2.toInt() - 17
-                        context.drawHorizontalLine(lineStart, lineEnd, 17, colorValue)
-                        context.drawVerticalLine(17, lineStart, lineEnd, colorValue)
+                        if (end2 > 17f) {
+                            val lineStart = (start2.toInt() - 17).coerceAtLeast(0)
+                            val lineEnd = end2.toInt() - 17
+                            service.drawHorizontalLine(lineStart, lineEnd, 17, colorValue)
+                            service.drawVerticalLine(17, lineStart, lineEnd, colorValue)
+                        }
                     }
                 }
             }
 
             // END: TILE DRAW
-            service.matrices.pop()
         }
     }
 

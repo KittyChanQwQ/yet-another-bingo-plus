@@ -83,6 +83,8 @@ internal class BingoHudController(
     private val interpolateCardX = Interpolate(0f, 0f)
     private val interpolateCardY = Interpolate(0f, 0f)
     private val interpolateCardScale = Interpolate(0f, 0f)
+    private var scaledWindowWidth: Int = 0
+    private var scaledWindowHeight: Int = 0
 
     private fun onCardHudClosed(
         cardPositions: Map<BingoTeamKey?, Pair<Float, Float>>,
@@ -108,16 +110,14 @@ internal class BingoHudController(
     }
 
     private fun getCardPos(): Pair<Float, Float> {
-        val client = MinecraftClient.getInstance()
-
         val cardScale = interpolateCardScale.get(Interpolate.Easing.IN_OUT)
         val cardAlignment = config.client.cardAlignment
 
         val offsetX = config.client.cardOffsetX * (if (cardAlignment.x > 0) -1 else 1)
         val offsetY = config.client.cardOffsetY * (if (cardAlignment.y > 0) -1 else 1)
 
-        val x = cardAlignment.x * (client.window.scaledWidth - (ClientCardBufferRenderer.CARD_WIDTH * cardScale)) + offsetX
-        val y = cardAlignment.y * (client.window.scaledHeight - (ClientCardBufferRenderer.CARD_HEIGHT * cardScale)) + offsetY
+        val x = cardAlignment.x * (scaledWindowWidth - (ClientCardBufferRenderer.CARD_WIDTH * cardScale)) + offsetX
+        val y = cardAlignment.y * (scaledWindowHeight - (ClientCardBufferRenderer.CARD_HEIGHT * cardScale)) + offsetY
         interpolateCardX.to = x
         interpolateCardY.to = y
 
@@ -169,7 +169,7 @@ internal class BingoHudController(
 
         val client = MinecraftClient.getInstance()
         val mouse = client.mouse
-        val scaleFactor = client.window.scaleFactor
+        val scaleFactor = drawService.window.scaleFactor
         val mouseX = (mouse.x / scaleFactor).toInt()
         val mouseY = (mouse.y / scaleFactor).toInt()
         val isMouseOver = client.currentScreen is ChatScreen
@@ -195,7 +195,6 @@ internal class BingoHudController(
                 z = config.client.cardOverlap.z,
                 messageScale = config.client.messageScale,
                 cardAlignment = config.client.cardAlignment,
-                width = client.window.width/2
             )
         }
 
@@ -521,6 +520,8 @@ internal class BingoHudController(
 
         eventBus.register(HudRenderEvent) {
             state.now = Clock.System.now()
+            scaledWindowWidth = it.drawService.window.scaledWindowWidth
+            scaledWindowHeight = it.drawService.window.scaledWindowHeight
 
             // TODO: move to resize event?
             state.cards.values.forEach { card ->

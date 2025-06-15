@@ -355,7 +355,7 @@ internal class BingoHudScreen(
 
         drawService.matrices.push()
         drawService.matrices.translate(x, titleY.toFloat(), 0f)
-        drawService.matrices.multiply(Quaternionf(AxisAngle4f(-.25f, 0f, 0f, 1f)))
+        drawService.matrices.rotate(-.25f)
         drawService.matrices.push()
         drawService.matrices.scale(2f, 2f, 1f)
 
@@ -406,7 +406,7 @@ internal class BingoHudScreen(
 
         drawService.matrices.push()
         drawService.matrices.translate(x, titleY.toFloat(), 0f)
-        drawService.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
+        drawService.matrices.rotate(.25f)
         drawService.matrices.push()
         drawService.matrices.scale(2f, 2f, 1f)
 
@@ -451,16 +451,11 @@ internal class BingoHudScreen(
         if (winStreak > 1 && gameOver.packet.isWinner) {
             drawService.matrices.push()
             drawService.matrices.translate(x, titleY.toFloat() + 12, 0f)
-            drawService.matrices.multiply(
-                Quaternionf(
-                    AxisAngle4f(
-                        now.toEpochMilliseconds()
-                            .mod(2000)
-                            .div(2000f)
-                            .times(2 * PI.toFloat()),
-                        0f, 0f, 1f
-                    )
-                )
+            drawService.matrices.rotate(
+                now.toEpochMilliseconds()
+                    .mod(2000)
+                    .div(2000f)
+                    .times(2 * PI.toFloat())
             )
             drawService.matrices.scale(8f, 8f, 1f)
             drawService.matrices.push()

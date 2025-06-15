@@ -9,12 +9,12 @@ import me.jfenn.bingo.client.common.event.ClientConfigChangedEvent
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
 import me.jfenn.bingo.client.common.sound.ClientSounds
 import me.jfenn.bingo.client.common.sound.SoundService
+import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.platform.event.IEventBus
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -36,9 +36,10 @@ internal interface YetAnotherConfigLibIntegration {
             soundService: SoundService,
             text: TextProvider,
             eventBus: IEventBus,
+            drawServiceFactory: IDrawServiceFactory,
         ): YetAnotherConfigLibIntegration {
             return if (hasYACL(environment))
-                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings, soundService, text, eventBus)
+                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings, soundService, text, eventBus, drawServiceFactory)
             else YetAnotherConfigLibIntegrationDummy()
         }
     }
@@ -57,6 +58,7 @@ internal class YetAnotherConfigLibIntegrationImpl(
     private val soundService: SoundService,
     private val text: TextProvider,
     private val eventBus: IEventBus,
+    private val drawServiceFactory: IDrawServiceFactory,
 ) : YetAnotherConfigLibIntegration {
 
     private val defaultConfig = BingoConfig()
@@ -201,7 +203,7 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     )
                                     .controller {
                                         IntegerSliderControllerBuilder.create(it)
-                                            .range(0, MinecraftClient.getInstance().window.scaledWidth/2)
+                                            .range(0, drawServiceFactory.window.scaledWindowWidth/2)
                                             .step(1)
                                     }
                                     .build(),
@@ -222,7 +224,7 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     )
                                     .controller {
                                         IntegerSliderControllerBuilder.create(it)
-                                            .range(0, MinecraftClient.getInstance().window.scaledHeight/2)
+                                            .range(0, drawServiceFactory.window.scaledWindowHeight/2)
                                             .step(1)
                                     }
                                     .build(),

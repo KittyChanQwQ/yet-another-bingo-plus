@@ -158,7 +158,7 @@
   "bingo.intro.use_config_menu": "Use the menu in front of you to configure the game.",
   "bingo.intro.use_coords": "Use \"/coords\" to keep track of coordinates and share them with your team.",
   "bingo.intro.welcome": "Welcome to %s!",
-  "bingo.intro.welcome_link": "Yet Another MC BINGO",
+  "bingo.intro.welcome_link": "Yet Another Bingo",
   "bingo.keybind.open_card": "View Bingo Card",
   "bingo.keybind.toggle_hud": "Toggle Bingo HUD Rendering",
   "bingo.list.advancements": "Advancements",

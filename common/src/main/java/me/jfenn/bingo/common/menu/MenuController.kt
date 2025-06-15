@@ -408,14 +408,13 @@ internal class MenuController(
             .also { entityManager.spawnEntity(lobbyWorld, it) }
 
         interactionEntityEvents.onInteract(interactionListenerEntity) { player ->
-            val playerImpl = playerManager.forPlayer(player)
             val team = BingoTeam.fromPreset(teamKey, teamPreset)
 
             particleFactory.createDustParticle(team.textColor.colorValue ?: 0, 1f)
-                .spawn(playerImpl, position, 10, Vector3d(1.0), 0.2)
+                .spawn(player, position, 10, Vector3d(1.0), 0.2)
 
-            Sounds.playTeamChanged(playerImpl)
-            teamService.joinTeam(playerImpl, team)
+            Sounds.playTeamChanged(player)
+            teamService.joinTeam(player, team)
         }
     }
 

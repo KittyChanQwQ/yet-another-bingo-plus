@@ -94,7 +94,7 @@ internal class ClientCardRenderer(
         if (isWinner) {
             service.matrices.push()
             service.matrices.translate(90f, -4f, 1000f)
-            service.matrices.multiply(Quaternionf(AxisAngle4f(.25f, 0f, 0f, 1f)))
+            service.matrices.rotate(.25f)
 
             service.drawText(text.string(StringKey.CardWinner), 0, 0, getWinColor(state.now), true)
 

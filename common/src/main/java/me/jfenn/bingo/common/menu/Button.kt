@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.common.utils.toVector3d
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.*
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
 import org.joml.Matrix4f
@@ -25,16 +26,17 @@ internal fun MenuComponent.registerButtonInteraction(
     height: Float = 1f,
     playerManager: IPlayerManager = koinScope.get(),
     permissions: IPermissionsApi = koinScope.get(),
-    permissionGetter: ((ServerPlayerEntity) -> Boolean)? = null,
+    permissionGetter: ((IPlayerHandle) -> Boolean)? = null,
     interactionEntityEvents: InteractionEntityEvents = koinScope.get(),
     tooltipState: TooltipState = koinScope.get(),
     executors: IExecutors = koinScope.get(),
+    server: MinecraftServer = koinScope.get(),
     log: Logger = koinScope.get(),
     clickSound: (() -> PlayerSoundEvent)? = null,
     onClick: (player: IPlayerHandle) -> Unit,
 ) {
     val actualPermissionGetter = permissionGetter ?: {
-        permissions.hasPermission(playerManager.forPlayer(it), Permission.CONFIGURE_GAME)
+        permissions.hasPermission(it, Permission.CONFIGURE_GAME)
     }
 
     val offset = -width / 2.0
@@ -52,7 +54,7 @@ internal fun MenuComponent.registerButtonInteraction(
         interactionEntityEvents.onInteract(entity) { player ->
             if (actualPermissionGetter(player)) {
                 try {
-                    onClick(playerManager.forPlayer(player))
+                    onClick(player)
                 } catch (e: Throwable) {
                     log.error("Exception during interaction onClick:", e)
                 }
@@ -66,7 +68,7 @@ internal fun MenuComponent.registerButtonInteraction(
                 )
                 // Schedule an options changed event
                 // (this clears the ready state & redraws the menu)
-                executors.createServerTaskExecutor(player.server).execute {
+                executors.createServerTaskExecutor(server).execute {
                     eventBus.emit(OptionsChangedEvent, Unit)
                 }
             }
@@ -87,7 +89,7 @@ internal fun MenuComponent.registerTileButton(
     brightness: IDisplayEntity.Brightness? = null,
     width: Double = 1.0,
     height: Double = MENU_LINE_HEIGHT,
-    permissionGetter: ((ServerPlayerEntity) -> Boolean)? = null,
+    permissionGetter: ((IPlayerHandle) -> Boolean)? = null,
     onClick: (player: IPlayerHandle) -> Unit,
 ) {
     val isActive by isActiveProp
@@ -169,7 +171,7 @@ internal fun MenuComponent.registerIconButton(
     isActiveProp: Property<Boolean> = ConstantProperty(false),
     width: Double = 0.6,
     height: Double = 0.6,
-    permissionGetter: ((ServerPlayerEntity) -> Boolean)? = null,
+    permissionGetter: ((IPlayerHandle) -> Boolean)? = null,
     onClick: (player: IPlayerHandle) -> Unit,
 ) {
     val isActive by isActiveProp

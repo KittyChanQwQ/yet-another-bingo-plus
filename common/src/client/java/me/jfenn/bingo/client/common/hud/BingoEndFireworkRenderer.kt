@@ -81,7 +81,7 @@ internal class BingoEndFireworkRenderer(
             drawService.matrices.push()
             drawService.matrices.translate(centerX.toFloat(), centerY.toFloat(), 0f)
             drawService.matrices.translate(x.toFloat(), y.toFloat(), 2000f)
-            drawService.matrices.multiply(Quaternionf(AxisAngle4f(rot.toFloat(), 0f, 0f, 1f)))
+            drawService.matrices.rotate(rot.toFloat())
 
             val color = star.color
                 .copy(a = (alpha * 255).toInt().coerceIn(1, 255))

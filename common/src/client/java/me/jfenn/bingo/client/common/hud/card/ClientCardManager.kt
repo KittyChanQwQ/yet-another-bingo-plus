@@ -4,11 +4,10 @@ import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.common.state.ClientCardBase
 import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
+import me.jfenn.bingo.client.platform.renderer.use
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.team.BingoTeamKey
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.util.ScreenshotRecorder
 import org.slf4j.Logger
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
@@ -22,9 +21,8 @@ internal class ClientCardManager(
 ) {
 
     private fun getCardSize(cardScale: Float): Pair<Int, Int> {
-        val window = MinecraftClient.getInstance().window
-        val width = (ClientCardBufferRenderer.CARD_WIDTH * cardScale * window.scaleFactor).roundToInt()
-        val height = (ClientCardBufferRenderer.CARD_HEIGHT * cardScale * window.scaleFactor).roundToInt()
+        val width = (ClientCardBufferRenderer.CARD_WIDTH * cardScale * drawServiceFactory.window.scaleFactor).roundToInt()
+        val height = (ClientCardBufferRenderer.CARD_HEIGHT * cardScale * drawServiceFactory.window.scaleFactor).roundToInt()
         return Pair(width, height)
     }
 
@@ -61,13 +59,13 @@ internal class ClientCardManager(
             val (originalWidth, _) = getCardSize(1f)
             val cardScale = card.framebuffer.width.toFloat() / originalWidth
 
-            drawService.matrices.push()
-            drawService.matrices.scale(cardScale, cardScale, 1f)
-            clientCardBufferRenderer.drawCard(
-                service = drawService,
-                card = card,
-            )
-            drawService.matrices.pop()
+            drawService.matrices.use {
+                scale(cardScale, cardScale, 1f)
+                clientCardBufferRenderer.drawCard(
+                    service = drawService,
+                    card = card,
+                )
+            }
         }
     }
 

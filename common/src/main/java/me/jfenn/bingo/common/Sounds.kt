@@ -10,9 +10,9 @@ import org.joml.Vector3d
 
 internal object Sounds {
 
-    fun playButtonSound(playerManager: IPlayerManager, player: ServerPlayerEntity, fromPosition: Vector3d, fromWorld: ServerWorld, sound: PlayerSoundEvent = PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_ON) {
+    fun playButtonSound(playerManager: IPlayerManager, player: IPlayerHandle, fromPosition: Vector3d, fromWorld: ServerWorld, sound: PlayerSoundEvent = PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_ON) {
         playerManager.playToAround(
-            player,
+            player.player,
             sound,
             PlayerSoundCategory.MAIN,
             0.8f,
