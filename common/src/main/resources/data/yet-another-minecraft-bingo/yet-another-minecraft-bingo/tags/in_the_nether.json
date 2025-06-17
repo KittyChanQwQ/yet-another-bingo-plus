@@ -111,7 +111,6 @@
     "minecraft:weeping_vines",
     "minecraft:beacon",
     "minecraft:twisting_vines",
-    "minecraft:nether_sprouts",
     "minecraft:diamond_horse_armor",
     "minecraft:piglin_banner_pattern",
     "minecraft:piglin_head",
@@ -173,6 +172,10 @@
     "yet-another-minecraft-bingo:challenge/stat_killed_zombified_piglin",
     "yet-another-minecraft-bingo:simplified/one_of_froglight",
     "yet-another-minecraft-bingo:simplified/one_of_netherite_armor",
-    "yet-another-minecraft-bingo:simplified/one_of_netherite_tools"
-  ]
+    "yet-another-minecraft-bingo:simplified/one_of_netherite_tools",
+    "minecraft:husbandry/place_dried_ghast_in_water",
+    "minecraft:dried_ghast",
+    "minecraft:music_disc_tears"
+  ],
+  "replace": false
 }

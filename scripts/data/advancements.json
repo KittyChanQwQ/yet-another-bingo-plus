@@ -59,6 +59,7 @@
   "minecraft:adventure/minecraft_trials_edition": "minecraft:chiseled_tuff",
   "minecraft:adventure/voluntary_exile": "minecraft:white_banner",
   "minecraft:adventure/spyglass_at_dragon": "minecraft:spyglass",
+  "minecraft:adventure/heart_transplanter": "minecraft:creaking_heart",
   "minecraft:adventure/sniper_duel": "minecraft:arrow",
   "minecraft:adventure/overoverkill": "minecraft:mace",
   "minecraft:adventure/two_birds_one_arrow": "minecraft:crossbow",
@@ -120,5 +121,6 @@
   "minecraft:husbandry/obtain_netherite_hoe": "minecraft:netherite_hoe",
   "minecraft:husbandry/fishy_business": "minecraft:fishing_rod",
   "minecraft:husbandry/balanced_diet": "minecraft:apple",
+  "minecraft:husbandry/place_dried_ghast_in_water": "minecraft:dried_ghast",
   "minecraft:husbandry/remove_wolf_armor": "minecraft:shears"
 }

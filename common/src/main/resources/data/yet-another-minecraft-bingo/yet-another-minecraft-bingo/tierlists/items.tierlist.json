@@ -498,7 +498,8 @@
         "minecraft:white_candle",
         "minecraft:wild_armor_trim_smithing_template",
         "minecraft:yellow_candle",
-        "yet-another-minecraft-bingo:simplified/one_of_dead_coral_block"
+        "yet-another-minecraft-bingo:simplified/one_of_dead_coral_block",
+        "minecraft:music_disc_tears"
     ],
     "B": [
         "minecraft:activator_rail",
@@ -692,7 +693,8 @@
         "minecraft:wildflowers",
         "minecraft:wolf_armor",
         "minecraft:writable_book",
-        "minecraft:written_book"
+        "minecraft:written_book",
+        "minecraft:dried_ghast"
     ],
     "C": [
         "minecraft:acacia_boat",
@@ -1014,7 +1016,24 @@
         "minecraft:yellow_glazed_terracotta",
         "minecraft:yellow_stained_glass",
         "minecraft:yellow_stained_glass_pane",
-        "minecraft:yellow_terracotta"
+        "minecraft:yellow_terracotta",
+        "minecraft:lodestone",
+        "minecraft:black_harness",
+        "minecraft:blue_harness",
+        "minecraft:brown_harness",
+        "minecraft:cyan_harness",
+        "minecraft:gray_harness",
+        "minecraft:green_harness",
+        "minecraft:light_blue_harness",
+        "minecraft:light_gray_harness",
+        "minecraft:lime_harness",
+        "minecraft:magenta_harness",
+        "minecraft:orange_harness",
+        "minecraft:pink_harness",
+        "minecraft:purple_harness",
+        "minecraft:red_harness",
+        "minecraft:white_harness",
+        "minecraft:yellow_harness"
     ],
     "D": [
         "minecraft:andesite",
@@ -1536,6 +1555,24 @@
             "minecraft:red_concrete_powder",
             "minecraft:white_concrete_powder",
             "minecraft:yellow_concrete_powder"
+        ],
+        [
+            "minecraft:black_harness",
+            "minecraft:blue_harness",
+            "minecraft:brown_harness",
+            "minecraft:cyan_harness",
+            "minecraft:gray_harness",
+            "minecraft:green_harness",
+            "minecraft:light_blue_harness",
+            "minecraft:light_gray_harness",
+            "minecraft:lime_harness",
+            "minecraft:magenta_harness",
+            "minecraft:orange_harness",
+            "minecraft:pink_harness",
+            "minecraft:purple_harness",
+            "minecraft:red_harness",
+            "minecraft:white_harness",
+            "minecraft:yellow_harness"
         ],
         [
             "minecraft:black_stained_glass",
