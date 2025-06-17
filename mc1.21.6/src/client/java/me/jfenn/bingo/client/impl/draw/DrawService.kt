@@ -10,9 +10,7 @@ import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gl.RenderPipelines
-import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.render.state.GuiRenderState
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 import org.joml.Vector2i
@@ -77,7 +75,7 @@ class DrawService(
     }
 
     override fun overlayFill(x1: Int, y1: Int, x2: Int, y2: Int, color: Int) {
-        context.fill(RenderPipelines.GUI_NAUSEA_OVERLAY, x1, y1, x2, y2, color)
+        context.fill(x1, y1, x2, y2, color)
     }
 
     override fun drawHorizontalLine(x1: Int, x2: Int, y: Int, color: Int) {
@@ -125,7 +123,7 @@ class DrawService(
             x, y,
             x + width, y + height,
             0f, 1f,
-            1f, 0f,
+            0f, 1f,
             -1
         )
     }

@@ -1,13 +1,12 @@
 package me.jfenn.bingo.client.common.sound
 
+import me.jfenn.bingo.client.platform.IClientSoundManager
 import me.jfenn.bingo.common.config.BingoConfig
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.sound.PositionedSoundInstance
-import net.minecraft.client.sound.SoundInstance
-import net.minecraft.sound.SoundCategory
 
 internal class SoundService(
     private val config: BingoConfig,
+    private val soundManager: IClientSoundManager,
+    private val sounds: ClientSounds,
 ) {
 
     fun play(
@@ -16,19 +15,11 @@ internal class SoundService(
         pitch: Float = 1f,
         actualVolume: Float = volume * config.client.getSoundVolume(sound.name.lowercase()),
     ) {
-        val instance = PositionedSoundInstance(
-            sound.id,
-            SoundCategory.RECORDS,
+        soundManager.play(
+            sounds[sound],
             actualVolume,
-            pitch,
-            SoundInstance.createRandom(),
-            false,
-            0,
-            SoundInstance.AttenuationType.NONE,
-            0.0, 0.0, 0.0, true
+            pitch
         )
-        MinecraftClient.getInstance().soundManager.stopSounds(sound.id, null)
-        MinecraftClient.getInstance().soundManager.play(instance)
     }
 
 }

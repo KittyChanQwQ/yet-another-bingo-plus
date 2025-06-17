@@ -1,10 +1,11 @@
 package me.jfenn.bingo.client.common.sound
 
+import me.jfenn.bingo.client.platform.IClientSoundManager
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import net.minecraft.sound.SoundEvent
-import net.minecraft.util.Identifier
 
-internal class ClientSounds {
+internal class ClientSounds(
+    private val soundManager: IClientSoundManager,
+) {
 
     // this enum must contain the exact file names in resources/assets/yet-another-minecraft-bingo/sounds/*.ogg
     // as well as a translation key under "bingo.sound.*"
@@ -18,11 +19,11 @@ internal class ClientSounds {
         START_COUNTDOWN,
         START_RELEASE;
 
-        val id get() = Identifier.of(MOD_ID_BINGO, name.lowercase())!!
+        val id get() = "$MOD_ID_BINGO:${name.lowercase()}"
     }
 
     private val soundEvents = Key.entries.associateWith {
-        SoundEvent.of(it.id)
+        soundManager.createUnregistered(it.id)
     }
 
     operator fun get(key: Key) = soundEvents[key]!!

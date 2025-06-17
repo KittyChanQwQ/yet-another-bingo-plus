@@ -42,6 +42,7 @@ object Main : ClientModInitializer {
         singleOf(::ButtonFactory) bind IButtonFactory::class
         singleOf(::ClientImpl) bind IClient::class
         singleOf(::ClientNetworkingImpl) bind IClientNetworking::class
+        singleOf(::ClientSoundManager) bind IClientSoundManager::class
         single { DrawService } bind IDrawServiceFactory::class
         singleOf(::HudCallbackImpl) withOptions { createdAtStart() }
         singleOf(::KeyBindingManager) bind IKeyBindingManager::class
