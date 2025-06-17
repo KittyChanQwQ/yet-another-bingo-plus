@@ -5,19 +5,7 @@
       "translate": "bingo.objective.challenge.stat_killed_hoglin",
       "fallback": "Kill a Hoglin"
     },
-    "item": "minecraft:player_head",
-    "itemNbt": "{SkullOwner:{Id:[I;48390355,1730691355,-2026249322,-402812612],Properties:{textures:[{Value:\"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2FkN2I1YWViMjIwYzA3OWUzMTljZDcwYWM4ODAwZTgwNzc0YTkzMTNjMjJmMzhlNzdhZmI4OTk5OWU2ZWM4NyJ9fX0=\"}]}}}",
-    "itemComponents": {
-      "profile": {
-        "id": [48390355,1730691355,-2026249322,-402812612],
-        "properties": [
-          {
-            "name": "textures",
-            "value": "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2FkN2I1YWViMjIwYzA3OWUzMTljZDcwYWM4ODAwZTgwNzc0YTkzMTNjMjJmMzhlNzdhZmI4OTk5OWU2ZWM4NyJ9fX0="
-          }
-        ]
-      }
-    },
+    "item": "minecraft:hoglin_spawn_egg",
     "image": "yet-another-minecraft-bingo:hoglin_head"
   },
   "statType": "minecraft:killed",

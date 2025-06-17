@@ -89,9 +89,6 @@ Parts of this mod are inspired from [Extremelyd1/minecraft-bingo](https://github
 
 The logo design was inspired by [Aikoyori/ProgrammingVTuberLogos](https://github.com/Aikoyori/ProgrammingVTuberLogos)
 
-Vanilla entity/challenge goal textures are from [minecraft-heads.com](https://minecraft-heads.com/)
-
-
 ### Translations
 
 [![Localized on CrowdIn](https://img.shields.io/badge/Localized_On-Crowdin-373d4c?style=for-the-badge&labelColor=464e62&logoColor=white&logo=Crowdin)](https://crowdin.com/project/yet-another-bingo)
