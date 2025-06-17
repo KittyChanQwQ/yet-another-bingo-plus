@@ -160,6 +160,8 @@ interface IDrawServiceFactory {
 
     fun create(drawContext: DrawContext): IDrawService
 
+    val isBufferSupported: Boolean
+
     fun newBuffer(width: Int, height: Int): IFramebuffer
 }
 

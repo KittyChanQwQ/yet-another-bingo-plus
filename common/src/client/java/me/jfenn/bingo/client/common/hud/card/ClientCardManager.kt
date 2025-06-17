@@ -55,6 +55,9 @@ internal class ClientCardManager(
     }
 
     private fun updateCard(card: ClientCard) {
+        if (!drawServiceFactory.isBufferSupported)
+            return
+
         card.framebuffer.write { drawService ->
             val (originalWidth, _) = getCardSize(1f)
             val cardScale = card.framebuffer.width.toFloat() / originalWidth

@@ -52,6 +52,8 @@ class DrawService(
             BufferBuilderStorage()
         }
 
+        override val isBufferSupported: Boolean = true
+
         override fun newBuffer(width: Int, height: Int): IFramebuffer {
             val client = MinecraftClient.getInstance()
             val buffer = SimpleFramebuffer(width, height, true, MinecraftClient.IS_SYSTEM_MAC)

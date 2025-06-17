@@ -52,18 +52,21 @@ class DrawService(
             BufferBuilderStorage(Runtime.getRuntime().availableProcessors())
         }*/
 
-        private val guiRenderState by lazy {
+        /*private val guiRenderState by lazy {
             GuiRenderState()
-        }
+        }*/
+
+        override val isBufferSupported: Boolean = false
 
         override fun newBuffer(width: Int, height: Int): IFramebuffer {
-            val client = MinecraftClient.getInstance()
+            /*val client = MinecraftClient.getInstance()
             val buffer = SimpleFramebuffer(null, width, height, true)
             val context = DrawContext(client, guiRenderState)
 
             return FramebufferImpl(
                 buffer, DrawService(context), guiRenderState
-            )
+            )*/
+            return FramebufferImplStub(width, height)
         }
     }
 

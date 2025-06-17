@@ -6,6 +6,7 @@ import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer.Companion.
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.platform.renderer.IDrawService
+import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -13,14 +14,14 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import org.joml.AxisAngle4f
-import org.joml.Quaternionf
 import kotlin.math.ceil
 
 internal class ClientCardRenderer(
     private val text: TextProvider,
     private val state: BingoHudState,
     private val cardTileRenderer: CardTileRenderer,
+    private val cardBufferRenderer: ClientCardBufferRenderer,
+    private val drawServiceFactory: IDrawServiceFactory,
 ) {
 
     companion object {
@@ -88,8 +89,12 @@ internal class ClientCardRenderer(
         service.matrices.translate(x, y, z.toFloat())
         service.matrices.scale(cardScale, cardScale, 1f)
 
-        service.enableBlend()
-        card.framebuffer.draw(service, CARD_WIDTH, CARD_HEIGHT)
+        if (!drawServiceFactory.isBufferSupported) {
+            cardBufferRenderer.drawCard(service, card)
+        } else {
+            service.enableBlend()
+            card.framebuffer.draw(service, CARD_WIDTH, CARD_HEIGHT)
+        }
 
         if (isWinner) {
             service.matrices.push()
