@@ -52,6 +52,10 @@ class BingoPrefsCommand(
                 text.string(StringKey.OptionsNotifyChanged, string, text.boolean(value))
             )
         }
+
+        if (field == PlayerSettings::hideLobbyPrompt && value) {
+            sendMessage(text.string(StringKey.InstalledNeverShowAgainMessage))
+        }
     }
 
     init {

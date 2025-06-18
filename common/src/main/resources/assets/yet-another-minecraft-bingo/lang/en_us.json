@@ -145,6 +145,7 @@
   "bingo.installed.getting_started_wiki": "Wiki: Getting Started",
   "bingo.installed.limited_singleplayer_mode": "Yet Another Bingo is running in limited (singleplayer) mode! Use '%s' to start a game, or enable the 'bingo' datapack for full functionality.",
   "bingo.installed.never_show_again": "Never show this again",
+  "bingo.installed.never_show_again.message": "Okay, you won't see this message again.",
   "bingo.installed.server_setup_wiki": "Wiki: Server Setup",
   "bingo.installed.smp_mode": "Yet Another Bingo is running in SMP Mode! Use '%s' to set up Lobby Mode, or '%s' to start a game.",
   "bingo.intro.change_player_settings": "Change your player settings on the next page.",
