@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier
 class ClientSoundManager : IClientSoundManager {
 
     override fun createUnregistered(id: String): IClientSoundHandle {
-        return ClientSoundHandle(Identifier.of(id))
+        return ClientSoundHandle(Identifier(id))
     }
 
     override fun play(sound: IClientSoundHandle, volume: Float, pitch: Float) {

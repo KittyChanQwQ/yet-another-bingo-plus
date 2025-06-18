@@ -3,6 +3,7 @@ package me.jfenn.bingo.platform
 import me.jfenn.bingo.client.platform.text.IText
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
+import me.jfenn.bingo.platform.inventory.IContainerItemView
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.player.PlayerProfile
 import net.minecraft.command.CommandSource
@@ -65,7 +66,8 @@ interface IPlayerHandle : ILivingEntity {
     var gameMode: PlayerGameMode
     val mainHandStack: IItemStack
     val offHandStack: IItemStack
-    fun allHeldStacks(): Sequence<IItemStack>
+    fun allHeldStackViews(): Sequence<IContainerItemView>
+    fun allHeldStacks(): Sequence<IItemStack> = allHeldStackViews().map { it.stack }
     fun allInventorySlots(): Sequence<Pair<Int, IItemStack>>
 
     /**

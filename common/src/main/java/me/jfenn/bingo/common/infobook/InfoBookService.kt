@@ -230,7 +230,8 @@ internal class InfoBookService(
 
     fun giveBookItem(player: IPlayerHandle) {
         var bookCount = 0
-        for (stack in player.allHeldStacks().mapNotNull { it.asWrittenBook() }) {
+        for (view in player.allHeldStackViews()) {
+            val stack = view.stack.asWrittenBook() ?: continue
             if (isBookItem(stack)) {
                 // prevent players from taking someone else's book...
                 if (stack.author != scoreboardManager.getPlayerName(player))
@@ -239,9 +240,9 @@ internal class InfoBookService(
                 bookCount++
 
                 if (bookCount > 1)
-                    stack.count = 0
+                    view.mutate { it.count = 0 }
                 else if (stack.count > 1)
-                    stack.count = 1
+                    view.mutate { it.count = 1 }
             }
         }
 

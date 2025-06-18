@@ -41,19 +41,19 @@ internal class MapItemController(
             .find { (_, stack) -> mapItemService.isMapItem(stack) }
             ?.first
 
-        val hasMap = player.allHeldStacks()
-            .filter { mapItemService.isMapItem(it) }
-            .count { stack ->
+        val hasMap = player.allHeldStackViews()
+            .filter { mapItemService.isMapItem(it.stack) }
+            .count { view ->
                 val isItemValid = when (team) {
-                    null -> mapItemService.isPreviewMapItem(stack)
-                    else -> mapItemService.isMapTeamItem(stack, team)
+                    null -> mapItemService.isPreviewMapItem(view.stack)
+                    else -> mapItemService.isMapTeamItem(view.stack, team)
                 }
                 if (isItemValid) {
-                    stack.count = 1
+                    view.mutate { it.count = 1 }
                     true
                 } else {
                     // if the player has another team's map item, remove it!
-                    stack.count = 0
+                    view.mutate { it.count = 0 }
                     false
                 }
             } > 0
@@ -101,9 +101,9 @@ internal class MapItemController(
      * Remove all bingo map items from the player
      */
     private fun removeAllMapItems(player: IPlayerHandle) {
-        player.allHeldStacks()
-            .filter { mapItemService.isMapItem(it) }
-            .forEach { it.count = 0 }
+        player.allHeldStackViews()
+            .filter { mapItemService.isMapItem(it.stack) }
+            .forEach { view -> view.mutate { it.count = 0 } }
     }
 
     init {

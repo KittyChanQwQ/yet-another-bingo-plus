@@ -136,20 +136,20 @@ class ItemObjectiveManager(
         player: IPlayerHandle,
         objective: BingoObjective.ItemEntry,
     ) {
-        val itemStacks = player.allHeldStacks()
-            .filter { canSatisfyPartial(it, objective) }
+        val itemViews = player.allHeldStackViews()
+            .filter { canSatisfyPartial(it.stack, objective) }
 
         // Confiscate item stacks until the objective requirements are met
         var countRemaining = objective.itemCount
-        for (stack in itemStacks) {
-            val newCount = stack.count - countRemaining
+        for (view in itemViews) {
+            val newCount = view.stack.count - countRemaining
             if (newCount < 0) {
                 // the entire stack is consumed, and there are remaining items to confiscate
-                countRemaining -= stack.count
-                stack.count = 0
+                countRemaining -= view.stack.count
+                view.mutate { it.count = 0 }
             } else {
                 // there are no remaining items to confiscate
-                stack.count = newCount
+                view.mutate { it.count = newCount }
                 break
             }
         }

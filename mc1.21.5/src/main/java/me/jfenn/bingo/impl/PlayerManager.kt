@@ -2,9 +2,11 @@ package me.jfenn.bingo.impl
 
 import com.mojang.authlib.GameProfile
 import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.impl.inventory.ContainerItemView
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
+import me.jfenn.bingo.platform.inventory.IContainerItemView
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.PlayerProfile
@@ -15,6 +17,7 @@ import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.BlockItem
 import net.minecraft.item.BoatItem
+import net.minecraft.item.BundleItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.item.consume.UseAction
@@ -219,15 +222,20 @@ class PlayerHandle(
     override val offHandStack: IItemStack
         get() = getItemStackFactory().forStack(player.offHandStack)
 
-    private fun allNestedStacks(stack: ItemStack): Sequence<ItemStack> = sequence {
-        yield(stack)
+    private fun allNestedStacks(stack: ItemStack): Sequence<Pair<ItemStack, ItemStack>> = sequence {
         stack[DataComponentTypes.CONTAINER]?.iterateNonEmpty()
-            ?.forEach { yieldAll(allNestedStacks(it)) }
+            ?.forEach {
+                yield(Pair(stack, it))
+                yieldAll(allNestedStacks(it))
+            }
         stack[DataComponentTypes.BUNDLE_CONTENTS]?.iterate()
-            ?.forEach { yieldAll(allNestedStacks(it)) }
+            ?.forEach {
+                yield(Pair(stack, it))
+                yieldAll(allNestedStacks(it))
+            }
     }
 
-    override fun allHeldStacks(): Sequence<IItemStack> {
+    override fun allHeldStackViews(): Sequence<IContainerItemView> {
         val itemStackFactory = getItemStackFactory()
         return sequence {
             // yield all items in inventory
@@ -251,9 +259,18 @@ class PlayerHandle(
             yieldAll(player.enderChestInventory.heldStacks)
         }
             .filter { !it.isEmpty }
-            .flatMap { allNestedStacks(it) }
-            .filter { !it.isEmpty }
-            .map { itemStackFactory.forStack(it) }
+            .flatMap { sequenceOf(Pair(null, it)) + allNestedStacks(it) }
+            .filter { !it.second.isEmpty }
+            .map { (container, stack) ->
+                val stackImpl = itemStackFactory.forStack(stack)
+                if (container?.item is BundleItem) {
+                    ContainerItemView.Bundle(container, stackImpl)
+                } else if (container?.get(DataComponentTypes.CONTAINER) != null) {
+                    ContainerItemView.Container(container, stackImpl)
+                } else {
+                    ContainerItemView.Inventory(stackImpl)
+                }
+            }
     }
 
     override fun allInventorySlots(): Sequence<Pair<Int, IItemStack>> {

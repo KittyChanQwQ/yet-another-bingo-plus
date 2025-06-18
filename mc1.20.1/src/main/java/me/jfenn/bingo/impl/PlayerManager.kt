@@ -2,9 +2,11 @@ package me.jfenn.bingo.impl
 
 import com.mojang.authlib.GameProfile
 import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.impl.inventory.ContainerItemView
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
+import me.jfenn.bingo.platform.inventory.IContainerItemView
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.PlayerProfile
@@ -215,7 +217,7 @@ class PlayerHandle(
     override val offHandStack: IItemStack
         get() = getItemStackFactory().forStack(player.offHandStack)
 
-    override fun allHeldStacks(): Sequence<IItemStack> {
+    override fun allHeldStackViews(): Sequence<IContainerItemView> {
         val itemStackFactory = getItemStackFactory()
         return sequence {
             // yield all items in inventory
@@ -226,7 +228,7 @@ class PlayerHandle(
             // yield the current cursor stack
             yield(player.currentScreenHandler.cursorStack)
         }.map {
-            itemStackFactory.forStack(it)
+            ContainerItemView.Inventory(itemStackFactory.forStack(it))
         }
     }
 
