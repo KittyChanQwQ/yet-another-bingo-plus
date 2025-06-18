@@ -1,5 +1,15 @@
+### New Features:
+
+- **Updated to support 1.21.6!**
+
 ### Bugs Squashed:
 
-- Fixed the "Mending Book" objective being unobtainable in 1.21.5
-- Fixed the "Ominous Banner" objective being unobtainable in 1.20.5+
-- Fixed some banner patterns missing from the "Any Banner Pattern" objective
+- Fixed a crash caused by "Consume Items" mode when obtaining an item stored in a bundle or shulker box
+
+### Translations:
+
+- New Chinese Traditional translations by notlin4!
+- New Czech translations by Džerry!
+- New Dutch translations by GrangerTheDog!
+- New Russian translations by lazdni!
+- New Spanish translations by GatoEnCaja and TheJokerDev!
