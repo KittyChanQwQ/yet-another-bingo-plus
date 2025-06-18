@@ -141,9 +141,6 @@ internal class BingoHudController(
     }
 
     private fun drawHud(drawService: IDrawService) {
-        val context = drawService.context
-        val textRenderer = MinecraftClient.getInstance().textRenderer
-
         // If the selected team is one of the displayed cards, try to find its view state...
         val view = getSelectedCard() ?: return
         // Ensure that `selectedTeam` is set to the displayed card, in case they don't match
@@ -175,7 +172,6 @@ internal class BingoHudController(
         val isMouseOver = client.currentScreen is ChatScreen
 
         renderer.draw(
-            context,
             drawService,
             view,
             x = x,
@@ -207,10 +203,9 @@ internal class BingoHudController(
                 val cardX = x + ((i+1) * xDirection * ClientCardBufferRenderer.CARD_WIDTH * cardScale)
                 val cardEndX = x + ((i+2) * xDirection * ClientCardBufferRenderer.CARD_WIDTH * cardScale)
                 // if the card would go off-screen, don't bother rendering it...
-                if (cardEndX < 0 || cardEndX > context.scaledWindowWidth) continue
+                if (cardEndX < 0 || cardEndX > drawService.window.scaledWindowWidth) continue
 
                 renderer.draw(
-                    context,
                     drawService,
                     remainingView,
                     x = cardX,
@@ -226,7 +221,7 @@ internal class BingoHudController(
 
         readyHudRenderer.drawReadyHud(
             drawService = drawService,
-            x = context.scaledWindowWidth/2 - 50,
+            x = drawService.window.scaledWindowWidth/2 - 50,
             y = 40,
             width = 100
         )
@@ -242,14 +237,14 @@ internal class BingoHudController(
         val tooltipStartedAt = state.tooltipStartedAt ?: Instant.DISTANT_PAST
         if (tooltipText != null && MinecraftClient.getInstance().currentScreen == null) {
             val tooltipSize = tooltipText.maxOfOrNull { drawService.font.getTextWidth(it) } ?: 0
-            val tooltipX = context.scaledWindowWidth/2 - tooltipSize/2 - 12
-            val tooltipY = (context.scaledWindowHeight * 0.5).toInt() + 18 + 12
+            val tooltipX = drawService.window.scaledWindowWidth/2 - tooltipSize/2 - 12
+            val tooltipY = (drawService.window.scaledWindowHeight * 0.5).toInt() + 18 + 12
 
             val fadeIn = ((now - tooltipStartedAt) / 250.milliseconds).coerceIn(0.0, 1.0)
             val fadeOut = 1.0 - ((now - tooltipPacket.createdAt.plus(100.milliseconds)) / 250.milliseconds).coerceIn(0.0, 1.0)
 
             drawService.setShaderColor(1f, 1f, 1f, (fadeIn * fadeOut).toFloat())
-            context.drawTooltip(textRenderer, tooltipText.map { it.value }, tooltipX, tooltipY)
+            drawService.drawTooltip(tooltipText, tooltipX, tooltipY)
             drawService.setShaderColor(1f, 1f, 1f, 1f)
 
             if (fadeOut <= 0.0) {

@@ -461,7 +461,7 @@ internal class BingoHudScreen(
             drawService.matrices.push()
             drawService.matrices.translate(-2f, -2f, 0f)
 
-            drawService.context.fill(0, 0, 4, 4, 0x30_F5A3D6)
+            drawService.fill(0, 0, 4, 4, 0x30_F5A3D6)
 
             drawService.matrices.pop()
             drawService.matrices.pop()

@@ -10,9 +10,7 @@ import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import kotlin.math.ceil
 
@@ -72,7 +70,6 @@ internal class ClientCardRenderer(
     }
 
     fun draw(
-        context: DrawContext,
         service: IDrawService,
         card: ClientCard,
         x: Float,
@@ -129,7 +126,7 @@ internal class ClientCardRenderer(
         ) {
             service.matrices.push()
             service.matrices.translate(0f, 0f, z + 2000f)
-            context.drawTooltip(service.textRenderer, card.display.players.map { Text.literal(it.name) }, mouseX, mouseY)
+            service.drawTooltip(card.display.players.map { text.literal(it.name) }, mouseX, mouseY)
             service.matrices.pop()
         }
 
@@ -149,7 +146,6 @@ internal class ClientCardRenderer(
         mouseY: Int,
         z: Int,
     ) {
-        val context by service::context
         val tooltip = tile.clientTooltip ?: buildList {
             tile.name?.let { add(it) }
             addAll(
@@ -184,8 +180,8 @@ internal class ClientCardRenderer(
                 val componentWidth = 14 + 20 * columns
 
                 val tooltipPosition = HoveredTooltipPositioner.INSTANCE.getPosition(
-                    context.scaledWindowWidth,
-                    context.scaledWindowHeight,
+                    service.window.scaledWindowWidth,
+                    service.window.scaledWindowHeight,
                     mouseX,
                     mouseY,
                     tooltipWidth,
@@ -220,7 +216,7 @@ internal class ClientCardRenderer(
                 }
             }
 
-            context.drawTooltip(service.textRenderer, tooltip.map { it.value }, mouseX, mouseY)
+            service.drawTooltip(tooltip, mouseX, mouseY)
             service.matrices.pop()
         }
     }

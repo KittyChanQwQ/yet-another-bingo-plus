@@ -27,14 +27,13 @@ internal class ReadyHudRenderer(
     private var progressInterpolated: Float = 0f
 
     private fun drawProgressBar(drawService: IDrawService, x: Int, y: Int, width: Int, height: Int, progress: Float) {
-        val context = drawService.context
         progressInterpolated = (progressInterpolated.takeIf { it.isFinite() } ?: 0f) * 0.8f + progress * 0.2f
 
         val xProgress = x + ((width - 1) * progressInterpolated).roundToInt() + 1
-        context.fill(x, y, xProgress, y + height + 1, LOADING_COLOR)
-        context.drawHorizontalLine(xProgress, x + width, y, LOADING_COLOR)
-        context.drawHorizontalLine(xProgress, x + width, y + height, LOADING_COLOR)
-        context.drawVerticalLine(x + width, y, y + height, LOADING_COLOR)
+        drawService.fill(x, y, xProgress, y + height + 1, LOADING_COLOR)
+        drawService.drawHorizontalLine(xProgress, x + width, y, LOADING_COLOR)
+        drawService.drawHorizontalLine(xProgress, x + width, y + height, LOADING_COLOR)
+        drawService.drawVerticalLine(x + width, y, y + height, LOADING_COLOR)
     }
 
     fun drawReadyHud(drawService: IDrawService, x: Int, y: Int, width: Int) {
@@ -42,7 +41,6 @@ internal class ReadyHudRenderer(
         if (!ready.isRunning) return
 
         val textRenderer = MinecraftClient.getInstance().textRenderer
-        val context = drawService.context
 
         val titleText = ready.title ?: when {
             ready.isReady -> text.string(StringKey.LobbyStartingPlayersReady, ready.readyPlayers, ready.totalPlayers)

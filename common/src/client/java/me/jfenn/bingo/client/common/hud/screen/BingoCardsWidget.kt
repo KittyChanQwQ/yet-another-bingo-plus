@@ -139,7 +139,6 @@ internal class BingoCardsWidget(
         val mouseX = mouse.x
         val mouseY = mouse.y
 
-        val context by drawService::context
         if (isInBounds(mouseX, mouseY)) {
             val boundaryMin = x - cardsAreaWidth*.5f
             val boundaryMax = x + cardsAreaWidth*.5f
@@ -172,7 +171,6 @@ internal class BingoCardsWidget(
             val isHovered = hoveredView != null && hoveredView.teamKey == view.teamKey
             val isSingleView = views.size <= 1
             renderer.draw(
-                context,
                 drawService,
                 view,
                 x = x,
@@ -199,9 +197,9 @@ internal class BingoCardsWidget(
             val barColorBg = 0x80000000.toInt()
             val barColorFilled = 0xff6b6b85.toInt()
 
-            context.fill(barX, barY, barX + barOffsetScrolled, barY + barHeight, 0, barColorBg)
-            context.fill(barX + barOffsetScrolled, barY, barX + barOffsetScrolled + barFilledWidth, barY + barHeight, 0, barColorFilled)
-            context.fill(barX + barOffsetScrolled + barFilledWidth, barY, barX + cardsAreaWidth, barY + barHeight, 0, barColorBg)
+            drawService.fill(barX, barY, barX + barOffsetScrolled, barY + barHeight, barColorBg)
+            drawService.fill(barX + barOffsetScrolled, barY, barX + barOffsetScrolled + barFilledWidth, barY + barHeight, barColorFilled)
+            drawService.fill(barX + barOffsetScrolled + barFilledWidth, barY, barX + cardsAreaWidth, barY + barHeight, barColorBg)
         }
     }
 
