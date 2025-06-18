@@ -96,7 +96,7 @@ The logo design was inspired by [Aikoyori/ProgrammingVTuberLogos](https://github
 **Help translate this mod into your language!** <br>All text in this project is available [on CrowdIn](https://crowdin.com/project/yet-another-bingo) for anyone to submit translations.
 
 
-Chinese Simplified translations were contributed by Fishlanding, tovv3r, Young912, BoredYukolin, yzy_sheep, nageih, and teaSummer!<br>
+Chinese Simplified translations were contributed by Fishlanding, tovv3r, Young912, BoredYukolin, yzy_sheep, nageih, teaSummer, and Nattiden!<br>
 Chinese Traditional translations were contributed by Leo_768, BoredYukolin, and notlin4!<br>
 Czech translations were contributed by Džerry!<br>
 Danish translations were contributed by Libreh!<br>
@@ -107,7 +107,7 @@ German translations were contributed by Butterkeks!<br>
 Hungarian translations were contributed by petya0927 and Remarci!<br>
 Korean translations were contributed by LegendLier!<br>
 Polish translations were contributed by Toniemax!<br>
-Portuguese translations were contributed by Lucasofchirst!<br>
+Portuguese translations were contributed by Lucsdev_!<br>
 Russian translations were contributed by Milleol, XakVit, Ofterkino, Mrpavel, Май, Lucky Wayч, yukkovna, and lazdni!<br>
 Spanish translations were contributed by ANDY, GatoEnCaja, and TheJokerDev!<br>
 Swedish translations were contributed by Vica50 Rosvall!<br>

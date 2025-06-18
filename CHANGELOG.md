@@ -1,15 +1,10 @@
-### New Features:
-
-- **Updated to support 1.21.6!**
-
 ### Bugs Squashed:
 
-- Fixed a crash caused by "Consume Items" mode when obtaining an item stored in a bundle or shulker box
+- Fixed a crash in 1.21.6 when cards overflow on the game over screen in multiplayer
 
 ### Translations:
 
+- New Chinese Simplified translations by Nattiden!
 - New Chinese Traditional translations by notlin4!
-- New Czech translations by Džerry!
-- New Dutch translations by GrangerTheDog!
-- New Russian translations by lazdni!
-- New Spanish translations by GatoEnCaja and TheJokerDev!
+- New Hungarian translations by Remarci!
+- New Portuguese translations by Lucsdev_!
