@@ -173,6 +173,8 @@ internal class ClientCardRenderer(
             service.matrices.push()
             service.matrices.translate(0f, 0f, z + 2000f)
 
+            service.drawTooltip(tooltip, mouseX, mouseY)
+
             if (tile.imageList.isNotEmpty()) {
                 val tooltipWidth = tooltip.maxOf { service.font.getTextWidth(it) }
                 val tooltipHeight = 10 * tooltip.size // hardcoded in OrderedTextTooltipComponent
@@ -194,29 +196,30 @@ internal class ClientCardRenderer(
                     else -> tooltipPosition.y() + tooltipHeight + 6
                 }
 
-                service.drawNinePatch(
-                    texture = CARD_TOOLTIP_ID,
-                    x = x, y = y,
-                    sliceSize = 7,
-                    width = componentWidth,
-                    height = componentHeight,
-                    textureWidth = 34,
-                    textureHeight = 34,
-                )
-
-                tile.imageList.forEachIndexed { index, cardTileImage ->
-                    val row = index / columns
-                    val col = index % columns
-                    cardTileRenderer.renderTileImage(
-                        drawService = service,
-                        image = cardTileImage,
-                        itemX = x + 9 + 20 * col,
-                        itemY = y + 9 + 20 * row,
+                service.drawTooltipAddon {
+                    service.drawNinePatch(
+                        texture = CARD_TOOLTIP_ID,
+                        x = x, y = y,
+                        sliceSize = 7,
+                        width = componentWidth,
+                        height = componentHeight,
+                        textureWidth = 34,
+                        textureHeight = 34,
                     )
+
+                    tile.imageList.forEachIndexed { index, cardTileImage ->
+                        val row = index / columns
+                        val col = index % columns
+                        cardTileRenderer.renderTileImage(
+                            drawService = service,
+                            image = cardTileImage,
+                            itemX = x + 9 + 20 * col,
+                            itemY = y + 9 + 20 * row,
+                        )
+                    }
                 }
             }
 
-            service.drawTooltip(tooltip, mouseX, mouseY)
             service.matrices.pop()
         }
     }

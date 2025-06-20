@@ -13,6 +13,7 @@ import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
+import org.joml.Vector2f
 import org.joml.Vector2i
 
 class DrawService(
@@ -112,7 +113,16 @@ class DrawService(
     override fun drawTooltip(text: List<IText>, x: Int, y: Int) {
         val textRenderer = MinecraftClient.getInstance().textRenderer
         val textList = text.map { it.value }.toMutableList()
-        context.drawTooltip(textRenderer, textList, x, y)
+        val realPosition = context.matrices.transformPosition(x.toFloat(), y.toFloat(), Vector2f())
+        context.drawTooltip(textRenderer, textList, realPosition.x.toInt(), realPosition.y.toInt())
+    }
+
+    override fun drawTooltipAddon(callback: () -> Unit) {
+        val tooltipRunnable = context.accessor.tooltipDrawer
+        context.accessor.tooltipDrawer = Runnable {
+            tooltipRunnable?.run()
+            callback()
+        }
     }
 
     override fun drawDynamicTexture(texture: INativeImage, x: Int, y: Int, width: Int, height: Int) {

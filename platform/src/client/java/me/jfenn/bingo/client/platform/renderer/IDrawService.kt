@@ -38,6 +38,7 @@ interface IDrawService {
     fun drawText(text: IText, x: Int, y: Int, color: Int, shadow: Boolean = false)
     fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int)
     fun drawTooltip(text: List<IText>, x: Int, y: Int)
+    fun drawTooltipAddon(callback: () -> Unit) = callback()
 
     fun drawDynamicTexture(
         texture: INativeImage,
