@@ -245,6 +245,7 @@ internal class BingoHudController(
 
             drawService.setShaderColor(1f, 1f, 1f, (fadeIn * fadeOut).toFloat())
             drawService.drawTooltip(tooltipText, tooltipX, tooltipY)
+            drawService.drawTooltipImmediate()
             drawService.setShaderColor(1f, 1f, 1f, 1f)
 
             if (fadeOut <= 0.0) {

@@ -125,6 +125,10 @@ class DrawService(
         }
     }
 
+    override fun drawTooltipImmediate() {
+        context.renderTooltip()
+    }
+
     override fun drawDynamicTexture(texture: INativeImage, x: Int, y: Int, width: Int, height: Int) {
         require(texture is NativeImageImpl)
         context.accessor.invokeDrawTexturedQuad(
