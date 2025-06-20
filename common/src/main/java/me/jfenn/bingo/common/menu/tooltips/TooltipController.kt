@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.menu.tooltips
 
-import me.jfenn.bingo.common.LOBBY_WORLD_ID
+import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.GameState
@@ -32,7 +32,7 @@ internal class TooltipController(
         lookingAtTicks.clear()
 
         for (player in playerManager.getPlayers()) {
-            if (player.serverWorld.registryKey.value == LOBBY_WORLD_ID) {
+            if (player.world.identifier == LOBBY_WORLD_IDENTIFIER) {
                 sendTooltip(player, prevTicks)
             }
         }
