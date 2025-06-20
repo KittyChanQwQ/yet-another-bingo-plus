@@ -59,7 +59,7 @@ class TabImpl(private val text: Text) : Tab {
 
     override fun refreshGrid(tabArea: ScreenRect?) {}
 
-    override fun getNarratedHint(): Text? = null
+    override fun getNarratedHint(): Text = text
 }
 
 object TabsWidgetFactory : ITabsWidgetFactory {
