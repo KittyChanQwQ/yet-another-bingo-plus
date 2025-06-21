@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.menu.tooltips
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IEntity
 import java.util.*
 

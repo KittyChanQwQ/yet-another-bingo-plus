@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.map.CardViewService

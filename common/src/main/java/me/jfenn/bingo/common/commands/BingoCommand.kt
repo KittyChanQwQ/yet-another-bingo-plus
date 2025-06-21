@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.client.platform.text.IText
-import me.jfenn.bingo.client.platform.text.TextAction
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.TextAction
 import me.jfenn.bingo.common.URL_WIKI
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.scope.BingoComponent

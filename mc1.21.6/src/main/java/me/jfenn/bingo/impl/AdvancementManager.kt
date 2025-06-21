@@ -1,6 +1,6 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IAdvancementHandle
 import me.jfenn.bingo.platform.IAdvancementManager
 import me.jfenn.bingo.platform.item.IItemStack
@@ -8,7 +8,6 @@ import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.advancement.AdvancementEntry
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import kotlin.jvm.optionals.getOrNull
 

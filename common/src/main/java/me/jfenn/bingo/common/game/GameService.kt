@@ -2,8 +2,8 @@ package me.jfenn.bingo.common.game
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.client.platform.text.IText
-import me.jfenn.bingo.client.platform.text.TextAction
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.TextAction
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager

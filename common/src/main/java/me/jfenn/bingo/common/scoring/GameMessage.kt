@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.scoring
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.client.platform.text.ITextSerialized
+import me.jfenn.bingo.platform.text.ITextSerialized
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardTileImage
 import me.jfenn.bingo.common.team.BingoTeamKey

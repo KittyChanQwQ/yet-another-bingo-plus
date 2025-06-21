@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.card.filter
 
-import me.jfenn.bingo.client.platform.text.TextAction
+import me.jfenn.bingo.platform.text.TextAction
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.tag.TagService
 import me.jfenn.bingo.common.commands.hasPermission

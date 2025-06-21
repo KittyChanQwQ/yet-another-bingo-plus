@@ -4,7 +4,7 @@ import me.jfenn.bingo.client.platform.IWorldService
 import me.jfenn.bingo.client.platform.event.model.ScreenEvent
 import me.jfenn.bingo.client.platform.event.model.ScreenType
 import me.jfenn.bingo.client.platform.screen.IButtonFactory
-import me.jfenn.bingo.client.platform.text.ITextFactory
+import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState

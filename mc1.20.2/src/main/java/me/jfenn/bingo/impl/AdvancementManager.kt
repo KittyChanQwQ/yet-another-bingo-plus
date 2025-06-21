@@ -1,6 +1,6 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IAdvancementHandle
 import me.jfenn.bingo.platform.IAdvancementManager
 import me.jfenn.bingo.platform.item.IItemStack

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.card
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.MDC_DEBUG
 import me.jfenn.bingo.common.MDC_FILENAME
 import me.jfenn.bingo.common.MDC_OBJECTIVE

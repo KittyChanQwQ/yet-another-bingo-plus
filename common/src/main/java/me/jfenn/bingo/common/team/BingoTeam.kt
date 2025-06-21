@@ -3,9 +3,9 @@ package me.jfenn.bingo.common.team
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.jfenn.bingo.client.platform.text.HoverAction
-import me.jfenn.bingo.client.platform.text.IText
-import me.jfenn.bingo.client.platform.text.ITextSerialized
+import me.jfenn.bingo.platform.text.HoverAction
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.ITextSerialized
 import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.text.TextProvider

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.card.filter
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.client.platform.text.IText
-import me.jfenn.bingo.client.platform.text.ITextFactory
-import me.jfenn.bingo.client.platform.text.ITextSerialized
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.ITextFactory
+import me.jfenn.bingo.platform.text.ITextSerialized
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
 

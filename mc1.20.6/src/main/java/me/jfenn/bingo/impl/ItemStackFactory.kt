@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.mojang.serialization.JsonOps
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.item.*
 import net.minecraft.component.DataComponentType
 import net.minecraft.component.DataComponentTypes

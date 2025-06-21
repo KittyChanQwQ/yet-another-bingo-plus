@@ -2,10 +2,10 @@ package me.jfenn.bingo.common.text
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
-import me.jfenn.bingo.client.platform.text.IText
-import me.jfenn.bingo.client.platform.text.ITextFactory
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.ITextFactory
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
@@ -15,6 +15,7 @@ class TextProvider(
     private val textFactory: ITextFactory,
 ): ITextFactory by textFactory {
 
+    private val keys = StringKey.entries.associateBy { it.key }
     private val lang: Map<StringKey, String> = this::class.java.getResourceAsStream("/assets/yet-another-minecraft-bingo/lang/en_us.json")
         ?.use { stream ->
             @OptIn(ExperimentalSerializationApi::class)
@@ -75,30 +76,42 @@ class TextProvider(
     }
 
     fun itemCount(number: Int): IText {
-        return when (number) {
-            1 -> string(StringKey.GameItemSingle)
-            else -> string(StringKey.GameItemCount, number)
+        val key = StringKey.GameItemCount
+        val numberKey = keys[key.key + "_${number}"]
+        return if (numberKey != null && numberKey in lang) {
+            string(numberKey)
+        } else {
+            string(key, number)
         }
     }
 
     fun lineCount(number: Int): IText {
-        return when (number) {
-            1 -> string(StringKey.GameLineSingle)
-            else -> string(StringKey.GameLineCount, number)
+        val key = StringKey.GameLineCount
+        val numberKey = keys[key.key + "_${number}"]
+        return if (numberKey != null && numberKey in lang) {
+            string(numberKey)
+        } else {
+            string(key, number)
         }
     }
 
     fun cardCount(number: Int): IText {
-        return when (number) {
-            1 -> string(StringKey.GameCardSingle)
-            else -> string(StringKey.GameCardCount, number)
+        val key = StringKey.GameCardCount
+        val numberKey = keys[key.key + "_${number}"]
+        return if (numberKey != null && numberKey in lang) {
+            string(numberKey)
+        } else {
+            string(key, number)
         }
     }
 
     fun teamCount(number: Int): IText {
-        return when (number) {
-            1 -> string(StringKey.GameTeamSingle)
-            else -> string(StringKey.GameTeamCount, number)
+        val key = StringKey.GameTeamCount
+        val numberKey = keys[key.key + "_${number}"]
+        return if (numberKey != null && numberKey in lang) {
+            string(numberKey)
+        } else {
+            string(key, number)
         }
     }
 

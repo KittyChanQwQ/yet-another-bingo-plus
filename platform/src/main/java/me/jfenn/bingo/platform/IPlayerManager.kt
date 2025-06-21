@@ -1,6 +1,6 @@
 package me.jfenn.bingo.platform
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
 import me.jfenn.bingo.platform.inventory.IContainerItemView

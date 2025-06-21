@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.platform.screen
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.IEventListener
 import net.minecraft.client.gui.widget.ButtonWidget
 import org.joml.Vector2i

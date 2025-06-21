@@ -13,7 +13,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionProvider
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.*
 import me.jfenn.bingo.platform.scope.BingoKoin

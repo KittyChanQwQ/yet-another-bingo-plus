@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry

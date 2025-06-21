@@ -1,7 +1,7 @@
 package me.jfenn.bingo.platform
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
 import java.util.*
 import kotlin.time.Duration

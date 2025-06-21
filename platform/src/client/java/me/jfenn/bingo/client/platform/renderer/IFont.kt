@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.platform.renderer
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 
 interface IFont {
     fun getTextWidth(text: IText): Int

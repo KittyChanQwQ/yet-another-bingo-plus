@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.impl.draw
 
 import me.jfenn.bingo.client.platform.renderer.IFont
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.impl.TextImpl
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.text.OrderedText

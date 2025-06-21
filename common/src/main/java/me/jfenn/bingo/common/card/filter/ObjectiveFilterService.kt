@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.card.filter
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.text.TextProvider

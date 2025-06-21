@@ -4,7 +4,7 @@ import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.common.hud.BingoCardColors
 import me.jfenn.bingo.client.common.hud.BingoMessageRenderer
 import me.jfenn.bingo.client.platform.INativeImage
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.game.GameStatusPacket
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket

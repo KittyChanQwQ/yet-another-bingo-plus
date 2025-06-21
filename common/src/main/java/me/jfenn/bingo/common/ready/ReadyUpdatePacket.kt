@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.ready
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPacketBuf

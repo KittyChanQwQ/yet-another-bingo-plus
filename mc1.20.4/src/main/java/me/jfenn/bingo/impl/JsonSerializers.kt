@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.modules.SerializersModule
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IJsonSerializers
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory

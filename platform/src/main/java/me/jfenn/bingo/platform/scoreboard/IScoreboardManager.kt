@@ -1,6 +1,6 @@
 package me.jfenn.bingo.platform.scoreboard
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
 
 interface IScoreboardManager {

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.platform.item
 
 import kotlinx.serialization.Contextual
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer

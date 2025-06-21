@@ -1,6 +1,6 @@
 package me.jfenn.bingo.platform.commands
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text

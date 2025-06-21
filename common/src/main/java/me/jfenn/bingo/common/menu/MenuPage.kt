@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commands.formatWarning
 import me.jfenn.bingo.common.config.ConfigService

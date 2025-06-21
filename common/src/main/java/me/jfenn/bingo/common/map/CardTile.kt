@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.map
 
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierLabel

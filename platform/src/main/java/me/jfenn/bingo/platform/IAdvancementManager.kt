@@ -1,6 +1,6 @@
 package me.jfenn.bingo.platform
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity

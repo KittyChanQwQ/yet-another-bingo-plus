@@ -5,7 +5,7 @@ import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.IScrollableWidget
 import me.jfenn.bingo.client.platform.renderer.IDrawService
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey

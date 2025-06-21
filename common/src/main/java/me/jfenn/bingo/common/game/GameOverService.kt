@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.game
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.options.EndWhen

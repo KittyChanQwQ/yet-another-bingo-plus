@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.game
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.ScopedEvents

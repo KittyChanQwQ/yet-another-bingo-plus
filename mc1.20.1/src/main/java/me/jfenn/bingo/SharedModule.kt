@@ -1,6 +1,6 @@
 package me.jfenn.bingo
 
-import me.jfenn.bingo.client.platform.text.ITextFactory
+import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.impl.*
 import me.jfenn.bingo.impl.event.ServerCloseEvent

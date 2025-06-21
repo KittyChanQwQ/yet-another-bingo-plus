@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.text
 
 import me.jfenn.bingo.api.services.TextPlaceholders
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.server.MinecraftServer
 
 class PlaceholderService(

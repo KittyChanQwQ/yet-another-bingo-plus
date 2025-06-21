@@ -1,4 +1,4 @@
-package me.jfenn.bingo.client.platform.text
+package me.jfenn.bingo.platform.text
 
 import kotlinx.serialization.Contextual
 import net.minecraft.text.Text

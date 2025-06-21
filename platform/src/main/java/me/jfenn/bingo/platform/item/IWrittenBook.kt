@@ -1,6 +1,6 @@
 package me.jfenn.bingo.platform.item
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 
 interface IWrittenBook : IItemStack {
     var title: String?

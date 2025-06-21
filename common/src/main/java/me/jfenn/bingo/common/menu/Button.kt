@@ -1,21 +1,18 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.model.OptionsChangedEvent
 import me.jfenn.bingo.common.menu.tooltips.TooltipState
 import me.jfenn.bingo.common.utils.plus
-import me.jfenn.bingo.common.utils.toVector3d
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.*
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
-import org.joml.Vector3f
 import org.slf4j.Logger
 
 internal fun MenuComponent.registerButtonInteraction(

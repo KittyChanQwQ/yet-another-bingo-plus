@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.ready
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.autorestart.ResetService

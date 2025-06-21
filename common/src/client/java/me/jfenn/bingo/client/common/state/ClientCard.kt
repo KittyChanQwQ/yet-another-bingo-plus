@@ -3,7 +3,7 @@ package me.jfenn.bingo.client.common.state
 import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.common.hud.BingoCardColors
 import me.jfenn.bingo.client.platform.renderer.IFramebuffer
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.map.CardView
 import java.io.Closeable
 

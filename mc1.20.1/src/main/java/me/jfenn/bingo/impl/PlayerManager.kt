@@ -1,7 +1,7 @@
 package me.jfenn.bingo.impl
 
 import com.mojang.authlib.GameProfile
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.impl.inventory.ContainerItemView
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition

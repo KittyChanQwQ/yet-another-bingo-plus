@@ -1,9 +1,9 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.client.platform.text.HoverAction
-import me.jfenn.bingo.client.platform.text.IText
-import me.jfenn.bingo.client.platform.text.ITextFactory
-import me.jfenn.bingo.client.platform.text.TextAction
+import me.jfenn.bingo.platform.text.HoverAction
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.ITextFactory
+import me.jfenn.bingo.platform.text.TextAction
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
 

@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.infobook
 
-import me.jfenn.bingo.client.platform.text.HoverAction
-import me.jfenn.bingo.client.platform.text.ITextFactory
-import me.jfenn.bingo.client.platform.text.TextAction
+import me.jfenn.bingo.platform.text.HoverAction
+import me.jfenn.bingo.platform.text.ITextFactory
+import me.jfenn.bingo.platform.text.TextAction
 import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.commands.BingoPrefsCommand
 import me.jfenn.bingo.common.config.BingoConfig

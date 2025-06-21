@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.lobby
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.lobby.BingoLobbyCommand.Companion.CONFIRM_COMMAND
@@ -12,7 +12,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*

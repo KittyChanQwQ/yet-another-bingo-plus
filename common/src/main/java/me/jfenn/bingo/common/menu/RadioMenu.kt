@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.util.Formatting

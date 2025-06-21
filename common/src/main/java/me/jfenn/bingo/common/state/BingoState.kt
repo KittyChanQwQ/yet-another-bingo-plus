@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.state
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.game.GameOverService

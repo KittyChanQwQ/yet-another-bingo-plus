@@ -3,7 +3,7 @@ package me.jfenn.bingo.client.impl.screen.button
 import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.platform.screen.IButton
 import me.jfenn.bingo.client.platform.screen.IButtonFactory
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.impl.TextImpl
 import me.jfenn.bingo.platform.utils.IEventListener

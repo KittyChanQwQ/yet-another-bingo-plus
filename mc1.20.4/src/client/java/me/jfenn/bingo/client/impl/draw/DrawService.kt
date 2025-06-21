@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import me.jfenn.bingo.client.impl.NativeImageImpl
 import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.client.platform.renderer.*
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.impl.ItemStackFactory
 import me.jfenn.bingo.platform.item.IItemStack
 import net.minecraft.client.MinecraftClient

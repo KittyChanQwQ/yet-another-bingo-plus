@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.options
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.client.platform.text.IText
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.text.TextProvider
