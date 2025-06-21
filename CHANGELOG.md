@@ -1,5 +1,6 @@
 ### Bugs Squashed:
 
+- Fix bingo cards not persisting in saves/restarts on older MC versions
 - Fix cards on the Game Over screen overlapping incorrectly on 1.21.6
 - Fix menu hints & loading bars not being displayed when "Preview Card" is turned off
 - Prevent the HUD options from hiding the ready-up bar & menu hints
