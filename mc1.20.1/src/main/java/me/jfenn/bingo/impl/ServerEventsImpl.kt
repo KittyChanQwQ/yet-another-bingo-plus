@@ -16,6 +16,7 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceType
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import net.minecraft.util.TypedActionResult
@@ -43,6 +44,10 @@ class ServerEventsImpl(
         }
     }
 
+    companion object {
+        var afterSaveCallback: ((MinecraftServer) -> Unit)? = null
+    }
+
     init {
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             eventBus.emit(ServerEvent.Started, ServerEvent(server))
@@ -50,6 +55,10 @@ class ServerEventsImpl(
 
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
             eventBus.emit(ServerEvent.Stopped, ServerEvent(server))
+        }
+
+        afterSaveCallback = { server ->
+            eventBus.emit(ServerEvent.Saved, ServerEvent(server))
         }
 
         ServerTickEvents.START_SERVER_TICK.register {

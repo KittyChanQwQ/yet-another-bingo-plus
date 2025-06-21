@@ -52,6 +52,10 @@ class ServerEventsImpl(
             eventBus.emit(ServerEvent.Stopped, ServerEvent(server))
         }
 
+        ServerLifecycleEvents.AFTER_SAVE.register { server, flush, force ->
+            eventBus.emit(ServerEvent.Saved, ServerEvent(server))
+        }
+
         ServerTickEvents.START_SERVER_TICK.register {
             val event = TickEvent(it.ticks)
             eventBus.emit(TickEvent.Start, event)
