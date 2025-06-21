@@ -534,12 +534,8 @@ internal class BingoHudController(
             // Do not draw the HUD if the F3 or chat overlay is shown
             if (optionsAccessor.isHudHidden())
                 return@register
-            if (config.client.hideOnF3 && optionsAccessor.isDebugEnabled())
-                return@register
-            if (config.client.hideOnChat && MinecraftClient.getInstance().currentScreen is ChatScreen)
-                return@register
-            if (!config.client.enableHud)
-                return@register
+            val isDebugEnabled = optionsAccessor.isDebugEnabled()
+            val isChatOpen = MinecraftClient.getInstance().currentScreen is ChatScreen
 
             // Do not draw the HUD if the card screen is open
             if (
@@ -551,8 +547,16 @@ internal class BingoHudController(
                 return@register
             }
 
-            drawHudCards(it.drawService)
-            drawHudInfo(it.drawService)
+            if (
+                config.client.enableHud &&
+                !(config.client.hideOnF3 && isDebugEnabled) &&
+                !(config.client.hideOnChat && isChatOpen)
+            ) {
+                drawHudCards(it.drawService)
+            }
+            if (!isDebugEnabled && !isChatOpen) {
+                drawHudInfo(it.drawService)
+            }
         }
 
         eventBus.register(ClientServerEvent.Join) {
