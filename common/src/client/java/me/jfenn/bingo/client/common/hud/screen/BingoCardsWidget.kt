@@ -78,22 +78,20 @@ internal class BingoCardsWidget(
         val screenX = x - cardsTotalWidth/2
         val screenY = y - ClientCardBufferRenderer.CARD_HEIGHT /2
 
-        val zOrder = views.indices.toList()
-            .sortedBy { i ->
+        val zOrderedViews = views.toList().withIndex()
+            .sortedByDescending { (i) ->
                 val xOffset = i * ClientCardBufferRenderer.CARD_WIDTH + widthOffset + (ClientCardBufferRenderer.CARD_WIDTH /2)
                 val x = screenX + xOffset.roundToInt()
                 val distanceToCenter = x - this.x
                 distanceToCenter.absoluteValue
             }
 
-        for ((i, view) in views.withIndex()) {
+        zOrderedViews.forEachIndexed { zIndex, (i, view) ->
             val xOffset = i * ClientCardBufferRenderer.CARD_WIDTH + widthOffset
 
             val x = screenX + xOffset
             val y = screenY
-
-            val zIndex = zOrder.indexOf(i)
-            val z = 302 * (views.size - zIndex)
+            val z = 302 * zIndex
 
             val xCoerced = when {
                 x < xMin -> x.coerceAtLeast(xMin - 4f * (views.size - i - 1))
