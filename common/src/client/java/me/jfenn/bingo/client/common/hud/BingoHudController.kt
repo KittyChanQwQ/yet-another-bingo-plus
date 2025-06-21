@@ -140,7 +140,7 @@ internal class BingoHudController(
         }
     }
 
-    private fun drawHud(drawService: IDrawService) {
+    private fun drawHudCards(drawService: IDrawService) {
         // If the selected team is one of the displayed cards, try to find its view state...
         val view = getSelectedCard() ?: return
         // Ensure that `selectedTeam` is set to the displayed card, in case they don't match
@@ -218,7 +218,9 @@ internal class BingoHudController(
                 )
             }
         }
+    }
 
+    private fun drawHudInfo(drawService: IDrawService) {
         readyHudRenderer.drawReadyHud(
             drawService = drawService,
             x = drawService.window.scaledWindowWidth/2 - 50,
@@ -549,7 +551,8 @@ internal class BingoHudController(
                 return@register
             }
 
-            drawHud(it.drawService)
+            drawHudCards(it.drawService)
+            drawHudInfo(it.drawService)
         }
 
         eventBus.register(ClientServerEvent.Join) {
