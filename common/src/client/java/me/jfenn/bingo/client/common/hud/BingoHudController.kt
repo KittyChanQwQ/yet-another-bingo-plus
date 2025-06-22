@@ -560,7 +560,7 @@ internal class BingoHudController(
         }
 
         eventBus.register(ClientServerEvent.Join) {
-            client.execute { state.reset() }
+            client.execute { state.resetAll() }
         }
 
         eventBus.register(ClientServerEvent.Disconnect) {
