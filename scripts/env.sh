@@ -1,5 +1,5 @@
 # https://mcversions.net; 1.21.6
-export CLIENT_JAR=https://piston-data.mojang.com/v1/objects/740a125b83dd3447feaa3c5e891ead7fbb21ae28/client.jar
+export CLIENT_JAR=https://piston-data.mojang.com/v1/objects/fe914f4f60698ca4e494af61b24a94ed1b341a63/client.jar
 
 # https://mcversions.net; 1.21.6
-export SERVER_JAR=https://piston-data.mojang.com/v1/objects/6e64dcabba3c01a7271b4fa6bd898483b794c59b/server.jar
+export SERVER_JAR=https://piston-data.mojang.com/v1/objects/72716f71dfbc3d026a8577854ebaa69c63eb4474/server.jar
