@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.game
 
-import me.jfenn.bingo.platform.text.IText
-import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -16,8 +14,10 @@ import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
-import me.jfenn.bingo.integrations.permissions.IPermissionsApi
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.dialog.IDialogManager
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
@@ -29,13 +29,12 @@ internal class GameOverController(
     private val options: BingoOptions,
     private val text: TextProvider,
     private val gameOverService: GameOverService,
-    private val gameResumeService: GameResumeService,
     private val cardViewService: CardViewService,
     private val playerManager: IPlayerManager,
-    private val permissions: IPermissionsApi,
     private val packetManager: ServerPacketEvents,
     private val messageService: MessageService,
     private val teamService: TeamService,
+    private val dialogManager: IDialogManager,
     private val log: Logger,
     events: ScopedEvents,
 ) {
@@ -91,6 +90,15 @@ internal class GameOverController(
             }
     }
 
+    private fun openGameOverDialog(
+        player: IPlayerHandle,
+        packet: GameOverPacket,
+    ): Boolean {
+        val dialog = gameOverService.createDialog(packet) ?: return false
+        dialogManager.showDialog(player, dialog)
+        return true
+    }
+
     private fun sendGameOverPacket(
         info: GameOverService.GameOverInfo,
         isUpdate: Boolean,
@@ -102,57 +110,18 @@ internal class GameOverController(
             }
         }
 
-        val winningTeam = info.winningTeamKey?.let { state.teams[it] }
         val title = gameOverService.getTitle(info)
         val message = gameOverService.getMessage(info)
-
-        val scoreRankings = info.scoreRankings.map {
-            GameOverPacket.ScoreRanking(
-                index = it.index,
-                key = it.key,
-                name = state.teams[it.key]?.getName(text, playerName = true) ?: text.literal("[unknown]"),
-                score = it.score,
-                duration = it.duration,
-            )
-        }
-
-        val defaultTab = when {
-            // If there are multiple teams & either more than one team completed the game, or the game was a draw
-            scoreRankings.size > 1 && scoreRankings.count { it.duration != null } != 1 -> GameOverPacket.EndScreenTab.SCORES
-            else -> GameOverPacket.EndScreenTab.CARDS
-        }
+        val scoreRankings = gameOverService.getScoreRankings(info)
 
         for (player in playerManager.getPlayers()) {
-            val playerInfo = info.playerInfo[player.uuid]
-            val isWinner = winningTeam?.includesPlayer(player.player) ?: false
-
-            val packet = GameOverPacket(
-                title = title,
-                subtitle = message ?: text.empty(),
-                winner = info.winningTeamKey,
-                duration = state.ingameDuration() ?: Duration.ZERO,
-                isReturnToLobbyAvailable = permissions.hasPermission(player, Permission.COMMAND_READY)
-                        && state.isLobbyMode,
-                isResumeAvailable = gameResumeService.isResumeAvailable(player),
-                isWinner = isWinner,
+            val packet = gameOverService.createPacket(
+                player = player,
+                info = info,
                 isUpdate = isUpdate,
-
-                winStreak = playerInfo?.winStreak,
-                bestWinStreak = playerInfo?.bestWinStreak,
-                isBestWinStreak = playerInfo?.isBestWinStreak == true,
-
-                capturedItems = playerInfo?.capturedItems,
-                bestCapturedItems = playerInfo?.bestCapturedItems,
-                isBestCapturedItems = playerInfo?.isBestCapturedItems == true,
-
-                endedAt = info.endedAt,
-
-                isBestTime = info.isBestTime,
-                prevBestTime = info.prevBestTime,
-
-                seed = server.overworld.seed,
-                scores = scoreRankings,
-                defaultTab = defaultTab,
+                title = title,
+                message = message,
+                scoreRankings = scoreRankings,
             )
 
             when {
@@ -168,6 +137,9 @@ internal class GameOverController(
                 }
                 packetManager.gameOverV2.send(player.player, packet) -> {}
                 packetManager.gameOverV1.send(player.player, packet) -> {
+                    Sounds.playGameOver(player)
+                }
+                openGameOverDialog(player, packet) -> {
                     Sounds.playGameOver(player)
                 }
                 else -> {

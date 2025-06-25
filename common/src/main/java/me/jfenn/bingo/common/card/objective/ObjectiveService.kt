@@ -10,7 +10,7 @@ import me.jfenn.bingo.common.team.OfflinePlayerCache
 import me.jfenn.bingo.common.utils.toMap
 import java.util.*
 
-class ObjectiveService(
+internal class ObjectiveService(
     private val state: BingoState,
     private val offlinePlayerCache: OfflinePlayerCache,
 ) {

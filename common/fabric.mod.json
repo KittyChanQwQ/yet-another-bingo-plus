@@ -51,8 +51,14 @@
   ],
   "description": "A multiplayer BINGO item hunt mod + lobby",
   "mixins": [
-    "mixins.bingo.json",
-    "mixins-client.bingo.json"
+    {
+      "config": "mixins.bingo.json",
+      "environment": "*"
+    },
+    {
+      "config": "mixins-client.bingo.json",
+      "environment": "client"
+    }
   ],
   "custom": {
     "modmenu": {

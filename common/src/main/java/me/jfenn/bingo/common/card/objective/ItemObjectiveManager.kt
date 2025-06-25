@@ -18,7 +18,7 @@ import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import kotlin.math.max
 
-class ItemObjectiveManager(
+internal class ItemObjectiveManager(
     private val log: Logger,
     private val server: MinecraftServer,
     private val state: BingoState,

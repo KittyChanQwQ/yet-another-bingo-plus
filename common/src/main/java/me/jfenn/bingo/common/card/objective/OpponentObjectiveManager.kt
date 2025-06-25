@@ -10,7 +10,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 
-class OpponentObjectiveManager(
+internal class OpponentObjectiveManager(
     private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,

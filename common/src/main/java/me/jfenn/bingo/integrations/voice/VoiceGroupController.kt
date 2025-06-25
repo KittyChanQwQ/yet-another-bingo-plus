@@ -14,7 +14,7 @@ import me.jfenn.bingo.platform.config.read
 import me.jfenn.bingo.platform.config.write
 import me.jfenn.bingo.platform.event.IEventBus
 
-class VoiceGroupController(
+internal class VoiceGroupController(
     configManager: IConfigManager,
     private val playerManager: IPlayerManager,
     private val voiceApi: IVoiceApi,

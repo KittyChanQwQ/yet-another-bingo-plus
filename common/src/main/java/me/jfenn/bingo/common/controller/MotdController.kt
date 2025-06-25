@@ -6,7 +6,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import net.minecraft.server.MinecraftServer
 
-class MotdController(
+internal class MotdController(
     events: ScopedEvents,
     private val server: MinecraftServer,
     private val state: BingoState,

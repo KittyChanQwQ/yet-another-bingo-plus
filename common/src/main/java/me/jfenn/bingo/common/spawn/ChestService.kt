@@ -7,7 +7,6 @@ import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.platform.block.BlockPosition
-import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.server.MinecraftServer
@@ -17,14 +16,13 @@ import net.minecraft.util.math.Direction
 import net.minecraft.world.Heightmap
 import org.slf4j.Logger
 
-class ChestService(
+internal class ChestService(
     private val log: Logger,
     private val server: MinecraftServer,
     private val options: BingoOptions,
     private val data: ScopedData,
     private val config: BingoConfig,
     private val state: BingoState,
-    private val itemStackFactory: IItemStackFactory,
 ) {
 
     private fun getSpawnDimension(): ServerWorld {

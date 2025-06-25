@@ -35,7 +35,7 @@ import kotlin.math.min
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
-class CardService(
+internal class CardService(
     private val log: Logger,
     private val state: BingoState,
     private val options: BingoOptions,

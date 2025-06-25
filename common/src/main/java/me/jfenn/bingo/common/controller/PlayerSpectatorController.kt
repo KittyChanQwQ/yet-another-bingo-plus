@@ -22,7 +22,7 @@ import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.world.GameMode
 
-class PlayerSpectatorController(
+internal class PlayerSpectatorController(
     eventBus: IEventBus,
     private val state: BingoState,
     private val teamService: TeamService,

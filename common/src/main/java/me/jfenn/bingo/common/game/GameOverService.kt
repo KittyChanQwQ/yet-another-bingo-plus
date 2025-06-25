@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.game
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.options.EndWhen
@@ -16,24 +16,35 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.Vector3dAsArray
+import me.jfenn.bingo.common.utils.formatHHMMSS
+import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.dialog.IDialogAction
+import me.jfenn.bingo.platform.dialog.IDialogHandle
+import me.jfenn.bingo.platform.dialog.IDialogManager
 import me.jfenn.bingo.platform.item.IItemStackSerialized
 import me.jfenn.bingo.platform.player.PlayerProfile
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.UuidAsString
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import kotlin.time.Duration
 
-class GameOverService(
+internal class GameOverService(
     private val state: BingoState,
     private val options: BingoOptions,
     private val textProvider: TextProvider,
     private val stats: StatsService,
     private val server: MinecraftServer,
     private val playerManager: IPlayerManager,
+    private val text: TextProvider,
+    private val permissions: IPermissionsApi,
+    private val gameResumeService: GameResumeService,
+    private val dialogManager: IDialogManager,
 ) {
 
     @Serializable
@@ -229,5 +240,127 @@ class GameOverService(
                 .map { (slot, stack) -> slot to stack.copy() }
                 .toMap(),
         )
+    }
+
+    fun getScoreRankings(info: GameOverInfo) = info.scoreRankings.map {
+        GameOverPacket.ScoreRanking(
+            index = it.index,
+            key = it.key,
+            name = state.teams[it.key]?.getName(text, playerName = true)
+                ?: text.literal("[unknown]"),
+            score = it.score,
+            duration = it.duration,
+        )
+    }
+
+    fun createPacket(
+        player: IPlayerHandle,
+        info: GameOverInfo,
+        isUpdate: Boolean,
+        title: IText = getTitle(info),
+        message: IText? = getMessage(info),
+        scoreRankings: List<GameOverPacket.ScoreRanking> = getScoreRankings(info),
+    ): GameOverPacket {
+        val winningTeam = info.winningTeamKey?.let { state.teams[it] }
+        val playerInfo = info.playerInfo[player.uuid]
+        val isWinner = winningTeam?.includesPlayer(player.player) ?: false
+
+        val defaultTab = when {
+            // If there are multiple teams & either more than one team completed the game, or the game was a draw
+            scoreRankings.size > 1 && scoreRankings.count { it.duration != null } != 1 -> GameOverPacket.EndScreenTab.SCORES
+            else -> GameOverPacket.EndScreenTab.CARDS
+        }
+
+        return GameOverPacket(
+            title = title,
+            subtitle = message ?: text.empty(),
+            winner = info.winningTeamKey,
+            duration = state.ingameDuration() ?: Duration.ZERO,
+            isReturnToLobbyAvailable = permissions.hasPermission(player, Permission.COMMAND_READY)
+                    && state.isLobbyMode,
+            isResumeAvailable = gameResumeService.isResumeAvailable(player),
+            isWinner = isWinner,
+            isUpdate = isUpdate,
+
+            winStreak = playerInfo?.winStreak,
+            bestWinStreak = playerInfo?.bestWinStreak,
+            isBestWinStreak = playerInfo?.isBestWinStreak == true,
+
+            capturedItems = playerInfo?.capturedItems,
+            bestCapturedItems = playerInfo?.bestCapturedItems,
+            isBestCapturedItems = playerInfo?.isBestCapturedItems == true,
+
+            endedAt = info.endedAt,
+
+            isBestTime = info.isBestTime,
+            prevBestTime = info.prevBestTime,
+
+            seed = server.overworld.seed,
+            scores = scoreRankings,
+            defaultTab = defaultTab,
+        )
+    }
+
+    fun createDialog(
+        packet: GameOverPacket
+    ): IDialogHandle? {
+        val builder = dialogManager.multiActionBuilder() ?: return null
+
+        builder.title = text.string(StringKey.FullName)
+        builder.addText(packet.title.copy().formatted(Formatting.BOLD))
+        builder.addText(packet.subtitle)
+
+        builder.addText(text.empty())
+
+        builder.addText(
+            text.empty()
+                .append(text.string(StringKey.StatsGameDuration).formatted(Formatting.GRAY))
+                .append("  ")
+                .append(packet.duration.formatString())
+                .also { it.setColor(0xFF_CCA3F5.toInt()) }
+        )
+
+        if (packet.scores.size > 1) {
+            builder.addText(text.empty())
+
+            for (score in packet.scores) {
+                builder.addText(
+                    text.literal("#${score.index+1} ")
+                        .formatted(Formatting.GRAY)
+                        .append(score.name)
+                        .append("  ")
+                        .append(score.score.formatText(text))
+                        .append("  ")
+                        .append(score.duration?.formatHHMMSS() ?: "DNF")
+                )
+            }
+        } else {
+            builder.addText(
+                text.empty()
+                    .append(text.string(StringKey.GameEndScoresScore).formatted(Formatting.GRAY))
+                    .append("  ")
+                    .append(packet.scores.firstOrNull()?.score?.formatText(text) ?: text.empty())
+                    .also { it.setColor(0xFF_CCA3F5.toInt()) }
+            )
+        }
+
+        builder.addAction(
+            label = text.string(StringKey.CardTitle),
+            action = IDialogAction.RunCommand("bingo card"),
+        )
+
+        if (packet.isReturnToLobbyAvailable) {
+            builder.addAction(
+                label = text.string(StringKey.WorldReturnToLobby),
+                action = IDialogAction.RunCommand("ready"),
+            )
+        }
+
+        builder.setExitAction(
+            label = text.string(StringKey.CardClose),
+            action = IDialogAction.None,
+        )
+
+        return builder.build()
     }
 }

@@ -9,6 +9,8 @@ import me.jfenn.bingo.impl.particle.ParticleFactory
 import me.jfenn.bingo.impl.world.GameRulesImpl
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.dialog.DummyDialogManager
+import me.jfenn.bingo.platform.dialog.IDialogManager
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.packet.IServerNetworking
 import me.jfenn.bingo.platform.particle.IParticleFactory
@@ -31,6 +33,7 @@ val sharedModule = module {
 
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
+    single { DummyDialogManager } bind IDialogManager::class
     singleOf(::EntityManagerImpl) bind IEntityManager::class
     single { Executors } bind IExecutors::class
     singleOf(::ItemStackFactory) bind IItemStackFactory::class

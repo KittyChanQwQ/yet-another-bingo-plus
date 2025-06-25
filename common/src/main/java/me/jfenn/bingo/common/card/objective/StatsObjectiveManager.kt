@@ -18,7 +18,7 @@ import me.jfenn.bingo.platform.IStatHandle
 import me.jfenn.bingo.platform.IStatManager
 import org.slf4j.Logger
 
-class StatsObjectiveManager(
+internal class StatsObjectiveManager(
     private val log: Logger,
     private val statManager: IStatManager,
     private val state: BingoState,

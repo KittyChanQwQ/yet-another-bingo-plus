@@ -15,7 +15,7 @@ import me.jfenn.bingo.platform.event.game.ScopeStopped
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.BlockPos
 
-class PlayerManagerMixinHelper(
+class PlayerManagerMixinHelper internal constructor(
     private val config: BingoConfig,
     private val state: BingoState,
     private val spawnService: SpawnService,

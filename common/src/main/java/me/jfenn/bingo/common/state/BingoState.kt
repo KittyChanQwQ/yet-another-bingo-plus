@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.state
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.game.GameOverService
@@ -23,13 +22,14 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.UuidAsString
 import net.minecraft.util.Formatting
 import java.util.*
 import kotlin.time.Duration
 
 @Serializable
-data class BingoState(
+data class BingoState internal constructor(
     var isLobbyMode: Boolean = false,
     var gameId: UuidAsString = UUID.randomUUID(),
     var state: GameState = GameState.UNINITIALIZED,
@@ -46,7 +46,7 @@ data class BingoState(
     var previewMap: BingoMap? = null,
     // This is a temporary list that should be overwritten by `CardService.generate()`
     val cards: MutableList<BingoCard> = mutableListOf(),
-    var gameOverInfo: GameOverService.GameOverInfo? = null,
+    internal var gameOverInfo: GameOverService.GameOverInfo? = null,
     var gameMessages: MutableList<GameMessage> = mutableListOf(),
     /**
      * Stores a set of recently-joined player UUIDs for PlayerController

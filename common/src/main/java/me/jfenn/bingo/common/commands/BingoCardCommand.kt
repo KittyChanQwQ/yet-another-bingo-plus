@@ -171,8 +171,12 @@ class BingoCardCommand(
     init {
         commandManager.register("bingo") {
             literal("card") {
-                requires { hasConfigureGame() }
+                executes {
+                    cardViewService.openCard(player!!)
+                }
+
                 literal("set") {
+                    requires { hasConfigureGame() }
                     string("tile", { CARD_KEYS }) { tileArg ->
                         string(
                             name = "objective",
@@ -194,6 +198,7 @@ class BingoCardCommand(
                 }
 
                 literal("seed") {
+                    requires { hasConfigureGame() }
                     executes { getCardSeed() }
 
                     long("seed") { seedArg ->
@@ -202,6 +207,7 @@ class BingoCardCommand(
                 }
 
                 literal("assign") {
+                    requires { hasConfigureGame() }
                     string(
                         "team",
                         { state.teams.keys.map { it.id } + state.teams.keys.map { it.label } }
@@ -217,6 +223,7 @@ class BingoCardCommand(
                 }
 
                 literal("stack") {
+                    requires { hasConfigureGame() }
                     executes { getCardStack() }
 
                     literal("push") {

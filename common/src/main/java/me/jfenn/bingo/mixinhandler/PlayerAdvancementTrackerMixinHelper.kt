@@ -6,7 +6,7 @@ import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.ScopeStopped
 import net.minecraft.server.network.ServerPlayerEntity
 
-class PlayerAdvancementTrackerMixinHelper(
+internal class PlayerAdvancementTrackerMixinHelper(
     private val state: BingoState,
     private val teamService: TeamService,
     eventBus: IEventBus,

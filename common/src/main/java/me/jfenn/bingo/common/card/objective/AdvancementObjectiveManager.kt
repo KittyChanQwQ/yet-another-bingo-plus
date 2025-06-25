@@ -14,7 +14,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 
-class AdvancementObjectiveManager(
+internal class AdvancementObjectiveManager(
     private val log: Logger,
     private val server: MinecraftServer,
     private val state: BingoState,

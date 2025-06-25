@@ -14,7 +14,7 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 import org.slf4j.Logger
 
-class SomeOfObjectiveManager(
+internal class SomeOfObjectiveManager(
     private val log: Logger,
     private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,

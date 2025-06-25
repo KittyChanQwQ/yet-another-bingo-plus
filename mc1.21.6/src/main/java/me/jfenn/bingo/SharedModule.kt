@@ -1,18 +1,20 @@
 package me.jfenn.bingo
 
-import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.impl.*
+import me.jfenn.bingo.impl.dialog.DialogManager
 import me.jfenn.bingo.impl.event.ServerCloseEvent
 import me.jfenn.bingo.impl.networking.ServerNetworkingImpl
 import me.jfenn.bingo.impl.particle.ParticleFactory
 import me.jfenn.bingo.impl.world.GameRulesImpl
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.commands.ICommandManager
+import me.jfenn.bingo.platform.dialog.IDialogManager
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.packet.IServerNetworking
 import me.jfenn.bingo.platform.particle.IParticleFactory
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
+import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.platform.world.IGameRules
 import org.koin.core.module.dsl.createdAtStart
 import org.koin.core.module.dsl.scopedOf
@@ -36,6 +38,7 @@ val sharedModule = module {
 
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
+    singleOf(::DialogManager) bind IDialogManager::class
     singleOf(::EntityManagerImpl) bind IEntityManager::class
     single { Executors } bind IExecutors::class
     single { ItemStackFactory(get(), null) } bind IItemStackFactory::class

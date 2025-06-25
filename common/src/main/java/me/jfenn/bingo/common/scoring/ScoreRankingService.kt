@@ -4,7 +4,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import kotlin.time.Duration
 
-object ScoreRankingService {
+internal object ScoreRankingService {
 
     private fun getTeamDuration(state: BingoState, team: BingoTeam): Duration? {
         return team.winner?.instant?.let { completedAt ->

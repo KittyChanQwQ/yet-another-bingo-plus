@@ -10,7 +10,7 @@ import me.jfenn.bingo.platform.ITeamManager
 import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
 
-class TeamController(
+internal class TeamController(
     private val teamService: TeamService,
     private val state: BingoState,
     private val playerManager: IPlayerManager,

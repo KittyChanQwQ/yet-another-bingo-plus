@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.stats
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -15,6 +14,7 @@ import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.block.Blocks
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
@@ -28,7 +28,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import kotlin.time.Duration.Companion.seconds
 
-class StatsLobbyController(
+internal class StatsLobbyController(
     private val log: Logger,
     private val server: MinecraftServer,
     private val state: BingoState,

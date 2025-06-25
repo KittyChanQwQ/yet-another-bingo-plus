@@ -1,25 +1,25 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.common.card.CardScreenHandler
+import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.dialog.IDialogManager
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.*
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import java.util.*
 
 internal class MapItemHandler(
     eventBus: IEventBus,
     private val playerManager: IPlayerManager,
+    private val dialogManager: IDialogManager,
     private val mapItemService: MapItemService,
     private val itemStackFactory: IItemStackFactory,
-    private val teamService: TeamService,
+    private val cardViewService: CardViewService,
+    private val gameOverService: GameOverService,
     private val state: BingoState,
 ) : BingoComponent() {
 
@@ -31,25 +31,20 @@ internal class MapItemHandler(
     private val itemCooldown = mutableMapOf<UUID, Int>()
 
     private fun showInventory(player: IPlayerHandle) {
-        val team = teamService.getPlayerTeam(player)
-        val view = when {
-            team == null -> state.previewMap?.view
-            else -> team.map?.view
-        } ?: return
-
-        player.player.openHandledScreen(
-            SimpleNamedScreenHandlerFactory(
-                { syncId, inv, _ ->
-                    CardScreenHandler(
-                        syncId = syncId,
-                        view = view,
-                        itemStackFactory = itemStackFactory,
-                        playerInventory = inv,
-                    )
-                },
-                Text.literal("BINGO Card")
+        state.gameOverInfo?.let { gameOverInfo ->
+            val packet = gameOverService.createPacket(
+                player = player,
+                info = gameOverInfo,
+                isUpdate = false,
             )
-        )
+            val dialog = gameOverService.createDialog(packet)
+            if (dialog != null) {
+                dialogManager.showDialog(player, dialog)
+                return
+            }
+        }
+
+        cardViewService.openCard(player)
     }
 
     init {

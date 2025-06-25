@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
+import me.jfenn.bingo.common.card.CardScreenHandler
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -19,6 +19,9 @@ import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.text.IText
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.MinecraftServer
 import java.util.*
 import kotlin.time.Duration.Companion.seconds
@@ -35,6 +38,7 @@ internal class CardViewService(
     private val permissions: IPermissionsApi,
     private val textProvider: TextProvider,
     private val packets: ServerPacketEvents,
+    private val itemStackFactory: IItemStackFactory,
 ) {
 
     companion object {
@@ -367,4 +371,33 @@ internal class CardViewService(
         }
     }
 
+    fun openCard(player: IPlayerHandle) {
+        val team = teamService.getPlayerTeam(player)
+
+        val view = when {
+            !isViewingCard(player, team) -> null
+            team == null -> state.previewMap?.view
+            else -> team.map?.view
+        }
+
+        if (view == null) {
+            player.sendHotbarMessage(textProvider.string(StringKey.CardNoCards))
+            return
+        }
+
+        player.player.openHandledScreen(
+            SimpleNamedScreenHandlerFactory(
+                { syncId, inv, _ ->
+                    CardScreenHandler(
+                        syncId = syncId,
+                        view = view,
+                        itemStackFactory = itemStackFactory,
+                        playerInventory = inv,
+                        text = textProvider,
+                    )
+                },
+                textProvider.string(StringKey.CardTitle).value
+            )
+        )
+    }
 }

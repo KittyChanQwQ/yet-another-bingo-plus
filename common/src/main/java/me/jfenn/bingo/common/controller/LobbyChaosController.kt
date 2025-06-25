@@ -15,7 +15,7 @@ import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.platform.event.model.UseBlockEvent
 import net.minecraft.block.Blocks
 
-class LobbyChaosController(
+internal class LobbyChaosController(
     events: ScopedEvents,
     eventBus: IEventBus,
     private val config: BingoConfig,

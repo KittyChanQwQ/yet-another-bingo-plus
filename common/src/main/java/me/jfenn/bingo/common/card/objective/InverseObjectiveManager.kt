@@ -12,7 +12,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
 
-class InverseObjectiveManager(
+internal class InverseObjectiveManager(
     private val state: BingoState,
     private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,

@@ -18,7 +18,7 @@ import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.util.Formatting
 
-class MapItemService(
+internal class MapItemService(
     private val state: BingoState,
     private val itemStackFactory: IItemStackFactory,
     private val mapService: IMapService,

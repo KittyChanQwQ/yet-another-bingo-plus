@@ -20,7 +20,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.sign
 import kotlin.random.Random
 
-class SpawnService(
+internal class SpawnService(
     private val log: Logger,
     private val options: BingoOptions,
     private val state: BingoState,

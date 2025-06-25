@@ -9,7 +9,7 @@ import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 
-class ReadyService(
+internal class ReadyService(
     private val state: BingoState,
     private val teamService: TeamService,
     private val config: BingoConfig,

@@ -15,7 +15,7 @@ import me.jfenn.bingo.platform.event.model.PlayerEvent
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 
-class ScoreboardDataController(
+internal class ScoreboardDataController(
     private val state: BingoState,
     private val playerManager: IPlayerManager,
     private val teamService: TeamService,

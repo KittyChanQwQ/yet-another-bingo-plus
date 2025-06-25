@@ -15,7 +15,7 @@ import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import kotlin.math.ceil
 
-class TeamService(
+internal class TeamService(
     private val log: Logger,
     private val eventBus: IEventBus,
     private val state: BingoState,

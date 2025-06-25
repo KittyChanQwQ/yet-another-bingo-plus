@@ -15,12 +15,10 @@ import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
-import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 
-class ScoreboardObjectiveManager(
+internal class ScoreboardObjectiveManager(
     private val log: Logger,
-    private val server: MinecraftServer,
     private val scoreboardManager: IScoreboardManager,
     private val state: BingoState,
     private val data: ScopedData,

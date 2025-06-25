@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.card
 
 import me.jfenn.bingo.common.map.CardView
+import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -16,10 +17,11 @@ class CardScreenHandler(
     view: CardView,
     itemStackFactory: IItemStackFactory,
     playerInventory: PlayerInventory,
+    text: TextProvider,
 ) : ScreenHandler(ScreenHandlerType.GENERIC_9X5, syncId) {
 
     init {
-        val inventory = CardInventory(view, itemStackFactory)
+        val inventory = CardInventory(view, itemStackFactory, text)
 
         // bingo card slots
         for (row in 0 until 5) {

@@ -4,7 +4,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 
-class ChestController(
+internal class ChestController(
     private val state: BingoState,
     private val chestService: ChestService,
     events: ScopedEvents,
