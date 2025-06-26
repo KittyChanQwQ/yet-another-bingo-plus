@@ -205,6 +205,8 @@
   "bingo.list.uncategorized": "Uncategorized",
   "bingo.list.unobtainable": "Unobtainable",
   "bingo.lobby.click_to_join": "Click to join!",
+  "bingo.lobby.leaving_in_ready": "Leaving in %s - %s of %s ready!",
+  "bingo.lobby.leaving_in_run_command": "Leaving in %s - type /ready to speed up!",
   "bingo.lobby.loading_terrain": "Loading terrain...",
   "bingo.lobby.next_round_time_remaining": "Leaving in %s",
   "bingo.lobby.sounds_muted": "Certain sounds in this lobby may be muted to avoid spam.",

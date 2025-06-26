@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.ready
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.autorestart.ResetService
@@ -19,6 +18,7 @@ import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.text.Text
 import org.slf4j.Logger
 import kotlin.time.Duration
@@ -164,8 +164,22 @@ internal class ReadyController(
                 packets.readyUpdateV1.send(player, packet) -> {}
                 packet.isRunning -> {
                     val message = when {
-                        !isPlayerReady -> text.string(StringKey.LobbyStartingInRunCommand, packet.remainingDuration.formatHHMMSS())
-                        else -> text.string(StringKey.LobbyStartingInReady, packet.remainingDuration.formatHHMMSS(), packet.readyPlayers, packet.totalPlayers)
+                        !isPlayerReady -> text.string(
+                            when (state.state) {
+                                GameState.POSTGAME -> StringKey.LobbyLeavingInRunCommand
+                                else -> StringKey.LobbyStartingInRunCommand
+                            },
+                            packet.remainingDuration.formatHHMMSS()
+                        )
+                        else -> text.string(
+                            when (state.state) {
+                                GameState.POSTGAME -> StringKey.LobbyLeavingInReady
+                                else -> StringKey.LobbyStartingInReady
+                            },
+                            packet.remainingDuration.formatHHMMSS(),
+                            packet.readyPlayers,
+                            packet.totalPlayers
+                        )
                     }
                     player.sendHotbarMessage(message)
                 }
