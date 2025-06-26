@@ -109,18 +109,21 @@ internal class GameOverService(
                     val string = if (isAutoWin) StringKey.GameEndCompletedCardByStalemate else StringKey.GameEndCompletedCard
                     textProvider.string(string, winner.getName(textProvider, playerName = true))
                 }
-                ?: info.leadingTeamKey?.let { leadingTeamKey ->
-                    val leader = state.teams[leadingTeamKey.leader]
-                        ?.getName(textProvider, playerName = true)
-                        ?: Text.literal("[unknown]")
+                ?: info.leadingTeamKey
+                    .takeIf { info.scoreRankings.size > 1 }
+                    ?.let { leadingTeamKey ->
+                        val leader = state.teams[leadingTeamKey.leader]
+                            ?.getName(textProvider, playerName = true)
+                            ?: Text.literal("[unknown]")
 
-                    when (leadingTeamKey) {
-                        is LeadingTeam.Cards -> textProvider.string(StringKey.GameEndWonWithMoreCards, leader)
-                        is LeadingTeam.Lines -> textProvider.string(StringKey.GameEndWonWithMoreLines, leader)
-                        is LeadingTeam.Items -> textProvider.string(StringKey.GameEndWonWithMoreItems, leader)
+                        when (leadingTeamKey) {
+                            is LeadingTeam.Cards -> textProvider.string(StringKey.GameEndWonWithMoreCards, leader)
+                            is LeadingTeam.Lines -> textProvider.string(StringKey.GameEndWonWithMoreLines, leader)
+                            is LeadingTeam.Items -> textProvider.string(StringKey.GameEndWonWithMoreItems, leader)
+                        }
                     }
-                }
-                ?: textProvider.string(StringKey.GameEndDraw).takeIf { options.endGameWhen is EndWhen.FirstWin }
+                ?: textProvider.string(StringKey.GameEndDraw)
+                    .takeIf { info.scoreRankings.size > 1 && options.endGameWhen is EndWhen.FirstWin }
         )?.formatted(Formatting.YELLOW)
     }
 
@@ -312,12 +315,16 @@ internal class GameOverService(
 
         builder.addText(text.empty())
 
+        val separator = text.literal(" — ").formatted(Formatting.GRAY)
+
         builder.addText(
             text.empty()
-                .append(text.string(StringKey.StatsGameDuration).formatted(Formatting.GRAY))
-                .append("  ")
-                .append(packet.duration.formatString())
-                .also { it.setColor(0xFF_CCA3F5.toInt()) }
+                .append(text.string(StringKey.StatsGameDuration))
+                .append(separator)
+                .append(
+                    text.literal(packet.duration.formatString())
+                        .also { it.setColor(0xFF_CCA3F5.toInt()) }
+                )
         )
 
         if (packet.scores.size > 1) {
@@ -325,24 +332,28 @@ internal class GameOverService(
 
             for (score in packet.scores) {
                 builder.addText(
-                    text.literal("#${score.index+1} ")
-                        .formatted(Formatting.GRAY)
+                    text.literal("#${score.index+1}. ")
                         .append(score.name)
-                        .append("  ")
+                        .append(separator)
                         .append(score.score.formatText(text))
-                        .append("  ")
+                        .append(separator)
                         .append(score.duration?.formatHHMMSS() ?: "DNF")
                 )
             }
         } else {
             builder.addText(
                 text.empty()
-                    .append(text.string(StringKey.GameEndScoresScore).formatted(Formatting.GRAY))
-                    .append("  ")
-                    .append(packet.scores.firstOrNull()?.score?.formatText(text) ?: text.empty())
-                    .also { it.setColor(0xFF_CCA3F5.toInt()) }
+                    .append(text.string(StringKey.GameEndScoresScore))
+                    .append(separator)
+                    .append(
+                        packet.scores.firstOrNull()?.score?.formatText(text)
+                            ?.also { it.setColor(0xFF_CCA3F5.toInt()) }
+                            ?: text.empty()
+                    )
             )
         }
+
+        builder.addText(text.empty())
 
         builder.addAction(
             label = text.string(StringKey.CardTitle),
