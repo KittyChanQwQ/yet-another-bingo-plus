@@ -23,6 +23,7 @@ internal class ReadyService(
         val isPostgameCountdown = state.state == GameState.POSTGAME && config.nextRoundWhenReadySeconds != null
         val isPermission = permissions.hasPermission(player, Permission.COMMAND_READY)
         val isTeamChosen = !config.startWhenReadyWaitsForTeams ||
+                playerManager.getPlayers().size == 1 ||
                 teamService.isPlaying(player) ||
                 state.playersSpectatingIds.contains(player.uuid) ||
                 isPostgameCountdown
@@ -35,14 +36,15 @@ internal class ReadyService(
         playerManager.updatePlayerListName(player)
     }
 
-    fun toggleReady(player: IPlayerHandle) {
+    fun toggleReady(player: IPlayerHandle): Boolean {
         val isReady = !readyTimerState.isReady(player.uuid)
         // If a player is trying to ready-up and has not chosen a team, ask them to do so!
         if (isReady && !teamService.isTeamChosen(player)) {
             teamService.notifyMissingTeam(player)
-            return
+            return false
         }
 
         setReady(player, isReady)
+        return isReady
     }
 }

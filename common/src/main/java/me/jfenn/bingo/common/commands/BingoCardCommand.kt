@@ -172,7 +172,7 @@ class BingoCardCommand(
         commandManager.register("bingo") {
             literal("card") {
                 executes {
-                    cardViewService.openCard(player!!)
+                    cardViewService.openCard(playerOrThrow)
                 }
 
                 literal("set") {

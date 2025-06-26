@@ -35,6 +35,8 @@
   "bingo.command.lobby.warning2": "However, turning on 'lobby mode' will DELETE YOUR WORLD FOLDER after each game to start from a fresh seed.",
   "bingo.command.lobby.warning3": "There is no way to recover lost data if you enable this setting. Are you sure you want to continue?",
   "bingo.command.lobby.warning4": "(run '%s' if you understand this and would like to proceed)",
+  "bingo.command.ready.true": "%s is ready!",
+  "bingo.command.ready.false": "%s is no longer ready!",
   "bingo.command.ready.cancelled": "Cancelled the ready-up timer!",
   "bingo.command.reset.success": "Resetting the game...",
   "bingo.command.resume.success": "Resumed the game!",

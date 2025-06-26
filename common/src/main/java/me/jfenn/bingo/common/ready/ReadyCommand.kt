@@ -19,7 +19,11 @@ class ReadyCommand(
                 scope.get<ReadyService>().canUseReady(playerOrThrow)
             }
             executes {
-                scope.get<ReadyService>().toggleReady(playerOrThrow)
+                val isReady = scope.get<ReadyService>().toggleReady(playerOrThrow)
+                sendFeedback(text.string(
+                    if (isReady) StringKey.CommandReadyTrue else StringKey.CommandReadyFalse,
+                    playerOrThrow.playerName
+                ))
             }
 
             literal("cancel") {
