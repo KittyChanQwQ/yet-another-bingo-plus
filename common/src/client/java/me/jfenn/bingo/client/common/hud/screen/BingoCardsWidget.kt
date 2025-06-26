@@ -117,15 +117,12 @@ internal class BingoCardsWidget(
 
     private fun getHoveredView(mouseX: Int, mouseY: Int): ClientCard? {
         var hoveredView: ClientCard? = null
-        var hoveredZ = 0
         viewsWithPositions { view, x, y, z ->
             if (
                 mouseX in x.toInt()..(x.toInt() + ClientCardBufferRenderer.CARD_WIDTH) &&
-                mouseY in y.toInt()..(y.toInt() + ClientCardBufferRenderer.CARD_HEIGHT) &&
-                z > hoveredZ
+                mouseY in y.toInt()..(y.toInt() + ClientCardBufferRenderer.CARD_HEIGHT)
             ) {
                 hoveredView = view
-                hoveredZ = z
             }
         }
 
