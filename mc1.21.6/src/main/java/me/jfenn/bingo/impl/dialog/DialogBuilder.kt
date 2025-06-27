@@ -9,12 +9,19 @@ import net.minecraft.dialog.DialogActionButtonData
 import net.minecraft.dialog.DialogButtonData
 import net.minecraft.dialog.DialogCommonData
 import net.minecraft.dialog.action.DialogAction
+import net.minecraft.dialog.action.DynamicRunCommandDialogAction
+import net.minecraft.dialog.action.ParsedTemplate
 import net.minecraft.dialog.action.SimpleDialogAction
 import net.minecraft.dialog.body.DialogBody
 import net.minecraft.dialog.body.ItemDialogBody
 import net.minecraft.dialog.body.PlainMessageDialogBody
+import net.minecraft.dialog.input.BooleanInputControl
 import net.minecraft.dialog.type.ConfirmationDialog
+import net.minecraft.dialog.type.DialogInput
 import net.minecraft.dialog.type.MultiActionDialog
+import net.minecraft.dialog.type.NoticeDialog
+import net.minecraft.nbt.NbtOps
+import net.minecraft.nbt.NbtString
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
 import java.util.*
@@ -22,6 +29,7 @@ import java.util.*
 abstract class DialogBuilder : IDialogBuilder {
     override var title: IText = TextImpl(Text.empty())
     private val body = mutableListOf<DialogBody>()
+    private val inputs = mutableListOf<DialogInput>()
 
     override fun addText(text: IText, width: Int) {
         body.add(PlainMessageDialogBody(text.value, width))
@@ -29,6 +37,17 @@ abstract class DialogBuilder : IDialogBuilder {
 
     override fun addItem(item: IItemStack) {
         body.add(ItemDialogBody(item.stack, Optional.empty(), true, true, 1, 1))
+    }
+
+    override fun addInput(input: IDialogInput) {
+        when (input) {
+            is IDialogInput.Boolean -> {
+                inputs.add(DialogInput(
+                    input.key,
+                    BooleanInputControl(input.label.value, false, "true", "false")
+                ))
+            }
+        }
     }
 
     internal fun buildCommon(): DialogCommonData {
@@ -39,8 +58,30 @@ abstract class DialogBuilder : IDialogBuilder {
             false,
             AfterAction.CLOSE,
             body,
-            emptyList(),
+            inputs,
         )
+    }
+}
+
+class NoticeDialogBuilder : DialogBuilder(), INoticeDialogBuilder {
+    private var exitAction: DialogActionButtonData? = null
+
+    override fun setAction(label: IText, action: IDialogAction) {
+        exitAction = DialogActionButtonData(
+            DialogButtonData(
+                label.value,
+                DialogButtonData.DEFAULT_WIDTH,
+            ),
+            action.toDialogAction()
+        )
+    }
+
+    override fun build(): IDialogHandle {
+        val dialog = NoticeDialog(
+            buildCommon(),
+            exitAction ?: NoticeDialog.OK_BUTTON,
+        )
+        return DialogHandle(dialog)
     }
 }
 
@@ -107,15 +148,7 @@ class MultiActionDialogBuilder : DialogBuilder(), IMultiActionDialogBuilder {
 
     override fun build(): IDialogHandle {
         if (actions.isEmpty()) {
-            actions.add(
-                DialogActionButtonData(
-                    DialogButtonData(
-                        Text.literal("Back"),
-                        DialogButtonData.DEFAULT_WIDTH,
-                    ),
-                    Optional.empty()
-                )
-            )
+            throw IllegalArgumentException("Dialog actions must not be empty")
         }
         val dialog = MultiActionDialog(
             buildCommon(),
@@ -132,6 +165,14 @@ private fun IDialogAction.toDialogAction(): Optional<DialogAction> = when (this)
     is IDialogAction.RunCommand -> {
         Optional.of(
             SimpleDialogAction(ClickEvent.RunCommand(command))
+        )
+    }
+    is IDialogAction.DynamicRunCommand -> {
+        Optional.of(
+            DynamicRunCommandDialogAction(
+                ParsedTemplate.CODEC.parse(NbtOps.INSTANCE, NbtString.of(command))
+                    .getOrThrow { IllegalArgumentException(it) }
+            )
         )
     }
 }

@@ -1,15 +1,13 @@
 package me.jfenn.bingo.impl.dialog
 
 import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.dialog.IConfirmationDialogBuilder
-import me.jfenn.bingo.platform.dialog.IDialogHandle
-import me.jfenn.bingo.platform.dialog.IDialogManager
-import me.jfenn.bingo.platform.dialog.IMultiActionDialogBuilder
+import me.jfenn.bingo.platform.dialog.*
 import net.minecraft.dialog.type.Dialog
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.server.network.ServerPlayerEntity
 
 class DialogManager : IDialogManager {
+    override fun noticeBuilder(): INoticeDialogBuilder? = NoticeDialogBuilder()
     override fun confirmationBuilder(): IConfirmationDialogBuilder? = ConfirmationDialogBuilder()
     override fun multiActionBuilder(): IMultiActionDialogBuilder? = MultiActionDialogBuilder()
 

@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.lobby
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.lobby.BingoLobbyCommand.Companion.CONFIRM_COMMAND
@@ -28,8 +27,7 @@ internal class LobbyModeService(
 
     fun canUseLobbyCommand(player: IPlayerHandle) = server.isDedicated && permissions.hasPermission(player, Permission.CONFIGURE_LOBBY)
 
-    fun sendWarnings(uuid: UUID): Sequence<IText> = sequence {
-        yield(text.empty())
+    fun getWarnings() = sequence {
         text.string(StringKey.CommandLobbyWarning1)
             .formatted(Formatting.GOLD)
             .let { yield(it) }
@@ -40,11 +38,18 @@ internal class LobbyModeService(
         text.string(StringKey.CommandLobbyWarning3)
             .formatted(Formatting.GOLD)
             .let { yield(it) }
+    }
+
+    fun getCommandWarnings() = sequence {
+        yield(text.empty())
+        yieldAll(getWarnings())
         yield(text.empty())
         text.string(StringKey.CommandLobbyWarning4, CONFIRM_COMMAND)
             .formatted(Formatting.GRAY)
             .let { yield(it) }
+    }
 
+    fun onPlayerWarned(uuid: UUID) {
         readWarnings[uuid] = Clock.System.now()
     }
 

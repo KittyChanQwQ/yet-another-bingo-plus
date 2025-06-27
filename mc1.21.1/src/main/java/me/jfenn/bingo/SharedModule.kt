@@ -54,6 +54,7 @@ val sharedModule = module {
         scopedOf(::TeamManager) bind ITeamManager::class
         scopedOf(::MapServiceImpl) bind IMapService::class
         scopedOf(::MinecraftServerImpl) binds arrayOf(ITickManager::class, ILevelStorage::class)
+        scopedOf(::MinecraftServerImpl) bind IMinecraftServer::class
         scopedOf(::ItemStackFactory) bind IItemStackFactory::class
         scopedOf(::JsonSerializers) bind IJsonSerializers::class
         scopedOf(::RecipeManagerImpl) bind IRecipeManager::class

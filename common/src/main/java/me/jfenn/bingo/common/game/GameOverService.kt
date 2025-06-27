@@ -368,7 +368,7 @@ internal class GameOverService(
         }
 
         builder.setExitAction(
-            label = text.string(StringKey.CardClose),
+            label = text.string(StringKey.GuiClose),
             action = IDialogAction.None,
         )
 
