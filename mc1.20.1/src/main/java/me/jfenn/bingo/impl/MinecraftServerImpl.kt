@@ -13,15 +13,9 @@ class MinecraftServerImpl(
     override val isSingleplayer: Boolean
         get() = server.isSingleplayer
 
-<<<<<<<
-=======
     override val isDedicated: Boolean
         get() = server.isDedicated
 
-    override fun setFrozen(frozen: Boolean) {
-        server.tickManager.isFrozen = frozen
-    }
->>>>>>>
     override fun setFrozen(frozen: Boolean) = Unit
 
     override fun getLevelSaveDir(worldId: Identifier): Path? {
