@@ -70,6 +70,12 @@ class ServerWorldFactory(
                 }
             }
 
+        // Clear any ongoing raids
+        server.worlds.forEach { world ->
+            world.raidManager.raidManagerAccessor.raids.values
+                .forEach { it.invalidate() }
+        }
+
         server.accessor.setSaving(true)
         try {
             // First, ensure the world/data is saved

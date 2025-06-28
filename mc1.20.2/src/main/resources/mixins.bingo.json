@@ -16,6 +16,7 @@
     "PlayerAdvancementTrackerPreventSpectatorsMixin",
     "PlayerEntityMixin",
     "PlayerManagerMixin",
+    "RaidManagerAccessor",
     "ServerBossBarMixin",
     "ServerChunkManagerAccessor",
     "ServerChunkManagerMixin",
