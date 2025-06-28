@@ -73,7 +73,6 @@
   "bingo.installed.getting_started_wiki": "Wiki: Kom Godt i Gang",
   "bingo.installed.never_show_again": "Aldrig hvis dette igen",
   "bingo.installed.server_setup_wiki": "Wiki: Server Setup",
-  "bingo.installed.smp_mode": "Endnu En Bingo kører i SMP Tilstand! Brug '%s' til opsætning af Lobby Tilstand, eller '%s' for at starte et spil.",
   "bingo.intro.use_coords": "Brug \"/coords\" til at holde styr på koordinater og del dem med dit hold.",
   "bingo.options.mode_lockout": "Lockout"
 }

@@ -45,8 +45,6 @@
   "bingo.config.card_alignment.top_right": "Överst till höger",
   "bingo.config.card_offset_x": "Vågrät förskjutning",
   "bingo.installed.getting_started_wiki": "Wiki: Komma Igång",
-  "bingo.installed.limited_singleplayer_mode": "Ännu Ett Till Bingo kör i begränsat (singelspelare) läge! Använd '%s' för att starta ett spel, eller aktivera datapaketet 'bingo' för full funktionalitet.",
   "bingo.installed.never_show_again": "Visa aldrig det här igen",
-  "bingo.installed.server_setup_wiki": "Wiki: Serverinställning",
-  "bingo.installed.smp_mode": "Ännu Ett Till Bingo kör i SMP Läget! Använd '%s' för att ställa in Lobbyläget, eller '%s' för att starta ett spel."
+  "bingo.installed.server_setup_wiki": "Wiki: Serverinställning"
 }
