@@ -66,6 +66,13 @@ function mask_texture {
   # convert $1 -alpha set -background none -extent 16x16 \( $2 -alpha copy -background none \) -channel rgba -compose multiply -composite PNG32:$3
 }
 
+function multiply_texture {
+  # mask the image with ImageMagick, and write to the output dir
+  # https://stackoverflow.com/a/22417663
+  # convert $1 \( $2 \) -compose CopyOpacity -composite PNG32:$3
+  convert $1 \( $2 \) -compose CopyOpacity -composite \( $2 \) -compose Multiply -composite PNG32:$3
+}
+
 # Apply a color tint to the texture identifier before writing it to the output dir
 # $1 = input texture file (.png)
 # $2 = color (#ffffff)
@@ -74,7 +81,10 @@ function color_texture {
   # tint the image with ImageMagick, and write to the output dir
   # https://www.imagemagick.org/discourse-server/viewtopic.php?t=33380
   # convert $texture_file -colorspace gray -fill $2 -tint 100 PNG32:$OUT_DIR/$(echo $3 | xargs).png
-  convert $1 -background none \( xc:$(echo $2 | xargs) -scale 16x16 -background none \) -compose multiply -channel rgb -composite PNG32:$3
+  # convert $1 -background none \( xc:$(echo $2 | xargs) -scale 16x16 -background none \) -compose multiply -channel rgb -composite PNG32:$3
+  # convert $1 -colorspace gray -fill $2 -tint 100 PNG32:$3
+  #convert $1 \( xc:$(echo $2 | xargs) -scale 16x16 \) -compose multiply -channel rgb -composite PNG32:$3
+  convert xc:$(echo $2 | xargs) -scale 16x16 \( $1 \) -compose CopyOpacity -composite \( $1 \) -compose Multiply -composite PNG32:$3
 }
 
 # extract jar assets (into ./assets)
@@ -193,7 +203,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     # if it's stained glass, we need to apply a manual image mask
     if [[ "$item_id" == *"_stained_glass" ]]; then
       echo "STAINED GLASS"
-      mask_texture $block_texture_file $IMAGE_MASK_DIR/template_stained_glass.png $item_out_file
+      multiply_texture $block_texture_file $IMAGE_MASK_DIR/template_stained_glass.png $item_out_file
       continue
     fi
 
@@ -258,7 +268,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     # if it's a glass pane, we need to apply a manual image mask
     if [[ "$item_id" == *"_glass_pane" ]]; then
       echo "GLASS PANE"
-      mask_texture $item_texture_file $IMAGE_MASK_DIR/template_glass_pane.png $item_out_file
+      multiply_texture $item_texture_file $IMAGE_MASK_DIR/template_glass_pane.png $item_out_file
       continue
     fi
 
@@ -270,17 +280,17 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
       [[ "$item_id" == *"potion" ]] && item_color="#b743cc"
       [ "$item_id" == "tipped_arrow" ] && item_color="#ff0000"
 
-      # color the item texture and write to tmp.png
-      color_texture $item_texture_file $item_color tmp.png
-
       item_texture1=$(jq ".textures.layer1" tmp.json)
       if [ "$item_texture1" != "null" ]; then
         echo "TINTED ITEM WITH OVERLAY"
+        # color the item texture and write to tmp.png
+        color_texture $item_texture_file $item_color tmp.png
         item_texture1_file=$(get_texture_file $item_texture1)
         convert tmp.png $item_texture1_file -composite $item_out_file
       else
         echo "TINTED ITEM"
-        copy_texture tmp.png $item_out_file
+        # color the item texture and write to tmp.png
+        color_texture $item_texture_file $item_color $item_out_file
       fi
 
       continue
