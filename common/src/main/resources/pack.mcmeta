@@ -1,7 +1,7 @@
 {
     "pack": {
         "pack_format": 15,
-        "supported_formats": [15, 80],
+        "supported_formats": [15, 200],
         "description": "Bingo Data"
     },
     "overlays": {
@@ -15,7 +15,7 @@
                 "directory": "overlay-until-1-21-5"
             },
             {
-                "formats": [65, 100],
+                "formats": [65, 200],
                 "directory": "overlay-1-21-5"
             },
             {
@@ -23,7 +23,7 @@
                 "directory": "overlay-until-1-21-6"
             },
             {
-                "formats": [80, 100],
+                "formats": [80, 200],
                 "directory": "overlay-1-21-6"
             }
         ]
