@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.card
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.MDC_DEBUG
 import me.jfenn.bingo.common.MDC_FILENAME
 import me.jfenn.bingo.common.MDC_OBJECTIVE
@@ -28,10 +27,10 @@ import me.jfenn.bingo.common.utils.cacheFor
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.toMap
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.text.IText
 import org.slf4j.Logger
 import java.util.*
 import kotlin.math.ceil
-import kotlin.math.min
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
@@ -439,6 +438,7 @@ internal class CardService(
         cardOptions: BingoCardOptions,
         excludeObjectives: Set<String>,
         dist: List<Int>,
+        minItems: Int = dist.sum(),
     ): List<GeneratedObjective> {
         val items = mutableListOf<GeneratedObjective>()
 
@@ -567,7 +567,7 @@ internal class CardService(
         }
 
         // if the card has less than 25 entries, add free spaces until it is full
-        while (items.size < dist.sum()) {
+        while (items.size < minItems) {
             items.add(GeneratedObjective.freeSpace())
         }
 
@@ -588,7 +588,8 @@ internal class CardService(
             cardOptions = cardOptions,
             excludeObjectives = excludeObjectives,
             dist = cardOptions.itemDistribution,
-        ).take(min(cardOptions.itemDistribution.sum(), 25))
+            minItems = 25,
+        )
 
         return BingoCard(
             id = id,

@@ -25,7 +25,7 @@ class BingoCard(
 ) {
 
     init {
-        assert(entries.size == 25) { "BINGO card was created with less than 25 entries! (${entries.size})" }
+        if (entries.size != 25) throw IllegalArgumentException("BINGO card was created with less than 25 entries! (${entries.size})")
     }
 
     @Transient

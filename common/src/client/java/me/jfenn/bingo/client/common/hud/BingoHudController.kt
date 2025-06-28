@@ -411,7 +411,7 @@ internal class BingoHudController(
 
             newTile.updatedAt = when {
                 // edge case - if almost the entire card is re-rolled, don't show updates
-                packet.tiles.size > 20 -> null
+                !packet.shouldNotify -> null
                 newTile.id != existingTile?.id -> state.now
                 else -> existingTile?.updatedAt
             }
@@ -474,6 +474,7 @@ internal class BingoHudController(
         eventBus.register(packetEvents.cardUpdateV6, ::onCardUpdate)
 
         eventBus.register(packetEvents.cardTilesV1, ::onCardTiles)
+        eventBus.register(packetEvents.cardTilesV2, ::onCardTiles)
         eventBus.register(packetEvents.cardShuffledV1, ::onCardShuffled)
 
         eventBus.register(packetEvents.cardCompletedV1) {

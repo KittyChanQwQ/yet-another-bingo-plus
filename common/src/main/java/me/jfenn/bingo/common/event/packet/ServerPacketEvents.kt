@@ -33,6 +33,7 @@ internal class ServerPacketEvents(
     @Suppress("Deprecation")
     val cardUpdateV6 = serverNetworking.registerS2C(CardUpdatePacket.V6)
     val cardTilesV1 = serverNetworking.registerS2C(CardTilesPacket.V1)
+    val cardTilesV2 = serverNetworking.registerS2C(CardTilesPacket.V2)
     val cardImageV1 = serverNetworking.registerS2C(CardImagePacket.V1)
     val cardShuffledV1 = serverNetworking.registerS2C(CardShuffledPacket.V1)
     val cardCompletedV1 = serverNetworking.registerS2C(CardCompletedPacket.V1)

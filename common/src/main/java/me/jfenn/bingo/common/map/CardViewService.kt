@@ -86,13 +86,15 @@ internal class CardViewService(
             teamKey = view.teamKey,
             tiles = view.tiles
                 .withIndex()
-                .associate { it.index to it.value }
+                .associate { it.index to it.value },
+            shouldNotify = false,
         )
 
         @Suppress("Deprecation")
         val updatePacket = CardUpdatePacket(view)
 
         when {
+            packets.cardTilesV2.send(player, tilesPacket) -> {}
             packets.cardTilesV1.send(player, tilesPacket) -> {}
             packets.cardUpdateV6.send(player, updatePacket) -> {}
             packets.cardUpdateV5.send(player, updatePacket) -> {}
@@ -328,6 +330,9 @@ internal class CardViewService(
         team: BingoTeam?,
         forceNotFlashing: Boolean = false,
     ) {
+        val card = team?.let { state.getCard(it) }
+            ?: state.getActiveCard()
+
         var currentView = getMapView(team)
         val map = team?.let { teamService.getTeamMap(it) } ?: state.getPreviewMap(mapService)
 
@@ -356,7 +361,10 @@ internal class CardViewService(
             teamKey = team?.key,
             tiles = changedTiles.associateWith {
                 currentView.tiles[it]
-            }
+            },
+            // prevent flickering items when messing with the lobby menu (PREGAME)
+            // or when the card is rerolled (card.ticks)
+            shouldNotify = state.state == GameState.PLAYING && card.ticks > 3 && !forceNotFlashing,
         )
 
         val players = playerManager.getPlayers()
@@ -364,6 +372,7 @@ internal class CardViewService(
 
         for (player in players) {
             when {
+                packets.cardTilesV2.send(player, cardTilesPacket) -> {}
                 packets.cardTilesV1.send(player, cardTilesPacket) -> {}
                 // Legacy support (when cardTiles is not supported) - is not performant
                 else -> sendEntireCardTilesPacket(player, currentView)
