@@ -258,7 +258,7 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
     item_texture_file=$(get_texture_file $item_texture)
 
     # if it's a grass/fern block, we need to apply the colormap: #48b518.
-    if [ "$item_id" == "grass" ] || [ "$item_id" == "short_grass" ] || [ "$item_id" == "tall_grass" ] || [ "$item_id" == "fern" ] || [ "$item_id" == "large_fern" ] || [ "$item_id" == "vine" ] || [ "$item_id" == "lily_pad" ]; then
+    if [ "$item_id" == "grass" ] || [ "$item_id" == "short_grass" ] || [ "$item_id" == "tall_grass" ] || [ "$item_id" == "fern" ] || [ "$item_id" == "large_fern" ] || [ "$item_id" == "vine" ] || [ "$item_id" == "lily_pad" ] || [ "$item_id" == "bush" ]; then
       # some items (leaves / grass / ferns) have color masks that need to be applied... #48b518.
       echo "USING COLOR TINT: $item_texture"
       color_texture $item_texture_file "#48b518" $item_out_file
