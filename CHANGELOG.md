@@ -1,11 +1,19 @@
+### New Features:
+
+- Added 1.21.6 dialogs for Lobby Mode prompts & a "Game Over" screen for vanilla clients
+
+- Added silk touch items to the `tedious` tag (excluded by default) & recategorized them out of S-tier 
+
 ### Bugs Squashed:
 
-- Fix bingo cards not persisting in saves/restarts on older MC versions
-- Fix cards on the Game Over screen overlapping incorrectly on 1.21.6
-- Fix menu hints & loading bars not being displayed when "Preview Card" is turned off
-- Prevent the HUD options from hiding the ready-up bar & menu hints
+- Fix tooltips not working on the card screen when there is only one card
+- Prevent flashing items on the card when editing item tiers in the lobby
+- Fix pillager raids not being cleared when resetting the world
+- Fix some card icons not appearing correctly on the vanilla map
 
-### Translations
+### Translations:
 
-- New Czech translations from Džerry!
+- New Chinese Simplified translations from Young912 and yzy_sheep!
+- New Hungarian translations from Remarci!
+- New Portuguese translations from Lucsdev_!
 - New Russian translations from lazdni!
