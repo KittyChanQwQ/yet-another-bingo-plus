@@ -53,36 +53,7 @@ internal class GameResumeService(
             receiveError = null,
         )
 
-        // Restore player positions/inventory
         val teams = state.getRegisteredTeams()
-        for (team in teams) {
-            // If in lobby mode, restore each player's inventory/position
-            if (state.isLobbyMode) {
-                val players = team.players.iterator()
-                for (player in players) {
-                    val playerImpl = playerManager.getPlayer(player.uuid)
-                    // If a player isn't online when resumed, they'll get reset by PlayerController
-                    // (and lose their inventory... bad luck. sorry)
-                        ?: continue
-
-                    val playerData = gameOverInfo.playerStates[player.uuid] ?: continue
-
-                    playerImpl.gameMode = PlayerGameMode.SURVIVAL
-                    playerImpl.teleport(
-                        world = serverWorldFactory.listWorlds()
-                            .find { it.identifier == playerData.world }
-                            ?: continue,
-                        pos = playerData.position,
-                        yaw = playerData.yaw,
-                        pitch = playerData.pitch,
-                    )
-
-                    playerData.inventory.forEach { (slot, stack) ->
-                        playerImpl.setStack(slot, stack)
-                    }
-                }
-            }
-        }
 
         // Find if any winning card has a goal that can be increased
         val canContinueCard = teams.firstNotNullOfOrNull { team ->
@@ -127,8 +98,42 @@ internal class GameResumeService(
             // if there are teams that aren't done yet, set endWhen=AllWin
             optionsService.setEndWhen(context, EndWhen.AllWin)
         } else {
+            // Reset each team to a non-winner state
+            for (team in teams) {
+                team.winner = null
+            }
+
             // if the team won for another reason (e.g. a multi-card game), set the winCondition to infinite
             optionsService.setWinCondition(context, BingoWinCondition.Infinite)
+        }
+
+        for (team in teams) {
+            // If in lobby mode, restore each player's inventory/position (if they continue the game)
+            if (state.isLobbyMode && !team.isWinner()) {
+                val players = team.players.iterator()
+                for (player in players) {
+                    val playerImpl = playerManager.getPlayer(player.uuid)
+                    // If a player isn't online when resumed, they'll get reset by PlayerController
+                    // (and lose their inventory... bad luck. sorry)
+                        ?: continue
+
+                    val playerData = gameOverInfo.playerStates[player.uuid] ?: continue
+
+                    playerImpl.gameMode = PlayerGameMode.SURVIVAL
+                    playerImpl.teleport(
+                        world = serverWorldFactory.listWorlds()
+                            .find { it.identifier == playerData.world }
+                            ?: continue,
+                        pos = playerData.position,
+                        yaw = playerData.yaw,
+                        pitch = playerData.pitch,
+                    )
+
+                    playerData.inventory.forEach { (slot, stack) ->
+                        playerImpl.setStack(slot, stack)
+                    }
+                }
+            }
         }
 
         // If the time limit is close (or expired), remove it!
