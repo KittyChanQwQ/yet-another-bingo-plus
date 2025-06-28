@@ -5,7 +5,7 @@
       "translate": "bingo.objective.challenge.stat_killed_zombified_piglin",
       "fallback": "Kill a Zombified Piglin"
     },
-    "item": "minecraft:zombie_pigman_spawn_egg",
+    "item": "minecraft:zombified_piglin_spawn_egg",
     "image": "yet-another-minecraft-bingo:zombified_piglin_head"
   },
   "statType": "minecraft:killed",

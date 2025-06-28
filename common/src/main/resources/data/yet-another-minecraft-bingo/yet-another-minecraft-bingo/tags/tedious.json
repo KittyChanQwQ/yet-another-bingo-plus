@@ -100,6 +100,7 @@
     "minecraft:torchflower",
     "minecraft:turtle_helmet",
     "minecraft:turtle_scute",
+    "minecraft:trident",
     "minecraft:beacon",
     "minecraft:mace",
     "minecraft:heavy_core",
@@ -172,6 +173,7 @@
     "minecraft:nether/create_beacon",
     "minecraft:nether/create_full_beacon",
     "minecraft:nether/summon_wither",
-    "minecraft:nether/uneasy_alliance"
+    "minecraft:nether/uneasy_alliance",
+    "#yet-another-minecraft-bingo:needs_silk_touch"
   ]
 }
