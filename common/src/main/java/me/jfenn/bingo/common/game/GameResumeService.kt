@@ -54,7 +54,8 @@ internal class GameResumeService(
         )
 
         // Restore player positions/inventory
-        for (team in state.getRegisteredTeams()) {
+        val teams = state.getRegisteredTeams()
+        for (team in teams) {
             // If in lobby mode, restore each player's inventory/position
             if (state.isLobbyMode) {
                 val players = team.players.iterator()
@@ -81,39 +82,53 @@ internal class GameResumeService(
                     }
                 }
             }
+        }
+
+        // Find if any winning card has a goal that can be increased
+        val canContinueCard = teams.firstNotNullOfOrNull { team ->
+            val lastCard = team.completedCards.lastOrNull()
+                ?: return@firstNotNullOfOrNull null
+            if (
+                lastCard.isWinner &&
+                (!lastCard.card.options.goal.isFullCard() ||
+                        options.winCondition is BingoWinCondition.ReplaceGoals)
+            ) {
+                lastCard
+            } else null
+        }
+
+        if (canContinueCard != null) {
+            val cardId = canContinueCard.card.id
 
             // Remove the team's last completedCard and restore the cardIds
-            val lastCard = team.completedCards.lastOrNull()
-            if (lastCard != null) {
-                team.cardId = lastCard.card.id
-                team.completedCards.removeIf { it.card.id == lastCard.card.id }
-
-                if (lastCard.isWinner) {
-                    if (!lastCard.card.options.goal.isFullCard() || options.winCondition is BingoWinCondition.ReplaceGoals) {
-                        // if the game ended because a team won, and the goal wasn't full card, increase it!
-                        val newGoal = if (options.winCondition is BingoWinCondition.ReplaceGoals) {
-                            when (
-                                val goal = lastCard.card.options.goal
-                            ) {
-                                is BingoGoal.Lines -> BingoGoal.Lines(goal.lines + 5)
-                                is BingoGoal.Items -> BingoGoal.Items(goal.items + 25)
-                            }
-                        } else {
-                            BingoGoal.Items(BingoGoal.MAX_ITEMS)
-                        }
-
-                        val actualCard = state.cards.find { it.id == team.cardId }
-                        if (actualCard != null) {
-                            optionsService.setGoal(context, actualCard, newGoal)
-                        }
-                    } else {
-                        // if the team won for another reason (e.g. a multi-card game), set the winCondition to infinite
-                        optionsService.setWinCondition(context, BingoWinCondition.Infinite)
-                    }
-                }
+            for (team in teams) {
+                team.cardId = cardId
+                team.completedCards.removeIf { it.card.id == cardId }
+                team.winner = null
             }
 
-            team.winner = null
+            // if the game ended because a team won, and the goal wasn't full card, increase it!
+            val newGoal = if (options.winCondition is BingoWinCondition.ReplaceGoals) {
+                when (
+                    val goal = canContinueCard.card.options.goal
+                ) {
+                    is BingoGoal.Lines -> BingoGoal.Lines(goal.lines + 5)
+                    is BingoGoal.Items -> BingoGoal.Items(goal.items + 25)
+                }
+            } else {
+                BingoGoal.Items(BingoGoal.MAX_ITEMS)
+            }
+
+            val actualCard = state.cards.find { it.id == cardId }
+            if (actualCard != null) {
+                optionsService.setGoal(context, actualCard, newGoal)
+            }
+        } else if (teams.any { !it.isWinner() }) {
+            // if there are teams that aren't done yet, set endWhen=AllWin
+            optionsService.setEndWhen(context, EndWhen.AllWin)
+        } else {
+            // if the team won for another reason (e.g. a multi-card game), set the winCondition to infinite
+            optionsService.setWinCondition(context, BingoWinCondition.Infinite)
         }
 
         // If the time limit is close (or expired), remove it!
