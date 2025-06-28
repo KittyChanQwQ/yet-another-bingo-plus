@@ -64,7 +64,8 @@ internal class CardService(
         MDC_DEBUG to "true",
     ) {
         log.info("[CardService] Validating tag $name.json...")
-        for (objectiveId in tag.values) {
+        val objectiveIds = tagExpansionService.expandItemTags(tag.values)
+        for (objectiveId in objectiveIds) {
             val map = createObjectives(
                 objectiveType = null,
                 objectiveId = objectiveId,

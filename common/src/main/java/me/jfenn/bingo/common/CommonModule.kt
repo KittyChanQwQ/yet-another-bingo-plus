@@ -144,8 +144,6 @@ val commonModule = module {
     singleOf(::InfoBookCommand)
     singleOf(::DataCommands)
 
-    singleOf(::TagExpansionService)
-
     singleOf(::ConnectionFactory)
     single { get<ConnectionFactory>().create() }
     singleOf(::StatsService)
@@ -215,6 +213,7 @@ val commonModule = module {
         scopedOf(::ScopedData)
         scopedOf(::DataLoaderManager)
         scopedOf(::DataCommandService)
+        scopedOf(::TagExpansionService)
 
         scopedOf(::ObjectiveService)
         scopedOf(::ObjectiveListService)
