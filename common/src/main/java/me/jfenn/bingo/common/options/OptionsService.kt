@@ -1,8 +1,5 @@
 package me.jfenn.bingo.common.options
 
-import me.jfenn.bingo.platform.text.IText
-import me.jfenn.bingo.platform.text.ITextFactory
-import me.jfenn.bingo.platform.text.TextAction
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
@@ -21,6 +18,9 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.ITextFactory
+import me.jfenn.bingo.platform.text.TextAction
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.*
@@ -291,10 +291,15 @@ internal class OptionsService(
         ctx: Context,
         minutes: Int?
     ) {
-        options.timeLimit = minutes
-            ?.takeIf { it > 0 }
-            ?.minutes
-            ?.plus(state.ingameDuration() ?: Duration.ZERO)
+        // If the game is playing, the command should set the remaining time (add the current time before applying)
+        val newTimeLimit = minutes?.takeIf { it > 0 }?.minutes
+        val ingameDuration = state.ingameDuration()
+        options.timeLimit = newTimeLimit?.plus(ingameDuration ?: Duration.ZERO)
+
+        if (newTimeLimit != null && ingameDuration != null) {
+            // When the game resets, apply the specified timeLimit (without the added time)
+            state.restoreOptions.add(RestoreTimeLimit(newTimeLimit))
+        }
 
         ctx.sendFeedback(
             text.string(
@@ -304,6 +309,18 @@ internal class OptionsService(
                     options.timeLimit != null -> state.formatTimeRemaining(text)
                     else -> text.string(StringKey.OptionsTimeLimitOff)
                 }
+            )
+        )
+    }
+
+    fun createRestoreTimeLimit() {
+        state.restoreOptions.add(
+            RestoreTimeLimit(
+                state.restoreOptions
+                    .filterIsInstance<RestoreTimeLimit>()
+                    .lastOrNull()
+                    ?.timeLimit
+                    ?: options.timeLimit
             )
         )
     }

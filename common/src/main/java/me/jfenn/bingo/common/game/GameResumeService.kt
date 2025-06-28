@@ -92,10 +92,12 @@ internal class GameResumeService(
 
             val actualCard = state.cards.find { it.id == cardId }
             if (actualCard != null) {
+                state.restoreOptions.add(RestoreGoal(actualCard.options.goal))
                 optionsService.setGoal(context, actualCard, newGoal)
             }
         } else if (teams.any { !it.isWinner() }) {
             // if there are teams that aren't done yet, set endWhen=AllWin
+            state.restoreOptions.add(RestoreEndWhen(options.endGameWhen))
             optionsService.setEndWhen(context, EndWhen.AllWin)
         } else {
             // Reset each team to a non-winner state
@@ -104,6 +106,7 @@ internal class GameResumeService(
             }
 
             // if the team won for another reason (e.g. a multi-card game), set the winCondition to infinite
+            state.restoreOptions.add(RestoreWinCondition(options.winCondition))
             optionsService.setWinCondition(context, BingoWinCondition.Infinite)
         }
 
@@ -138,6 +141,7 @@ internal class GameResumeService(
 
         // If the time limit is close (or expired), remove it!
         if (state.remainingDuration()?.let { it < 30.seconds } == true) {
+            optionsService.createRestoreTimeLimit()
             optionsService.setTimeLimit(context, null)
         }
 
@@ -146,6 +150,7 @@ internal class GameResumeService(
             is GameEndReason.Lockout,
             is GameEndReason.Stalemate,
             is GameEndReason.ImpossibleGoal -> {
+                state.restoreOptions.add(RestoreStalemateBehavior(options.stalemateBehavior))
                 optionsService.setStalemateBehavior(context, StalemateBehavior.NOTHING)
             }
             else -> {}

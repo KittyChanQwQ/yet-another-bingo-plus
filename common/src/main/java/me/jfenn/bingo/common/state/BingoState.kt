@@ -10,6 +10,7 @@ import me.jfenn.bingo.common.menu.MenuPage
 import me.jfenn.bingo.common.menu.MenuState
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.BingoWinCondition
+import me.jfenn.bingo.common.options.RestoreOption
 import me.jfenn.bingo.common.scoring.GameMessage
 import me.jfenn.bingo.common.spawn.PlayerState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -42,6 +43,7 @@ data class BingoState internal constructor(
     var timeOffline: Duration = Duration.ZERO,
     var timeAdjustment: Duration = Duration.ZERO,
     val options: BingoOptions,
+    val restoreOptions: MutableList<RestoreOption> = mutableListOf(),
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
     var previewMap: BingoMap? = null,
     // This is a temporary list that should be overwritten by `CardService.generate()`
@@ -244,8 +246,8 @@ data class BingoState internal constructor(
 
     /**
      * If a game is over & we want to reset this to its default state
-     * without restarting...
-     * (should only be called when isLobbyMode=false)
+     *
+     * This must be called after each game, before transitioning back to [GameState.PREGAME]!
      */
     fun reset() {
         // set a new gameId
@@ -264,6 +266,9 @@ data class BingoState internal constructor(
         gameMessages.clear()
         isForfeit = false
         menu.page = MenuPage.ROOT
+        // restore any temporary options to their initial state
+        restoreOptions.forEach { it.apply(options) }
+        restoreOptions.clear()
     }
 
 }

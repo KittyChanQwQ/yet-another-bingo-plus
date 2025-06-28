@@ -7,6 +7,13 @@ import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 
+/**
+ * Card options are initialized once and passed by reference into [me.jfenn.bingo.common.card.BingoCard]
+ * from the list of [BingoOptions.cards]
+ *
+ * This way, the settings stay in sync and any changes are applied to both files
+ * (game-options.json and [me.jfenn.bingo.common.state.BingoState.cards])
+ */
 @Serializable
 data class BingoCardOptions(
     var goal: BingoGoal = BingoGoal.Lines(1),
