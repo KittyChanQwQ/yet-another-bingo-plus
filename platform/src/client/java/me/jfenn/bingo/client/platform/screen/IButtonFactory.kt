@@ -14,6 +14,7 @@ interface IButtonFactory {
         height: Int,
         texture: String?,
         focusedTexture: String?,
+        inactiveTexture: String? = texture,
         onClick: (ButtonWidget) -> Unit,
         message: IText,
     ) : IButton
@@ -23,6 +24,7 @@ interface IButtonFactory {
         textureSize: Vector2i,
         texture: String?,
         focusedTexture: String?,
+        inactiveTexture: String? = texture,
     ) : IButton
 
 }
@@ -31,5 +33,6 @@ interface IButton {
     var position: Vector2i
     var size: Vector2i
     var message: IText
+    var active: Boolean
     val onClick: IEventListener<Unit>
 }

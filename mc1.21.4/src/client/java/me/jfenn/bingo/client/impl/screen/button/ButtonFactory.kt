@@ -3,9 +3,9 @@ package me.jfenn.bingo.client.impl.screen.button
 import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.platform.screen.IButton
 import me.jfenn.bingo.client.platform.screen.IButtonFactory
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.impl.TextImpl
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.IEventListener
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -25,6 +25,7 @@ class ButtonFactory : IButtonFactory {
         height: Int,
         texture: String?,
         focusedTexture: String?,
+        inactiveTexture: String?,
         onClick: (ButtonWidget) -> Unit,
         message: IText
     ): IButton = TexturedButtonWidget(
@@ -34,7 +35,9 @@ class ButtonFactory : IButtonFactory {
         height,
         ButtonTextures(
             texture?.let { Identifier.of(it) },
+            inactiveTexture?.let { Identifier.of(it) },
             focusedTexture?.let { Identifier.of(it) },
+            inactiveTexture?.let { Identifier.of(it) },
         ),
         onClick,
         message.value,
@@ -45,8 +48,9 @@ class ButtonFactory : IButtonFactory {
         textureSize: Vector2i,
         texture: String?,
         focusedTexture: String?,
+        inactiveTexture: String?,
     ): IButton {
-        return NinePatchButton(sliceSize, textureSize, texture, focusedTexture)
+        return NinePatchButton(sliceSize, textureSize, texture, focusedTexture, inactiveTexture)
     }
 }
 
@@ -77,6 +81,8 @@ class TexturedButtonImpl(
             button.message = value.value
         }
 
+    override var active: Boolean by button::active
+
     override val onClick: IEventListener<Unit> = EventListener()
 }
 
@@ -85,11 +91,14 @@ class NinePatchButton(
     private val textureSize: Vector2i,
     texture: String?,
     focusedTexture: String?,
+    inactiveTexture: String?,
 ) : ButtonImpl {
 
     private val textures = ButtonTextures(
         texture?.let { Identifier.of(it) },
+        inactiveTexture?.let { Identifier.of(it) },
         focusedTexture?.let { Identifier.of(it) },
+        inactiveTexture?.let { Identifier.of(it) },
     )
 
     override val button = object : ButtonWidget(
@@ -125,6 +134,8 @@ class NinePatchButton(
         set(value) {
             button.message = value.value
         }
+
+    override var active: Boolean by button::active
 
     override val onClick: IEventListener<Unit> = EventListener()
 }

@@ -3,9 +3,9 @@ package me.jfenn.bingo.client.impl.screen.button
 import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.platform.screen.IButton
 import me.jfenn.bingo.client.platform.screen.IButtonFactory
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.impl.TextImpl
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.IEventListener
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -24,6 +24,7 @@ class ButtonFactory : IButtonFactory {
         height: Int,
         texture: String?,
         focusedTexture: String?,
+        inactiveTexture: String?,
         onClick: (ButtonWidget) -> Unit,
         message: IText
     ): IButton = LegacyTexturedButton(
@@ -33,6 +34,7 @@ class ButtonFactory : IButtonFactory {
         height,
         texture?.let { Identifier(it) },
         focusedTexture?.let { Identifier(it) },
+        inactiveTexture?.let { Identifier(it) },
         onClick,
         message.value,
     ).let { TexturedButtonImpl(it) }
@@ -42,8 +44,9 @@ class ButtonFactory : IButtonFactory {
         textureSize: Vector2i,
         texture: String?,
         focusedTexture: String?,
+        inactiveTexture: String?,
     ): IButton {
-        return NinePatchButton(sliceSize, textureSize, texture, focusedTexture)
+        return NinePatchButton(sliceSize, textureSize, texture, focusedTexture, inactiveTexture)
     }
 }
 
@@ -58,6 +61,7 @@ class LegacyTexturedButton(
     height: Int,
     private val normalTexture: Identifier?,
     private val focusedTexture: Identifier?,
+    private val inactiveTexture: Identifier?,
     onClick: (ButtonWidget) -> Unit,
     message: Text,
 ) : TexturedButtonWidget(
@@ -79,7 +83,11 @@ class LegacyTexturedButton(
     }
 
     override fun renderButton(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-        val id = if (isSelected) focusedTexture else normalTexture
+        val id = when {
+            !active -> inactiveTexture
+            isSelected -> focusedTexture
+            else -> normalTexture
+        }
         context?.drawTexture(
             id?.let { Identifier.of(id.namespace, "textures/gui/sprites/${id.path}.png") },
             x,
@@ -117,6 +125,8 @@ class TexturedButtonImpl(
             button.message = value.value
         }
 
+    override var active: Boolean by button::active
+
     override val onClick: IEventListener<Unit> = EventListener()
 }
 
@@ -125,10 +135,12 @@ class NinePatchButton(
     private val textureSize: Vector2i,
     texture: String?,
     focusedTexture: String?,
+    inactiveTexture: String?,
 ) : ButtonImpl {
 
     val textureId = texture?.let { Identifier(it) }
     val focusedTextureId = focusedTexture?.let { Identifier(it) }
+    val inactiveTextureId = inactiveTexture?.let { Identifier(it) }
 
     private interface ButtonWidgetExt {
         fun bingoSetHeight(height: Int)
@@ -146,8 +158,12 @@ class NinePatchButton(
 
         override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             val service = DrawService(context)
-            val identifier = focusedTextureId?.takeIf { isSelected } ?: textureId ?: return
-            service.drawNinePatch(identifier, x, y, width, height, sliceSize, textureSize.x, textureSize.y)
+            val id = when {
+                !active -> inactiveTextureId
+                isSelected -> focusedTextureId
+                else -> textureId
+            } ?: return
+            service.drawNinePatch(id, x, y, width, height, sliceSize, textureSize.x, textureSize.y)
             drawMessage(context, MinecraftClient.getInstance().textRenderer, -1)
         }
     }
@@ -171,6 +187,8 @@ class NinePatchButton(
         set(value) {
             button.message = value.value
         }
+
+    override var active: Boolean by button::active
 
     override val onClick: IEventListener<Unit> = EventListener()
 }

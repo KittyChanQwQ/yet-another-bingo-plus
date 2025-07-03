@@ -30,8 +30,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.Identifier
-import org.joml.AxisAngle4f
-import org.joml.Quaternionf
 import org.joml.Vector2i
 import org.koin.core.Koin
 import kotlin.math.*
@@ -190,10 +188,11 @@ internal class BingoHudScreen(
         sliceSize = 8,
         textureSize = Vector2i(200, 40),
         texture = "minecraft:bingo/button_game_continue",
-        focusedTexture = "minecraft:bingo/button_game_continue_focused"
-    ).also {
-        it.message = text.string(StringKey.WorldReturnToLobby)
-        it.onClick {
+        focusedTexture = "minecraft:bingo/button_game_continue_focused",
+        inactiveTexture = "minecraft:bingo/button_game_continue_inactive",
+    ).also { button ->
+        button.message = text.string(StringKey.WorldReturnToLobby)
+        button.onClick {
             sendReadyForNextRound()
         }
     }
@@ -479,6 +478,7 @@ internal class BingoHudScreen(
         }
 
         val ready = state.ready
+        primaryButton.active = ready?.isReady == false
         if (ready != null && ready.isRunning) {
             primaryButton.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
         } else {
