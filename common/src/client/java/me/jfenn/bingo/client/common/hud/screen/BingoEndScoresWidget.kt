@@ -2,23 +2,23 @@ package me.jfenn.bingo.client.common.hud.screen
 
 import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.common.state.BingoHudState
+import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.IScrollableWidget
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.client.MinecraftClient
 import net.minecraft.util.Formatting
 import org.koin.core.Koin
 
 internal class BingoEndScoresWidget(
     koin: Koin,
     private val gameOver: BingoHudState.GameOver,
+    private val client: IClient = koin.get(),
     private val text: TextProvider = koin.get(),
 ) : IScrollableWidget() {
 
-    private val textRenderer = MinecraftClient.getInstance().textRenderer
-    private val entryHeight = textRenderer.fontHeight + 8
+    private val entryHeight = client.font.getTextHeight() + 8
 
     override fun measureContentHeight(): Int {
         return entryHeight * (gameOver.packet.scores.size + 1)
@@ -29,7 +29,7 @@ internal class BingoEndScoresWidget(
         val scoreCol = (contentWidth * 0.4f).toInt()
         val timeCol = (contentWidth * 0.8f).toInt()
 
-        val yOffset = (entryHeight/2) - (textRenderer.fontHeight/2)
+        val yOffset = (entryHeight/2) - (client.font.getTextHeight()/2)
 
         drawService.drawText(
             text.string(StringKey.GameEndScoresTeam).formatted(Formatting.GRAY),
@@ -84,7 +84,7 @@ internal class BingoEndScoresWidget(
                 0xFF_FFFFFF.toInt(), true
             )
 
-            val isTextHovered = mouseX in teamCol..textRenderer.getWidth(teamText.value)
+            val isTextHovered = mouseX in teamCol..drawService.font.getTextWidth(teamText)
                     && mouseY in (y - yOffset)..(y - yOffset + entryHeight)
             if (isTextHovered) {
                 val view = gameOver.cards.find { it.teamKey == score.key }

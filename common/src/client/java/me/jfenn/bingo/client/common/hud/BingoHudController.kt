@@ -15,6 +15,7 @@ import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.ClientPacket
+import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.IKeyBindingManager
 import me.jfenn.bingo.client.platform.IOptionsAccessor
 import me.jfenn.bingo.client.platform.event.model.*
@@ -23,6 +24,7 @@ import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.KEYBIND_TOGGLE_HUD
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.*
@@ -37,7 +39,6 @@ import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ServerEvent
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.resource.ResourceManager
 import net.minecraft.util.Identifier
@@ -61,10 +62,10 @@ internal class BingoHudController(
     keyBindingManager: IKeyBindingManager,
     packetEvents: ClientPacketEvents,
     private val eventBus: IEventBus,
+    private val client: IClient,
 ) : BingoComponent() {
 
-    private val client = MinecraftClient.getInstance()
-
+    private var cardHudWasClicked: Boolean = false
     private var openCardKeyAlreadyPressed: Boolean = false
     private val openCardKey = keyBindingManager.registerKey(
         KEYBIND_OPEN_CARD,
@@ -127,6 +128,18 @@ internal class BingoHudController(
         )
     }
 
+    fun isCardMouseOver(): Boolean {
+        val (x, y) = getCardPos()
+        val (mouseX, mouseY) = client.mouse.let { Pair(it.x, it.y) }
+        return client.screen is ChatScreen &&
+                mouseX.toFloat() in x..(x + ClientCardBufferRenderer.CARD_WIDTH*config.client.cardScale) &&
+                mouseY.toFloat() in y..(y + ClientCardBufferRenderer.CARD_HEIGHT*config.client.cardScale)
+    }
+
+    fun isCardFocused(): Boolean {
+        return config.client.cardAlignment != CardAlignment.BOTTOM_LEFT && isCardMouseOver()
+    }
+
     private fun getSelectedCard(): ClientCard? {
         val teamKeys = state.cards.keys
         if (teamKeys.isEmpty()) return null
@@ -164,12 +177,7 @@ internal class BingoHudController(
             )
         }
 
-        val client = MinecraftClient.getInstance()
-        val mouse = client.mouse
-        val scaleFactor = drawService.window.scaleFactor
-        val mouseX = (mouse.x / scaleFactor).toInt()
-        val mouseY = (mouse.y / scaleFactor).toInt()
-        val isMouseOver = client.currentScreen is ChatScreen
+        val (mouseX, mouseY) = drawService.mouse.let { Pair(it.x, it.y) }
 
         renderer.draw(
             drawService,
@@ -178,7 +186,8 @@ internal class BingoHudController(
             y = y,
             z = config.client.cardOverlap.z,
             cardScale = cardScale,
-            isMouseOver = isMouseOver,
+            isMouseOver = isCardMouseOver(),
+            isFocused = isCardFocused(),
             mouseX = mouseX,
             mouseY = mouseY,
         )
@@ -211,10 +220,7 @@ internal class BingoHudController(
                     x = cardX,
                     y = y,
                     z = config.client.cardOverlap.z,
-                    cardScale =  cardScale,
-                    isMouseOver = isMouseOver,
-                    mouseX = mouseX,
-                    mouseY = mouseY,
+                    cardScale = cardScale,
                 )
             }
         }
@@ -237,7 +243,7 @@ internal class BingoHudController(
                     .also { tooltipPacket.clientWrappedText = it }
         }
         val tooltipStartedAt = state.tooltipStartedAt ?: Instant.DISTANT_PAST
-        if (tooltipText != null && MinecraftClient.getInstance().currentScreen == null) {
+        if (tooltipText != null && client.screen == null) {
             val tooltipSize = tooltipText.maxOfOrNull { drawService.font.getTextWidth(it) } ?: 0
             val tooltipX = drawService.window.scaledWindowWidth/2 - tooltipSize/2 - 12
             val tooltipY = (drawService.window.scaledWindowHeight * 0.5).toInt() + 18 + 12
@@ -278,14 +284,12 @@ internal class BingoHudController(
 
         if (!packet.isUpdate) {
             // when the game first ends, open the end screen
-            MinecraftClient.getInstance().setScreen(
-                endScreenFactory.create(
-                    gameOver,
-                    originalCardKey = getSelectedCard()?.teamKey,
-                    originalCardPos = getCardPos(),
-                    canEscape = false,
-                    onClose = { onCardHudClosed(it.getCardPositions()) },
-                )
+            client.screen = endScreenFactory.create(
+                gameOver,
+                originalCardKey = getSelectedCard()?.teamKey,
+                originalCardPos = getCardPos(),
+                canEscape = false,
+                onClose = { onCardHudClosed(it.getCardPositions()) },
             )
         }
     }
@@ -393,7 +397,7 @@ internal class BingoHudController(
     private fun scheduleCardUpdates(teamKey: BingoTeamKey?) {
         // Schedule card redraws that occur when a tile is flashing on the card
         for (delay in 500L..4500L step 500L) {
-            CompletableFuture.delayedExecutor(delay, TimeUnit.MILLISECONDS, client)
+            CompletableFuture.delayedExecutor(delay, TimeUnit.MILLISECONDS, client.executor)
                 .execute {
                     clientCardManager.markDirty(teamKey)
                 }
@@ -536,11 +540,11 @@ internal class BingoHudController(
             if (optionsAccessor.isHudHidden())
                 return@register
             val isDebugEnabled = optionsAccessor.isDebugEnabled()
-            val isChatOpen = MinecraftClient.getInstance().currentScreen is ChatScreen
+            val isChatOpen = client.screen is ChatScreen
 
             // Do not draw the HUD if the card screen is open
             if (
-                MinecraftClient.getInstance().currentScreen
+                client.screen
                     ?.javaClass?.packageName
                     ?.startsWith("me.jfenn.bingo")
                     == true
@@ -586,27 +590,20 @@ internal class BingoHudController(
             var openCardKeyWasPressed = false
             while (openCardKey.wasPressed()) openCardKeyWasPressed = true
 
+            var shouldSendReady = false
+            var shouldOpenCard = false
+
+            if (cardHudWasClicked && client.screen is ChatScreen) {
+                shouldOpenCard = true
+                cardHudWasClicked = false
+            }
+
+            // If Y (card hotkey) is pressed, decide whether to open the card screen or ready up
             if (openCardKeyWasPressed && !openCardKeyAlreadyPressed) {
                 if (state.ready?.canSendReady == true && optionsAccessor.isSneakPressed()) {
-                    if (state.ready?.isRunning == true) {
-                        packetEvents.readySetV1.send(SetReadyPacket(!(state.ready?.isReady ?: false)))
-                    }
+                    shouldSendReady = true
                 } else {
-                    val gameOver = state.gameOver
-                    val hudScreen = if (gameOver != null || state.cards.isNotEmpty()) {
-                        endScreenFactory.create(
-                            gameOver = gameOver,
-                            originalCardKey = getSelectedCard()?.teamKey,
-                            originalCardPos = getCardPos(),
-                            canEscape = true,
-                            onClose = { onCardHudClosed(it.getCardPositions()) }
-                        )
-                    } else {
-                        client.player?.sendMessage(text.string(StringKey.CardNoCards).value, true)
-                        return@register
-                    }
-
-                    client.setScreen(hudScreen)
+                    shouldOpenCard = true
                 }
 
                 // Prevent holding down the "Ready" keybind from toggling the ready packet multiple times
@@ -615,9 +612,42 @@ internal class BingoHudController(
                 openCardKeyAlreadyPressed = false
             }
 
+            if (shouldSendReady && state.ready?.isRunning == true) {
+                packetEvents.readySetV1.send(SetReadyPacket(!(state.ready?.isReady ?: false)))
+            }
+
+            if (shouldOpenCard) {
+                val gameOver = state.gameOver
+                val hudScreen = if (gameOver != null || state.cards.isNotEmpty()) {
+                    endScreenFactory.create(
+                        gameOver = gameOver,
+                        originalCardKey = getSelectedCard()?.teamKey,
+                        originalCardPos = getCardPos(),
+                        canEscape = true,
+                        onClose = { onCardHudClosed(it.getCardPositions()) }
+                    )
+                } else {
+                    client.player.sendHotbarMessage(text.string(StringKey.CardNoCards))
+                    return@register
+                }
+
+                client.screen = hudScreen
+            }
+
             if (toggleHudKey.wasPressed()) {
                 config.client.enableHud = !config.client.enableHud
                 configService.writeConfig(config)
+            }
+        }
+
+        eventBus.register(ScreenEvent.AfterInit) {
+            if (it.screen.screen is ChatScreen) {
+                it.screen.onAfterLeftClick {
+                    // If the card is clicked, open the card
+                    if (isCardFocused()) {
+                        cardHudWasClicked = true
+                    }
+                }
             }
         }
 

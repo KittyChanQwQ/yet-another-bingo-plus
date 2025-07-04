@@ -8,7 +8,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.client.MinecraftClient
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.text.Text
 import kotlin.math.PI
 import kotlin.math.roundToInt
@@ -39,8 +39,7 @@ internal class ReadyHudRenderer(
     fun drawReadyHud(drawService: IDrawService, x: Int, y: Int, width: Int) {
         val ready = state.ready ?: return
         if (!ready.isRunning) return
-
-        val textRenderer = MinecraftClient.getInstance().textRenderer
+        val font = drawService.font
 
         val titleText = ready.title ?: when {
             ready.isReady -> text.string(StringKey.LobbyStartingPlayersReady, ready.readyPlayers, ready.totalPlayers)
@@ -59,15 +58,15 @@ internal class ReadyHudRenderer(
             }
         }
 
-        drawService.drawText(titleText, x + width/2 - drawService.font.getTextWidth(titleText)/2, y, titleColor, true)
-        drawService.drawText(bodyText, x + width/2 - drawService.font.getTextWidth(bodyText)/2, y + textRenderer.fontHeight + 2, TEXT_COLOR, true)
+        drawService.drawText(titleText, x + width/2 - font.getTextWidth(titleText)/2, y, titleColor, true)
+        drawService.drawText(bodyText, x + width/2 - font.getTextWidth(bodyText)/2, y + font.getTextHeight() + 2, TEXT_COLOR, true)
 
         val remainingProgress = ready.remainingDuration / ready.totalDuration.coerceAtLeast(1.seconds)
-        drawProgressBar(drawService, x, y + (textRenderer.fontHeight * 2) + 5, width, 5, 1f - remainingProgress.toFloat().coerceIn(0f, 1f))
+        drawProgressBar(drawService, x, y + (font.getTextHeight() * 2) + 5, width, 5, 1f - remainingProgress.toFloat().coerceIn(0f, 1f))
 
         val charCount = ready.totalPlayers.coerceAtMost(10)
-        val charReady = "✔"
-        val charNot = "•"
+        val charReady = text.literal("✔")
+        val charNot = text.literal("•")
         val chars = buildList(charCount) {
             for (i in 0 until charCount) {
                 val isReady = i * ready.totalPlayers < charCount * ready.readyPlayers
@@ -76,18 +75,18 @@ internal class ReadyHudRenderer(
                     ReadyChar(
                         char = char,
                         color = if (isReady) TEXT_COLOR else LOADING_COLOR,
-                        width = textRenderer.getWidth(char) + 2
+                        width = font.getTextWidth(char) + 2
                     )
                 )
             }
         }
-        val charWidth = textRenderer.getWidth(charReady)
+        val charWidth = font.getTextWidth(charReady)
         val charTotalWidth = charWidth * chars.size
         for ((i, char) in chars.withIndex()) {
             drawService.drawText(
-                text = text.literal(char.char),
+                text = char.char,
                 x = x + width/2 - charTotalWidth/2 + (i*charWidth) + (charWidth-char.width)/2,
-                y = y + (textRenderer.fontHeight * 2) + 12,
+                y = y + (font.getTextHeight() * 2) + 12,
                 color = char.color,
                 shadow = true,
             )
@@ -95,7 +94,7 @@ internal class ReadyHudRenderer(
     }
 
     private class ReadyChar(
-        val char: String,
+        val char: IText,
         val color: Int,
         val width: Int,
     )

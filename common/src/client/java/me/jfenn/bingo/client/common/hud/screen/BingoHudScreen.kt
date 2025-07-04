@@ -28,7 +28,6 @@ import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.event.IEventBus
-import net.minecraft.client.MinecraftClient
 import net.minecraft.util.Identifier
 import org.joml.Vector2i
 import org.koin.core.Koin
@@ -153,9 +152,7 @@ internal class BingoHudScreen(
     ).also {
         it.message = text.string(StringKey.CardSettingsButton)
         it.onClick {
-            MinecraftClient.getInstance().setScreen(
-                yacl.buildConfigScreen(helper.screen)
-            )
+            client.screen = yacl.buildConfigScreen(helper.screen)
         }
     }.takeIf { yacl.isInstalled() }
 

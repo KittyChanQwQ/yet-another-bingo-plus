@@ -7,8 +7,8 @@ import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
+import me.jfenn.bingo.common.map.rgba
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
-import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
 import kotlin.math.max
 import kotlin.math.pow
@@ -108,8 +108,9 @@ internal class BingoMessageRenderer(
         isLeftOfCard: Boolean,
     ) {
         val usingShaderColor = visibility < 0.99f
+        val alpha = visibility.pow(2)
         if (usingShaderColor) {
-            drawService.setShaderColor(1f, 1f, 1f, visibility.pow(2))
+            drawService.setShaderColor(1f, 1f, 1f, alpha)
         }
 
         val itemX = if (isLeftOfCard) -8 - message.height else 8
@@ -143,6 +144,10 @@ internal class BingoMessageRenderer(
             }
         }
 
+        if (usingShaderColor) {
+            drawService.setShaderColor(1f, 1f, 1f, 1f)
+        }
+
         val messageWidth = message.messageLines.maxOf {
             drawService.font.getTextWidth(it)
         }
@@ -159,13 +164,9 @@ internal class BingoMessageRenderer(
             drawService.drawText(
                 text,
                 textX, textY + (drawService.font.getTextHeight() + 2)*index,
-                0xFF_FFFFFF.toInt(),
+                rgba(255, 255, 255, (alpha * 255).toInt()),
                 true,
             )
-        }
-
-        if (usingShaderColor) {
-            drawService.setShaderColor(1f, 1f, 1f, 1f)
         }
     }
 

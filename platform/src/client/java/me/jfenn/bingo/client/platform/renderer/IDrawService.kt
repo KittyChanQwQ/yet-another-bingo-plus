@@ -1,8 +1,8 @@
 package me.jfenn.bingo.client.platform.renderer
 
 import me.jfenn.bingo.client.platform.INativeImage
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
