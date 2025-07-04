@@ -164,7 +164,7 @@ internal class BingoMessageRenderer(
             drawService.drawText(
                 text,
                 textX, textY + (drawService.font.getTextHeight() + 2)*index,
-                rgba(255, 255, 255, (alpha * 255).toInt()),
+                rgba(255, 255, 255, (alpha * 255).toInt().coerceIn(5, 255)),
                 true,
             )
         }
