@@ -394,6 +394,7 @@
   "bingo.options.value.on": "Вкл.",
   "bingo.options.win_behavior.end_when": "Конец когда...",
   "bingo.options.win_behavior.stalemate": "Пат: %s",
+  "bingo.options.win_behavior.stalemate.do_nothing": "Ничего",
   "bingo.options.win_behavior.stalemate.do_nothing.tooltip": "Игра будет продолжаться до того, пока её не остановят вручную. Даже если цель недостижима.",
   "bingo.options.win_behavior.stalemate.end_game": "Закончить игру",
   "bingo.options.win_behavior.stalemate.end_game.tooltip": "Если ни одна из команд не сможет выполнить свою цель с текущей карточкой, то игра закончится",
