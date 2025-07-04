@@ -1,19 +1,20 @@
 ### New Features:
 
-- Added 1.21.6 dialogs for Lobby Mode prompts & a "Game Over" screen for vanilla clients
+- Added the ability to click on the bingo card in the HUD to open the card screen
 
-- Added silk touch items to the `tedious` tag (excluded by default) & recategorized them out of S-tier 
+  (in addition to the "View Card" keybind)
+- Added a "pressed" texture to make the Return to Lobby button more intuitive
+- The "Keep Playing" button no longer persists its setting changes into the next game
+- Minor tier list sorting
 
 ### Bugs Squashed:
 
-- Fix tooltips not working on the card screen when there is only one card
-- Prevent flashing items on the card when editing item tiers in the lobby
-- Fix pillager raids not being cleared when resetting the world
-- Fix some card icons not appearing correctly on the vanilla map
+- Fixed broken ender dragon state when the spawn dimension is set to "The End"
+- Using `/bingo timelimit` while a game is running no longer saves oddly specific time limits to the config ([#151](https://gitlab.com/horrificdev/bingo/-/issues/151))
 
 ### Translations:
 
-- New Chinese Simplified translations from Young912 and yzy_sheep!
+- New Chinese Simplified translations from Young912!
+- New Czech translations from Džerry!
 - New Hungarian translations from Remarci!
-- New Portuguese translations from Lucsdev_!
 - New Russian translations from lazdni!
