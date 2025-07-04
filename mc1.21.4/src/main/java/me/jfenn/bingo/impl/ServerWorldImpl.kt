@@ -11,6 +11,7 @@ import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.IBlockState
+import net.minecraft.entity.boss.dragon.EnderDragonFight
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
@@ -106,6 +107,7 @@ class ServerWorldFactory(
 
             log.measureTime("[Reset] Loading new worlds...") {
                 val levelPropertiesAccessor = (server.saveProperties as LevelProperties) as LevelPropertiesAccessor
+                levelPropertiesAccessor.setDragonFight(EnderDragonFight.Data.DEFAULT)
                 levelPropertiesAccessor.generatorOptions = levelPropertiesAccessor.generatorOptions.withSeed(OptionalLong.of(seed))
                 server.accessor.invokeLoadWorld()
             }
