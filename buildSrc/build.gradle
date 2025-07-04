@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:2.1.10"
-    implementation "fabric-loom:fabric-loom.gradle.plugin:1.10-SNAPSHOT"
+    implementation "fabric-loom:fabric-loom.gradle.plugin:1.11-SNAPSHOT"
     implementation "com.modrinth.minotaur:com.modrinth.minotaur.gradle.plugin:2.8.7"
-    implementation "com.gradleup.shadow:com.gradleup.shadow.gradle.plugin:8.3.5"
+    implementation "com.gradleup.shadow:com.gradleup.shadow.gradle.plugin:8.3.7"
 }
