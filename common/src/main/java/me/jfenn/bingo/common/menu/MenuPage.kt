@@ -43,20 +43,11 @@ private fun createRootPage(
     registerTeams(
         position = pos + Vector3d(MENU_TEAMS_WIDTH/2, 0.0, 0.0),
     )
-    registerTileButton(
+    registerCardReroll(
         position = pos + Vector3d(MENU_TEAMS_WIDTH/2, -0.5 - 2*MENU_LINE_HEIGHT - 3*MENU_LINE_PADDING - 0.55, 0.0),
         width = MENU_TEAMS_WIDTH,
         height = 0.55,
-        icon = "⚄",
-        text = text.string(StringKey.OptionsRerollCard),
-        brightness = MENU_BRIGHTNESS_ALT,
-    ) {
-        // Shuffle the current card + seed
-        val card = state.getActiveCard()
-        cardService.shuffleCard(card)
-        optionsService.broadcastHotbarMessage(it, text.string(StringKey.OptionsRerollCardSuccess))
-        eventBus.emit(CardShuffledEvent, CardShuffledEvent(card.id))
-    }
+    )
     registerTileButton(
         position = pos + Vector3d(MENU_TEAMS_WIDTH/2, -0.5 - 2*MENU_LINE_HEIGHT - 3*MENU_LINE_PADDING - 1.2, 0.0),
         width = MENU_TEAMS_WIDTH,

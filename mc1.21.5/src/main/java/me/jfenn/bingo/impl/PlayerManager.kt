@@ -1,7 +1,6 @@
 package me.jfenn.bingo.impl
 
 import com.mojang.authlib.GameProfile
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.impl.inventory.ContainerItemView
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
@@ -11,15 +10,12 @@ import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.platform.scope.BingoKoin
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.command.CommandSource
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.item.BlockItem
-import net.minecraft.item.BoatItem
-import net.minecraft.item.BundleItem
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
+import net.minecraft.item.*
 import net.minecraft.item.consume.UseAction
 import net.minecraft.network.message.MessageType
 import net.minecraft.network.message.SentMessage
@@ -360,6 +356,7 @@ private fun PlayerSoundEvent.toSoundEvent() = when (this) {
     PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_OFF -> SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_OFF
     PlayerSoundEvent.ENTITY_PLAYER_LEVELUP -> SoundEvents.ENTITY_PLAYER_LEVELUP
     PlayerSoundEvent.ENTITY_SHULKER_AMBIENT -> SoundEvents.ENTITY_SHULKER_AMBIENT
+    PlayerSoundEvent.ENTITY_TNT_PRIMED -> SoundEvents.ENTITY_TNT_PRIMED
     PlayerSoundEvent.BLOCK_NOTE_BLOCK_BASS -> SoundEvents.BLOCK_NOTE_BLOCK_BASS.value()
     PlayerSoundEvent.ITEM_LODESTONE_COMPASS_LOCK -> SoundEvents.ITEM_LODESTONE_COMPASS_LOCK
     PlayerSoundEvent.BLOCK_PORTAL_TRAVEL -> SoundEvents.BLOCK_PORTAL_TRAVEL

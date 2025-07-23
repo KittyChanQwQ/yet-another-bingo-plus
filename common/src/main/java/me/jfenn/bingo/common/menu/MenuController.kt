@@ -56,7 +56,6 @@ internal class MenuController(
     private val data: ScopedData,
     private val teamService: TeamService,
     private val text: TextProvider,
-    private val playerManager: IPlayerManager,
     private val levelStorage: ILevelStorage,
     private val particleFactory: me.jfenn.bingo.platform.particle.IParticleFactory,
     private val serverWorldFactory: IServerWorldFactory,

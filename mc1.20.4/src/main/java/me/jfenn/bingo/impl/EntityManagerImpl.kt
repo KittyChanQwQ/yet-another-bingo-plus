@@ -1,13 +1,14 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.platform.text.IText
-import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.common.utils.toNbt
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.ITextFactory
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.TntEntity
 import net.minecraft.entity.decoration.ArmorStandEntity
 import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.decoration.DisplayEntity.BlockDisplayEntity
@@ -33,6 +34,7 @@ class EntityManagerImpl(
             EntityType.TEXT_DISPLAY -> net.minecraft.entity.EntityType.TEXT_DISPLAY
             EntityType.BLOCK_DISPLAY -> net.minecraft.entity.EntityType.BLOCK_DISPLAY
             EntityType.ARMOR_STAND -> net.minecraft.entity.EntityType.ARMOR_STAND
+            EntityType.TNT -> net.minecraft.entity.EntityType.TNT
             EntityType.BAT -> net.minecraft.entity.EntityType.BAT
             else -> error("Entity type not recognized!")
         }
@@ -44,6 +46,7 @@ class EntityManagerImpl(
             is TextDisplayEntity -> TextDisplayEntityImpl(entity, textFactory, textSerializer)
             is BlockDisplayEntity -> BlockDisplayEntityImpl(entity)
             is ArmorStandEntity -> ArmorStandEntityImpl(entity)
+            is TntEntity -> TntEntityImpl(entity)
             is BatEntity -> BatEntityImpl(entity)
             is LivingEntity -> LivingEntityImpl(entity)
             else -> EntityImpl(entity)
@@ -261,6 +264,12 @@ class ArmorStandEntityImpl(
         }
         entity.equipStack(mcSlot, stack.stack)
     }
+}
+
+class TntEntityImpl(
+    override val entity: TntEntity,
+) : ITntEntity, EntityImpl(entity) {
+    override var fuse: Int by entity::fuse
 }
 
 open class LivingEntityImpl(

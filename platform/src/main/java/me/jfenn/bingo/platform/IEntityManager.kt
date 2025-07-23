@@ -1,7 +1,7 @@
 package me.jfenn.bingo.platform
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.entity.Entity
 import net.minecraft.server.world.ServerWorld
 import org.joml.Matrix4f
@@ -21,6 +21,7 @@ class EntityType<T: IEntity>(val name: String) {
         val BLOCK_DISPLAY = EntityType<IBlockDisplayEntity>("BLOCK_DISPLAY")
         val INTERACTION = EntityType<IInteractionEntity>("INTERACTION")
         val ARMOR_STAND = EntityType<IArmorStandEntity>("ARMOR_STAND")
+        val TNT = EntityType<ITntEntity>("TNT")
         val BAT = EntityType<IBatEntity>("BAT")
         val OTHER = EntityType<IBatEntity>("OTHER")
     }
@@ -101,4 +102,9 @@ interface IArmorStandEntity : IEntity {
 
 interface IBatEntity : ILivingEntity {
     override val type get() = EntityType.BAT
+}
+
+interface ITntEntity : IEntity {
+    override val type get() = EntityType.TNT
+    var fuse: Int
 }
