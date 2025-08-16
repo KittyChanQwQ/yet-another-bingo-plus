@@ -3,27 +3,10 @@ package me.jfenn.bingo.common.scoring
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
-import io.mockk.every
-import io.mockk.mockk
-import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamScore
 import org.junit.jupiter.api.Test
 
 class ScoreServiceTest {
-
-    fun mockTeam(name: String, score: TeamScore) = mockk<BingoTeam>().also {
-        every { it.id } returns name
-        every { it.countCards() } returns score.cards
-        every { it.score } returns score
-    }
-
-    fun mockState(
-        teams: List<BingoTeam>,
-    ) = mockk<BingoState>().also {
-        every { it.getRegisteredTeams() } returns teams
-        every { it.cards } returns mutableListOf()
-    }
 
     @Test
     fun `given three teams, when two are tied by items, then the leading team is null`() {
