@@ -43,3 +43,7 @@ logs/
 /*.sh
 crowdin.json
 .fabric/
+*.kra
+*.log
+/docs
+drawing.svg

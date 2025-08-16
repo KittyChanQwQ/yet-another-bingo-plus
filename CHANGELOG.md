@@ -1,20 +1,18 @@
 ### New Features:
 
-- Added the ability to click on the bingo card in the HUD to open the card screen
-
-  (in addition to the "View Card" keybind)
-- Added a "pressed" texture to make the Return to Lobby button more intuitive
-- The "Keep Playing" button no longer persists its setting changes into the next game
-- Minor tier list sorting
+- Added a mini easter egg when rerolling the card :)
 
 ### Bugs Squashed:
 
-- Fixed broken ender dragon state when the spawn dimension is set to "The End"
-- Using `/bingo timelimit` while a game is running no longer saves oddly specific time limits to the config ([#151](https://gitlab.com/horrificdev/bingo/-/issues/151))
+- Fixed compatibility with [fabric-language-kotlin 2.2.10](https://github.com/FabricMC/fabric-language-kotlin/issues/169#issuecomment-3190928751) (thanks @J10a1n15 for finding this!)
+- Fixed a bug that prevents the mod from loading after saving invalid game settings
+- Fixed player xp not being cleared between games
+- Advancements can no longer be scored while in the lobby
+- Fixed "Keep Playing" button never resuming an existing card
 
 ### Translations:
 
-- New Chinese Simplified translations from Young912!
-- New Czech translations from Džerry!
-- New Hungarian translations from Remarci!
+- New French translations from Yosh64!
+- New Italian translations from noah and sculk1!
+- New Literary Chinese translations from Sorajima Asugawa!
 - New Russian translations from lazdni!
