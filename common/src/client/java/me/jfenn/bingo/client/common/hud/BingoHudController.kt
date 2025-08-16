@@ -542,6 +542,7 @@ internal class BingoHudController(
                 return@register
             val isDebugEnabled = optionsAccessor.isDebugEnabled()
             val isChatOpen = client.screen is ChatScreen
+            val isPlayerListOpen = optionsAccessor.isPlayerListPressed()
 
             // Do not draw the HUD if the card screen is open
             if (
@@ -560,7 +561,7 @@ internal class BingoHudController(
             ) {
                 drawHudCards(it.drawService)
             }
-            if (!isDebugEnabled && !isChatOpen) {
+            if (!isDebugEnabled && !isChatOpen && !isPlayerListOpen) {
                 drawHudInfo(it.drawService)
             }
         }
