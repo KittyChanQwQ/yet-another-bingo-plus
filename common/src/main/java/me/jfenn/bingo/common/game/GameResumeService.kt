@@ -54,8 +54,13 @@ internal class GameResumeService(
 
         val teams = state.getRegisteredTeams()
 
+        // Find if any card can just be resumed with no changes
+        val canResumeAllCards = teams.all { team ->
+            team.winner == null && team.completedCards.lastOrNull()?.isWinner == false
+        }
+
         // Find if any winning card has a goal that can be increased
-        val canContinueCard = teams.firstNotNullOfOrNull { team ->
+        val canIncreaseCardGoal = teams.firstNotNullOfOrNull { team ->
             val lastCard = team.completedCards.lastOrNull()
                 ?: return@firstNotNullOfOrNull null
             if (
@@ -67,8 +72,14 @@ internal class GameResumeService(
             } else null
         }
 
-        if (canContinueCard != null) {
-            val cardId = canContinueCard.card.id
+        if (canResumeAllCards) {
+            // Resume each team's last completed card
+            for (team in teams) {
+                val resumeCard = team.completedCards.removeLast()
+                team.cardId = resumeCard.card.id
+            }
+        } else if (canIncreaseCardGoal != null) {
+            val cardId = canIncreaseCardGoal.card.id
 
             // Remove the team's last completedCard and restore the cardIds
             for (team in teams) {
@@ -80,7 +91,7 @@ internal class GameResumeService(
             // if the game ended because a team won, and the goal wasn't full card, increase it!
             val newGoal = if (options.winCondition is BingoWinCondition.ReplaceGoals) {
                 when (
-                    val goal = canContinueCard.card.options.goal
+                    val goal = canIncreaseCardGoal.card.options.goal
                 ) {
                     is BingoGoal.Lines -> BingoGoal.Lines(goal.lines + 5)
                     is BingoGoal.Items -> BingoGoal.Items(goal.items + 25)
