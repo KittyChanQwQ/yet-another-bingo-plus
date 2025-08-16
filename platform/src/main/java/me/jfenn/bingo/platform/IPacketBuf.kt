@@ -51,7 +51,13 @@ interface IPacketBuf {
     }
 
     fun writeDuration(value: Duration) {
-        writeLong(value.toMillis())
+        writeLong(
+            try {
+                value.toMillis()
+            } catch (_: ArithmeticException) {
+                0L
+            }
+        )
     }
 
     fun readDuration(): Duration {
