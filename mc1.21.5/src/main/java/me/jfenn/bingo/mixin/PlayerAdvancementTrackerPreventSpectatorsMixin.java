@@ -1,5 +1,6 @@
 package me.jfenn.bingo.mixin;
 
+import me.jfenn.bingo.impl.PlayerHandle;
 import me.jfenn.bingo.mixinhandler.PlayerAdvancementTrackerMixinHelper;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -21,9 +22,9 @@ public class PlayerAdvancementTrackerPreventSpectatorsMixin {
     )
     public void grantCriterion(CallbackInfoReturnable<Boolean> ci) {
         if (
-                owner.isSpectator() &&
-                        PlayerAdvancementTrackerMixinHelper.Companion
-                                .shouldPreventSpectatorAdvancements(owner)
+                PlayerAdvancementTrackerMixinHelper.shouldPreventSpectatorAdvancements(
+                        new PlayerHandle(owner, null)
+                )
         ) {
             ci.setReturnValue(false);
             ci.cancel();
