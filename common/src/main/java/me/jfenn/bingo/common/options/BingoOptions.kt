@@ -5,12 +5,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.menu.*
+import me.jfenn.bingo.common.utils.DurationType
 import me.jfenn.bingo.common.utils.copyMemberProperties
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
 import java.security.MessageDigest
 import java.util.*
-import kotlin.time.Duration
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
@@ -21,7 +21,7 @@ data class BingoOptions(
     var stalemateBehavior: StalemateBehavior = StalemateBehavior.END_GAME,
     var endGameWhen: EndWhen = EndWhen.FirstWin,
 
-    var timeLimit: Duration? = null,
+    var timeLimit: DurationType? = null,
 
     // game feature settings
     var isElytra: Boolean = false,

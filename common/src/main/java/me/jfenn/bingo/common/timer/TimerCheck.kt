@@ -1,15 +1,16 @@
 package me.jfenn.bingo.common.timer
 
-import kotlinx.datetime.Clock
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.game.GameService
+import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.utils.minus
+import me.jfenn.bingo.common.utils.seconds
 import org.slf4j.Logger
-import kotlin.time.Duration.Companion.seconds
+import java.time.Instant
 
 /**
  * Checks when the game time exceeds its time limit, and
@@ -27,13 +28,13 @@ internal class TimerCheck(
         events.onEnter(GameState.PLAYING) { prevState ->
             if (prevState == GameState.PLAYING) return@onEnter
 
-            state.startedAt = Clock.System.now()
+            state.startedAt = Instant.now()
         }
 
         events.onGameTick {
             if (state.state != GameState.PLAYING) return@onGameTick
 
-            val now = Clock.System.now()
+            val now = Instant.now()
 
             // if significant time has elapsed since the last update, the game might have been paused/offline...
             state.updatedAt

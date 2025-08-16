@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
@@ -16,6 +15,7 @@ import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
+import java.time.Instant
 import kotlin.math.max
 
 internal class ItemObjectiveManager(
@@ -157,7 +157,7 @@ internal class ItemObjectiveManager(
 
 
     override fun tick(card: BingoCard) {
-        val now = state.updatedAt ?: Instant.DISTANT_PAST
+        val now = state.updatedAt ?: Instant.MIN
 
         val playersToItems = objectiveService.getTeamPlayers(card)
             .map { (team, player) ->

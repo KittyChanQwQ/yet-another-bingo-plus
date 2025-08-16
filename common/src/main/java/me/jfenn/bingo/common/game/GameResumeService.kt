@@ -12,8 +12,7 @@ import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.PlayerGameMode
 import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
+import java.time.Duration
 
 internal class GameResumeService(
     private val log: Logger,
@@ -140,7 +139,7 @@ internal class GameResumeService(
         }
 
         // If the time limit is close (or expired), remove it!
-        if (state.remainingDuration()?.let { it < 30.seconds } == true) {
+        if (state.remainingDuration()?.let { it < Duration.ofSeconds(30) } == true) {
             optionsService.createRestoreTimeLimit()
             optionsService.setTimeLimit(context, null)
         }

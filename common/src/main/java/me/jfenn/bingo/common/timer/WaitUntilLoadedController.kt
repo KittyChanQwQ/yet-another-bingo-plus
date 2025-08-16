@@ -1,18 +1,18 @@
 package me.jfenn.bingo.common.timer
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.utils.milliseconds
+import me.jfenn.bingo.common.utils.minus
+import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.mixinhandler.ServerPlayNetworkHandlerMixinHandler
 import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
+import java.time.Instant
 
 /**
  * Wait until the player has finished loading terrain
@@ -32,7 +32,7 @@ internal class WaitUntilLoadedController(
 
     init {
         events.onEnter(GameState.LOADING) {
-            startedLoading = Clock.System.now()
+            startedLoading = Instant.now()
             log.info("Waiting until all players have loaded spawn terrain...")
         }
 
@@ -49,8 +49,8 @@ internal class WaitUntilLoadedController(
                     lastMovementPacket != null && lastMovementPacket > startedLoading
                 }
 
-            if (!isEveryPlayerLoaded || Clock.System.now() - startedLoading > 40.seconds) return@onGameTick
-            log.info("Waiting until all players have loaded spawn terrain... Done! (${(Clock.System.now() - startedLoading)})")
+            if (!isEveryPlayerLoaded || Instant.now() - startedLoading > 40.seconds) return@onGameTick
+            log.info("Waiting until all players have loaded spawn terrain... Done! (${(Instant.now() - startedLoading)})")
 
             // change to the playing state
             if (config.countdownDelayTicks > 0 || config.countdownSeconds > 0) {

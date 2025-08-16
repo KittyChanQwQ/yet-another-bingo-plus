@@ -1,20 +1,19 @@
 package me.jfenn.bingo.common.lobby
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.lobby.BingoLobbyCommand.Companion.CONFIRM_COMMAND
 import me.jfenn.bingo.common.lobby.BingoLobbyCommand.Companion.LOBBY_COMMAND
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.minutes
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
+import java.time.Instant
 import java.util.*
-import kotlin.time.Duration.Companion.minutes
 
 internal class LobbyModeService(
     private val server: MinecraftServer,
@@ -50,14 +49,14 @@ internal class LobbyModeService(
     }
 
     fun onPlayerWarned(uuid: UUID) {
-        readWarnings[uuid] = Clock.System.now()
+        readWarnings[uuid] = Instant.now()
     }
 
     fun acceptWarnings(uuid: UUID, playerName: String) = sequence {
         val playerId = uuid
         val readWarning = readWarnings[playerId]
 
-        if (readWarning != null && readWarning > Clock.System.now() - 5.minutes) {
+        if (readWarning != null && readWarning > Instant.now() - 5.minutes) {
             yield(text.string(StringKey.CommandLobbyRestarting))
 
             log.info("[BingoLobbyCommand] $playerName used '$CONFIRM_COMMAND' and has accepted the warnings.")

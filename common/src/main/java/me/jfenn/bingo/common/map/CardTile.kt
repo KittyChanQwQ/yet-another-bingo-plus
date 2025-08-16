@@ -1,14 +1,14 @@
 package me.jfenn.bingo.common.map
 
-import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.util.Identifier
+import java.time.Instant
 
 data class CardTile(
     val id: String? = null,

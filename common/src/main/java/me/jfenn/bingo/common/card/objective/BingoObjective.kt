@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -9,6 +7,7 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.utils.InstantType
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.platform.IAdvancementHandle
 import me.jfenn.bingo.platform.IStatHandle
@@ -16,8 +15,9 @@ import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.utils.UuidAsString
+import java.time.Duration
+import java.time.Instant
 import java.util.*
-import kotlin.time.Duration
 
 @Serializable
 sealed class BingoObjective {
@@ -27,9 +27,9 @@ sealed class BingoObjective {
     /** Includes teams that have observed or made partial progress on the objective */
     var teamsSeen = mutableSetOf<BingoTeamKey>()
     /** Includes teams that have achieved the objective */
-    var teamsAchieved = mutableMapOf<BingoTeamKey, Instant>()
+    var teamsAchieved = mutableMapOf<BingoTeamKey, InstantType>()
     /** Includes teams that have lost the objective */
-    var teamsLost = mutableMapOf<BingoTeamKey, Instant>()
+    var teamsLost = mutableMapOf<BingoTeamKey, InstantType>()
     /** Includes teams that have previously achieved and then lost the objective */
     val teamsOnceAchieved = mutableSetOf<BingoTeamKey>()
     /** Includes players that have achieved the objective */
@@ -107,8 +107,8 @@ sealed class BingoObjective {
      * for the specified team.
      */
     fun updatedAt(team: BingoTeamKey?): Instant {
-        val achieved = achievedAt(team) ?: Instant.DISTANT_PAST
-        val lost = lostAt(team) ?: Instant.DISTANT_PAST
+        val achieved = achievedAt(team) ?: Instant.MIN
+        val lost = lostAt(team) ?: Instant.MIN
         return maxOf(achieved, lost)
     }
 
@@ -119,7 +119,7 @@ sealed class BingoObjective {
     open fun isFlashing(team: BingoTeamKey?, duration: Duration): Boolean {
         return team != null &&
                 hasAchieved(team) &&
-                Clock.System.now() - updatedAt(team) < duration
+                Duration.between(updatedAt(team), Instant.now()) < duration
     }
 
     @Serializable

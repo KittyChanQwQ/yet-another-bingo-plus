@@ -8,9 +8,10 @@ import me.jfenn.bingo.client.platform.renderer.use
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.utils.milliseconds
+import me.jfenn.bingo.common.utils.minus
 import org.slf4j.Logger
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.milliseconds
 
 internal class ClientCardManager(
     private val log: Logger,

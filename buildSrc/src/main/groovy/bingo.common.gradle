@@ -44,7 +44,6 @@ dependencies {
     compileOnly libs.kotlin.stdlib
     compileOnly libs.kotlin.reflect
     compileOnly libs.kotlinx.serialization
-    compileOnly libs.kotlinx.datetime
     testImplementation libs.fabric.language.kotlin
 }
 

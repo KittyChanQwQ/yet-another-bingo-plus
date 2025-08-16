@@ -1,11 +1,10 @@
 package me.jfenn.bingo.platform
 
-import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.text.IText
+import java.time.Duration
+import java.time.Instant
 import java.util.*
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 interface IPacketBuf {
     fun writeString(str: String)
@@ -52,19 +51,19 @@ interface IPacketBuf {
     }
 
     fun writeDuration(value: Duration) {
-        writeLong(value.inWholeMilliseconds)
+        writeLong(value.toMillis())
     }
 
     fun readDuration(): Duration {
-        return readLong().milliseconds
+        return Duration.ofMillis(readLong())
     }
 
     fun writeInstant(value: Instant) {
-        writeLong(value.toEpochMilliseconds())
+        writeLong(value.toEpochMilli())
     }
 
     fun readInstant(): Instant {
-        return Instant.fromEpochMilliseconds(readLong())
+        return Instant.ofEpochMilli(readLong())
     }
 
     fun writeUUID(value: UUID) {

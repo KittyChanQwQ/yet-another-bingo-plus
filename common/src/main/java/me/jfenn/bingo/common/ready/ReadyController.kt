@@ -13,6 +13,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
+import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IExecutors
@@ -21,8 +22,7 @@ import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.text.IText
 import net.minecraft.text.Text
 import org.slf4j.Logger
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
+import java.time.Duration
 
 internal class ReadyController(
     private val log: Logger,

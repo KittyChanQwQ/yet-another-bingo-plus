@@ -1,16 +1,15 @@
 package me.jfenn.bingo.common.game
 
-import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.util.Identifier
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
+import java.time.Duration
+import java.time.Instant
 
 data class GameOverPacket(
     val title: IText,
@@ -36,7 +35,7 @@ data class GameOverPacket(
     val bestCapturedItems: Int? = null,
     val isBestCapturedItems: Boolean = false,
 
-    val endedAt: Instant = Instant.DISTANT_PAST,
+    val endedAt: Instant = Instant.MIN,
     val isBestTime: Boolean = false,
     val prevBestTime: Duration? = null,
     val seed: Long?,
@@ -71,7 +70,7 @@ data class GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
                 winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
-                duration = buf.readLong().milliseconds,
+                duration = buf.readDuration(),
                 isOperator = buf.readBoolean(),
                 isWinner = false,
                 isUpdate = false,
@@ -91,7 +90,7 @@ data class GameOverPacket(
                 dest.writeBoolean(false)
             }
 
-            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeDuration(source.duration)
             dest.writeBoolean(source.isOperator)
         }
     }
@@ -104,7 +103,7 @@ data class GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
                 winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
-                duration = buf.readLong().milliseconds,
+                duration = buf.readDuration(),
                 isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = false,
@@ -124,7 +123,7 @@ data class GameOverPacket(
                 dest.writeBoolean(false)
             }
 
-            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeDuration(source.duration)
             dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
         }
@@ -138,7 +137,7 @@ data class GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
                 winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
-                duration = buf.readLong().milliseconds,
+                duration = buf.readDuration(),
                 isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
@@ -158,7 +157,7 @@ data class GameOverPacket(
                 dest.writeBoolean(false)
             }
 
-            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeDuration(source.duration)
             dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
@@ -173,7 +172,7 @@ data class GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
                 winner = if (buf.readBoolean()) BingoTeamKey(buf.readString()) else null,
-                duration = buf.readLong().milliseconds,
+                duration = buf.readDuration(),
                 isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
@@ -193,7 +192,7 @@ data class GameOverPacket(
                 dest.writeBoolean(false)
             }
 
-            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeDuration(source.duration)
             dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
@@ -222,7 +221,7 @@ data class GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
                 winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
-                duration = buf.readLong().milliseconds,
+                duration = buf.readDuration(),
                 isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
@@ -235,9 +234,9 @@ data class GameOverPacket(
                 bestCapturedItems = buf.readNullable(buf::readInt),
                 isBestCapturedItems = buf.readBoolean(),
 
-                endedAt = Instant.fromEpochMilliseconds(buf.readLong()),
+                endedAt = buf.readInstant(),
                 isBestTime = buf.readBoolean(),
-                prevBestTime = buf.readNullable(buf::readLong)?.milliseconds,
+                prevBestTime = buf.readNullable(buf::readDuration),
                 seed = buf.readNullable(buf::readLong),
             )
         }
@@ -248,7 +247,7 @@ data class GameOverPacket(
 
             dest.writeNullable(source.winner?.id, dest::writeString)
 
-            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeDuration(source.duration)
             dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
@@ -261,9 +260,9 @@ data class GameOverPacket(
             dest.writeNullable(source.bestCapturedItems, dest::writeInt)
             dest.writeBoolean(source.isBestCapturedItems)
 
-            dest.writeLong(source.endedAt.toEpochMilliseconds())
+            dest.writeInstant(source.endedAt)
             dest.writeBoolean(source.isBestTime)
-            dest.writeNullable(source.prevBestTime?.inWholeMilliseconds, dest::writeLong)
+            dest.writeNullable(source.prevBestTime, dest::writeDuration)
 
             dest.writeNullable(source.seed, dest::writeLong)
         }
@@ -277,7 +276,7 @@ data class GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
                 winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
-                duration = buf.readLong().milliseconds,
+                duration = buf.readDuration(),
                 isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
@@ -290,9 +289,9 @@ data class GameOverPacket(
                 bestCapturedItems = buf.readNullable(buf::readInt),
                 isBestCapturedItems = buf.readBoolean(),
 
-                endedAt = Instant.fromEpochMilliseconds(buf.readLong()),
+                endedAt = buf.readInstant(),
                 isBestTime = buf.readBoolean(),
-                prevBestTime = buf.readNullable(buf::readLong)?.milliseconds,
+                prevBestTime = buf.readNullable(buf::readDuration),
                 seed = buf.readNullable(buf::readLong),
 
                 scores = buf.readList {
@@ -302,7 +301,7 @@ data class GameOverPacket(
                         name = buf.readText(),
                         score = TeamScore.V1.fromPacketBuf(buf),
                         duration = buf.readNullable(buf::readString)
-                            ?.let { Duration.parseIsoString(it) }
+                            ?.let { Duration.parse(it) }
                     )
                 }
             )
@@ -314,7 +313,7 @@ data class GameOverPacket(
 
             dest.writeNullable(source.winner?.id, dest::writeString)
 
-            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeDuration(source.duration)
             dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
@@ -327,9 +326,9 @@ data class GameOverPacket(
             dest.writeNullable(source.bestCapturedItems, dest::writeInt)
             dest.writeBoolean(source.isBestCapturedItems)
 
-            dest.writeLong(source.endedAt.toEpochMilliseconds())
+            dest.writeInstant(source.endedAt)
             dest.writeBoolean(source.isBestTime)
-            dest.writeNullable(source.prevBestTime?.inWholeMilliseconds, dest::writeLong)
+            dest.writeNullable(source.prevBestTime, dest::writeDuration)
 
             dest.writeNullable(source.seed, dest::writeLong)
 
@@ -338,7 +337,7 @@ data class GameOverPacket(
                 dest.writeString(it.key.id)
                 dest.writeText(it.name)
                 TeamScore.V1.toPacketBuf(it.score, dest)
-                dest.writeNullable(it.duration?.toIsoString(), dest::writeString)
+                dest.writeNullable(it.duration?.toString(), dest::writeString)
             }
         }
     }
@@ -351,7 +350,7 @@ data class GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
                 winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
-                duration = buf.readLong().milliseconds,
+                duration = buf.readDuration(),
                 isOperator = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
@@ -364,9 +363,9 @@ data class GameOverPacket(
                 bestCapturedItems = buf.readNullable(buf::readInt),
                 isBestCapturedItems = buf.readBoolean(),
 
-                endedAt = Instant.fromEpochMilliseconds(buf.readLong()),
+                endedAt = buf.readInstant(),
                 isBestTime = buf.readBoolean(),
-                prevBestTime = buf.readNullable(buf::readLong)?.milliseconds,
+                prevBestTime = buf.readNullable(buf::readDuration),
                 seed = buf.readNullable(buf::readLong),
 
                 scores = buf.readList {
@@ -376,7 +375,7 @@ data class GameOverPacket(
                         name = buf.readText(),
                         score = TeamScore.V1.fromPacketBuf(buf),
                         duration = buf.readNullable(buf::readString)
-                            ?.let { Duration.parseIsoString(it) }
+                            ?.let { Duration.parse(it) }
                     )
                 },
                 defaultTab = try {
@@ -393,7 +392,7 @@ data class GameOverPacket(
 
             dest.writeNullable(source.winner?.id, dest::writeString)
 
-            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeDuration(source.duration)
             dest.writeBoolean(source.isOperator)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
@@ -406,9 +405,9 @@ data class GameOverPacket(
             dest.writeNullable(source.bestCapturedItems, dest::writeInt)
             dest.writeBoolean(source.isBestCapturedItems)
 
-            dest.writeLong(source.endedAt.toEpochMilliseconds())
+            dest.writeInstant(source.endedAt)
             dest.writeBoolean(source.isBestTime)
-            dest.writeNullable(source.prevBestTime?.inWholeMilliseconds, dest::writeLong)
+            dest.writeNullable(source.prevBestTime, dest::writeDuration)
 
             dest.writeNullable(source.seed, dest::writeLong)
 
@@ -417,7 +416,7 @@ data class GameOverPacket(
                 dest.writeString(it.key.id)
                 dest.writeText(it.name)
                 TeamScore.V1.toPacketBuf(it.score, dest)
-                dest.writeNullable(it.duration?.toIsoString(), dest::writeString)
+                dest.writeNullable(it.duration?.toString(), dest::writeString)
             }
             dest.writeString(source.defaultTab.name)
         }
@@ -431,7 +430,7 @@ data class GameOverPacket(
                 title = buf.readText(),
                 subtitle = buf.readText(),
                 winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
-                duration = buf.readLong().milliseconds,
+                duration = buf.readDuration(),
                 isReturnToLobbyAvailable = buf.readBoolean(),
                 isResumeAvailable = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
@@ -445,9 +444,9 @@ data class GameOverPacket(
                 bestCapturedItems = buf.readNullable(buf::readInt),
                 isBestCapturedItems = buf.readBoolean(),
 
-                endedAt = Instant.fromEpochMilliseconds(buf.readLong()),
+                endedAt = buf.readInstant(),
                 isBestTime = buf.readBoolean(),
-                prevBestTime = buf.readNullable(buf::readLong)?.milliseconds,
+                prevBestTime = buf.readNullable(buf::readDuration),
                 seed = buf.readNullable(buf::readLong),
 
                 scores = buf.readList {
@@ -457,7 +456,7 @@ data class GameOverPacket(
                         name = buf.readText(),
                         score = TeamScore.V1.fromPacketBuf(buf),
                         duration = buf.readNullable(buf::readString)
-                            ?.let { Duration.parseIsoString(it) }
+                            ?.let { Duration.parse(it) }
                     )
                 },
                 defaultTab = try {
@@ -474,7 +473,7 @@ data class GameOverPacket(
 
             dest.writeNullable(source.winner?.id, dest::writeString)
 
-            dest.writeLong(source.duration.inWholeMilliseconds)
+            dest.writeDuration(source.duration)
             dest.writeBoolean(source.isReturnToLobbyAvailable)
             dest.writeBoolean(source.isResumeAvailable)
             dest.writeBoolean(source.isWinner)
@@ -488,9 +487,9 @@ data class GameOverPacket(
             dest.writeNullable(source.bestCapturedItems, dest::writeInt)
             dest.writeBoolean(source.isBestCapturedItems)
 
-            dest.writeLong(source.endedAt.toEpochMilliseconds())
+            dest.writeInstant(source.endedAt)
             dest.writeBoolean(source.isBestTime)
-            dest.writeNullable(source.prevBestTime?.inWholeMilliseconds, dest::writeLong)
+            dest.writeNullable(source.prevBestTime, dest::writeDuration)
 
             dest.writeNullable(source.seed, dest::writeLong)
 
@@ -499,7 +498,7 @@ data class GameOverPacket(
                 dest.writeString(it.key.id)
                 dest.writeText(it.name)
                 TeamScore.V1.toPacketBuf(it.score, dest)
-                dest.writeNullable(it.duration?.toIsoString(), dest::writeString)
+                dest.writeNullable(it.duration?.toString(), dest::writeString)
             }
             dest.writeString(source.defaultTab.name)
         }

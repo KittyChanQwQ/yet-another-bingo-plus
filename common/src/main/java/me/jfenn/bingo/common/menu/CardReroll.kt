@@ -1,21 +1,21 @@
 package me.jfenn.bingo.common.menu
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.event.model.CardShuffledEvent
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.common.utils.plus
+import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import org.joml.Vector3d
+import java.time.Instant
 import kotlin.random.Random
 import kotlin.random.nextInt
-import kotlin.time.Duration.Companion.seconds
 
 private const val REROLL_SPAM_AMOUNT = 100
-private var lastReroll: Instant = Instant.DISTANT_PAST
+private var lastReroll: Instant = Instant.MIN
 private var rerolls: Int = 0
 
 internal fun MenuComponent.registerCardReroll(
@@ -36,7 +36,7 @@ internal fun MenuComponent.registerCardReroll(
         text = text.string(StringKey.OptionsRerollCard),
         brightness = MENU_BRIGHTNESS_ALT,
     ) { player ->
-        val now = Clock.System.now()
+        val now = Instant.now()
         if (now - lastReroll < 1.seconds) {
             if (rerolls++ > REROLL_SPAM_AMOUNT) {
                 rerolls = 0

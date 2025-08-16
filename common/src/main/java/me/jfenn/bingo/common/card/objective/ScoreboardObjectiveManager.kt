@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
@@ -16,6 +15,7 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import org.slf4j.Logger
+import java.time.Instant
 
 internal class ScoreboardObjectiveManager(
     private val log: Logger,
@@ -94,7 +94,7 @@ internal class ScoreboardObjectiveManager(
     }
 
     override fun tick(card: BingoCard) {
-        val now = state.updatedAt ?: Instant.DISTANT_PAST
+        val now = state.updatedAt ?: Instant.MIN
 
         for (objective in card.objectivesByInstance<BingoObjective.ScoreboardEntry>()) {
             val scoreboard = objective.scoreboard ?: continue

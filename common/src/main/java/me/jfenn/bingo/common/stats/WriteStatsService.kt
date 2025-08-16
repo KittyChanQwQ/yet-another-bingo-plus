@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.stats
 
-import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -15,7 +14,8 @@ import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.IJsonSerializers
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
-import kotlin.time.Duration
+import java.time.Duration
+import java.time.Instant
 
 internal class WriteStatsService(
     private val log: Logger,
@@ -52,11 +52,11 @@ internal class WriteStatsService(
         val options = json.encodeToString(state.options)
         val startedAt = state.startedAt ?: run {
             log.error("state.startedAt is null!")
-            Clock.System.now()
+            Instant.now()
         }
         val endedAt = state.endedAt ?: run {
             log.error("state.endedAt is null!")
-            Clock.System.now()
+            Instant.now()
         }
         val insertGame = GameInfo(
             id = state.gameId,

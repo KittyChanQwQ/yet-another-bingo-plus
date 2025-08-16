@@ -1,7 +1,5 @@
 package me.jfenn.bingo.client.common.hud
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.client.common.event.ClientConfigChangedEvent
@@ -35,7 +33,10 @@ import me.jfenn.bingo.common.scoring.GameMessagePacket
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.div
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.common.utils.milliseconds
+import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ServerEvent
@@ -43,10 +44,10 @@ import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.resource.ResourceManager
 import net.minecraft.util.Identifier
 import org.lwjgl.glfw.GLFW
+import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.jvm.optionals.getOrNull
-import kotlin.time.Duration.Companion.milliseconds
 
 internal class BingoHudController(
     private val optionsAccessor: IOptionsAccessor,
@@ -90,7 +91,7 @@ internal class BingoHudController(
     private fun onCardHudClosed(
         cardPositions: Map<BingoTeamKey?, Pair<Float, Float>>,
     ) {
-        val now = Clock.System.now()
+        val now = Instant.now()
         val lastPosition = cardPositions[getSelectedCard()?.teamKey] ?: return
 
         interpolateCardX.apply {
@@ -242,7 +243,7 @@ internal class BingoHudController(
                 ?: tooltipText.flatMap { line -> drawService.font.wrapLines(line, 200) }
                     .also { tooltipPacket.clientWrappedText = it }
         }
-        val tooltipStartedAt = state.tooltipStartedAt ?: Instant.DISTANT_PAST
+        val tooltipStartedAt = state.tooltipStartedAt ?: Instant.MIN
         if (tooltipText != null && client.screen == null) {
             val tooltipSize = tooltipText.maxOfOrNull { drawService.font.getTextWidth(it) } ?: 0
             val tooltipX = drawService.window.scaledWindowWidth/2 - tooltipSize/2 - 12
@@ -296,7 +297,7 @@ internal class BingoHudController(
 
     private fun onMessagePacket(packet: GameMessagePacket) {
         val scoreMessage = BingoHudState.ScoreMessage(
-            createdAt = Clock.System.now(),
+            createdAt = Instant.now(),
             packet = packet,
         )
 
@@ -423,7 +424,7 @@ internal class BingoHudController(
             newTile
         }
 
-        if (tiles.any { it.updatedAt == state.now })
+        if (tiles.any { it.updatedAt as Any? == state.now })
             scheduleCardUpdates(packet.teamKey)
 
         clientCard.view = clientCard.view.copy(tiles = tiles)
@@ -522,7 +523,7 @@ internal class BingoHudController(
         }
 
         eventBus.register(HudRenderEvent) {
-            state.now = Clock.System.now()
+            state.now = Instant.now()
             scaledWindowWidth = it.drawService.window.scaledWindowWidth
             scaledWindowHeight = it.drawService.window.scaledWindowHeight
 

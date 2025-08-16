@@ -14,6 +14,7 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IMapService
@@ -24,7 +25,6 @@ import me.jfenn.bingo.platform.text.IText
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.MinecraftServer
 import java.util.*
-import kotlin.time.Duration.Companion.seconds
 
 internal class CardViewService(
     private val server: MinecraftServer,

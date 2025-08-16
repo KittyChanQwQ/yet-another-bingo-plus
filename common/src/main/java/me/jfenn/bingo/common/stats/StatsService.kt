@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.stats
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.stats.data.*
@@ -10,11 +8,11 @@ import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.sql.BingoDatabase
 import org.slf4j.Logger
 import java.security.MessageDigest
+import java.time.Duration
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 class StatsService(
     private val log: Logger,
@@ -82,7 +80,7 @@ class StatsService(
                     host_id = hostId.toString(),
                     is_singleplayer = if (game.playerCount == 1) 1L else 0L,
                     game_id = game.id.toString(),
-                    duration = game.duration.inWholeMilliseconds
+                    duration = game.duration.toMillis()
                 )
             }.onFailure {
                 log.error("Failure running updateTime", it)
@@ -158,7 +156,7 @@ class StatsService(
             ?: 0L
     }
 
-    fun getPlayerSummary(playerUuid: UUID, now: Instant = Clock.System.now()): PlayerStatsSummary {
+    fun getPlayerSummary(playerUuid: UUID, now: Instant = Instant.now()): PlayerStatsSummary {
         val total = db.gameQueries.totalStatsByPlayer(playerUuid.toString()).executeAsOne()
         val monthly = db.gameQueries.monthlyStatsByPlayer(playerUuid.toString(), now.toString()).executeAsOne()
         val favoriteTeam = db.gamePlayerQueries.findFavoriteTeam(playerUuid.toString()).executeAsOneOrNull()
@@ -166,19 +164,19 @@ class StatsService(
         val bestStreak = getBestWinStreak(playerUuid)
 
         return PlayerStatsSummary(
-            totalPlaytime = total.duration?.milliseconds ?: Duration.ZERO,
+            totalPlaytime = Duration.ofMillis(total.duration ?: 0),
             totalItems = total.items ?: 0L,
             totalGames = total.games,
             totalWins = total.wins,
             totalLosses = total.losses,
-            monthlyPlaytime = monthly.duration?.milliseconds ?: Duration.ZERO,
+            monthlyPlaytime = Duration.ofMillis(monthly.duration ?: 0),
             monthlyItems = monthly.items ?: 0L,
             monthlyGames = monthly.games,
             monthlyWins = monthly.wins,
             monthlyLosses = monthly.losses,
             favoriteTeam = favoriteTeam?.id?.let { BingoTeamKey(it) },
             favoriteTeamPercentage = favoriteTeam?.let { it.count / it.total.toFloat() } ?: 0f,
-            winStreak = currentStreak ?: 0L,
+            winStreak = currentStreak,
             winStreakBest = bestStreak,
         )
     }
@@ -201,7 +199,7 @@ class StatsService(
             )
         }
 
-        return bestTimeQuery.executeAsOneOrNull()?.duration?.milliseconds
+        return bestTimeQuery.executeAsOneOrNull()?.duration?.let { Duration.ofMillis(it) }
     }
 
     fun getBestTimeAsync(options: BingoOptions, isSingleplayer: Boolean): CompletableFuture<Duration?> {

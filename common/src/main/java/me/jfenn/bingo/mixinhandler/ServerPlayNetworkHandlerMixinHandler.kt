@@ -1,8 +1,7 @@
 package me.jfenn.bingo.mixinhandler
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import net.minecraft.server.network.ServerPlayerEntity
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 object ServerPlayNetworkHandlerMixinHandler {
@@ -16,6 +15,6 @@ object ServerPlayNetworkHandlerMixinHandler {
 
     fun onPlayerMove(player: ServerPlayerEntity) {
         val id = System.identityHashCode(player)
-        playerMap[id] = Clock.System.now()
+        playerMap[id] = Instant.now()
     }
 }

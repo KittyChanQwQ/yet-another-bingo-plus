@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.config
 
-import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -15,6 +14,7 @@ import java.io.InputStream
 import java.math.BigInteger
 import java.nio.file.Path
 import java.security.MessageDigest
+import java.time.Instant
 import kotlin.io.path.deleteIfExists
 
 internal class TrackedFileService(
@@ -112,7 +112,7 @@ internal class TrackedFileService(
             // If the file doesn't exist or has never been changed, replace it with the updated resource
             val newTrackedFile = TrackedFile(
                 name = name,
-                createdAt = trackedFile?.createdAt ?: Clock.System.now(),
+                createdAt = trackedFile?.createdAt ?: Instant.now(),
                 md5 = md5Of(resourceJson),
             )
 

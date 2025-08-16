@@ -23,17 +23,13 @@ import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.ready.SetReadyPacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.formatHHMMSS
-import me.jfenn.bingo.common.utils.formatString
-import me.jfenn.bingo.common.utils.formatStringSmall
+import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.util.Identifier
 import org.joml.Vector2i
 import org.koin.core.Koin
 import kotlin.math.*
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 internal class BingoHudScreen(
     koin: Koin,
@@ -448,7 +444,7 @@ internal class BingoHudScreen(
             drawService.matrices.push()
             drawService.matrices.translate(x, titleY.toFloat() + 12, 0f)
             drawService.matrices.rotate(
-                now.toEpochMilliseconds()
+                now.toEpochMilli()
                     .mod(2000)
                     .div(2000f)
                     .times(2 * PI.toFloat())

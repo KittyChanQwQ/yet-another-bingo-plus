@@ -2,7 +2,8 @@ package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
-import kotlin.time.Duration
+import me.jfenn.bingo.common.utils.minus
+import java.time.Duration
 
 internal object ScoreRankingService {
 
@@ -16,7 +17,7 @@ internal object ScoreRankingService {
 
     fun getScoreRankings(state: BingoState): List<ScoreRanking> {
         val scoreRankingComparator = Comparator.comparingLong<BingoTeam> { team ->
-            getTeamDuration(state, team)?.inWholeMilliseconds ?: Long.MAX_VALUE
+            getTeamDuration(state, team)?.toMillis() ?: Long.MAX_VALUE
         }
             .thenByDescending(ScoreService.getComparator(state)) { it }
 
@@ -38,7 +39,7 @@ internal object ScoreRankingService {
             for (ranking in scoreRankingScores) {
                 // Only increment the index if the teams are not tied
                 val prevRanking = lastOrNull()
-                if (prevRanking?.score != ranking.score || prevRanking.duration != ranking.duration) {
+                if (prevRanking?.score != ranking.score || prevRanking.duration as Any? != ranking.duration as Any?) {
                     index++
                 }
 

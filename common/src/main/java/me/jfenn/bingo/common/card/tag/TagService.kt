@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.card.tag
 
 import me.jfenn.bingo.common.card.filter.ObjectiveFilter
 import me.jfenn.bingo.common.utils.cacheFor
-import kotlin.time.Duration.Companion.seconds
+import me.jfenn.bingo.common.utils.seconds
 
 class TagService(
     private val providers: List<ITagProvider>

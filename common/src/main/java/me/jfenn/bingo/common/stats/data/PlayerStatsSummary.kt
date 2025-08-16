@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.stats.data
 
 import me.jfenn.bingo.common.team.BingoTeamKey
-import kotlin.time.Duration
+import java.time.Duration
 
 class PlayerStatsSummary(
     val totalPlaytime: Duration,

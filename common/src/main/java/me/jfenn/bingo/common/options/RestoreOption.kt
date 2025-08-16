@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.options
 
 import kotlinx.serialization.Serializable
-import kotlin.time.Duration
+import me.jfenn.bingo.common.utils.DurationType
 
 @Serializable
 sealed interface RestoreOption {
@@ -37,7 +37,7 @@ data class RestoreEndWhen(val endGameWhen: EndWhen) : RestoreOption {
 }
 
 @Serializable
-data class RestoreTimeLimit(val timeLimit: Duration?) : RestoreOption {
+data class RestoreTimeLimit(val timeLimit: DurationType?) : RestoreOption {
     override fun apply(options: BingoOptions) {
         options.timeLimit = timeLimit
     }

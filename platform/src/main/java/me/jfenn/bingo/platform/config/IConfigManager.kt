@@ -1,9 +1,9 @@
 package me.jfenn.bingo.platform.config
 
-import kotlinx.datetime.Instant
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path
+import java.time.Instant
 import kotlin.reflect.KType
 
 interface IConfigManager {

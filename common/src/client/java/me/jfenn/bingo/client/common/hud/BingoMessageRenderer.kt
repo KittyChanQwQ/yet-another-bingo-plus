@@ -9,12 +9,14 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.map.rgba
 import me.jfenn.bingo.common.scoring.ScoreMessagePacket
+import me.jfenn.bingo.common.utils.div
+import me.jfenn.bingo.common.utils.milliseconds
+import me.jfenn.bingo.common.utils.minus
+import me.jfenn.bingo.common.utils.seconds
 import net.minecraft.util.Identifier
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 internal class BingoMessageRenderer(
     private val state: BingoHudState,

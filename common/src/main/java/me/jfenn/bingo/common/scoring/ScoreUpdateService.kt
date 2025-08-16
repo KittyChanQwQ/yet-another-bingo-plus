@@ -15,7 +15,7 @@ import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.PlayerSoundCategory
 import me.jfenn.bingo.platform.PlayerSoundEvent
 import me.jfenn.bingo.platform.player.PlayerProfile
-import kotlin.time.Duration
+import java.time.Duration
 
 internal class ScoreUpdateService(
     private val packetManager: ServerPacketEvents,

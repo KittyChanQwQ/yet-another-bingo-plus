@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.game
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.Permission
@@ -15,6 +14,8 @@ import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.DurationType
+import me.jfenn.bingo.common.utils.InstantType
 import me.jfenn.bingo.common.utils.Vector3dAsArray
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
@@ -32,7 +33,8 @@ import me.jfenn.bingo.platform.utils.UuidAsString
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import kotlin.time.Duration
+import java.time.Duration
+import java.time.Instant
 
 internal class GameOverService(
     private val state: BingoState,
@@ -50,14 +52,14 @@ internal class GameOverService(
     @Serializable
     class GameOverInfo(
         val reason: GameEndReason?,
-        val endedAt: Instant,
-        val duration: Duration,
+        val endedAt: InstantType,
+        val duration: DurationType,
         val winningTeamKey: BingoTeamKey?,
         val leadingTeamKey: LeadingTeam?,
         val playerInfo: Map<UuidAsString, GameOverPlayerInfo>,
         val playerStates: Map<UuidAsString, PlayerState>,
         val isBestTime: Boolean,
-        val prevBestTime: Duration?,
+        val prevBestTime: DurationType?,
         val scoreRankings: List<ScoreRanking>,
     )
 
@@ -129,7 +131,7 @@ internal class GameOverService(
 
     private fun getTeamDuration(team: BingoTeam): Duration? {
         return team.winner?.instant?.let { completedAt ->
-            completedAt - (state.startedAt ?: completedAt)
+            Duration.between(state.startedAt ?: completedAt, completedAt)
         }
             ?.plus(state.timeAdjustment)
             ?.minus(state.timeOffline)

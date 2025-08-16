@@ -1,11 +1,7 @@
 package me.jfenn.bingo.common.team
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.jfenn.bingo.platform.text.HoverAction
-import me.jfenn.bingo.platform.text.IText
-import me.jfenn.bingo.platform.text.ITextSerialized
 import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.text.TextProvider
@@ -16,9 +12,13 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.player.PlayerProfile
+import me.jfenn.bingo.platform.text.HoverAction
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.ITextSerialized
 import me.jfenn.bingo.platform.utils.UuidAsString
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
+import java.time.Instant
 import java.util.concurrent.CompletableFuture
 
 @Serializable
@@ -54,7 +54,7 @@ data class BingoTeam(
 ) {
 
     @Transient
-    var scoreUpdatedAt: Instant = Instant.DISTANT_PAST
+    var scoreUpdatedAt: Instant = Instant.MIN
 
     /**
      * Creates a copy of the team that does not share any mutable

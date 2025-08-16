@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.card.objective
 
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
@@ -11,6 +10,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.text.Text
+import java.time.Instant
 
 internal class InverseObjectiveManager(
     private val state: BingoState,
@@ -78,7 +78,7 @@ internal class InverseObjectiveManager(
                         BingoObjectiveCapture(
                             team = team.key,
                             player = player,
-                            instant = state.startedAt ?: Instant.DISTANT_PAST
+                            instant = state.startedAt ?: Instant.MIN
                         )
                     }
                 )

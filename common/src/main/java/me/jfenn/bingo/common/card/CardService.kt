@@ -22,17 +22,13 @@ import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.Build
-import me.jfenn.bingo.common.utils.cacheFor
-import me.jfenn.bingo.common.utils.formatString
-import me.jfenn.bingo.common.utils.toMap
+import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.text.IText
 import org.slf4j.Logger
 import java.util.*
 import kotlin.math.ceil
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.seconds
 
 internal class CardService(
     private val log: Logger,

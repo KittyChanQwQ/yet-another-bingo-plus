@@ -3,19 +3,18 @@ package me.jfenn.bingo.api
 import me.jfenn.bingo.api.data.IBingoPlayerStats
 import me.jfenn.bingo.common.stats.data.PlayerStatsSummary
 import java.time.Duration
-import kotlin.time.toJavaDuration
 
 class BingoPlayerStatsImpl(
     val stats: PlayerStatsSummary,
 ): IBingoPlayerStats {
     override val totalPlaytime: Duration
-        get() = stats.totalPlaytime.toJavaDuration()
+        get() = stats.totalPlaytime
     override val totalItems by stats::totalItems
     override val totalGames by stats::totalGames
     override val totalWins by stats::totalWins
     override val totalLosses by stats::totalLosses
     override val monthlyPlaytime: Duration
-        get() = stats.monthlyPlaytime.toJavaDuration()
+        get() = stats.monthlyPlaytime
     override val monthlyItems by stats::monthlyItems
     override val monthlyGames by stats::monthlyGames
     override val monthlyWins by stats::monthlyWins

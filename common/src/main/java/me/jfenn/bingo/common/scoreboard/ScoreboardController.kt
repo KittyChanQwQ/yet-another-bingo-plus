@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -21,9 +20,10 @@ import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import kotlin.time.Duration
+import java.time.Duration
 
 /**
  * Displays scoreboard score/timer information for all players.

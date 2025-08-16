@@ -1,8 +1,7 @@
 [versions]
-kotlin = "2.1.10"
-kotlinx-serialization = "1.8.0" # Note: must exactly match the versions in fabric-language-kotlin for each mod impl
-kotlinx-datetime = "0.6.1" # Note: must exactly match the versions in fabric-language-kotlin for each mod impl
-fabric-language-kotlin = "1.13.1+kotlin.2.1.10"
+kotlin = "2.1.21"
+kotlinx-serialization = "1.9.0" # Note: must exactly match the versions in fabric-language-kotlin for each mod impl
+fabric-language-kotlin = "1.13.3+kotlin.2.1.21"
 insert-koin = "3.5.6"
 sqldelight = "2.0.2"
 mockk = "1.13.11"
@@ -13,7 +12,6 @@ junit-jupiter = "5.11.4"
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 fabric-language-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version.ref = "fabric-language-kotlin" }
 
 insert-koin-core = { module = "io.insert-koin:koin-core-jvm", version.ref = "insert-koin" }

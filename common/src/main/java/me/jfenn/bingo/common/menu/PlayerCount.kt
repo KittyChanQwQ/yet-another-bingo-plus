@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
@@ -11,8 +10,8 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
-import kotlin.time.Duration
 
 private var statsHash: String = ""
 private var statsFuture: CompletableFuture<Duration?> = CompletableFuture.completedFuture(null)

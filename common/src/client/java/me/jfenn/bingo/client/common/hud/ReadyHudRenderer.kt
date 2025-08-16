@@ -6,14 +6,15 @@ import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.map.rgba
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.div
 import me.jfenn.bingo.common.utils.formatHHMMSS
+import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.text.IText
 import net.minecraft.text.Text
 import kotlin.math.PI
 import kotlin.math.roundToInt
 import kotlin.math.sin
-import kotlin.time.Duration.Companion.seconds
 
 internal class ReadyHudRenderer(
     private val state: BingoHudState,
@@ -53,7 +54,7 @@ internal class ReadyHudRenderer(
         val titleColor = when {
             ready.isReady -> LOADING_COLOR
             else -> {
-                val titleAlpha = sin(state.now.nanosecondsOfSecond.toDouble().div(1000000000.0) * 2.0 * PI) * 0.4 + 0.6
+                val titleAlpha = sin(state.now.nano.toDouble().div(1000000000.0) * 2.0 * PI) * 0.4 + 0.6
                 rgba(255, 255, 255, (titleAlpha * 255).toInt())
             }
         }

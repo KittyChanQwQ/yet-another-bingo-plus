@@ -1,11 +1,10 @@
 package me.jfenn.bingo.common.ready
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.platform.IPlayerHandle
+import java.time.Duration
+import java.time.Instant
 import java.util.*
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 class ReadyTimerState {
 
@@ -38,20 +37,20 @@ class ReadyTimerState {
     }
 
     fun startTimer(duration: Duration) {
-        startedAt = Clock.System.now()
+        startedAt = Instant.now()
         totalDuration = duration
     }
 
     fun duration(): Duration? {
         val readyRatio = totalPlayers.count { isReady(it) } / totalPlayers.size.toFloat().coerceAtLeast(1f)
-        val millis = (1f - readyRatio) * (totalDuration?.inWholeMilliseconds ?: return null)
-        return millis.toLong().milliseconds
+        val millis = (1f - readyRatio) * (totalDuration?.toMillis() ?: return null)
+        return Duration.ofMillis(millis.toLong())
     }
 
     fun totalTime(): Duration? = totalDuration
 
     fun elapsedTime(): Duration? {
-        val now = Clock.System.now()
+        val now = Instant.now()
         return now - (startedAt ?: return null)
     }
 

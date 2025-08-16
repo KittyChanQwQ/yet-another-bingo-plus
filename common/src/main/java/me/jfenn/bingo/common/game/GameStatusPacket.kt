@@ -4,7 +4,7 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
 import net.minecraft.util.Identifier
-import kotlin.time.Duration
+import java.time.Duration
 
 class GameStatusPacket(
     val ingameDuration: Duration?,

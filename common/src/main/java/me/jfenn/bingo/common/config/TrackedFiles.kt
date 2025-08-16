@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.config
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.jfenn.bingo.common.utils.InstantType
 
 @Serializable
 class TrackedFiles(
@@ -22,5 +22,5 @@ class TrackedFiles(
 class TrackedFile(
     val name: String,
     val md5: String,
-    val createdAt: Instant,
+    val createdAt: InstantType,
 )

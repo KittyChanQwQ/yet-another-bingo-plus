@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.platform.text.ITextSerialized
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardTileImage
@@ -8,9 +7,10 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.readEnum
+import me.jfenn.bingo.platform.text.ITextSerialized
 import me.jfenn.bingo.platform.utils.UuidAsString
 import net.minecraft.util.Identifier
-import kotlin.time.Duration
+import java.time.Duration
 
 data class GameMessagePacket(
     val id: UuidAsString,

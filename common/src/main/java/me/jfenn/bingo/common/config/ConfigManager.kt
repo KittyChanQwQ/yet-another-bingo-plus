@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.config
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.decodeFromStream
@@ -18,6 +17,7 @@ import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.StandardOpenOption
+import java.time.Instant
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
@@ -71,9 +71,9 @@ class ConfigManager(
     override fun readLastModified(fileName: String): Instant {
         val file = configDir.resolve("$MOD_ID_BINGO/$fileName").toFile()
         return if (file.exists()) {
-            Instant.fromEpochMilliseconds(file.lastModified())
+            Instant.ofEpochMilli(file.lastModified())
         } else {
-            Instant.DISTANT_PAST
+            Instant.MIN
         }
     }
 

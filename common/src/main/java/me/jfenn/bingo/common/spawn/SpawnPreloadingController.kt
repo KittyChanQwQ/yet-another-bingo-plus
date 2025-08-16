@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.spawn
 
-import kotlinx.datetime.Clock
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -9,16 +8,18 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.minus
+import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
+import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Wait until chunks around spawn are generated
@@ -49,7 +50,7 @@ internal class SpawnPreloadingController(
 
     init {
         events.onEnter(GameState.PRELOADING) {
-            val startedLoading = Clock.System.now()
+            val startedLoading = Instant.now()
 
             val world = spawnService.getSpawnDimension()
             val viewDistance = config.server.preloadViewDistance
@@ -78,7 +79,7 @@ internal class SpawnPreloadingController(
                         log.debug(
                             "[SpawnPreloadingController] Finished chunk {} in {}",
                             chunk,
-                            Clock.System.now() - startedLoading
+                            Instant.now() - startedLoading
                         )
                     }
             }
@@ -86,7 +87,7 @@ internal class SpawnPreloadingController(
             chunkFutureList = futures
             CompletableFuture.allOf(*futures.toTypedArray())
                 .whenCompleteAsync({ _, _ ->
-                    log.info("[SpawnPreloadingController] Finished preloading spawn chunks in ${Clock.System.now() - startedLoading}")
+                    log.info("[SpawnPreloadingController] Finished preloading spawn chunks in ${Instant.now() - startedLoading}")
                     chunkFutureList = emptyList()
                     state.changeState(eventBus, GameState.LOADING)
                 }, serverTaskExecutor)

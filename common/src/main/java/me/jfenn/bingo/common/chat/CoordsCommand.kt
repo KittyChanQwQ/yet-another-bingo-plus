@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.chat
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
@@ -12,6 +10,7 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.BlockPositionType
+import me.jfenn.bingo.common.utils.InstantType
 import me.jfenn.bingo.common.utils.formatStringSmall
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.ICommandManager
@@ -20,6 +19,8 @@ import me.jfenn.bingo.platform.commands.IExecutionSource
 import me.jfenn.bingo.platform.commands.ISignedMessage
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.time.Duration
+import java.time.Instant
 
 class CoordsCommand(
     commandManager: ICommandManager,
@@ -31,7 +32,7 @@ class CoordsCommand(
         val pos: BlockPositionType,
         val dimension: String,
         val message: String?,
-        val created: Instant,
+        val created: InstantType,
     ) {
 
         fun formatText(): String {
@@ -54,7 +55,7 @@ class CoordsCommand(
             pos = player.blockPos,
             dimension = player.world.identifier.substringAfter(':').removePrefix("the_"),
             message = message?.raw,
-            created = Clock.System.now(),
+            created = Instant.now(),
         )
 
         // add the coordinates message to the stored list
@@ -81,7 +82,7 @@ class CoordsCommand(
 
         player.sendMessage(text.literal("Coordinates:").formatted(Formatting.GRAY, Formatting.BOLD))
         for (entry in coordMessages) {
-            val duration = Clock.System.now() - entry.created
+            val duration = Duration.between(entry.created, Instant.now())
             player.sendMessage(
                 text.literal("  • ${entry.player} (${duration.formatStringSmall()} ago): ${entry.formatText()}")
                     .formatted(Formatting.GRAY)

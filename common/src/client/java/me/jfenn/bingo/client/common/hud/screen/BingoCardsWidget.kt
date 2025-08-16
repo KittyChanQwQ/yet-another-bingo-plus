@@ -10,9 +10,9 @@ import me.jfenn.bingo.client.platform.screen.IDrawable
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.team.BingoTeamKey
 import org.koin.core.Koin
+import java.time.Duration
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
-import kotlin.time.Duration
 
 internal class BingoCardsWidget(
     koin: Koin,

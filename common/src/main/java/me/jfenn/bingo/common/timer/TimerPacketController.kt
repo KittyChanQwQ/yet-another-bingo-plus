@@ -19,7 +19,7 @@ internal class TimerPacketController(
             // Calculate the seconds remaining
             val timeLimit = state.options.timeLimit ?: return@onGameTick
             val duration = state.ingameDuration() ?: return@onGameTick
-            val secondsRemaining = (timeLimit - duration).inWholeSeconds
+            val secondsRemaining = (timeLimit - duration).seconds
 
             // When it changes, send a new TimerPacket to the client
             if (secondsRemaining != prevSecondsRemaining && secondsRemaining >= 0L) {

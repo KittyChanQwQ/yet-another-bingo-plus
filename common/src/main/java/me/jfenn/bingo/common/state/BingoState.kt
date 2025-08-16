@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.state
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.event.model.StateChangedEvent
@@ -16,9 +15,7 @@ import me.jfenn.bingo.common.spawn.PlayerState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.BlockPositionType
-import me.jfenn.bingo.common.utils.formatHHMMSS
-import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.block.BlockPosition
@@ -26,8 +23,8 @@ import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.UuidAsString
 import net.minecraft.util.Formatting
+import java.time.Duration
 import java.util.*
-import kotlin.time.Duration
 
 @Serializable
 data class BingoState internal constructor(
@@ -35,13 +32,13 @@ data class BingoState internal constructor(
     var gameId: UuidAsString = UUID.randomUUID(),
     var state: GameState = GameState.UNINITIALIZED,
     val menu: MenuState = MenuState(),
-    var startedAt: Instant? = null,
-    var updatedAt: Instant? = null,
-    var endedAt: Instant? = null,
+    var startedAt: InstantType? = null,
+    var updatedAt: InstantType? = null,
+    var endedAt: InstantType? = null,
     var lobbySpawnPos: BlockPositionType = BlockPosition(0, 0, 0),
     var lobbySpawnYaw: Float = 0f,
-    var timeOffline: Duration = Duration.ZERO,
-    var timeAdjustment: Duration = Duration.ZERO,
+    var timeOffline: DurationType = Duration.ZERO,
+    var timeAdjustment: DurationType = Duration.ZERO,
     val options: BingoOptions,
     val restoreOptions: MutableList<RestoreOption> = mutableListOf(),
     val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
@@ -172,7 +169,7 @@ data class BingoState internal constructor(
     fun ingameDuration(): Duration? {
         val started = startedAt ?: return null
         val updated = endedAt ?: updatedAt ?: return null
-        val duration = updated - started
+        val duration = Duration.between(started, updated)
         // subtract any offline server time from the game duration
         return duration + timeAdjustment - timeOffline
     }
@@ -203,7 +200,7 @@ data class BingoState internal constructor(
             return textProvider.string(StringKey.TimerGameOver)
 
         return textProvider.literal(secondsRemaining.formatString())
-            .formatted(if (secondsRemaining.inWholeSeconds <= 30 && secondsRemaining.inWholeSeconds % 2 == 0L) { alertColor } else { normalColor })
+            .formatted(if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { alertColor } else { normalColor })
     }
 
     fun formatCardGoals(team: BingoTeam?, text: TextProvider): IText {

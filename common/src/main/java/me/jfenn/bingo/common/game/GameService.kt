@@ -1,9 +1,5 @@
 package me.jfenn.bingo.common.game
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.text.IText
-import me.jfenn.bingo.platform.text.TextAction
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
@@ -23,14 +19,18 @@ import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.MessageService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.minus
+import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.TextAction
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
-import kotlin.time.Duration.Companion.seconds
+import java.time.Instant
 
 internal class GameService(
     private val state: BingoState,
@@ -53,13 +53,13 @@ internal class GameService(
 ) {
 
     private val notifySpamCooldown = 2.seconds
-    private var notifySpamTime = Instant.DISTANT_PAST
+    private var notifySpamTime = Instant.MIN
 
     private fun notifyPlayersMissingTeams(playersWithoutATeam: List<IPlayerHandle>) {
         if (!state.isLobbyMode) return
 
         // Prevent spamming titles (making them unreadable) if someone spams the start button
-        val now = Clock.System.now()
+        val now = Instant.now()
         if (now - notifySpamTime < notifySpamCooldown)
             return
 
@@ -190,7 +190,7 @@ internal class GameService(
         if (state.endedAt != null) return
 
         // Create completion info for any teams that have not already completed the card
-        val endedAt = Clock.System.now()
+        val endedAt = Instant.now()
         for (team in state.getRegisteredTeams()) {
             val card = state.cards.find { it.id == team.cardId }
             val completedCard = team.completedCards.find { it.card.id == team.cardId }

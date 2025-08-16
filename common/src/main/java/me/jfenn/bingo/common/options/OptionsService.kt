@@ -14,6 +14,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
+import me.jfenn.bingo.common.utils.minutes
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
@@ -23,10 +24,9 @@ import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.platform.text.TextAction
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.time.Duration
 import java.util.*
 import kotlin.reflect.KMutableProperty1
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 
 internal val IExecutionContext.optionsContext
     get() = OptionsService.Context(
@@ -394,7 +394,7 @@ internal class OptionsService(
             text.string(StringKey.OptionsTimeLimit)
                 .append(": ")
                 .append(
-                    timeLimit.inWholeMinutes.let { minutes ->
+                    timeLimit.toMinutes().let { minutes ->
                         String.format(Locale.US, "%dh %02dm", minutes / 60, minutes % 60)
                             .let { textFactory.literal(it).formatted(Formatting.YELLOW) }
                     }

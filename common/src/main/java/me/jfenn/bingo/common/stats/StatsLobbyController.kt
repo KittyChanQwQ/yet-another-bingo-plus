@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.stats
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -11,6 +9,8 @@ import me.jfenn.bingo.common.stats.data.PlayerStatsSummary
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.common.utils.minus
+import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.item.IItemStackFactory
@@ -24,9 +24,9 @@ import org.joml.Vector3d
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.slf4j.Logger
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import kotlin.time.Duration.Companion.seconds
 
 internal class StatsLobbyController(
     private val log: Logger,
@@ -46,7 +46,7 @@ internal class StatsLobbyController(
     }
 
     private var showingPlayer: UUID? = null
-    private var showingStartedAt: Instant = Instant.DISTANT_PAST
+    private var showingStartedAt: Instant = Instant.MIN
 
     private var pendingStats: CompletableFuture<PlayerStatsSummary>? = null
 
@@ -293,7 +293,7 @@ internal class StatsLobbyController(
     }
 
     private fun tickPlayer(player: ServerPlayerEntity) {
-        val now = Clock.System.now()
+        val now = Instant.now()
         // if the stats are already being shown for this player, return
         if (showingPlayer == player.uuid) {
             showingStartedAt = now
@@ -326,7 +326,7 @@ internal class StatsLobbyController(
         }
 
         // if no player is activating the stats and DURATION_RESET has passed...
-        if (Clock.System.now() - showingStartedAt > DURATION_RESET && showingPlayer != null) {
+        if (Instant.now() - showingStartedAt > DURATION_RESET && showingPlayer != null) {
             showingPlayer = null
             resetSummary()
         }

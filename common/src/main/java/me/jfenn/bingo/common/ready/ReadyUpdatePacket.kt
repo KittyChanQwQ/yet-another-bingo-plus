@@ -6,8 +6,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
 import net.minecraft.util.Identifier
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
+import java.time.Duration
 
 data class ReadyUpdatePacket(
     val isRunning: Boolean,
@@ -33,8 +32,8 @@ data class ReadyUpdatePacket(
                 } catch (e: IllegalArgumentException) {
                     GameState.PREGAME
                 },
-                remainingDuration = buf.readLong().milliseconds,
-                totalDuration = buf.readLong().milliseconds,
+                remainingDuration = buf.readDuration(),
+                totalDuration = buf.readDuration(),
                 readyPlayers = buf.readInt(),
                 totalPlayers = buf.readInt(),
                 title = null,
@@ -46,8 +45,8 @@ data class ReadyUpdatePacket(
             dest.writeBoolean(source.isRunning)
             dest.writeBoolean(source.isReady)
             dest.writeString(source.state.name)
-            dest.writeLong(source.remainingDuration.inWholeMilliseconds)
-            dest.writeLong(source.totalDuration.inWholeMilliseconds)
+            dest.writeDuration(source.remainingDuration)
+            dest.writeDuration(source.totalDuration)
             dest.writeInt(source.readyPlayers)
             dest.writeInt(source.totalPlayers)
         }
@@ -65,8 +64,8 @@ data class ReadyUpdatePacket(
                 } catch (e: IllegalArgumentException) {
                     GameState.PREGAME
                 },
-                remainingDuration = buf.readLong().milliseconds,
-                totalDuration = buf.readLong().milliseconds,
+                remainingDuration = buf.readDuration(),
+                totalDuration = buf.readDuration(),
                 readyPlayers = buf.readInt(),
                 totalPlayers = buf.readInt(),
                 title = buf.readNullable(buf::readText),
@@ -78,8 +77,8 @@ data class ReadyUpdatePacket(
             dest.writeBoolean(source.isRunning)
             dest.writeBoolean(source.isReady)
             dest.writeString(source.state.name)
-            dest.writeLong(source.remainingDuration.inWholeMilliseconds)
-            dest.writeLong(source.totalDuration.inWholeMilliseconds)
+            dest.writeDuration(source.remainingDuration)
+            dest.writeDuration(source.totalDuration)
             dest.writeInt(source.readyPlayers)
             dest.writeInt(source.totalPlayers)
             dest.writeNullable(source.title, dest::writeText)
@@ -99,8 +98,8 @@ data class ReadyUpdatePacket(
                 } catch (e: IllegalArgumentException) {
                     GameState.PREGAME
                 },
-                remainingDuration = buf.readLong().milliseconds,
-                totalDuration = buf.readLong().milliseconds,
+                remainingDuration = buf.readDuration(),
+                totalDuration = buf.readDuration(),
                 readyPlayers = buf.readInt(),
                 totalPlayers = buf.readInt(),
                 title = buf.readNullable(buf::readText),
@@ -113,8 +112,8 @@ data class ReadyUpdatePacket(
             dest.writeBoolean(source.isRunning)
             dest.writeBoolean(source.isReady)
             dest.writeString(source.state.name)
-            dest.writeLong(source.remainingDuration.inWholeMilliseconds)
-            dest.writeLong(source.totalDuration.inWholeMilliseconds)
+            dest.writeDuration(source.remainingDuration)
+            dest.writeDuration(source.totalDuration)
             dest.writeInt(source.readyPlayers)
             dest.writeInt(source.totalPlayers)
             dest.writeNullable(source.title, dest::writeText)

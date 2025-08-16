@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.scoring
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
@@ -29,6 +27,7 @@ import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
+import java.time.Instant
 import java.util.*
 import kotlin.random.Random
 
@@ -75,7 +74,7 @@ internal class ScoredItemCheck(
             rootObjectives
                 .takeIf { sendUpdates }
                 // if the objective has been updated in this tick
-                ?.filter { it.updatedAt(team.key) == tickStart }
+                ?.filter { it.updatedAt(team.key) as Any == tickStart as Any }
                 ?.forEach { objective ->
                     if (objective.hasAchieved(team.key)) {
                         // find the player that captured the objective
@@ -297,7 +296,7 @@ internal class ScoredItemCheck(
                 .asSequence()
                 .mapNotNull { card.objectives[it] }
                 .filter { it.playersHolding.containsKey(player.uuid) }
-                .sortedByDescending { it.playersHolding[player.uuid]?.instant ?: Instant.DISTANT_PAST }
+                .sortedByDescending { it.playersHolding[player.uuid]?.instant ?: Instant.MIN }
                 // take only the most recently captured objectives that count towards the goal
                 .take(objective.valueMin.coerceAtLeast(1))
             is BingoObjective.InverseEntry -> sequenceOf(card.objectives[objective.inverseObjective]).filterNotNull()
@@ -328,7 +327,7 @@ internal class ScoredItemCheck(
     }
 
     private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean, isAutoWin: Boolean = false) {
-        val now = state.updatedAt ?: Clock.System.now()
+        val now = state.updatedAt ?: Instant.now()
 
         val completedCard = team.completedCards.find { it.card.id == card.id } ?: run {
             TeamCompletedCard(
@@ -525,7 +524,7 @@ internal class ScoredItemCheck(
 
         updateScores(
             initialCard = card,
-            tickStart = Instant.DISTANT_PAST,
+            tickStart = Instant.MIN,
             sendUpdates = false,
         )
     }

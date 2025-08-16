@@ -1,14 +1,13 @@
 package me.jfenn.bingo.common.config
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.sql.BingoDatabase
+import java.time.Duration
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.time.Duration.Companion.minutes
 
 class PlayerSettingsService(
     private val db: BingoDatabase,
@@ -21,7 +20,7 @@ class PlayerSettingsService(
 
     private fun clearOutdatedCache(now: Instant) {
         cache.entries
-            .filter { (_, value) -> (now - value.first) > 10.minutes }
+            .filter { (_, value) -> Duration.between(value.first, now) > Duration.ofMinutes(10L) }
             .map { it.key }
             .toList()
             .forEach { cache.remove(it) }
@@ -30,7 +29,7 @@ class PlayerSettingsService(
     fun getPlayer(player: IPlayerHandle) = getPlayer(player.uuid)
 
     fun getPlayer(player: UUID): PlayerSettings {
-        val now = Clock.System.now()
+        val now = Instant.now()
         clearOutdatedCache(now)
 
         val (_, cachedValue) = cache.getOrPut(player) {
@@ -45,7 +44,7 @@ class PlayerSettingsService(
                     ?: field.get(defaultPlayerSettings)
             }
 
-            Clock.System.now() to PlayerSettings(
+            Instant.now() to PlayerSettings(
                 seenTutorial = getSetting(PlayerSettings::seenTutorial),
                 hideLobbyPrompt = getSetting(PlayerSettings::hideLobbyPrompt),
                 bossbar = getSetting(PlayerSettings::bossbar),

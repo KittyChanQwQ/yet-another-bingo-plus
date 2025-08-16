@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.map
 
-import kotlinx.datetime.format
-import kotlinx.datetime.format.DateTimeComponents
 import me.jfenn.bingo.common.NBT_BINGO_CARD
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.NBT_BINGO_KEEP
@@ -17,6 +15,7 @@ import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.util.Formatting
+import java.time.format.DateTimeFormatter
 
 internal class MapItemService(
     private val state: BingoState,
@@ -52,17 +51,7 @@ internal class MapItemService(
         return stack.asFilledMap()?.mapId == previewMap.mapId
     }
 
-    private val timeFormat = DateTimeComponents.Format {
-        hour()
-        chars(":")
-        minute()
-        chars(" ")
-        dayOfMonth()
-        chars("-")
-        monthNumber()
-        chars("-")
-        year()
-    }
+    private val timeFormat = DateTimeFormatter.ofPattern("H:mm dd-MM-yyyy")
 
     fun createMementoMapItem(team: BingoTeam): IItemStack {
         val teamMap = teamService.getTeamMap(team)
@@ -86,7 +75,7 @@ internal class MapItemService(
                     gameOverService.getTitle(gameInfo).copy().formatted(Formatting.WHITE),
                     gameOverService.getMessage(gameInfo),
                     state.ingameDuration()?.formatString()?.let { textProvider.literal(it) },
-                    state.startedAt?.format(timeFormat)?.let { textProvider.literal(it) },
+                    state.startedAt?.let { textProvider.literal(timeFormat.format(it)) },
                 ),
             )
             setHideFlags(255)

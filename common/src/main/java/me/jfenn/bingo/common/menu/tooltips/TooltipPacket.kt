@@ -1,16 +1,15 @@
 package me.jfenn.bingo.common.menu.tooltips
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.packet.PacketConverter
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.util.Identifier
+import java.time.Instant
 
 class TooltipPacket(
     val text: List<IText>,
-    val createdAt: Instant = Clock.System.now(),
+    val createdAt: Instant = Instant.now(),
 ) {
 
     @Transient

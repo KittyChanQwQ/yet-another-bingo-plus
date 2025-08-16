@@ -22,7 +22,7 @@ internal fun MenuComponent.registerTimer(
     )
 
     val timerProp = DelegatedProperty(
-        getter = { state.options.timeLimit?.inWholeMinutes?.toInt() ?: 0 },
+        getter = { state.options.timeLimit?.toMinutes()?.toInt() ?: 0 },
         setter = {},
     )
 

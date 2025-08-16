@@ -11,7 +11,6 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.StatsService
 import net.minecraft.server.MinecraftServer
 import java.util.*
-import kotlin.time.toJavaDuration
 
 internal class BingoApiImpl(
     override val server: MinecraftServer,
@@ -32,8 +31,8 @@ internal class BingoApiImpl(
                 GameState.PLAYING -> BingoGameStatus.PLAYING
                 GameState.POSTGAME -> BingoGameStatus.POSTGAME
             },
-            time = state.ingameDuration()?.toJavaDuration(),
-            timeRemaining = state.remainingDuration()?.toJavaDuration()
+            time = state.ingameDuration(),
+            timeRemaining = state.remainingDuration()
         )
 
     override val teams: IBingoTeams get() = this

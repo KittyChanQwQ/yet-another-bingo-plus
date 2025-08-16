@@ -8,9 +8,10 @@ import me.jfenn.bingo.client.platform.renderer.use
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.Color
+import me.jfenn.bingo.common.utils.milliseconds
+import me.jfenn.bingo.common.utils.minus
+import me.jfenn.bingo.common.utils.seconds
 import net.minecraft.util.Identifier
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 internal class ClientCardBufferRenderer(
     private val state: BingoHudState,
@@ -36,11 +37,11 @@ internal class ClientCardBufferRenderer(
         // "== false" asserts that the tile was sent from card_tile_v6 which does not send isFlashing timed with server ticks
         return tile.isFlashing == false &&
                 timeSinceUpdated < 4.seconds &&
-                (timeSinceUpdated.inWholeMilliseconds / 500L) % 2L == 0L
+                (timeSinceUpdated.toMillis() / 500L) % 2L == 0L
     }
 
     private fun shouldRenderFlashing(tile: CardTile): Boolean {
-        val isFlashRender = (state.now.toEpochMilliseconds() / 500L) % 2L == 0L
+        val isFlashRender = (state.now.toEpochMilli() / 500L) % 2L == 0L
         return tile.isFlashing?.let { isFlashRender && it } ?: tile.isFlashingOnMap
     }
 

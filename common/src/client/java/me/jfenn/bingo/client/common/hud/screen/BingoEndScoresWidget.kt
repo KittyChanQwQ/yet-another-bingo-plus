@@ -1,15 +1,16 @@
 package me.jfenn.bingo.client.common.hud.screen
 
-import kotlinx.datetime.Clock
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.IScrollableWidget
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
+import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.util.Formatting
 import org.koin.core.Koin
+import java.time.Instant
 
 internal class BingoEndScoresWidget(
     koin: Koin,
@@ -49,9 +50,9 @@ internal class BingoEndScoresWidget(
             0xFF_FFFFFF.toInt(), true,
         )
 
-        val now = Clock.System.now()
+        val now = Instant.now()
         for ((i, score) in gameOver.packet.scores.withIndex()) {
-            val isObfuscated = (now - gameOver.packet.endedAt).inWholeSeconds < (i+1).toLong()
+            val isObfuscated = (now - gameOver.packet.endedAt).seconds < (i+1).toLong()
 
             val teamText = text.empty()
                 .append("#${score.index+1} ")

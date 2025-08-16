@@ -1,20 +1,20 @@
 package me.jfenn.bingo.client.common.state
 
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.common.hud.BingoCardColors
 import me.jfenn.bingo.client.common.hud.BingoMessageRenderer
 import me.jfenn.bingo.client.platform.INativeImage
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.game.GameStatusPacket
 import me.jfenn.bingo.common.menu.tooltips.TooltipPacket
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.scoring.GameMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.platform.text.IText
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 internal class BingoHudState(
-    var now: Instant = Instant.DISTANT_PAST,
+    var now: Instant = Instant.MIN,
     var cards: MutableMap<BingoTeamKey?, ClientCardBase> = mutableMapOf(),
     var selectedTeam: BingoTeamKey? = null,
     var gameStatus: GameStatusPacket = GameStatusPacket.DEFAULT,

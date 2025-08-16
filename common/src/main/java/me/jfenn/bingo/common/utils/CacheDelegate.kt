@@ -1,9 +1,8 @@
 package me.jfenn.bingo.common.utils
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import java.lang.ref.SoftReference
-import kotlin.time.Duration
+import java.time.Duration
+import java.time.Instant
 
 class CacheDelegateArg<T, A>(
     private val timeout: Duration,
@@ -13,7 +12,7 @@ class CacheDelegateArg<T, A>(
     private var lastValue: SoftReference<T>? = null
 
     fun get(arg: A): T {
-        val now = Clock.System.now()
+        val now = Instant.now()
         if (lastExecution?.let { it + timeout > now } == true) {
             lastExecution = now
             lastValue?.get()?.let { return it }

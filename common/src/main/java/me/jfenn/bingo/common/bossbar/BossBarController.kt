@@ -40,7 +40,7 @@ internal class BossBarController(
                     val timeLimit = options.timeLimit
                     val duration = state.ingameDuration()
                     if (timeLimit != null && duration != null) {
-                        bossBar.value = ((1f - (duration.inWholeSeconds / timeLimit.inWholeSeconds.toFloat())) * bossBar.maxValue).toInt()
+                        bossBar.value = ((1f - (duration.seconds / timeLimit.seconds.toFloat())) * bossBar.maxValue).toInt()
                     }
                 }
 

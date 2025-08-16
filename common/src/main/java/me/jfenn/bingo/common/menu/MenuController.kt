@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.menu
 
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.data.ScopedData
@@ -40,6 +39,7 @@ import org.slf4j.Logger
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.time.Instant
 import java.util.*
 import kotlin.math.atan2
 import kotlin.math.roundToInt
@@ -69,7 +69,7 @@ internal class MenuController(
     private val instanceTag = "bingo-${UUID.randomUUID()}"
 
     private object Cache {
-        var lobbyWorldModified: Instant = Instant.DISTANT_PAST
+        var lobbyWorldModified: Instant = Instant.MIN
         var spawnPosition: Pair<BlockPosition, Float>? = null
         var menuPosition: Matrix4d? = null
         var teamPositions: Map<BingoTeamKey, BlockPosition>? = null
@@ -172,7 +172,7 @@ internal class MenuController(
 
         // If the lobby has been modified, clear cached positions
         val lobbyWorldModified = lobbyWorldService.readLastModified()
-        if (lobbyWorldModified != Cache.lobbyWorldModified) {
+        if (lobbyWorldModified.isAfter(Cache.lobbyWorldModified)) {
             Cache.spawnPosition = null
             Cache.menuPosition = null
             Cache.teamPositions = null

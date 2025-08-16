@@ -1,13 +1,11 @@
 package me.jfenn.bingo.client.common.hud
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.text.TextProvider
-import org.joml.AxisAngle4f
-import org.joml.Quaternionf
+import me.jfenn.bingo.common.utils.minus
 import org.joml.Vector2d
+import java.time.Instant
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.pow
@@ -15,7 +13,7 @@ import kotlin.math.sin
 
 internal class BingoEndFireworkRenderer(
     text: TextProvider,
-    private val startedAt: Instant = Clock.System.now(),
+    private val startedAt: Instant = Instant.now(),
     private var range: Int = 500,
 ) {
 
@@ -64,7 +62,7 @@ internal class BingoEndFireworkRenderer(
         centerY: Int,
         now: Instant,
     ) {
-        val ticks = (now - startedAt).inWholeMilliseconds.toDouble() / 50.0
+        val ticks = (now - startedAt).toMillis().toDouble() / 50.0
 
         val iterator = stars.iterator()
         for (star in iterator) {

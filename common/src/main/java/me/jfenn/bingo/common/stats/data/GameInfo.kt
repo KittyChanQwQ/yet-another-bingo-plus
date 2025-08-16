@@ -1,21 +1,22 @@
 package me.jfenn.bingo.common.stats.data
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.common.utils.DurationType
+import me.jfenn.bingo.common.utils.InstantType
 import me.jfenn.bingo.platform.utils.UuidAsString
 import me.jfenn.bingo.stats.sql.Game
+import java.time.Duration
+import java.time.Instant
 import java.util.*
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 @Serializable
 data class GameInfo(
     val id: UuidAsString,
     val bingoOptions: String,
     val bingoOptionsHash: String,
-    val startedAt: Instant,
-    val endedAt: Instant,
-    val duration: Duration,
+    val startedAt: InstantType,
+    val endedAt: InstantType,
+    val duration: DurationType,
     val playerCount: Int,
     /** True if the game ended due to a timeout & was not won by any team */
     val isDraw: Boolean,
@@ -30,7 +31,7 @@ data class GameInfo(
         bingoOptionsHash = game.bingo_options_hash,
         startedAt = Instant.parse(game.started_at),
         endedAt = Instant.parse(game.ended_at),
-        duration = game.duration.milliseconds,
+        duration = Duration.ofMillis(game.duration),
         playerCount = game.player_count.toInt(),
         isDraw = game.is_draw == 1L,
         isForfeit = game.is_forfeit == 1L,
@@ -43,7 +44,7 @@ data class GameInfo(
         bingo_options_hash = this.bingoOptionsHash,
         started_at = this.startedAt.toString(),
         ended_at = this.endedAt.toString(),
-        duration = this.duration.inWholeMilliseconds,
+        duration = this.duration.toMillis(),
         player_count = this.playerCount.toLong(),
         is_draw = if (this.isDraw) 1L else 0L,
         is_forfeit = if (this.isForfeit) 1L else 0L,

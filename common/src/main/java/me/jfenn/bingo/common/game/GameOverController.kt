@@ -21,7 +21,7 @@ import me.jfenn.bingo.platform.text.IText
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
-import kotlin.time.Duration
+import java.time.Duration
 
 internal class GameOverController(
     private val server: MinecraftServer,

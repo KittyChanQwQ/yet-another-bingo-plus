@@ -1,6 +1,5 @@
 package me.jfenn.bingo.client.common.hud.card
 
-import kotlinx.datetime.Instant
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer.Companion.CARD_HEIGHT
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer.Companion.CARD_WIDTH
 import me.jfenn.bingo.client.common.state.BingoHudState
@@ -12,6 +11,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.util.Identifier
+import java.time.Instant
 import kotlin.math.ceil
 
 internal class ClientCardRenderer(
@@ -37,7 +37,7 @@ internal class ClientCardRenderer(
         )
 
         fun getWinColor(now: Instant): Int {
-            val winIndex = now.epochSeconds % winColors.size
+            val winIndex = now.epochSecond % winColors.size
             return winColors[winIndex.toInt()]
         }
     }
