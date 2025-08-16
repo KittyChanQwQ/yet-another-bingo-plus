@@ -156,6 +156,8 @@ internal class PlayerController(
         player.foodLevel = player.maxFoodLevel
         player.saturationLevel = player.maxSaturationLevel
         player.exhaustion = 0f
+        player.experienceLevel = 0
+        player.experienceProgress = 0f
     }
 
     private fun respawnPlayer(player: IPlayerHandle) {

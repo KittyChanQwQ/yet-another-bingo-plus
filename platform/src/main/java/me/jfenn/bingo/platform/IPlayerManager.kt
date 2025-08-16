@@ -1,11 +1,11 @@
 package me.jfenn.bingo.platform
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
 import me.jfenn.bingo.platform.inventory.IContainerItemView
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.player.PlayerProfile
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.command.CommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
@@ -54,6 +54,8 @@ interface IPlayerHandle : ILivingEntity {
     val maxSaturationLevel: Float get() = 5f
     var exhaustion: Float
     val isSneaking: Boolean
+    var experienceLevel: Int
+    var experienceProgress: Float
 
     val profile get() = PlayerProfile(uuid, playerName)
 

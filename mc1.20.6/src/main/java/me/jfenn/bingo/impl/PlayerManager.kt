@@ -133,6 +133,14 @@ class PlayerHandle(
     override var saturationLevel: Float by player.hungerManager::saturationLevel
     override var exhaustion: Float by player.hungerManager.accessor::exhaustion
 
+    override var experienceLevel: Int
+        get() = player.experienceLevel
+        set(value) { player.setExperienceLevel(value) }
+
+    override var experienceProgress: Float
+        get() = player.experienceProgress
+        set(value) { player.setExperiencePoints((value * player.nextLevelExperience).toInt()) }
+
     override val isSneaking: Boolean
         get() = player.isSneaking
 
