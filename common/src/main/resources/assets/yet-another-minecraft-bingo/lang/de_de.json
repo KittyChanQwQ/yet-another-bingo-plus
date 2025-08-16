@@ -1,4 +1,9 @@
 {
+  "bingo.bossbar.time_remaining_or_goal": "Verbleibende Zeit: %s oder %s",
+  "bingo.card.settings_button": "Einstellungen",
+  "bingo.card.close": "Schließen",
+  "bingo.card.free_space": "Freier Platz",
+  "bingo.card.no_cards": "Es gibt keine Bingo Karten zum Anzeigen.",
   "bingo.card.winner": "GEWINNER!",
   "bingo.card_difficulty.easy": "Einfach",
   "bingo.card_difficulty.extreme": "Extrem",
