@@ -5,9 +5,6 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.datetime.Instant
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.EventBus
 import me.jfenn.bingo.common.options.BingoOptions
@@ -15,6 +12,7 @@ import me.jfenn.bingo.common.stats.data.GameInfo
 import me.jfenn.bingo.common.stats.data.GamePlayerInfo
 import me.jfenn.bingo.common.stats.data.GameTeamInfo
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.utils.minutes
 import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.platform.event.model.ApplicationCloseEvent
 import me.jfenn.bingo.sql.BingoDatabase
@@ -24,9 +22,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
+import java.time.Duration
+import java.time.Instant
 import java.util.*
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 
 class StatsServiceTest {
 
@@ -292,8 +290,8 @@ class StatsServiceTest {
                 id = gameOneId,
                 bingoOptions = "options1",
                 bingoOptionsHash = options.getShaHash(),
-                startedAt = Instant.DISTANT_PAST,
-                endedAt = Instant.DISTANT_PAST,
+                startedAt = Instant.MIN,
+                endedAt = Instant.MIN,
                 duration = 3.minutes,
                 playerCount = 1,
                 isDraw = false,
@@ -315,8 +313,8 @@ class StatsServiceTest {
                 id = gameTwoId,
                 bingoOptions = "options1",
                 bingoOptionsHash = options.getShaHash(),
-                startedAt = Instant.DISTANT_PAST,
-                endedAt = Instant.DISTANT_PAST,
+                startedAt = Instant.MIN,
+                endedAt = Instant.MIN,
                 duration = 2.minutes,
                 playerCount = 1,
                 isDraw = false,
@@ -346,8 +344,8 @@ class StatsServiceTest {
             id = gameOneId,
             bingoOptions = "options1",
             bingoOptionsHash = options.getShaHash(),
-            startedAt = Instant.DISTANT_PAST,
-            endedAt = Instant.DISTANT_PAST,
+            startedAt = Instant.MIN,
+            endedAt = Instant.MIN,
             duration = 3.minutes,
             playerCount = 1,
             isDraw = false,
@@ -371,8 +369,8 @@ class StatsServiceTest {
             id = gameTwoId,
             bingoOptions = "options1",
             bingoOptionsHash = options.getShaHash(),
-            startedAt = Instant.DISTANT_PAST,
-            endedAt = Instant.DISTANT_PAST,
+            startedAt = Instant.MIN,
+            endedAt = Instant.MIN,
             duration = 2.minutes,
             playerCount = 5,
             isDraw = false,
@@ -410,8 +408,8 @@ class StatsServiceTest {
                 id = gameOneId,
                 bingoOptions = "options1",
                 bingoOptionsHash = options.getShaHash(),
-                startedAt = Instant.DISTANT_PAST,
-                endedAt = Instant.DISTANT_PAST,
+                startedAt = Instant.MIN,
+                endedAt = Instant.MIN,
                 duration = 3.minutes,
                 playerCount = 1,
                 isDraw = false,
@@ -433,8 +431,8 @@ class StatsServiceTest {
                 id = gameTwoId,
                 bingoOptions = "options1",
                 bingoOptionsHash = options.getShaHash(),
-                startedAt = Instant.DISTANT_PAST,
-                endedAt = Instant.DISTANT_PAST,
+                startedAt = Instant.MIN,
+                endedAt = Instant.MIN,
                 duration = 2.minutes,
                 playerCount = 1,
                 isDraw = false,
@@ -470,8 +468,8 @@ class StatsServiceTest {
                 id = gameOneId,
                 bingoOptions = "options1",
                 bingoOptionsHash = options.getShaHash(),
-                startedAt = Instant.DISTANT_PAST,
-                endedAt = Instant.DISTANT_PAST,
+                startedAt = Instant.MIN,
+                endedAt = Instant.MIN,
                 duration = 3.minutes,
                 playerCount = 1,
                 isDraw = false,
@@ -493,8 +491,8 @@ class StatsServiceTest {
                 id = gameTwoId,
                 bingoOptions = "options1",
                 bingoOptionsHash = options.getShaHash(),
-                startedAt = Instant.DISTANT_PAST,
-                endedAt = Instant.DISTANT_PAST,
+                startedAt = Instant.MIN,
+                endedAt = Instant.MIN,
                 duration = 4.minutes,
                 playerCount = 1,
                 isDraw = false,

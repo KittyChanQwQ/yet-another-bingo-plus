@@ -64,6 +64,7 @@ fun Duration.formatHHMMSS(): String {
 inline val Int.milliseconds: Duration get() = Duration.ofMillis(this.toLong())
 inline val Int.seconds: Duration get() = Duration.ofSeconds(this.toLong())
 inline val Int.minutes: Duration get() = Duration.ofMinutes(this.toLong())
+inline val Int.hours: Duration get() = Duration.ofHours(this.toLong())
 
 operator fun Instant.minus(from: Instant): Duration = Duration.between(from, this)
 operator fun Duration.div(other: Duration) = try {
