@@ -569,7 +569,7 @@ internal class CardService(
         }
 
         items.shuffle(random)
-        return items
+        return items.take(minItems)
     }
 
     fun generate(
