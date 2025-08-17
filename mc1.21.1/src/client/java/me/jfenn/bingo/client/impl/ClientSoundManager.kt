@@ -19,7 +19,7 @@ class ClientSoundManager : IClientSoundManager {
 
         val instance = PositionedSoundInstance(
             sound.id,
-            SoundCategory.UI,
+            SoundCategory.MASTER,
             volume,
             pitch,
             SoundInstance.createRandom(),
