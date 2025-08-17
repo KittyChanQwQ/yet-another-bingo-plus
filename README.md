@@ -105,7 +105,9 @@ Finnish translations were contributed by Diamonddevv!<br>
 French translations were contributed by Yosh64, Guillarda, and Narkotiqu!<br>
 German translations were contributed by Butterkeks!<br>
 Hungarian translations were contributed by petya0927 and Remarci!<br>
+Italian translations were contributed by noah and sculk1!<br>
 Korean translations were contributed by LegendLier!<br>
+Literary Chinese translations were contributed by Sorajima Asugawa!<br>
 Polish translations were contributed by Toniemax!<br>
 Portuguese translations were contributed by Lucsdev_!<br>
 Russian translations were contributed by Milleol, XakVit, Ofterkino, Mrpavel, Май, Lucky Wayч, yukkovna, and lazdni!<br>
