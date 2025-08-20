@@ -3,7 +3,11 @@ package me.jfenn.bingo.impl
 import com.mojang.datafixers.util.Pair
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.DynamicOps
+import com.mojang.serialization.MapLike
+import com.mojang.serialization.RecordBuilder
 import kotlinx.serialization.json.*
+import me.jfenn.bingo.common.utils.toMap
+import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.stream.Stream
 
@@ -103,12 +107,45 @@ object JsonOpsKotlinx : DynamicOps<JsonElement> {
     override fun getMapValues(map: JsonElement): DataResult<Stream<Pair<JsonElement, JsonElement?>>> {
         return if (map is JsonObject) {
             DataResult.success(
-                map.entries.stream()
-                    .map { Pair.of(JsonPrimitive(it.key), if (it.value is JsonNull) null else it.value) }
+                map.entries.stream().map { entry ->
+                    Pair.of(createString(entry.key), entry.value.takeUnless { it is JsonNull })
+                }
             )
         } else {
-            DataResult.error { "Not a JSON object: $map" }
+            DataResult.error { "Not a JSON object (getMapValues): $map" }
         }
+    }
+
+    override fun getMapEntries(map: JsonElement): DataResult<Consumer<BiConsumer<JsonElement, JsonElement?>>> {
+        return if (map is JsonObject) {
+            DataResult.success(Consumer { c: BiConsumer<JsonElement, JsonElement?> ->
+                map.entries.forEach { entry ->
+                    c.accept(createString(entry.key), entry.value.takeUnless { it is JsonNull })
+                }
+            })
+        } else {
+            DataResult.error { "Not a JSON object (getMapEntries): $map" }
+        }
+    }
+
+    override fun getMap(map: JsonElement?): DataResult<MapLike<JsonElement>> {
+        if (map !is JsonObject) {
+            return DataResult.error { "Not a JSON object (getMap): $map" }
+        }
+
+        return DataResult.success<MapLike<JsonElement>>(object : MapLike<JsonElement> {
+            override fun get(key: JsonElement): JsonElement? = map[key.jsonPrimitive.content]
+                .takeUnless { it is JsonNull }
+
+            override fun get(key: String?): JsonElement? = map[key]
+                .takeUnless { it is JsonNull }
+
+            override fun entries() = map.entries.stream().map<Pair<JsonElement, JsonElement>> { e ->
+                Pair.of(JsonPrimitive(e.key), e.value)
+            }
+
+            override fun toString() = "MapLike[$map]"
+        })
     }
 
     override fun createMap(map: Stream<Pair<JsonElement, JsonElement>>): JsonElement {
@@ -119,16 +156,18 @@ object JsonOpsKotlinx : DynamicOps<JsonElement> {
 
     override fun getStream(input: JsonElement): DataResult<Stream<JsonElement>> {
         return if (input is JsonArray) {
-            DataResult.success(input.stream())
+            DataResult.success(input.stream().map { entry ->
+                entry.takeUnless { it is JsonNull }
+            })
         } else {
             DataResult.error { "Not a json array: $input" }
         }
     }
 
-    override fun getList(input: JsonElement): DataResult<Consumer<Consumer<JsonElement>>> {
+    override fun getList(input: JsonElement): DataResult<Consumer<Consumer<JsonElement?>>> {
         return if (input is JsonArray) {
-            return DataResult.success(Consumer { consumer: Consumer<JsonElement> ->
-                input.forEach { consumer.accept(it) }
+            return DataResult.success(Consumer { consumer: Consumer<JsonElement?> ->
+                input.forEach { entry -> consumer.accept(entry.takeUnless { it is JsonNull }) }
             })
         } else {
             DataResult.error { "Not a json array: $input" }
@@ -143,5 +182,35 @@ object JsonOpsKotlinx : DynamicOps<JsonElement> {
         return if (input is JsonObject) {
             JsonObject(input.filterKeys { it != key })
         } else input
+    }
+
+    override fun mapBuilder(): RecordBuilder<JsonElement?> = JsonRecordBuilder()
+
+    private class JsonRecordBuilder : RecordBuilder.AbstractStringBuilder<JsonElement?, MutableMap<String, JsonElement>>(this) {
+        override fun initBuilder(): MutableMap<String, JsonElement> = mutableMapOf()
+
+        override fun append(
+            key: String,
+            value: JsonElement?,
+            builder: MutableMap<String, JsonElement>
+        ): MutableMap<String, JsonElement> {
+            builder[key] = value ?: JsonNull
+            return builder
+        }
+
+        override fun build(builder: MutableMap<String, JsonElement>, prefix: JsonElement?): DataResult<JsonElement?>? {
+            if (prefix == null || prefix is JsonNull) {
+                return DataResult.success<JsonElement?>(JsonObject(builder))
+            }
+            if (prefix is JsonObject) {
+                return DataResult.success<JsonElement?>(JsonObject(
+                    (prefix.jsonObject.entries + builder.entries).toMap()
+                ))
+            }
+            return DataResult.error<JsonElement>(
+                { "mergeToMap called with not a map: $prefix" },
+                prefix
+            )
+        }
     }
 }
