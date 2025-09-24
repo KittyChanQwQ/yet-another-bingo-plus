@@ -99,6 +99,8 @@ interface IPlayerHandle : ILivingEntity {
     fun sendTeamMessage(message: IText, sender: IPlayerHandle, teamName: IText)
 
     fun sendTitle(title: IText, subtitle: IText?)
+
+    fun startRiding(entity: IEntity, force: Boolean)
 }
 
 enum class PlayerSoundEvent {

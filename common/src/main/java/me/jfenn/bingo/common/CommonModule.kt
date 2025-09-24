@@ -104,16 +104,21 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
-val commonModule = module {
+val baseModule = module {
     single { getKoin() }
     single { LoggerFactory.getLogger(MOD_ID) }
     singleOf(::MigrationHandler)
-    singleOf(::MapColors)
 
     singleOf(::ConfigManager) bind IConfigManager::class
     singleOf(::ConfigService)
     single { get<ConfigService>().config }
     single { get<ConfigService>().config.client }
+}
+
+val commonModule = module {
+    includes(baseModule)
+
+    singleOf(::MapColors)
     singleOf(::TextProvider)
     singleOf(::ServerProps)
 

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.stats
 
+import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.lobbyWorld
@@ -292,7 +293,7 @@ internal class StatsLobbyController(
         getArmorStand()?.equipStack(IArmorStandEntity.EquipmentSlot.HEAD, itemStackFactory.emptyStack)
     }
 
-    private fun tickPlayer(player: ServerPlayerEntity) {
+    private fun tickPlayer(player: IPlayerHandle) {
         val now = Instant.now()
         // if the stats are already being shown for this player, return
         if (showingPlayer == player.uuid) {
@@ -312,12 +313,10 @@ internal class StatsLobbyController(
     }
 
     private fun tickPlayers() {
-        val lobbyWorld = server.lobbyWorld ?: return
-
-        val player = server.playerManager.playerList
-            .filter { it.world == lobbyWorld }
+        val player = playerManager.getPlayers()
+            .filter { it.world.identifier == LOBBY_WORLD_ID.toString() }
             .find { player ->
-                lobbyWorld.getBlockState(player.blockPos).block == Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE
+                player.world.getBlockState(player.blockPos).block == Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE
             }
 
         if (player != null) {

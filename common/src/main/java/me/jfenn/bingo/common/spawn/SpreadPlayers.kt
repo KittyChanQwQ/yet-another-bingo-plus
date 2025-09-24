@@ -44,17 +44,17 @@ class SpreadPlayers(
 
     // Clamp spawn positions to the overworld border
     // - yes, even if the spawn dimension isn't in the overworld...
-    private val worldBorder = world.server.overworld.worldBorder
-    private val coordinateScale = world.dimension.coordinateScale
+    private val worldBorder = worldImpl.worldBorder
+    private val coordinateScale = worldImpl.coordinateScale
     private val worldBorderCenterInWorld = BlockPos((worldBorder.centerX / coordinateScale).toInt(), 0, (worldBorder.centerZ / coordinateScale).toInt())
 
-    private val logicalHeight = world.logicalHeight
-    private val bottomY = world.bottomY
-    private val seaLevel = world.seaLevel
-    private val worldSpawnPos = BlockPosition.fromBlockPos(world.spawnPos)
+    private val logicalHeight = worldImpl.logicalHeight
+    private val bottomY = worldImpl.bottomY
+    private val seaLevel = worldImpl.seaLevel
+    private val worldSpawnPos = worldImpl.spawnPos
 
     init {
-        log.info("[SpreadPlayers] Initialized in dimension ${world.registryKey.value} with coordinateScale=$coordinateScale, logicalHeight=$logicalHeight, bottomY=$bottomY, seaLevel=$seaLevel")
+        log.info("[SpreadPlayers] Initialized in dimension ${worldImpl.identifier} with coordinateScale=$coordinateScale, logicalHeight=$logicalHeight, bottomY=$bottomY, seaLevel=$seaLevel")
     }
 
     private val invalidSpawnBiomes = setOf(
@@ -105,7 +105,7 @@ class SpreadPlayers(
 
     private fun isValidSpawn(chunk: Chunk, groundPos: BlockPos): Boolean {
         // scale the groundPos to match overworld positions for the worldBorder
-        val groundPosInOverworld = BlockPos(
+        val groundPosInOverworld = BlockPosition(
             groundPos.x.times(coordinateScale).toInt(),
             groundPos.y,
             groundPos.z.times(coordinateScale).toInt(),
@@ -241,7 +241,7 @@ class SpreadPlayers(
         }
 
         // Scale the chunkCenter to match overworld positions for the worldBorder
-        val chunkCenterInOverworld = BlockPos(
+        val chunkCenterInOverworld = BlockPosition(
             chunkCenter.x.times(coordinateScale).toInt(),
             chunkCenter.y,
             chunkCenter.z.times(coordinateScale).toInt(),

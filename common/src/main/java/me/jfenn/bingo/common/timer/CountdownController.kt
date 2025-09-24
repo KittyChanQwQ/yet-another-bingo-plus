@@ -83,8 +83,8 @@ internal class CountdownController(
                 marker
             }
 
-            for (player in team.players.mapNotNull { server.playerManager.getPlayer(it.uuid) }) {
-                player.startRiding(entity.entity, true)
+            for (player in team.players.mapNotNull { playerManager.getPlayer(it.uuid) }) {
+                player.startRiding(entity, true)
             }
         }
     }

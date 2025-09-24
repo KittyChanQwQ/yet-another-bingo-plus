@@ -24,6 +24,13 @@ interface IServerWorld {
 
     val world: ServerWorld
 
+    val worldBorder: IWorldBorder
+    val coordinateScale: Double
+    val logicalHeight: Int
+    val bottomY: Int
+    val seaLevel: Int
+    val spawnPos: BlockPosition
+
     fun getBlockState(pos: BlockPosition): IBlockState
 
     fun addTicket(chunk: Pair<Int, Int>): IChunkTicketHandle
@@ -33,4 +40,11 @@ interface IServerWorld {
     fun close()
 
     interface IChunkTicketHandle : Closeable
+}
+
+interface IWorldBorder {
+    val centerX: Double
+    val centerZ: Double
+    val maxRadius: Int
+    fun contains(blockPos: BlockPosition): Boolean
 }

@@ -58,6 +58,12 @@ internal class MenuInstance(
 
         var yawDegrees = yaw + Math.toDegrees(-angles.x - angles.y).roundToInt()
         while (yawDegrees < 0) yawDegrees += 360f
+
+        if (matrix.get(0, 0) == 0.0 && matrix.get(1, 1) == 1.0 && matrix.get(2, 2) == 0.0) {
+            // Fix for menu position being wacky in this specific rotation
+            yawDegrees *= -1
+        }
+
         yaw = yawDegrees
     }
 

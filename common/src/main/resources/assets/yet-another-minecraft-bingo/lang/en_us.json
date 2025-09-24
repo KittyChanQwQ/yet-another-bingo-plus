@@ -510,5 +510,6 @@
   "bingo.world.return_to_lobby": "Return to Lobby",
   "bingo.world.keep_playing": "Keep Playing",
   "bingo.world.preparing": "Preparing a new Bingo world...",
-  "biome.bingo.lobby": "Bingo Lobby"
+  "biome.bingo.lobby": "Bingo Lobby",
+  "key.category.yet-another-minecraft-bingo.bingo": "Yet Another Bingo"
 }
