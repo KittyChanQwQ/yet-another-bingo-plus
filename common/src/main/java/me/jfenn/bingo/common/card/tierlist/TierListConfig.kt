@@ -66,12 +66,12 @@ data class TierListConfig(
         val entry = TierListEntry(null, objective)
         return this.mapTiers { set, setTier ->
             if (setTier == tier) set + entry else set - entry
-        }
+        }.sort()
     }
 
     fun minus(objective: String): TierListConfig {
         val entry = TierListEntry(null, objective)
-        return this.mapTiers { set, _ -> set - entry }
+        return this.mapTiers { set, _ -> set - entry }.sort()
     }
 
     fun getTier(tier: TierLabel) = when (tier) {
@@ -163,6 +163,17 @@ data class TierListConfig(
             d = map(this.d, TierLabel.D),
         )
     }
+
+    fun sort(): TierListConfig = this.copy(
+        values = values.sorted().toSet(),
+        s = s.sorted().toSet(),
+        a = a.sorted().toSet(),
+        b = b.sorted().toSet(),
+        c = c.sorted().toSet(),
+        d = d.sorted().toSet(),
+    )
+
+    fun allEntries(): Set<TierListEntry> = values + s + a + b + c + d
 
     fun expandTags(
         expansionService: TagExpansionService,

@@ -18,7 +18,7 @@ import kotlinx.serialization.json.jsonPrimitive
 class TierListEntry(
     val type: String?,
     val item: String,
-) {
+) : Comparable<TierListEntry> {
 
     var listName: String = "[unknown]"
     var tierLabel: TierLabel? = null
@@ -29,6 +29,10 @@ class TierListEntry(
 
     override fun equals(other: Any?): Boolean {
         return other is TierListEntry && other.item == item
+    }
+
+    override fun compareTo(other: TierListEntry): Int {
+        return item.compareTo(other.item)
     }
 
     @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)

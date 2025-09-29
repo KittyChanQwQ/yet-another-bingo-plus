@@ -356,6 +356,10 @@ class PlayerHandle(
             sendMessage
         )
     }
+
+    override fun startRiding(entity: IEntity, force: Boolean) {
+        player.startRiding(entity.entity, true)
+    }
 }
 
 private fun PlayerSoundEvent.toSoundEvent() = when (this) {

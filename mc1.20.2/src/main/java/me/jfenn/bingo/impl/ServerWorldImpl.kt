@@ -9,6 +9,7 @@ import me.jfenn.bingo.mixin.ThreadedAnvilChunkStorageAccessor
 import me.jfenn.bingo.mixinhelper.ServerChunkManagerMixinHelper
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.IWorldBorder
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.IBlockState
 import net.minecraft.entity.boss.dragon.EnderDragonFight
@@ -18,6 +19,7 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
 import net.minecraft.util.Unit
 import net.minecraft.util.math.ChunkPos
+import net.minecraft.world.border.WorldBorder
 import net.minecraft.world.chunk.Chunk
 import net.minecraft.world.chunk.ChunkStatus
 import net.minecraft.world.level.LevelProperties
@@ -140,6 +142,19 @@ class ServerWorldImpl(
     override val directory: Path
         get() = world.server.accessor.session.getWorldDirectory(world.registryKey)
 
+    override val worldBorder: IWorldBorder
+        get() = WorldBorderImpl(world.server.overworld.worldBorder)
+    override val coordinateScale: Double
+        get() = world.dimension.coordinateScale
+    override val logicalHeight: Int
+        get() = world.logicalHeight
+    override val bottomY: Int
+        get() = world.bottomY
+    override val seaLevel: Int
+        get() = world.seaLevel
+    override val spawnPos: BlockPosition
+        get() = BlockPosition.fromBlockPos(world.spawnPos)
+
     override fun getBlockState(pos: BlockPosition): IBlockState {
         return world.getBlockState(pos.toBlockPos())
             .let { BlockStateImpl.fromBlockState(it) }
@@ -191,4 +206,13 @@ class ServerWorldImpl(
     override fun close() {
         world.close()
     }
+}
+
+class WorldBorderImpl(
+    val worldBorder: WorldBorder
+): IWorldBorder {
+    override val centerX: Double by worldBorder::centerX
+    override val centerZ: Double by worldBorder::centerZ
+    override val maxRadius: Int by worldBorder::maxRadius
+    override fun contains(blockPos: BlockPosition): Boolean = worldBorder.contains(blockPos.toBlockPos())
 }

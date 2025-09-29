@@ -296,6 +296,15 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
       continue
     fi
 
+    # if the item is waxed, apply a waxed overlay
+    if [[ "$item_id" == "waxed_"* ]]; then
+      echo "WAXED ITEM"
+
+      # apply the wax overlay to tmp.png
+      convert $item_texture_file $IMAGE_MASK_DIR/overlay_waxed.png -composite $item_out_file
+      continue
+    fi
+
     # copy the texture with no modifications
     echo $item_texture
     copy_texture $item_texture_file $item_out_file

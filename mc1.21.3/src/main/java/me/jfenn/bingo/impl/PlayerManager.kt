@@ -352,6 +352,10 @@ class PlayerHandle(
         val serverWorld: ServerWorld = world.world
         player.setSpawnPoint(serverWorld.registryKey, spawn.toBlockPos(), angle, forced, sendMessage)
     }
+
+    override fun startRiding(entity: IEntity, force: Boolean) {
+        player.startRiding(entity.entity, true)
+    }
 }
 
 private fun PlayerSoundEvent.toSoundEvent() = when (this) {

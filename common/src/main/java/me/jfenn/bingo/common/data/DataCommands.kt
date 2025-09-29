@@ -13,6 +13,11 @@ class DataCommands(
     commandManager: ICommandManager,
     private val text: TextProvider,
 ) {
+    private fun matchesWildcardString(pattern: String, value: String) = pattern.split("*")
+        .joinToString(".*") { Regex.escape(it) }
+        .let { Regex("^$it$") }
+        .matches(value)
+
     init {
         commandManager.register("bingodata") {
             requires {
@@ -27,20 +32,31 @@ class DataCommands(
                     ) { tagArg ->
                         string(
                             name = "objective",
-                            suggestions = { scope.get<ObjectiveListService>().getAllObjectives() },
+                            suggestions = {
+                                val tag = getArgument(tagArg)
+                                val tagValues = scope.get<ScopedData>().tags[tag]?.values.orEmpty()
+                                scope.get<ObjectiveListService>().getAllObjectives()
+                                    .filterNot { tagValues.contains(it) }
+                            },
                             greedy = true,
                         ) { objectiveArg ->
                             executes {
                                 val tag = getArgument(tagArg)
-                                val objective = getArgument(objectiveArg)
-                                scope.get<DataCommandService>().addToTag(
-                                    tagName = tag,
-                                    objective = objective,
-                                )
+                                val objectivePattern = getArgument(objectiveArg)
+                                val matchedObjectives = scope.get<ObjectiveListService>().getAllObjectives()
+                                    .filter { matchesWildcardString(objectivePattern, it) }
+
+                                for (objective in matchedObjectives) {
+                                    scope.get<DataCommandService>().addToTag(
+                                        tagName = tag,
+                                        objective = objective,
+                                    )
+                                }
+
                                 sendFeedback(
                                     text.string(
                                         StringKey.CommandDataTagAddSuccess,
-                                        objective,
+                                        matchedObjectives.toString(),
                                         ObjectiveFilterPreset.formatName(text, tag),
                                     )
                                 )
@@ -56,20 +72,29 @@ class DataCommands(
                     ) { tagArg ->
                         string(
                             name = "objective",
-                            suggestions = { scope.get<ObjectiveListService>().getAllObjectives() },
+                            suggestions = {
+                                val tag = getArgument(tagArg)
+                                scope.get<ScopedData>().tags[tag]?.values.orEmpty()
+                            },
                             greedy = true,
                         ) { objectiveArg ->
                             executes {
                                 val tag = getArgument(tagArg)
-                                val objective = getArgument(objectiveArg)
-                                scope.get<DataCommandService>().removeFromTag(
-                                    tagName = tag,
-                                    objective = objective,
-                                )
+                                val objectivePattern = getArgument(objectiveArg)
+                                val matchedObjectives = scope.get<ScopedData>().tags[tag]?.values.orEmpty()
+                                    .filter { matchesWildcardString(objectivePattern, it) }
+
+                                for (objective in matchedObjectives) {
+                                    scope.get<DataCommandService>().removeFromTag(
+                                        tagName = tag,
+                                        objective = objective,
+                                    )
+                                }
+
                                 sendFeedback(
                                     text.string(
                                         StringKey.CommandDataTagRemoveSuccess,
-                                        objective,
+                                        matchedObjectives.toString(),
                                         ObjectiveFilterPreset.formatName(text, tag),
                                     )
                                 )
@@ -89,22 +114,41 @@ class DataCommands(
                             literal(tier?.name?.lowercase() ?: "uncategorized") {
                                 string(
                                     name = "objective",
-                                    suggestions = { scope.get<ObjectiveListService>().getAllObjectives() },
+                                    suggestions = {
+                                        val list = getArgument(listArg)
+                                        val items = scope.get<ScopedData>().tierLists[list]
+                                            ?.let {
+                                                if (tier != null) it.getTier(tier)
+                                                else it.values
+                                            }
+                                            .orEmpty()
+                                            .map { it.item }
+                                            .toSet()
+                                        scope.get<ObjectiveListService>().getAllObjectives()
+                                            .filterNot { items.contains(it) }
+                                    },
                                     greedy = true,
                                 ) { objectiveArg ->
                                     executes {
                                         val list = getArgument(listArg)
-                                        val objective = getArgument(objectiveArg)
-                                        scope.get<DataCommandService>().addToTierList(
-                                            listName = list,
-                                            objective = objective,
-                                            tier = tier,
-                                        )
+                                        val objectivePattern = getArgument(objectiveArg)
+                                        val matchedObjectives = scope.get<ObjectiveListService>()
+                                            .getAllObjectives()
+                                            .filter { matchesWildcardString(objectivePattern, it) }
+
+                                        for (objective in matchedObjectives) {
+                                            scope.get<DataCommandService>().addToTierList(
+                                                listName = list,
+                                                objective = objective,
+                                                tier = tier,
+                                            )
+                                        }
+
                                         sendFeedback(
                                             text.string(
                                                 StringKey.CommandDataTierlistAddSuccess,
-                                                objective,
-                                                tier?.string ?: StringKey.ListUncategorized,
+                                                matchedObjectives.toString(),
+                                                tier?.text(text) ?: StringKey.ListUncategorized,
                                                 ObjectiveFilterPreset.formatName(text, list),
                                             )
                                         )
@@ -122,20 +166,31 @@ class DataCommands(
                     ) { listArg ->
                         string(
                             name = "objective",
-                            suggestions = { scope.get<ObjectiveListService>().getAllObjectives() },
+                            suggestions = {
+                                val list = getArgument(listArg)
+                                scope.get<ScopedData>().tierLists[list]?.allEntries().orEmpty()
+                                    .map { it.item }
+                            },
                             greedy = true,
                         ) { objectiveArg ->
                             executes {
                                 val list = getArgument(listArg)
-                                val objective = getArgument(objectiveArg)
-                                scope.get<DataCommandService>().removeFromTierList(
-                                    listName = list,
-                                    objective = objective,
-                                )
+                                val objectivePattern = getArgument(objectiveArg)
+                                val matchedObjectives = scope.get<ScopedData>().tierLists[list]?.allEntries().orEmpty()
+                                    .map { it.item }
+                                    .filter { matchesWildcardString(objectivePattern, it) }
+
+                                for (objective in matchedObjectives) {
+                                    scope.get<DataCommandService>().removeFromTierList(
+                                        listName = list,
+                                        objective = objective,
+                                    )
+                                }
+
                                 sendFeedback(
                                     text.string(
                                         StringKey.CommandDataTierlistRemoveSuccess,
-                                        objective,
+                                        matchedObjectives.toString(),
                                         ObjectiveFilterPreset.formatName(text, list),
                                     )
                                 )

@@ -29,8 +29,10 @@ data class TagData(
         return values.contains(value)
     }
 
-    operator fun plus(value: String) = this.copy(values = values + value)
-    operator fun minus(value: String) = this.copy(values = values - value)
+    operator fun plus(value: String) = this.copy(values = values + value).sort()
+    operator fun minus(value: String) = this.copy(values = values - value).sort()
+
+    fun sort() = this.copy(values = values.sorted().toSet())
 
     fun isEmpty() = values.isEmpty()
 }
