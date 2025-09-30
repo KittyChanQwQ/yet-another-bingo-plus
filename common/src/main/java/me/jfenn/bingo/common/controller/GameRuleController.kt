@@ -6,8 +6,8 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.mixinhandler.GameRuleOverrideHelper
+import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.world.IGameRules
-import net.minecraft.server.MinecraftServer
 
 /**
  * Controls server setting and gamerule changes:
@@ -16,21 +16,21 @@ import net.minecraft.server.MinecraftServer
  */
 internal class GameRuleController(
     events: ScopedEvents,
-    private val server: MinecraftServer,
     private val options: BingoOptions,
     private val state: BingoState,
     private val datapackFunctionService: DatapackFunctionService,
     private val gameRules: IGameRules,
+    private val serverWorldFactory: IServerWorldFactory,
 ) : BingoComponent() {
 
     fun readFromServer() {
-        options.isPvpEnabled = server.isPvpEnabled
+        options.isPvpEnabled = gameRules.pvp.value
         options.isKeepInventory = gameRules.keepInventory.value
     }
 
     fun writeToServer() {
         if (!state.isLobbyMode) return
-        server.isPvpEnabled = options.isPvpEnabled
+        gameRules.pvp.value = options.isPvpEnabled
         gameRules.keepInventory.value = options.isKeepInventory
     }
 
@@ -45,7 +45,7 @@ internal class GameRuleController(
 
     private fun setCountdownRules() {
         // reset overworld time
-        server.overworld.timeOfDay = 0
+        serverWorldFactory.overworld.timeOfDay = 0
     }
 
     private fun setPlayingRules(setTimeOfDay: Boolean) {
@@ -58,7 +58,7 @@ internal class GameRuleController(
 
         // reset overworld time
         if (setTimeOfDay) {
-            server.overworld.timeOfDay = 0
+            serverWorldFactory.overworld.timeOfDay = 0
         }
     }
 

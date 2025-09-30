@@ -12,6 +12,15 @@ class GameRulesImpl(
     override val announceAdvancements = BooleanRule(GameRules.ANNOUNCE_ADVANCEMENTS)
     override val showDeathMessages = BooleanRule(GameRules.SHOW_DEATH_MESSAGES)
     override val keepInventory = BooleanRule(GameRules.KEEP_INVENTORY)
+    override val pvp: IGameRule<Boolean> = object : IGameRule<Boolean> {
+        override val name: String
+            get() = throw NotImplementedError()
+        override var value: Boolean
+            get() = server.isPvpEnabled
+            set(value) {
+                server.isPvpEnabled = value
+            }
+    }
 
     private inner class Visitor(val name: String) : GameRules.Visitor {
         var ret: IGameRule<*>? = null

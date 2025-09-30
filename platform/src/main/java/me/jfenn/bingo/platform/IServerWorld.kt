@@ -2,7 +2,6 @@ package me.jfenn.bingo.platform
 
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.IBlockState
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.chunk.Chunk
 import java.io.Closeable
@@ -30,6 +29,8 @@ interface IServerWorld {
     val bottomY: Int
     val seaLevel: Int
     val spawnPos: BlockPosition
+
+    var timeOfDay: Long
 
     fun getBlockState(pos: BlockPosition): IBlockState
 

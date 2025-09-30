@@ -162,6 +162,8 @@ class ServerWorldImpl(
     override val spawnPos: BlockPosition
         get() = BlockPosition.fromBlockPos(world.spawnPos)
 
+    override var timeOfDay by world::timeOfDay
+
     override fun getBlockState(pos: BlockPosition): IBlockState {
         return world.getBlockState(pos.toBlockPos())
             .let { BlockStateImpl.fromBlockState(it) }
