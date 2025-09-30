@@ -49,7 +49,7 @@
   "bingo.command.start.invalid_distribution": "Распределение предметов должно суммироваться до 25!",
   "bingo.command.start.join_a_team": "Вступайте в клан!",
   "bingo.command.start.join_a_team_message": "Используйте команду '%s' или нажмите на команду, чтобы присоединиться к ней!",
-  "bingo.command.start.lockout_with_lines_goal": "\"Заблокировать\" (режим игры) включён, но цель карты является '%s' - это может привести к тупику или пату. Наверное вы хотели бы этого:",
+  "bingo.command.start.lockout_with_lines_goal": "\"Блокировка\" (режим игры) включён, но цель карты является '%s' - это может привести к тупику или пату. Наверное вы хотели бы этого:",
   "bingo.command.start.players_missing_teams": "Некоторые игроки не выбрали себе команду! (%s)",
   "bingo.command.start.players_missing_teams_hint": "Запустите '%s', чтобы назначить команды. Используйте '%s' или sneak+click, чтобы игнорировать.",
   "bingo.command.start.success": "Игра начинается...",
@@ -350,11 +350,11 @@
   "bingo.options.leading_team.tooltip": "Отображать название лидирующей команды на экране.",
   "bingo.options.mode_consume_items": "Уничтожение предметов",
   "bingo.options.mode_consume_items.tooltip": "Когда предмет будет получен, он исчезнет из вашего инвентаря.",
-  "bingo.options.mode_hidden_items": "Скрыть предметы",
+  "bingo.options.mode_hidden_items": "Скрытые предметы",
   "bingo.options.mode_hidden_items.tooltip": "Предметы не отображаются на карточке бинго, пока игрок не обнаружит их.",
   "bingo.options.mode_inventory": "Инвентарь",
   "bingo.options.mode_inventory.tooltip": "Предметы должны оставаться в инвентаре игрока, что бы они засчитывались",
-  "bingo.options.mode_lockout": "Заблокировать",
+  "bingo.options.mode_lockout": "Блокировка",
   "bingo.options.mode_lockout.tooltip": "Предмет, который команда получит первой, станет недоступен для остальных.",
   "bingo.options.mode_standard": "Обычный",
   "bingo.options.more": "Подробнее...",
@@ -411,6 +411,7 @@
   "bingo.options.win_condition.infinite.tooltip": "При включении, карты будут генерироваться бесконечно до достижения лимита времени.",
   "bingo.options.win_condition.num_cards": "# карт",
   "bingo.options.win_condition.replace_goals": "Замена целей",
+  "bingo.options.win_condition.replace_goals.tooltip": "Как только линия/предмет будет собрана, собранные предметы тут же заменятся новыми предметами. Это будет до тех пор, пока цель игры не будет достигнута.",
   "bingo.player_settings": "Игровые настройки",
   "bingo.player_settings.bossbar": "Боссбар",
   "bingo.player_settings.bossbar.description": "Показывает оставшееся время на боссбаре.",
@@ -502,5 +503,6 @@
   "bingo.world.return_to_lobby": "Возврат в лобби",
   "bingo.world.keep_playing": "Продолжить играть",
   "bingo.world.preparing": "Подготовка нового мира Бинго...",
-  "biome.bingo.lobby": "Бинго лобби"
+  "biome.bingo.lobby": "Бинго лобби",
+  "key.category.yet-another-minecraft-bingo.bingo": "Yet Another Bingo"
 }

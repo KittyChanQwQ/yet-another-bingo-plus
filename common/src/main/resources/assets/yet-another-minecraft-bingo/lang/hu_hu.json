@@ -225,6 +225,8 @@
   "bingo.lobby.team_spectators": "➾ A szemlélők közé lettél helyezve",
   "bingo.objective.all_of": "Az összes: %s",
   "bingo.objective.challenge.all_chicken_eggs": "Összes csirketojás",
+  "bingo.objective.challenge.all_copper_armor": "Összes rézpáncél",
+  "bingo.objective.challenge.all_copper_tools": "Összes rézeszköz",
   "bingo.objective.challenge.all_diamond_armor": "Összes gyémántpáncél",
   "bingo.objective.challenge.all_diamond_tools": "Összes gyémánteszköz",
   "bingo.objective.challenge.all_dyes": "Összes festék",
@@ -286,6 +288,8 @@
   "bingo.objective.simplified.one_of_carpet": "Bármilyen szőnyeg",
   "bingo.objective.simplified.one_of_concrete": "Bármilyen beton",
   "bingo.objective.simplified.one_of_concrete_powder": "Bármilyen szárazbeton",
+  "bingo.objective.simplified.one_of_copper_armor": "Bármilyen rézpáncél",
+  "bingo.objective.simplified.one_of_copper_tools": "Bármilyen rézeszköz",
   "bingo.objective.simplified.one_of_coral": "Bármilyen korall",
   "bingo.objective.simplified.one_of_coral_block": "Bármilyen korallblokk",
   "bingo.objective.simplified.one_of_coral_fan": "Bármilyen korall-legyező",
@@ -510,5 +514,6 @@
   "bingo.world.return_to_lobby": "Visszatérés a lobbyba",
   "bingo.world.keep_playing": "Játék folytatása",
   "bingo.world.preparing": "Új bingó pálya előkészítése...",
-  "biome.bingo.lobby": "Bingó lobby"
+  "biome.bingo.lobby": "Bingó lobby",
+  "key.category.yet-another-minecraft-bingo.bingo": "Yet Another Bingo"
 }
