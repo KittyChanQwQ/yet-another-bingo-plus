@@ -79,6 +79,8 @@
         "yet-another-minecraft-bingo:challenge/stat_killed_iron_golem"
     ],
     "D": [
+        "yet-another-minecraft-bingo:challenge/all_copper_armor",
+        "yet-another-minecraft-bingo:challenge/all_copper_tools",
         "yet-another-minecraft-bingo:challenge/all_leather_armor",
         "yet-another-minecraft-bingo:challenge/all_stone_tools",
         "yet-another-minecraft-bingo:challenge/all_wooden_tools",
