@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.event.player.*
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.resource.ResourceManager
@@ -146,6 +147,13 @@ class ServerEventsImpl(
 
         S2CPlayChannelEvents.REGISTER.register { handler, _, _, _ ->
             val player = getPlayerImpl(handler.player)
+            try {
+                ServerPlayNetworking.getSendable(handler.player)
+            } catch (_: NullPointerException) {
+                // The player is not set up yet
+                return@register
+            }
+
             eventBus.emit(PlayerEvent.ChannelRegister, PlayerEvent(player))
         }
 

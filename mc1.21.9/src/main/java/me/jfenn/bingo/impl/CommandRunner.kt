@@ -3,10 +3,10 @@ package me.jfenn.bingo.impl
 import me.jfenn.bingo.platform.ICommandRunner
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandOutput
-import java.util.*
 
 class CommandRunner : ICommandRunner {
     override fun runSilentCommand(server: MinecraftServer, cmd: String) {
-        server.commandManager.executeWithPrefix(server.commandSource.withOutput(CommandOutput.DUMMY), cmd)
+        val parsed = server.commandManager.dispatcher.parse(cmd, server.commandSource.withOutput(CommandOutput.DUMMY))
+        server.commandManager.execute(parsed, cmd)
     }
 }

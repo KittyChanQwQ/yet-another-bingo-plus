@@ -44,7 +44,10 @@ class ScopedEvents(
     fun onPlayerJoin(callback: (PlayerEvent) -> Unit) = eventBus.register(PlayerEvent.Join, callback)
     fun onPlayerDisconnect(callback: (PlayerEvent) -> Unit) = eventBus.register(PlayerEvent.Disconnect, callback)
     fun onPlayerRespawn(callback: (PlayerEvent) -> Unit) = eventBus.register(PlayerEvent.AfterRespawn, callback)
-    fun onPlayerChannelRegister(callback: (PlayerEvent) -> Unit) = eventBus.register(PlayerEvent.ChannelRegister, callback)
+    fun onPlayerChannelRegister(callback: (PlayerEvent) -> Unit) {
+        eventBus.register(PlayerEvent.Join, callback)
+        eventBus.register(PlayerEvent.ChannelRegister, callback)
+    }
 
     fun onStateChange(callback: (StateChangedEvent) -> Unit) = eventBus.register(StateChangedEvent, callback)
     fun onChangeOptions(callback: (Unit) -> Unit) = eventBus.register(OptionsChangedEvent, callback)
