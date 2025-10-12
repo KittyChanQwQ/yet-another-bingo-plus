@@ -50,7 +50,9 @@ sealed class BingoObjective {
         resolved: Set<String>
     ): Boolean = resolved.containsAll(dependsOnObjectives)
 
-    open val conflictsWithObjectives get() = (data?.conflictsWith ?: emptySet()) + id
+    protected open val conflictsWithObjectivesInternal get() = setOf(id)
+
+    val conflictsWithObjectives get() = data?.conflictsWith ?: conflictsWithObjectivesInternal
 
     open fun hasAchieved(player: PlayerProfile): Boolean = players.containsKey(player.uuid)
     open fun hasAchieved(team: BingoTeamKey): Boolean = teamsAchieved.containsKey(team)
@@ -144,8 +146,8 @@ sealed class BingoObjective {
         var itemCount: Int = 1,
     ): BingoObjective() {
 
-        override val conflictsWithObjectives: Set<String>
-            get() = super.conflictsWithObjectives + itemId
+        override val conflictsWithObjectivesInternal: Set<String>
+            get() = super.conflictsWithObjectivesInternal + itemId
 
         val itemId get() = data.item
         val itemNbt get() = data.nbt
@@ -165,8 +167,8 @@ sealed class BingoObjective {
         val advancementId: String,
     ): BingoObjective() {
 
-        override val conflictsWithObjectives: Set<String>
-            get() = super.conflictsWithObjectives + advancementId + listOfNotNull(advancement?.displayIcon?.identifier?.toString())
+        override val conflictsWithObjectivesInternal: Set<String>
+            get() = super.conflictsWithObjectivesInternal + advancementId + listOfNotNull(advancement?.displayIcon?.identifier?.toString())
 
         @Transient
         var advancement: IAdvancementHandle? = null
@@ -184,8 +186,8 @@ sealed class BingoObjective {
         override val dependsOnObjectives: Set<String>
             get() = super.dependsOnObjectives + someOfObjectives
 
-        override val conflictsWithObjectives: Set<String>
-            get() = super.conflictsWithObjectives + someOfObjectives
+        override val conflictsWithObjectivesInternal: Set<String>
+            get() = super.conflictsWithObjectivesInternal + someOfObjectives
 
         override fun satisfiesDependencies(resolved: Set<String>): Boolean {
             // SomeOfEntry will use the amount of resolved dependencies as the min value
@@ -203,8 +205,8 @@ sealed class BingoObjective {
         override val dependsOnObjectives: Set<String>
             get() = super.dependsOnObjectives + inverseObjective
 
-        override val conflictsWithObjectives: Set<String>
-            get() = super.conflictsWithObjectives + inverseObjective
+        override val conflictsWithObjectivesInternal: Set<String>
+            get() = super.conflictsWithObjectivesInternal + inverseObjective
 
         val permanent get() = data.permanent
 
@@ -234,8 +236,8 @@ sealed class BingoObjective {
         override val dependsOnObjectives: Set<String>
             get() = super.dependsOnObjectives + opponentObjective
 
-        override val conflictsWithObjectives: Set<String>
-            get() = super.conflictsWithObjectives + opponentObjective
+        override val conflictsWithObjectivesInternal: Set<String>
+            get() = super.conflictsWithObjectivesInternal + opponentObjective
 
         var opponentsAchieved = mutableMapOf<UuidAsString, BingoObjectiveCapture>()
         val permanent get() = data.permanent
@@ -263,8 +265,8 @@ sealed class BingoObjective {
         val valueMax: Int
     ): BingoObjective() {
 
-        override val conflictsWithObjectives: Set<String>
-            get() = super.conflictsWithObjectives + listOfNotNull(data.statName)
+        override val conflictsWithObjectivesInternal: Set<String>
+            get() = super.conflictsWithObjectivesInternal + listOfNotNull(data.statName)
 
         val valueRange get() = valueMin..valueMax
 

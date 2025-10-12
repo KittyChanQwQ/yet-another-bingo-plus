@@ -10,7 +10,7 @@ sealed class ObjectiveData {
 
     var isRoot: Boolean = true
     val display: ObjectiveDisplay.Data? = null
-    val conflictsWith: Set<String> = emptySet()
+    val conflictsWith: Set<String>? = null
 
     abstract val permanent: Boolean
 
