@@ -1,12 +1,14 @@
 ### New Features:
 
-- Added support for 1.21.9!
+- Allow datapack objectives to override implicit conflicts using `"confictsWith": []`
+
+### Bugs Squashed:
+
+- Fixed some waxed copper items appearing in the wrong tier
 
 ### Translations:
 
-- New Chinese Simplified translations from ZnianXgang!
-- New Chinese Traditional translations from notlin4!
-- New Chinese Traditional (Hong Kong) translations from Furina_de_zh_hant!
-- New German translations from CryptoGamer1612!
-- New Hungarian translations from Remarci!
+- New Chinese Simplified translations from SpongeCouna and Young912!
+- New French translations from Yosh64!
 - New Russian translations from lazdni!
+- New Ukrainian translations from Dan4ikPlayUA!
