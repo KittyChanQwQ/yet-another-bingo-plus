@@ -39,6 +39,7 @@
   "bingo.command.ready.false": "%s is no longer ready!",
   "bingo.command.ready.cancelled": "Cancelled the ready-up timer!",
   "bingo.command.ready.not_on_a_team": "You cannot ready up without joining a team! (use '%s' if you want to spectate)",
+  "bingo.command.ready.not_running": "Cannot ready up - other players need to join a team!",
   "bingo.command.reset.success": "Resetting the game...",
   "bingo.command.resume.success": "Resumed the game!",
   "bingo.command.shuffleteams.success": "Teams have been shuffled!",

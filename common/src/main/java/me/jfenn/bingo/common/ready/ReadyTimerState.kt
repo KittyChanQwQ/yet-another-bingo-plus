@@ -29,7 +29,6 @@ class ReadyTimerState {
 
     fun setReady(player: UUID, ready: Boolean) {
         if (ready) {
-            isCancelled = false
             readyPlayers.add(player)
         } else {
             readyPlayers.remove(player)
@@ -37,6 +36,7 @@ class ReadyTimerState {
     }
 
     fun startTimer(duration: Duration) {
+        isCancelled = false
         startedAt = Instant.now()
         totalDuration = duration
     }
@@ -64,6 +64,7 @@ class ReadyTimerState {
         readyPlayers.clear()
         startedAt = null
         totalDuration = null
+        isCancelled = false
     }
 
 }

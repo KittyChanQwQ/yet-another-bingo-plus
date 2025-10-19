@@ -10,10 +10,8 @@ import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
-import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IExecutors
@@ -32,7 +30,6 @@ internal class ReadyController(
     private val text: TextProvider,
     private val gameService: GameService,
     private val playerManager: IPlayerManager,
-    private val teamService: TeamService,
     private val resetService: ResetService,
     private val packets: ServerPacketEvents,
     private val permissions: IPermissionsApi,
@@ -40,23 +37,6 @@ internal class ReadyController(
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
     events: ScopedEvents,
 ) {
-
-    private fun isPregameReady(): Boolean {
-        val players = playerManager.getPlayers()
-
-        val isTeams = !config.startWhenReadyWaitsForTeams || players
-            .filterNot { state.playersSpectatingIds.contains(it.player.uuid) }
-            .all { teamService.isPlaying(it) }
-        val isFirstVote = !config.startWhenReadyWaitsForFirstVote || players.any { readyState.isReady(it.uuid) }
-        return isTeams && isFirstVote && players.size > 1 && state.options.isValid()
-    }
-
-    private fun reset() {
-        readyState.reset()
-        playerManager.getPlayers().forEach { player ->
-            playerManager.updatePlayerListName(player)
-        }
-    }
 
     private fun update(
         playersToUpdate: List<IPlayerHandle> = playerManager.getPlayers(),
@@ -77,50 +57,23 @@ internal class ReadyController(
         val remainingTime = readyState.remainingTime()
         val isComplete = remainingTime?.let { it <= Duration.ZERO } ?: false
 
-        if (state.state == GameState.PREGAME) {
-            // If the game can start, begin the timer!
-            if (!readyState.isRunning && !readyState.isCancelled && isPregameReady()) {
-                config.startWhenReadySeconds?.let {
-                    log.info("[ReadyController] Starting the PREGAME timer for $it seconds")
-                    readyState.startTimer(it.seconds)
-                }
-            }
+        readyService.tick()
 
-            // If the game is no longer ready, reset the timer!
-            if (readyState.isRunning && !isPregameReady()) {
-                log.info("[ReadyController] Cancelling the PREGAME timer, as players are not ready")
-                reset()
-            }
-
-            if (isComplete) {
-                log.info("[ReadyController] Reached the end of the PREGAME timer - starting the game!")
-                reset()
-                val warnings = mutableListOf<IText>()
-                gameService.start(warnings, allowSpectators = true)
-                warnings.forEachIndexed { i, warning ->
-                    playerManager.getPlayers()
-                        .forEach { it.sendMessage(text.formatWarning(warning, i == 0)) }
-                }
+        if (isComplete && state.state == GameState.PREGAME) {
+            log.info("[ReadyController] Reached the end of the PREGAME timer - starting the game!")
+            readyService.reset()
+            val warnings = mutableListOf<IText>()
+            gameService.start(warnings, allowSpectators = true)
+            warnings.forEachIndexed { i, warning ->
+                playerManager.getPlayers()
+                    .forEach { it.sendMessage(text.formatWarning(warning, i == 0)) }
             }
         }
 
-        if (state.state == GameState.POSTGAME) {
-            val hasAnyoneVoted = playerManager.getPlayers().any { readyState.isReady(it.uuid) }
-            if (
-                !readyState.isRunning && !readyState.isCancelled &&
-                (hasAnyoneVoted || !config.nextRoundWhenReadyWaitsForFirstVote)
-            ) {
-                config.nextRoundWhenReadySeconds?.let {
-                    log.info("[ReadyController] Starting the POSTGAME timer for $it seconds")
-                    readyState.startTimer(it.seconds)
-                }
-            }
-
-            if (isComplete) {
-                log.info("[ReadyController] Reached the end of the POSTGAME timer - running reset.")
-                serverTaskExecutor.execute {
-                    resetService.resetGame()
-                }
+        if (isComplete && state.state == GameState.POSTGAME) {
+            log.info("[ReadyController] Reached the end of the POSTGAME timer - running reset.")
+            serverTaskExecutor.execute {
+                resetService.resetGame()
             }
         }
 
@@ -189,7 +142,7 @@ internal class ReadyController(
 
     init {
         events.onStateChange {
-            reset()
+            readyService.reset()
 
             // Run an update check immediately
             update()
@@ -221,7 +174,7 @@ internal class ReadyController(
             if (readyState.isRunning) {
                 log.info("[ReadyController] Reset the timer, as the game options have changed")
             }
-            reset()
+            readyService.reset()
         }
 
         events.onChangeTeam {
@@ -237,7 +190,9 @@ internal class ReadyController(
         }
 
         events.onPacket(packets.readySetV1) {
-            readyService.setReady(it.player, it.packet.isReady)
+            val isReady = it.packet.isReady
+            val result = readyService.setReady(it.player, isReady)
+            it.player.sendMessage(result.message)
         }
 
         events.onPlayerChannelRegister {
