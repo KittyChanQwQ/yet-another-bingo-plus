@@ -38,6 +38,7 @@
   "bingo.command.ready.true": "%s已准备就绪！",
   "bingo.command.ready.false": "%s取消了准备！",
   "bingo.command.ready.cancelled": "准备就绪计时器已取消！",
+  "bingo.command.ready.not_on_a_team": "你不能在未加入队伍的情况下准备就绪！（若想旁观游戏，请使用“%s”）",
   "bingo.command.reset.success": "正在重置游戏...",
   "bingo.command.resume.success": "游戏已恢复！",
   "bingo.command.shuffleteams.success": "队伍已重新分配！",
