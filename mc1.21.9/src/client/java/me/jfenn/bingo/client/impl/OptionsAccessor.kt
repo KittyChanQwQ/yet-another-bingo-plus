@@ -7,7 +7,7 @@ object OptionsAccessor : IOptionsAccessor {
     private val client = MinecraftClient.getInstance()
 
     override fun isDebugEnabled(): Boolean {
-        return client.inGameHud.debugHud.shouldShowDebugHud()
+        return client.debugHudEntryList.isF3Enabled
     }
 
     override fun isPlayerListPressed(): Boolean {
