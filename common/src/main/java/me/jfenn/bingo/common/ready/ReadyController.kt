@@ -73,7 +73,7 @@ internal class ReadyController(
             else -> false
         }
 
-        readyState.updatePlayers(playerManager.getPlayers())
+        readyState.updatePlayers(playerManager.getPlayers().filter { readyService.canUseReady(it) })
         val remainingTime = readyState.remainingTime()
         val isComplete = remainingTime?.let { it <= Duration.ZERO } ?: false
 

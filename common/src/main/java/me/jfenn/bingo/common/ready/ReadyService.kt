@@ -17,17 +17,22 @@ internal class ReadyService(
     private val playerManager: IPlayerManager,
     private val permissions: IPermissionsApi,
 ) {
-    fun canUseReady(player: IPlayerHandle): Boolean {
+    fun isReadyEnabled(player: IPlayerHandle): Boolean {
         val isLobbyMode = state.isLobbyMode
         val isPregameCountdown = state.state == GameState.PREGAME && config.startWhenReadySeconds != null
         val isPostgameCountdown = state.state == GameState.POSTGAME && config.nextRoundWhenReadySeconds != null
         val isPermission = permissions.hasPermission(player, Permission.COMMAND_READY)
+        return isLobbyMode && (isPregameCountdown || isPostgameCountdown) && isPermission
+    }
+
+    fun canUseReady(player: IPlayerHandle): Boolean {
+        val isPostgameCountdown = state.state == GameState.POSTGAME && config.nextRoundWhenReadySeconds != null
         val isTeamChosen = !config.startWhenReadyWaitsForTeams ||
                 playerManager.getPlayers().size == 1 ||
                 teamService.isPlaying(player) ||
                 state.playersSpectatingIds.contains(player.uuid) ||
                 isPostgameCountdown
-        return isLobbyMode && (isPregameCountdown || isPostgameCountdown) && isPermission && isTeamChosen
+        return isReadyEnabled(player) && isTeamChosen
     }
 
     fun setReady(player: IPlayerHandle, isReady: Boolean) {
