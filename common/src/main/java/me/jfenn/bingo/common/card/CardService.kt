@@ -203,19 +203,17 @@ internal class CardService(
         return newCard
     }
 
-    fun replaceEntry(x: Int, y: Int, objectiveId: String) {
+    fun replaceEntry(card: BingoCard, x: Int, y: Int, objectiveId: String) {
         // Make sure that the objective exists
         val objective = objectiveManager.find(objectiveId, CardGeneratorState.DEFAULT)
             ?: throw IllegalArgumentException("Could not find objective '$objectiveId'")
 
-        replaceEntry(x, y, objective)
+        replaceEntry(card, x, y, objective)
     }
 
-    fun replaceEntry(x: Int, y: Int, objective: BingoObjective) {
-        val activeCard = state.getActiveCard()
-
+    fun replaceEntry(card: BingoCard, x: Int, y: Int, objective: BingoObjective) {
         // Overwrite the entry being replaced
-        val entries = activeCard.entries.toMutableList()
+        val entries = card.entries.toMutableList()
         entries[x + y * 5] = BingoCardEntry(
             objectiveId = objective.id,
             tier = null,
@@ -232,7 +230,7 @@ internal class CardService(
         // If any objectives already exist on the card, use them instead of the new instance
         // (so that partial completion/state doesn't get lost if this is used mid-game)
         for (key in objectives.keys.toSet()) {
-            activeCard.objectives[key]?.let {
+            card.objectives[key]?.let {
                 objectives[key] = it
             }
         }
@@ -242,11 +240,11 @@ internal class CardService(
         assignTileNames(entries)
         // Set the card
         val newCard = BingoCard(
-            id = activeCard.id,
-            seed = activeCard.seed,
+            id = card.id,
+            seed = card.seed,
             entries = entries,
             objectives = objectives,
-            options = activeCard.options
+            options = card.options
         )
         state.replaceCard(newCard)
     }

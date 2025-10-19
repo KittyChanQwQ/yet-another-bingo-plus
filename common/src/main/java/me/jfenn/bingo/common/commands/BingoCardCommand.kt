@@ -35,13 +35,18 @@ class BingoCardCommand(
     companion object {
         private val CARD_KEYS = "bingo".toCharArray()
             .flatMap { col -> (1..5).map { "$col$it" } }
+            .plus("random")
 
         private val CARD_POSITIONS = buildMap {
-            val text = "bingo".toCharArray()
             for (x in 0..4) for (y in 0..4) {
-                val row = y+1
-                this["${text[x]}$row"] = Pair(x, y)
+                this[tileName(x, y)] = Pair(x, y)
             }
+        }
+
+        private fun tileName(x: Int, y: Int) : String {
+            val text = "bingo".toCharArray()
+            val row = y+1
+            return "${text[x]}$row"
         }
     }
 
@@ -50,20 +55,39 @@ class BingoCardCommand(
     private val IExecutionContext.cardService get() = scope.get<CardService>()
     private val IExecutionContext.cardViewService get() = scope.get<CardViewService>()
 
-    private fun IExecutionContext.setObjective(tile: String, objectiveId: String) {
-        val (x, y) = CARD_POSITIONS[tile]
-            ?: throw IllegalArgumentException("'$tile' is not a valid bingo tile position: ${CARD_POSITIONS.keys}")
+    private fun getCardPosition(tile: String): Pair<Int, Int> = when (tile) {
+        "random" -> CARD_POSITIONS.values.random()
+        else -> CARD_POSITIONS[tile] ?:
+            throw IllegalArgumentException("'$tile' is not a valid bingo tile position: ${CARD_POSITIONS.keys}")
+    }
 
-        cardService.replaceEntry(x, y, objectiveId)
-        sendFeedback(text.string(StringKey.CommandCardSetSuccess, tile, objectiveId))
+    private fun IExecutionContext.setObjective(tile: String, objectiveId: String) {
+        val (x, y) = getCardPosition(tile)
+        val originalCard = cardViewService.getPlayerCard(player)
+        cardService.replaceEntry(originalCard, x, y, objectiveId)
+        sendFeedback(text.string(StringKey.CommandCardSetSuccess, tileName(x, y), objectiveId))
     }
 
     private fun IExecutionContext.setFreeSpace(tile: String) {
-        val (x, y) = CARD_POSITIONS[tile]
-            ?: throw IllegalArgumentException("'$tile' is not a valid bingo tile position: ${CARD_POSITIONS.keys}")
+        val (x, y) = getCardPosition(tile)
+        val originalCard = cardViewService.getPlayerCard(player)
+        cardService.replaceEntry(originalCard, x, y, BingoObjective.FreeSpace())
+        sendFeedback(text.string(StringKey.CommandCardSetSuccess, tileName(x, y), StringKey.CardFreeSpace))
+    }
 
-        cardService.replaceEntry(x, y, BingoObjective.FreeSpace())
-        sendFeedback(text.string(StringKey.CommandCardSetSuccess, tile, StringKey.CardFreeSpace))
+    private fun IExecutionContext.setRandom(tile: String) {
+        val (x, y) = getCardPosition(tile)
+        val card = cardViewService.getPlayerCard(player)
+        val entryToReplace = card.entry(x, y)
+
+        val newCard = cardService.replaceEntries(
+            card = card,
+            replaceEntries = listOf(entryToReplace),
+            excludeObjectives = scope.get<BingoObjectiveManager>().listExcludedIds().toSet(),
+        )
+
+        val newEntry = newCard.entry(x, y)
+        sendFeedback(text.string(StringKey.CommandCardSetSuccess, tileName(x, y), newEntry.objectiveId))
     }
 
     private fun IExecutionContext.getCardSeed() {
@@ -187,6 +211,11 @@ class BingoCardCommand(
                                 val tile = getArgument(tileArg).lowercase()
                                 val objectiveId = getArgument(objectiveArg)
                                 setObjective(tile, objectiveId)
+                            }
+                        }
+                        literal("random") {
+                            executes {
+                                setRandom(getArgument(tileArg).lowercase())
                             }
                         }
                         literal("free_space") {
