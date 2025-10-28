@@ -39,6 +39,7 @@
   "bingo.command.ready.false": "%s Не готов!",
   "bingo.command.ready.cancelled": "Отменить таймер готовности!",
   "bingo.command.ready.not_on_a_team": "Вы не можете быть готовым к игре, не вступив в команду! (используйте '%s' если хотите быть наблюдателем)",
+  "bingo.command.ready.not_running": "Не можем начать игру - остальные игроки должны присоединиться к какой-либо команде!",
   "bingo.command.reset.success": "Рестарт игры...",
   "bingo.command.resume.success": "Продолжаем игру!",
   "bingo.command.shuffleteams.success": "Команды были перемешаны!",

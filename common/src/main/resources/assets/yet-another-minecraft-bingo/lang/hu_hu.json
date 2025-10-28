@@ -38,6 +38,8 @@
   "bingo.command.ready.true": "%s készen áll!",
   "bingo.command.ready.false": "%s már nem áll készen!",
   "bingo.command.ready.cancelled": "Készenléti időzítő megszakítva!",
+  "bingo.command.ready.not_on_a_team": "Nem állhatsz készenlétbe ha nem vagy csapatban! ('%s' használatával lehetsz szemlélő)",
+  "bingo.command.ready.not_running": "Nem állhatsz készenlétbe - másoknak még csapatot kell találniuk!",
   "bingo.command.reset.success": "Játék visszaállítása...",
   "bingo.command.resume.success": "Játék folytatva!",
   "bingo.command.shuffleteams.success": "A csapatok meg lettek kevere!",
