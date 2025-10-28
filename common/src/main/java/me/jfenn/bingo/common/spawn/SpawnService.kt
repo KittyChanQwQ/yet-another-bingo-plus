@@ -131,9 +131,7 @@ internal class SpawnService(
         val team = teamService.getPlayerTeam(player.player)
         val spawn = team?.let {
             getTeamSpawnpoint(team)
-        } ?: run {
-            BlockPosition.fromBlockPos(world.world.spawnPos)
-        }
+        } ?: world.spawnPos
 
         // if the player already has the exact block position, don't teleport them again
         val needsTeleport = player.serverWorld != world || player.blockPos != spawn

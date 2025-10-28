@@ -379,7 +379,7 @@ class SpreadPlayers(
                 teams.indices.associate { i ->
                     val team = teams[i]
                     val position = positions[i]
-                    team.key to (position.getNow(null) ?: BlockPosition.fromBlockPos(world.spawnPos))
+                    team.key to (position.getNow(null) ?: worldImpl.spawnPos)
                 }
             }
     }
