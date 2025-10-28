@@ -96,21 +96,23 @@ The logo design was inspired by [Aikoyori/ProgrammingVTuberLogos](https://github
 **Help translate this mod into your language!** <br>All text in this project is available [on CrowdIn](https://crowdin.com/project/yet-another-bingo) for anyone to submit translations.
 
 
-Chinese Simplified translations were contributed by Fishlanding, tovv3r, Young912, BoredYukolin, yzy_sheep, nageih, teaSummer, and Nattiden!<br>
-Chinese Traditional translations were contributed by Leo_768, BoredYukolin, and notlin4!<br>
+Chinese Simplified translations were contributed by Fishlanding, tovv3r, Young912, BoredYukolin, yzy_sheep, nageih, teaSummer, Nattiden, ZnianXgang, and SpongeCouna!<br>
+Chinese Traditional translations were contributed by Leo_768, BoredYukolin, notlin4!<br>
+Chinese Traditional (Hong Kong) translations were contributed by Furina_de_zh_hant!<br>
 Czech translations were contributed by Džerry!<br>
 Danish translations were contributed by Libreh!<br>
 Dutch translations were contributed by GrangerTheDog!<br>
 Finnish translations were contributed by Diamonddevv!<br>
 French translations were contributed by Yosh64, Guillarda, and Narkotiqu!<br>
-German translations were contributed by Butterkeks!<br>
+German translations were contributed by Butterkeks and CryptoGamer1612!<br>
 Hungarian translations were contributed by petya0927 and Remarci!<br>
 Italian translations were contributed by noah and sculk1!<br>
 Korean translations were contributed by LegendLier!<br>
 Literary Chinese translations were contributed by Sorajima Asugawa!<br>
 Polish translations were contributed by Toniemax!<br>
 Portuguese translations were contributed by Lucsdev_!<br>
-Russian translations were contributed by Milleol, XakVit, Ofterkino, Mrpavel, Май, Lucky Wayч, yukkovna, and lazdni!<br>
+Russian translations were contributed by Milleol, XakVit, Ofterkino, Mrpavel, Май, Lucky Wayч, yukkovna, lazdni, and Encidi!<br>
 Spanish translations were contributed by ANDY, GatoEnCaja, and TheJokerDev!<br>
 Swedish translations were contributed by Vica50 Rosvall!<br>
 Turkish translations were contributed by Erkin_!<br>
+Ukrainian translations were contributed by Dan4ikPlayUA and RealWinord!<br>

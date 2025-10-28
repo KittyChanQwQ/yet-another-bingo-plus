@@ -1,15 +1,9 @@
-### New Features:
-
-- Added `random` options to the `/bingo card set` command ([#148](https://gitlab.com/horrificdev/bingo/-/issues/148))
-
 ### Bugs Squashed:
 
-- Fixed the card disappearing on 1.21.9-10 when any debug feature is enabled (not just the F3 screen)
-- Improved `/ready` command messages & fixed some confusing behavior
-- Fixed occasional packet errors being logged when a player joins the server
+- Fixed a 1.21.10 crash preventing the game from starting properly when a spectator is in the lobby
 
 ### Translations:
 
 - New Chinese Simplified translations from Young912!
-- New Russian translations from Encidi and lazdni!
-- New Ukrainian translations from RealWinord!
+- New Czech translations from Džerry!
+- New Russian translations from lazdni!
