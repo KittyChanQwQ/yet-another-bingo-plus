@@ -12,6 +12,7 @@ import me.jfenn.bingo.platform.event.model.ReloadEvent
 import me.jfenn.bingo.platform.event.model.TickEvent
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.server.MinecraftServer
+import java.util.concurrent.CompletableFuture
 
 /**
  * Handles re-rolling or generating new BINGO card layouts.
@@ -94,7 +95,7 @@ internal class BingoMapController(
             }
         }
 
-        eventBus.register(ReloadEvent) {
+        eventBus.register(ReloadEvent.After) {
             cardImageService.clearPlayerStates()
             mapRenderService.clearCache()
         }

@@ -14,10 +14,12 @@ import me.jfenn.bingo.client.platform.screen.IScreenFactory
 import me.jfenn.bingo.client.world.BingoWorldController
 import me.jfenn.bingo.client.world.BingoWorldState
 import me.jfenn.bingo.client.world.WorldServiceImpl
+import me.jfenn.bingo.common.baseModule
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.commonModule
 import me.jfenn.bingo.common.config.MigrationHandler
 import me.jfenn.bingo.platform.scope.BingoKoin
+import me.jfenn.bingo.sharedBaseModule
 import me.jfenn.bingo.sharedModule
 import net.fabricmc.api.ClientModInitializer
 import org.koin.core.logger.Level
@@ -63,7 +65,7 @@ object Main : ClientModInitializer {
 
         koinApplication {
             logger(SLF4JLogger(level = Level.DEBUG))
-            modules(sharedModule, commonModule)
+            modules(sharedBaseModule, baseModule)
         }.also {
             it.koin.get<MigrationHandler>().runMigrations()
             it.close()

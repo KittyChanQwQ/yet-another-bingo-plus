@@ -175,7 +175,7 @@ data class TierListConfig(
 
     fun allEntries(): Set<TierListEntry> = values + s + a + b + c + d
 
-    fun expandTags(
+    internal fun expandTags(
         expansionService: TagExpansionService,
     ) : TierListConfig {
         return this

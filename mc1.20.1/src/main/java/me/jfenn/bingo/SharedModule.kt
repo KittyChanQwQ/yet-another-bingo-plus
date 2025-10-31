@@ -1,6 +1,5 @@
 package me.jfenn.bingo
 
-import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.impl.*
 import me.jfenn.bingo.impl.event.ServerCloseEvent
@@ -15,6 +14,7 @@ import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.packet.IServerNetworking
 import me.jfenn.bingo.platform.particle.IParticleFactory
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
+import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.platform.world.IGameRules
 import org.koin.core.module.dsl.createdAtStart
 import org.koin.core.module.dsl.scopedOf
@@ -28,8 +28,12 @@ val sharedServerModule = module {
     singleOf(::ServerCloseEvent) withOptions { createdAtStart() }
 }
 
-val sharedModule = module {
+val sharedBaseModule = module {
     singleOf(::ModEnvironment) bind IModEnvironment::class
+}
+
+val sharedModule = module {
+    includes(sharedBaseModule)
 
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class

@@ -32,9 +32,14 @@ val sharedServerModule = module {
     singleOf(::ServerCloseEvent) withOptions { createdAtStart() }
 }
 
-val sharedModule = module {
-    singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
+val sharedBaseModule = module {
     singleOf(::ModEnvironment) bind IModEnvironment::class
+}
+
+val sharedModule = module {
+    includes(sharedBaseModule)
+
+    singleOf(::ServerNetworkingImpl) bind IServerNetworking::class
 
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
@@ -48,6 +53,7 @@ val sharedModule = module {
     singleOf(::StatManagerImpl) bind IStatManager::class
     singleOf(::TagAccessorImpl) bind ITagAccessor::class
     singleOf(::TextFactoryImpl) bind ITextFactory::class
+    single { JsonSerializers(get(), null) } bind IJsonSerializers::class
     singleOf(::TextSerializer) bind ITextSerializer::class
 
     scope<BingoScope> {

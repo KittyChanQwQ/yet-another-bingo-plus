@@ -15,3 +15,7 @@ val jsonUnpretty = Json {
     encodeDefaults = true
     prettyPrint = false
 }
+
+val jsonStrict = Json(json) {
+    ignoreUnknownKeys = false
+}

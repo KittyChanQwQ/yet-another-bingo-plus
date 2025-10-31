@@ -20,6 +20,7 @@ import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.spawn.SpawnKitService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.*
@@ -40,6 +41,7 @@ internal class CardService(
     private val objectiveManager: BingoObjectiveManager,
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
+    private val spawnKitService: SpawnKitService,
 ) {
 
     private val supportedObjectiveIds = cacheFor(5.seconds) { _: Unit ->
@@ -378,7 +380,6 @@ internal class CardService(
         // Determine the set of unobtainable items
         tags[ObjectiveFilter.UNOBTAINABLE] = TagData(
             (tags[ObjectiveFilter.UNOBTAINABLE]?.values ?: emptySet())
-                .plus(data.unobtainableItems)
         )
 
         // If there is any included tag, only include explicitly referenced items
@@ -442,9 +443,9 @@ internal class CardService(
         val excludedObjectives = if (configService.config.excludeSpawnKitItemsFromCards) {
             buildSet {
                 if (options.isPlayerKit)
-                    addAll(data.spawnKits.playerKit.items.map { it.identifier.toString() })
+                    addAll(spawnKitService.getPlayerItems().map { it.identifier.toString() })
                 if (options.isTeamKit)
-                    addAll(data.spawnKits.teamKit.items.map { it.identifier.toString() })
+                    addAll(spawnKitService.getTeamItems().map { it.identifier.toString() })
                 if (options.isElytra) {
                     add("minecraft:elytra")
                     add("minecraft:firework_rocket")

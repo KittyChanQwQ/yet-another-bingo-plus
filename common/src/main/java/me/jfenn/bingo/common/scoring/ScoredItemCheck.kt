@@ -25,6 +25,7 @@ import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.model.ReloadEvent
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.time.Instant
@@ -535,6 +536,10 @@ internal class ScoredItemCheck(
             for (completion in team.completedCards) {
                 objectiveManager.init(completion.card)
             }
+        }
+
+        eventBus.register(ReloadEvent.After) {
+            cardService.validateLists()
         }
 
         events.onGameTick {

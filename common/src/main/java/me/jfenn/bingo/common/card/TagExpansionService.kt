@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.platform.ITagAccessor
 import org.slf4j.Logger
 
-class TagExpansionService(
+internal class TagExpansionService(
     private val log: Logger,
     private val tagAccessor: ITagAccessor,
     private val data: ScopedData,

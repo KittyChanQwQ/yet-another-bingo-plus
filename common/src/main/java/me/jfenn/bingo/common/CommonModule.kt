@@ -12,10 +12,7 @@ import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterCommand
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.card.objective.*
-import me.jfenn.bingo.common.card.tag.DataTagProvider
-import me.jfenn.bingo.common.card.tag.ObjectiveTagProvider
-import me.jfenn.bingo.common.card.tag.TagService
-import me.jfenn.bingo.common.card.tag.TierListTagProvider
+import me.jfenn.bingo.common.card.tag.*
 import me.jfenn.bingo.common.chat.ChatCommand
 import me.jfenn.bingo.common.chat.ChatMessageController
 import me.jfenn.bingo.common.chat.ChatMessageService
@@ -187,6 +184,19 @@ val commonModule = module {
         )
     }
 
+    singleOf(::TrackedFileService)
+    singleOf(::FilterPresetsLoader)
+    singleOf(::ObjectiveLoader)
+    singleOf(::SpawnKitLoader)
+    singleOf(::TierListLoader)
+    singleOf(::TagLoader)
+    singleOf(::TeamPresetLoader)
+    singleOf(::ObtainableItemsLoader)
+    singleOf(MessageService::Loader)
+    singleOf(DatapackFunctionService::Loader)
+    singleOf(::ScopedData)
+    singleOf(::DataLoaderManager)
+
     scope<BingoScope> {
         scoped { ScopedEventBus(getKoin().get(), this) } bind IEventBus::class
         scopedOf(::ScopedEvents)
@@ -207,16 +217,6 @@ val commonModule = module {
         scopedOf(::PlaceholderService)
         scopedOf(::MessageService)
 
-        scopedOf(::TrackedFileService)
-        scopedOf(::FilterPresetsLoader)
-        scopedOf(::ObjectiveLoader)
-        scopedOf(::SpawnKitLoader)
-        scopedOf(::TierListLoader)
-        scopedOf(::TagLoader)
-        scopedOf(::TeamPresetLoader)
-        scopedOf(::UnobtainableItemsLoader)
-        scopedOf(::ScopedData)
-        scopedOf(::DataLoaderManager)
         scopedOf(::DataCommandService)
         scopedOf(::TagExpansionService)
 
@@ -249,12 +249,14 @@ val commonModule = module {
         scopedOf(::DataTagProvider)
         scopedOf(::ObjectiveTagProvider)
         scopedOf(::TierListTagProvider)
+        scopedOf(::UnobtainableTagProvider)
         scoped {
             TagService(
                 listOf(
                     get<DataTagProvider>(),
                     get<ObjectiveTagProvider>(),
                     get<TierListTagProvider>(),
+                    get<UnobtainableTagProvider>(),
                 )
             )
         }
@@ -323,6 +325,7 @@ val commonModule = module {
         scopedOf(::ChestController)
         scopedOf(::ElytraService)
         scopedOf(::SpawnService)
+        scopedOf(::SpawnKitService)
         scopedOf(SpreadPlayers::Factory)
         scopedOf(::PlayerController)
         scopedOf(::SpawnPreloadingController)
@@ -360,6 +363,7 @@ val commonModule = module {
 
 fun Koin.commonInit() {
     get<BingoPluginHolder>()
+    get<DataLoaderManager>()
 
     get<MapColors>()
     get<ServerDatapackManager>()
@@ -393,8 +397,6 @@ fun Koin.commonInit() {
 }
 
 fun Scope.commonInit() {
-    get<DataLoaderManager>()
-
     get<ScoredItemCheck>() // must be registered before MenuController
 
     get<TooltipController>()

@@ -12,10 +12,10 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.modules.SerializersModule
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IJsonSerializers
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.TextCodecs
@@ -23,10 +23,10 @@ import kotlin.reflect.KClass
 
 class JsonSerializers(
     private val itemStackFactory: IItemStackFactory,
-    server: MinecraftServer,
+    server: MinecraftServer?,
 ) : IJsonSerializers {
 
-    private val registryOps = server.registryManager.getOps(JsonOpsKotlinx)
+    private val registryOps = server?.registryManager?.getOps(JsonOpsKotlinx) ?: JsonOpsKotlinx
 
     inner class CodecSerializer<T: Any>(
         private val codec: Codec<T>,

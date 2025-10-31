@@ -1,14 +1,15 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.options.OptionsService
-import me.jfenn.bingo.common.spawn.SpawnKit
-import me.jfenn.bingo.common.spawn.SpawnKitLoader
+import me.jfenn.bingo.common.spawn.SpawnKitService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.util.Formatting
 import org.joml.Vector3d
@@ -19,11 +20,10 @@ private const val EDIT_HEIGHT = 0.55
 internal fun MenuComponent.registerSpawnKit(
     position: Vector3d,
     state: BingoState = koinScope.get(),
-    data: ScopedData = koinScope.get(),
     cardService: CardService = koinScope.get(),
     itemStackFactory: IItemStackFactory = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
-    spawnKitLoader: SpawnKitLoader = koinScope.get(),
+    spawnKitService: SpawnKitService = koinScope.get(),
 ) {
     val options by state::options
     val offset = Vector3d()
@@ -54,6 +54,28 @@ internal fun MenuComponent.registerSpawnKit(
         )
     }
 
+    fun editStacks(
+        player: IPlayerHandle,
+        stacks: List<IItemStack>,
+        title: IText,
+        callback: (List<IItemStack>) -> Unit,
+    ) {
+        player.player.openHandledScreen(
+            SimpleNamedScreenHandlerFactory(
+                { syncId, inv, _ ->
+                    InventoryScreenHandler(syncId, stacks, inv).apply {
+                        onClose { newStacks ->
+                            callback(
+                                newStacks.map { itemStackFactory.forStack(it) }
+                            )
+                        }
+                    }
+                },
+                title.value
+            )
+        )
+    }
+
     registerTileButton(
         position = position + offset.sub(0.0, MENU_LINE_PADDING + EDIT_HEIGHT, 0.0),
         width = MENU_SPAWN_KIT_WIDTH,
@@ -66,23 +88,10 @@ internal fun MenuComponent.registerSpawnKit(
         ),
         brightness = MENU_BRIGHTNESS_ALT,
     ) { player ->
-        player.player.openHandledScreen(
-            SimpleNamedScreenHandlerFactory(
-                { syncId, inv, _ ->
-                    InventoryScreenHandler(syncId, data.spawnKits.playerKit.items, inv).apply {
-                        onClose { stacks ->
-                            val spawnKit = SpawnKit(
-                                stacks.map { itemStackFactory.forStack(it) }
-                            )
-                            data.spawnKits.playerKit = spawnKit
-                            spawnKitLoader.writeSpawnKit(SpawnKitLoader.KIT_PLAYER, spawnKit)
-                            cardService.generateCard()
-                        }
-                    }
-                },
-                text.string(StringKey.OptionsSpawnKitPlayer).value
-            )
-        )
+        editStacks(player, spawnKitService.getPlayerItems(), text.string(StringKey.OptionsSpawnKitPlayer)) { newStacks ->
+            spawnKitService.writePlayerItems(newStacks)
+            cardService.generateCard()
+        }
     }
 
     registerTileButton(
@@ -117,22 +126,9 @@ internal fun MenuComponent.registerSpawnKit(
         ),
         brightness = MENU_BRIGHTNESS_ALT,
     ) { player ->
-        player.player.openHandledScreen(
-            SimpleNamedScreenHandlerFactory(
-                { syncId, inv, _ ->
-                    InventoryScreenHandler(syncId, data.spawnKits.teamKit.items, inv).apply {
-                        onClose { stacks ->
-                            val spawnKit = SpawnKit(
-                                stacks.map { itemStackFactory.forStack(it) }
-                            )
-                            data.spawnKits.teamKit = spawnKit
-                            spawnKitLoader.writeSpawnKit(SpawnKitLoader.KIT_TEAM, spawnKit)
-                            cardService.generateCard()
-                        }
-                    }
-                },
-                text.string(StringKey.OptionsSpawnKitTeam).value
-            )
-        )
+        editStacks(player, spawnKitService.getTeamItems(), text.string(StringKey.OptionsSpawnKitTeam)) { newStacks ->
+            spawnKitService.writeTeamItems(newStacks)
+            cardService.generateCard()
+        }
     }
 }

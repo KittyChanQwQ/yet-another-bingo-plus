@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.platform.text.ITextSerialized
 import me.jfenn.bingo.common.utils.FormattingSerializer
+import me.jfenn.bingo.platform.text.ITextSerialized
 import net.minecraft.util.Formatting
 
 @Serializable

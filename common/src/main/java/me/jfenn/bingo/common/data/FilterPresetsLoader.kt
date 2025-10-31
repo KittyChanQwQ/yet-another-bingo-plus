@@ -21,12 +21,14 @@ class FilterPresetsLoader(
             it.path.substringAfter('/') == "filters.json"
         }
 
+        val json = serializers.jsonStrict
+
         for ((id, files) in presets) {
             for (file in files) {
                 val data = try {
                     file.inputStream.use {
                         @OptIn(ExperimentalSerializationApi::class)
-                        serializers.json.decodeFromStream<ObjectiveFilterPresets>(it)
+                        json.decodeFromStream<ObjectiveFilterPresets>(it)
                     }
                 } catch (e: Throwable) {
                     log.error("[FilterPresetsLoader] Error reading filter presets $id: ${e.message}")

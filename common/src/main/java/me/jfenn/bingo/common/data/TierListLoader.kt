@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierListConfig
 import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.common.utils.jsonStrict
 import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
@@ -41,7 +42,7 @@ internal class TierListLoader(
                 try {
                     file.inputStream.use {
                         @OptIn(ExperimentalSerializationApi::class)
-                        json.decodeFromStream<TierListConfig>(it)
+                        jsonStrict.decodeFromStream<TierListConfig>(it)
                     }
                 } catch (e: Throwable) {
                     log.error("[TierListLoader] Error reading tier list $id: ${e.message}")

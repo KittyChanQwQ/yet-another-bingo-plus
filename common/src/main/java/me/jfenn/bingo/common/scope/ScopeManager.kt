@@ -14,7 +14,6 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.ScopeStarted
 import me.jfenn.bingo.platform.event.game.ScopeStopped
-import me.jfenn.bingo.platform.event.model.ReloadEvent
 import me.jfenn.bingo.platform.event.model.ServerEvent
 import me.jfenn.bingo.platform.scope.IScopeManager
 import net.minecraft.server.MinecraftServer
@@ -60,7 +59,6 @@ class ScopeManager(
             state.isLobbyMode = isLobbyMode
 
             scope.commonInit()
-            eventBus.emit(ReloadEvent, ReloadEvent(server.resourceManager))
 
             // re-run state entry listeners
             if (state.state == GameState.UNINITIALIZED) {

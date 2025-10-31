@@ -1,11 +1,11 @@
 package me.jfenn.bingo.common.spawn
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.platform.item.IItemStackSerialized
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class SpawnKit(
-    var items: List<IItemStackSerialized>,
+    var items: List<JsonElement>,
 ) {
     companion object {
         val EMPTY get() = SpawnKit(emptyList())

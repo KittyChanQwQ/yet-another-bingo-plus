@@ -53,6 +53,7 @@ val sharedModule = module {
     singleOf(::StatManagerImpl) bind IStatManager::class
     singleOf(::TagAccessorImpl) bind ITagAccessor::class
     singleOf(::TextFactoryImpl) bind ITextFactory::class
+    single { JsonSerializers(get(), null) } bind IJsonSerializers::class
     singleOf(::TextSerializer) bind ITextSerializer::class
 
     scope<BingoScope> {

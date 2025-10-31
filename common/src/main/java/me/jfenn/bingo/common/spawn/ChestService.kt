@@ -2,7 +2,6 @@ package me.jfenn.bingo.common.spawn
 
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -20,9 +19,9 @@ internal class ChestService(
     private val log: Logger,
     private val server: MinecraftServer,
     private val options: BingoOptions,
-    private val data: ScopedData,
     private val config: BingoConfig,
     private val state: BingoState,
+    private val spawnKitService: SpawnKitService,
 ) {
 
     private fun getSpawnDimension(): ServerWorld {
@@ -116,7 +115,7 @@ internal class ChestService(
             .forEach { blockPos -> world.setBlockState(blockPos, torchState) }
 
         // Fill the chest with the configured item stacks
-        data.spawnKits.teamKit.items.map { it.copy() }
+        spawnKitService.getTeamItems()
             .forEachIndexed { i, itemStack ->
                 if (config.preventScoringSpawnKitItems) {
                     // set BINGO_IGNORE flag so that spawn items do not count on the bingo card

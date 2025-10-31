@@ -13,12 +13,15 @@ import net.fabricmc.fabric.api.event.player.*
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.minecraft.resource.ResourceManager
+import net.minecraft.resource.ResourceReloader
 import net.minecraft.resource.ResourceType
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 class ServerEventsImpl(
     eventBus: IEventBus,
@@ -149,14 +152,36 @@ class ServerEventsImpl(
         }
 
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(
-            object : SimpleSynchronousResourceReloadListener {
-                override fun reload(manager: ResourceManager) {
-                    eventBus.emit(ReloadEvent, ReloadEvent(manager))
+            object : IdentifiableResourceReloadListener {
+                override fun reload(
+                    synchronizer: ResourceReloader.Synchronizer,
+                    manager: ResourceManager,
+                    prepareExecutor: Executor,
+                    applyExecutor: Executor
+                ): CompletableFuture<Void> {
+                    val reloadEvent = ReloadEvent(
+                        resourceManager = manager,
+                        prepareExecutor = prepareExecutor,
+                        applyExecutor = applyExecutor,
+                        whenPrepared = synchronizer::whenPrepared,
+                    )
+                    return eventBus.emit(ReloadEvent, reloadEvent)
+                        .takeIf { it.isNotEmpty() }
+                        ?.let { CompletableFuture.allOf(*it.toTypedArray()) }
+                        ?: CompletableFuture.completedFuture(reloadEvent)
+                            .thenCompose(synchronizer::whenPrepared)
+                            .thenAcceptAsync({}, applyExecutor)
                 }
+
+                override fun getName(): String = MOD_ID_BINGO
 
                 override fun getFabricId(): Identifier = Identifier.of(MOD_ID_BINGO, "server_reload")!!
             }
         )
+
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { _, _, _ ->
+            eventBus.emit(ReloadEvent.After, ReloadEvent.After())
+        }
 
         ServerMessageEvents.ALLOW_CHAT_MESSAGE.register { message, player, _ ->
             val event = AllowChatMessageEvent(

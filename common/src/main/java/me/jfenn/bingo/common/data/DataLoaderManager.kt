@@ -1,16 +1,13 @@
 package me.jfenn.bingo.common.data
 
-import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.controller.DatapackFunctionService
 import me.jfenn.bingo.common.spawn.SpawnKitLoader
 import me.jfenn.bingo.common.text.MessageService
-import me.jfenn.bingo.common.utils.measureTime
-import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ReloadEvent
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import kotlin.time.TimeSource
 
 internal class DataLoaderManager(
     events: IEventBus,
@@ -22,37 +19,60 @@ internal class DataLoaderManager(
     private val tierListLoader: TierListLoader,
     private val tagLoader: TagLoader,
     private val teamPresetLoader: TeamPresetLoader,
-    private val unobtainableItemsLoader: UnobtainableItemsLoader,
-    private val cardService: CardService,
-    private val datapackFunctionService: DatapackFunctionService,
-    private val messageService: MessageService,
-    private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
+    private val obtainableItemsLoader: ObtainableItemsLoader,
+    private val datapackFunctionLoader: DatapackFunctionService.Loader,
+    private val messageLoader: MessageService.Loader,
 ) {
     init {
-        events.register(ReloadEvent) { (manager) ->
-            log.measureTime("[DataLoader] Reloading bingo data...") {
-                scopedData.teamPresets = teamPresetLoader.loadTeamPresets(manager)
-                scopedData.filterPresets = filterPresetsLoader.loadFilterPresets(manager)
-                scopedData.objectives = objectiveLoader.loadObjectives(manager)
-                scopedData.spawnKits = spawnKitLoader.loadSpawnKits(manager)
-                scopedData.tierLists = tierListLoader.loadTierLists(manager)
-                scopedData.tags = tagLoader.loadTags(manager)
-                scopedData.unobtainableItems = emptySet()
-                datapackFunctionService.loadCommands()
-                messageService.loadMessages(manager)
-            }
+        events.register(ReloadEvent) { event ->
+            val start = TimeSource.Monotonic.markNow()
+            log.info("[DataLoader] Reloading bingo data...")
+            val newData = ScopedData()
 
-            log.measureTime("[DataLoader] Determining unobtainable items...") {
-                scopedData.unobtainableItems = unobtainableItemsLoader.loadUnobtainableItems(
-                    scopedData.tierLists,
-                    scopedData.tags,
-                    manager
-                )
-            }
+            val objectivesFuture = CompletableFuture.supplyAsync({
+                newData.objectives = objectiveLoader.loadObjectives(event.resourceManager)
+            }, event.prepareExecutor)
+            val tierListsFuture = CompletableFuture.supplyAsync({
+                newData.tierLists = tierListLoader.loadTierLists(event.resourceManager)
+            }, event.prepareExecutor)
+            val tagsFuture = CompletableFuture.supplyAsync({
+                newData.tags = tagLoader.loadTags(event.resourceManager)
+            }, event.prepareExecutor)
+            val obtainableItemsFuture = CompletableFuture.supplyAsync({
+                newData.obtainableItems = obtainableItemsLoader.loadObtainableItems(event.resourceManager)
+            }, event.prepareExecutor)
+            val teamPresetsFuture = CompletableFuture.supplyAsync({
+                newData.teamPresets = teamPresetLoader.loadTeamPresets(event.resourceManager)
+            }, event.prepareExecutor)
+            val filterPresetsFuture = CompletableFuture.supplyAsync({
+                newData.filterPresets = filterPresetsLoader.loadFilterPresets(event.resourceManager)
+            }, event.prepareExecutor)
+            val spawnKitsFuture = CompletableFuture.supplyAsync({
+                newData.spawnKits = spawnKitLoader.loadSpawnKits(event.resourceManager)
+            }, event.prepareExecutor)
+            val commandsFuture = CompletableFuture.supplyAsync({
+                newData.commandFiles = datapackFunctionLoader.loadCommands()
+            }, event.prepareExecutor)
+            val messagesFuture = CompletableFuture.supplyAsync({
+                newData.messages = messageLoader.loadMessages(event.resourceManager)
+            }, event.prepareExecutor)
 
-            // Validate after the next tick(s), once any datapacks/scoreboards are loaded
-            CompletableFuture.delayedExecutor(1, TimeUnit.SECONDS, serverTaskExecutor)
-                .execute { cardService.validateLists() }
+            CompletableFuture.allOf(
+                objectivesFuture,
+                tierListsFuture,
+                tagsFuture,
+                obtainableItemsFuture,
+                teamPresetsFuture,
+                filterPresetsFuture,
+                spawnKitsFuture,
+                commandsFuture,
+                messagesFuture,
+            ).whenComplete { _, _ ->
+                log.info("[DataLoader] Prepared in ${start.elapsedNow()}!")
+            }.thenCompose(event.whenPrepared).thenAcceptAsync({
+                scopedData.copyFrom(newData)
+                log.info("[DataLoader] Completed in ${start.elapsedNow()}!")
+            }, event.applyExecutor)
         }
     }
 }

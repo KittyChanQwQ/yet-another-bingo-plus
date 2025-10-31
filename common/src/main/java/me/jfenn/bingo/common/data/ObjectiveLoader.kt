@@ -5,7 +5,7 @@ import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveDataReference
-import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.common.utils.jsonStrict
 import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
 
@@ -26,7 +26,7 @@ class ObjectiveLoader(
             val objectiveData = try {
                 file.inputStream.use {
                     @OptIn(ExperimentalSerializationApi::class)
-                    json.decodeFromStream<ObjectiveData>(it)
+                    jsonStrict.decodeFromStream<ObjectiveData>(it)
                 }
             } catch (e: Throwable) {
                 log.error("[ObjectiveLoader] Error reading objective $id: ${e.message}")

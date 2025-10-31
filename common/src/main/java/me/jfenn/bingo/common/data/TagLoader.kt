@@ -1,12 +1,12 @@
 package me.jfenn.bingo.common.data
 
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tag.TagData
 import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.common.utils.jsonStrict
 import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
@@ -42,7 +42,7 @@ internal class TagLoader(
                 try {
                     file.inputStream.use {
                         @OptIn(ExperimentalSerializationApi::class)
-                        json.decodeFromStream<TagData>(it)
+                        jsonStrict.decodeFromStream<TagData>(it)
                     }
                 } catch (e: Throwable) {
                     log.error("[TagLoader] Error reading tag file $id: ${e.message}")

@@ -20,6 +20,7 @@ class TeamPresetLoader(
         log.info("[TeamPresetLoader] Reloading BINGO team presets...")
 
         val newTeamPresets = mutableMapOf<BingoTeamKey, BingoTeamPreset>()
+        val json = serializers.jsonStrict
 
         val lists = manager.findResources(TEAM_PRESETS_PATH) { it.path.endsWith(FILE_SUFFIX) }
         for ((id, file) in lists) {
@@ -27,7 +28,7 @@ class TeamPresetLoader(
             val config = try {
                 file.inputStream.use {
                     @OptIn(ExperimentalSerializationApi::class)
-                    serializers.json.decodeFromStream<BingoTeamPreset>(it)
+                    json.decodeFromStream<BingoTeamPreset>(it)
                 }
             } catch (e: Throwable) {
                 log.error("[TeamPresetLoader] Error reading team preset $id: ${e.message}")

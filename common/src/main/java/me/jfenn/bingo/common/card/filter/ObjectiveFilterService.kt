@@ -6,7 +6,7 @@ import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.text.TextProvider
 import net.minecraft.util.Formatting
 
-class ObjectiveFilterService(
+internal class ObjectiveFilterService(
     private val config: BingoConfig,
     private val data: ScopedData,
     private val text: TextProvider,

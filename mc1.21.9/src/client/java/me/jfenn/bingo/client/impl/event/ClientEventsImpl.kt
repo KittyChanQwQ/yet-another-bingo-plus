@@ -8,11 +8,11 @@ import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.InvalidateRenderStateCallback
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader
 import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceType
+import net.minecraft.resource.SynchronousResourceReloader
 import net.minecraft.util.Identifier
 
 class ClientEventsImpl(
@@ -39,16 +39,13 @@ class ClientEventsImpl(
             eventBus.emit(ClientTickEvent.End, ClientTickEvent())
         }
 
-        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(
-            object : SimpleSynchronousResourceReloadListener {
-                val identifier = Identifier.of("yet-another-minecraft-bingo", "bingo_client")!!
-
+        ResourceLoader.get(ResourceType.CLIENT_RESOURCES).registerReloader(
+            Identifier.of("yet-another-minecraft-bingo", "bingo_client")!!,
+            object: SynchronousResourceReloader {
                 override fun reload(manager: ResourceManager) {
                     eventBus.emit(ClientReloadEvent, ClientReloadEvent(manager))
                 }
-
-                override fun getFabricId(): Identifier = identifier
-            }
+            },
         )
 
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->

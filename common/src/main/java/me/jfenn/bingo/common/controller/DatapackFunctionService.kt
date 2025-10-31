@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.controller
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.TrackedFileService
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.ICommandRunner
@@ -11,8 +12,7 @@ import net.minecraft.server.MinecraftServer
 internal class DatapackFunctionService(
     private val server: MinecraftServer,
     private val commandRunner: ICommandRunner,
-    private val trackedFileService: TrackedFileService,
-    private val environment: IModEnvironment,
+    private val scopedData: ScopedData,
 ): BingoComponent() {
 
     companion object {
@@ -27,24 +27,27 @@ internal class DatapackFunctionService(
         fun filePath(state: GameState) = "$MOD_ID_BINGO/commands/on_${state.name.lowercase()}.mcfunction"
     }
 
-    private var commandFiles = emptyMap<GameState, String>()
+    internal class Loader(
+        private val trackedFileService: TrackedFileService,
+        private val environment: IModEnvironment,
+    ) {
+        private fun loadCommandFile(state: GameState): String {
+            val pathStr = filePath(state)
+            val path = environment.configDir.resolve(pathStr)
+            val resource = this::class.java
+                .getResourceAsStream("/$pathStr")
+                ?.use { stream -> stream.bufferedReader().use { it.readText() } }
+                .orEmpty()
 
-    private fun loadCommandFile(state: GameState): String {
-        val pathStr = filePath(state)
-        val path = environment.configDir.resolve(pathStr)
-        val resource = this::class.java
-            .getResourceAsStream("/$pathStr")
-            ?.use { stream -> stream.bufferedReader().use { it.readText() } }
-            .orEmpty()
+            return trackedFileService.readTextFileOrResource(
+                path = path,
+                resource = resource,
+            ).config.orEmpty()
+        }
 
-        return trackedFileService.readTextFileOrResource(
-            path = path,
-            resource = resource,
-        ).config.orEmpty()
-    }
-
-    fun loadCommands() {
-        commandFiles = SUPPORTED_EVENTS.associateWith { loadCommandFile(it) }
+        fun loadCommands(): Map<GameState, String> {
+            return SUPPORTED_EVENTS.associateWith { loadCommandFile(it) }
+        }
     }
 
     /**
@@ -59,7 +62,7 @@ internal class DatapackFunctionService(
         }
 
         kotlin.runCatching {
-            val commands = commandFiles[state]
+            val commands = scopedData.commandFiles[state]
                 ?.split(Regex("\\R"))
                 ?.map { it.removePrefix("/").trim() }
                 ?.filter { it.isNotBlank() && !it.startsWith("#") }

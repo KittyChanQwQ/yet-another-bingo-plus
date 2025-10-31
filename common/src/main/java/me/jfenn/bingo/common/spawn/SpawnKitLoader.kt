@@ -1,11 +1,10 @@
 package me.jfenn.bingo.common.spawn
 
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.TrackedFileService
-import me.jfenn.bingo.platform.IJsonSerializers
+import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.resource.ResourceManager
 import org.slf4j.Logger
@@ -14,7 +13,6 @@ import java.io.IOException
 internal class SpawnKitLoader(
     private val trackedFileService: TrackedFileService,
     private val environment: IModEnvironment,
-    serializers: IJsonSerializers,
     private val log: Logger,
 ) {
 
@@ -26,10 +24,6 @@ internal class SpawnKitLoader(
             .orEmpty()
             .filter { it.name.endsWith(FILE_SUFFIX) }
             .map { it.name.removeSuffix(FILE_SUFFIX) }
-    }
-
-    val json = Json(serializers.json) {
-        prettyPrint = true
     }
 
     fun loadSpawnKits(
@@ -60,7 +54,6 @@ internal class SpawnKitLoader(
             val (_, finalConfig) = trackedFileService.readFileOrResource(
                 path = configFile(name),
                 resource = resource,
-                jsonInstance = json,
             )
 
             if (finalConfig == null) continue

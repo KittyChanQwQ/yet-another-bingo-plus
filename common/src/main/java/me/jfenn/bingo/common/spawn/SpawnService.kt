@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.spawn
 import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.NBT_BINGO_IGNORE
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -25,11 +24,11 @@ internal class SpawnService(
     private val options: BingoOptions,
     private val state: BingoState,
     private val config: BingoConfig,
-    private val data: ScopedData,
     private val teamService: TeamService,
     private val spreadPlayersFactory: SpreadPlayers.Factory,
     private val serverWorldFactory: IServerWorldFactory,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
+    private val spawnKitService: SpawnKitService,
 ) {
 
     fun getSpawnDimension(): IServerWorld {
@@ -249,7 +248,7 @@ internal class SpawnService(
 
         if (!options.isPlayerKit) return
 
-        val itemStacks = data.spawnKits.playerKit.items.map { it.copy() }
+        val itemStacks = spawnKitService.getPlayerItems()
 
         if (config.preventScoringSpawnKitItems) {
             for (itemStack in itemStacks) {

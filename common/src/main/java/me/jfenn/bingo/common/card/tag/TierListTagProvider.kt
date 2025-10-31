@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.card.tag
 import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.data.ScopedData
 
-class TierListTagProvider(
+internal class TierListTagProvider(
     private val data: ScopedData,
     private val tagExpansionService: TagExpansionService,
 ): ITagProvider {
