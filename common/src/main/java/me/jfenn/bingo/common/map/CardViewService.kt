@@ -228,6 +228,7 @@ internal class CardViewService(
         val image = CardTileImage(
             item = if (isHidden) null else entry.display.item,
             texture = if (isHidden) null else entry.display.image,
+            mapTexture = if (isHidden) null else entry.display.mapImage,
         )
 
         val imageListObjectives = when (objective) {

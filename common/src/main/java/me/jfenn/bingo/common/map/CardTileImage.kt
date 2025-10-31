@@ -11,6 +11,7 @@ import net.minecraft.util.Identifier
 class CardTileImage(
     val item: IItemStackSerialized? = null,
     val texture: String? = null,
+    val mapTexture: String? = null,
 ) {
 
     companion object {
@@ -18,13 +19,14 @@ class CardTileImage(
     }
 
     override fun hashCode(): Int {
-        return arrayOf(item?.identifier, texture).contentHashCode()
+        return arrayOf(item?.identifier, texture, mapTexture).contentHashCode()
     }
 
     override fun equals(other: Any?): Boolean {
         return other is CardTileImage &&
                 item?.identifier == other.item?.identifier &&
-                texture == other.texture
+                texture == other.texture &&
+                mapTexture == other.mapTexture
     }
 
     object V1 : PacketConverter<CardTileImage> {

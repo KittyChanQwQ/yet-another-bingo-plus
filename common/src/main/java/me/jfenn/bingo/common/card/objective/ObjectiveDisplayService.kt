@@ -68,6 +68,7 @@ class ObjectiveDisplayService(
                 item = item,
                 decoration = data?.decoration ?: fallback.decoration,
                 image = data?.image ?: fallback.image,
+                mapImage = data?.mapImage ?: fallback.mapImage,
             )
         } catch (e: Throwable) {
             log.objectiveError(id, "Unable to resolve display:", e)
