@@ -132,18 +132,15 @@ internal class BingoMessageRenderer(
                 ScoreMessagePacket.MessageType.CARD_COMPLETED,
                 ScoreMessagePacket.MessageType.LINE_SCORED -> ICON_CHECK_ID
                 ScoreMessagePacket.MessageType.ITEM_SCORED -> ICON_HIDDEN_ID
-                else -> null
             }
 
-            if (iconTexture != null) {
-                drawService.drawGuiTexture(
-                    texture = iconTexture,
-                    x = itemX, y = itemY,
-                    u = 0f, v = 0f,
-                    width = 16, height = 16,
-                    textureWidth = 16, textureHeight = 16,
-                )
-            }
+            drawService.drawGuiTexture(
+                texture = iconTexture,
+                x = itemX, y = itemY,
+                u = 0f, v = 0f,
+                width = 16, height = 16,
+                textureWidth = 16, textureHeight = 16,
+            )
         }
 
         if (usingShaderColor) {

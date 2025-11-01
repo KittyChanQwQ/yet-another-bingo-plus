@@ -27,6 +27,7 @@ import java.time.Duration
 import java.util.*
 
 @Serializable
+@ConsistentCopyVisibility
 data class BingoState internal constructor(
     var isLobbyMode: Boolean = false,
     var gameId: UuidAsString = UUID.randomUUID(),
