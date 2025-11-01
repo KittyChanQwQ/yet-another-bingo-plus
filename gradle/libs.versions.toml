@@ -1,8 +1,8 @@
 [versions]
-kotlin = "2.1.21"
+kotlin = "2.2.21"
 kotlinx-serialization = "1.9.0" # Note: must exactly match the versions in fabric-language-kotlin for each mod impl
-fabric-language-kotlin = "1.13.3+kotlin.2.1.21"
-insert-koin = "3.5.6"
+fabric-language-kotlin = "1.13.7+kotlin.2.2.21"
+insert-koin = "4.1.0"
 sqldelight = "2.0.2"
 mockk = "1.13.11"
 assertk = "0.28.1"
@@ -29,16 +29,16 @@ fabric-permissions-api-v2 = { module = "me.lucko:fabric-permissions-api", versio
 papi-mc1i20i1 = { module = "eu.pb4:placeholder-api", version = "2.1.2+1.20.1" }
 waystones = { module = "curse.maven:waystones-245755", version = "6225081" }
 
-hikari = { module = "com.zaxxer:HikariCP", version = "5.1.0" }
+hikari = { module = "com.zaxxer:HikariCP", version = "7.0.2" }
 sqldelight-jdbc = { module = "app.cash.sqldelight:jdbc-driver", version.ref = "sqldelight" }
 sqldelight-sqlite = { module = "app.cash.sqldelight:sqlite-3-38-dialect", version.ref = "sqldelight" }
 sqldelight-runtime = { module = "app.cash.sqldelight:runtime-jvm", version.ref = "sqldelight" }
-sqlite = { module = "org.xerial:sqlite-jdbc", version = "3.46.0.0" }
+sqlite = { module = "org.xerial:sqlite-jdbc", version = "3.50.3.0" }
 
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
 
 [plugins]
-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.1.10" }
+kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
