@@ -127,7 +127,7 @@ internal class SpawnService(
 
         val world = getSpawnDimension()
 
-        val team = teamService.getPlayerTeam(player.player)
+        val team = teamService.getPlayerTeam(player)
         val spawn = team?.let {
             getTeamSpawnpoint(team)
         } ?: world.spawnPos

@@ -25,7 +25,7 @@ internal class NightVisionController(
 ) : BingoComponent() {
 
     private fun updateNightVision(player: IPlayerHandle) {
-        val isOnTeam = teamService.isPlaying(player.player)
+        val isOnTeam = teamService.isPlaying(player)
 
         // give the player night_vision if configured
         // ...and remove it if not

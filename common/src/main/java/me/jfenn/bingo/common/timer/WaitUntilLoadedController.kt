@@ -9,8 +9,8 @@ import me.jfenn.bingo.common.utils.milliseconds
 import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.mixinhandler.ServerPlayNetworkHandlerMixinHandler
+import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
-import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import java.time.Instant
 
@@ -24,7 +24,7 @@ internal class WaitUntilLoadedController(
     private val state: BingoState,
     private val countdownService: CountdownService,
     private val teamService: TeamService,
-    private val server: MinecraftServer,
+    private val playerManager: IPlayerManager,
     private val log: Logger,
 ) {
 
@@ -42,10 +42,10 @@ internal class WaitUntilLoadedController(
             // +2 ticks to ensure that previous movement events are excluded
             val startedLoading = (startedLoading ?: return@onGameTick) + 40.milliseconds
 
-            val isEveryPlayerLoaded = server.playerManager.playerList
+            val isEveryPlayerLoaded = playerManager.getPlayers()
                 .filter { teamService.isPlaying(it) }
                 .all { player ->
-                    val lastMovementPacket = ServerPlayNetworkHandlerMixinHandler.getLastPlayerMovement(player)
+                    val lastMovementPacket = ServerPlayNetworkHandlerMixinHandler.getLastPlayerMovement(player.player)
                     lastMovementPacket != null && lastMovementPacket > startedLoading
                 }
 

@@ -101,6 +101,13 @@ interface IPlayerHandle : ILivingEntity {
     fun sendTitle(title: IText, subtitle: IText?)
 
     fun startRiding(entity: IEntity, force: Boolean)
+
+    val abilities: IPlayerAbilities
+    fun sendAbilitiesUpdate()
+}
+
+interface IPlayerAbilities {
+    var allowFlying: Boolean
 }
 
 enum class PlayerSoundEvent {

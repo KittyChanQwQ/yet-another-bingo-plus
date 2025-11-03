@@ -262,7 +262,7 @@ internal class ScoreboardController(
 
                 // Determine which players should be shown the scoreboard
                 val players = playerManager.getPlayers()
-                    .filter { teamService.getPlayerTeam(it.player)?.key == team?.key }
+                    .filter { teamService.getPlayerTeam(it)?.key == team?.key }
                     .filter { playerSettingsService.getPlayer(it).scoreboard }
                     .filter { scoreboardService.shouldDisplayScoreboard(it) }
 

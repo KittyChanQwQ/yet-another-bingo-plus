@@ -37,7 +37,7 @@ internal class CountdownController(
     private val entityMap = mutableMapOf<BingoTeamKey, IBatEntity>()
 
     private val playingPlayerList get() = playerManager.getPlayers()
-        .filter { teamService.isPlaying(it.player) }
+        .filter { teamService.isPlaying(it) }
 
     private fun forcePlayersInvisible() {
         for (player in playingPlayerList) {

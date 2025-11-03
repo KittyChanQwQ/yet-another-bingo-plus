@@ -367,6 +367,15 @@ class PlayerHandle(
     override fun startRiding(entity: IEntity, force: Boolean) {
         player.startRiding(entity.entity, true, false)
     }
+
+    override val abilities: IPlayerAbilities
+        get() = object : IPlayerAbilities {
+            override var allowFlying by player.abilities::allowFlying
+        }
+
+    override fun sendAbilitiesUpdate() {
+        player.sendAbilitiesUpdate()
+    }
 }
 
 private fun PlayerSoundEvent.toSoundEvent() = when (this) {

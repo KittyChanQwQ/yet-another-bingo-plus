@@ -10,7 +10,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import kotlin.math.ceil
@@ -27,16 +26,12 @@ internal class TeamService(
     private val permissions: IPermissionsApi,
 ) {
 
-    fun getPlayerTeam(player: IPlayerHandle) = getPlayerTeam(player.player)
-
-    fun getPlayerTeam(player: ServerPlayerEntity): BingoTeam? {
-        val team = teamManager.getPlayerTeam(player) ?: return null
+    fun getPlayerTeam(player: IPlayerHandle): BingoTeam? {
+        val team = teamManager.getPlayerTeam(player.player) ?: return null
         return state.teams[BingoTeamKey(team.name)]
     }
 
-    fun isPlaying(player: IPlayerHandle) = isPlaying(player.player)
-
-    fun isPlaying(player: ServerPlayerEntity): Boolean {
+    fun isPlaying(player: IPlayerHandle): Boolean {
         return getPlayerTeam(player) != null
     }
 

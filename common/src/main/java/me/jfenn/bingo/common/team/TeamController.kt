@@ -64,7 +64,7 @@ internal class TeamController(
             }
 
             for (player in playerManager.getPlayers()) {
-                val playerTeam = teamService.getPlayerTeam(player.player)
+                val playerTeam = teamService.getPlayerTeam(player)
 
                 // If the player has switched teams, update the player UUID sets...
                 // (this is necessary because teams could be changed without us knowing, using /team join)

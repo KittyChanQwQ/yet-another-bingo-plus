@@ -15,7 +15,6 @@ import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.server.MinecraftServer
-import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
 import org.slf4j.Logger
 
@@ -55,7 +54,7 @@ internal class PlayerController(
     private fun updateVanishStatus(
         player: IPlayerHandle
     ): Boolean {
-        val team = teamService.getPlayerTeam(player.player)
+        val team = teamService.getPlayerTeam(player)
         val isOnActiveTeam = team?.isPlaying() == true
 
         // if the player is not on a team, they should be vanished
@@ -74,7 +73,7 @@ internal class PlayerController(
             return
         }
 
-        val team = teamService.getPlayerTeam(player.player)
+        val team = teamService.getPlayerTeam(player)
         val isOnActiveTeam = team?.isPlaying() == true
         log.debug("updateGameMode({}, forceReset={})", player.playerName, forceReset)
 
@@ -133,8 +132,8 @@ internal class PlayerController(
         val isVanished = updateVanishStatus(player)
         // allow players in adventure mode to fly
         if (isVanished && vanishApi.isInstalled()) {
-            player.player.abilities.allowFlying = true
-            player.player.sendAbilitiesUpdate()
+            player.abilities.allowFlying = true
+            player.sendAbilitiesUpdate()
         }
     }
 
@@ -202,7 +201,7 @@ internal class PlayerController(
             spawnService.teleportPlayer(player)
 
             // give spawn equipment to the player if they are on a team
-            if (teamService.isPlaying(player.player) && state.state == GameState.PLAYING) {
+            if (teamService.isPlaying(player) && state.state == GameState.PLAYING) {
                 spawnService.giveSpawnEquipment(listOf(player))
             }
         }
@@ -248,7 +247,7 @@ internal class PlayerController(
                 state.state == GameState.PLAYING
                 // if KEEP_INVENTORY is on, we don't need to replace these items
                 && !server.gameRules.get(GameRules.KEEP_INVENTORY).get()
-                && teamService.isPlaying(player.player)
+                && teamService.isPlaying(player)
             ) {
                 spawnService.giveSpawnEquipment(listOf(player))
             }
@@ -311,25 +310,25 @@ internal class PlayerController(
                 }
 
                 // ensure that players don't run out of hunger in the lobby
-                if (state.isLobbyMode && state.state == GameState.PREGAME && player.player.hungerManager.foodLevel < 10) {
-                    player.player.hungerManager.foodLevel = 10
+                if (state.isLobbyMode && state.state == GameState.PREGAME && player.foodLevel < 10) {
+                    player.foodLevel = 10
                 }
 
-                if (state.state == GameState.PLAYING && player.player.health > 0f && !player.isSpectator) {
+                if (state.state == GameState.PLAYING && player.health > 0f && !player.isSpectator) {
                     // if elytra mode is configured, give the player an elytra
-                    if (options.isElytra && teamService.isPlaying(player.player))
-                        elytraService.giveElytra(playerManager.forPlayer(player.player))
+                    if (options.isElytra && teamService.isPlaying(player))
+                        elytraService.giveElytra(player)
 
                     // if the player is spectating in adventure mode,
                     // they should be able to fly
-                    if (state.isLobbyMode && player.player.interactionManager.gameMode == GameMode.ADVENTURE) {
-                        val isSpectating = !teamService.isPlaying(player.player)
+                    if (state.isLobbyMode && player.gameMode == PlayerGameMode.ADVENTURE) {
+                        val isSpectating = !teamService.isPlaying(player)
                         if (isSpectating) {
                             resetPlayerHealth(player)
                         }
-                        if (isSpectating != player.player.abilities.allowFlying) {
-                            player.player.abilities.allowFlying = isSpectating
-                            player.player.sendAbilitiesUpdate()
+                        if (isSpectating != player.abilities.allowFlying) {
+                            player.abilities.allowFlying = isSpectating
+                            player.sendAbilitiesUpdate()
                         }
                     }
                 }

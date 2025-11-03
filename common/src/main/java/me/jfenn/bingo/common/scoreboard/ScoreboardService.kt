@@ -35,7 +35,7 @@ internal class ScoreboardService(
 
     fun shouldDisplayScoreboard(player: IPlayerHandle) : Boolean {
         // if the player is not on a team and isLobbyMode=false, then they should not see the scoreboard
-        val isOnTeam = teamService.isPlaying(player.player)
+        val isOnTeam = teamService.isPlaying(player)
         if (!state.isLobbyMode && !isOnTeam) return false
 
         // if the player has turned the scoreboard off
