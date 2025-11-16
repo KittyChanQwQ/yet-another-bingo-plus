@@ -1,5 +1,3 @@
 ### Bugs Squashed:
 
-- Fixed a crash when loading the mod with [Enderscape](https://modrinth.com/mod/enderscape) installed
-- Fixed some waxed copper items (lightning rod & copper golem) appearing in the wrong tier
-- Miscellaneous refactors & dependency updates
+- Fixed end portals not sending players to the overworld when the spawn dimension is the end (if the player has already skipped the credits screen)
