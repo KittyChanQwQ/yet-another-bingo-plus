@@ -83,6 +83,7 @@ public abstract class PlayerManagerMixin {
         if (alive) {
             // the player is exiting through the end portal...
             // if the spawnpoint is also in the end, then respawn them in the overworld
+            // NOTE: duplicated inside EndPortalBlockMixin
             if (PlayerManagerMixinHelper.Companion.shouldOverrideEndRespawn()) {
                 var overworld = player.server.getOverworld();
                 player.setSpawnPoint(overworld.getRegistryKey(), overworld.getSpawnPos(), overworld.getSpawnAngle(), false, false);

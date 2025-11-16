@@ -37,8 +37,7 @@ internal class SpawnService(
             it.identifier == options.spawnDimension
         } ?: run {
             log.error("[SpawnService] Could not find spawnDimension '${options.spawnDimension}'; defaulting to minecraft:overworld")
-            worlds.find { it.identifier == "minecraft:overworld" }
-                ?: worlds.first()
+            serverWorldFactory.overworld
         }
     }
 

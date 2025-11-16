@@ -1,7 +1,6 @@
 package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.common.spawn.SpawnData;
-import me.jfenn.bingo.impl.BingoErrorReporter;
 import me.jfenn.bingo.mixinhandler.PlayerManagerMixinHelper;
 import me.jfenn.bingo.platform.block.BlockPosition;
 import net.minecraft.block.BlockState;
@@ -20,11 +19,7 @@ import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.storage.ReadView;
-import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -90,6 +85,7 @@ public abstract class PlayerManagerMixin {
         if (alive) {
             // the player is exiting through the end portal...
             // if the spawnpoint is also in the end, then respawn them in the overworld
+            // NOTE: duplicated inside EndPortalBlockMixin
             if (PlayerManagerMixinHelper.Companion.shouldOverrideEndRespawn()) {
                 var overworld = server.getOverworld();
                 player.setSpawnPoint(

@@ -4,6 +4,7 @@
   "package": "me.jfenn.bingo.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "EndPortalBlockMixin",
     "GameRuleOverrideMixin",
     "HungerManagerAccessor",
     "InteractionEntityMixin",
