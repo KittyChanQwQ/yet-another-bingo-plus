@@ -52,6 +52,18 @@
           "minecraft:mending": 1
         }
       }
+    },
+    {
+      "type": "item",
+      "item": "minecraft:enchanted_book",
+      "nbt": "{Enchantments:[{id:mending}]}",
+      "components": {
+        "minecraft:stored_enchantments": {
+          "levels": {
+            "minecraft:mending": 1
+          }
+        }
+      }
     }
   ]
 }
