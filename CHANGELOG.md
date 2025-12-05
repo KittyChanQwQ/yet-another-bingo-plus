@@ -1,3 +1,4 @@
 ### Bugs Squashed:
 
-- Fixed end portals not sending players to the overworld when the spawn dimension is the end (if the player has already skipped the credits screen)
+- Fixed "One of ..." goals behaving incorrectly when players hold multiple items in lockout mode
+- Fixed the notorious Mending Book objective being unobtainable on 1.21.1
