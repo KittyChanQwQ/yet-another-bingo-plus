@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardTileImage
@@ -13,6 +12,7 @@ import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.util.Formatting
 
 internal class GameMessageService(
@@ -64,9 +64,12 @@ internal class GameMessageService(
         val chatMessage = text.string(
             if (message.isLost) StringKey.GameMessageLostItem else StringKey.GameMessageCapturedItem,
             when {
-                message.player != null ->
-                    text.literal(team.symbol?.plus(" ").orEmpty() + message.player.name)
+                message.player != null -> {
+                    text.empty()
+                        .append(team.getSymbolText(text) ?: text.empty())
+                        .append(message.player.name)
                         .formatted(team.textColor)
+                }
                 else -> team.getName(text, playerName = true, bracketed = false)
             },
             itemText,

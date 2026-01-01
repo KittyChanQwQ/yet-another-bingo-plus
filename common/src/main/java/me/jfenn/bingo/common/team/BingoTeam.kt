@@ -110,6 +110,13 @@ data class BingoTeam(
 
     fun getSimpleName() = name.copy()
 
+    fun getSymbolText(textProvider: TextProvider): IText? {
+        return players.takeIf { it.size == 1 }
+            ?.firstOrNull()
+            ?.let { textProvider.player(it.uuid)?.formatted(Formatting.WHITE)?.append(" ") }
+            ?: symbol?.let { textProvider.literal("$it ") }
+    }
+
     fun getName(
         textProvider: TextProvider,
         playerName: Boolean = false,
@@ -121,8 +128,10 @@ data class BingoTeam(
             ?: (if (shouldFormatName && teamNameKey != null) textProvider.string(teamNameKey, getSimpleName()) else null)
             ?: getSimpleName()
 
+        val teamSymbol = getSymbolText(textProvider)
+
         return teamName
-            .let { if (symbol && this.symbol != null) textProvider.empty().append("${this.symbol} ").append(it) else it }
+            .let { if (symbol && teamSymbol != null) textProvider.empty().append(teamSymbol).append(it) else it }
             .formatted(this.textColor)
             .let { if (bracketed) it.bracketed() else it }
             .also { t ->

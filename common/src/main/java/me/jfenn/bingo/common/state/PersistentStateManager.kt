@@ -24,7 +24,7 @@ import kotlin.reflect.KType
 @OptIn(ExperimentalSerializationApi::class)
 class PersistentStateManager(
     val logger: Logger,
-    val serializers: IJsonSerializers,
+    serializers: IJsonSerializers,
     val serverWorldFactory: IServerWorldFactory,
     eventBus: IEventBus,
 ) : IPersistentStateManager {
@@ -100,6 +100,7 @@ class PersistentStateManager(
         }
 
         type.value = value
+        logger.debug("Writing persistent state ${type.id}... Done!")
     }
 
     private class Type<T: Any>(

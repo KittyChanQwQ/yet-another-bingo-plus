@@ -4,6 +4,7 @@ import kotlinx.serialization.Contextual
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.net.URI
+import java.util.*
 
 interface ITextFactory {
     fun empty(): IText
@@ -12,6 +13,7 @@ interface ITextFactory {
     fun keybind(key: String): IText
     fun translatable(key: String, fallback: String?, vararg args: Any): IText
     fun bracketedCopyable(str: String): IText
+    fun player(uuid: UUID): IText? = null
 
     fun joinText(
         list: List<IText>,

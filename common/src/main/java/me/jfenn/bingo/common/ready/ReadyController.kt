@@ -192,7 +192,10 @@ internal class ReadyController(
         events.onPacket(packets.readySetV1) {
             val isReady = it.packet.isReady
             val result = readyService.setReady(it.player, isReady)
-            it.player.sendMessage(result.message)
+            // Only send the chat message if the player is in multiplayer (or if it failed)
+            if (!state.isSingleplayer() || result !is ReadyResult.ChangedTo) {
+                it.player.sendMessage(result.message)
+            }
         }
 
         events.onPlayerChannelRegister {

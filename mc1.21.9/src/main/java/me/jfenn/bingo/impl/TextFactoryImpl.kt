@@ -4,8 +4,11 @@ import me.jfenn.bingo.platform.text.HoverAction
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.platform.text.TextAction
+import net.minecraft.component.type.ProfileComponent
 import net.minecraft.text.*
+import net.minecraft.text.`object`.PlayerTextObjectContents
 import net.minecraft.util.Formatting
+import java.util.*
 
 class TextFactoryImpl : ITextFactory {
     override fun empty(): IText {
@@ -36,6 +39,17 @@ class TextFactoryImpl : ITextFactory {
 
     override fun bracketedCopyable(str: String): IText {
         return TextImpl(Texts.bracketedCopyable(str))
+    }
+
+    override fun player(uuid: UUID): IText {
+        return TextImpl(
+            Text.`object`(
+                PlayerTextObjectContents(
+                    ProfileComponent.ofDynamic(uuid),
+                    true
+                )
+            )
+        )
     }
 }
 
