@@ -22,5 +22,12 @@
   "bingo.command.data.tag.add.success": "已為 %s 增添 %s 標籤",
   "bingo.command.data.tag.remove.success": "已從 %2$s 上移除 %1$s 標籤",
   "bingo.command.end.success": "遊戲已暫停！",
-  "bingo.command.join.success": "已將玩家 %s 移動至隊伍 %s！"
+  "bingo.command.join.spectators": "%s已成為旁觀者！",
+  "bingo.command.join.success": "已將玩家 %s 移動至隊伍 %s！",
+  "bingo.command.join.already_on_team": "該玩家已在%s隊！",
+  "bingo.command.join.does_not_exist": "%s隊並不存在！",
+  "bingo.command.lobby.restarting": "正在重啟伺服器...",
+  "bingo.command.ready.true": "%s已準備！",
+  "bingo.command.ready.false": "%s已取消準備！",
+  "bingo.command.teammsg.spectators": "旁觀者"
 }

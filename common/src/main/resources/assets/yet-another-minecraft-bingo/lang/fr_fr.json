@@ -38,6 +38,8 @@
   "bingo.command.ready.true": "%s est prêt !",
   "bingo.command.ready.false": "%s n'est plus prêt !",
   "bingo.command.ready.cancelled": "Chrono de préparation annulé !",
+  "bingo.command.ready.not_on_a_team": "Vous ne pouvez pas être prêt sans rejoindre une équipe ! (faites '%s' si vous vous voulez être spectateur)",
+  "bingo.command.ready.not_running": "Impossible de lancer - d'autres joueurs ont besoins de rejoindre une équipe !",
   "bingo.command.reset.success": "Réinitialisation de la partie...",
   "bingo.command.resume.success": "La partie continue !",
   "bingo.command.shuffleteams.success": "Les équipes ont été mélangées !",
