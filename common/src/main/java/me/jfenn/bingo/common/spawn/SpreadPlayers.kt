@@ -36,6 +36,11 @@ class SpreadPlayers(
         )
     }
 
+    init {
+        require(invalidSpawnBlocks.list().isNotEmpty()) { "invalid_spawn block tag failed to load" }
+        require(invalidSpawnBiomes.list().isNotEmpty()) { "invalid_spawn biome tag failed to load" }
+    }
+
     // Clamp spawn positions to the overworld border
     // - yes, even if the spawn dimension isn't in the overworld...
     private val worldBorder = world.worldBorder

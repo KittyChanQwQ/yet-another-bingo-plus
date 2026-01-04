@@ -51,7 +51,6 @@ val sharedModule = module {
     single { ParticleFactory } bind IParticleFactory::class
     singleOf(::ServerEventsImpl) withOptions { createdAtStart() }
     singleOf(::StatManagerImpl) bind IStatManager::class
-    singleOf(::TagAccessorImpl) bind ITagAccessor::class
     singleOf(::TextFactoryImpl) bind ITextFactory::class
     single { JsonSerializers(get(), null) } bind IJsonSerializers::class
     singleOf(::TextSerializer) bind ITextSerializer::class
@@ -61,6 +60,7 @@ val sharedModule = module {
         scopedOf(::BossBarManager) bind IBossBarManager::class
         scopedOf(::GameRulesImpl) bind IGameRules::class
         scopedOf(::PlayerManager) bind IPlayerManager::class
+        scopedOf(::TagAccessorImpl) bind ITagAccessor::class
         scopedOf(::TeamManager) bind ITeamManager::class
         scopedOf(::MapServiceImpl) bind IMapService::class
         scopedOf(::MinecraftServerImpl) binds arrayOf(ITickManager::class, ILevelStorage::class)

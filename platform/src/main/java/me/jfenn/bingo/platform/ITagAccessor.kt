@@ -11,6 +11,7 @@ interface ITagAccessor {
 }
 
 interface ITagContents<T: IRegistryEntry> {
+    fun list(): List<T>
     fun contains(entry: T): Boolean
 }
 
