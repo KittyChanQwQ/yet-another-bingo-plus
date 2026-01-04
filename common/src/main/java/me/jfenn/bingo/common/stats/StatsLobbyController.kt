@@ -16,7 +16,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.block.Blocks
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Formatting
@@ -316,7 +315,7 @@ internal class StatsLobbyController(
         val player = playerManager.getPlayers()
             .filter { it.world.identifier == LOBBY_WORLD_ID.toString() }
             .find { player ->
-                player.world.getBlockState(player.blockPos).block == Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE
+                player.world.getBlockState(player.blockPos).identifier == "minecraft:heavy_weighted_pressure_plate"
             }
 
         if (player != null) {

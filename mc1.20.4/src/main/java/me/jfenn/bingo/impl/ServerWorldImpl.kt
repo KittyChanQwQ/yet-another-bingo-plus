@@ -3,15 +3,18 @@ package me.jfenn.bingo.impl
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.impl.block.BlockStateImpl
+import me.jfenn.bingo.impl.world.ChunkImpl
 import me.jfenn.bingo.mixin.LevelPropertiesAccessor
 import me.jfenn.bingo.mixin.ServerChunkManagerAccessor
 import me.jfenn.bingo.mixin.ThreadedAnvilChunkStorageAccessor
 import me.jfenn.bingo.mixinhelper.ServerChunkManagerMixinHelper
+import me.jfenn.bingo.platform.IRegistryEntry
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.IWorldBorder
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.IBlockState
+import me.jfenn.bingo.platform.world.IChunk
 import net.minecraft.entity.boss.dragon.EnderDragonFight
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ChunkTicketType
@@ -19,6 +22,7 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
 import net.minecraft.util.Unit
 import net.minecraft.util.math.ChunkPos
+import net.minecraft.world.World
 import net.minecraft.world.border.WorldBorder
 import net.minecraft.world.chunk.Chunk
 import net.minecraft.world.chunk.ChunkStatus
@@ -154,12 +158,20 @@ class ServerWorldImpl(
         get() = world.seaLevel
     override val spawnPos: BlockPosition
         get() = BlockPosition.fromBlockPos(world.spawnPos)
+    override val hasCeiling: Boolean
+        get() = world.dimension.hasCeiling
+    override val isOverworld: Boolean
+        get() = world.registryKey == World.OVERWORLD
 
     override var timeOfDay by world::timeOfDay
 
     override fun getBlockState(pos: BlockPosition): IBlockState {
         return world.getBlockState(pos.toBlockPos())
             .let { BlockStateImpl.fromBlockState(it) }
+    }
+
+    override fun getBiome(pos: BlockPosition): IRegistryEntry.Biome {
+        return BiomeRegistryEntry(world.getBiome(pos.toBlockPos()))
     }
 
     private val taskExecutor = Executors.createServerTaskExecutor(world.server)
@@ -177,7 +189,11 @@ class ServerWorldImpl(
         }
     }
 
-    override fun getChunkAsync(chunk: Pair<Int, Int>): CompletableFuture<Chunk?> {
+    override fun getChunkSync(chunk: Pair<Int, Int>): IChunk {
+        return ChunkImpl(world.getChunk(chunk.first, chunk.second))
+    }
+
+    override fun getChunkAsync(chunk: Pair<Int, Int>): CompletableFuture<IChunk?> {
         if (!world.server.isOnThread) {
             return CompletableFuture.supplyAsync({ getChunkAsync(chunk) }, world.server)
                 .thenCompose({ it })
@@ -187,7 +203,7 @@ class ServerWorldImpl(
         val chunkManager = world.chunkManager
         chunkManager.addTicket(TICKET_ASYNC, ChunkPos(chunk.first, chunk.second), 0, Unit.INSTANCE)
 
-        (chunkManager as ServerChunkManagerAccessor).invokeUpdateChunks()
+        (chunkManager as ServerChunkManagerAccessor).invokeTick()
 
         val threadedAnvilChunkStorage = world.chunkManager.threadedAnvilChunkStorage
         val chunkHolder = (threadedAnvilChunkStorage as ThreadedAnvilChunkStorageAccessor)
@@ -202,7 +218,7 @@ class ServerWorldImpl(
             chunkManager.removeTicket(TICKET_ASYNC, ChunkPos(chunk.first, chunk.second), 0, Unit.INSTANCE)
         }, taskExecutor)
 
-        return chunkFuture
+        return chunkFuture.thenApply { if (it != null) ChunkImpl(it) else null }
     }
 
     override fun close() {

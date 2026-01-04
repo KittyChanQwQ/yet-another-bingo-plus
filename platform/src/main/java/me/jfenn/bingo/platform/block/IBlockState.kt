@@ -1,11 +1,14 @@
 package me.jfenn.bingo.platform.block
 
-import net.minecraft.block.Block
+import me.jfenn.bingo.platform.IRegistryEntry
+import me.jfenn.bingo.platform.IServerWorld
 import org.joml.Vector3i
 
 interface IBlockState {
     val identifier: String
-    val block: Block
+    val block: IRegistryEntry.Block
+    fun isEmpty(world: IServerWorld, pos: BlockPosition): Boolean
+    val isFluid: Boolean
 }
 
 interface IWallSignBlockState: IBlockState {

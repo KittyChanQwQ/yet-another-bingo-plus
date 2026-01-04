@@ -1,21 +1,12 @@
 package me.jfenn.bingo.common.spawn
 
+import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.platform.IExecutors
-import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
-import net.minecraft.block.Blocks
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.util.math.ChunkSectionPos
-import net.minecraft.util.math.Direction
-import net.minecraft.world.Heightmap
-import net.minecraft.world.World
-import net.minecraft.world.biome.BiomeKeys
-import net.minecraft.world.chunk.Chunk
-import net.minecraft.world.chunk.ChunkStatus
+import me.jfenn.bingo.platform.world.IChunk
+import me.jfenn.bingo.platform.world.IChunkHeightmap
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -26,68 +17,44 @@ import kotlin.math.sin
 class SpreadPlayers(
     private val log: Logger,
     private val taskExecutor: IExecutors.IServerTaskExecutor,
-    private val world: ServerWorld,
-    private val worldImpl: IServerWorld,
+    private val world: IServerWorld,
+    private val invalidSpawnBiomes: ITagContents<IRegistryEntry.Biome>,
+    private val invalidSpawnBlocks: ITagContents<IRegistryEntry.Block>,
 ) {
 
     class Factory(
         private val log: Logger,
         private val taskExecutor: IExecutors.IServerTaskExecutor,
+        private val tagAccessor: ITagAccessor,
     ) {
         fun forWorld(world: IServerWorld) = SpreadPlayers(
             log = log,
             taskExecutor = taskExecutor,
-            world = world.world,
-            worldImpl = world
+            world = world,
+            invalidSpawnBiomes = tagAccessor.getBiomeTag("$MOD_ID_BINGO:invalid_spawn"),
+            invalidSpawnBlocks = tagAccessor.getBlockTag("$MOD_ID_BINGO:invalid_spawn"),
         )
     }
 
     // Clamp spawn positions to the overworld border
     // - yes, even if the spawn dimension isn't in the overworld...
-    private val worldBorder = worldImpl.worldBorder
-    private val coordinateScale = worldImpl.coordinateScale
-    private val worldBorderCenterInWorld = BlockPos((worldBorder.centerX / coordinateScale).toInt(), 0, (worldBorder.centerZ / coordinateScale).toInt())
+    private val worldBorder = world.worldBorder
+    private val coordinateScale = world.coordinateScale
+    private val worldBorderCenterInWorld = BlockPosition((worldBorder.centerX / coordinateScale).toInt(), 0, (worldBorder.centerZ / coordinateScale).toInt())
 
-    private val logicalHeight = worldImpl.logicalHeight
-    private val bottomY = worldImpl.bottomY
-    private val seaLevel = worldImpl.seaLevel
-    private val worldSpawnPos = worldImpl.spawnPos
+    private val logicalHeight = world.logicalHeight
+    private val bottomY = world.bottomY
+    private val seaLevel = world.seaLevel
+    private val worldSpawnPos = world.spawnPos
 
     init {
-        log.info("[SpreadPlayers] Initialized in dimension ${worldImpl.identifier} with coordinateScale=$coordinateScale, logicalHeight=$logicalHeight, bottomY=$bottomY, seaLevel=$seaLevel")
+        log.info("[SpreadPlayers] Initialized in dimension ${world.identifier} with coordinateScale=$coordinateScale, logicalHeight=$logicalHeight, bottomY=$bottomY, seaLevel=$seaLevel")
     }
 
-    private val invalidSpawnBiomes = setOf(
-        BiomeKeys.BEACH,
-        BiomeKeys.OCEAN,
-        BiomeKeys.RIVER,
-        BiomeKeys.COLD_OCEAN,
-        BiomeKeys.DEEP_OCEAN,
-        BiomeKeys.WARM_OCEAN,
-        BiomeKeys.SNOWY_BEACH,
-        BiomeKeys.FROZEN_RIVER,
-        BiomeKeys.FROZEN_OCEAN,
-        BiomeKeys.LUKEWARM_OCEAN,
-        BiomeKeys.DEEP_COLD_OCEAN,
-        BiomeKeys.DEEP_FROZEN_OCEAN,
-        BiomeKeys.DEEP_LUKEWARM_OCEAN,
-    )
-
-    private val invalidSpawnBlocks = setOf(
-        Blocks.POWDER_SNOW,
-        Blocks.MAGMA_BLOCK,
-        Blocks.CACTUS,
-        Blocks.NETHER_WART_BLOCK,
-        Blocks.WARPED_WART_BLOCK,
-        Blocks.BONE_BLOCK,
-        Blocks.CHORUS_PLANT,
-        Blocks.CHORUS_FLOWER,
-    )
-
     private fun spreadGroups(count: Int, distance: Int): List<Pair<Int, Int>> {
-        val center = ChunkPos(worldBorderCenterInWorld)
+        val center = worldBorderCenterInWorld.toChunkPos()
         val radius = ((distance * count) / (2 * Math.PI))
-            .coerceAtMost(ChunkSectionPos.getSectionCoord(worldBorder.maxRadius).toDouble() - 16.0)
+            .coerceAtMost((worldBorder.maxRadius / 16).toDouble() - 16.0)
             .coerceAtLeast(0.0)
 
         val theta = 2 * Math.PI * Math.random()
@@ -98,12 +65,12 @@ class SpreadPlayers(
                 val x = sin(t0) * radius
                 val z = cos(t0) * radius
 
-                add(Pair(center.x + x.toInt(), center.z + z.toInt()))
+                add(Pair(center.first + x.toInt(), center.second + z.toInt()))
             }
         }
     }
 
-    private fun isValidSpawn(chunk: Chunk, groundPos: BlockPos): Boolean {
+    private fun isValidSpawn(chunk: IChunk, groundPos: BlockPosition): Boolean {
         // scale the groundPos to match overworld positions for the worldBorder
         val groundPosInOverworld = BlockPosition(
             groundPos.x.times(coordinateScale).toInt(),
@@ -115,23 +82,23 @@ class SpreadPlayers(
             return false
         }
 
-        if (world.registryKey == World.OVERWORLD && groundPos.y <= seaLevel) {
+        if (world.isOverworld && groundPos.y <= seaLevel) {
             log.debug("Skipping block {} to avoid spawning underwater (y <= {})", groundPos, seaLevel)
             return false
         }
 
         val groundState = chunk.getBlockState(groundPos)
-        if (isEmptyBlock(world, groundPos, groundState))
+        if (groundState.isEmpty(world, groundPos))
             return false
-        if (isFluidBlock(groundState) || invalidSpawnBlocks.contains(groundState.block)) {
+        if (groundState.isFluid || invalidSpawnBlocks.contains(groundState.block)) {
             log.debug("Skipping block {} to avoid spawning on {}", groundPos, groundState)
             return false
         }
 
         for (y in 1..2) {
-            val blockPos = BlockPos(groundPos.x, groundPos.y + y, groundPos.z)
+            val blockPos = groundPos.move(y = y)
             val blockState = chunk.getBlockState(blockPos)
-            if (!isEmptyBlock(world, blockPos, blockState) || isFluidBlock(blockState)) {
+            if (!blockState.isEmpty(world, blockPos) || blockState.isFluid) {
                 log.debug("Skipping block {} to avoid spawning inside {}", groundPos, blockState)
                 return false
             }
@@ -147,27 +114,28 @@ class SpreadPlayers(
         }
     }
 
-    private fun adjacentBlocks(pos: BlockPos, range: Int) = sequence {
+    private fun adjacentBlocks(pos: BlockPosition, range: Int) = sequence {
         for (x in -range..range) {
             for (z in -range..range) {
                 if (x == 0 && z == 0) continue
-                yield(BlockPos(pos.x + x, pos.y, pos.z + z))
+                yield(BlockPosition(pos.x + x, pos.y, pos.z + z))
             }
         }
     }
 
-    private fun selectChunkPosition(chunk: Chunk): BlockPos? {
+    private fun selectChunkPosition(chunk: IChunk): BlockPosition? {
         // if world.dimension.hasCeiling, this needs to find a spawnpoint without using heightmaps
         // otherwise, choosing "the_nether" will spawn players on the nether roof!
 
-        if (world.dimension.hasCeiling) {
+        if (world.hasCeiling) {
             // choose random positions in the chunk until a valid one is found
             val spawnBlockPos = everyChunkIndex(2)
                 .shuffled()
                 .map {
-                    chunk.pos.getBlockPos(it % 16, logicalHeight - 2, it / 16).mutableCopy()
+                    chunk.getBlockPos(it % 16, logicalHeight - 2, it / 16)
                 }
-                .map { pos ->
+                .map { immutablePos ->
+                    var pos = immutablePos
                     // iterate until these match (false, false, true)
                     // i.e. a solid block underneath two air blocks
                     var isEmptyAbove = false
@@ -177,8 +145,8 @@ class SpreadPlayers(
                         isEmptyAbove = isEmpty
                         isEmpty = isEmptyBelow
 
-                        pos.move(Direction.DOWN)
-                        isEmptyBelow = isEmptyBlock(world, pos, chunk.getBlockState(pos))
+                        pos = pos.move(y = -1)
+                        isEmptyBelow = chunk.getBlockState(pos).isEmpty(world, pos)
                     }
 
                     if (!(isEmptyAbove && isEmpty && !isEmptyBelow))
@@ -198,11 +166,11 @@ class SpreadPlayers(
                 }
                 .find { it != null }
 
-            return spawnBlockPos?.toImmutable()
+            return spawnBlockPos
         } else {
             // otherwise, use heightmaps to spawn players near the world surface
             // this hopefully finds a reasonable actual spawn location without placing the player in a cave or on a tree
-            val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES)
+            val heightmap = chunk.getHeightmap(IChunkHeightmap.Type.MOTION_BLOCKING_NO_LEAVES)
 
             return everyChunkIndex(1)
                 .shuffled()
@@ -210,11 +178,11 @@ class SpreadPlayers(
                     val x = it % 16
                     val z = it / 16
                     val height = heightmap.get(x, z)
-                    chunk.pos.getBlockPos(x, height - 1, z)
+                    chunk.getBlockPos(x, height - 1, z)
                 }
                 .filter {
                     // if the block is below sea level, skip it!
-                    !(world.registryKey == World.OVERWORLD && it.y <= seaLevel)
+                    !(world.isOverworld && it.y <= seaLevel)
                 }
                 .find { pos ->
                     isValidSpawn(chunk, pos) && adjacentBlocks(pos, 1).all { isValidSpawn(chunk, it) }
@@ -233,9 +201,9 @@ class SpreadPlayers(
         val xSign = x.sign.takeIf { it != 0 } ?: 1
 
         // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
-        val chunkCenter = BlockPos(x*16 + 8, logicalHeight, z*16 + 8)
+        val chunkCenter = BlockPosition(x*16 + 8, logicalHeight, z*16 + 8)
         val biomeTest = world.getBiome(chunkCenter)
-        if (invalidSpawnBiomes.contains(biomeTest.key.get())) {
+        if (invalidSpawnBiomes.contains(biomeTest)) {
             x += 4 * xSign
             return Result.NextChunk(Pair(x, z))
         }
@@ -248,11 +216,12 @@ class SpreadPlayers(
         )
         if (!worldBorder.contains(chunkCenterInOverworld)) {
             log.warn("Selected chunk is outside of the world border - attempting to find any valid position...")
-            val centerChunkPos = ChunkPos(worldBorderCenterInWorld)
-            val centerChunk = world.getChunk(centerChunkPos.x, centerChunkPos.z)
+            worldBorderCenterInWorld.toChunkPos()
+            val centerChunkPos = worldBorderCenterInWorld.toChunkPos()
+            val centerChunk = world.getChunkSync(centerChunkPos)
             val centerPos = selectChunkPosition(centerChunk)
             if (centerPos != null) {
-                return Result.Finish(BlockPosition.fromBlockPos(centerPos))
+                return Result.Finish(centerPos)
             }
 
             log.error("Could not find any valid spawn location due to the world border. Using the default world spawn, which may be buggy...")
@@ -262,7 +231,7 @@ class SpreadPlayers(
         return Result.Success(Unit)
     }
 
-    private fun processChunk(chunkPos: Pair<Int, Int>, chunk: Chunk): Result<BlockPosition> {
+    private fun processChunk(chunkPos: Pair<Int, Int>, chunk: IChunk): Result<BlockPosition> {
         var (x, z) = chunkPos
         val xSign = x.sign.takeIf { it != 0 } ?: 1
 
@@ -273,7 +242,7 @@ class SpreadPlayers(
             return Result.NextChunk(Pair(x, z))
         }
 
-        if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos).key.get())) {
+        if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos))) {
             log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
             x += 4 * xSign
             return Result.NextChunk(Pair(x, z))
@@ -301,7 +270,7 @@ class SpreadPlayers(
                 }
             }
 
-            return worldImpl.getChunkAsync(startChunk).thenComposeAsync({ chunk ->
+            return world.getChunkAsync(startChunk).thenComposeAsync({ chunk ->
                 if (chunk == null) {
                     log.error("Could not find any valid spawn location because getChunk returned null. Using the default world spawn, which may be buggy...")
                     return@thenComposeAsync CompletableFuture.completedFuture(worldSpawnPos)
@@ -335,7 +304,7 @@ class SpreadPlayers(
                 }
             }
 
-            val chunk = world.getChunk(chunkPos.first, chunkPos.second, ChunkStatus.FULL, true)!!
+            val chunk = world.getChunkSync(chunkPos)
 
             return when (val result = processChunk(chunkPos, chunk)) {
                 is Result.NextChunk -> findSpawnPos(result.nextChunk)
@@ -379,7 +348,7 @@ class SpreadPlayers(
                 teams.indices.associate { i ->
                     val team = teams[i]
                     val position = positions[i]
-                    team.key to (position.getNow(null) ?: worldImpl.spawnPos)
+                    team.key to (position.getNow(null) ?: world.spawnPos)
                 }
             }
     }

@@ -2,8 +2,8 @@ package me.jfenn.bingo.platform
 
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.IBlockState
+import me.jfenn.bingo.platform.world.IChunk
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.world.chunk.Chunk
 import java.io.Closeable
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
@@ -29,14 +29,18 @@ interface IServerWorld {
     val bottomY: Int
     val seaLevel: Int
     val spawnPos: BlockPosition
+    val hasCeiling: Boolean
+    val isOverworld: Boolean
 
     var timeOfDay: Long
 
     fun getBlockState(pos: BlockPosition): IBlockState
+    fun getBiome(pos: BlockPosition): IRegistryEntry.Biome
 
     fun addTicket(chunk: Pair<Int, Int>): IChunkTicketHandle
 
-    fun getChunkAsync(chunk: Pair<Int, Int>): CompletableFuture<Chunk?>
+    fun getChunkSync(chunk: Pair<Int, Int>): IChunk
+    fun getChunkAsync(chunk: Pair<Int, Int>): CompletableFuture<IChunk?>
 
     fun close()
 

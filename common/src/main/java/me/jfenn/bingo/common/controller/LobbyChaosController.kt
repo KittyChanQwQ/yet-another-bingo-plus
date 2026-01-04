@@ -14,7 +14,6 @@ import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.platform.event.model.UseBlockEvent
-import net.minecraft.block.Blocks
 
 internal class LobbyChaosController(
     events: ScopedEvents,
@@ -32,7 +31,10 @@ internal class LobbyChaosController(
     }
 
     private val hitBlockSet = setOf(
-        Blocks.BARREL, Blocks.CHEST, Blocks.SWEET_BERRY_BUSH, Blocks.DECORATED_POT
+        "minecraft:barrel",
+        "minecraft:chest",
+        "minecraft:sweet_berry_bush",
+        "minecraft:decorated_pot"
     )
 
     init {
@@ -49,7 +51,7 @@ internal class LobbyChaosController(
 
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
                 val blockState = player.world.getBlockState(BlockPosition.fromBlockPos(it.hit.blockPos))
-                if (blockState.block in hitBlockSet) {
+                if (blockState.identifier in hitBlockSet) {
                     player.sendHotbarMessage(textProvider.string(StringKey.LobbySoundsMuted))
                 }
             }
@@ -58,7 +60,7 @@ internal class LobbyChaosController(
             // (levitation potions are annoying...)
             if (shouldPreventLobbyChaos(player)) {
                 val blockState = player.world.getBlockState(BlockPosition.fromBlockPos(it.hit.blockPos))
-                if (blockState.block == Blocks.BREWING_STAND)
+                if (blockState.identifier == "minecraft:brewing_stand")
                     return@register ActionResult.Fail(Unit)
             }
 

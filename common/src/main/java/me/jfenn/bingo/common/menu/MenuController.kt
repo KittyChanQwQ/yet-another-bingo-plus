@@ -259,7 +259,7 @@ internal class MenuController(
                 }
 
                 val isMenuPos = blocks.values.all {
-                    it?.block == Blocks.OAK_WALL_SIGN
+                    it?.identifier == "minecraft:oak_wall_sign"
                 }
                 val centerState = blocks.values.first()
 

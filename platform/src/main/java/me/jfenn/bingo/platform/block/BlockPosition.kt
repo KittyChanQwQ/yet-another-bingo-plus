@@ -23,6 +23,8 @@ data class BlockPosition(
         )
     }
 
+    fun up() = move(y = 1)
+
     fun toBlockPos() = BlockPos(x, y, z)
 
     fun toChunkPos() = Pair(x / 16, y / 16)

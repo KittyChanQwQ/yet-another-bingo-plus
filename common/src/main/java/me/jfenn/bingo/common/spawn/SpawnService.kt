@@ -170,21 +170,20 @@ internal class SpawnService(
             return GetSpawnpointResult.SearchChunk(newSpawnChunk)
         }
 
-        val pos = spawnpoint.toBlockPos().mutableCopy()
+        var pos = spawnpoint
         while (
-            !isEmptyBlock(world.world, pos, world.world.getBlockState(pos))
-            || !isEmptyBlock(world.world, pos.up(), world.world.getBlockState(pos.up()))
+            !world.getBlockState(pos).isEmpty(world, pos)
+            || !world.getBlockState(pos.up()).isEmpty(world, pos.up())
         ) {
-            pos.y += 1
+            pos = pos.up()
             if (pos.y >= world.world.logicalHeight) {
                 log.warn("[SpawnService] Spawn position for team $team is obstructed up to build height! Finding a new spawn position...")
                 return GetSpawnpointResult.SearchChunk(spawnpoint.toChunkPos())
             }
         }
 
-        val spawnPos = BlockPosition.fromBlockPos(pos)
-        onSpawnpointUpdated(team, spawnPos)
-        return GetSpawnpointResult.Found(spawnPos)
+        onSpawnpointUpdated(team, pos)
+        return GetSpawnpointResult.Found(pos)
     }
 
     fun getTeamSpawnpointAsync(team: BingoTeam): CompletableFuture<BlockPosition?> {
