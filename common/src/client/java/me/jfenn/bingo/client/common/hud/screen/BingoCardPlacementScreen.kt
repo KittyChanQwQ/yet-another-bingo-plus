@@ -6,10 +6,7 @@ import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.renderer.CursorType
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.renderer.use
-import me.jfenn.bingo.client.platform.screen.IButtonFactory
-import me.jfenn.bingo.client.platform.screen.IMutableScreenHelper
-import me.jfenn.bingo.client.platform.screen.IScreen
-import me.jfenn.bingo.client.platform.screen.IScreenFactory
+import me.jfenn.bingo.client.platform.screen.*
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.text.TextProvider
@@ -22,7 +19,7 @@ import kotlin.math.roundToInt
 
 internal class BingoCardPlacementScreen(
     koin: Koin,
-    onClose: (Result) -> Unit,
+    private val onCloseCallback: (Result) -> Unit,
     private val text: TextProvider = koin.get(),
     private val state: BingoHudState = koin.get(),
     private val config: BingoConfig = koin.get(),
@@ -40,7 +37,7 @@ internal class BingoCardPlacementScreen(
         fun create(onClose: (Result) -> Unit) = screenFactory.build(text.string(StringKey.CardTitle)) { helper ->
             BingoCardPlacementScreen(
                 koin = koin,
-                onClose = onClose,
+                onCloseCallback = onClose,
                 text = text,
                 state = state,
                 config = config,
@@ -64,14 +61,14 @@ internal class BingoCardPlacementScreen(
 
     private val cancelButton = buttonFactory.createDefaultButton(
         message = text.translatable("gui.cancel", "Cancel"),
-        onClick = { onClose(Result.Cancel) },
+        onClick = { onCloseCallback(Result.Cancel) },
     )
 
     private val saveButton = buttonFactory.createDefaultButton(
         message = text.translatable("gui.ok", "Ok"),
         onClick = {
             writeCardPosition()
-            onClose(Result.Ok(
+            onCloseCallback(Result.Ok(
                 cardScale = cardScale,
                 cardAlignment = cardAlignment,
                 cardOffsetX = cardOffsetX,
@@ -299,4 +296,13 @@ internal class BingoCardPlacementScreen(
     }
 
     override fun shouldCloseOnEsc(): Boolean = false
+
+    override fun keyPressed(input: IKeyInput): Boolean {
+        if (input.isEscape) {
+            onCloseCallback(Result.Cancel)
+            return true
+        }
+
+        return false
+    }
 }

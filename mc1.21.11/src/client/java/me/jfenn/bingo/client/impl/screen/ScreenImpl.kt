@@ -4,6 +4,7 @@ import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.platform.screen.IScreen
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import kotlin.math.absoluteValue
 
@@ -49,6 +50,10 @@ class ScreenImpl(title: Text) : Screen(title) {
 
     override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
         return impl?.mouseClicked(click.x, click.y, click.button()) == true || super.mouseClicked(click, doubled)
+    }
+
+    override fun keyPressed(input: KeyInput): Boolean {
+        return impl?.keyPressed(KeyInputImpl(input)) == true || super.keyPressed(input)
     }
 
     override fun mouseScrolled(

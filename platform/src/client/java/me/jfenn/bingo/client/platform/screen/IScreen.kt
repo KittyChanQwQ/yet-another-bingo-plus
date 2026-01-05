@@ -11,7 +11,12 @@ interface IScreen {
     fun mouseReleased(mouseX: Double, mouseY: Double): Boolean = false
     fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean = false
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean = false
+    fun keyPressed(input: IKeyInput) = false
     fun shouldPause(): Boolean = false
     fun shouldCloseOnEsc(): Boolean = true
     fun onClose(): Unit = Unit
+}
+
+interface IKeyInput {
+    val isEscape: Boolean
 }

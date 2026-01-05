@@ -59,6 +59,10 @@ class ScreenImpl(title: Text) : Screen(title) {
         return impl?.mouseScrolled(mouseX, mouseY, amount) == true || super.mouseScrolled(mouseX, mouseY, amount)
     }
 
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        return impl?.keyPressed(KeyInputImpl(keyCode)) == true || super.keyPressed(keyCode, scanCode, modifiers)
+    }
+
     override fun shouldPause(): Boolean {
         return impl?.shouldPause() ?: false
     }
