@@ -1,4 +1,13 @@
-### Bugs Squashed:
+### New Features:
 
-- Fixed "One of ..." goals behaving incorrectly when players hold multiple items in lockout mode
-- Fixed the notorious Mending Book objective being unobtainable on 1.21.1
+- Updated for 1.21.11!
+
+### Translations:
+
+- New Chinese Simplified translations from Young912 and nageih!
+- New Chinese Traditional translations from Sear and Lavskiy Ilias!
+- New Chinese Traditional (Hong Kong) translations from Sear!
+- New French translations from Yosh64 and Barbie192! 
+- New Japanese translations from おほしさまちゃんねる!
+- New Russian translations from lazdni!
+

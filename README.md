@@ -103,7 +103,7 @@ Czech translations were contributed by Džerry!<br>
 Danish translations were contributed by Libreh!<br>
 Dutch translations were contributed by GrangerTheDog!<br>
 Finnish translations were contributed by Diamonddevv!<br>
-French translations were contributed by Yosh64, Guillarda, and Narkotiqu!<br>
+French translations were contributed by Yosh64, Guillarda, Narkotiqu, and Barbie192!<br>
 German translations were contributed by Butterkeks and CryptoGamer1612!<br>
 Hungarian translations were contributed by petya0927 and Remarci!<br>
 Italian translations were contributed by noah and sculk1!<br>
