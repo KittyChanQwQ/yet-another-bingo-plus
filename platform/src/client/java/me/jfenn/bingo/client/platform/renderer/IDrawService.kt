@@ -18,6 +18,7 @@ interface IDrawService {
     val font: IFont
     val matrices: IMatrixStack
     val window: IWindow
+    fun setCursor(cursor: CursorType) = Unit
 
     val delta: Float
     val mouse: Vector2i
@@ -174,4 +175,12 @@ interface IFramebuffer : Closeable {
     fun resize(width: Int, height: Int)
     fun write(callback: (IDrawService) -> Unit)
     fun draw(service: IDrawService, width: Int, height: Int)
+}
+
+enum class CursorType {
+    DEFAULT,
+    POINTING_HAND,
+    RESIZE_HORIZONTAL,
+    RESIZE_VERTICAL,
+    RESIZE_ALL,
 }

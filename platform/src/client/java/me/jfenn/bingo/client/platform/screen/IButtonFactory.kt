@@ -7,6 +7,11 @@ import org.joml.Vector2i
 
 interface IButtonFactory {
 
+    fun createDefaultButton(
+        message: IText,
+        onClick: () -> Unit,
+    ): IButton
+
     fun createButton(
         x: Int,
         y: Int,

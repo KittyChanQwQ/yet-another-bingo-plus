@@ -37,8 +37,19 @@ class ScreenImpl(title: Text) : Screen(title) {
 
     override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
         if (context == null) return
+        renderBackground(context)
+        val service = DrawService(context)
+        impl?.beforeRender(service)
         super.render(context, mouseX, mouseY, delta)
-        impl?.render(DrawService(context), mouseX, mouseY, delta)
+        impl?.render(service, mouseX, mouseY, delta)
+    }
+
+    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
+        return impl?.mouseDragged(mouseX, mouseY) == true || super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    }
+
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return impl?.mouseReleased(mouseX, mouseY) == true || super.mouseReleased(mouseX, mouseY, button)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

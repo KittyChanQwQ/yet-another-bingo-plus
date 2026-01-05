@@ -20,6 +20,13 @@ import net.minecraft.util.Identifier
 import org.joml.Vector2i
 
 class ButtonFactory : IButtonFactory {
+    override fun createDefaultButton(
+        message: IText,
+        onClick: () -> Unit
+    ) = ButtonWidget.builder(message.value, { onClick() })
+        .build()
+        .let { TexturedButtonImpl(it) }
+
     override fun createButton(
         x: Int,
         y: Int,

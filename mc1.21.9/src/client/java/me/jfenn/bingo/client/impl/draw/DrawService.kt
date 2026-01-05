@@ -11,6 +11,8 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.cursor.Cursor
+import net.minecraft.client.gui.cursor.StandardCursors
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 import org.joml.Vector2f
@@ -24,6 +26,18 @@ class DrawService(
     override val font: IFont = FontImpl(textRenderer)
     override val matrices: IMatrixStack = MatrixStackImpl(context.matrices)
     override val window: IWindow = Companion
+
+    override fun setCursor(cursor: CursorType) {
+        context.setCursor(
+            when (cursor) {
+                CursorType.DEFAULT -> Cursor.DEFAULT
+                CursorType.POINTING_HAND -> StandardCursors.POINTING_HAND
+                CursorType.RESIZE_HORIZONTAL -> StandardCursors.RESIZE_EW
+                CursorType.RESIZE_VERTICAL -> StandardCursors.RESIZE_NS
+                CursorType.RESIZE_ALL -> StandardCursors.RESIZE_ALL
+            }
+        )
+    }
 
     override var delta: Float = 0.5f
     override val mouse: Vector2i

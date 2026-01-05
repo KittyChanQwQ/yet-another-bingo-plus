@@ -17,6 +17,13 @@ import net.minecraft.util.Identifier
 import org.joml.Vector2i
 
 class ButtonFactory : IButtonFactory {
+    override fun createDefaultButton(
+        message: IText,
+        onClick: () -> Unit
+    ) = ButtonWidget.builder(message.value, { onClick() })
+        .build()
+        .let { ButtonWidgetImpl(it) }
+
     override fun createButton(
         x: Int,
         y: Int,
@@ -117,6 +124,33 @@ class TexturedButtonImpl(
         set(value) {
             button.width = value.x
             button.height = value.y
+        }
+
+    override var message: IText
+        get() = TextImpl(button.message.copy())
+        set(value) {
+            button.message = value.value
+        }
+
+    override var active: Boolean by button::active
+
+    override val onClick: IEventListener<Unit> = EventListener()
+}
+
+class ButtonWidgetImpl(
+    override val button: ButtonWidget
+) : ButtonImpl {
+    override var position: Vector2i
+        get() = Vector2i(button.x, button.y)
+        set(value) {
+            button.x = value.x
+            button.y = value.y
+        }
+
+    override var size: Vector2i
+        get() = Vector2i(button.width, button.height)
+        set(value) {
+            button.width = value.x
         }
 
     override var message: IText

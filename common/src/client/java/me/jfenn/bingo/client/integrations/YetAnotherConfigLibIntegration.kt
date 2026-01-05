@@ -6,9 +6,11 @@ import dev.isxander.yacl3.api.controller.EnumControllerBuilder
 import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder
 import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder
 import me.jfenn.bingo.client.common.event.ClientConfigChangedEvent
+import me.jfenn.bingo.client.common.hud.screen.BingoCardPlacementScreen
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
 import me.jfenn.bingo.client.common.sound.ClientSounds
 import me.jfenn.bingo.client.common.sound.SoundService
+import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.text.TextProvider
@@ -37,9 +39,11 @@ internal interface YetAnotherConfigLibIntegration {
             text: TextProvider,
             eventBus: IEventBus,
             drawServiceFactory: IDrawServiceFactory,
+            cardPlacementScreenFactory: BingoCardPlacementScreen.Factory,
+            client: IClient,
         ): YetAnotherConfigLibIntegration {
             return if (hasYACL(environment))
-                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings, soundService, text, eventBus, drawServiceFactory)
+                YetAnotherConfigLibIntegrationImpl(configService, config, clientSettings, soundService, text, eventBus, drawServiceFactory, cardPlacementScreenFactory, client)
             else YetAnotherConfigLibIntegrationDummy()
         }
     }
@@ -59,6 +63,8 @@ internal class YetAnotherConfigLibIntegrationImpl(
     private val text: TextProvider,
     private val eventBus: IEventBus,
     private val drawServiceFactory: IDrawServiceFactory,
+    private val cardPlacementScreenFactory: BingoCardPlacementScreen.Factory,
+    private val client: IClient,
 ) : YetAnotherConfigLibIntegration {
 
     private val defaultConfig = BingoConfig()
@@ -73,6 +79,96 @@ internal class YetAnotherConfigLibIntegrationImpl(
     override fun isInstalled(): Boolean = true
 
     override fun buildConfigScreen(parent: Screen): Screen {
+        val configCardScale = Option.createBuilder<Float>()
+            .name(text.string(StringKey.ConfigCardScale).value)
+            .description(
+                OptionDescription.of(
+                    text.string(StringKey.ConfigCardScaleDescription).value
+                )
+            )
+            .binding(
+                defaultConfig.client.cardScale,
+                { config.client.cardScale },
+                {
+                    config.client.cardScale = it
+                    configService.writeConfig(config)
+                    onConfigChanged()
+                }
+            )
+            .controller {
+                FloatSliderControllerBuilder.create(it)
+                    .formatValue { value -> Text.literal(String.format("%.0f%%", value*100)) }
+                    .range(0.25f, 4.0f)
+                    .step(0.05f)
+            }
+            .build()
+
+        val configCardAlignment = Option.createBuilder<CardAlignment>()
+            .name(text.string(StringKey.ConfigCardAlignment).value)
+            .description(
+                OptionDescription.of(
+                    text.string(StringKey.ConfigCardAlignmentDescription).value
+                )
+            )
+            .binding(
+                defaultConfig.client.cardAlignment,
+                { config.client.cardAlignment },
+                {
+                    config.client.cardAlignment = it
+                    configService.writeConfig(config)
+                }
+            )
+            .controller {
+                EnumControllerBuilder.create(it)
+                    .enumClass(CardAlignment::class.java)
+                    .formatValue { value -> text.string(value.string).value }
+            }
+            .build()
+
+        val configCardOffsetX = Option.createBuilder<Int>()
+            .name(text.string(StringKey.ConfigCardOffsetX).value)
+            .description(
+                OptionDescription.of(
+                    text.string(StringKey.ConfigCardOffsetXDescription).value
+                )
+            )
+            .binding(
+                defaultConfig.client.cardOffsetX,
+                { config.client.cardOffsetX },
+                {
+                    config.client.cardOffsetX = it
+                    configService.writeConfig(config)
+                }
+            )
+            .controller {
+                IntegerSliderControllerBuilder.create(it)
+                    .range(0, drawServiceFactory.window.scaledWindowWidth/2)
+                    .step(1)
+            }
+            .build()
+
+        val configCardOffsetY = Option.createBuilder<Int>()
+            .name(text.string(StringKey.ConfigCardOffsetY).value)
+            .description(
+                OptionDescription.of(
+                    text.string(StringKey.ConfigCardOffsetYDescription).value
+                )
+            )
+            .binding(
+                defaultConfig.client.cardOffsetY,
+                { config.client.cardOffsetY },
+                {
+                    config.client.cardOffsetY = it
+                    configService.writeConfig(config)
+                }
+            )
+            .controller {
+                IntegerSliderControllerBuilder.create(it)
+                    .range(0, drawServiceFactory.window.scaledWindowHeight/2)
+                    .step(1)
+            }
+            .build()
+
         return YetAnotherConfigLib.createBuilder()
             .title(text.string(StringKey.FullName).value)
             .category(
@@ -121,48 +217,33 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     )
                                     .controller { BooleanControllerBuilder.create(it).coloured(true) }
                                     .build(),
-                                Option.createBuilder<Float>()
-                                    .name(text.string(StringKey.ConfigCardScale).value)
-                                    .description(
-                                        OptionDescription.of(
-                                            text.string(StringKey.ConfigCardScaleDescription).value
-                                        )
+                                ButtonOption.createBuilder()
+                                    .name(
+                                        text.string(StringKey.ConfigCardPosition).value
                                     )
-                                    .binding(
-                                        defaultConfig.client.cardScale,
-                                        { config.client.cardScale },
-                                        {
-                                            config.client.cardScale = it
-                                            configService.writeConfig(config)
-                                            onConfigChanged()
+                                    .text(text.string(StringKey.ConfigCardPositionEdit).value)
+                                    .description(OptionDescription.of(
+                                        text.string(StringKey.ConfigCardPositionDescription).value,
+                                        text.string(StringKey.ConfigCardPositionHelpMove).value,
+                                        text.string(StringKey.ConfigCardPositionHelpResize).value,
+                                    ))
+                                    .action { parent, _ ->
+                                        client.screen = cardPlacementScreenFactory.create { result ->
+                                            if (result is BingoCardPlacementScreen.Result.Ok) {
+                                                config.client.cardScale = result.cardScale
+                                                config.client.cardAlignment = result.cardAlignment
+                                                config.client.cardOffsetX = result.cardOffsetX
+                                                config.client.cardOffsetY = result.cardOffsetY
+                                                configService.writeConfig(config)
+                                            }
+                                            client.screen = parent
+                                            if (result is BingoCardPlacementScreen.Result.Ok) {
+                                                configCardScale.forgetPendingValue()
+                                                configCardAlignment.forgetPendingValue()
+                                                configCardOffsetX.forgetPendingValue()
+                                                configCardOffsetY.forgetPendingValue()
+                                            }
                                         }
-                                    )
-                                    .controller {
-                                        FloatSliderControllerBuilder.create(it)
-                                            .formatValue { value -> Text.literal(String.format("%.0f%%", value*100)) }
-                                            .range(0.25f, 4.0f)
-                                            .step(0.05f)
-                                    }
-                                    .build(),
-                                Option.createBuilder<CardAlignment>()
-                                    .name(text.string(StringKey.ConfigCardAlignment).value)
-                                    .description(
-                                        OptionDescription.of(
-                                            text.string(StringKey.ConfigCardAlignmentDescription).value
-                                        )
-                                    )
-                                    .binding(
-                                        defaultConfig.client.cardAlignment,
-                                        { config.client.cardAlignment },
-                                        {
-                                            config.client.cardAlignment = it
-                                            configService.writeConfig(config)
-                                        }
-                                    )
-                                    .controller {
-                                        EnumControllerBuilder.create(it)
-                                            .enumClass(CardAlignment::class.java)
-                                            .formatValue { value -> text.string(value.string).value }
                                     }
                                     .build(),
                                 Option.createBuilder<CardOverlap>()
@@ -184,48 +265,6 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                         EnumControllerBuilder.create(it)
                                             .enumClass(CardOverlap::class.java)
                                             .formatValue { value -> text.string(value.string).value }
-                                    }
-                                    .build(),
-                                Option.createBuilder<Int>()
-                                    .name(text.string(StringKey.ConfigCardOffsetX).value)
-                                    .description(
-                                        OptionDescription.of(
-                                            text.string(StringKey.ConfigCardOffsetXDescription).value
-                                        )
-                                    )
-                                    .binding(
-                                        defaultConfig.client.cardOffsetX,
-                                        { config.client.cardOffsetX },
-                                        {
-                                            config.client.cardOffsetX = it
-                                            configService.writeConfig(config)
-                                        }
-                                    )
-                                    .controller {
-                                        IntegerSliderControllerBuilder.create(it)
-                                            .range(0, drawServiceFactory.window.scaledWindowWidth/2)
-                                            .step(1)
-                                    }
-                                    .build(),
-                                Option.createBuilder<Int>()
-                                    .name(text.string(StringKey.ConfigCardOffsetY).value)
-                                    .description(
-                                        OptionDescription.of(
-                                            text.string(StringKey.ConfigCardOffsetYDescription).value
-                                        )
-                                    )
-                                    .binding(
-                                        defaultConfig.client.cardOffsetY,
-                                        { config.client.cardOffsetY },
-                                        {
-                                            config.client.cardOffsetY = it
-                                            configService.writeConfig(config)
-                                        }
-                                    )
-                                    .controller {
-                                        IntegerSliderControllerBuilder.create(it)
-                                            .range(0, drawServiceFactory.window.scaledWindowHeight/2)
-                                            .step(1)
                                     }
                                     .build(),
                                 Option.createBuilder<Boolean>()
@@ -442,6 +481,13 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     .controller { BooleanControllerBuilder.create(it) }
                                     .build(),
                             )
+                            .build()
+                    )
+                    .group(
+                        OptionGroup.createBuilder()
+                            .collapsed(true)
+                            .name(text.string(StringKey.ConfigCardPositionManual).value)
+                            .options(listOf(configCardScale, configCardAlignment, configCardOffsetX, configCardOffsetY))
                             .build()
                     )
                     .build()
