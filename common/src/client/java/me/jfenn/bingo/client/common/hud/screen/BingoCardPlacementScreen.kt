@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.common.hud.screen
 
+import me.jfenn.bingo.client.common.hud.BingoMessageRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer.Companion.CARD_HEIGHT
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer.Companion.CARD_WIDTH
 import me.jfenn.bingo.client.common.state.BingoHudState
@@ -9,11 +10,18 @@ import me.jfenn.bingo.client.platform.renderer.use
 import me.jfenn.bingo.client.platform.screen.*
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
+import me.jfenn.bingo.common.scoring.GameMessagePacket
+import me.jfenn.bingo.common.scoring.ScoreMessagePacket
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import net.minecraft.util.Formatting
 import org.joml.Vector2d
 import org.joml.Vector2i
 import org.koin.core.Koin
+import java.time.Duration
+import java.time.temporal.ChronoUnit
+import java.util.*
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -24,6 +32,7 @@ internal class BingoCardPlacementScreen(
     private val state: BingoHudState = koin.get(),
     private val config: BingoConfig = koin.get(),
     private val helper: IMutableScreenHelper,
+    private val messageRenderer: BingoMessageRenderer = koin.get(),
     buttonFactory: IButtonFactory = koin.get(),
 ) : IScreen {
 
@@ -100,8 +109,10 @@ internal class BingoCardPlacementScreen(
         val offsetX = cardOffsetX * (if (cardAlignment.x > 0) -1 else 1)
         val offsetY = cardOffsetY * (if (cardAlignment.y > 0) -1 else 1)
 
-        cardLeft = cardAlignment.x * (scaledWindowWidth - (CARD_WIDTH * cardScale)) + offsetX
-        cardTop = cardAlignment.y * (scaledWindowHeight - (CARD_HEIGHT * cardScale)) + offsetY
+        cardLeft = (cardAlignment.x * (scaledWindowWidth - (CARD_WIDTH * cardScale)) + offsetX)
+            .coerceIn(0f, scaledWindowWidth - (CARD_WIDTH * cardScale))
+        cardTop = (cardAlignment.y * (scaledWindowHeight - (CARD_HEIGHT * cardScale)) + offsetY)
+            .coerceIn(0f, scaledWindowHeight - (CARD_HEIGHT * cardScale))
     }
 
     private fun applyCardPosition() {
@@ -210,10 +221,8 @@ internal class BingoCardPlacementScreen(
                 dragStart = pos
                 pos
             }
-            cardLeft = (dragFromLeft + (pos.x - start.x).toFloat())
-                .coerceIn(0f, scaledWindowWidth - (CARD_WIDTH * cardScale))
-            cardTop = (dragFromTop + (pos.y - start.y).toFloat())
-                .coerceIn(0f, scaledWindowHeight - (CARD_HEIGHT * cardScale))
+            cardLeft = dragFromLeft + (pos.x - start.x).toFloat()
+            cardTop = dragFromTop + (pos.y - start.y).toFloat()
             return true
         }
 
@@ -238,6 +247,26 @@ internal class BingoCardPlacementScreen(
 
     private val helpText1 = text.string(StringKey.ConfigCardPositionHelpMove)
     private val helpText2 = text.string(StringKey.ConfigCardPositionHelpResize)
+
+    private fun createDummyMessages(): List<BingoHudState.ScoreMessage> {
+        val playerName = text.literal("\uD83C\uDF3A fennifith").formatted(Formatting.LIGHT_PURPLE)
+        val messages = listOf(
+            text.string(StringKey.GameMessageCapturedItem, playerName, text.empty().append("[").append(text.string(StringKey.ObjectiveExampleYourNose)).append("]")),
+        )
+        return messages.map { message ->
+            BingoHudState.ScoreMessage(
+                createdAt = state.now.minus(500L, ChronoUnit.MILLIS),
+                packet = GameMessagePacket(
+                    id = UUID(0L, 0L),
+                    timeElapsed = Duration.ZERO,
+                    team = BingoTeamKey(""),
+                    decoration = null,
+                    messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
+                    message = message,
+                )
+            )
+        }
+    }
 
     override fun beforeRender(drawService: IDrawService) {
         val (mouseX, mouseY) = drawService.mouse.let { Pair(it.x.toDouble(), it.y.toDouble()) }
@@ -284,6 +313,16 @@ internal class BingoCardPlacementScreen(
                 )
             }
         }
+
+        messageRenderer.drawMessages(
+            drawService,
+            x = cardLeft.toInt(),
+            y = cardTop.toInt() + (CARD_HEIGHT * cardScale * (1 - cardAlignment.y)).toInt(),
+            z = 0,
+            cardAlignment = cardAlignment,
+            cardScale = cardScale,
+            messages = createDummyMessages(),
+        )
     }
 
     override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {

@@ -40,8 +40,10 @@ internal class BingoMessageRenderer(
         x: Int,
         y: Int,
         z: Int,
-        messageScale: Float,
-        cardAlignment: CardAlignment,
+        messageScale: Float = config.client.messageScale,
+        cardAlignment: CardAlignment = config.client.cardAlignment,
+        cardScale: Float = config.client.cardScale,
+        messages: List<BingoHudState.ScoreMessage> = state.messages,
     ) {
         val isAboveCard = cardAlignment.y > 0
         val isLeftOfCard = cardAlignment.x > 0
@@ -55,7 +57,7 @@ internal class BingoMessageRenderer(
         drawService.matrices.scale(messageScale, messageScale, 1f)
 
         var itemY = if (isAboveCard) -ITEM_HEIGHT else 0
-        for (message in state.messages.reversed().take(5)) {
+        for (message in messages.reversed().take(5)) {
             val timeSinceCreated = now - message.createdAt
             val fadeIn = (timeSinceCreated / fadeInDuration).toFloat().coerceIn(0f, 1f)
             val fadeOut = (1f - ((timeSinceCreated - duration) / fadeInDuration).toFloat()).coerceIn(0f, 1f)
@@ -69,7 +71,7 @@ internal class BingoMessageRenderer(
 
             drawService.matrices.push()
             drawService.matrices.translate(
-                if (isLeftOfCard) ClientCardBufferRenderer.CARD_WIDTH.toFloat() else 0f,
+                if (isLeftOfCard) ClientCardBufferRenderer.CARD_WIDTH.toFloat() * cardScale / messageScale else 0f,
                 itemY.toFloat() + (1f - fadeOut).pow(2) * message.height * direction,
                 0f
             )

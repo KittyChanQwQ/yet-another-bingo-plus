@@ -232,6 +232,7 @@
   "bingo.lobby.team_changed": "➾ You have been moved to %s",
   "bingo.lobby.team_spectators": "➾ You have been moved to spectators",
   "bingo.objective.all_of": "All of: %s",
+  "bingo.objective.example.your_nose": "Your Nose",
   "bingo.objective.challenge.all_chicken_eggs": "All Chicken Eggs",
   "bingo.objective.challenge.all_copper_armor": "All Copper Armor",
   "bingo.objective.challenge.all_copper_tools": "All Copper Tools",

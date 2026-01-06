@@ -14,7 +14,7 @@ import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 internal class BingoHudState(
-    var now: Instant = Instant.MIN,
+    var now: Instant = Instant.now(),
     var cards: MutableMap<BingoTeamKey?, ClientCardBase> = mutableMapOf(),
     var selectedTeam: BingoTeamKey? = null,
     var gameStatus: GameStatusPacket = GameStatusPacket.DEFAULT,
