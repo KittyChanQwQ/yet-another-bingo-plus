@@ -1,6 +1,7 @@
 ### New Features:
 
 - Updated for 1.21.11!
+- Added a drag+drop editor for the HUD position (replacing the card offset settings)
 
 ### Translations:
 
