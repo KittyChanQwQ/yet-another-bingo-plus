@@ -203,14 +203,14 @@ class ServerWorldImpl(
         val chunkManager = world.chunkManager
         chunkManager.addTicket(TICKET_ASYNC, ChunkPos(chunk.first, chunk.second), 0, Unit.INSTANCE)
 
-        (chunkManager as ServerChunkManagerAccessor).invokeTick()
+        (chunkManager as ServerChunkManagerAccessor).invokeUpdateChunks()
 
         val threadedAnvilChunkStorage = world.chunkManager.threadedAnvilChunkStorage
         val chunkHolder = (threadedAnvilChunkStorage as ThreadedAnvilChunkStorageAccessor)
             .invokeGetChunkHolder(ChunkPos(chunk.first, chunk.second).toLong())
 
         val chunkFuture = chunkHolder?.getChunkAt(ChunkStatus.FULL, threadedAnvilChunkStorage)
-            ?.thenApply { it.left().getOrNull() }
+            ?.thenApply { it?.orElse(null) }
             ?: CompletableFuture.completedFuture<Chunk?>(null)
 
         // Remove the chunk ticket once loaded

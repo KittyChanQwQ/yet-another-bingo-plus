@@ -203,7 +203,7 @@ class ServerWorldImpl(
         val chunkManager = world.chunkManager
         chunkManager.addTicket(TICKET_ASYNC, ChunkPos(chunk.first, chunk.second), 0, Unit.INSTANCE)
 
-        (chunkManager as ServerChunkManagerAccessor).invokeTick()
+        (chunkManager as ServerChunkManagerAccessor).invokeUpdateChunks()
 
         val threadedAnvilChunkStorage = world.chunkManager.threadedAnvilChunkStorage
         val chunkHolder = (threadedAnvilChunkStorage as ThreadedAnvilChunkStorageAccessor)
