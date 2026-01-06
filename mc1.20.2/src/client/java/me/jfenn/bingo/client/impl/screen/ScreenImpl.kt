@@ -37,7 +37,6 @@ class ScreenImpl(title: Text) : Screen(title) {
 
     override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
         if (context == null) return
-        renderBackground(context)
         val service = DrawService(context)
         impl?.beforeRender(service)
         super.render(context, mouseX, mouseY, delta)
