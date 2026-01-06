@@ -146,6 +146,7 @@ internal class BingoCardPlacementScreen(
 
     private fun initButtons() {
         helper.clearChildren()
+        helper.addDrawable(CardDrawable())
         helper.addButton(cancelButton)
         helper.addButton(saveButton)
 
@@ -268,42 +269,16 @@ internal class BingoCardPlacementScreen(
         }
     }
 
-    override fun beforeRender(drawService: IDrawService) {
-        val (mouseX, mouseY) = drawService.mouse.let { Pair(it.x.toDouble(), it.y.toDouble()) }
+    inner class CardDrawable : IDrawable {
+        override fun render(drawService: IDrawService) {
+            val (mouseX, mouseY) = drawService.mouse.let { Pair(it.x.toDouble(), it.y.toDouble()) }
 
-        drawService.matrices.use {
-            drawService.matrices.translate(cardLeft, cardTop, 0f)
-            drawService.matrices.scale(cardScale, cardScale, 1f)
+            drawService.matrices.use {
+                drawService.matrices.translate(cardLeft, cardTop, 0f)
+                drawService.matrices.scale(cardScale, cardScale, 1f)
 
-            drawService.drawGuiTexture(
-                texture = cardColors.cardTexture,
-                x = 0, y = 0,
-                u = 0f, v = 0f,
-                width = CARD_WIDTH,
-                height = CARD_HEIGHT,
-                textureWidth = CARD_WIDTH,
-                textureHeight = CARD_HEIGHT,
-            )
-
-            val isOverCardBorder = isIntersectingCardBorder(mouseX, mouseY)
-            val isOverCard = isIntersectingCard(mouseX, mouseY)
-
-            if (isOverCardBorder && resizeStart == null) {
-                drawService.setCursor(
-                    when {
-                        isIntersectingRightBorder(mouseX, mouseY) -> CursorType.RESIZE_HORIZONTAL
-                        else -> CursorType.RESIZE_VERTICAL
-                    }
-                )
-            } else if (isOverCard || dragStart != null || resizeStart != null) {
-                drawService.setCursor(CursorType.RESIZE_ALL)
-            }
-
-            if (dragStart != null || resizeStart != null) {
-                drawService.overlayFill(0, 0, CARD_WIDTH, CARD_HEIGHT, 0x80ffffff.toInt())
-            } else if (isOverCardBorder || isOverCard) {
                 drawService.drawGuiTexture(
-                    texture = cardColors.cardTextureOutline,
+                    texture = cardColors.cardTexture,
                     x = 0, y = 0,
                     u = 0f, v = 0f,
                     width = CARD_WIDTH,
@@ -311,18 +286,46 @@ internal class BingoCardPlacementScreen(
                     textureWidth = CARD_WIDTH,
                     textureHeight = CARD_HEIGHT,
                 )
-            }
-        }
 
-        messageRenderer.drawMessages(
-            drawService,
-            x = cardLeft.toInt(),
-            y = cardTop.toInt() + (CARD_HEIGHT * cardScale * (1 - cardAlignment.y)).toInt(),
-            z = 0,
-            cardAlignment = cardAlignment,
-            cardScale = cardScale,
-            messages = createDummyMessages(),
-        )
+                val isOverCardBorder = isIntersectingCardBorder(mouseX, mouseY)
+                val isOverCard = isIntersectingCard(mouseX, mouseY)
+
+                if (isOverCardBorder && resizeStart == null) {
+                    drawService.setCursor(
+                        when {
+                            isIntersectingRightBorder(mouseX, mouseY) -> CursorType.RESIZE_HORIZONTAL
+                            else -> CursorType.RESIZE_VERTICAL
+                        }
+                    )
+                } else if (isOverCard || dragStart != null || resizeStart != null) {
+                    drawService.setCursor(CursorType.RESIZE_ALL)
+                }
+
+                if (dragStart != null || resizeStart != null) {
+                    drawService.overlayFill(0, 0, CARD_WIDTH, CARD_HEIGHT, 0x80ffffff.toInt())
+                } else if (isOverCardBorder || isOverCard) {
+                    drawService.drawGuiTexture(
+                        texture = cardColors.cardTextureOutline,
+                        x = 0, y = 0,
+                        u = 0f, v = 0f,
+                        width = CARD_WIDTH,
+                        height = CARD_HEIGHT,
+                        textureWidth = CARD_WIDTH,
+                        textureHeight = CARD_HEIGHT,
+                    )
+                }
+            }
+
+            messageRenderer.drawMessages(
+                drawService,
+                x = cardLeft.toInt(),
+                y = cardTop.toInt() + (CARD_HEIGHT * cardScale * (1 - cardAlignment.y)).toInt(),
+                z = 0,
+                cardAlignment = cardAlignment,
+                cardScale = cardScale,
+                messages = createDummyMessages(),
+            )
+        }
     }
 
     override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
