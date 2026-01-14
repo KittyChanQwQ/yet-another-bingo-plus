@@ -23,7 +23,8 @@ internal class BingoApiImpl(
             id = state.gameId,
             status = when (state.state) {
                 GameState.UNINITIALIZED,
-                GameState.PREGAME -> BingoGameStatus.PREGAME
+                GameState.PREGAME,
+                GameState.LOBBY_EDITOR -> BingoGameStatus.PREGAME
                 GameState.STARTING,
                 GameState.PRELOADING,
                 GameState.LOADING,

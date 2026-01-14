@@ -2,7 +2,6 @@ package me.jfenn.bingo.common
 
 import me.jfenn.bingo.api.BingoApiImpl
 import me.jfenn.bingo.api.IBingoApi
-import me.jfenn.bingo.common.autorestart.ResetCommand
 import me.jfenn.bingo.common.autorestart.ResetOnLeaveController
 import me.jfenn.bingo.common.autorestart.ResetService
 import me.jfenn.bingo.common.bossbar.BossBarController
@@ -133,7 +132,6 @@ val commonModule = module {
     singleOf(::BingoLobbyCommand)
     singleOf(::BingoOptionsCommands)
     singleOf(::BingoPrefsCommand)
-    singleOf(::ResetCommand)
     singleOf(::GameCommands)
     singleOf(::ChatCommand)
     singleOf(::CoordsCommand)
@@ -377,7 +375,6 @@ fun Koin.commonInit() {
     get<BingoLobbyCommand>()
     get<BingoOptionsCommands>()
     get<BingoPrefsCommand>()
-    get<ResetCommand>()
     get<GameCommands>()
     get<ChatCommand>()
     get<CoordsCommand>()

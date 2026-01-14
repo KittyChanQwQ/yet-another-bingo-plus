@@ -1,9 +1,16 @@
 package me.jfenn.bingo.common.lobby
 
+import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.autorestart.ResetService
+import me.jfenn.bingo.common.commands.hasLobby
+import me.jfenn.bingo.common.commands.hasPermission
+import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.commands.runByName
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.ICommandManager
@@ -49,28 +56,81 @@ internal class BingoLobbyCommand(
         return true
     }
 
+    private fun IExecutionSource.canUseReset(): Boolean {
+        return hasPermission(Permission.COMMAND_RESET) &&
+                hasState(GameState.PLAYING, GameState.POSTGAME, GameState.LOBBY_EDITOR) &&
+                hasLobby()
+    }
+
+    private fun IExecutionSource.canUseEdit(): Boolean {
+        return hasPermission(Permission.CONFIGURE_LOBBY) &&
+                hasLobby()
+    }
+
+    private fun IExecutionContext.reset() {
+        val resetService = scope.get<ResetService>()
+        val serverTaskExecutor = scope.get<IExecutors.IServerTaskExecutor>()
+        sendFeedback(text.string(StringKey.CommandResetSuccess))
+        serverTaskExecutor.execute {
+            resetService.resetGame()
+        }
+    }
+
+    private fun IExecutionContext.edit() {
+        val resetService = scope.get<ResetService>()
+        val serverTaskExecutor = scope.get<IExecutors.IServerTaskExecutor>()
+        sendFeedback(text.string(StringKey.CommandResetSuccess))
+        serverTaskExecutor.execute {
+            resetService.resetGame(GameState.LOBBY_EDITOR)
+        }
+    }
+
     init {
-        if (environment.envType == IModEnvironment.EnvType.SERVER && !config.server.isLobbyMode) {
-            commandManager.register("bingo") {
-                literal("lobby") {
-                    requires {
-                        isConsole || lobbyModeService.canUseLobbyCommand(playerOrThrow)
-                    }
-                    executes {
+        commandManager.register("bingo") {
+            literal("reset") {
+                requires { canUseReset() }
+                executes { reset() }
+            }
+
+            literal("lobby") {
+                requires {
+                    hasPermission(Permission.CONFIGURE_LOBBY)
+                }
+                executes {
+                    if (environment.envType == IModEnvironment.EnvType.SERVER && !config.server.isLobbyMode) {
                         val isDialog = player?.let { createLobbyDialog(it) }
                         if (isDialog != true) {
                             lobbyModeService.getCommandWarnings()
                                 .forEach { sendMessage(it) }
                         }
                         lobbyModeService.onPlayerWarned(executorUuid)
+                    } else if (canUseReset()) {
+                        reset()
                     }
+                }
 
-                    literal("confirm") {
-                        executes {
-                            lobbyModeService
-                                .acceptWarnings(executorUuid, runByName)
-                                .forEach { sendMessage(it) }
-                        }
+                literal("confirm") {
+                    requires {
+                        if (environment.envType == IModEnvironment.EnvType.SERVER && !config.server.isLobbyMode) {
+                            isConsole || lobbyModeService.canUseLobbyCommand(playerOrThrow)
+                        } else false
+                    }
+                    executes {
+                        lobbyModeService
+                            .acceptWarnings(executorUuid, runByName)
+                            .forEach { sendMessage(it) }
+                    }
+                }
+
+                literal("edit") {
+                    requires { canUseEdit() && hasState(GameState.PREGAME) }
+                    executes { edit() }
+                }
+
+                literal("save") {
+                    requires { canUseEdit() && hasState(GameState.LOBBY_EDITOR) }
+                    executes {
+
                     }
                 }
             }

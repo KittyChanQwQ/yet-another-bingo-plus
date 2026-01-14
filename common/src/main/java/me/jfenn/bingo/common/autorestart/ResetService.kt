@@ -32,15 +32,15 @@ internal class ResetService(
     private val log: Logger,
 ) {
 
-    fun resetGame() {
+    fun resetGame(newState: GameState = GameState.PREGAME) {
         if (state.isLobbyMode) {
-            resetGameWorlds()
+            resetGameWorlds(newState)
         } else {
             error("This shouldn't be happening. Tell fennifith to stop writing bad code.")
         }
     }
 
-    private fun resetGameWorlds() = log.measureTime("Resetting worlds...") {
+    private fun resetGameWorlds(newState: GameState) = log.measureTime("Resetting worlds...") {
         // Clear scoreboards (otherwise this causes an error when recreated)
         log.info("[Reset] Clearing game data")
         teamService.clearTeams()
@@ -62,7 +62,7 @@ internal class ResetService(
         )
 
         log.info("[Reset] Teleporting players back to lobby")
-        state.changeState(eventBus, GameState.PREGAME) // invokes createInitialCards in ScoredItemCheck
+        state.changeState(eventBus, newState) // invokes createInitialCards in ScoredItemCheck
 
         // if any player is still in the world, teleport to the lobby
         for (player in playerManager.getPlayers()) {

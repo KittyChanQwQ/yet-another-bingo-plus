@@ -104,6 +104,7 @@ internal class PlayerController(
                 cardViewService.supportsCardHud(player) -> PlayerGameMode.SPECTATOR
                 else -> PlayerGameMode.CREATIVE
             }
+            GameState.LOBBY_EDITOR -> PlayerGameMode.CREATIVE
         }
 
         // This indicates that a player is starting the game, or has logged back on after a game has started
