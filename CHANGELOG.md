@@ -1,14 +1,11 @@
 ### New Features:
 
-- Updated for 1.21.11!
-- Added a drag+drop editor for the HUD position (replacing the card offset settings)
+- Avoid unnecessary animation logic to improve HUD performance (thanks to the unnamed collaborator that sent me an email!)
+- Added error logging for misformatted commands in the config files
 
 ### Translations:
 
-- New Chinese Simplified translations from Young912 and nageih!
-- New Chinese Traditional translations from Sear and Lavskiy Ilias!
-- New Chinese Traditional (Hong Kong) translations from Sear!
-- New French translations from Yosh64 and Barbie192! 
-- New Japanese translations from おほしさまちゃんねる!
+- New Chinese Simplified translations from Young912!
+- New Chinese Traditional translations from Sear!
 - New Russian translations from lazdni!
 
