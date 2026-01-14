@@ -29,6 +29,7 @@ internal class ClientCardBufferRenderer(
         val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")!!
 
         val SHUFFLE_DURATION = 280.milliseconds
+        val SHUFFLE_DURATION_PADDING = 50.milliseconds
     }
 
     private fun shouldRenderReplacing(tile: CardTile): Boolean {
@@ -75,6 +76,8 @@ internal class ClientCardBufferRenderer(
                 (!card.isGui && !config.client.showMultipleCards) || state.cards.size <= 1
         )
 
+        val createInterpolations = state.now < card.shuffledAt + SHUFFLE_DURATION + SHUFFLE_DURATION_PADDING
+
         for (tileIndex in 0 until 25) {
             val tileX = tileIndex % 5
             val tileY = tileIndex / 5
@@ -84,25 +87,29 @@ internal class ClientCardBufferRenderer(
             val isReplacing = shouldRenderReplacing(tile)
             if (isReplacing) continue
 
-            val interpolateFrom = card.shufflePositions[tileIndex % card.shufflePositions.size]
-                .let { Pair(it % 5, it / 5) }
-                .let { (x, y) -> Pair(12 + x*20, 22 + y*20) }
-            val interpolateTo = Pair(12 + tileX*20, 22 + tileY*20)
-            val interpolateX = Interpolate(
-                from = interpolateFrom.first.toFloat(),
-                to = interpolateTo.first.toFloat(),
-                duration = SHUFFLE_DURATION,
-                startedAt = card.shuffledAt,
-            )
-            val interpolateY = Interpolate(
-                from = interpolateFrom.second.toFloat(),
-                to = interpolateTo.second.toFloat(),
-                duration = SHUFFLE_DURATION,
-                startedAt = card.shuffledAt,
-            )
+            var itemX = (12 + tileX*20).toFloat()
+            var itemY = (22 + tileY*20).toFloat()
 
-            val itemX = interpolateX.get(Interpolate.Easing.IN_OUT, state.now)
-            val itemY = interpolateY.get(Interpolate.Easing.IN_OUT, state.now)
+            if (createInterpolations) {
+                val interpolateFrom = card.shufflePositions[tileIndex % card.shufflePositions.size]
+                    .let { Pair(it % 5, it / 5) }
+                    .let { (x, y) -> Pair((12 + x*20).toFloat(), (22 + y*20).toFloat()) }
+                val interpolateX = Interpolate(
+                    from = interpolateFrom.first,
+                    to = itemX,
+                    duration = SHUFFLE_DURATION,
+                    startedAt = card.shuffledAt,
+                )
+                val interpolateY = Interpolate(
+                    from = interpolateFrom.second,
+                    to = itemY,
+                    duration = SHUFFLE_DURATION,
+                    startedAt = card.shuffledAt,
+                )
+
+                itemX = interpolateX.get(Interpolate.Easing.IN_OUT, state.now)
+                itemY = interpolateY.get(Interpolate.Easing.IN_OUT, state.now)
+            }
 
             // BEGIN: TILE DRAW
             service.matrices.use {

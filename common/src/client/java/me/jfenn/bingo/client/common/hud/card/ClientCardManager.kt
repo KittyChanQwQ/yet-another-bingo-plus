@@ -8,7 +8,6 @@ import me.jfenn.bingo.client.platform.renderer.use
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.utils.milliseconds
 import me.jfenn.bingo.common.utils.minus
 import org.slf4j.Logger
 import kotlin.math.roundToInt
@@ -77,7 +76,7 @@ internal class ClientCardManager(
         for (card in state.cards.values) {
             val isDirty = card.isDirty ||
                     // Always rerender cards while shuffling
-                    (state.now - card.shuffledAt) < (ClientCardBufferRenderer.SHUFFLE_DURATION + 50.milliseconds)
+                    (state.now - card.shuffledAt) < (ClientCardBufferRenderer.SHUFFLE_DURATION + ClientCardBufferRenderer.SHUFFLE_DURATION_PADDING)
 
             if (!isDirty) continue
 
