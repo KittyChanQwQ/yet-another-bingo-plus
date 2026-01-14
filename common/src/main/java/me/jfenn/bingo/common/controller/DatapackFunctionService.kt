@@ -8,8 +8,10 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.ICommandRunner
 import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.server.MinecraftServer
+import org.slf4j.Logger
 
 internal class DatapackFunctionService(
+    private val log: Logger,
     private val server: MinecraftServer,
     private val commandRunner: ICommandRunner,
     private val scopedData: ScopedData,
@@ -50,6 +52,15 @@ internal class DatapackFunctionService(
         }
     }
 
+    private fun runCommand(command: String) {
+        try {
+            log.debug("Running command '${command}'")
+            commandRunner.runSilentCommand(server, command)
+        } catch (e: Throwable) {
+            log.error("Unable to run command '${command}'", e)
+        }
+    }
+
     /**
      * run "#yet-another-minecraft-bingo:on_playing" functions when the game state is changed
      */
@@ -57,20 +68,12 @@ internal class DatapackFunctionService(
         if (state !in SUPPORTED_EVENTS)
             return
 
-        kotlin.runCatching {
-            commandRunner.runSilentCommand(server, "function #${MOD_ID_BINGO}:on_${state.name.lowercase()}")
-        }
+        runCommand("function #${MOD_ID_BINGO}:on_${state.name.lowercase()}")
 
-        kotlin.runCatching {
-            val commands = scopedData.commandFiles[state]
-                ?.split(Regex("\\R"))
-                ?.map { it.removePrefix("/").trim() }
-                ?.filter { it.isNotBlank() && !it.startsWith("#") }
-                ?: emptyList()
-
-            for (command in commands) {
-                commandRunner.runSilentCommand(server, command)
-            }
-        }
+        scopedData.commandFiles[state]
+            ?.split(Regex("\\R"))
+            ?.map { it.removePrefix("/").trim() }
+            ?.filter { it.isNotBlank() && !it.startsWith("#") }
+            ?.forEach { runCommand(it) }
     }
 }
