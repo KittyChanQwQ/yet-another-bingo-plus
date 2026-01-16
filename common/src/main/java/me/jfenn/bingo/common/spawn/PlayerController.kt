@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.spawn
 import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamWinnerEvent
-import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.options.BingoOptions
@@ -14,8 +13,7 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
-import net.minecraft.server.MinecraftServer
-import net.minecraft.world.GameRules
+import me.jfenn.bingo.platform.world.IGameRules
 import org.slf4j.Logger
 
 /**
@@ -34,7 +32,6 @@ internal class PlayerController(
     events: ScopedEvents,
     eventBus: IEventBus,
     private val log: Logger,
-    private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
     private val spawnService: SpawnService,
@@ -45,6 +42,7 @@ internal class PlayerController(
     private val elytraService: ElytraService,
     private val advancementManager: IAdvancementManager,
     private val recipeManager: IRecipeManager,
+    private val gameRules: IGameRules,
     private val vanishApi: IVanishApi,
     private val playerManager: IPlayerManager,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
@@ -67,7 +65,6 @@ internal class PlayerController(
         player: IPlayerHandle,
         forceReset: Boolean = false,
     ) {
-        val lobbyWorld = server.lobbyWorld ?: return
         if (!state.isLobbyMode) {
             log.error("[PlayerController] Attempted updateGameMode, but isLobbyMode=false!")
             return
@@ -111,8 +108,9 @@ internal class PlayerController(
         // (this also happens on LAN)
         val preGameStates = arrayOf(GameState.PREGAME, GameState.STARTING, GameState.PRELOADING, GameState.LOADING, GameState.COUNTDOWN)
         val isRespawnNeeded = (newPlayerState != oldPlayerState || forceReset) && (state.state in preGameStates || isOnActiveTeam) && state.state != GameState.POSTGAME
-        val isStuckInLobby = player.serverWorld == lobbyWorld && state.state != GameState.PREGAME
-        val isStuckInWorld = player.serverWorld != lobbyWorld && state.state == GameState.PREGAME
+        val isInLobby = player.world.identifier == LOBBY_WORLD_IDENTIFIER
+        val isStuckInLobby = isInLobby && state.state != GameState.PREGAME
+        val isStuckInWorld = !isInLobby && state.state == GameState.PREGAME
         if (isRespawnNeeded || isStuckInLobby || isStuckInWorld) {
             if (!player.isAlive) {
                 log.debug("[PlayerController] respawnPlayer({}, {})", player.playerName, player.uuid)
@@ -246,7 +244,7 @@ internal class PlayerController(
             if (
                 state.state == GameState.PLAYING
                 // if KEEP_INVENTORY is on, we don't need to replace these items
-                && !server.gameRules.get(GameRules.KEEP_INVENTORY).get()
+                && !gameRules.keepInventory.value
                 && teamService.isPlaying(player)
             ) {
                 spawnService.giveSpawnEquipment(listOf(player))
