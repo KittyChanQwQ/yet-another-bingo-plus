@@ -1,8 +1,11 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.impl.inventory.ListInventoryImpl
 import me.jfenn.bingo.platform.ITextSerializer
-import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.item.*
+import me.jfenn.bingo.platform.text.IText
+import net.minecraft.inventory.Inventories
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -15,6 +18,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.collection.DefaultedList
 import org.slf4j.Logger
 
 class ItemStackFactory(
@@ -201,6 +205,29 @@ class ItemStackFactory(
             return (this as? PlayerHeadImpl)
                 ?: takeIf { item == Items.PLAYER_HEAD }
                     ?.let { PlayerHeadImpl(stack) }
+        }
+
+        override val bundleInventory: IInventory? get() = null
+        override fun setBundleInventory(inventory: Collection<IItemStack>) {}
+
+        override val containerInventory: IInventory? get() {
+            val nbt = stack.nbt
+            if (nbt?.contains("Items", 9) == true) {
+                try {
+                    val list = DefaultedList.ofSize(27, ItemStack.EMPTY)
+                    Inventories.readNbt(nbt, list)
+                    return ListInventoryImpl(list.map { forStack(it) })
+                } catch (e: Throwable) {
+                    logger.error("Error reading nested inventory nbt on $identifier", e)
+                    return null
+                }
+            } else return null
+        }
+
+        override fun setContainerInventory(inventory: Collection<IItemStack>) {
+            val list = DefaultedList.ofSize(27, ItemStack.EMPTY)
+            inventory.forEachIndexed { index, stack -> list[index] = stack.stack }
+            Inventories.writeNbt(stack.getOrCreateNbt(), list)
         }
     }
 

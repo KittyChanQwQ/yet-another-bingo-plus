@@ -2,7 +2,7 @@ package me.jfenn.bingo.platform
 
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
-import me.jfenn.bingo.platform.inventory.IContainerItemView
+import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.platform.text.IText
@@ -68,9 +68,11 @@ interface IPlayerHandle : ILivingEntity {
     var gameMode: PlayerGameMode
     val mainHandStack: IItemStack
     val offHandStack: IItemStack
-    fun allHeldStackViews(): Sequence<IContainerItemView>
-    fun allHeldStacks(): Sequence<IItemStack> = allHeldStackViews().map { it.stack }
-    fun allInventorySlots(): Sequence<Pair<Int, IItemStack>>
+    val inventory: IInventory
+    val screenInventory: IInventory
+    val enderChestInventory: IInventory
+    val extraInventories: List<IInventory>
+    val allInventories get() = listOf(inventory, screenInventory, enderChestInventory) + extraInventories
 
     /**
      * Give the player an ItemStack, equipping it in the preferred slot if armor,

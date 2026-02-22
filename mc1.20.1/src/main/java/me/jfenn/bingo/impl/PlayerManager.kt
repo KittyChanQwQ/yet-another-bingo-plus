@@ -1,11 +1,15 @@
 package me.jfenn.bingo.impl
 
 import com.mojang.authlib.GameProfile
-import me.jfenn.bingo.impl.inventory.ContainerItemView
+import me.jfenn.bingo.api.annotations.BingoInternalApi
+import me.jfenn.bingo.api.internal.ExtensionManager
+import me.jfenn.bingo.impl.inventory.InventoryFactoryImpl
+import me.jfenn.bingo.impl.inventory.InventoryImpl
+import me.jfenn.bingo.impl.inventory.PlayerScreenInventoryImpl
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
-import me.jfenn.bingo.platform.inventory.IContainerItemView
+import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.PlayerProfile
@@ -225,32 +229,23 @@ class PlayerHandle(
     override val offHandStack: IItemStack
         get() = getItemStackFactory().forStack(player.offHandStack)
 
-    override fun allHeldStackViews(): Sequence<IContainerItemView> {
-        val itemStackFactory = getItemStackFactory()
-        return sequence {
-            // yield all items in inventory
-            for (i in 0 until player.inventory.size()) {
-                yield(player.inventory.getStack(i))
-            }
+    override val inventory: IInventory
+        get() = InventoryImpl(getItemStackFactory(), player.inventory)
 
-            // yield the current cursor stack
-            yield(player.currentScreenHandler.cursorStack)
-        }.map {
-            ContainerItemView.Inventory(itemStackFactory.forStack(it))
-        }
-    }
+    override val screenInventory: IInventory
+        get() = PlayerScreenInventoryImpl(getItemStackFactory(), player)
 
-    override fun allInventorySlots(): Sequence<Pair<Int, IItemStack>> {
-        val itemStackFactory = getItemStackFactory()
-        return sequence {
-            // yield all items in inventory
-            for (i in 0 until player.inventory.size()) {
-                yield(Pair(i, player.inventory.getStack(i)))
-            }
-        }.map { (i, stack) ->
-            i to itemStackFactory.forStack(stack)
+    override val enderChestInventory: IInventory
+        get() = InventoryImpl(getItemStackFactory(), player.enderChestInventory)
+
+    @OptIn(BingoInternalApi::class)
+    override val extraInventories: List<IInventory>
+        get() {
+            val inventoryFactory = InventoryFactoryImpl(getItemStackFactory())
+            return ExtensionManager.inventoryProviders
+                .flatMap { it.getInventories(player) }
+                .map { inventoryFactory.create(it) }
         }
-    }
 
     override fun giveOrEquipStack(stack: IItemStack) {
         val itemStack = stack.stack

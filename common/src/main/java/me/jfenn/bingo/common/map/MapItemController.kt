@@ -7,6 +7,9 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.utils.InventoryVisitor
+import me.jfenn.bingo.common.utils.allHeldStacks
+import me.jfenn.bingo.common.utils.visitInventories
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
@@ -24,9 +27,11 @@ internal class MapItemController(
 ) : BingoComponent() {
 
     private fun removePreviewCardItem(player: IPlayerHandle) {
-        for ((slot, item) in player.allInventorySlots()) {
-            if (mapItemService.isPreviewMapItem(item))
-                player.removeStack(slot)
+        visitInventories(player.allInventories) {
+            if (mapItemService.isPreviewMapItem(it)) {
+                it.count = 0
+                InventoryVisitor.MODIFY
+            } else InventoryVisitor.SKIP
         }
     }
 
@@ -37,26 +42,28 @@ internal class MapItemController(
     private fun giveMapCardItem(player: IPlayerHandle, team: BingoTeam?) {
         if (cardViewService.supportsCardHud(player)) return
 
-        val previousSlot = player.allInventorySlots()
+        val previousSlot = player.inventory
+            .withIndex()
             .find { (_, stack) -> mapItemService.isMapItem(stack) }
-            ?.first
+            ?.index
 
-        val hasMap = player.allHeldStackViews()
-            .filter { mapItemService.isMapItem(it.stack) }
-            .count { view ->
+        var hasMap = false
+        visitInventories(player.allInventories) { stack ->
+            if (mapItemService.isMapItem(stack)) {
                 val isItemValid = when (team) {
-                    null -> mapItemService.isPreviewMapItem(view.stack)
-                    else -> mapItemService.isMapTeamItem(view.stack, team)
+                    null -> mapItemService.isPreviewMapItem(stack)
+                    else -> mapItemService.isMapTeamItem(stack, team)
                 }
                 if (isItemValid) {
-                    view.mutate { it.count = 1 }
-                    true
+                    stack.count = 1
+                    hasMap = true
                 } else {
                     // if the player has another team's map item, remove it!
-                    view.mutate { it.count = 0 }
-                    false
+                    stack.count = 0
                 }
-            } > 0
+                InventoryVisitor.MODIFY
+            } else InventoryVisitor.SKIP
+        }
 
         if (!hasMap) {
             // give the player a new map item
@@ -64,7 +71,7 @@ internal class MapItemController(
                 null -> mapItemService.createPreviewMapItem()
                 else -> mapItemService.createMapItem(team)
             }
-            previousSlot?.let { player.setStack(it, mapItem) }
+            previousSlot?.let { player.inventory[it] = mapItem }
                 ?: player.giveItemStack(mapItem)
         }
     }
@@ -101,9 +108,12 @@ internal class MapItemController(
      * Remove all bingo map items from the player
      */
     private fun removeAllMapItems(player: IPlayerHandle) {
-        player.allHeldStackViews()
-            .filter { mapItemService.isMapItem(it.stack) }
-            .forEach { view -> view.mutate { it.count = 0 } }
+        visitInventories(player.allInventories) {
+            if (mapItemService.isMapItem(it)) {
+                it.count = 0
+                InventoryVisitor.MODIFY
+            } else InventoryVisitor.SKIP
+        }
     }
 
     init {

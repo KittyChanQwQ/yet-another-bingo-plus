@@ -1,7 +1,9 @@
 package me.jfenn.bingo.platform.item
 
 import kotlinx.serialization.Contextual
+import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.text.IText
+import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.server.MinecraftServer
@@ -64,6 +66,12 @@ interface IItemStack {
     fun asFireworkRocket(): IFireworkRocket?
     fun asWrittenBook(): IWrittenBook?
     fun asPlayerHead(): IPlayerHead?
+
+    val bundleInventory: IInventory?
+    fun setBundleInventory(inventory: Collection<IItemStack>)
+
+    val containerInventory: IInventory?
+    fun setContainerInventory(inventory: Collection<IItemStack>)
 }
 
 typealias IItemStackSerialized = @Contextual IItemStack

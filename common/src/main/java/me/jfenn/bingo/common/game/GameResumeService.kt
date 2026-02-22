@@ -142,8 +142,9 @@ internal class GameResumeService(
                         pitch = playerData.pitch,
                     )
 
+                    val playerInventory = playerImpl.inventory
                     playerData.inventory.forEach { (slot, stack) ->
-                        playerImpl.setStack(slot, stack)
+                        playerInventory[slot] = stack
                     }
                 }
             }

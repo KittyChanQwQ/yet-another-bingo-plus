@@ -1,8 +1,5 @@
 package me.jfenn.bingo.common.infobook
 
-import me.jfenn.bingo.platform.text.HoverAction
-import me.jfenn.bingo.platform.text.ITextFactory
-import me.jfenn.bingo.platform.text.TextAction
 import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.commands.BingoPrefsCommand
 import me.jfenn.bingo.common.config.BingoConfig
@@ -12,6 +9,9 @@ import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.InventoryVisitor
+import me.jfenn.bingo.common.utils.allHeldStacks
+import me.jfenn.bingo.common.utils.visitInventories
 import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
@@ -19,6 +19,9 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.item.IWrittenBook
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
+import me.jfenn.bingo.platform.text.HoverAction
+import me.jfenn.bingo.platform.text.ITextFactory
+import me.jfenn.bingo.platform.text.TextAction
 import net.minecraft.util.Formatting
 
 internal class InfoBookService(
@@ -230,20 +233,23 @@ internal class InfoBookService(
 
     fun giveBookItem(player: IPlayerHandle) {
         var bookCount = 0
-        for (view in player.allHeldStackViews()) {
-            val stack = view.stack.asWrittenBook() ?: continue
-            if (isBookItem(stack)) {
-                // prevent players from taking someone else's book...
-                if (stack.author != scoreboardManager.getPlayerName(player))
-                    updateBookItem(player, stack)
+        visitInventories(player.allInventories) { stack ->
+            val book = stack.asWrittenBook()
+                ?.takeIf { isBookItem(it) }
+                ?: return@visitInventories InventoryVisitor.SKIP
 
-                bookCount++
+            // prevent players from taking someone else's book...
+            if (book.author != scoreboardManager.getPlayerName(player))
+                updateBookItem(player, book)
 
-                if (bookCount > 1)
-                    view.mutate { it.count = 0 }
-                else if (stack.count > 1)
-                    view.mutate { it.count = 1 }
-            }
+            bookCount++
+
+            if (bookCount > 1)
+                book.count = 0
+            else if (stack.count > 1)
+                book.count = 1
+
+            InventoryVisitor.MODIFY
         }
 
         if (bookCount == 0) {

@@ -10,6 +10,9 @@ import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MI
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.utils.InventoryVisitor
+import me.jfenn.bingo.common.utils.allHeldStacks
+import me.jfenn.bingo.common.utils.visitInventories
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
@@ -136,21 +139,24 @@ internal class ItemObjectiveManager(
         player: IPlayerHandle,
         objective: BingoObjective.ItemEntry,
     ) {
-        val itemViews = player.allHeldStackViews()
-            .filter { canSatisfyPartial(it.stack, objective) }
-
         // Confiscate item stacks until the objective requirements are met
         var countRemaining = objective.itemCount
-        for (view in itemViews) {
-            val newCount = view.stack.count - countRemaining
+
+        visitInventories(player.allInventories) { stack ->
+            if (countRemaining <= 0) return@visitInventories InventoryVisitor.BREAK
+            if (!canSatisfyPartial(stack, objective)) return@visitInventories InventoryVisitor.SKIP
+
+            val newCount = stack.count - countRemaining
             if (newCount < 0) {
                 // the entire stack is consumed, and there are remaining items to confiscate
-                countRemaining -= view.stack.count
-                view.mutate { it.count = 0 }
+                countRemaining -= stack.count
+                stack.count = 0
+                InventoryVisitor.MODIFY
             } else {
                 // there are no remaining items to confiscate
-                view.mutate { it.count = newCount }
-                break
+                countRemaining = 0
+                stack.count = newCount
+                InventoryVisitor.BREAK
             }
         }
     }

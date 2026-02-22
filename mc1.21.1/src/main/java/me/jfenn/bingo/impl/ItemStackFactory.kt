@@ -5,8 +5,10 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.mojang.serialization.JsonOps
-import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.impl.inventory.ListInventoryImpl
+import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.item.*
+import me.jfenn.bingo.platform.text.IText
 import net.minecraft.component.ComponentType
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.*
@@ -303,6 +305,32 @@ class ItemStackFactory(
                     ?.let { PlayerHeadImpl(stack) }
         }
 
+        override val bundleInventory: IInventory?
+            get() = stack[DataComponentTypes.BUNDLE_CONTENTS]
+                ?.iterate()
+                ?.map { forStack(it) }
+                .orEmpty()
+                .let { ListInventoryImpl(it) }
+
+        override fun setBundleInventory(inventory: Collection<IItemStack>) {
+            stack[DataComponentTypes.BUNDLE_CONTENTS] = BundleContentsComponent(
+                inventory.filter { !it.isEmpty }.map { it.stack }
+            )
+        }
+
+        override val containerInventory: IInventory?
+            get() = stack[DataComponentTypes.CONTAINER]
+                ?.stream()
+                ?.map { forStack(it) }
+                ?.toList()
+                .orEmpty()
+                .let { ListInventoryImpl(it) }
+
+        override fun setContainerInventory(inventory: Collection<IItemStack>) {
+            stack[DataComponentTypes.CONTAINER] = ContainerComponent.fromStacks(
+                inventory.map { it.stack }
+            )
+        }
     }
 
     inner class WrittenBookImpl(

@@ -14,11 +14,7 @@ import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.DurationType
-import me.jfenn.bingo.common.utils.InstantType
-import me.jfenn.bingo.common.utils.Vector3dAsArray
-import me.jfenn.bingo.common.utils.formatHHMMSS
-import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
@@ -241,8 +237,8 @@ internal class GameOverService(
             position = player.pos,
             pitch = player.pitch,
             yaw = player.yaw,
-            inventory = player.allInventorySlots()
-                .map { (slot, stack) -> slot to stack.copy() }
+            inventory = player.inventory
+                .mapIndexed { slot, stack -> slot to stack.copy() }
                 .toMap(),
         )
     }
