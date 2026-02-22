@@ -47,10 +47,13 @@ dependencies {
 
 processResources {
     dependsOn(project(":common").tasks.processResources)
-    from("../common/src/main/resources") {
-        exclude("bingo.accesswidener")
-    }
-    from("../common/fabric.mod.json")
+    duplicatesStrategy = DuplicatesStrategy.WARN
+    copySpec({
+        from("../common/src/main/resources") {
+            exclude("bingo.accesswidener")
+        }
+        from("../common/fabric.mod.json")
+    })
 }
 
 shadowJar {

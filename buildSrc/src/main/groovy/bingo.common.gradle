@@ -41,7 +41,9 @@ dependencies {
 
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    if (project.hasProperty("yarn_mappings")) {
+        mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    }
 
     compileOnly libs.kotlin.stdlib
     compileOnly libs.kotlin.reflect
@@ -66,14 +68,17 @@ processResources {
     inputs.property "fabric_api_version", fabricApiVersion
     inputs.property "fabric_language_kotlin_version", fabricLanguageKotlinVersion
 
-    filesMatching("fabric.mod.json") {
-        expand(
-                "version": projectVersion,
-                "minecraft_version": supportedMinecraftVersion,
-                "fabric_api_version": fabricApiVersion,
-                "fabric_language_kotlin_version": fabricLanguageKotlinVersion
-        )
-    }
+    duplicatesStrategy = DuplicatesStrategy.WARN
+    copySpec({
+        filesMatching("fabric.mod.json") {
+            expand(
+                    "version": projectVersion,
+                    "minecraft_version": supportedMinecraftVersion,
+                    "fabric_api_version": fabricApiVersion,
+                    "fabric_language_kotlin_version": fabricLanguageKotlinVersion
+            )
+        }
+    })
 }
 
 java {
