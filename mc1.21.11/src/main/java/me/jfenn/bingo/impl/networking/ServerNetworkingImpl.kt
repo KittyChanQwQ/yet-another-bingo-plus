@@ -29,14 +29,37 @@ class ServerNetworkingImpl(
     ) : IServerPacketHandlerC2S<T> {
         override val name: String = "packetC2S=${converter.id}"
 
-        private val id = CustomPayload.id<BingoPayload<T>>(converter.id.let { "${it.namespace}_${it.path}" })
+        private val legacyId = CustomPayload.id<BingoPayload<T>>(converter.id.let { "${it.namespace}_${it.path}" })
+        private val legacyCodec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
+            { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, itemStackFactory)) },
+            { b: RegistryByteBuf -> BingoPayload(legacyId, converter.fromPacketBuf(PacketBufImpl(b, itemStackFactory))) }
+        )
+
+        private val id = CustomPayload.Id<BingoPayload<T>>(converter.id)
         private val codec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
             { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, itemStackFactory)) },
             { b: RegistryByteBuf -> BingoPayload(id, converter.fromPacketBuf(PacketBufImpl(b, itemStackFactory))) }
         )
 
+        private fun receivePacket(packet: BingoPayload<T>, ctx: ServerPlayNetworking.Context) {
+            val player = PlayerHandle(ctx.player())
+            val data = ServerPacket(player, packet.value)
+            ctx.server().execute {
+                eventBus.emit(this, data)
+            }
+        }
+
         init {
             log.debug("[ServerNetworkingInfo] Registering C2S packet {}", converter.id.toString())
+            try {
+                PayloadTypeRegistry.playC2S().register(legacyId, legacyCodec)
+            } catch (e: IllegalArgumentException) {
+                if (e.message?.contains("already registered") != true)
+                    throw RuntimeException("Error initializing bingo ServerNetworking", e)
+            }
+
+            ServerPlayNetworking.registerGlobalReceiver(legacyId, ::receivePacket)
+
             try {
                 PayloadTypeRegistry.playC2S().register(id, codec)
             } catch (e: IllegalArgumentException) {
@@ -44,13 +67,7 @@ class ServerNetworkingImpl(
                     throw RuntimeException("Error initializing bingo ServerNetworking", e)
             }
 
-            ServerPlayNetworking.registerGlobalReceiver(id) { packet, ctx ->
-                val player = PlayerHandle(ctx.player())
-                val data = ServerPacket(player, packet.value)
-                ctx.server().execute {
-                    eventBus.emit(this, data)
-                }
-            }
+            ServerPlayNetworking.registerGlobalReceiver(id, ::receivePacket)
         }
     }
 
@@ -58,7 +75,13 @@ class ServerNetworkingImpl(
         private val converter: PacketConverter<T>,
     ) : IServerPacketHandlerS2C<T> {
 
-        private val id = CustomPayload.id<BingoPayload<T>>(converter.id.let { "${it.namespace}_${it.path}" })
+        private val legacyId = CustomPayload.id<BingoPayload<T>>(converter.id.let { "${it.namespace}_${it.path}" })
+        private val legacyCodec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
+            { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, itemStackFactory)) },
+            { b: RegistryByteBuf -> BingoPayload(legacyId, converter.fromPacketBuf(PacketBufImpl(b, itemStackFactory))) }
+        )
+
+        private val id = CustomPayload.Id<BingoPayload<T>>(converter.id)
         private val codec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
             { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, itemStackFactory)) },
             { b: RegistryByteBuf -> BingoPayload(id, converter.fromPacketBuf(PacketBufImpl(b, itemStackFactory))) }
@@ -66,6 +89,12 @@ class ServerNetworkingImpl(
 
         init {
             log.debug("[ServerNetworkingInfo] Registering S2C packet {}", converter.id.toString())
+            try {
+                PayloadTypeRegistry.playS2C().register(legacyId, legacyCodec)
+            } catch (e: IllegalArgumentException) {
+                if (e.message?.contains("already registered") != true)
+                    throw RuntimeException("Error initializing bingo ServerNetworking", e)
+            }
             try {
                 PayloadTypeRegistry.playS2C().register(id, codec)
             } catch (e: IllegalArgumentException) {
@@ -75,12 +104,15 @@ class ServerNetworkingImpl(
         }
 
         override fun isSupported(player: ServerPlayerEntity): Boolean {
-            return ServerPlayNetworking.canSend(player, id)
+            return ServerPlayNetworking.canSend(player, id) || ServerPlayNetworking.canSend(player, legacyId)
         }
 
         override fun send(player: ServerPlayerEntity, packet: T): Boolean {
-            if (isSupported(player)) {
+            if (ServerPlayNetworking.canSend(player, id)) {
                 ServerPlayNetworking.send(player, BingoPayload(id, packet))
+                return true
+            } else if (ServerPlayNetworking.canSend(player, legacyId)) {
+                ServerPlayNetworking.send(player, BingoPayload(legacyId, packet))
                 return true
             } else {
                 return false
