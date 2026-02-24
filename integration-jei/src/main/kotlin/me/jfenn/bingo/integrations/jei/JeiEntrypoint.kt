@@ -6,16 +6,17 @@ import mezz.jei.api.runtime.IJeiRuntime
 import net.minecraft.util.Identifier
 
 @JeiPlugin
-internal object JeiEntrypoint : IModPlugin {
+internal class JeiEntrypoint : IModPlugin {
 
-    private val IDENTIFIER = Identifier.of("yet-another-minecraft-bingo", "bingo")!!
-
-    var runtime: IJeiRuntime? = null
+    companion object {
+        private val IDENTIFIER = Identifier.of("yet-another-minecraft-bingo", "bingo")!!
+        var runtime: IJeiRuntime? = null
+    }
 
     override fun getPluginUid(): Identifier = IDENTIFIER
 
     override fun onRuntimeAvailable(jeiRuntime: IJeiRuntime) {
-        this.runtime = jeiRuntime
+        runtime = jeiRuntime
     }
 
     override fun onRuntimeUnavailable() {
