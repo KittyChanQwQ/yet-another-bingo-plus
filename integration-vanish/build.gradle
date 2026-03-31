@@ -6,6 +6,6 @@ plugins {
 base.archivesName.set("${project.archives_base_name}-integration-vanish")
 
 dependencies {
-    modCompileOnly(libs.vanish.get())
-    compileOnly project(path: ":platform", configuration: "namedElements")
+    compileOnly(libs.vanish.get())
+    compileOnly project(path: ":platform")
 }

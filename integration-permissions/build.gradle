@@ -5,6 +5,6 @@ plugins {
 base.archivesName.set("${project.archives_base_name}-integration-placeholders")
 
 dependencies {
-    modCompileOnly(libs.fabric.permissions.api.v2.get())
-    compileOnly project(path: ":platform", configuration: "namedElements")
+    compileOnly(libs.fabric.permissions.api.v2.get())
+    compileOnly project(path: ":platform")
 }

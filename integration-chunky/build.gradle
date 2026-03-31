@@ -6,6 +6,6 @@ plugins {
 base.archivesName.set("${project.archives_base_name}-integration-chunky")
 
 dependencies {
-    compileOnly project(path: ":platform", configuration: "namedElements")
-    compileOnly project(path: ":api", configuration: "namedElements")
+    compileOnly project(path: ":platform")
+    compileOnly project(path: ":api")
 }

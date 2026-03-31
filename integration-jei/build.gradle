@@ -5,8 +5,8 @@ plugins {
 base.archivesName.set("${project.archives_base_name}-integration-jei")
 
 dependencies {
-    modCompileOnly(libs.jei)
-    modCompileOnly(libs.roughlyenoughitems)
-    modCompileOnly(libs.emi)
-    compileOnly project(path: ":platform", configuration: "namedElements")
+    compileOnly(libs.jei)
+    compileOnly(libs.roughlyenoughitems)
+    compileOnly(libs.emi)
+    compileOnly project(path: ":platform")
 }

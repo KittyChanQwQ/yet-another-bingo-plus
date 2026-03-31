@@ -34,11 +34,11 @@ dependencies {
     api libs.sqldelight.jdbc
     api libs.sqlite
 
-    modCompileOnly(libs.modmenu) {
+    compileOnly(libs.modmenu) {
         exclude(group: "net.fabricmc")
         exclude(group: "net.fabricmc.fabric-api")
     }
-    modCompileOnly(libs.yacl) {
+    compileOnly(libs.yacl) {
         exclude(group: "net.fabricmc")
         exclude(group: "net.fabricmc.fabric-api")
         exclude(group: "com.twelvemonkeys.common")
@@ -46,8 +46,8 @@ dependencies {
         exclude(group: "org.quiltmc.parsers")
     }
 
-    api project(path: ":platform", configuration: "namedElements")
-    api project(path: ":api", configuration: "namedElements")
+    api project(path: ":platform")
+    api project(path: ":api")
 }
 
 tasks.register('bingoImages', Copy) {

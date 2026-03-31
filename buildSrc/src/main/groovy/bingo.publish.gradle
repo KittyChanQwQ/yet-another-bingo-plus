@@ -15,7 +15,7 @@ modrinth {
         versionType = "release"
     }
     changelog = rootProject.file("CHANGELOG.md").text
-    uploadFile = remapJar
+    uploadFile = jar
     gameVersions = project.minecraft_supported_versions.toString().split(',').toList()
     loaders = ["fabric", "quilt"]
     dependencies {

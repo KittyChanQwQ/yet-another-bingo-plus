@@ -15,11 +15,11 @@ publishing {
             artifactId = "api"
             version = project.mod_version
 
-            artifact(remapJar) {
-                builtBy remapJar
+            artifact(jar) {
+                builtBy jar
             }
             artifact(sourcesJar) {
-                builtBy remapSourcesJar
+                builtBy sourcesJar
             }
         }
     }

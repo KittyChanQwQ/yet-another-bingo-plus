@@ -6,7 +6,7 @@ plugins {
 base.archivesName.set("${project.archives_base_name}-integration-voicechat")
 
 dependencies {
-    modCompileOnly(libs.voicechat)
+    compileOnly(libs.voicechat)
     // modCompileOnly(libs.plasmovoice) {
     //     exclude(group: "org.jetbrains.kotlin")
     //     exclude(group: "org.jetbrains.kotlinx")
@@ -16,6 +16,6 @@ dependencies {
     //     exclude(group: "com.google.code.gson")
     // }
 
-    compileOnly project(path: ":platform", configuration: "namedElements")
-    compileOnly project(path: ":api", configuration: "namedElements")
+    compileOnly project(path: ":platform")
+    compileOnly project(path: ":api")
 }
