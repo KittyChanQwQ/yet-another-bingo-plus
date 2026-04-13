@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.options.StalemateBehavior
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Vector3d
 
 internal const val MENU_STALEMATE_WIDTH = 2.0

@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.player.PlayerProfile
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.text.Formatting
+import me.jfenn.bingo.platform.text.IText
 import java.util.*
 
 data class CardView(
@@ -38,14 +38,14 @@ data class CardDisplay(
     var clientTeamName: IText? = null
 
     object V1 : PacketConverter<CardDisplay> {
-        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_view_display")!!
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_view_display")
 
         override fun fromPacketBuf(buf: IPacketBuf): CardDisplay {
             return CardDisplay(
                 teamColor = buf.readNullable {
                     try {
                         Formatting.valueOf(buf.readString())
-                    } catch (e: IllegalArgumentException) {
+                    } catch (_: IllegalArgumentException) {
                         null
                     }
                 },

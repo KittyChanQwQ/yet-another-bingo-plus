@@ -3,9 +3,9 @@ package me.jfenn.bingo.common.map
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.item.IItemStackSerialized
 import me.jfenn.bingo.platform.packet.PacketConverter
-import net.minecraft.util.Identifier
 
 @Serializable
 class CardTileImage(
@@ -30,7 +30,7 @@ class CardTileImage(
     }
 
     object V1 : PacketConverter<CardTileImage> {
-        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_tile_image")!!
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_tile_image")
 
         override fun fromPacketBuf(buf: IPacketBuf): CardTileImage {
             return CardTileImage(

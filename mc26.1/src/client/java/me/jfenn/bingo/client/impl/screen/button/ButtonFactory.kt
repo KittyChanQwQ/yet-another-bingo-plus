@@ -5,25 +5,22 @@ import me.jfenn.bingo.client.platform.screen.IButton
 import me.jfenn.bingo.client.platform.screen.IButtonFactory
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.impl.TextImpl
+import me.jfenn.bingo.impl.toPlatformIdentifier
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.IEventListener
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.ButtonTextures
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.PressableWidget
-import net.minecraft.client.gui.widget.TexturedButtonWidget
-import net.minecraft.client.input.AbstractInput
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.*
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.input.InputWithModifiers
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import org.joml.Vector2i
 
 class ButtonFactory : IButtonFactory {
     override fun createDefaultButton(
         message: IText,
         onClick: () -> Unit
-    ) = ButtonWidget.builder(message.value, { onClick() })
+    ) = Button.builder(message.value, { onClick() })
         .build()
         .let { TexturedButtonImpl(it) }
 
@@ -32,21 +29,21 @@ class ButtonFactory : IButtonFactory {
         y: Int,
         width: Int,
         height: Int,
-        texture: String?,
-        focusedTexture: String?,
-        inactiveTexture: String?,
-        onClick: (ButtonWidget) -> Unit,
+        texture: String,
+        focusedTexture: String,
+        inactiveTexture: String,
+        onClick: (Button) -> Unit,
         message: IText
-    ): IButton = TexturedButtonWidget(
+    ): IButton = ImageButton(
         x,
         y,
         width,
         height,
-        ButtonTextures(
-            texture?.let { Identifier.of(it) },
-            inactiveTexture?.let { Identifier.of(it) },
-            focusedTexture?.let { Identifier.of(it) },
-            inactiveTexture?.let { Identifier.of(it) },
+        WidgetSprites(
+            texture.let { Identifier.parse(it) },
+            inactiveTexture.let { Identifier.parse(it) },
+            focusedTexture.let { Identifier.parse(it) },
+            inactiveTexture.let { Identifier.parse(it) },
         ),
         onClick,
         message.value,
@@ -55,20 +52,20 @@ class ButtonFactory : IButtonFactory {
     override fun createNinePatchButton(
         sliceSize: Int,
         textureSize: Vector2i,
-        texture: String?,
-        focusedTexture: String?,
-        inactiveTexture: String?,
+        texture: String,
+        focusedTexture: String,
+        inactiveTexture: String,
     ): IButton {
         return NinePatchButton(sliceSize, textureSize, texture, focusedTexture, inactiveTexture)
     }
 }
 
 interface ButtonImpl : IButton {
-    val button: ClickableWidget
+    val button: AbstractWidget
 }
 
 class TexturedButtonImpl(
-    override val button: ClickableWidget
+    override val button: AbstractWidget
 ) : ButtonImpl {
     override var position: Vector2i
         get() = Vector2i(button.x, button.y)
@@ -98,34 +95,34 @@ class TexturedButtonImpl(
 class NinePatchButton(
     private val sliceSize: Int,
     private val textureSize: Vector2i,
-    texture: String?,
-    focusedTexture: String?,
-    inactiveTexture: String?,
+    texture: String,
+    focusedTexture: String,
+    inactiveTexture: String,
 ) : ButtonImpl {
 
-    private val textures = ButtonTextures(
-        texture?.let { Identifier.of(it) },
-        inactiveTexture?.let { Identifier.of(it) },
-        focusedTexture?.let { Identifier.of(it) },
-        inactiveTexture?.let { Identifier.of(it) },
+    private val textures = WidgetSprites(
+        texture.let { Identifier.parse(it) },
+        inactiveTexture.let { Identifier.parse(it) },
+        focusedTexture.let { Identifier.parse(it) },
+        inactiveTexture.let { Identifier.parse(it) },
     )
 
-    override val button = object : PressableWidget(
+    override val button = object : AbstractButton(
         0, 0, 0, 0,
-        Text.empty(),
+        Component.empty(),
     ) {
-        override fun drawIcon(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
-            val service = DrawService(context)
-            val identifier = textures[this.active, this.isSelected]
-            service.drawNinePatch(identifier, x, y, width, height, sliceSize, textureSize.x, textureSize.y)
-            drawTextWithMargin(context.textConsumer, message, 2)
+        override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, a: Float) {
+            val service = DrawService(graphics)
+            val identifier = textures[this.active, this.isHoveredOrFocused]
+            service.drawNinePatch(identifier.toPlatformIdentifier(), x, y, width, height, sliceSize, textureSize.x, textureSize.y)
+            extractScrollingStringOverContents(graphics.textRenderer(), message, 2)
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            appendDefaultNarrations(builder)
+        override fun updateWidgetNarration(output: NarrationElementOutput) {
+            defaultButtonNarrationText(output)
         }
 
-        override fun onPress(input: AbstractInput?) {
+        override fun onPress(input: InputWithModifiers) {
             onClick.invoke(Unit)
         }
     }

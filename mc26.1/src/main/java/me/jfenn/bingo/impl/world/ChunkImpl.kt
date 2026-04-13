@@ -2,22 +2,26 @@ package me.jfenn.bingo.impl.world
 
 import me.jfenn.bingo.impl.block.BlockStateImpl
 import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.block.ChunkPosition
 import me.jfenn.bingo.platform.block.IBlockState
 import me.jfenn.bingo.platform.world.IChunk
 import me.jfenn.bingo.platform.world.IChunkHeightmap
-import net.minecraft.world.Heightmap
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.chunk.ChunkAccess
+import net.minecraft.world.level.levelgen.Heightmap
 
 class ChunkImpl(
-    private val chunk: Chunk,
+    private val chunk: ChunkAccess,
 ) : IChunk {
+    override val pos: ChunkPosition
+        get() = ChunkPosition(chunk.pos.x, chunk.pos.z)
+
     override fun getBlockPos(
         offsetX: Int,
         y: Int,
         offsetZ: Int
     ): BlockPosition {
         return BlockPosition.fromBlockPos(
-            chunk.pos.getBlockPos(offsetX, y, offsetZ)
+            chunk.pos.getBlockAt(offsetX, y, offsetZ)
         )
     }
 
@@ -27,9 +31,11 @@ class ChunkImpl(
 
     override fun getHeightmap(type: IChunkHeightmap.Type): IChunkHeightmap {
         return ChunkHeightmapImpl(
-            chunk.getHeightmap(
+            chunk.getOrCreateHeightmapUnprimed(
                 when (type) {
-                    IChunkHeightmap.Type.MOTION_BLOCKING_NO_LEAVES -> Heightmap.Type.MOTION_BLOCKING_NO_LEAVES
+                    IChunkHeightmap.Type.MOTION_BLOCKING_NO_LEAVES -> Heightmap.Types.MOTION_BLOCKING_NO_LEAVES
+                    IChunkHeightmap.Type.MOTION_BLOCKING -> Heightmap.Types.MOTION_BLOCKING
+                    IChunkHeightmap.Type.WORLD_SURFACE -> Heightmap.Types.WORLD_SURFACE
                 }
             )
         )

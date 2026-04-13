@@ -12,7 +12,7 @@ import me.jfenn.bingo.common.stats.packets.StatsGamePacket
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.IJsonSerializers
-import net.minecraft.server.MinecraftServer
+import me.jfenn.bingo.platform.IPlayerManager
 import org.slf4j.Logger
 import java.time.Duration
 import java.time.Instant
@@ -23,8 +23,8 @@ internal class WriteStatsService(
     private val state: BingoState,
     private val stats: StatsService,
     private val packets: ServerPacketEvents,
-    private val server: MinecraftServer,
     private val serializers: IJsonSerializers,
+    private val playerManager: IPlayerManager,
 ) : BingoComponent() {
     private fun broadcastResult(
         gameInfo: GameInfo,
@@ -32,7 +32,7 @@ internal class WriteStatsService(
         playerInfo: GamePlayerInfo,
     ) {
         // TODO: if player.uuid is also the server host (in singleplayer/lan), there's no need to send this packet
-        val player = server.playerManager.getPlayer(playerInfo.minecraftId) ?: return
+        val player = playerManager.getPlayer(playerInfo.minecraftId) ?: return
 
         packets.statsGameV1S2C.send(player, StatsGamePacket(
             PlayerGameSummary(

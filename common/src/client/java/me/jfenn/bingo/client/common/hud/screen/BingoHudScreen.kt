@@ -25,8 +25,8 @@ import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.event.IEventBus
-import net.minecraft.util.Identifier
 import org.joml.Vector2i
 import org.koin.core.Koin
 import kotlin.math.*
@@ -117,7 +117,7 @@ internal class BingoHudScreen(
         onTileClick = { tile ->
             if (gameOver != null) return@BingoCardsWidget false
             when (val action = tile.action) {
-                is CardTileAction.Item -> jei.openItemRecipe(action.item.stack)
+                is CardTileAction.Item -> jei.openItemRecipe(action.item)
                 else -> false
             }
         },
@@ -237,7 +237,7 @@ internal class BingoHudScreen(
             // Ensure that the texture is rendered with an even width
             val evenOffset = if (sidebarWidth % 2 == 0) 0 else 1
             drawService.drawNinePatch(
-                texture = Identifier.of("minecraft", "bingo/game_sidebar_background")!!,
+                texture = Identifier.of("minecraft", "bingo/game_sidebar_background"),
                 x = width - sidebarWidth - evenOffset,
                 y = 0,
                 width = sidebarWidth + evenOffset,

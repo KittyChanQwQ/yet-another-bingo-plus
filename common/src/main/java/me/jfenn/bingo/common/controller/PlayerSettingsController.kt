@@ -45,16 +45,11 @@ internal class PlayerSettingsController(
         eventBus.register(PlayerSettingsEvent) { (player) ->
             val settings = playerSettingsService.getPlayer(player)
             when {
-                packetManager.receivePlayerSettingsV2.send(player, settings) -> {}
                 packetManager.receivePlayerSettingsV1.send(player, settings) -> {}
             }
         }
 
         events.onPacket(packetManager.sendPlayerSettingsV1) {
-            receivePlayerSettings(it.player, it.packet)
-        }
-
-        events.onPacket(packetManager.sendPlayerSettingsV2) {
             receivePlayerSettings(it.player, it.packet)
         }
     }

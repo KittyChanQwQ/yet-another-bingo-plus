@@ -2,9 +2,9 @@ package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.packet.PacketConverter
-import net.minecraft.util.Identifier
 
 sealed interface CardTileAction {
     data class Advancement(val id: String) : CardTileAction
@@ -19,7 +19,7 @@ sealed interface CardTileAction {
     data object None : CardTileAction
 
     object V1 : PacketConverter<CardTileAction> {
-        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_tile_action")!!
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_tile_action")
 
         override fun fromPacketBuf(buf: IPacketBuf): CardTileAction {
             val type = buf.readString()

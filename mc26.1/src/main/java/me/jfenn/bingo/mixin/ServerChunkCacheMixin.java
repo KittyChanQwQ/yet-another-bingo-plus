@@ -1,7 +1,7 @@
 package me.jfenn.bingo.mixin;
 
 import me.jfenn.bingo.mixinhelper.ServerChunkManagerMixinHelper;
-import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.level.ServerChunkCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,10 +10,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ServerChunkManager.class)
-public class ServerChunkManagerMixin {
+@Mixin(ServerChunkCache.class)
+public class ServerChunkCacheMixin {
     @Unique
-    private final Logger logger = LoggerFactory.getLogger(ServerChunkManagerMixin.class);
+    private final Logger logger = LoggerFactory.getLogger(ServerChunkCacheMixin.class);
 
     @Inject(at = @At(value = "HEAD"), method = "save(Z)V", cancellable = true)
     public void save(boolean flush, CallbackInfo ci) {

@@ -3,25 +3,24 @@ package me.jfenn.bingo.mixin;
 import me.jfenn.bingo.common.spawn.SpawnData;
 import me.jfenn.bingo.mixinhandler.PlayerManagerMixinHelper;
 import me.jfenn.bingo.platform.block.BlockPosition;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.RespawnAnchorBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtDouble;
-import net.minecraft.nbt.NbtFloat;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.TeleportTarget;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.RespawnAnchorBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.portal.TeleportTransition;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
-@Mixin(PlayerManager.class)
+@Mixin(PlayerList.class)
 public abstract class PlayerManagerMixin {
 
     @Shadow @Final private MinecraftServer server;
@@ -44,42 +43,44 @@ public abstract class PlayerManagerMixin {
     @Unique
     private final Logger log = LoggerFactory.getLogger(PlayerManagerMixin.class);
 
-    @Inject(at = @At(value = "HEAD"), method = "sendToAround", cancellable = true)
-    private void sendToAround(@Nullable PlayerEntity player, double x, double y, double z, double distance, RegistryKey<World> worldKey, Packet<?> packet, CallbackInfo ci) {
+    // TODO(Ravel): no target class
+    @Inject(at = @At(value = "HEAD"), method = "broadcast", cancellable = true)
+    private void sendToAround(@Nullable Player player, double x, double y, double z, double distance, ResourceKey<Level> worldKey, Packet<?> packet, CallbackInfo ci) {
         // If the game is in PREGAME, prevent chaos by cancelling sound packets while in the lobby
-        if (packet instanceof PlaySoundS2CPacket && PlayerManagerMixinHelper.Companion.shouldPreventLobbyChaos()) {
+        if (packet instanceof ClientboundSoundPacket && PlayerManagerMixinHelper.Companion.shouldPreventLobbyChaos()) {
             ci.cancel();
         }
     }
 
     @Inject(at = @At(value = "RETURN"), method = "loadPlayerData", cancellable = true)
-    private void loadPlayerData(PlayerConfigEntry player, CallbackInfoReturnable<Optional<NbtCompound>> ci) {
+    private void loadPlayerData(NameAndId player, CallbackInfoReturnable<Optional<CompoundTag>> ci) {
         // Provide default player data (for the lobby dimension / spawnpoint) if null
         if (ci.getReturnValue().isEmpty() && PlayerManagerMixinHelper.Companion.shouldSpawnInLobby()) {
             SpawnData spawn = PlayerManagerMixinHelper.Companion.getPregameSpawnData();
             if (spawn == null) return;
 
-            NbtCompound nbt = new NbtCompound();
+            CompoundTag nbt = new CompoundTag();
             nbt.putString("Dimension", spawn.getDimension());
 
-            NbtList position = new NbtList();
+            ListTag position = new ListTag();
             BlockPosition blockPosition = spawn.getPosition();
-            position.add(NbtDouble.of(blockPosition.getX() + 0.5));
-            position.add(NbtDouble.of(blockPosition.getY()));
-            position.add(NbtDouble.of(blockPosition.getZ() + 0.5));
+            position.add(DoubleTag.valueOf(blockPosition.getX() + 0.5));
+            position.add(DoubleTag.valueOf(blockPosition.getY()));
+            position.add(DoubleTag.valueOf(blockPosition.getZ() + 0.5));
             nbt.put("Pos", position);
 
-            NbtList rotation = new NbtList();
-            rotation.add(NbtFloat.of(spawn.getYaw())); // yaw
-            rotation.add(NbtFloat.of(0f)); // pitch
+            ListTag rotation = new ListTag();
+            rotation.add(DoubleTag.valueOf(spawn.getYaw())); // yaw
+            rotation.add(DoubleTag.valueOf(0f)); // pitch
             nbt.put("Rotation", rotation);
 
             ci.setReturnValue(Optional.of(nbt));
         }
     }
 
-    @Inject(at = @At(value = "HEAD"), method = "respawnPlayer")
-    private void respawnPlayer(ServerPlayerEntity player, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayerEntity> info) {
+    // TODO(Ravel): no target class
+    @Inject(at = @At(value = "HEAD"), method = "respawn")
+    private void respawnPlayer(ServerPlayer player, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayer> info) {
         if (!PlayerManagerMixinHelper.Companion.exists()) return;
 
         if (alive) {
@@ -87,9 +88,9 @@ public abstract class PlayerManagerMixin {
             // if the spawnpoint is also in the end, then respawn them in the overworld
             // NOTE: duplicated inside EndPortalBlockMixin
             if (PlayerManagerMixinHelper.Companion.shouldOverrideEndRespawn()) {
-                var overworld = server.getOverworld();
-                player.setSpawnPoint(
-                        new ServerPlayerEntity.Respawn(overworld.getSpawnPoint(), false),
+                var overworld = server.overworld();
+                player.setRespawnPosition(
+                        new ServerPlayer.RespawnConfig(overworld.getRespawnData(), false),
                         false
                 );
             }
@@ -98,9 +99,9 @@ public abstract class PlayerManagerMixin {
 
         // If the spawnpoint is a respawn anchor, get the current state
         // (this will be affected by getRespawnTarget)
-        ServerPlayerEntity.Respawn respawn = player.getRespawn();
-        ServerWorld respawnAnchorWorld = respawn != null ? server.getWorld(respawn.respawnData().getDimension()) : null;
-        BlockPos respawnAnchorBlockPos = respawn != null ? respawn.respawnData().getPos() : null;
+        ServerPlayer.RespawnConfig respawn = player.getRespawnConfig();
+        ServerLevel respawnAnchorWorld = respawn != null ? server.getLevel(respawn.respawnData().dimension()) : null;
+        BlockPos respawnAnchorBlockPos = respawn != null ? respawn.respawnData().pos() : null;
         BlockState respawnAnchorBlockState = respawnAnchorWorld != null && respawnAnchorBlockPos != null
                 ? respawnAnchorWorld.getBlockState(respawnAnchorBlockPos)
                 : null;
@@ -112,7 +113,7 @@ public abstract class PlayerManagerMixin {
         // target can be null if the player's spawnpoint failed... so it should default to the team spawn
         boolean missingRespawnBlock = false;
         try {
-            var target = player.getRespawnTarget(alive, TeleportTarget.NO_OP);
+            var target = player.findRespawnPositionAndUseSpawnBlock(alive, TeleportTransition.DO_NOTHING);
             missingRespawnBlock = target == null || target.missingRespawnBlock();
         } catch (Throwable e) {
             log.error("Exception thrown during PlayerEntity.getRespawnTarget", e);
@@ -120,7 +121,7 @@ public abstract class PlayerManagerMixin {
 
         // Reset the respawn anchor to the state captured before getRespawnTarget was called
         if (respawnAnchorWorld != null) {
-            respawnAnchorWorld.setBlockState(respawnAnchorBlockPos, respawnAnchorBlockState);
+            respawnAnchorWorld.setBlockAndUpdate(respawnAnchorBlockPos, respawnAnchorBlockState);
         }
 
         // if the targeted spawnpoint is invalid (i.e. a broken bed, or otherwise somewhere that would reset to the world spawn) ...

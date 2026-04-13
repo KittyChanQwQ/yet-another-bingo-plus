@@ -5,45 +5,46 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import com.mojang.serialization.JsonOps
 import me.jfenn.bingo.platform.ITextSerializer
-import net.minecraft.text.Style
-import net.minecraft.text.Text
-import net.minecraft.text.TextCodecs
-import net.minecraft.text.TextColor
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.IText
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.ComponentSerialization
+import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.TextColor
 import java.util.*
 
 class TextSerializer : ITextSerializer {
 
     private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
 
-    override fun toJson(text: Text): String {
+    override fun toJson(text: IText): String {
         // this achieves Text.Serialization.toJsonString, but statically, without requiring RegistryWrapper
-        val element = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, text).getOrThrow()
+        val element = ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, text.value).getOrThrow()
         return gson.toJson(element)
     }
 
-    override fun fromJson(json: String): Text {
+    override fun fromJson(json: String): Component {
         // this achieves Text.Serialization.fromJson, but statically, without requiring RegistryWrapper
         val element = JsonParser.parseString(json)
-        return TextCodecs.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow()
+        return ComponentSerialization.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow()
     }
 
-    override fun toRawString(text: Text): String {
+    override fun toRawString(text: IText): String {
         val builder = StringBuilder()
-        text.visit<Unit>(
+        text.value.visit<Unit>(
             { style, asString ->
-                if (style.isEmpty) builder.append(Formatting.RESET)
-                if (style.isBold) builder.append(Formatting.BOLD)
-                if (style.isItalic) builder.append(Formatting.ITALIC)
-                if (style.isStrikethrough) builder.append(Formatting.STRIKETHROUGH)
-                if (style.isUnderlined) builder.append(Formatting.UNDERLINE)
-                if (style.isObfuscated) builder.append(Formatting.OBFUSCATED)
+                if (style.isEmpty) builder.append(ChatFormatting.RESET)
+                if (style.isBold) builder.append(ChatFormatting.BOLD)
+                if (style.isItalic) builder.append(ChatFormatting.ITALIC)
+                if (style.isStrikethrough) builder.append(ChatFormatting.STRIKETHROUGH)
+                if (style.isUnderlined) builder.append(ChatFormatting.UNDERLINE)
+                if (style.isObfuscated) builder.append(ChatFormatting.OBFUSCATED)
 
-                Formatting.entries
+                ChatFormatting.entries
                     .filter { it.isColor }
                     .find {
-                        val textColor = TextColor.fromFormatting(it)
-                        textColor != null && style.color?.rgb == textColor.rgb
+                        val textColor = TextColor.fromLegacyFormat(it)
+                        textColor != null && style.color?.value == textColor.value
                     }
                     ?.also { builder.append(it) }
 

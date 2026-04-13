@@ -47,13 +47,6 @@ internal class ScorePacketReceiver(
         }
 
         eventBus.register(clientPacketEvents.gameOverV1, ::onGameOver)
-        eventBus.register(clientPacketEvents.gameOverV2, ::onGameOver)
-        eventBus.register(clientPacketEvents.gameOverV3, ::onGameOver)
-        eventBus.register(clientPacketEvents.gameOverV4, ::onGameOver)
-        eventBus.register(clientPacketEvents.gameOverV5, ::onGameOver)
-        eventBus.register(clientPacketEvents.gameOverV6, ::onGameOver)
-        eventBus.register(clientPacketEvents.gameOverV7, ::onGameOver)
-        eventBus.register(clientPacketEvents.gameOverV8, ::onGameOver)
 
         eventBus.register(clientPacketEvents.timerV1) { (packet) ->
             if (packet.secondsRemaining in 1..20 && packet.secondsRemaining % 2 != 0) {

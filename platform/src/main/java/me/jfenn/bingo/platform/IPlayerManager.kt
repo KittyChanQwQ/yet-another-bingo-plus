@@ -4,17 +4,18 @@ import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.commands.ISignedMessage
 import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.player.IContainerMenu
 import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.command.CommandSource
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
+import net.minecraft.commands.CommandSource
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.level.Level
 import org.joml.Vector3d
 import java.util.*
 
 interface IPlayerManager {
 
-    fun forPlayer(player: ServerPlayerEntity): IPlayerHandle
+    fun forPlayer(player: ServerPlayer): IPlayerHandle
 
     fun getPlayer(uuid: UUID): IPlayerHandle?
 
@@ -31,14 +32,14 @@ interface IPlayerManager {
      * If lobbyChaosProtection=true, this will result in
      * only [player] hearing the sound.
      */
-    fun playToAround(player: ServerPlayerEntity?, sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float, position: Triple<Double, Double, Double>, world: ServerWorld)
+    fun playToAround(player: ServerPlayer?, sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float, position: Triple<Double, Double, Double>, world: IServerWorld)
 
     fun broadcastChatMessage(message: ISignedMessage, sender: IPlayerHandle)
 
 }
 
 interface IPlayerHandle : ILivingEntity {
-    val player: ServerPlayerEntity
+    val player: ServerPlayer
     val server: IMinecraftServer?
     val world: IServerWorld
     val isAlive: Boolean
@@ -56,6 +57,7 @@ interface IPlayerHandle : ILivingEntity {
     val isSneaking: Boolean
     var experienceLevel: Int
     var experienceProgress: Float
+    val itemUseTimeLeft: Int
 
     val profile get() = PlayerProfile(uuid, playerName)
 
@@ -68,6 +70,12 @@ interface IPlayerHandle : ILivingEntity {
     var gameMode: PlayerGameMode
     val mainHandStack: IItemStack
     val offHandStack: IItemStack
+
+    fun getStackInHand(hand: Hand): IItemStack = when (hand) {
+        Hand.MAIN_HAND -> mainHandStack
+        Hand.OFF_HAND -> offHandStack
+    }
+
     val inventory: IInventory
     val screenInventory: IInventory
     val enderChestInventory: IInventory
@@ -86,8 +94,9 @@ interface IPlayerHandle : ILivingEntity {
 
     fun playSound(sound: PlayerSoundEvent, category: PlayerSoundCategory, volume: Float, pitch: Float)
 
-    val serverWorld: ServerWorld
+    val serverWorld: Level
     val blockPos: BlockPosition
+    val eyePos: Vector3d
 
     fun respawn(): IPlayerHandle
     fun teleport(world: IServerWorld, pos: Vector3d, yaw: Float, pitch: Float)
@@ -101,6 +110,7 @@ interface IPlayerHandle : ILivingEntity {
     fun sendTeamMessage(message: IText, sender: IPlayerHandle, teamName: IText)
 
     fun sendTitle(title: IText, subtitle: IText?)
+    fun openMenu(menu: IContainerMenu)
 
     fun startRiding(entity: IEntity, force: Boolean)
 
@@ -137,3 +147,5 @@ enum class PlayerGameMode {
     ADVENTURE,
     SPECTATOR
 }
+
+enum class Hand { MAIN_HAND, OFF_HAND }

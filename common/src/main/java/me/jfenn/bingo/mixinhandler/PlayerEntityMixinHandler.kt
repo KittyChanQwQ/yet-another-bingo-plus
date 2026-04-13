@@ -1,6 +1,5 @@
 package me.jfenn.bingo.mixinhandler
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.NBT_BINGO_KEEP
 import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.ready.ReadyTimerState
@@ -8,8 +7,9 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.ScopeStopped
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import net.minecraft.item.ItemStack
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.IText
+import net.minecraft.ChatFormatting
+import net.minecraft.world.item.ItemStack
 import java.util.*
 
 class PlayerEntityMixinHandler(
@@ -32,7 +32,7 @@ class PlayerEntityMixinHandler(
     fun getPlayerListName(uuid: UUID, name: IText): IText? {
         return if (readyTimerState.isRunning && readyTimerState.isReady(uuid)) {
             text.empty()
-                .append(text.literal("✔ ").formatted(Formatting.GREEN))
+                .append(text.literal("✔ ").formatted(ChatFormatting.GREEN))
                 .append(name)
         } else {
             null

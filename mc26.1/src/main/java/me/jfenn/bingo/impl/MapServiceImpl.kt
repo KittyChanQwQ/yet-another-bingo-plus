@@ -3,10 +3,10 @@ package me.jfenn.bingo.impl
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.IMapState
 import me.jfenn.bingo.platform.IServerWorld
-import net.minecraft.block.MapColor
-import net.minecraft.component.type.MapIdComponent
-import net.minecraft.item.map.MapState
 import net.minecraft.server.MinecraftServer
+import net.minecraft.world.level.material.MapColor
+import net.minecraft.world.level.saveddata.maps.MapId
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData
 
 class MapServiceImpl(
     private val server: MinecraftServer,
@@ -14,29 +14,29 @@ class MapServiceImpl(
     override fun getMapColors(): Map<Byte, Int> {
         return  (4 until 248)
             .associate { i ->
-                val mapColorRGB = MapColor.getRenderColor(i)
+                val mapColorRGB = MapColor.getColorFromPackedId(i)
                 i.toUByte().toByte() to mapColorRGB
             }
     }
 
     override fun getNextMapId(): Int {
-        return server.overworld.increaseAndGetMapId().id
+        return server.overworld().freeMapId.id
     }
 
     override fun createMapState(scale: Byte, locked: Boolean, world: IServerWorld): IMapState {
         require(world is ServerWorldImpl)
-        val state = MapState.of(scale, locked, world.world.registryKey)
+        val state = MapItemSavedData.createForClient(scale, locked, world.world.dimension())
         return MapStateImpl(state)
     }
 
     override fun putMapState(id: Int, state: IMapState) {
         require(state is MapStateImpl)
-        server.overworld.putMapState(MapIdComponent(id), state.state)
+        server.overworld().setMapData(MapId(id), state.state)
     }
 }
 
 class MapStateImpl(
-    val state: MapState,
+    val state: MapItemSavedData,
 ) : IMapState {
     override fun setColor(x: Int, z: Int, color: Byte) {
         state.setColor(x, z, color)

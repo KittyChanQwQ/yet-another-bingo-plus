@@ -1,19 +1,23 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import me.jfenn.bingo.platform.scoreboard.ScoreChange
-import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket
-import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket
-import net.minecraft.network.packet.s2c.play.ScoreboardScoreResetS2CPacket
-import net.minecraft.network.packet.s2c.play.ScoreboardScoreUpdateS2CPacket
-import net.minecraft.scoreboard.*
-import net.minecraft.scoreboard.number.BlankNumberFormat
+import me.jfenn.bingo.platform.text.IText
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.numbers.BlankFormat
+import net.minecraft.network.protocol.game.ClientboundResetScorePacket
+import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket
+import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket
+import net.minecraft.network.protocol.game.ClientboundSetScorePacket
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
+import net.minecraft.server.ServerScoreboard
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.scores.DisplaySlot
+import net.minecraft.world.scores.Objective
+import net.minecraft.world.scores.ScoreHolder
+import net.minecraft.world.scores.criteria.ObjectiveCriteria
 import java.util.*
 
 class ScoreboardManager(
@@ -22,14 +26,14 @@ class ScoreboardManager(
 
     override fun createDummyObjective(name: String): IObjectiveHandle {
         val scoreboard: ServerScoreboard = server.scoreboard
-        val objective = scoreboard.getNullableObjective(name) ?: run {
+        val objective = scoreboard.getObjective(name) ?: run {
             scoreboard.addObjective(
                 name,
-                ScoreboardCriterion.DUMMY,
-                Text.empty(),
-                ScoreboardCriterion.RenderType.INTEGER,
+                ObjectiveCriteria.DUMMY,
+                Component.empty(),
+                ObjectiveCriteria.RenderType.INTEGER,
                 false,
-                BlankNumberFormat.INSTANCE,
+                BlankFormat.INSTANCE,
             )
         }
 
@@ -46,99 +50,99 @@ class ScoreboardManager(
         require(handle is ObjectiveHandle)
 
         // Remove any previous sidebar lines that have been changed
-        for (score in server.scoreboard.getScoreboardEntries(handle.objective)) {
+        for (score in server.scoreboard.listPlayerScores(handle.objective)) {
             if (textLines.none { it.name == score.owner }) {
-                server.scoreboard.removeScore({ score.owner }, handle.objective)
+                server.scoreboard.resetSinglePlayerScore({ score.owner }, handle.objective)
             }
         }
 
         textLines.forEachIndexed { i, text ->
-            val score = server.scoreboard.getOrCreateScore(
+            val score = server.scoreboard.getOrCreatePlayerScore(
                 object : ScoreHolder {
-                    override fun getNameForScoreboard(): String = text.name
-                    override fun getDisplayName(): Text = text.text
+                    override fun getScoreboardName(): String = text.name
+                    override fun getDisplayName(): Component = text.text.value
                 },
                 handle.objective,
                 true
             )
-            score.score = textLines.size - i - 1
+            score.set(textLines.size - i - 1)
         }
     }
 
     override fun sendObjectiveCreate(player: IPlayerHandle, handle: IObjectiveHandle) {
         require(handle is ObjectiveHandle)
-        val serverPlayer: ServerPlayerEntity = player.player
+        val serverPlayer: ServerPlayer = player.player
 
-        serverPlayer.networkHandler.sendPacket(
-            ScoreboardObjectiveUpdateS2CPacket(
+        serverPlayer.connection.send(
+            ClientboundSetObjectivePacket(
                 handle.objective,
-                ScoreboardObjectiveUpdateS2CPacket.ADD_MODE,
+                ClientboundSetObjectivePacket.METHOD_ADD,
             )
         )
 
-        serverPlayer.networkHandler.sendPacket(
-            ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, handle.objective)
+        serverPlayer.connection.send(
+            ClientboundSetDisplayObjectivePacket(DisplaySlot.SIDEBAR, handle.objective)
         )
     }
 
     override fun sendObjectiveDelete(player: IPlayerHandle, handle: IObjectiveHandle) {
         require(handle is ObjectiveHandle)
-        val serverPlayer: ServerPlayerEntity = player.player
+        val serverPlayer: ServerPlayer = player.player
 
-        serverPlayer.networkHandler.sendPacket(
-            ScoreboardObjectiveUpdateS2CPacket(
+        serverPlayer.connection.send(
+            ClientboundSetObjectivePacket(
                 handle.objective,
-                ScoreboardObjectiveUpdateS2CPacket.REMOVE_MODE,
+                ClientboundSetObjectivePacket.METHOD_REMOVE,
             )
         )
     }
 
     override fun sendObjectiveDisplayUpdate(player: IPlayerHandle, handle: IObjectiveHandle) {
         require(handle is ObjectiveHandle)
-        val serverPlayer: ServerPlayerEntity = player.player
+        val serverPlayer: ServerPlayer = player.player
 
-        serverPlayer.networkHandler.sendPacket(
-            ScoreboardObjectiveUpdateS2CPacket(
+        serverPlayer.connection.send(
+            ClientboundSetObjectivePacket(
                 handle.objective,
-                ScoreboardObjectiveUpdateS2CPacket.UPDATE_MODE,
+                ClientboundSetObjectivePacket.METHOD_CHANGE,
             )
         )
     }
 
     override fun sendScoreChanges(player: IPlayerHandle, handle: IObjectiveHandle, changes: List<ScoreChange>) {
         require(handle is ObjectiveHandle)
-        val serverPlayer: ServerPlayerEntity = player.player
+        val serverPlayer: ServerPlayer = player.player
 
         for (change in changes) {
             when (change) {
                 is ScoreChange.Create -> {
-                    serverPlayer.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, Optional.of(change.text), Optional.empty()))
+                    serverPlayer.connection.send(ClientboundSetScorePacket(change.name, handle.name, change.value, Optional.of(change.text.value), Optional.empty()))
                 }
                 is ScoreChange.Update -> {
-                    serverPlayer.networkHandler.sendPacket(ScoreboardScoreUpdateS2CPacket(change.name, handle.name, change.value, Optional.of(change.text), Optional.empty()))
+                    serverPlayer.connection.send(ClientboundSetScorePacket(change.name, handle.name, change.value, Optional.of(change.text.value), Optional.empty()))
                 }
                 is ScoreChange.Remove -> {
-                    serverPlayer.networkHandler.sendPacket(ScoreboardScoreResetS2CPacket(change.name, handle.name))
+                    serverPlayer.connection.send(ClientboundResetScorePacket(change.name, handle.name))
                 }
             }
         }
     }
 
     override fun getPlayerName(player: IPlayerHandle): String {
-        val serverPlayer: ServerPlayerEntity = player.player
-        return serverPlayer.nameForScoreboard
+        val serverPlayer: ServerPlayer = player.player
+        return serverPlayer.scoreboardName
     }
 
     override fun getByName(name: String): IObjectiveHandle? {
         val scoreboard: ServerScoreboard = server.scoreboard
-        val objective = scoreboard.getNullableObjective(name) ?: return null
+        val objective = scoreboard.getObjective(name) ?: return null
         return ObjectiveHandle(scoreboard, objective)
     }
 }
 
 class ObjectiveHandle(
     private val scoreboard: ServerScoreboard,
-    val objective: ScoreboardObjective,
+    val objective: Objective,
 ) : IObjectiveHandle {
     override val name: String
         get() = objective.name
@@ -149,13 +153,11 @@ class ObjectiveHandle(
 
     override fun getForPlayer(player: IPlayerHandle): Int? {
         val playerImpl = player as PlayerHandle
-        return scoreboard.getScore(playerImpl.player, objective)?.score
+        return scoreboard.getPlayerScoreInfo(playerImpl.player, objective)?.value()
     }
 
     override fun setPlayer(player: IPlayerHandle, value: Int) {
         val playerImpl = player as PlayerHandle
-        scoreboard.getOrCreateScore(playerImpl.player, objective).apply {
-            score = value
-        }
+        scoreboard.getOrCreatePlayerScore(playerImpl.player, objective).set(value)
     }
 }

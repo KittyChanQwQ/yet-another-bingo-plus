@@ -1,40 +1,40 @@
 package me.jfenn.bingo.client.impl.draw
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes
 import me.jfenn.bingo.client.impl.NativeImageImpl
 import me.jfenn.bingo.client.impl.accessor
 import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.client.platform.renderer.*
 import me.jfenn.bingo.impl.ItemStackFactory
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gl.RenderPipelines
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.cursor.Cursor
-import net.minecraft.client.gui.cursor.StandardCursors
-import net.minecraft.item.ItemStack
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.world.item.ItemStack
 import org.joml.Vector2f
 import org.joml.Vector2i
+import net.minecraft.resources.Identifier as MinecraftIdentifier
 
 class DrawService(
-    override val context: DrawContext,
+    override val context: GuiGraphicsExtractor,
 ) : IDrawService {
 
-    override val textRenderer: TextRenderer = MinecraftClient.getInstance().textRenderer
+    override val textRenderer: Font = Minecraft.getInstance().font
     override val font: IFont = FontImpl(textRenderer)
-    override val matrices: IMatrixStack = MatrixStackImpl(context.matrices)
+    override val matrices: IMatrixStack = MatrixStackImpl(context.pose())
     override val window: IWindow = Companion
 
     override fun setCursor(cursor: CursorType) {
-        context.setCursor(
+        context.requestCursor(
             when (cursor) {
-                CursorType.DEFAULT -> Cursor.DEFAULT
-                CursorType.POINTING_HAND -> StandardCursors.POINTING_HAND
-                CursorType.RESIZE_HORIZONTAL -> StandardCursors.RESIZE_EW
-                CursorType.RESIZE_VERTICAL -> StandardCursors.RESIZE_NS
-                CursorType.RESIZE_ALL -> StandardCursors.RESIZE_ALL
+                CursorType.DEFAULT -> com.mojang.blaze3d.platform.cursor.CursorType.DEFAULT
+                CursorType.POINTING_HAND -> CursorTypes.POINTING_HAND
+                CursorType.RESIZE_HORIZONTAL -> CursorTypes.RESIZE_EW
+                CursorType.RESIZE_VERTICAL -> CursorTypes.RESIZE_NS
+                CursorType.RESIZE_ALL -> CursorTypes.RESIZE_ALL
             }
         )
     }
@@ -42,24 +42,24 @@ class DrawService(
     override var delta: Float = 0.5f
     override val mouse: Vector2i
         get() {
-            val client = MinecraftClient.getInstance()
-            val mouse = client.mouse
+            val client = Minecraft.getInstance()
+            val mouse = client.mouseHandler
             return Vector2i(
-                (mouse.x * client.window.scaledWidth.toDouble() / client.window.width.toDouble()).toInt(),
-                (mouse.y * client.window.scaledHeight.toDouble() / client.window.height.toDouble()).toInt(),
+                (mouse.xpos() * client.window.guiScaledWidth.toDouble() / client.window.width.toDouble()).toInt(),
+                (mouse.ypos() * client.window.guiScaledHeight.toDouble() / client.window.height.toDouble()).toInt(),
             )
         }
 
     companion object : IDrawServiceFactory, IWindow {
         override val window: IWindow = this
 
-        override val scaleFactor: Double get() = MinecraftClient.getInstance().window.scaleFactor.toDouble()
+        override val scaleFactor: Double get() = Minecraft.getInstance().window.guiScale.toDouble()
         override val scaledWindowWidth: Int
-            get() = MinecraftClient.getInstance().window.scaledWidth
+            get() = Minecraft.getInstance().window.guiScaledWidth
         override val scaledWindowHeight: Int
-            get() = MinecraftClient.getInstance().window.scaledHeight
+            get() = Minecraft.getInstance().window.guiScaledHeight
 
-        override fun create(drawContext: DrawContext): IDrawService = DrawService(drawContext)
+        override fun create(drawContext: GuiGraphicsExtractor): IDrawService = DrawService(drawContext)
 
         /*private val bufferBuilderStorage by lazy {
             BufferBuilderStorage(Runtime.getRuntime().availableProcessors())
@@ -94,11 +94,11 @@ class DrawService(
     }
 
     override fun drawHorizontalLine(x1: Int, x2: Int, y: Int, color: Int) {
-        context.drawHorizontalLine(x1, x2, y, color)
+        context.horizontalLine(x1, x2, y, color)
     }
 
     override fun drawVerticalLine(x: Int, y1: Int, y2: Int, color: Int) {
-        context.drawVerticalLine(x, y1, y2, color)
+        context.verticalLine(x, y1, y2, color)
     }
 
     override fun enableBlend() {}
@@ -111,24 +111,24 @@ class DrawService(
     }
 
     override fun drawText(text: IText, x: Int, y: Int, color: Int, shadow: Boolean) {
-        context.drawText(textRenderer, text.value, x, y, color, shadow)
+        context.text(textRenderer, text.value, x, y, color, shadow)
     }
 
     override fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int) {
         require(stack is ItemStackFactory.ItemStackImpl)
         val itemStack: ItemStack = stack.stack
-        context.drawItem(itemStack, x, y, seed)
+        context.item(itemStack, x, y, seed)
 
         // draws the item count + durability bar
-        val textRenderer = MinecraftClient.getInstance().textRenderer
-        context.drawStackOverlay(textRenderer, stack.stack, x, y)
+        val textRenderer = Minecraft.getInstance().font
+        context.itemDecorations(textRenderer, stack.stack, x, y)
     }
 
     override fun drawTooltip(text: List<IText>, x: Int, y: Int) {
-        val textRenderer = MinecraftClient.getInstance().textRenderer
-        val textList = text.map { it.value }.toMutableList()
-        val realPosition = context.matrices.transformPosition(x.toFloat(), y.toFloat(), Vector2f())
-        context.drawTooltip(textRenderer, textList, realPosition.x.toInt(), realPosition.y.toInt())
+        val textRenderer = Minecraft.getInstance().font
+        val textList = text.map { it.value.visualOrderText }.toMutableList()
+        val realPosition = context.pose().transformPosition(x.toFloat(), y.toFloat(), Vector2f())
+        context.setTooltipForNextFrame(textRenderer, textList, realPosition.x.toInt(), realPosition.y.toInt())
     }
 
     override fun drawTooltipAddon(callback: () -> Unit) {
@@ -167,9 +167,9 @@ class DrawService(
         textureWidth: Int,
         textureHeight: Int
     ) {
-        context.drawTexture(
+        context.blit(
             RenderPipelines.GUI_TEXTURED,
-            texture.let { Identifier.of(it.namespace, "textures/gui/sprites/${it.path}.png")!! },
+            texture.let { MinecraftIdentifier.fromNamespaceAndPath(it.namespace, "textures/gui/sprites/${it.path}.png") },
             x, y,
             u, v,
             width, height,

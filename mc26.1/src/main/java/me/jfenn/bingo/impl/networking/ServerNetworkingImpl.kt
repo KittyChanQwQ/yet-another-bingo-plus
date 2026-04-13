@@ -1,15 +1,16 @@
 package me.jfenn.bingo.impl.networking
 
 import me.jfenn.bingo.impl.PlayerHandle
+import me.jfenn.bingo.impl.toMinecraftIdentifier
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.packet.*
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.minecraft.network.RegistryByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.server.level.ServerPlayer
 import org.slf4j.Logger
 
 class ServerNetworkingImpl(
@@ -29,16 +30,10 @@ class ServerNetworkingImpl(
     ) : IServerPacketHandlerC2S<T> {
         override val name: String = "packetC2S=${converter.id}"
 
-        private val legacyId = CustomPayload.id<BingoPayload<T>>(converter.id.let { "${it.namespace}_${it.path}" })
-        private val legacyCodec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
-            { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, itemStackFactory)) },
-            { b: RegistryByteBuf -> BingoPayload(legacyId, converter.fromPacketBuf(PacketBufImpl(b, itemStackFactory))) }
-        )
-
-        private val id = CustomPayload.Id<BingoPayload<T>>(converter.id)
-        private val codec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
-            { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, itemStackFactory)) },
-            { b: RegistryByteBuf -> BingoPayload(id, converter.fromPacketBuf(PacketBufImpl(b, itemStackFactory))) }
+        private val id = CustomPacketPayload.Type<BingoPayload<T>>(converter.id.toMinecraftIdentifier())
+        private val codec: StreamCodec<RegistryFriendlyByteBuf, BingoPayload<T>> = StreamCodec.ofMember(
+            { type: BingoPayload<T>, buf: RegistryFriendlyByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, itemStackFactory)) },
+            { b: RegistryFriendlyByteBuf -> BingoPayload(id, converter.fromPacketBuf(PacketBufImpl(b, itemStackFactory))) }
         )
 
         private fun receivePacket(packet: BingoPayload<T>, ctx: ServerPlayNetworking.Context) {
@@ -51,17 +46,9 @@ class ServerNetworkingImpl(
 
         init {
             log.debug("[ServerNetworkingInfo] Registering C2S packet {}", converter.id.toString())
-            try {
-                PayloadTypeRegistry.playC2S().register(legacyId, legacyCodec)
-            } catch (e: IllegalArgumentException) {
-                if (e.message?.contains("already registered") != true)
-                    throw RuntimeException("Error initializing bingo ServerNetworking", e)
-            }
-
-            ServerPlayNetworking.registerGlobalReceiver(legacyId, ::receivePacket)
 
             try {
-                PayloadTypeRegistry.playC2S().register(id, codec)
+                PayloadTypeRegistry.serverboundPlay().register(id, codec)
             } catch (e: IllegalArgumentException) {
                 if (e.message?.contains("already registered") != true)
                     throw RuntimeException("Error initializing bingo ServerNetworking", e)
@@ -75,44 +62,29 @@ class ServerNetworkingImpl(
         private val converter: PacketConverter<T>,
     ) : IServerPacketHandlerS2C<T> {
 
-        private val legacyId = CustomPayload.id<BingoPayload<T>>(converter.id.let { "${it.namespace}_${it.path}" })
-        private val legacyCodec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
-            { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, itemStackFactory)) },
-            { b: RegistryByteBuf -> BingoPayload(legacyId, converter.fromPacketBuf(PacketBufImpl(b, itemStackFactory))) }
-        )
-
-        private val id = CustomPayload.Id<BingoPayload<T>>(converter.id)
-        private val codec: PacketCodec<RegistryByteBuf, BingoPayload<T>> = PacketCodec.of(
-            { type: BingoPayload<T>, buf: RegistryByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, itemStackFactory)) },
-            { b: RegistryByteBuf -> BingoPayload(id, converter.fromPacketBuf(PacketBufImpl(b, itemStackFactory))) }
+        private val id = CustomPacketPayload.Type<BingoPayload<T>>(converter.id.toMinecraftIdentifier())
+        private val codec: StreamCodec<RegistryFriendlyByteBuf, BingoPayload<T>> = StreamCodec.ofMember(
+            { type: BingoPayload<T>, buf: RegistryFriendlyByteBuf -> converter.toPacketBuf(type.value, PacketBufImpl(buf, itemStackFactory)) },
+            { b: RegistryFriendlyByteBuf -> BingoPayload(id, converter.fromPacketBuf(PacketBufImpl(b, itemStackFactory))) }
         )
 
         init {
             log.debug("[ServerNetworkingInfo] Registering S2C packet {}", converter.id.toString())
             try {
-                PayloadTypeRegistry.playS2C().register(legacyId, legacyCodec)
-            } catch (e: IllegalArgumentException) {
-                if (e.message?.contains("already registered") != true)
-                    throw RuntimeException("Error initializing bingo ServerNetworking", e)
-            }
-            try {
-                PayloadTypeRegistry.playS2C().register(id, codec)
+                PayloadTypeRegistry.clientboundPlay().register(id, codec)
             } catch (e: IllegalArgumentException) {
                 if (e.message?.contains("already registered") != true)
                     throw RuntimeException("Error initializing bingo ServerNetworking", e)
             }
         }
 
-        override fun isSupported(player: ServerPlayerEntity): Boolean {
-            return ServerPlayNetworking.canSend(player, id) || ServerPlayNetworking.canSend(player, legacyId)
+        override fun isSupported(player: ServerPlayer): Boolean {
+            return ServerPlayNetworking.canSend(player, id)
         }
 
-        override fun send(player: ServerPlayerEntity, packet: T): Boolean {
+        override fun send(player: ServerPlayer, packet: T): Boolean {
             if (ServerPlayNetworking.canSend(player, id)) {
                 ServerPlayNetworking.send(player, BingoPayload(id, packet))
-                return true
-            } else if (ServerPlayNetworking.canSend(player, legacyId)) {
-                ServerPlayNetworking.send(player, BingoPayload(legacyId, packet))
                 return true
             } else {
                 return false

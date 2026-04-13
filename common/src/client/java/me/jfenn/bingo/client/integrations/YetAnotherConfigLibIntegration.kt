@@ -17,9 +17,8 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.platform.event.IEventBus
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
+import net.minecraft.client.gui.screens.Screen
 
 internal interface YetAnotherConfigLibIntegration {
 
@@ -97,7 +96,7 @@ internal class YetAnotherConfigLibIntegrationImpl(
             )
             .controller {
                 FloatSliderControllerBuilder.create(it)
-                    .formatValue { value -> Text.literal(String.format("%.0f%%", value*100)) }
+                    .formatValue { value -> text.literal(String.format("%.0f%%", value*100)).value }
                     .range(0.25f, 4.0f)
                     .step(0.05f)
             }
@@ -181,7 +180,7 @@ internal class YetAnotherConfigLibIntegrationImpl(
                             .description(
                                 OptionDescription.of(
                                     text.string(StringKey.ConfigQuickStartButtonDescription).value,
-                                    Text.empty(),
+                                    text.empty().value,
                                     text.string(StringKey.ConfigQuickStartButtonDescription2).value,
                                 )
                             )
@@ -402,7 +401,7 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     )
                                     .controller {
                                         FloatSliderControllerBuilder.create(it)
-                                            .formatValue { value -> Text.literal(String.format("%.0f%%", value*100)) }
+                                            .formatValue { value -> text.literal(String.format("%.0f%%", value*100)).value }
                                             .range(0.25f, 4.0f)
                                             .step(0.05f)
                                     }
@@ -596,7 +595,7 @@ internal class YetAnotherConfigLibIntegrationImpl(
                                     FloatSliderControllerBuilder.create(it)
                                         .range(0f, 1.5f)
                                         .step(0.01f)
-                                        .formatValue { value -> Text.literal((value * 100f).toInt().toString() + "%") }
+                                        .formatValue { value -> text.literal((value * 100f).toInt().toString() + "%").value }
                                 }
                                 .binding(
                                     defaultConfig.client.getSoundVolume(soundId),

@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.ColorType
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.Identifier
+import me.jfenn.bingo.platform.text.Formatting
 import kotlin.reflect.KProperty1
 
 @Serializable
@@ -40,9 +40,9 @@ internal data class BingoCardColors(
         val textY: Int = 10,
         val textColor: Color = Color.BLACK,
         val outlineColor: Color = Color.TRANSPARENT,
-        val cardTexture: Identifier = Identifier.of("minecraft", "bingo/card_preview")!!,
-        val cardTextureGui: Identifier = Identifier.of("minecraft", "bingo/card_preview")!!,
-        val cardTextureOutline: Identifier = Identifier.of("minecraft", "bingo/outline")!!,
+        val cardTexture: Identifier = Identifier.of("minecraft", "bingo/card_preview"),
+        val cardTextureGui: Identifier = Identifier.of("minecraft", "bingo/card_preview"),
+        val cardTextureOutline: Identifier = Identifier.of("minecraft", "bingo/outline"),
     )
 
     private fun <V> getValue(team: Team?, property: KProperty1<Team, V>): V =
@@ -50,7 +50,7 @@ internal data class BingoCardColors(
             ?: property.get(default)
 
     private fun String.parseIdentifier(): Identifier =
-        Identifier.of(substringBefore(':'), substringAfter(':'))!!
+        Identifier.of(substringBefore(':'), substringAfter(':'))
 
     fun getTeamColors(
         teamKey: BingoTeamKey?,

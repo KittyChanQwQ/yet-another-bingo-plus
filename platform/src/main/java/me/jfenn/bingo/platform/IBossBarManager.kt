@@ -1,12 +1,12 @@
 package me.jfenn.bingo.platform
 
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 
 interface IBossBarManager {
     fun get(id: String): IBossBar?
     fun remove(bossBar: IBossBar)
-    fun add(id: String, title: Text): IBossBar
+    fun add(id: String, title: Component): IBossBar
     fun list(): List<IBossBar>
 }
 

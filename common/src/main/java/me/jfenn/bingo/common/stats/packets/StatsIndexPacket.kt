@@ -1,10 +1,9 @@
 package me.jfenn.bingo.common.stats.packets
 
-import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.packet.PacketConverter
-import me.jfenn.bingo.common.stats.packets.StatsIndexPacket.Action
-import net.minecraft.util.Identifier
 import java.util.*
 
 /**
@@ -26,7 +25,7 @@ data class StatsIndexPacket(
     }
 
     object V1 : PacketConverter<StatsIndexPacket> {
-        override val id = Identifier.of(MOD_ID_BINGO, "stats_index")!!
+        override val id = Identifier.of(MOD_ID_BINGO, "stats_index")
 
         override fun toPacketBuf(source: StatsIndexPacket, dest: IPacketBuf) {
             dest.writeInt(

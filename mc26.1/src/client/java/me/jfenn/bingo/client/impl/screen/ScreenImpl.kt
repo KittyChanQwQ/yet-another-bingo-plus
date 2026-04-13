@@ -2,13 +2,17 @@ package me.jfenn.bingo.client.impl.screen
 
 import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.platform.screen.IScreen
-import net.minecraft.client.gui.*
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.input.KeyInput
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.network.chat.Component
 import kotlin.math.absoluteValue
 
-class ScreenImpl(title: Text) : Screen(title) {
+class ScreenImpl(title: Component) : Screen(title) {
     var impl: IScreen? = null
     val helper = MutableScreenHelperImpl(this)
 
@@ -17,14 +21,14 @@ class ScreenImpl(title: Text) : Screen(title) {
         impl?.init()
     }
 
-    fun bingoAddDrawableChild(drawable: Drawable) {
-        require(drawable is Element) { "${drawable::class.simpleName} is not Element!" }
-        require(drawable is Selectable) { "${drawable::class.simpleName} is not Element!" }
-        addDrawableChild(drawable)
+    fun bingoAddDrawableChild(drawable: Renderable) {
+        require(drawable is GuiEventListener) { "${drawable::class.simpleName} is not Element!" }
+        require(drawable is NarratableEntry) { "${drawable::class.simpleName} is not Element!" }
+        addRenderableWidget(drawable)
     }
 
     fun bingoClearChildren() {
-        clearChildren()
+        clearWidgets()
     }
 
     override fun resize(width: Int, height: Int) {
@@ -32,27 +36,26 @@ class ScreenImpl(title: Text) : Screen(title) {
         impl?.resize(width, height)
     }
 
-    override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-        if (context == null) return
-        val service = DrawService(context)
+    override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        val service = DrawService(graphics)
         impl?.beforeRender(service)
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(graphics, mouseX, mouseY, delta)
         impl?.render(service, mouseX, mouseY, delta)
     }
 
-    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+    override fun mouseDragged(click: MouseButtonEvent, offsetX: Double, offsetY: Double): Boolean {
         return impl?.mouseDragged(click.x, click.y) == true || super.mouseDragged(click, offsetX, offsetY)
     }
 
-    override fun mouseReleased(click: Click): Boolean {
+    override fun mouseReleased(click: MouseButtonEvent): Boolean {
         return impl?.mouseReleased(click.x, click.y) == true || super.mouseReleased(click)
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         return impl?.mouseClicked(click.x, click.y, click.button()) == true || super.mouseClicked(click, doubled)
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
+    override fun keyPressed(input: KeyEvent): Boolean {
         return impl?.keyPressed(KeyInputImpl(input)) == true || super.keyPressed(input)
     }
 
@@ -66,7 +69,7 @@ class ScreenImpl(title: Text) : Screen(title) {
         return impl?.mouseScrolled(mouseX, mouseY, amount) == true || super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun shouldPause(): Boolean {
+    override fun isPauseScreen(): Boolean {
         return impl?.shouldPause() ?: false
     }
 
@@ -74,8 +77,8 @@ class ScreenImpl(title: Text) : Screen(title) {
         return impl?.shouldCloseOnEsc() ?: true
     }
 
-    override fun close() {
+    override fun onClose() {
         impl?.onClose()
-        super.close()
+        super.onClose()
     }
 }

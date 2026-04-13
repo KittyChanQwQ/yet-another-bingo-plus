@@ -2,17 +2,17 @@ package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.platform.EffectType
 import me.jfenn.bingo.platform.IStatusEffectHandle
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
 
 class StatusEffectHandle(
-    val instance: StatusEffectInstance,
+    val instance: MobEffectInstance,
 ) : IStatusEffectHandle {
-    override val type: EffectType = when (instance.effectType) {
-        StatusEffects.NIGHT_VISION -> EffectType.NIGHT_VISION
-        StatusEffects.SLOWNESS -> EffectType.SLOWNESS
-        StatusEffects.JUMP_BOOST -> EffectType.JUMP_BOOST
-        StatusEffects.INVISIBILITY -> EffectType.INVISIBILITY
+    override val type: EffectType = when (instance.effect) {
+        MobEffects.NIGHT_VISION -> EffectType.NIGHT_VISION
+        MobEffects.SLOWNESS -> EffectType.SLOWNESS
+        MobEffects.JUMP_BOOST -> EffectType.JUMP_BOOST
+        MobEffects.INVISIBILITY -> EffectType.INVISIBILITY
         else -> EffectType.OTHER
     }
     override val duration: Int = instance.duration

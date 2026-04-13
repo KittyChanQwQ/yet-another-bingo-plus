@@ -16,15 +16,14 @@ import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.dialog.IDialogManager
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.time.Duration
 
 internal class GameOverController(
-    private val server: MinecraftServer,
     private val state: BingoState,
     private val options: BingoOptions,
     private val text: TextProvider,
@@ -35,6 +34,7 @@ internal class GameOverController(
     private val messageService: MessageService,
     private val teamService: TeamService,
     private val dialogManager: IDialogManager,
+    private val serverWorldFactory: IServerWorldFactory,
     private val log: Logger,
     events: ScopedEvents,
 ) {
@@ -75,7 +75,7 @@ internal class GameOverController(
                 .let { listOf(text.literal("  ").append(it)) },
             "%seed%" to text.string(
                 StringKey.GameEndSeed,
-                text.bracketedCopyable(server.overworld.seed.toString())
+                text.bracketedCopyable(serverWorldFactory.overworld.seed.toString())
             ).let { listOf(text.literal("  ").append(it)) },
             "%scores%" to scores,
         )
@@ -125,20 +125,7 @@ internal class GameOverController(
             )
 
             when {
-                packetManager.gameOverV8.send(player.player, packet) -> {}
-                packetManager.gameOverV7.send(player.player, packet) -> {}
-                packetManager.gameOverV6.send(player.player, packet) -> {}
-                packetManager.gameOverV5.send(player.player, packet) -> {}
-                packetManager.gameOverV4.send(player.player, packet) -> {}
-                packetManager.gameOverV3.send(player.player, packet) -> {}
-                isUpdate -> {
-                    // if this is an update packet, this should only be sent to v3 clients
-                    // (for v2/below, this would re-open the end screen on each update)
-                }
-                packetManager.gameOverV2.send(player.player, packet) -> {}
-                packetManager.gameOverV1.send(player.player, packet) -> {
-                    Sounds.playGameOver(player)
-                }
+                packetManager.gameOverV1.send(player.player, packet) -> {}
                 openGameOverDialog(player, packet) -> {
                     Sounds.playGameOver(player)
                 }

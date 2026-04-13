@@ -9,8 +9,8 @@ import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.Identifier
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner
 import java.time.Instant
 import kotlin.math.ceil
 
@@ -25,7 +25,7 @@ internal class ClientCardRenderer(
     companion object {
         const val TOOLTIP_MAX_WIDTH = 200
 
-        val CARD_TOOLTIP_ID = Identifier.of("minecraft", "bingo/tooltip")!!
+        val CARD_TOOLTIP_ID = Identifier.of("minecraft", "bingo/tooltip")
 
         private val winColors = listOf(
             0xFF_F5C0A3.toInt(),
@@ -181,7 +181,7 @@ internal class ClientCardRenderer(
                 val componentHeight = 14 + 20 * rows
                 val componentWidth = 14 + 20 * columns
 
-                val tooltipPosition = HoveredTooltipPositioner.INSTANCE.getPosition(
+                val tooltipPosition = DefaultTooltipPositioner.INSTANCE.positionTooltip(
                     service.window.scaledWindowWidth,
                     service.window.scaledWindowHeight,
                     mouseX,

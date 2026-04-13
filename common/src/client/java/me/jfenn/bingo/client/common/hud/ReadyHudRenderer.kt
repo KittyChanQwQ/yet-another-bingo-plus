@@ -11,7 +11,6 @@ import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.text.Text
 import kotlin.math.PI
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -44,7 +43,7 @@ internal class ReadyHudRenderer(
 
         val titleText = ready.title ?: when {
             ready.isReady -> text.string(StringKey.LobbyStartingPlayersReady, ready.readyPlayers, ready.totalPlayers)
-            else -> text.string(StringKey.LobbyStartingReadyUp, Text.keybind("key.sneak"), Text.keybind(KEYBIND_OPEN_CARD))
+            else -> text.string(StringKey.LobbyStartingReadyUp, text.keybind("key.sneak"), text.keybind(KEYBIND_OPEN_CARD))
         }
         val bodyText = ready.subtitle ?: when {
             ready.state == GameState.PREGAME -> text.string(StringKey.LobbyStartingTimeRemaining, ready.remainingDuration.formatHHMMSS())

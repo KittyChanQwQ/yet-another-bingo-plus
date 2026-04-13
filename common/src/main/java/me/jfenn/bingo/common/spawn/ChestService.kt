@@ -5,31 +5,30 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.block.BlockPosition
-import net.minecraft.block.Blocks
-import net.minecraft.block.entity.ChestBlockEntity
-import net.minecraft.server.MinecraftServer
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
-import net.minecraft.world.Heightmap
+import me.jfenn.bingo.platform.block.IChestBlockState
+import me.jfenn.bingo.platform.block.ITorchBlockState
+import me.jfenn.bingo.platform.world.IChestBlockEntity
+import me.jfenn.bingo.platform.world.IChunkHeightmap
 import org.slf4j.Logger
 
 internal class ChestService(
     private val log: Logger,
-    private val server: MinecraftServer,
+    private val serverWorldFactory: IServerWorldFactory,
     private val options: BingoOptions,
     private val config: BingoConfig,
     private val state: BingoState,
     private val spawnKitService: SpawnKitService,
 ) {
 
-    private fun getSpawnDimension(): ServerWorld {
-        return server.worlds.find {
-            it.registryKey.value.toString() == options.spawnDimension
+    private fun getSpawnDimension(): IServerWorld {
+        return serverWorldFactory.listWorlds().find {
+            it.identifier == options.spawnDimension
         } ?: run {
             log.error("[SpawnService] Could not find spawnDimension '${options.spawnDimension}'; defaulting to minecraft:overworld")
-            server.overworld
+            serverWorldFactory.overworld
         }
     }
 
@@ -52,13 +51,13 @@ internal class ChestService(
             return null
         }
 
-        val chunk = world.getChunk(spawnpoint.toBlockPos())
+        val chunk = world.getChunk(spawnpoint)
         // if the dimension has a ceiling, we can't use heightmaps...
-        val chestBlockPos: BlockPos? = if (world.dimension.hasCeiling) {
+        val chestBlockPos: BlockPosition? = if (world.hasCeiling) {
             // spawn the chest directly next to the player
-            BlockPos(spawnpoint.x + 1, spawnpoint.y, spawnpoint.z)
+            BlockPosition(spawnpoint.x + 1, spawnpoint.y, spawnpoint.z)
         } else {
-            val heightmap = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES)
+            val heightmap = chunk.getHeightmap(IChunkHeightmap.Type.MOTION_BLOCKING_NO_LEAVES)
 
             // Choose a random position in the chunk to spawn the team chest at
             buildList {
@@ -75,7 +74,7 @@ internal class ChestService(
                     chunk.pos.getBlockPos(x, y, z)
                 }
                 .find {  blockPos ->
-                    world.isAir(blockPos) || world.getBlockState(blockPos).getCollisionShape(world, blockPos).isEmpty
+                    world.isAir(blockPos) || world.isEmptyCollision(blockPos)
                 }
         }
 
@@ -84,9 +83,8 @@ internal class ChestService(
             return null
         }
 
-        val position = BlockPosition.fromBlockPos(chestBlockPos)
-        team.chestSpawnpoint = position
-        return position
+        team.chestSpawnpoint = chestBlockPos
+        return chestBlockPos
     }
 
     fun createChestBlock(team: BingoTeam) {
@@ -98,20 +96,22 @@ internal class ChestService(
             return
         }
 
-        val chestBlockPos = chestSpawnpoint.toBlockPos()
-
         // Create the team chest block/entity at the chosen position
-        world.setBlockState(chestBlockPos, Blocks.CHEST.defaultState)
-        val entity = world.getBlockEntity(chestBlockPos) as? ChestBlockEntity ?: run {
+        world.setBlockState(chestSpawnpoint, world.createBlockState(IChestBlockState.Type))
+        val entity = world.getBlockEntity(chestSpawnpoint) as? IChestBlockEntity ?: run {
             log.error("[SpawnService] createTeamChest - Creating a team kit chest did not create a block entity. This should never happen!!")
             return
         }
 
         // Place torches around the chest in each direction
-        val torchState = Blocks.TORCH.defaultState
-        Direction.Type.HORIZONTAL
-            .map { direction -> chestBlockPos.offset(direction) }
-            .filter { blockPos -> torchState.canPlaceAt(world, blockPos) }
+        val torchState = world.createBlockState(ITorchBlockState.Type)
+        listOf(
+            chestSpawnpoint.move(1, 0, 0),
+            chestSpawnpoint.move(-1, 0, 0),
+            chestSpawnpoint.move(0, 0, 1),
+            chestSpawnpoint.move(0, 0, -1)
+        )
+            .filter { blockPos -> torchState.canSurvive(world, blockPos) }
             .forEach { blockPos -> world.setBlockState(blockPos, torchState) }
 
         // Fill the chest with the configured item stacks
@@ -122,7 +122,7 @@ internal class ChestService(
                     itemStack.addCustomTag(NBT_BINGO_IGNORE)
                 }
 
-                entity.setStack(i, itemStack.stack)
+                entity.inventory[i] = itemStack
             }
     }
 

@@ -1,13 +1,11 @@
 package me.jfenn.bingo.common.event
 
-import me.jfenn.bingo.platform.IEntity
-import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.common.scope.ScopeManager
+import me.jfenn.bingo.platform.IEntity
 import me.jfenn.bingo.platform.IInteractionEntity
 import me.jfenn.bingo.platform.IPlayerHandle
-import net.minecraft.entity.decoration.InteractionEntity
+import me.jfenn.bingo.platform.scope.BingoKoin
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
 import org.slf4j.Logger
 import java.util.*
 

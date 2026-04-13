@@ -4,7 +4,7 @@ import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Vector3d
 
 internal const val MENU_ITEM_FILTERS_WIDTH = 2.5

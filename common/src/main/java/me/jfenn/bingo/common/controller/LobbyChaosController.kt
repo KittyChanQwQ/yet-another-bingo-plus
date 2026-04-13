@@ -10,7 +10,6 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
-import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.platform.event.model.UseBlockEvent
@@ -50,7 +49,7 @@ internal class LobbyChaosController(
             val player = it.player
 
             if (config.preventLobbyChaos && state.state == GameState.PREGAME) {
-                val blockState = player.world.getBlockState(BlockPosition.fromBlockPos(it.hit.blockPos))
+                val blockState = player.world.getBlockState(it.hit.blockPos)
                 if (blockState.identifier in hitBlockSet) {
                     player.sendHotbarMessage(textProvider.string(StringKey.LobbySoundsMuted))
                 }
@@ -59,7 +58,7 @@ internal class LobbyChaosController(
             // If preventLobbyChaos=true, prevent players from accessing the brewing stand
             // (levitation potions are annoying...)
             if (shouldPreventLobbyChaos(player)) {
-                val blockState = player.world.getBlockState(BlockPosition.fromBlockPos(it.hit.blockPos))
+                val blockState = player.world.getBlockState(it.hit.blockPos)
                 if (blockState.identifier == "minecraft:brewing_stand")
                     return@register ActionResult.Fail(Unit)
             }

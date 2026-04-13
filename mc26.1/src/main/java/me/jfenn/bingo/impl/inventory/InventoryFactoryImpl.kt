@@ -3,7 +3,7 @@ package me.jfenn.bingo.impl.inventory
 import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.inventory.IInventoryFactory
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import net.minecraft.inventory.Inventory
+import net.minecraft.world.entity.player.Inventory
 
 class InventoryFactoryImpl(
     private val itemStackFactory: IItemStackFactory,

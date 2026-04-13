@@ -1,7 +1,7 @@
 package me.jfenn.bingo.platform.item
 
-import net.minecraft.server.network.ServerPlayerEntity
+import me.jfenn.bingo.platform.IPlayerHandle
 
 interface IPlayerHead : IItemStack {
-    fun setSkullOwner(player: ServerPlayerEntity)
+    fun setSkullOwner(player: IPlayerHandle)
 }

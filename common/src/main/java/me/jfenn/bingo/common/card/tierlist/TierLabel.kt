@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.card.tierlist
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 
 enum class TierLabel(
     val formatting: Formatting,

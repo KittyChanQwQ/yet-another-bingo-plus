@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.datapack
 
-import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.BINGO
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.platform.IModEnvironment
@@ -18,9 +18,9 @@ class ServerDatapackManager(
     init {
         // If the env is on a dedicated server, we need to install the datapack manually
         if (environment.envType == IModEnvironment.EnvType.SERVER) {
-            val datapackPath = environment.gameDir.resolve("${serverProps.levelName}/datapacks/$MOD_ID.zip")
+            val datapackPath = environment.gameDir.resolve("${serverProps.levelName}/datapacks/$BINGO.zip")
             if (config.server.isLobbyMode) {
-                log.info("[ServerDatapackManager] isLobbyMode=true - Installing the $MOD_ID datapack in $datapackPath")
+                log.info("[ServerDatapackManager] isLobbyMode=true - Installing the $BINGO datapack in $datapackPath")
                 lobbyWorldService.copyDataPack(datapackPath)
             } else {
                 log.info("[ServerDatapackManager] isLobbyMode=false - Verifying that $datapackPath does not exist...")

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.client.mixin;
 
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.client.gui.screen.world.CreateWorldScreen;
-import net.minecraft.resource.DataConfiguration;
-import net.minecraft.resource.ResourcePackManager;
+import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
+import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.world.level.WorldDataConfiguration;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
@@ -12,12 +12,12 @@ import java.util.function.Consumer;
 
 @Mixin(CreateWorldScreen.class)
 public interface CreateWorldScreenAccessor {
-    @Invoker("getOrCreateDataPackTempDir")
+    @Invoker("getOrCreateTempDataPackDir")
     Path invokeGetDataPackTempDir();
-    @Invoker("getScannedPack")
-    Pair<Path, ResourcePackManager> invokeGetScannedPack(DataConfiguration dataConfiguration);
-    @Invoker("applyDataPacks")
-    void invokeApplyDataPacks(ResourcePackManager dataPackManager, boolean fromPackScreen, Consumer<DataConfiguration> configurationSetter);
-    @Invoker("validateDataPacks")
-    void invokeValidateDataPacks(ResourcePackManager dataPackManager, DataConfiguration dataConfiguration, Consumer<DataConfiguration> configurationSetter);
+    @Invoker("getDataPackSelectionSettings")
+    Pair<Path, PackRepository> invokeGetScannedPack(WorldDataConfiguration dataConfiguration);
+    @Invoker("tryApplyNewDataPacks")
+    void invokeApplyDataPacks(PackRepository dataPackManager, boolean fromPackScreen, Consumer<WorldDataConfiguration> configurationSetter);
+    @Invoker("applyNewPackConfig")
+    void invokeValidateDataPacks(PackRepository dataPackManager, WorldDataConfiguration dataConfiguration, Consumer<WorldDataConfiguration> configurationSetter);
 }

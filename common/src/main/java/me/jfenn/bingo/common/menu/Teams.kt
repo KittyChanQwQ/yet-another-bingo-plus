@@ -3,8 +3,8 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.IMinecraftServer
+import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Vector3d
 
 object TeamCountState {
@@ -16,7 +16,7 @@ internal const val MENU_TEAMS_WIDTH = 2.0
 internal fun MenuComponent.registerTeams(
     position: Vector3d,
     teamService: TeamService = koinScope.get(),
-    server: MinecraftServer = koinScope.get(),
+    server: IMinecraftServer = koinScope.get(),
 ) {
     val offsetY = MENU_LINE_PADDING*2 + MENU_LINE_HEIGHT
     registerTitlePanel(

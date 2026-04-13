@@ -10,12 +10,11 @@ import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.platform.IJsonSerializers
 import me.jfenn.bingo.platform.IModEnvironment
+import me.jfenn.bingo.platform.Identifier
+import me.jfenn.bingo.platform.resource.IResourceManager
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.text.ITextSerialized
-import net.minecraft.resource.ResourceManager
-import net.minecraft.util.Identifier
 import org.slf4j.Logger
-import kotlin.jvm.optionals.getOrNull
 
 internal class MessageService(
     private val placeholderService: PlaceholderService,
@@ -38,7 +37,7 @@ internal class MessageService(
         private fun filePath(type: MessageType) = "$MOD_ID_BINGO/messages/${type.name.lowercase()}.json"
 
         private fun loadMessage(
-            manager: ResourceManager,
+            manager: IResourceManager,
             type: MessageType
         ): MessageData {
             val pathStr = filePath(type)
@@ -46,7 +45,6 @@ internal class MessageService(
 
             // Attempt to retrieve from datapack; otherwise, fall back to jar resources
             val resourceStream = manager.getResource(Identifier.of(MOD_ID_BINGO, pathStr))
-                .getOrNull()
                 ?.inputStream
                 ?: this::class.java.getResourceAsStream("/data/$MOD_ID_BINGO/$pathStr")
 
@@ -71,7 +69,7 @@ internal class MessageService(
             return result
         }
 
-        fun loadMessages(manager: ResourceManager): Map<MessageType, MessageData> {
+        fun loadMessages(manager: IResourceManager): Map<MessageType, MessageData> {
             return MessageType.entries.associateWith { loadMessage(manager, it) }
         }
     }

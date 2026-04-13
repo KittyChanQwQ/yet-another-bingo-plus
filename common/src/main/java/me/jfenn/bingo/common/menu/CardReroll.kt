@@ -42,7 +42,7 @@ internal fun MenuComponent.registerCardReroll(
                 rerolls = 0
 
                 repeat(20) {
-                    entityManager.createEntity(EntityType.TNT, player.serverWorld)
+                    entityManager.createEntity(EntityType.TNT, player.world)
                         .also {
                             it.pos = player.pos.plus(
                                 Vector3d(
@@ -53,7 +53,7 @@ internal fun MenuComponent.registerCardReroll(
                             )
                         }
                         .also { it.fuse = Random.nextInt(10..50) }
-                        .also { entityManager.spawnEntity(player.serverWorld, it) }
+                        .also { entityManager.spawnEntity(player.world, it) }
                 }
             } else {
                 playerManager.playToAround(
@@ -65,7 +65,7 @@ internal fun MenuComponent.registerCardReroll(
                     position = with(player.pos) {
                         Triple(x, y, z)
                     },
-                    world = player.serverWorld,
+                    world = player.world,
                 )
             }
         } else {

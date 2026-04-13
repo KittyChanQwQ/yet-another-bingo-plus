@@ -5,17 +5,17 @@ import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardTileImage
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.Identifier
 
 internal class CardTileRenderer(
     private val hudState: BingoHudState,
 ) {
 
     private companion object {
-        val ADVANCEMENT_FRAME_ID = Identifier.of("minecraft", "bingo/image_frame_advancement")!!
-        val FRAME_FREE_SPACE_ID = Identifier.of("minecraft", "bingo/image_frame_free_space")!!
-        val FRAME_MULTI_ID = Identifier.of("minecraft", "bingo/image_frame_multi")!!
-        val FRAME_FORBIDDEN_ID = Identifier.of("minecraft", "bingo/image_frame_forbidden")!!
+        val ADVANCEMENT_FRAME_ID = Identifier.of("minecraft", "bingo/image_frame_advancement")
+        val FRAME_FREE_SPACE_ID = Identifier.of("minecraft", "bingo/image_frame_free_space")
+        val FRAME_MULTI_ID = Identifier.of("minecraft", "bingo/image_frame_multi")
+        val FRAME_FORBIDDEN_ID = Identifier.of("minecraft", "bingo/image_frame_forbidden")
     }
 
     fun renderTile(

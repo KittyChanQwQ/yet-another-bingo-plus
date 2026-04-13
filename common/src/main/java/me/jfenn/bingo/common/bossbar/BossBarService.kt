@@ -10,7 +10,7 @@ import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.IBossBar
 import me.jfenn.bingo.platform.IBossBarManager
 import me.jfenn.bingo.platform.IPlayerHandle
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 
 internal class BossBarService(
     private val state: BingoState,
@@ -22,7 +22,7 @@ internal class BossBarService(
     private fun createBossbar(team: BingoTeam?): IBossBar {
         val id = "$MOD_ID_BINGO:${team?.id ?: "preview"}"
         val bar = bossBarManager.get(id)
-            ?: bossBarManager.add(id, Text.literal("Time Remaining"))
+            ?: bossBarManager.add(id, Component.literal("Time Remaining"))
 
         return bar.apply {
             color = IBossBar.Color.WHITE

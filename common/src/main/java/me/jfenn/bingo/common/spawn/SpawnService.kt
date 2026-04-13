@@ -12,6 +12,7 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.block.ChunkPosition
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
@@ -75,7 +76,7 @@ internal class SpawnService(
         val distance = options.spawnDistance
         return if (distance <= 0) {
             // if the distance is 0, find one spawn point for all teams
-            val future = spread.findSpawnPosAsync(Pair(0, 0))
+            val future = spread.findSpawnPosAsync(ChunkPosition(0, 0))
 
             for (team in state.getRegisteredTeams()) {
                 team.spawnpointFuture = future
@@ -148,7 +149,7 @@ internal class SpawnService(
 
     sealed class GetSpawnpointResult {
         class Found(val position: BlockPosition) : GetSpawnpointResult()
-        class SearchChunk(val startChunk: Pair<Int, Int>) : GetSpawnpointResult()
+        class SearchChunk(val startChunk: ChunkPosition) : GetSpawnpointResult()
     }
     private fun getTeamSpawnpointInternal(team: BingoTeam): GetSpawnpointResult {
         val world = getSpawnDimension()
@@ -160,11 +161,11 @@ internal class SpawnService(
                 .mapNotNull { it.spawnpoint }
                 .maxByOrNull { it.x.absoluteValue }
                 ?.toChunkPos()
-                ?: Pair(0, 0)
+                ?: ChunkPosition(0, 0)
 
             // Move "spreadPlayersDistance" away from the existing chunk on the x-axis
             val xSign = x.sign.takeIf { it != 0 } ?: 1
-            val newSpawnChunk = Pair(x + (options.spawnDistance * xSign), y)
+            val newSpawnChunk = ChunkPosition(x + (options.spawnDistance * xSign), y)
 
             // Search for a spawn
             return GetSpawnpointResult.SearchChunk(newSpawnChunk)

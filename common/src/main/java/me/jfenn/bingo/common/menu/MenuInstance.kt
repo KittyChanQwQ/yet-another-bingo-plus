@@ -3,9 +3,8 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.platform.IEntity
 import me.jfenn.bingo.platform.IEntityManager
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
+import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.block.BlockPosition
 import org.joml.Matrix4d
 import org.joml.Vector3d
 import org.koin.core.scope.Scope
@@ -15,7 +14,7 @@ import kotlin.math.roundToInt
 internal class MenuInstance(
     private val log: Logger,
     koinScope: Scope,
-    private val world: ServerWorld,
+    private val world: IServerWorld,
     private val entityManager: IEntityManager,
     private val interactionEntityEvents: InteractionEntityEvents,
     private val matrix: Matrix4d,
@@ -81,7 +80,7 @@ internal class MenuInstance(
             info.init.invoke(entity)
             entity.transformPos()
 
-            val chunkPos = ChunkPos.toLong(BlockPos(entity.pos.x.toInt(), 0, entity.pos.z.toInt()))
+            val chunkPos = BlockPosition(entity.pos.x.toInt(), 0, entity.pos.z.toInt()).toChunkPos()
             val isLoaded = world.isChunkLoaded(chunkPos)
             if (!isLoaded) {
                 entity.discard()

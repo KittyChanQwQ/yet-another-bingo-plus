@@ -2,15 +2,15 @@ package me.jfenn.bingo.common
 
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.PlayerSoundCategory
 import me.jfenn.bingo.platform.PlayerSoundEvent
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
+import net.minecraft.server.level.ServerLevel
 import org.joml.Vector3d
 
 internal object Sounds {
 
-    fun playButtonSound(playerManager: IPlayerManager, player: IPlayerHandle, fromPosition: Vector3d, fromWorld: ServerWorld, sound: PlayerSoundEvent = PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_ON) {
+    fun playButtonSound(playerManager: IPlayerManager, player: IPlayerHandle, fromPosition: Vector3d, fromWorld: IServerWorld, sound: PlayerSoundEvent = PlayerSoundEvent.BLOCK_WOODEN_BUTTON_CLICK_ON) {
         playerManager.playToAround(
             player.player,
             sound,

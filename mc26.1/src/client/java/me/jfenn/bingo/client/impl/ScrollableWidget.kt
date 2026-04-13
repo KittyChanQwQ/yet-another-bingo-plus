@@ -3,55 +3,56 @@ package me.jfenn.bingo.client.impl
 import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.platform.IScrollableWidget
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.AbstractTextAreaWidget
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.network.chat.Component
 
 class ScrollableWidget(
     private val content: IScrollableWidget,
-) : net.minecraft.client.gui.widget.ScrollableTextFieldWidget(0, 0, 0, 0, Text.empty()) {
+) : AbstractTextAreaWidget(0, 0, 0, 0, Component.empty(), defaultSettings(9)) {
     // override the hardcoded padding values
     private var contentPadding = 4
 
-    override fun getPadding(): Int {
+    override fun totalInnerPadding(): Int {
         return contentPadding
     }
 
-    override fun getContentsHeight(): Int {
+    override fun getInnerHeight(): Int {
         return content.measureContentHeight()
     }
 
     // don't draw the box background
-    override fun drawBox(context: DrawContext?) {}
+    override fun extractBackground(graphics: GuiGraphicsExtractor) {}
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {}
+    override fun updateWidgetNarration(output: NarrationElementOutput) {}
 
-    override fun getDeltaYPerScroll(): Double {
+    override fun scrollRate(): Double {
         return 9.0
     }
 
-    override fun renderWidget(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, a: Float) {
         this.x = content.x
         this.y = content.y
         this.width = content.width
         this.height = content.height
         this.contentPadding = content.padding
 
-        super.renderWidget(context, mouseX, mouseY, delta)
+        super.extractWidgetRenderState(graphics, mouseX, mouseY, a)
     }
 
-    override fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        val drawService = DrawService(context)
+    override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        val drawService = DrawService(graphics)
         drawService.delta = delta
 
         if (content.background != 0) {
-            context.fill(x, y, x + width, y + contentsHeight + contentPadding*2, content.background)
+            graphics.fill(x, y, x + width, y + innerHeight + contentPadding*2, content.background)
         }
 
-        context.matrices.pushMatrix()
-        context.matrices.translate((x + contentPadding).toFloat(), (y + contentPadding).toFloat())
+        graphics.pose().pushMatrix()
+        graphics.pose().translate((x + contentPadding).toFloat(), (y + contentPadding).toFloat())
         content.renderContents(drawService, mouseX - (x + contentPadding), mouseY - (y + contentPadding))
-        context.matrices.popMatrix()
+        graphics.pose().popMatrix()
     }
 }
 

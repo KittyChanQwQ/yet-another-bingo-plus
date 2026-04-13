@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.card.filter
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.text.TextProvider
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.IText
+import net.minecraft.ChatFormatting
 
 internal class ObjectiveFilterService(
     private val config: BingoConfig,
@@ -29,7 +29,7 @@ internal class ObjectiveFilterService(
                 val name = filter.name(text)
                 when {
                     includePresetDetails -> name.append(" ")
-                        .append(text.literal("(${filter.value})").formatted(Formatting.GRAY))
+                        .append(text.literal("(${filter.value})").formatted(ChatFormatting.GRAY))
                     else -> name
                 }
             }

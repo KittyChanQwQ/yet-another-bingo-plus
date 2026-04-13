@@ -1,18 +1,18 @@
 package me.jfenn.bingo.platform
 
+import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.entity.Entity
-import net.minecraft.server.world.ServerWorld
+import net.minecraft.world.entity.Entity
 import org.joml.Matrix4f
 import org.joml.Vector3d
 import java.util.*
 
 interface IEntityManager {
-    fun <T: IEntity> createEntity(type: EntityType<T>, world: ServerWorld): T
-    fun getEntity(world: ServerWorld, uuid: UUID): IEntity?
-    fun spawnEntity(world: ServerWorld, entity: IEntity): Boolean
-    fun iterateEntities(world: ServerWorld): Sequence<IEntity>
+    fun <T: IEntity> createEntity(type: EntityType<T>, world: IServerWorld): T
+    fun getEntity(world: IServerWorld, uuid: UUID): IEntity?
+    fun spawnEntity(world: IServerWorld, entity: IEntity): Boolean
+    fun iterateEntities(world: IServerWorld): Sequence<IEntity>
 }
 
 class EntityType<T: IEntity>(val name: String) {
@@ -23,6 +23,8 @@ class EntityType<T: IEntity>(val name: String) {
         val ARMOR_STAND = EntityType<IArmorStandEntity>("ARMOR_STAND")
         val TNT = EntityType<ITntEntity>("TNT")
         val BAT = EntityType<IBatEntity>("BAT")
+        val CHEST_MINECART = EntityType<IChestMinecartEntity>("CHEST_MINECART")
+        val CHEST_BOAT = EntityType<IBatEntity>("CHEST_BOAT")
         val OTHER = EntityType<IBatEntity>("OTHER")
     }
 
@@ -39,6 +41,8 @@ interface IEntity {
     var commandTags: Set<String>
     var pitch: Float
     var yaw: Float
+    val name: IText
+    val isPlayer get() = this is IPlayerHandle
 
     fun discard()
 }
@@ -107,4 +111,14 @@ interface IBatEntity : ILivingEntity {
 interface ITntEntity : IEntity {
     override val type get() = EntityType.TNT
     var fuse: Int
+}
+
+interface IChestMinecartEntity : IEntity {
+    override val type get() = EntityType.CHEST_MINECART
+    val inventory: IInventory
+}
+
+interface IChestBoatEntity : IEntity {
+    override val type get() = EntityType.CHEST_BOAT
+    val inventory: IInventory
 }

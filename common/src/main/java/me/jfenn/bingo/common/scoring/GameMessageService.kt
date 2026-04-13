@@ -12,8 +12,8 @@ import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.util.Formatting
 
 internal class GameMessageService(
     private val packets: ServerPacketEvents,
@@ -194,8 +194,6 @@ internal class GameMessageService(
                     isViewerOnTeam = isViewerOnTeam
                 )
                 when {
-                    packets.scoreMessageV3.send(player, scoreMessagePacket) -> {}
-                    packets.scoreMessageV2.send(player, scoreMessagePacket) -> {}
                     packets.scoreMessageV1.send(player, scoreMessagePacket) -> {}
                     else -> player.sendMessage(packet.message)
                 }

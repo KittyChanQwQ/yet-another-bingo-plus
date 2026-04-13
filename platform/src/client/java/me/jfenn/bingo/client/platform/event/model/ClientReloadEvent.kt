@@ -1,10 +1,10 @@
 package me.jfenn.bingo.client.platform.event.model
 
 import me.jfenn.bingo.platform.event.IEvent
-import net.minecraft.resource.ResourceManager
+import me.jfenn.bingo.platform.resource.IResourceManager
 
 class ClientReloadEvent(
-    val resourceManager: ResourceManager,
+    val resourceManager: IResourceManager,
 ) {
     companion object : IEvent<ClientReloadEvent>
 }

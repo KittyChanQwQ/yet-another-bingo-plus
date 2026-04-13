@@ -4,7 +4,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.platform.ITextSerializer
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import net.minecraft.util.Formatting
+import net.minecraft.ChatFormatting
 import org.slf4j.Logger
 
 class ObjectiveDisplayService(
@@ -32,7 +32,7 @@ class ObjectiveDisplayService(
     ): ObjectiveDisplay.Resolved = run {
         try {
             val nameJson = data?.name?.let { jsonUnpretty.encodeToString(it) }
-                ?: fallback.name?.let { textSerializer.toJson(it.value) }
+                ?: fallback.name?.let { textSerializer.toJson(it) }
 
             val name = nameJson?.let { insertSubstitutions(it, substitutions) }
                 ?.let { textSerializer.fromJson(it) }
@@ -79,10 +79,10 @@ class ObjectiveDisplayService(
             name = display.name?.let { name ->
                 when {
                     name.toString() == display.item?.displayName?.toString() -> name
-                    else -> textProvider.empty().append(name).formatted(Formatting.ITALIC)
+                    else -> textProvider.empty().append(name).formatted(ChatFormatting.ITALIC)
                 }
             },
-            lore = display.lore?.map { textProvider.empty().append(it).formatted(Formatting.DARK_PURPLE) }
+            lore = display.lore?.map { textProvider.empty().append(it).formatted(ChatFormatting.DARK_PURPLE) }
         )
     }
 }

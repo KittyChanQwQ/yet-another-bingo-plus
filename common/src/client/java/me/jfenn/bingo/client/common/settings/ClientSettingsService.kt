@@ -26,7 +26,6 @@ internal class ClientSettingsService(
             log.debug("[ClientSettingsService] Sending settings update for player")
             when {
                 packetEvents.sendPlayerSettingsV2.send(settings) -> {}
-                packetEvents.sendPlayerSettingsV1.send(settings) -> {}
             }
         }
     }

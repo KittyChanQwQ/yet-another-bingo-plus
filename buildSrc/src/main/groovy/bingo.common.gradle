@@ -66,16 +66,14 @@ processResources {
     inputs.property "fabric_language_kotlin_version", fabricLanguageKotlinVersion
 
     duplicatesStrategy = DuplicatesStrategy.WARN
-    copySpec({
-        filesMatching("fabric.mod.json") {
-            expand(
-                    "version": projectVersion,
-                    "minecraft_version": supportedMinecraftVersion,
-                    "fabric_api_version": fabricApiVersion,
-                    "fabric_language_kotlin_version": fabricLanguageKotlinVersion
-            )
-        }
-    })
+    filesMatching("fabric.mod.json") {
+        expand(
+                "version": projectVersion,
+                "minecraft_version": supportedMinecraftVersion,
+                "fabric_api_version": fabricApiVersion,
+                "fabric_language_kotlin_version": fabricLanguageKotlinVersion
+        )
+    }
 }
 
 java {
@@ -101,8 +99,8 @@ java {
     // If you remove this line, sources will not be generated.
     withSourcesJar()
 
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
+    sourceCompatibility = JavaVersion.VERSION_24
+    targetCompatibility = JavaVersion.VERSION_24
 }
 
 kotlin {

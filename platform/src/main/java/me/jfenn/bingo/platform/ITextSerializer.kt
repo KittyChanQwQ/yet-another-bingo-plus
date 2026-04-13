@@ -1,9 +1,10 @@
 package me.jfenn.bingo.platform
 
-import net.minecraft.text.Text
+import me.jfenn.bingo.platform.text.IText
+import net.minecraft.network.chat.Component
 
 interface ITextSerializer {
-    fun toJson(text: Text): String
-    fun fromJson(json: String): Text
-    fun toRawString(text: Text): String
+    fun toJson(text: IText): String
+    fun fromJson(json: String): Component
+    fun toRawString(text: IText): String
 }

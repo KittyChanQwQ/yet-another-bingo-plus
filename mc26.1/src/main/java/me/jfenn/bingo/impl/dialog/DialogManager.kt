@@ -2,9 +2,9 @@ package me.jfenn.bingo.impl.dialog
 
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.dialog.*
-import net.minecraft.dialog.type.Dialog
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.core.Holder
+import net.minecraft.server.dialog.Dialog
+import net.minecraft.server.level.ServerPlayer
 
 class DialogManager : IDialogManager {
     override fun noticeBuilder(): INoticeDialogBuilder? = NoticeDialogBuilder()
@@ -13,8 +13,8 @@ class DialogManager : IDialogManager {
 
     override fun showDialog(player: IPlayerHandle, dialog: IDialogHandle) {
         require(dialog is DialogHandle)
-        val player: ServerPlayerEntity = player.player
-        player.openDialog(RegistryEntry.Direct(dialog.dialog))
+        val player: ServerPlayer = player.player
+        player.openDialog(Holder.direct(dialog.dialog))
     }
 }
 

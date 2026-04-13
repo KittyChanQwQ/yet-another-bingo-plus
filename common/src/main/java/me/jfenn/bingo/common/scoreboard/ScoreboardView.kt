@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.scoreboard
 
 import me.jfenn.bingo.platform.scoreboard.ScoreChange
-import net.minecraft.text.Text
+import me.jfenn.bingo.platform.text.IText
 import java.util.*
 
 class ScoreboardView(
@@ -14,7 +14,7 @@ class ScoreboardView(
 
     class ScoreboardItem(
         val string: String,
-        val text: Text,
+        val text: IText,
     )
 
     fun createChanges(list: List<ScoreboardItem>): List<ScoreChange>

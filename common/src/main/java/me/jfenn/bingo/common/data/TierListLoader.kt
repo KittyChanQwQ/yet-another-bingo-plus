@@ -8,7 +8,7 @@ import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.common.utils.jsonStrict
 import me.jfenn.bingo.platform.IModEnvironment
-import net.minecraft.resource.ResourceManager
+import me.jfenn.bingo.platform.resource.IResourceManager
 import org.slf4j.Logger
 import java.io.IOException
 
@@ -28,7 +28,7 @@ internal class TierListLoader(
     }
 
     fun loadTierLists(
-        manager: ResourceManager
+        manager: IResourceManager
     ): Map<String, TierListConfig> {
         log.info("[TierListLoader] Reloading BINGO tier lists...")
 

@@ -1,33 +1,35 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "package": "me.jfenn.bingo.mixin",
-  "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "EndPortalBlockMixin",
-    "GameRuleOverrideMixin",
-    "HungerManagerAccessor",
-    "InteractionEntityMixin",
-    "LevelPropertiesAccessor",
-    "MapStateAccessor",
-    "MinecraftServerAccessor",
-    "MinecraftServerSkipStartRegionMixin",
-    "MinecraftServerUnsafeSkipCloseMixin",
-    "PlayerAdvancementTrackerPreventSpectatorsMixin",
-    "PlayerEntityMixin",
-    "PlayerManagerMixin",
-    "RaidManagerAccessor",
-    "ServerBossBarMixin",
-    "ServerChunkLoadingManagerAccessor",
-    "ServerChunkManagerAccessor",
-    "ServerChunkManagerMixin",
-    "ServerEntityManagerMixin",
-    "ServerPlayNetworkHandlerMixin",
-    "ServerRecipeBookMixin",
-    "ThreadExecutorAccessor"
-  ],
-  "client": [],
-  "injectors": {
-    "defaultRequire": 1
-  }
+    "required": true,
+    "minVersion": "0.8",
+    "package": "me.jfenn.bingo.mixin",
+    "compatibilityLevel": "JAVA_25",
+    "mixins": [
+        "BlockableEventLoopAccessor",
+        "ChunkMapAccessor",
+        "DistanceManagerAccessor",
+        "EndPortalBlockMixin",
+        "FoodDataAccessor",
+        "GameRuleOverrideMixin",
+        "InteractionEntityMixin",
+        "MapItemSavedDataAccessor",
+        "MinecraftServerAccessor",
+        "MinecraftServerSkipStartRegionMixin",
+        "MinecraftServerUnsafeSkipCloseMixin",
+        "PlayerAdvancementsPreventSpectatorsMixin",
+        "PlayerEntityMixin",
+        "PlayerManagerMixin",
+        "RaidsAccessor",
+        "ServerBossEventMixin",
+        "ServerChunkCacheAccessor",
+        "ServerChunkCacheMixin",
+        "ServerEntityManagerMixin",
+        "ServerGamePacketListenerMixin",
+        "ServerLevelAccessor",
+        "ServerRecipeBookMixin",
+        "WorldGenSettingsAccessor"
+    ],
+    "client": [],
+    "injectors": {
+        "defaultRequire": 1
+    }
 }

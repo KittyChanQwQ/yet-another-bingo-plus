@@ -8,7 +8,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import org.koin.core.Koin
 import java.time.Instant
 

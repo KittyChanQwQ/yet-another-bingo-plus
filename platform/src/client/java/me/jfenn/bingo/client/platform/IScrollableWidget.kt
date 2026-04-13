@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.platform
 
 import me.jfenn.bingo.client.platform.renderer.IDrawService
-import net.minecraft.client.gui.widget.ScrollableWidget
+import net.minecraft.client.gui.components.AbstractScrollArea
 
 abstract class IScrollableWidget {
     var x: Int = 0
@@ -10,7 +10,7 @@ abstract class IScrollableWidget {
     var height: Int = 0
     var padding: Int = 4
     var background: Int = 0x40_000000
-    var widget: ScrollableWidget? = null
+    var widget: AbstractScrollArea? = null
 
     val contentWidth get() = width - padding*2
 

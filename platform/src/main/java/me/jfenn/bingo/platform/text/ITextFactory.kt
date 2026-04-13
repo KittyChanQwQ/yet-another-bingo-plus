@@ -1,14 +1,14 @@
 package me.jfenn.bingo.platform.text
 
 import kotlinx.serialization.Contextual
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
 import java.net.URI
 import java.util.*
 
 interface ITextFactory {
     fun empty(): IText
-    fun from(text: Text): IText
+    fun from(text: Component): IText
     fun literal(str: String): IText
     fun keybind(key: String): IText
     fun translatable(key: String, fallback: String?, vararg args: Any): IText
@@ -29,8 +29,9 @@ interface ITextFactory {
 }
 
 interface IText {
-    val value: Text
+    val value: Component
     fun isEmpty(): Boolean
+    fun formatted(vararg formatting: ChatFormatting): IText
     fun formatted(vararg formatting: Formatting): IText
     fun setColor(color: Int)
     fun append(text: IText): IText

@@ -1,11 +1,11 @@
 package me.jfenn.bingo.api.services
 
 import me.jfenn.bingo.api.annotations.BingoInternalApi
+import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 
 interface TextPlaceholderService {
-    fun parseText(message: Text, server: MinecraftServer): Text
+    fun parseText(message: Component, server: MinecraftServer): Component
 }
 
 object TextPlaceholders {

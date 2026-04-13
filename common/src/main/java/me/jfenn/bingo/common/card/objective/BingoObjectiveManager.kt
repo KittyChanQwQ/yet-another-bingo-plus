@@ -6,7 +6,7 @@ import me.jfenn.bingo.common.card.data.ObjectiveRequirements
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterPreset
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.util.Formatting
+import net.minecraft.ChatFormatting
 import org.slf4j.Logger
 
 class BingoObjectiveManager(
@@ -103,12 +103,12 @@ class BingoObjectiveManager(
 
                 val desc = listOfNotNull(
                     entry.tier?.let { text.string(it.string).formatted(it.formatting) },
-                    entry.source?.let { ObjectiveFilterPreset.formatName(text, it).formatted(Formatting.BLUE) },
-                    entry.tileName?.let { text.literal(it).formatted(Formatting.GRAY) },
+                    entry.source?.let { ObjectiveFilterPreset.formatName(text, it).formatted(ChatFormatting.BLUE) },
+                    entry.tileName?.let { text.literal(it).formatted(ChatFormatting.GRAY) },
                 )
 
                 desc.takeIf { it.isNotEmpty() }
-                    ?.let { text.joinText(it, text.literal(" • ").formatted(Formatting.GRAY)) }
+                    ?.let { text.joinText(it, text.literal(" • ").formatted(ChatFormatting.GRAY)) }
                     ?.let { add(it) }
             }.takeIf { it.isNotEmpty() }
 

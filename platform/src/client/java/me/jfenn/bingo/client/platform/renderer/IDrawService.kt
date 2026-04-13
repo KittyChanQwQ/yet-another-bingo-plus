@@ -1,11 +1,11 @@
 package me.jfenn.bingo.client.platform.renderer
 
 import me.jfenn.bingo.client.platform.INativeImage
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.util.Identifier
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.joml.Vector2i
 import java.io.Closeable
 import kotlin.math.ceil
@@ -13,8 +13,8 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 interface IDrawService {
-    val context: DrawContext
-    val textRenderer: TextRenderer
+    val context: GuiGraphicsExtractor
+    val textRenderer: Font
     val font: IFont
     val matrices: IMatrixStack
     val window: IWindow
@@ -161,7 +161,7 @@ interface IDrawService {
 interface IDrawServiceFactory {
     val window: IWindow
 
-    fun create(drawContext: DrawContext): IDrawService
+    fun create(drawContext: GuiGraphicsExtractor): IDrawService
 
     val isBufferSupported: Boolean
 

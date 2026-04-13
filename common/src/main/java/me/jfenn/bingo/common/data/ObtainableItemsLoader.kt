@@ -1,21 +1,18 @@
 package me.jfenn.bingo.common.data
 
-import net.minecraft.resource.ResourceFinder
-import net.minecraft.resource.ResourceManager
+import me.jfenn.bingo.platform.resource.IResourceManager
 import org.slf4j.Logger
 
 class ObtainableItemsLoader(
     private val log: Logger,
 ) {
     private fun collectItems(
-        manager: ResourceManager
+        manager: IResourceManager,
     ): Sequence<String> {
         val resources = sequence {
-            ResourceFinder.json("loot_table")
-                .findResources(manager)
+            manager.findJson("loot_table")
                 .let { yieldAll(it.entries) }
-            ResourceFinder.json("recipe")
-                .findResources(manager)
+            manager.findJson("recipe")
                 .let { yieldAll(it.entries) }
         }
 
@@ -36,7 +33,7 @@ class ObtainableItemsLoader(
     }
 
     fun loadObtainableItems(
-        manager: ResourceManager,
+        manager: IResourceManager,
     ): Set<String> {
         val obtainableItems = collectItems(manager).toSet()
         log.info("[ObtainableItemsLoader] Found ${obtainableItems.size} items referenced in resource files")

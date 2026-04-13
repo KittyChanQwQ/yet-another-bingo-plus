@@ -1,6 +1,6 @@
 package me.jfenn.bingo.platform.block
 
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.BlockPos
 import org.joml.Vector3d
 import org.joml.Vector3f
 
@@ -27,7 +27,7 @@ data class BlockPosition(
 
     fun toBlockPos() = BlockPos(x, y, z)
 
-    fun toChunkPos() = Pair(x / 16, y / 16)
+    fun toChunkPos() = ChunkPosition(x / 16, z / 16)
 
     fun toVector3d() = Vector3d(x.toDouble(), y.toDouble(), z.toDouble())
 

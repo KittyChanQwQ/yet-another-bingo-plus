@@ -1,22 +1,21 @@
-package me.jfenn.bingo.common.spectator
+package me.jfenn.bingo.impl.player
 
-import me.jfenn.bingo.common.card.EmptySlot
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.inventory.Inventory
-import net.minecraft.item.ItemStack
-import net.minecraft.screen.ScreenHandler
-import net.minecraft.screen.ScreenHandlerType
-import net.minecraft.screen.slot.Slot
-import net.minecraft.screen.slot.SlotActionType
+import net.minecraft.world.Container
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.inventory.ContainerInput
+import net.minecraft.world.inventory.MenuType
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 
 class SpectatorInventoryScreenHandler(
-    type: ScreenHandlerType<*>,
+    type: MenuType<*>,
     syncId: Int,
     rows: Int,
-    playerInventory:  PlayerInventory,
-    inventory: Inventory,
-): ScreenHandler(type, syncId) {
+    playerInventory: Inventory,
+    inventory: Container,
+): AbstractContainerMenu(type, syncId) {
 
     init {
         // chest inventory slots
@@ -48,21 +47,21 @@ class SpectatorInventoryScreenHandler(
         }
     }
 
-    override fun insertItem(stack: ItemStack, startIndex: Int, endIndex: Int, fromLast: Boolean): Boolean {
+    override fun moveItemStackTo(itemStack: ItemStack, startSlot: Int, endSlot: Int, backwards: Boolean): Boolean {
         return false
     }
 
-    override fun canUse(player: PlayerEntity): Boolean {
+    override fun stillValid(player: Player): Boolean {
         return true
     }
 
-    override fun onContentChanged(inventory: Inventory?) {
+    override fun slotsChanged(container: Container) {
     }
 
-    override fun quickMove(player: PlayerEntity?, slot: Int): ItemStack {
+    override fun quickMoveStack(player: Player, slotIndex: Int): ItemStack {
         return ItemStack.EMPTY
     }
 
-    override fun onSlotClick(slotIndex: Int, button: Int, actionType: SlotActionType?, player: PlayerEntity?) {
+    override fun clicked(slotIndex: Int, buttonNum: Int, containerInput: ContainerInput, player: Player) {
     }
 }

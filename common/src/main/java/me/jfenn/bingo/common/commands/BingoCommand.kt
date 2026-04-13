@@ -1,7 +1,5 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.platform.text.IText
-import me.jfenn.bingo.platform.text.TextAction
 import me.jfenn.bingo.common.URL_WIKI
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -10,7 +8,9 @@ import me.jfenn.bingo.generated.BINGO_VERSION
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.platform.text.TextAction
+import net.minecraft.ChatFormatting
 
 class BingoCommand(
     commandManager: ICommandManager,
@@ -21,7 +21,7 @@ class BingoCommand(
 
         text.string(StringKey.FullName)
             .append(" v$BINGO_VERSION")
-            .formatted(Formatting.DARK_GREEN, Formatting.UNDERLINE).also {
+            .formatted(ChatFormatting.DARK_GREEN, ChatFormatting.UNDERLINE).also {
                 it.setClickEvent(TextAction.OpenUrl(URL_WIKI))
             }
             .let { add(it) }

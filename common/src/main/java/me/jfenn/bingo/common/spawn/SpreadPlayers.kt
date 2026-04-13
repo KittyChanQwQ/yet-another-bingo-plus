@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.block.ChunkPosition
 import me.jfenn.bingo.platform.world.IChunk
 import me.jfenn.bingo.platform.world.IChunkHeightmap
 import org.slf4j.Logger
@@ -56,7 +57,7 @@ class SpreadPlayers(
         log.info("[SpreadPlayers] Initialized in dimension ${world.identifier} with coordinateScale=$coordinateScale, logicalHeight=$logicalHeight, bottomY=$bottomY, seaLevel=$seaLevel")
     }
 
-    private fun spreadGroups(count: Int, distance: Int): List<Pair<Int, Int>> {
+    private fun spreadGroups(count: Int, distance: Int): List<ChunkPosition> {
         val center = worldBorderCenterInWorld.toChunkPos()
         val radius = ((distance * count) / (2 * Math.PI))
             .coerceAtMost((worldBorder.maxRadius / 16).toDouble() - 16.0)
@@ -70,7 +71,7 @@ class SpreadPlayers(
                 val x = sin(t0) * radius
                 val z = cos(t0) * radius
 
-                add(Pair(center.first + x.toInt(), center.second + z.toInt()))
+                add(ChunkPosition(center.x + x.toInt(), center.z + z.toInt()))
             }
         }
     }
@@ -196,12 +197,12 @@ class SpreadPlayers(
     }
 
     sealed class Result<T> {
-        data class NextChunk<T>(val nextChunk: Pair<Int, Int>) : Result<T>()
+        data class NextChunk<T>(val nextChunk: ChunkPosition) : Result<T>()
         data class Finish<T>(val block: BlockPosition) : Result<T>()
         data class Success<T>(val result: T) : Result<T>()
     }
 
-    private fun processChunkCoords(chunk: Pair<Int, Int>): Result<Unit> {
+    private fun processChunkCoords(chunk: ChunkPosition): Result<Unit> {
         var (x, z) = chunk
         val xSign = x.sign.takeIf { it != 0 } ?: 1
 
@@ -210,7 +211,7 @@ class SpreadPlayers(
         val biomeTest = world.getBiome(chunkCenter)
         if (invalidSpawnBiomes.contains(biomeTest)) {
             x += 4 * xSign
-            return Result.NextChunk(Pair(x, z))
+            return Result.NextChunk(ChunkPosition(x, z))
         }
 
         // Scale the chunkCenter to match overworld positions for the worldBorder
@@ -236,7 +237,7 @@ class SpreadPlayers(
         return Result.Success(Unit)
     }
 
-    private fun processChunk(chunkPos: Pair<Int, Int>, chunk: IChunk): Result<BlockPosition> {
+    private fun processChunk(chunkPos: ChunkPosition, chunk: IChunk): Result<BlockPosition> {
         var (x, z) = chunkPos
         val xSign = x.sign.takeIf { it != 0 } ?: 1
 
@@ -244,13 +245,13 @@ class SpreadPlayers(
         if (spawnBlockPos == null) {
             log.info("Skipping chunk ($x, $z) which contains no valid spawn locations")
             x += 1 * xSign
-            return Result.NextChunk(Pair(x, z))
+            return Result.NextChunk(ChunkPosition(x, z))
         }
 
         if (invalidSpawnBiomes.contains(world.getBiome(spawnBlockPos))) {
             log.info("Skipping chunk ($x, $z) for invalid spawn block biome")
             x += 4 * xSign
-            return Result.NextChunk(Pair(x, z))
+            return Result.NextChunk(ChunkPosition(x, z))
         }
 
         return Result.Success(BlockPosition(spawnBlockPos.x, spawnBlockPos.y + 1, spawnBlockPos.z))
@@ -260,7 +261,7 @@ class SpreadPlayers(
      * Searches for a valid spawn position, starting at the provided chunk and iterating
      * outwards on the X axis.
      */
-    fun findSpawnPosAsync(startChunk: Pair<Int, Int>): CompletableFuture<BlockPosition> {
+    fun findSpawnPosAsync(startChunk: ChunkPosition): CompletableFuture<BlockPosition> {
         var chunkPos = startChunk
 
         while (true) {
@@ -294,7 +295,7 @@ class SpreadPlayers(
      * Searches for a valid spawn position, starting at the provided chunk and iterating
      * outwards on the X axis.
      */
-    fun findSpawnPos(startChunk: Pair<Int, Int>): BlockPosition {
+    fun findSpawnPos(startChunk: ChunkPosition): BlockPosition {
         var chunkPos = startChunk
 
         while (true) {

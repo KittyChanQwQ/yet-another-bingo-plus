@@ -1,24 +1,24 @@
 package me.jfenn.bingo.client.impl
 
 import me.jfenn.bingo.client.platform.IOptionsAccessor
-import net.minecraft.client.MinecraftClient
+import net.minecraft.client.Minecraft
 
 object OptionsAccessor : IOptionsAccessor {
-    private val client = MinecraftClient.getInstance()
+    private val client = Minecraft.getInstance()
 
     override fun isDebugEnabled(): Boolean {
-        return client.debugHudEntryList.isF3Enabled
+        return client.debugEntries.isOverlayVisible
     }
 
     override fun isPlayerListPressed(): Boolean {
-        return client.options.playerListKey.isPressed
+        return client.options.keyPlayerList.isDown
     }
 
     override fun isSneakPressed(): Boolean {
-        return client.options.sneakKey.isPressed
+        return client.options.keyShift.isDown
     }
 
     override fun isHudHidden(): Boolean {
-        return client.options.hudHidden
+        return client.options.hideGui
     }
 }

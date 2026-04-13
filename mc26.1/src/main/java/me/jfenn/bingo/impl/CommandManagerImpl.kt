@@ -13,20 +13,20 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionProvider
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.*
 import me.jfenn.bingo.platform.scope.BingoKoin
+import me.jfenn.bingo.platform.text.IText
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
-import net.minecraft.command.CommandRegistryAccess
-import net.minecraft.command.CommandSource
-import net.minecraft.command.argument.EntityArgumentType
-import net.minecraft.command.argument.MessageArgumentType
-import net.minecraft.command.argument.TextArgumentType
+import net.minecraft.ChatFormatting
+import net.minecraft.commands.CommandBuildContext
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.SharedSuggestionProvider
+import net.minecraft.commands.arguments.ComponentArgument
+import net.minecraft.commands.arguments.EntityArgument
+import net.minecraft.commands.arguments.MessageArgument
+import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import org.koin.core.scope.Scope
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
@@ -43,13 +43,13 @@ class CommandManagerImpl(
 
     private fun constructCommand(
         command: CommandNode,
-        registryAccess: CommandRegistryAccess,
-    ): ArgumentBuilder<ServerCommandSource, *> {
-        var builder: ArgumentBuilder<ServerCommandSource, *> = when (command) {
+        registryAccess: CommandBuildContext,
+    ): ArgumentBuilder<CommandSourceStack, *> {
+        var builder: ArgumentBuilder<CommandSourceStack, *> = when (command) {
             is CommandNode.Literal -> LiteralArgumentBuilder.literal(command.name)
             is CommandNode.RequiredArgument<*> -> {
                 when (val arg = command.arg) {
-                    is CommandArgument.String -> RequiredArgumentBuilder.argument<ServerCommandSource?, String?>(
+                    is CommandArgument.String -> RequiredArgumentBuilder.argument<CommandSourceStack, String?>(
                         arg.name,
                         if (arg.greedy) StringArgumentType.greedyString() else StringArgumentType.string()
                     ).let {
@@ -61,12 +61,12 @@ class CommandManagerImpl(
 
                     is CommandArgument.SignedMessage -> RequiredArgumentBuilder.argument(
                         arg.name,
-                        MessageArgumentType.message()
+                        MessageArgument.message()
                     )
 
                     is CommandArgument.Text -> RequiredArgumentBuilder.argument(
                         arg.name,
-                        TextArgumentType.text(registryAccess)
+                        ComponentArgument.textComponent(registryAccess)
                     )
 
                     is CommandArgument.Bool -> RequiredArgumentBuilder.argument(
@@ -86,7 +86,7 @@ class CommandManagerImpl(
 
                     is CommandArgument.Player -> RequiredArgumentBuilder.argument(
                         arg.name,
-                        EntityArgumentType.player()
+                        EntityArgument.player()
                     )
                 }
             }
@@ -95,10 +95,10 @@ class CommandManagerImpl(
         }
 
         for (child in command.children) {
-            val childCommand: ArgumentBuilder<ServerCommandSource, *> = constructCommand(child, registryAccess)
+            val childCommand: ArgumentBuilder<CommandSourceStack, *> = constructCommand(child, registryAccess)
 
             @Suppress("UNCHECKED_CAST")
-            builder = builder.then(childCommand) as ArgumentBuilder<ServerCommandSource, *>
+            builder = builder.then(childCommand) as ArgumentBuilder<CommandSourceStack, *>
         }
 
         if (command.requires != null) {
@@ -124,7 +124,7 @@ class CommandManagerImpl(
                 } catch (e: Throwable) {
                     if (e is CommandSyntaxException) throw e
                     log.error("Error in command handler:", e)
-                    ctx.source.sendMessage(Text.literal(e.message).formatted(Formatting.RED))
+                    ctx.source.sendSystemMessage(Component.literal(e.message.orEmpty()).withStyle(ChatFormatting.RED))
                     0
                 }
             }
@@ -136,7 +136,7 @@ class CommandManagerImpl(
     init {
         CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, _ ->
             for (command in root.children) {
-                val builder = constructCommand(command, registryAccess) as? LiteralArgumentBuilder<ServerCommandSource>
+                val builder = constructCommand(command, registryAccess) as? LiteralArgumentBuilder<CommandSourceStack>
                     ?: throw IllegalArgumentException("Commands on the root node must only be literal()!")
 
                 dispatcher.register(builder)
@@ -148,7 +148,7 @@ class CommandManagerImpl(
 class SuggestionProviderImpl(
     private val isGreedy: Boolean,
     private val callback: IExecutionContext.(String) -> Iterable<String>,
-) : SuggestionProvider<ServerCommandSource> {
+) : SuggestionProvider<CommandSourceStack> {
     private fun String.quoteIfNecessary(): String {
         return if (!isGreedy && contains(Regex("[^A-Za-z0-9\\-_]")))
             "\"$this\""
@@ -156,18 +156,18 @@ class SuggestionProviderImpl(
     }
 
     override fun getSuggestions(
-        context: CommandContext<ServerCommandSource>,
+        context: CommandContext<CommandSourceStack>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
         val ctx = ExecutionContextImpl(context)
         val suggestions = callback.invoke(ctx, builder.remaining).map { it.quoteIfNecessary() }
-        CommandSource.suggestMatching(suggestions, builder)
+        SharedSuggestionProvider.suggest(suggestions, builder)
         return builder.buildFuture()
     }
 }
 
 open class ExecutionSourceImpl(
-    source: ServerCommandSource,
+    source: CommandSourceStack,
 ) : IExecutionSource {
     override val server: MinecraftServer = source.server
     override val scope: Scope = BingoKoin.getScope(source.server)
@@ -180,13 +180,13 @@ open class ExecutionSourceImpl(
 }
 
 class ExecutionContextImpl(
-    private val ctx: CommandContext<ServerCommandSource>,
+    private val ctx: CommandContext<CommandSourceStack>,
 ) : ExecutionSourceImpl(ctx.source), IExecutionContext {
     override fun sendMessage(text: IText) {
-        ctx.source.sendMessage(text.value)
+        ctx.source.sendSystemMessage(text.value)
     }
     override fun sendFeedback(text: IText) {
-        ctx.source.sendFeedback({ text.value }, true)
+        ctx.source.sendSuccess({ text.value }, true)
     }
     override fun <T> getArgument(arg: CommandArgument<T>): T {
         @Suppress("UNCHECKED_CAST")
@@ -194,16 +194,16 @@ class ExecutionContextImpl(
             is CommandArgument.String -> StringArgumentType.getString(ctx, arg.name) as T
             is CommandArgument.SignedMessage -> {
                 val future = CompletableFuture<ISignedMessage>()
-                MessageArgumentType.getSignedMessage(ctx, arg.name) { message ->
+                MessageArgument.resolveChatMessage(ctx, arg.name) { message ->
                     future.complete(SignedMessageImpl(message))
                 }
                 future as T
             }
-            is CommandArgument.Text -> TextArgumentType.getTextArgument(ctx, arg.name) as T
+            is CommandArgument.Text -> ComponentArgument.getResolvedComponent(ctx, arg.name) as T
             is CommandArgument.Bool -> BoolArgumentType.getBool(ctx, arg.name) as T
             is CommandArgument.Integer -> IntegerArgumentType.getInteger(ctx, arg.name) as T
             is CommandArgument.NumberLong -> LongArgumentType.getLong(ctx, arg.name) as T
-            is CommandArgument.Player -> EntityArgumentType.getPlayer(ctx, arg.name)?.let { PlayerHandle(it) } as T
+            is CommandArgument.Player -> PlayerHandle(EntityArgument.getPlayer(ctx, arg.name)) as T
         }
     }
 }

@@ -2,18 +2,19 @@ package me.jfenn.bingo.client.impl.event
 
 import me.jfenn.bingo.client.impl.screen.ScreenHelperImpl
 import me.jfenn.bingo.client.platform.event.model.*
+import me.jfenn.bingo.impl.resource.ResourceManagerImpl
 import me.jfenn.bingo.platform.event.IEventBus
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.fabricmc.fabric.api.client.networking.v1.ServerboundPlayChannelEvents
 import net.fabricmc.fabric.api.client.rendering.v1.InvalidateRenderStateCallback
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader
-import net.minecraft.client.gui.screen.TitleScreen
-import net.minecraft.resource.ResourceManager
-import net.minecraft.resource.ResourceType
-import net.minecraft.resource.SynchronousResourceReloader
-import net.minecraft.util.Identifier
+import net.minecraft.client.gui.screens.TitleScreen
+import net.minecraft.resources.Identifier
+import net.minecraft.server.packs.PackType
+import net.minecraft.server.packs.resources.ResourceManager
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener
 
 class ClientEventsImpl(
     private val eventBus: IEventBus,
@@ -27,7 +28,7 @@ class ClientEventsImpl(
             eventBus.emit(ClientServerEvent.Disconnect, ClientServerEvent())
         }
 
-        C2SPlayChannelEvents.REGISTER.register { _, _, _, _ ->
+        ServerboundPlayChannelEvents.REGISTER.register { _, _, _, _ ->
             eventBus.emit(ClientServerEvent.ChannelRegister, ClientServerEvent())
         }
 
@@ -39,11 +40,11 @@ class ClientEventsImpl(
             eventBus.emit(ClientTickEvent.End, ClientTickEvent())
         }
 
-        ResourceLoader.get(ResourceType.CLIENT_RESOURCES).registerReloader(
-            Identifier.of("yet-another-minecraft-bingo", "bingo_client")!!,
-            object: SynchronousResourceReloader {
-                override fun reload(manager: ResourceManager) {
-                    eventBus.emit(ClientReloadEvent, ClientReloadEvent(manager))
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(
+            Identifier.fromNamespaceAndPath("yet-another-minecraft-bingo", "bingo_client"),
+            object: ResourceManagerReloadListener {
+                override fun onResourceManagerReload(manager: ResourceManager) {
+                    eventBus.emit(ClientReloadEvent, ClientReloadEvent(ResourceManagerImpl(manager)))
                 }
             },
         )

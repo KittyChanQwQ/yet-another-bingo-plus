@@ -13,11 +13,6 @@ internal class ClientSettingsController(
 ) {
 
     init {
-        eventBus.register(packetEvents.receivePlayerSettingsV1) { (packet) ->
-            log.debug("[ClientSettingsController] Received a settings update (v1) from the server...")
-            clientSettings.update(packet, sendPacket = false)
-        }
-
         eventBus.register(packetEvents.receivePlayerSettingsV2) { (packet) ->
             log.debug("[ClientSettingsController] Received a settings update (v2) from the server...")
             clientSettings.update(packet, sendPacket = false)
@@ -28,7 +23,6 @@ internal class ClientSettingsController(
             val settings = clientSettings.getSettings()
             when {
                 packetEvents.sendPlayerSettingsV2.send(settings) -> {}
-                packetEvents.sendPlayerSettingsV1.send(settings) -> {}
             }
         }
     }

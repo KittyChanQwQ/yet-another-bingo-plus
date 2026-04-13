@@ -5,36 +5,36 @@ import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.IClientPlayer
 import me.jfenn.bingo.client.platform.renderer.IFont
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
 import org.joml.Vector2i
 import java.util.concurrent.Executor
 
 class ClientImpl : IClient {
-    private val client = MinecraftClient.getInstance()
+    private val client = Minecraft.getInstance()
 
     override val font: IFont
-        get() = FontImpl(client.textRenderer)
+        get() = FontImpl(client.font)
 
     override val player: IClientPlayer = PlayerImpl()
 
     override val isInSingleplayer: Boolean
-        get() = client.isInSingleplayer
+        get() = client.isLocalServer
 
     override val isPaused: Boolean
         get() = client.isPaused
 
     override val mouse: Vector2i
         get() {
-            val mouse = client.mouse
+            val mouse = client.mouseHandler
             return Vector2i(
-                (mouse.x * client.window.scaledWidth.toDouble() / client.window.width.toDouble()).toInt(),
-                (mouse.y * client.window.scaledHeight.toDouble() / client.window.height.toDouble()).toInt(),
+                (mouse.xpos() * client.window.guiScaledWidth.toDouble() / client.window.width.toDouble()).toInt(),
+                (mouse.ypos() * client.window.guiScaledHeight.toDouble() / client.window.height.toDouble()).toInt(),
             )
         }
 
     override var screen: Screen?
-        get() = client.currentScreen
+        get() = client.screen
         set(value) { client.setScreen(value) }
 
     override fun execute(callback: () -> Unit) {
@@ -45,10 +45,10 @@ class ClientImpl : IClient {
 
     inner class PlayerImpl : IClientPlayer {
         override fun sendHotbarMessage(text: IText) {
-            client.player?.sendMessage(text.value, true)
+            client.player?.sendOverlayMessage(text.value)
         }
         override fun sendCommand(command: String) {
-            client.player?.networkHandler?.sendChatCommand(
+            client.player?.connection?.sendCommand(
                 command.removePrefix("/")
             )
         }

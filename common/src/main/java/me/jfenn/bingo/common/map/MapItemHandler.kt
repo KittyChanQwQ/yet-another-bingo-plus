@@ -3,13 +3,12 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.platform.Hand
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.dialog.IDialogManager
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.*
-import me.jfenn.bingo.platform.item.IItemStackFactory
-import net.minecraft.util.Hand
 import java.util.*
 
 internal class MapItemHandler(
@@ -17,7 +16,6 @@ internal class MapItemHandler(
     private val playerManager: IPlayerManager,
     private val dialogManager: IDialogManager,
     private val mapItemService: MapItemService,
-    private val itemStackFactory: IItemStackFactory,
     private val cardViewService: CardViewService,
     private val gameOverService: GameOverService,
     private val state: BingoState,
@@ -49,11 +47,9 @@ internal class MapItemHandler(
 
     init {
         eventBus.register(UseItemEvent) { event ->
-            val player = event.player.player
+            val player = event.player
             val hand = event.hand
             val itemStack = player.getStackInHand(hand)
-                ?.let { itemStackFactory.forStack(it) }
-                ?: return@register null
 
             usedAnyItem.add(player.uuid)
 
@@ -62,7 +58,7 @@ internal class MapItemHandler(
                 val otherItemStack = player.getStackInHand(when (hand) {
                     Hand.MAIN_HAND -> Hand.OFF_HAND
                     else -> Hand.MAIN_HAND
-                }).let { itemStackFactory.forStack(it) }
+                })
 
                 if (hand == Hand.OFF_HAND && !otherItemStack.isEmpty)
                     return@register ActionResult.Pass(itemStack)
@@ -87,9 +83,7 @@ internal class MapItemHandler(
             val player = event.player
             usedAnyItem.add(player.uuid)
 
-            val itemStack = player.player.getStackInHand(event.hand)
-                ?.let { itemStackFactory.forStack(it) }
-                ?: return@register null
+            val itemStack = player.getStackInHand(event.hand)
 
             if (
                 usedBingoMap.contains(player.uuid)
@@ -107,9 +101,7 @@ internal class MapItemHandler(
             val player = event.player
             usedAnyItem.add(player.uuid)
 
-            val itemStack = player.player.getStackInHand(event.hand)
-                ?.let { itemStackFactory.forStack(it) }
-                ?: return@register null
+            val itemStack = player.getStackInHand(event.hand)
 
             if (
                 usedBingoMap.contains(player.uuid)
@@ -133,7 +125,7 @@ internal class MapItemHandler(
                     showInventory(player)
                 }
 
-                if (usedAnyItem.contains(player.uuid) || player.player.itemUseTimeLeft > 0)
+                if (usedAnyItem.contains(player.uuid) || player.itemUseTimeLeft > 0)
                     itemCooldown[player.uuid] = it.ticks
             }
 

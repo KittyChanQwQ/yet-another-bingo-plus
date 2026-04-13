@@ -3,15 +3,14 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.platform.IMinecraftServer
 import me.jfenn.bingo.platform.IPlayerManager
-import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.Identifier
 import java.io.InputStream
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
 
 internal class CardImageService(
-    private val server: MinecraftServer,
+    private val server: IMinecraftServer,
     private val playerManager: IPlayerManager,
     private val packets: ServerPacketEvents,
     private val state: BingoState,
@@ -22,9 +21,7 @@ internal class CardImageService(
     fun readCardImageStream(id: String): InputStream? {
         val namespace = id.substringBefore(':')
         val path = "$MOD_ID_BINGO/images/${id.substringAfterLast(':')}.png"
-        return server.resourceManager.getResource(Identifier.of(namespace, path))
-            .getOrNull()
-            ?.inputStream
+        return server.resourceManager.getResource(Identifier.of(namespace, path))?.inputStream
     }
 
     private fun readCardImage(id: String): CardImagePacket? {

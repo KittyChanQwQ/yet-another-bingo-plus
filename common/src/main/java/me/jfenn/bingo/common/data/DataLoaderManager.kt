@@ -69,7 +69,7 @@ internal class DataLoaderManager(
                 messagesFuture,
             ).whenComplete { _, _ ->
                 log.info("[DataLoader] Prepared in ${start.elapsedNow()}!")
-            }.thenCompose(event.whenPrepared).thenAcceptAsync({
+            }.thenCompose { event.whenPrepared(Unit) }.thenAcceptAsync({
                 scopedData.copyFrom(newData)
                 log.info("[DataLoader] Completed in ${start.elapsedNow()}!")
             }, event.applyExecutor)

@@ -17,8 +17,8 @@ import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
 import me.jfenn.bingo.platform.commands.ISignedMessage
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
 import java.time.Duration
 import java.time.Instant
 
@@ -76,23 +76,23 @@ class CoordsCommand(
 
         val coordMessages = team.chatCoordinates
         if (coordMessages.isEmpty()) {
-            player.sendMessage(text.literal("No coordinates have been saved yet.").formatted(Formatting.GRAY))
+            player.sendMessage(text.literal("No coordinates have been saved yet.").formatted(ChatFormatting.GRAY))
             return
         }
 
-        player.sendMessage(text.literal("Coordinates:").formatted(Formatting.GRAY, Formatting.BOLD))
+        player.sendMessage(text.literal("Coordinates:").formatted(ChatFormatting.GRAY, ChatFormatting.BOLD))
         for (entry in coordMessages) {
             val duration = Duration.between(entry.created, Instant.now())
             player.sendMessage(
                 text.literal("  • ${entry.player} (${duration.formatStringSmall()} ago): ${entry.formatText()}")
-                    .formatted(Formatting.GRAY)
+                    .formatted(ChatFormatting.GRAY)
             )
         }
     }
 
     private val IExecutionSource.teamOrThrow get() = scope.get<TeamService>()
         .getPlayerTeam(playerOrThrow)
-        ?: error(Text.literal("Player must be on a team!"))
+        ?: error(Component.literal("Player must be on a team!"))
 
     init {
         // send current player coordinates to other team members

@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.BINGO
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.readStream
@@ -11,7 +11,7 @@ import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.IMapState
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.config.IConfigManager
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
@@ -84,7 +84,6 @@ internal class MapRenderService(
             try {
                 readTileImage(item)!!.close()
             } catch (e: Throwable) {
-                val log = LoggerFactory.getLogger(MOD_ID)
                 log.warn("Missing item image: ${item.replace(':', '/')}.png")
             }
         }

@@ -16,9 +16,9 @@ import me.jfenn.bingo.platform.IJsonSerializers
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.item.ItemStack
+import net.minecraft.network.chat.ComponentSerialization
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.TextCodecs
+import net.minecraft.world.item.ItemStack
 import kotlin.reflect.KClass
 
 class JsonSerializers(
@@ -26,7 +26,7 @@ class JsonSerializers(
     server: MinecraftServer?,
 ) : IJsonSerializers {
 
-    private val registryOps = server?.registryManager?.getOps(JsonOpsKotlinx) ?: JsonOpsKotlinx
+    private val registryOps = server?.registryAccess()?.createSerializationContext(JsonOpsKotlinx) ?: JsonOpsKotlinx
 
     inner class CodecSerializer<T: Any>(
         private val codec: Codec<T>,
@@ -50,7 +50,7 @@ class JsonSerializers(
 
     private val module = SerializersModule {
         contextual(IText::class, CodecSerializer(
-            codec = TextCodecs.CODEC.xmap(
+            codec = ComponentSerialization.CODEC.xmap(
                 { TextImpl(it.copy()) },
                 { it.value }
             ),

@@ -6,7 +6,6 @@ import me.jfenn.bingo.common.NBT_BINGO_VANISH
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import net.minecraft.item.Items
 
 class ElytraService(
     private val itemStackFactory: IItemStackFactory,
@@ -18,12 +17,12 @@ class ElytraService(
      */
     fun giveElytra(player: IPlayerHandle) {
         val hasElytra = player.allHeldStacks()
-            .any { it.item == Items.ELYTRA && it.hasCustomTag(NBT_BINGO_VANISH) }
+            .any { it.identifier.toString() == "minecraft:elytra" && it.hasCustomTag(NBT_BINGO_VANISH) }
 
         if (!hasElytra) {
             // insert elytra in armor slot
             player.giveOrEquipStack(
-                itemStackFactory.createStack(Items.ELYTRA).apply {
+                itemStackFactory.createStack("minecraft:elytra").apply {
                     // unbreakable (should not take damage)
                     setUnbreakable(true)
                     addCustomTag(NBT_BINGO_IGNORE)
@@ -36,7 +35,7 @@ class ElytraService(
         // also give rocket
         val rocketStack = player.allHeldStacks()
             .find {
-                it.item == Items.FIREWORK_ROCKET && it.hasCustomTag(NBT_BINGO_VANISH)
+                it.asFireworkRocket() != null && it.hasCustomTag(NBT_BINGO_VANISH)
             }
 
         if (rocketStack != null && rocketStack.count < 2) {
@@ -57,7 +56,7 @@ class ElytraService(
 
     fun takeElytra(player: IPlayerHandle) {
         player.allHeldStacks()
-            .filter { it.item == Items.ELYTRA || it.item == Items.FIREWORK_ROCKET }
+            .filter { it.identifier.toString() == "minecraft:elytra" || it.asFireworkRocket() != null }
             .filter { it.hasCustomTag(NBT_BINGO_VANISH) }
             .forEach {
                 it.count = 0

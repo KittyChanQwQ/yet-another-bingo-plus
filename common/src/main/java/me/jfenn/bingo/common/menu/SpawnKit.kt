@@ -9,9 +9,9 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.player.IContainerMenu
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.util.Formatting
 import org.joml.Vector3d
 
 internal const val MENU_SPAWN_KIT_WIDTH = 2.0
@@ -24,6 +24,7 @@ internal fun MenuComponent.registerSpawnKit(
     itemStackFactory: IItemStackFactory = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
     spawnKitService: SpawnKitService = koinScope.get(),
+    containerMenuFactory: IContainerMenu.Factory = koinScope.get(),
 ) {
     val options by state::options
     val offset = Vector3d()
@@ -60,20 +61,15 @@ internal fun MenuComponent.registerSpawnKit(
         title: IText,
         callback: (List<IItemStack>) -> Unit,
     ) {
-        player.player.openHandledScreen(
-            SimpleNamedScreenHandlerFactory(
-                { syncId, inv, _ ->
-                    InventoryScreenHandler(syncId, stacks, inv).apply {
-                        onClose { newStacks ->
-                            callback(
-                                newStacks.map { itemStackFactory.forStack(it) }
-                            )
-                        }
-                    }
-                },
-                title.value
-            )
-        )
+        val inventory = containerMenuFactory.createSimpleContainer(stacks)
+        containerMenuFactory.createInventory(
+            inventory = inventory,
+            name = title,
+            isInteractable = true,
+            onClose = {
+                callback(inventory.toList())
+            },
+        ).let { player.openMenu(it) }
     }
 
     registerTileButton(

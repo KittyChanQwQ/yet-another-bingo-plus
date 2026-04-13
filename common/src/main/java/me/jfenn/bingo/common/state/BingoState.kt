@@ -20,9 +20,9 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.UuidAsString
-import net.minecraft.util.Formatting
 import java.time.Duration
 import java.util.*
 

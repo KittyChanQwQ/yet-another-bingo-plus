@@ -5,10 +5,10 @@ import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardTileImage
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.util.Identifier
 import java.time.Duration
 import java.util.*
 
@@ -56,113 +56,7 @@ data class ScoreMessagePacket(
     }
 
     object V1 : PacketConverter<ScoreMessagePacket> {
-        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "score_message")!!
-
-        override fun toPacketBuf(source: ScoreMessagePacket, dest: IPacketBuf) {
-            if (source.player != null) {
-                dest.writeBoolean(true)
-                dest.writeString(source.player.uuid.toString())
-                dest.writeString(source.player.name)
-            } else {
-                dest.writeBoolean(false)
-            }
-
-            dest.writeBoolean(source.isViewerOnTeam)
-
-            if (source.tile?.image?.item != null) {
-                dest.writeBoolean(true)
-                dest.writeItemStack(source.tile.image.item)
-            } else {
-                dest.writeBoolean(false)
-            }
-
-            dest.writeString(source.messageType?.name ?: "")
-            dest.writeText(source.message)
-        }
-
-        override fun fromPacketBuf(buf: IPacketBuf): ScoreMessagePacket {
-            val player = if (buf.readBoolean()) {
-                PlayerProfile(
-                    uuid = UUID.fromString(buf.readString()),
-                    name = buf.readString(),
-                )
-            } else null
-            val isViewerOnTeam = buf.readBoolean()
-            val item = if (buf.readBoolean()) buf.readItemStack() else null
-            val messageType = try {
-                MessageType.valueOf(buf.readString())
-            } catch (e: Throwable) {
-                null
-            }
-            val message = buf.readText()
-            return ScoreMessagePacket(
-                player = player,
-                isViewerOnTeam = isViewerOnTeam,
-                tile = CardTile(
-                    image = CardTileImage(
-                        item = item,
-                        texture = null,
-                    ),
-                    decoration = null,
-                ),
-                messageType = messageType,
-                message = message,
-            )
-        }
-    }
-
-    object V2 : PacketConverter<ScoreMessagePacket> {
-        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "score_message_v2")!!
-
-        override fun toPacketBuf(source: ScoreMessagePacket, dest: IPacketBuf) {
-            dest.writeNullable(source.player) {
-                dest.writeString(it.uuid.toString())
-                dest.writeString(it.name)
-            }
-
-            dest.writeBoolean(source.isViewerOnTeam)
-
-            dest.writeNullable(source.tile?.image?.item, dest::writeItemStack)
-            dest.writeNullable(source.tile?.image?.texture, dest::writeString)
-
-            dest.writeString(source.messageType?.name ?: "")
-            dest.writeText(source.message)
-        }
-
-        override fun fromPacketBuf(buf: IPacketBuf): ScoreMessagePacket {
-            val player = buf.readNullable {
-                PlayerProfile(
-                    uuid = UUID.fromString(buf.readString()),
-                    name = buf.readString(),
-                )
-            }
-            val isViewerOnTeam = buf.readBoolean()
-            val item = buf.readNullable(buf::readItemStack)
-            val image = buf.readNullable(buf::readString)
-            val messageType = try {
-                MessageType.valueOf(buf.readString())
-            } catch (e: Throwable) {
-                null
-            }
-            val message = buf.readText()
-            return ScoreMessagePacket(
-                player = player,
-                isViewerOnTeam = isViewerOnTeam,
-                tile = CardTile(
-                    image = CardTileImage(
-                        item = item,
-                        texture = image,
-                    ),
-                    decoration = null,
-                ),
-                messageType = messageType,
-                message = message,
-            )
-        }
-    }
-
-    object V3 : PacketConverter<ScoreMessagePacket> {
-        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "score_message_v3")!!
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "score_message")
 
         override fun toPacketBuf(source: ScoreMessagePacket, dest: IPacketBuf) {
             dest.writeNullable(source.player) {
@@ -173,7 +67,7 @@ data class ScoreMessagePacket(
             dest.writeBoolean(source.isViewerOnTeam)
 
             dest.writeNullable(source.tile) {
-                CardTile.V5.toPacketBuf(it, dest)
+                CardTile.V1.toPacketBuf(it, dest)
             }
 
             dest.writeString(source.messageType?.name ?: "")
@@ -189,7 +83,7 @@ data class ScoreMessagePacket(
             }
             val isViewerOnTeam = buf.readBoolean()
             val tile = buf.readNullable {
-                CardTile.V5.fromPacketBuf(buf)
+                CardTile.V1.fromPacketBuf(buf)
             }
             val messageType = try {
                 MessageType.valueOf(buf.readString())

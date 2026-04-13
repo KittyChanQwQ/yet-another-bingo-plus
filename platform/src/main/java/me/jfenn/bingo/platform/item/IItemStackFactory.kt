@@ -3,11 +3,10 @@ package me.jfenn.bingo.platform.item
 import kotlinx.serialization.Contextual
 import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.inventory.Inventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.resources.Identifier
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Identifier
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 
 interface IItemStackFactory {
     val emptyStack: IItemStack

@@ -7,6 +7,6 @@ class PermissionsApi : IPermissionsApi {
     private val fallback = FallbackPermissionsApi()
 
     override fun hasPermission(player: IPlayerHandle, key: PermissionKey): Boolean {
-        return Permissions.check(player.commandSource, key.permission, fallback.hasPermission(player, key))
+        return Permissions.check(player.entity, key.permission, fallback.hasPermission(player, key))
     }
 }

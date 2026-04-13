@@ -8,5 +8,5 @@ dependencies {
     compileOnly(libs.jei)
     compileOnly(libs.roughlyenoughitems)
     compileOnly(libs.emi)
-    compileOnly project(path: ":platform")
+    compileOnly project(path: ":platform", configuration: "archives")
 }

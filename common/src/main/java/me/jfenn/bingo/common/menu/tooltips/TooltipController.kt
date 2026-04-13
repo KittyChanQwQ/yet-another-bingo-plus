@@ -6,13 +6,12 @@ import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.block.AABB
 import me.jfenn.bingo.platform.event.ICallbackHandle
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.TickEvent
-import net.minecraft.entity.projectile.ProjectileUtil
-import net.minecraft.util.math.Box
-import net.minecraft.util.math.Vec3d
 import org.joml.Quaternionf
+import org.joml.Vector3d
 import org.joml.Vector3f
 import org.joml.Vector4f
 import java.util.*
@@ -40,7 +39,7 @@ internal class TooltipController(
 
     private fun sendTooltip(player: IPlayerHandle, prevTicks: Map<Pair<UUID, UUID>, Int>) {
         val reachDistance = 3.0
-        val origin = with(player.player.eyePos) { Vec3d(x, y, z) }
+        val origin = player.eyePos
 
         val pitch = Quaternionf().fromAxisAngleDeg(Vector3f(1f, 0f, 0f), -player.pitch)
         val yaw = Quaternionf().fromAxisAngleDeg(Vector3f(0f, 1f, 0f), -player.yaw)
@@ -48,18 +47,18 @@ internal class TooltipController(
             .transform(Vector4f(0f, 0f, 1f, 1f))
 
         val vec3d3 = direction.mul(reachDistance.toFloat()) // multiply by look distance
-            .let { Vec3d(it.x.toDouble(), it.y.toDouble(), it.z.toDouble()) }
+            .let { Vector3d(it.x.toDouble(), it.y.toDouble(), it.z.toDouble()) }
             .let { origin.add(it) }
 
-        val box = Box(
-            origin.subtract(reachDistance, reachDistance, reachDistance),
+        val box = AABB(
+            origin.sub(reachDistance, reachDistance, reachDistance),
             origin.add(reachDistance, reachDistance, reachDistance)
         )
 
         val blockDistanceSq = reachDistance.pow(2)
 
-        val hit = ProjectileUtil.raycast(
-            player.player,
+        val hit = player.world.getEntityHitResult(
+            player,
             origin,
             vec3d3,
             box,

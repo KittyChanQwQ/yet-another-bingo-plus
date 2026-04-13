@@ -1,18 +1,18 @@
 package me.jfenn.bingo.common
 
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.Identifier
+import net.minecraft.ChatFormatting
 import java.net.URI
 
-const val MOD_ID = "bingo"
+const val BINGO = "bingo"
 
 const val MOD_ID_BINGO = "yet-another-minecraft-bingo"
 
-val LOBBY_WORLD_ID = Identifier.of("bingo", "lobby")!!
+val LOBBY_WORLD_ID = Identifier.of("bingo", "lobby")
 val LOBBY_WORLD_IDENTIFIER = LOBBY_WORLD_ID.toString()
-val MinecraftServer.lobbyWorld get() = worlds.find { it.registryKey.value == LOBBY_WORLD_ID }
+val IServerWorldFactory.lobbyWorld get() = listWorlds().find { it.identifier == LOBBY_WORLD_ID.toString() }
 
 const val BINGO_TEAM_PREFIX = "bingo_"
 
@@ -33,7 +33,7 @@ internal val URL_WIKI_WHAT_IS_BINGO: URI = URI.create("https://horrific.dev/bing
 internal val URL_WIKI_SERVER_SETUP: URI = URI.create("https://horrific.dev/bingo/server-setup/")
 internal val URL_WIKI_GETTING_STARTED: URI = URI.create("https://horrific.dev/bingo/getting-started/")
 
-val BINGO_WORLD_PREFIX = "${Formatting.GREEN}[BINGO]${Formatting.WHITE}"
+val BINGO_WORLD_PREFIX = "${ChatFormatting.GREEN}[BINGO]${ChatFormatting.WHITE}"
 
 val KEYBIND_OPEN_CARD = StringKey.KeybindOpenCard.key
 val KEYBIND_TOGGLE_HUD = StringKey.KeybindToggleHud.key

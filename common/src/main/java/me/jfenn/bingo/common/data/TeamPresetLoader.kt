@@ -6,7 +6,7 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.BingoTeamPreset
 import me.jfenn.bingo.platform.IJsonSerializers
-import net.minecraft.resource.ResourceManager
+import me.jfenn.bingo.platform.resource.IResourceManager
 import org.slf4j.Logger
 
 class TeamPresetLoader(
@@ -15,7 +15,7 @@ class TeamPresetLoader(
 ) {
 
     fun loadTeamPresets(
-        manager: ResourceManager,
+        manager: IResourceManager,
     ): Map<BingoTeamKey, BingoTeamPreset> {
         log.info("[TeamPresetLoader] Reloading BINGO team presets...")
 

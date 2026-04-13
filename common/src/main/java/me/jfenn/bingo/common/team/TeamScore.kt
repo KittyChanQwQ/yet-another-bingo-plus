@@ -1,12 +1,12 @@
 package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.packet.PacketConverter
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.text.IText
 
 @Serializable
 data class TeamScore(
@@ -37,7 +37,7 @@ data class TeamScore(
     )
 
     object V1 : PacketConverter<TeamScore> {
-        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "team_score")!!
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "team_score")
 
         override fun toPacketBuf(source: TeamScore, dest: IPacketBuf) {
             dest.writeInt(source.items)

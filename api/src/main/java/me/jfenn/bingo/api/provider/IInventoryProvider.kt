@@ -1,8 +1,8 @@
 package me.jfenn.bingo.api.provider
 
-import net.minecraft.inventory.Inventory
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.entity.player.Inventory
 
 interface IInventoryProvider {
-    fun getInventories(player: ServerPlayerEntity) : List<Inventory>
+    fun getInventories(player: ServerPlayer) : List<Inventory>
 }

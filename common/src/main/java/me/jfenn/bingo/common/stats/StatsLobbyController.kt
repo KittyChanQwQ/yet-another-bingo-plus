@@ -15,10 +15,9 @@ import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
 import org.joml.Vector3f
@@ -38,6 +37,7 @@ internal class StatsLobbyController(
     private val playerManager: IPlayerManager,
     private val itemStackFactory: IItemStackFactory,
     private val entityManager: IEntityManager,
+    private val serverWorldFactory: IServerWorldFactory,
     events: ScopedEvents
 ) {
     companion object {
@@ -63,7 +63,7 @@ internal class StatsLobbyController(
 
     private var nameEntityUuid: UUID? = null
     private val nameEntity: ITextDisplayEntity? get() {
-        val lobbyWorld = server.lobbyWorld ?: return null
+        val lobbyWorld = serverWorldFactory.lobbyWorld ?: return null
 
         nameEntityUuid
             ?.let { entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity }
@@ -90,7 +90,7 @@ internal class StatsLobbyController(
 
     private var leftEntityUuid: UUID? = null
     private val leftEntity: ITextDisplayEntity? get() {
-        val lobbyWorld = server.lobbyWorld ?: return null
+        val lobbyWorld = serverWorldFactory.lobbyWorld ?: return null
 
         leftEntityUuid
             ?.let { entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity }
@@ -118,7 +118,7 @@ internal class StatsLobbyController(
 
     private var rightEntityUuid: UUID? = null
     private val rightEntity: ITextDisplayEntity? get() {
-        val lobbyWorld = server.lobbyWorld ?: return null
+        val lobbyWorld = serverWorldFactory.lobbyWorld ?: return null
 
         rightEntityUuid
             ?.let { entityManager.getEntity(lobbyWorld, it) as? ITextDisplayEntity }
@@ -144,13 +144,13 @@ internal class StatsLobbyController(
         return entity
     }
 
-    private fun getArmorStand() = server.lobbyWorld
+    private fun getArmorStand() = serverWorldFactory.lobbyWorld
         ?.let { entityManager.iterateEntities(it) }
         ?.mapNotNull { it as? IArmorStandEntity }
         ?.firstOrNull()
 
     private fun spawnSummary(
-        player: ServerPlayerEntity,
+        player: IPlayerHandle,
         summary: PlayerStatsSummary,
     ) {
         val armorStand = getArmorStand()
@@ -167,7 +167,7 @@ internal class StatsLobbyController(
         playerHead.setSkullOwner(player)
         armorStand.equipStack(IArmorStandEntity.EquipmentSlot.HEAD, playerHead)
 
-        nameEntity?.value = text.literal(playerManager.forPlayer(player).playerName)
+        nameEntity?.value = text.literal(player.playerName)
 
         val favoriteTeam = summary.favoriteTeam
             ?.let { data.teamPresets[it] }
@@ -337,7 +337,7 @@ internal class StatsLobbyController(
 
         val result = pending.getNow(null) ?: return
         val player = showingPlayer
-            ?.let { server.playerManager.getPlayer(it) }
+            ?.let { playerManager.getPlayer(it) }
             ?: return
 
         log.info("[StatsLobbyController] Finished fetching player summary!")

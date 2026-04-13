@@ -6,23 +6,25 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.mojang.serialization.JsonOps
 import me.jfenn.bingo.impl.inventory.ListInventoryImpl
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.item.*
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.component.ComponentType
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.*
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.registry.Registries
-import net.minecraft.resource.featuretoggle.FeatureFlags
+import net.minecraft.core.component.DataComponentType
+import net.minecraft.core.component.DataComponents
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.resources.Identifier
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.RawFilteredPair
-import net.minecraft.util.Identifier
+import net.minecraft.server.network.Filterable
 import net.minecraft.util.Unit
+import net.minecraft.world.flag.FeatureFlags
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.ItemStackTemplate
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.component.*
+import net.minecraft.world.level.saveddata.maps.MapId
 import org.slf4j.Logger
 
 class ItemStackFactory(
@@ -30,14 +32,14 @@ class ItemStackFactory(
     server: MinecraftServer?
 ) : IItemStackFactory {
 
-    private val jsonOps = server?.registryManager?.getOps(JsonOps.INSTANCE) ?: JsonOps.INSTANCE
+    private val jsonOps = server?.registryAccess()?.createSerializationContext(JsonOps.INSTANCE) ?: JsonOps.INSTANCE
     private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
 
     override val emptyStack: IItemStack = ItemStackImpl(ItemStack.EMPTY)
 
     override fun listItems(server: MinecraftServer): List<String> {
-        return Registries.ITEM.streamEntries()
-            .map { it.registryKey().value.toString() }
+        return BuiltInRegistries.ITEM.listElements()
+            .map { it.key().identifier().toString() }
             .filter { isEnabledInWorld(it, server) }
             .toList()
     }
@@ -52,18 +54,18 @@ class ItemStackFactory(
         val features = listOf(FeatureFlags.TRADE_REBALANCE, FeatureFlags.REDSTONE_EXPERIMENTS, FeatureFlags.MINECART_IMPROVEMENTS)
         return features.all {
             when {
-                itemInstance.requiredFeatures.contains(it) -> server.overworld.enabledFeatures.contains(it)
+                itemInstance.requiredFeatures().contains(it) -> server.overworld().enabledFeatures().contains(it)
                 else -> true
             }
         }
     }
 
     override fun createStack(item: String, count: Int): IItemStack {
-        return createStack(Identifier.of(item), count)
+        return createStack(Identifier.parse(item), count)
     }
 
     override fun createStack(item: Identifier, count: Int): IItemStack {
-        val itemInstance = Registries.ITEM.get(item)
+        val itemInstance = BuiltInRegistries.ITEM.getValue(item)
         if (itemInstance == Items.AIR && !item.path.equals("air", ignoreCase = true))
             throw IllegalArgumentException("[ItemStackFactory] Item $item not found")
         return createStack(itemInstance, count)
@@ -92,13 +94,13 @@ class ItemStackFactory(
             get() = stack.item
 
         override val identifier: Identifier
-            get() = Registries.ITEM.getId(item)
+            get() = BuiltInRegistries.ITEM.getKey(item)
 
         override val displayName: IText
-            get() = TextImpl(stack.name.copy())
+            get() = TextImpl(stack.displayName.copy())
 
         override val lore: List<IText>
-            get() = stack[DataComponentTypes.LORE]?.lines?.map { TextImpl(it.copy()) } ?: emptyList()
+            get() = stack[DataComponents.LORE]?.lines?.map { TextImpl(it.copy()) } ?: emptyList()
 
         override var count: Int
             get() = stack.count
@@ -107,45 +109,45 @@ class ItemStackFactory(
             }
 
         override val maxCount: Int
-            get() = stack.maxCount
+            get() = stack.maxStackSize
 
         override fun addCustomTag(tag: String) {
-            val nbt = stack[DataComponentTypes.CUSTOM_DATA]?.copyNbt() ?: NbtCompound()
+            val nbt = stack[DataComponents.CUSTOM_DATA]?.copyTag() ?: CompoundTag()
             nbt.putBoolean(tag, true)
-            stack[DataComponentTypes.CUSTOM_DATA] = NbtComponent.of(nbt)
+            stack[DataComponents.CUSTOM_DATA] = CustomData.of(nbt)
         }
 
         override fun removeCustomTag(tag: String) {
-            val nbt = stack[DataComponentTypes.CUSTOM_DATA]?.copyNbt() ?: NbtCompound()
+            val nbt = stack[DataComponents.CUSTOM_DATA]?.copyTag() ?: CompoundTag()
             nbt.remove(tag)
             if (nbt.isEmpty) {
-                stack.remove(DataComponentTypes.CUSTOM_DATA)
+                stack.remove(DataComponents.CUSTOM_DATA)
             } else {
-                stack[DataComponentTypes.CUSTOM_DATA] = NbtComponent.of(nbt)
+                stack[DataComponents.CUSTOM_DATA] = CustomData.of(nbt)
             }
         }
 
         override fun hasCustomTag(tag: String): Boolean {
-            return stack[DataComponentTypes.CUSTOM_DATA]?.copyNbt()?.contains(tag) == true
+            return stack[DataComponents.CUSTOM_DATA]?.copyTag()?.contains(tag) == true
         }
 
         override fun setDisplay(name: IText?, lore: List<IText>?) {
-            stack[DataComponentTypes.CUSTOM_NAME] = name?.value
-            stack[DataComponentTypes.LORE] = lore?.let { LoreComponent(it.map { t -> t.value }) }
+            stack[DataComponents.CUSTOM_NAME] = name?.value
+            stack[DataComponents.LORE] = lore?.let { ItemLore(it.map { t -> t.value }) }
         }
 
         override fun setUnbreakable(value: Boolean) {
-            stack[DataComponentTypes.UNBREAKABLE] = Unit.INSTANCE
+            stack[DataComponents.UNBREAKABLE] = Unit.INSTANCE
         }
 
         override fun setHideFlags(hideFlags: Int) {
-            stack[DataComponentTypes.TOOLTIP_DISPLAY] = TooltipDisplayComponent(
+            stack[DataComponents.TOOLTIP_DISPLAY] = TooltipDisplay(
                 false,
-                LinkedHashSet<ComponentType<*>?>().apply {
-                    add(DataComponentTypes.ENCHANTMENTS)
-                    add(DataComponentTypes.MAP_ID)
-                    add(DataComponentTypes.WRITTEN_BOOK_CONTENT)
-                    add(DataComponentTypes.ATTRIBUTE_MODIFIERS)
+                LinkedHashSet<DataComponentType<*>>().apply {
+                    add(DataComponents.ENCHANTMENTS)
+                    add(DataComponents.MAP_ID)
+                    add(DataComponents.WRITTEN_BOOK_CONTENT)
+                    add(DataComponents.ATTRIBUTE_MODIFIERS)
                 }
             )
         }
@@ -159,10 +161,10 @@ class ItemStackFactory(
 
             for ((key, value) in components) {
                 val id = Identifier.tryParse(key)
-                val type = id?.let { Registries.DATA_COMPONENT_TYPE.get(it) }
+                val type = id?.let { BuiltInRegistries.DATA_COMPONENT_TYPE.getValue(it) }
 
                 if (id == null || type == null) {
-                    logger.error("[ItemStackFactory] Error parsing item component $key for ${item.translationKey}: not a valid identifier")
+                    logger.error("[ItemStackFactory] Error parsing item component $key for ${item.descriptionId}: not a valid identifier")
                     isSuccessful = false
                     continue
                 }
@@ -179,17 +181,17 @@ class ItemStackFactory(
                 }
 
                 val component = try {
-                    type.codecOrThrow
+                    type.codecOrThrow()
                         .decode(jsonOps, jsonElement)
                         .getOrThrow()
                         .first
                 } catch (e: Throwable) {
-                    logger.error("[ItemStackFactory] Error parsing item component $key for ${item.translationKey}", e)
+                    logger.error("[ItemStackFactory] Error parsing item component $key for ${item.descriptionId}", e)
                     isSuccessful = false
                     null
                 }
 
-                stack.set(@Suppress("UNCHECKED_CAST") (type as ComponentType<Any>), component)
+                stack.set(@Suppress("UNCHECKED_CAST") (type as DataComponentType<Any>), component)
             }
 
             return isSuccessful
@@ -198,14 +200,14 @@ class ItemStackFactory(
         override fun getComponentsString(): Map<String, String?>? {
             val components = mutableMapOf<String, String?>()
 
-            for (component in stack.componentChanges.entrySet()) {
-                if (component.key.shouldSkipSerialization()) continue
-                val id = Registries.DATA_COMPONENT_TYPE.getId(component.key) ?: continue
+            for (component in stack.componentsPatch.entrySet()) {
+                if (component.key.isTransient) continue
+                val id = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(component.key) ?: continue
 
                 val jsonElement = try {
                     stack.components
                         .find { it.type == component.key }
-                        ?.encode(jsonOps)
+                        ?.encodeValue(jsonOps)
                         ?.getOrThrow()
                         ?.let { gson.toJson(it) }
                 } catch (e: Throwable) {
@@ -257,7 +259,7 @@ class ItemStackFactory(
                     value?.let { gson.fromJson(it, JsonElement::class.java) }
                 }
             } catch (e: Throwable) {
-                logger.error("[ItemStackFactory] Error parsing item components for ${item.translationKey} predicate", e)
+                logger.error("[ItemStackFactory] Error parsing item components for ${item.descriptionId} predicate", e)
                 return false
             }
 
@@ -300,28 +302,29 @@ class ItemStackFactory(
         }
 
         override val bundleInventory: IInventory?
-            get() = stack[DataComponentTypes.BUNDLE_CONTENTS]
-                ?.iterate()
-                ?.map { forStack(it) }
+            get() = stack[DataComponents.BUNDLE_CONTENTS]
+                ?.items()
+                ?.map { forStack(it.create()) }
                 .orEmpty()
                 .let { ListInventoryImpl(it) }
 
         override fun setBundleInventory(inventory: Collection<IItemStack>) {
-            stack[DataComponentTypes.BUNDLE_CONTENTS] = BundleContentsComponent(
-                inventory.filter { !it.isEmpty }.map { it.stack }
+            stack[DataComponents.BUNDLE_CONTENTS] = BundleContents(
+                inventory.filter { !it.isEmpty }
+                    .map { ItemStackTemplate.fromNonEmptyStack(it.stack) }
             )
         }
 
         override val containerInventory: IInventory?
-            get() = stack[DataComponentTypes.CONTAINER]
-                ?.stream()
+            get() = stack[DataComponents.CONTAINER]
+                ?.allItemsCopyStream()
                 ?.map { forStack(it) }
                 ?.toList()
                 .orEmpty()
                 .let { ListInventoryImpl(it) }
 
         override fun setContainerInventory(inventory: Collection<IItemStack>) {
-            stack[DataComponentTypes.CONTAINER] = ContainerComponent.fromStacks(
+            stack[DataComponents.CONTAINER] = ItemContainerContents.fromItems(
                 inventory.map { it.stack }
             )
         }
@@ -331,12 +334,12 @@ class ItemStackFactory(
         override val stack: ItemStack,
     ) : ItemStackImpl(stack), IWrittenBook {
         override var title: String?
-            get() = stack[DataComponentTypes.WRITTEN_BOOK_CONTENT]?.title?.raw
+            get() = stack[DataComponents.WRITTEN_BOOK_CONTENT]?.title?.raw
             set(value) {
-                val original = stack[DataComponentTypes.WRITTEN_BOOK_CONTENT]
-                stack[DataComponentTypes.WRITTEN_BOOK_CONTENT] = WrittenBookContentComponent(
-                    value?.let { RawFilteredPair.of(value) }
-                        ?: RawFilteredPair.of(""),
+                val original = stack[DataComponents.WRITTEN_BOOK_CONTENT]
+                stack[DataComponents.WRITTEN_BOOK_CONTENT] = WrittenBookContent(
+                    value?.let { Filterable.passThrough(value) }
+                        ?: Filterable.passThrough(""),
                     original?.author ?: "",
                     original?.generation ?: 0,
                     original?.pages() ?: emptyList(),
@@ -345,11 +348,11 @@ class ItemStackFactory(
             }
 
         override var author: String?
-            get() = stack[DataComponentTypes.WRITTEN_BOOK_CONTENT]?.author
+            get() = stack[DataComponents.WRITTEN_BOOK_CONTENT]?.author
             set(value) {
-                val original = stack[DataComponentTypes.WRITTEN_BOOK_CONTENT]
-                stack[DataComponentTypes.WRITTEN_BOOK_CONTENT] = WrittenBookContentComponent(
-                    original?.title ?: RawFilteredPair.of(""),
+                val original = stack[DataComponents.WRITTEN_BOOK_CONTENT]
+                stack[DataComponents.WRITTEN_BOOK_CONTENT] = WrittenBookContent(
+                    original?.title ?: Filterable.passThrough(""),
                     value ?: "",
                     original?.generation ?: 0,
                     original?.pages() ?: emptyList(),
@@ -358,12 +361,12 @@ class ItemStackFactory(
             }
 
         override fun setPages(pages: List<IText>) {
-            val original = stack[DataComponentTypes.WRITTEN_BOOK_CONTENT]
-            stack[DataComponentTypes.WRITTEN_BOOK_CONTENT] = WrittenBookContentComponent(
-                original?.title ?: RawFilteredPair.of(""),
+            val original = stack[DataComponents.WRITTEN_BOOK_CONTENT]
+            stack[DataComponents.WRITTEN_BOOK_CONTENT] = WrittenBookContent(
+                original?.title ?: Filterable.passThrough(""),
                 original?.author ?: "",
                 original?.generation ?: 0,
-                pages.map { RawFilteredPair.of(it.value) },
+                pages.map { Filterable.passThrough(it.value) },
                 original?.resolved ?: true
             )
         }
@@ -373,15 +376,15 @@ class ItemStackFactory(
         override val stack: ItemStack,
     ) : ItemStackImpl(stack), IFilledMap {
         override var mapId: Int?
-            get() = stack[DataComponentTypes.MAP_ID]?.id
+            get() = stack[DataComponents.MAP_ID]?.id
             set(value) {
-                stack[DataComponentTypes.MAP_ID] = value?.let { MapIdComponent(it) }
+                stack[DataComponents.MAP_ID] = value?.let { MapId(it) }
             }
 
         override var mapColor: Int?
-            get() = stack[DataComponentTypes.MAP_COLOR]?.rgb
+            get() = stack[DataComponents.MAP_COLOR]?.rgb
             set(value) {
-                stack[DataComponentTypes.MAP_COLOR] = value?.let { MapColorComponent(it) }
+                stack[DataComponents.MAP_COLOR] = value?.let { MapItemColor(it) }
             }
     }
 
@@ -391,15 +394,15 @@ class ItemStackFactory(
         override var fireworks: List<kotlin.Unit>?
             get() = emptyList()
             set(value) {
-                stack[DataComponentTypes.FIREWORKS] = value?.let { FireworksComponent(0, emptyList()) }
+                stack[DataComponents.FIREWORKS] = value?.let { Fireworks(0, emptyList()) }
             }
     }
 
     inner class PlayerHeadImpl(
         override val stack: ItemStack,
     ) : ItemStackImpl(stack), IPlayerHead {
-        override fun setSkullOwner(player: ServerPlayerEntity) {
-            stack[DataComponentTypes.PROFILE] = ProfileComponent.ofStatic(player.gameProfile)
+        override fun setSkullOwner(player: IPlayerHandle) {
+            stack[DataComponents.PROFILE] = ResolvableProfile.createResolved(player.player.gameProfile)
         }
     }
 }

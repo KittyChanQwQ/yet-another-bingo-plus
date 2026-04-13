@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.integrations.jei
 
-import net.minecraft.item.ItemStack
+import me.jfenn.bingo.platform.item.IItemStack
 
 interface IJeiApi {
-    fun openItemRecipe(stack: ItemStack): Boolean
+    fun openItemRecipe(stack: IItemStack): Boolean
 }

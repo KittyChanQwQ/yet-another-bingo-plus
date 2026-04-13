@@ -1,30 +1,27 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.platform.text.HoverAction
-import me.jfenn.bingo.platform.text.IText
-import me.jfenn.bingo.platform.text.ITextFactory
-import me.jfenn.bingo.platform.text.TextAction
-import net.minecraft.component.type.ProfileComponent
-import net.minecraft.text.*
-import net.minecraft.text.`object`.PlayerTextObjectContents
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.*
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.*
+import net.minecraft.network.chat.contents.objects.PlayerSprite
+import net.minecraft.world.item.component.ResolvableProfile
 import java.util.*
 
 class TextFactoryImpl : ITextFactory {
     override fun empty(): IText {
-        return TextImpl(Text.empty())
+        return TextImpl(Component.empty())
     }
 
-    override fun from(text: Text): IText {
-        return TextImpl(if (text is MutableText) text else text.copy())
+    override fun from(text: Component): IText {
+        return TextImpl(text as? MutableComponent ?: text.copy())
     }
 
     override fun literal(str: String): IText {
-        return TextImpl(Text.literal(str))
+        return TextImpl(Component.literal(str))
     }
 
     override fun keybind(key: String): IText {
-        return TextImpl(Text.keybind(key))
+        return TextImpl(Component.keybind(key))
     }
 
     override fun translatable(key: String, fallback: String?, vararg args: Any): IText {
@@ -34,18 +31,18 @@ class TextFactoryImpl : ITextFactory {
                 else -> it
             }
         }
-        return TextImpl(Text.translatableWithFallback(key, fallback, *mappedArgs.toTypedArray()))
+        return TextImpl(Component.translatableWithFallback(key, fallback, *mappedArgs.toTypedArray()))
     }
 
     override fun bracketedCopyable(str: String): IText {
-        return TextImpl(Texts.bracketedCopyable(str))
+        return TextImpl(ComponentUtils.copyOnClickText(str))
     }
 
     override fun player(uuid: UUID): IText {
         return TextImpl(
-            Text.`object`(
-                PlayerTextObjectContents(
-                    ProfileComponent.ofDynamic(uuid),
+            Component.`object`(
+                PlayerSprite(
+                    ResolvableProfile.createUnresolved(uuid),
                     true
                 )
             )
@@ -54,21 +51,19 @@ class TextFactoryImpl : ITextFactory {
 }
 
 class TextImpl(
-    override val value: MutableText
+    override val value: MutableComponent
 ) : IText {
     override fun isEmpty(): Boolean {
         return value.string.isEmpty()
     }
 
     override fun setClickEvent(event: TextAction) {
-        value.setStyle(
-            value.style.withClickEvent(
-                when (event) {
-                    is TextAction.OpenUrl -> ClickEvent.OpenUrl(event.url)
-                    is TextAction.RunCommand -> ClickEvent.RunCommand(event.command)
-                    is TextAction.SuggestCommand -> ClickEvent.SuggestCommand(event.command)
-                }
-            )
+        value.style = value.style.withClickEvent(
+            when (event) {
+                is TextAction.OpenUrl -> ClickEvent.OpenUrl(event.url)
+                is TextAction.RunCommand -> ClickEvent.RunCommand(event.command)
+                is TextAction.SuggestCommand -> ClickEvent.SuggestCommand(event.command)
+            }
         )
     }
 
@@ -92,16 +87,21 @@ class TextImpl(
     }
 
     override fun bracketed(): IText {
-        return TextImpl(Texts.bracketed(value))
+        return TextImpl(ComponentUtils.wrapInSquareBrackets(value))
+    }
+
+    override fun formatted(vararg formatting: ChatFormatting): IText {
+        value.withStyle(*formatting)
+        return this
     }
 
     override fun formatted(vararg formatting: Formatting): IText {
-        value.formatted(*formatting)
+        value.withStyle(*formatting.map { it.toMinecraftFormatting() }.toTypedArray())
         return this
     }
 
     override fun setColor(color: Int) {
-        value.styled { it.withColor(color) }
+        value.withStyle { it.withColor(color) }
     }
 
     override fun append(text: IText): IText {

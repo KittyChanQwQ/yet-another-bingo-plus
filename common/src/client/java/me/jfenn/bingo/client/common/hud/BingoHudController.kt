@@ -38,16 +38,15 @@ import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.common.utils.milliseconds
 import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ServerEvent
-import net.minecraft.client.gui.screen.ChatScreen
-import net.minecraft.resource.ResourceManager
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.resource.IResourceManager
+import net.minecraft.client.gui.screens.ChatScreen
 import org.lwjgl.glfw.GLFW
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-import kotlin.jvm.optionals.getOrNull
 
 internal class BingoHudController(
     private val optionsAccessor: IOptionsAccessor,
@@ -322,17 +321,6 @@ internal class BingoHudController(
         onMessagePacket(packet.packet)
     }
 
-    @Suppress("Deprecation")
-    private fun onCardUpdate(clientPacket: ClientPacket<CardUpdatePacket>) {
-        val packet = clientPacket.packet
-        val clientCard = state.cards.getOrPut(packet.view.teamKey) {
-            clientCardManager.newCard(packet.view)
-        }
-        clientCard.view = packet.view
-
-        updateGameOverViews()
-    }
-
     private fun onReadyUpdate(clientPacket: ClientPacket<ReadyUpdatePacket>) {
         val packet = clientPacket.packet
         val isStateChanged = state.ready?.canSendReady != packet.canSendReady ||
@@ -378,17 +366,6 @@ internal class BingoHudController(
         if (displays.isEmpty() && state.gameStatus.isDefaultInstance) {
             state.reset()
         }
-    }
-
-    private fun onCardDisplayV1(clientPacket: ClientPacket<CardDisplayPacket>) {
-        onCardDisplay(
-            clientPacket.packet.display.mapValues { (key, display) ->
-                state.cards[key]?.display
-                    // only overwrite teamColor from display, as the rest will come from card update packets
-                    ?.copy(teamColor = display.teamColor)
-                    ?: display
-            }
-        )
     }
 
     private fun onCardDisplayV2(clientPacket: ClientPacket<CardDisplayPacket>) {
@@ -441,11 +418,10 @@ internal class BingoHudController(
         }
     }
 
-    private val cardColorsId = Identifier.of(MOD_ID_BINGO, "gui/card_colors.json")!!
+    private val cardColorsId = Identifier.of(MOD_ID_BINGO, "gui/card_colors.json")
 
-    private fun loadCardColors(manager: ResourceManager) {
+    private fun loadCardColors(manager: IResourceManager) {
         state.cardColors = manager.getResource(cardColorsId)
-            .getOrNull()
             ?.inputStream
             ?.use {
                 @OptIn(ExperimentalSerializationApi::class)
@@ -468,18 +444,9 @@ internal class BingoHudController(
             state.reset()
         }
 
-        eventBus.register(packetEvents.cardDisplayV1, ::onCardDisplayV1)
-        eventBus.register(packetEvents.cardDisplayV1, ::onCardDisplayV1)
-        eventBus.register(packetEvents.cardDisplayV2, ::onCardDisplayV2)
-
-        eventBus.register(packetEvents.cardUpdateV2, ::onCardUpdate)
-        eventBus.register(packetEvents.cardUpdateV3, ::onCardUpdate)
-        eventBus.register(packetEvents.cardUpdateV4, ::onCardUpdate)
-        eventBus.register(packetEvents.cardUpdateV5, ::onCardUpdate)
-        eventBus.register(packetEvents.cardUpdateV6, ::onCardUpdate)
+        eventBus.register(packetEvents.cardDisplayV1, ::onCardDisplayV2)
 
         eventBus.register(packetEvents.cardTilesV1, ::onCardTiles)
-        eventBus.register(packetEvents.cardTilesV2, ::onCardTiles)
         eventBus.register(packetEvents.cardShuffledV1, ::onCardShuffled)
 
         eventBus.register(packetEvents.cardCompletedV1) {
@@ -489,8 +456,6 @@ internal class BingoHudController(
         }
 
         eventBus.register(packetEvents.scoreMessageV1, ::onScoreMessage)
-        eventBus.register(packetEvents.scoreMessageV2, ::onScoreMessage)
-        eventBus.register(packetEvents.scoreMessageV3, ::onScoreMessage)
 
         eventBus.register(packetEvents.gameStatusV1) {
             state.gameStatus = it.packet
@@ -503,17 +468,8 @@ internal class BingoHudController(
         }
 
         eventBus.register(packetEvents.gameOverV1, ::onGameOver)
-        eventBus.register(packetEvents.gameOverV2, ::onGameOver)
-        eventBus.register(packetEvents.gameOverV3, ::onGameOver)
-        eventBus.register(packetEvents.gameOverV4, ::onGameOver)
-        eventBus.register(packetEvents.gameOverV5, ::onGameOver)
-        eventBus.register(packetEvents.gameOverV6, ::onGameOver)
-        eventBus.register(packetEvents.gameOverV7, ::onGameOver)
-        eventBus.register(packetEvents.gameOverV8, ::onGameOver)
 
         eventBus.register(packetEvents.readyUpdateV1, ::onReadyUpdate)
-        eventBus.register(packetEvents.readyUpdateV2, ::onReadyUpdate)
-        eventBus.register(packetEvents.readyUpdateV3, ::onReadyUpdate)
 
         eventBus.register(packetEvents.tooltipV1) {
             state.tooltip = it.packet

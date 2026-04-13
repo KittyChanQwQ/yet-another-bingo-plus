@@ -1,6 +1,6 @@
 package me.jfenn.bingo.common.config
 
-import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.BINGO
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.data.TagLoader
 import me.jfenn.bingo.common.data.TierListLoader
@@ -92,14 +92,14 @@ class MigrationHandler(
 
         migrations[5] = {
             // move the "config/bingo" dir to "config/yet-another-minecraft-bingo"
-            val originalDir = environment.configDir.resolve(MOD_ID)
+            val originalDir = environment.configDir.resolve(BINGO)
             val newDir = environment.configDir.resolve(MOD_ID_BINGO)
             if (originalDir.resolve("game-options.json").toFile().exists()) {
-                log.info("[MigrationHandler] Renaming config/$MOD_ID -> config/$MOD_ID_BINGO")
+                log.info("[MigrationHandler] Renaming config/$BINGO -> config/$MOD_ID_BINGO")
                 newDir.toFile().deleteRecursively()
                 Files.move(originalDir, newDir, StandardCopyOption.REPLACE_EXISTING)
             } else {
-                log.warn("[MigrationHandler] Not renaming config/$MOD_ID as it does not exist.")
+                log.warn("[MigrationHandler] Not renaming config/$BINGO as it does not exist.")
             }
         }
 
@@ -292,7 +292,7 @@ class MigrationHandler(
         val maxVersion = migrations.keys.max()
 
         for (i in fromVersion+1..maxVersion) {
-            log.info("$MOD_ID: running migrations to v$i")
+            log.info("$BINGO: running migrations to v$i")
             migrations[i]?.invoke(config)
         }
 

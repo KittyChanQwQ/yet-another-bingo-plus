@@ -22,8 +22,7 @@ import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
 import me.jfenn.bingo.platform.event.IEventBus
-import net.minecraft.text.Texts
-import net.minecraft.util.Formatting
+import net.minecraft.ChatFormatting
 
 class BingoCardCommand(
     commandManager: ICommandManager,
@@ -95,7 +94,7 @@ class BingoCardCommand(
         sendFeedback(
             text.string(
                 StringKey.CommandCardSeedGet,
-                Texts.bracketedCopyable(card.seed.toString()),
+                text.bracketedCopyable(card.seed.toString()),
             )
         )
     }
@@ -106,7 +105,7 @@ class BingoCardCommand(
         sendFeedback(
             text.string(
                 StringKey.CommandCardSeedSet,
-                Texts.bracketedCopyable(newCard.seed.toString()),
+                text.bracketedCopyable(newCard.seed.toString()),
             )
         )
     }
@@ -138,7 +137,7 @@ class BingoCardCommand(
     }
 
     private fun IExecutionContext.getCardStack() {
-        sendMessage(text.literal("Bingo Cards:").formatted(Formatting.GRAY))
+        sendMessage(text.literal("Bingo Cards:").formatted(ChatFormatting.GRAY))
 
         for ((i, card) in state.cards.withIndex()) {
             val teams = state.getRegisteredTeams()
@@ -169,7 +168,7 @@ class BingoCardCommand(
                 }
             }
                 .let {
-                    text.joinText(it, text.literal(" | ").formatted(Formatting.GRAY))
+                    text.joinText(it, text.literal(" | ").formatted(ChatFormatting.GRAY))
                 }
                 .also { sendMessage(it) }
         }

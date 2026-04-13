@@ -4,11 +4,11 @@ import me.jfenn.bingo.common.WorldDeleter;
 import me.jfenn.bingo.mixinhandler.MinecraftServerMixinHandler;
 import me.jfenn.bingo.platform.scope.BingoKoin;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.minecraft.network.PacketApplyBatcher;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.ServerNetworkIo;
-import net.minecraft.util.profiler.Recorder;
+import net.minecraft.server.network.ServerConnectionListener;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.profiling.metrics.profiling.MetricsRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Final;
@@ -26,20 +26,20 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
     private final Logger log = LoggerFactory.getLogger(MinecraftServerUnsafeSkipCloseMixin.class);
 
     @Shadow
-    private boolean saving;
+    private boolean isSaving;
 
     @Shadow @Final
-    private ServerNetworkIo networkIo;
+    private ServerConnectionListener connection;
 
     @Shadow
-    private PlayerManager playerManager;
+    private PlayerList playerList;
 
-    @Shadow private Recorder recorder;
+    @Shadow private MetricsRecorder metricsRecorder;
 
-    @Shadow public abstract void forceStopRecorder();
+    @Shadow public abstract void cancelRecordingMetrics();
 
     @Shadow @Final
-    private PacketApplyBatcher packetApplyBatcher;
+    private PacketProcessor packetProcessor;
 
     @Unique
     private boolean shouldKeepWorldData() {
@@ -47,7 +47,7 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         if (BingoKoin.INSTANCE.getScope(server) == null) return true;
 
         // if this is running client-side, just shut down normally
-        if (!server.isDedicated()) return true;
+        if (!server.isDedicatedServer()) return true;
 
         // if isLobbyMode=false, never delete any world data
         if (!MinecraftServerMixinHandler.INSTANCE.shouldDeleteWorld(server)) {
@@ -58,8 +58,8 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         return MinecraftServerMixinHandler.INSTANCE.isGamePlaying(server);
     }
 
-    @Inject(at = @At(value = "HEAD"), method = "shutdown", cancellable = true)
-    public void shutdownUnsafe(CallbackInfo ci) {
+    @Inject(at = @At(value = "HEAD"), method = "stopServer", cancellable = true)
+    public void stopServerUnsafe(CallbackInfo ci) {
         MinecraftServer server = (MinecraftServer) (Object) this;
         if (shouldKeepWorldData()) return;
 
@@ -76,21 +76,21 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         // many of the shutdown tasks can be skipped, since we don't care if all the world data is saved
         log.info("Stopping server");
 
-        this.packetApplyBatcher.close();
-        if (this.recorder != null && this.recorder.isActive()) {
-            this.forceStopRecorder();
+        this.packetProcessor.close();
+        if (this.metricsRecorder != null && this.metricsRecorder.isRecording()) {
+            this.cancelRecordingMetrics();
         }
 
-        if (this.networkIo != null) {
-            this.networkIo.stop();
+        if (this.connection != null) {
+            this.connection.stop();
         }
 
-        this.saving = true;
+        this.isSaving = true;
 
-        if (this.playerManager != null) {
+        if (this.playerList != null) {
             log.info("Disconnecting players");
             try {
-                this.playerManager.disconnectAllPlayers();
+                this.playerList.removeAll();
             } catch (Throwable e) {
                 log.error("Error on disconnectAllPlayers", e);
             }
@@ -99,7 +99,7 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         log.info("unsafeSkipWorldClose is true; skipping file closing");
         log.info("This will likely cause a crash...");
 
-        this.saving = false;
+        this.isSaving = false;
 
         try {
             // tell Fabric to invoke SERVER_STOPPED (otherwise this would not reach its mixin)
@@ -116,8 +116,8 @@ public abstract class MinecraftServerUnsafeSkipCloseMixin {
         ci.cancel();
     }
 
-    @Inject(at = @At(value = "TAIL"), method = "shutdown", cancellable = true)
-    public void shutdownDeleteWorld(CallbackInfo ci) {
+    @Inject(at = @At(value = "TAIL"), method = "stopServer", cancellable = true)
+    public void stopServerDeleteWorld(CallbackInfo ci) {
         MinecraftServer server = (MinecraftServer) (Object) this;
         if (shouldKeepWorldData()) return;
 

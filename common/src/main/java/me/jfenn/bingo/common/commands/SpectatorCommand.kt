@@ -6,8 +6,8 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.PlayerGameMode
 import me.jfenn.bingo.platform.commands.ICommandManager
-import net.minecraft.world.GameMode
 import org.slf4j.Logger
 
 class SpectatorCommand(
@@ -19,18 +19,18 @@ class SpectatorCommand(
         val gameMode = if (player.isSpectator) {
             // This needs to match the game mode logic in [PlayerController]
             when (state.state) {
-                GameState.PLAYING -> GameMode.ADVENTURE
-                GameState.POSTGAME -> GameMode.CREATIVE
+                GameState.PLAYING -> PlayerGameMode.ADVENTURE
+                GameState.POSTGAME -> PlayerGameMode.CREATIVE
                 else -> {
                     log.error("[PlayerController] BUG: toggleSpectator was called in an unsupported GameState!")
                     return
                 }
             }
         } else {
-            GameMode.SPECTATOR
+            PlayerGameMode.SPECTATOR
         }
 
-        player.player.changeGameMode(gameMode)
+        player.gameMode = gameMode
     }
 
     init {

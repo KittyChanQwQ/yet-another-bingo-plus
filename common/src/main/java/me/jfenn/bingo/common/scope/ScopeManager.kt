@@ -3,12 +3,12 @@ package me.jfenn.bingo.common.scope
 import me.jfenn.bingo.api.BingoApi
 import me.jfenn.bingo.api.BingoEvents
 import me.jfenn.bingo.api.IBingoApi
-import me.jfenn.bingo.common.MOD_ID
+import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
+import me.jfenn.bingo.common.BINGO
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.model.StateChangedEvent
-import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.event.IEventBus
@@ -45,9 +45,9 @@ class ScopeManager(
 
     init {
         eventBus.register(ServerEvent.Started) { (server) ->
-            val isLobbyMode = server.lobbyWorld != null
-            if (isLobbyMode) log.info("[ScopeManager] $MOD_ID.zip datapack exists - starting with isLobbyMode=true")
-            else log.info("[ScopeManager] $MOD_ID.zip datapack does not exist - starting with isLobbyMode=false")
+            val isLobbyMode = server.allLevels.any { it.dimension().identifier().toString() == LOBBY_WORLD_IDENTIFIER }
+            if (isLobbyMode) log.info("[ScopeManager] $BINGO.zip datapack exists - starting with isLobbyMode=true")
+            else log.info("[ScopeManager] $BINGO.zip datapack does not exist - starting with isLobbyMode=false")
 
             log.info("[ScopeManager] Starting server scope...")
             val ctx = BingoScope(server)

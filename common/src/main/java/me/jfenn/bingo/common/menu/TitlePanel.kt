@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.platform.EntityType
 import me.jfenn.bingo.platform.IDisplayEntity
 import me.jfenn.bingo.platform.ITextDisplayEntity
-import net.minecraft.text.Text
+import me.jfenn.bingo.platform.text.ITextFactory
 import org.joml.Matrix4f
 import org.joml.Vector3d
 
@@ -15,6 +15,7 @@ internal fun MenuComponent.registerTitlePanel(
     height: Double = MENU_LINE_HEIGHT,
     title: IText = this.text.empty(),
     titleProp: Property<IText> = ConstantProperty(title),
+    text: ITextFactory = koinScope.get(),
 ) {
     val titleText by titleProp
 
@@ -29,7 +30,7 @@ internal fun MenuComponent.registerTitlePanel(
 
     registerEntity(EntityType.BLOCK_DISPLAY) {
         pos = position + Vector3d(-width/2, 0.0, -0.051)
-        blockIdentifier = if (titleText != Text.empty()) MENU_TITLE_MATERIAL else "minecraft:air"
+        blockIdentifier = if (titleText != text.empty()) MENU_TITLE_MATERIAL else "minecraft:air"
         brightness = IDisplayEntity.Brightness(0, 3)
         transformation = Matrix4f().scale(width.toFloat(), height.toFloat(), 0.05f)
     }

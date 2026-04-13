@@ -10,7 +10,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
 import kotlin.math.ceil
 

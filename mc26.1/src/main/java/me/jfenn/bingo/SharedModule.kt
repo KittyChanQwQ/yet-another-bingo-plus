@@ -6,6 +6,7 @@ import me.jfenn.bingo.impl.dialog.DialogManager
 import me.jfenn.bingo.impl.event.ServerCloseEvent
 import me.jfenn.bingo.impl.networking.ServerNetworkingImpl
 import me.jfenn.bingo.impl.particle.ParticleFactory
+import me.jfenn.bingo.impl.player.ContainerMenuFactory
 import me.jfenn.bingo.impl.world.GameRulesImpl
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.commands.ICommandManager
@@ -13,6 +14,7 @@ import me.jfenn.bingo.platform.dialog.IDialogManager
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.packet.IServerNetworking
 import me.jfenn.bingo.platform.particle.IParticleFactory
+import me.jfenn.bingo.platform.player.IContainerMenu
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.platform.world.IGameRules
@@ -44,7 +46,6 @@ val sharedModule = module {
     singleOf(::CommandManagerImpl) bind ICommandManager::class
     singleOf(::CommandRunner) bind ICommandRunner::class
     singleOf(::DialogManager) bind IDialogManager::class
-    singleOf(::EntityManagerImpl) bind IEntityManager::class
     single { Executors } bind IExecutors::class
     single { ItemStackFactory(get(), null) } bind IItemStackFactory::class
     singleOf(::MapColorServiceImpl) bind IMapColorService::class
@@ -58,6 +59,8 @@ val sharedModule = module {
     scope<BingoScope> {
         scopedOf(::AdvancementManager) bind IAdvancementManager::class
         scopedOf(::BossBarManager) bind IBossBarManager::class
+        scopedOf(::ContainerMenuFactory) bind IContainerMenu.Factory::class
+        scopedOf(::EntityManagerImpl) bind IEntityManager::class
         scopedOf(::GameRulesImpl) bind IGameRules::class
         scopedOf(::PlayerManager) bind IPlayerManager::class
         scopedOf(::TagAccessorImpl) bind ITagAccessor::class

@@ -10,13 +10,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerSkipStartRegionMixin {
-    @Inject(at = @At(value = "HEAD"), method = "prepareStartRegion", cancellable = true)
+    @Inject(at = @At(value = "HEAD"), method = "prepareLevels", cancellable = true)
     private void prepareStartRegion(CallbackInfo ci) {
         MinecraftServer server = (MinecraftServer) (Object) this;
         if (
-                server.isDedicated()
+                server.isDedicatedServer()
                         || ServerChunkManagerMixinHelper.getShouldCancelSaving()
-                        || server.getSaveProperties().getLevelName().startsWith(ConstantsKt.getBINGO_WORLD_PREFIX())
+                        || server.getWorldData().getLevelName().startsWith(ConstantsKt.getBINGO_WORLD_PREFIX())
         ) {
             // The start region worldgen isn't all that useful in bingo, since the game starts at random coords anyway. So it doesn't really help.
             ci.cancel();

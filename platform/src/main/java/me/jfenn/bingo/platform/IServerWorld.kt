@@ -1,16 +1,20 @@
 package me.jfenn.bingo.platform
 
+import me.jfenn.bingo.platform.block.AABB
 import me.jfenn.bingo.platform.block.BlockPosition
+import me.jfenn.bingo.platform.block.ChunkPosition
 import me.jfenn.bingo.platform.block.IBlockState
+import me.jfenn.bingo.platform.world.IBlockEntity
 import me.jfenn.bingo.platform.world.IChunk
-import net.minecraft.server.world.ServerWorld
+import net.minecraft.server.level.ServerLevel
+import org.joml.Vector3d
 import java.io.Closeable
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
 interface IServerWorldFactory {
     val overworld: IServerWorld
-    fun forWorld(world: ServerWorld): IServerWorld
+    fun forWorld(world: ServerLevel): IServerWorld
     fun listWorlds(): List<IServerWorld>
     fun recreateWorlds(seed: Long, callback: () -> Unit)
 }
@@ -21,7 +25,8 @@ interface IServerWorld {
 
     val directory: Path
 
-    val world: ServerWorld
+    val world: ServerLevel
+    val seed: Long
 
     val worldBorder: IWorldBorder
     val coordinateScale: Double
@@ -34,13 +39,30 @@ interface IServerWorld {
 
     var timeOfDay: Long
 
+    fun createBlockState(identifier: String): IBlockState
+    fun createBlockState(type: IBlockState.Type): IBlockState
     fun getBlockState(pos: BlockPosition): IBlockState
+    fun setBlockState(pos: BlockPosition, blockState: IBlockState)
+    fun getBlockEntity(pos: BlockPosition): IBlockEntity?
+    fun isAir(pos: BlockPosition): Boolean
+    fun isEmptyCollision(pos: BlockPosition): Boolean
     fun getBiome(pos: BlockPosition): IRegistryEntry.Biome
 
-    fun addTicket(chunk: Pair<Int, Int>): IChunkTicketHandle
+    fun getEntityHitResult(
+        except: IEntity,
+        from: Vector3d,
+        to: Vector3d,
+        aabb: AABB,
+        predicate: (IEntity) -> Boolean,
+        maxValue: Double,
+    ): EntityHitResult?
 
-    fun getChunkSync(chunk: Pair<Int, Int>): IChunk
-    fun getChunkAsync(chunk: Pair<Int, Int>): CompletableFuture<IChunk?>
+    fun addTicket(chunk: ChunkPosition): IChunkTicketHandle
+
+    fun isChunkLoaded(chunk: ChunkPosition): Boolean
+    fun getChunk(blockPosition: BlockPosition): IChunk = getChunkSync(blockPosition.toChunkPos())
+    fun getChunkSync(chunk: ChunkPosition): IChunk
+    fun getChunkAsync(chunk: ChunkPosition): CompletableFuture<IChunk?>
 
     fun close()
 

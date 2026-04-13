@@ -13,6 +13,7 @@ import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.block.ChunkPosition
 import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
 import java.time.Instant
@@ -57,7 +58,7 @@ internal class SpawnPreloadingController(
             val chunkOffsets = buildList {
                 for (x in -viewDistance..viewDistance) for (z in -viewDistance..viewDistance) {
                     if (isWithinDistance(x, z, viewDistance)) {
-                        add(Pair(x, z))
+                        add(ChunkPosition(x, z))
                     }
                 }
             }
@@ -67,7 +68,7 @@ internal class SpawnPreloadingController(
                 .flatMap { (x, z) ->
                     chunkOffsets
                         .map { (offsetX, offsetZ) ->
-                            Pair(x + offsetX, z + offsetZ)
+                            ChunkPosition(x + offsetX, z + offsetZ)
                         }
                 }
                 .toSet()
@@ -123,9 +124,7 @@ internal class SpawnPreloadingController(
 
             for (player in playerManager.getPlayers()) {
                 when {
-                    packet.readyUpdateV3.send(player, updatePacket) -> {}
-                    packet.readyUpdateV2.send(player, updatePacket) -> {}
-                    // readyUpdateV1 is intentionally omitted, as it does not support GameState.PRELOADING or custom titles
+                    packet.readyUpdateV1.send(player, updatePacket) -> {}
                     else -> player.sendHotbarMessage(message)
                 }
             }

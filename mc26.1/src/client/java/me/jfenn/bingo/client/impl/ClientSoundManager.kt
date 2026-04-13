@@ -2,34 +2,34 @@ package me.jfenn.bingo.client.impl
 
 import me.jfenn.bingo.client.platform.IClientSoundHandle
 import me.jfenn.bingo.client.platform.IClientSoundManager
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.sound.PositionedSoundInstance
-import net.minecraft.client.sound.SoundInstance
-import net.minecraft.sound.SoundCategory
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.resources.sounds.SimpleSoundInstance
+import net.minecraft.client.resources.sounds.SoundInstance
+import net.minecraft.resources.Identifier
+import net.minecraft.sounds.SoundSource
 
 class ClientSoundManager : IClientSoundManager {
 
     override fun createUnregistered(id: String): IClientSoundHandle {
-        return ClientSoundHandle(Identifier.of(id))
+        return ClientSoundHandle(Identifier.parse(id))
     }
 
     override fun play(sound: IClientSoundHandle, volume: Float, pitch: Float) {
         require(sound is ClientSoundHandle)
 
-        val instance = PositionedSoundInstance(
+        val instance = SimpleSoundInstance(
             sound.id,
-            SoundCategory.UI,
+            SoundSource.UI,
             volume,
             pitch,
-            SoundInstance.createRandom(),
+            SoundInstance.createUnseededRandom(),
             false,
             0,
-            SoundInstance.AttenuationType.NONE,
+            SoundInstance.Attenuation.NONE,
             0.0, 0.0, 0.0, true
         )
-        MinecraftClient.getInstance().soundManager.stopSounds(sound.id, null)
-        MinecraftClient.getInstance().soundManager.play(instance)
+        Minecraft.getInstance().soundManager.stop(sound.id, null)
+        Minecraft.getInstance().soundManager.play(instance)
     }
 
     class ClientSoundHandle(

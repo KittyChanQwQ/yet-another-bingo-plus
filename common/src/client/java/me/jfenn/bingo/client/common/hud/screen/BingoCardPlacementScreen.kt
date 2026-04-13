@@ -15,7 +15,7 @@ import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Vector2d
 import org.joml.Vector2i
 import org.koin.core.Koin

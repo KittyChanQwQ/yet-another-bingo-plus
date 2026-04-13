@@ -1,12 +1,13 @@
 package me.jfenn.bingo.integrations.placeholders
 
 import me.jfenn.bingo.api.BingoApi
-import net.minecraft.text.Text
+import me.jfenn.bingo.platform.text.ITextFactory
 import java.time.Duration
 import java.util.*
 
 class PlaceholdersIntegration(
     textPlaceholders: ITextPlaceholdersApi,
+    private val text: ITextFactory,
 ) {
 
     private fun Duration.formatString(): String {
@@ -33,11 +34,11 @@ class PlaceholdersIntegration(
 
     init {
         textPlaceholders.registerPlaceholder("time") {
-            Text.literal(BingoApi.game?.time?.formatString().orEmpty())
+            text.literal(BingoApi.game?.time?.formatString().orEmpty())
         }
 
         textPlaceholders.registerPlaceholder("time_remaining") {
-            Text.literal(BingoApi.game?.timeRemaining?.formatString().orEmpty())
+            text.literal(BingoApi.game?.timeRemaining?.formatString().orEmpty())
         }
     }
 }

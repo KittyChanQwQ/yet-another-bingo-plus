@@ -2,20 +2,20 @@ package me.jfenn.bingo.common.commands
 
 import me.jfenn.bingo.common.event.ScopedEvents
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.level.ServerPlayer
 
 class CommandTreeHandler(
     private val server: MinecraftServer,
     events: ScopedEvents,
 ) {
 
-    private fun sendCommandTree(playerEntity: ServerPlayerEntity) {
-        server.playerManager.sendCommandTree(playerEntity)
+    private fun sendCommandTree(playerEntity: ServerPlayer) {
+        server.commands.sendCommands(playerEntity)
     }
 
     init {
         events.onStateChange {
-            for (player in server.playerManager.playerList.toList()) {
+            for (player in server.playerList.players) {
                 sendCommandTree(player)
             }
         }

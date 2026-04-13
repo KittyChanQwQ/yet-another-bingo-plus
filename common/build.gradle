@@ -48,6 +48,8 @@ dependencies {
 
     api project(path: ":platform")
     api project(path: ":api")
+    clientApi project(path: ":platform", configuration: "archives")
+    clientApi project(path: ":api", configuration: "archives")
 }
 
 tasks.register('bingoImages', Copy) {

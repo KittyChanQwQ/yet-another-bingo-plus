@@ -1,13 +1,7 @@
 package me.jfenn.bingo.client.impl.draw
 
 import me.jfenn.bingo.client.platform.renderer.IMatrixStack
-import net.minecraft.client.util.math.MatrixStack
-import org.joml.AxisAngle4f
-import org.joml.Matrix3f
-import org.joml.Matrix3x2f
 import org.joml.Matrix3x2fStack
-import org.joml.Matrix4f
-import org.joml.Quaternionf
 
 class MatrixStackImpl(
     private val matrices: Matrix3x2fStack,

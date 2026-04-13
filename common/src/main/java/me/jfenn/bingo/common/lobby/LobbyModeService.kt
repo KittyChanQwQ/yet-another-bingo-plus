@@ -8,15 +8,15 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.minutes
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
+import me.jfenn.bingo.platform.IMinecraftServer
 import me.jfenn.bingo.platform.IPlayerHandle
-import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
 import java.time.Instant
 import java.util.*
 
 internal class LobbyModeService(
-    private val server: MinecraftServer,
+    private val server: IMinecraftServer,
     private val permissions: IPermissionsApi,
     private val configService: ConfigService,
     private val text: TextProvider,

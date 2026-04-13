@@ -1,10 +1,10 @@
 package me.jfenn.bingo.impl.networking
 
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 
 class BingoPayload<T>(
-    private val id: CustomPayload.Id<BingoPayload<T>>,
+    private val id: CustomPacketPayload.Type<BingoPayload<T>>,
     val value: T,
-) : CustomPayload {
-    override fun getId() = id
+) : CustomPacketPayload {
+    override fun type() = id
 }

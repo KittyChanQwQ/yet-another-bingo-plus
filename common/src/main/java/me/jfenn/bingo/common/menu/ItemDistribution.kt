@@ -8,7 +8,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.EntityType
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.ITextDisplayEntity
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
 

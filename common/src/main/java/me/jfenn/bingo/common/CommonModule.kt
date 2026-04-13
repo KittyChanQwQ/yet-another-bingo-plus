@@ -103,7 +103,7 @@ import kotlin.jvm.optionals.getOrNull
 
 val baseModule = module {
     single { getKoin() }
-    single { LoggerFactory.getLogger(MOD_ID) }
+    single { LoggerFactory.getLogger(BINGO) }
     singleOf(::MigrationHandler)
 
     singleOf(::ConfigManager) bind IConfigManager::class
@@ -153,7 +153,7 @@ val commonModule = module {
 
     single<ITextPlaceholdersApi> {
         ServiceLoader.load(ITextPlaceholdersApiFactory::class.java)
-            .firstNotNullOfOrNull { it.create(get()) }
+            .firstNotNullOfOrNull { it.create(get(), get()) }
             ?: DummyPlaceholders
     }
     singleOf(::PlaceholdersIntegration)
@@ -198,6 +198,7 @@ val commonModule = module {
     singleOf(::DataLoaderManager)
 
     scope<BingoScope> {
+        scoped<Scope> { this }
         scoped { ScopedEventBus(getKoin().get(), this) } bind IEventBus::class
         scopedOf(::ScopedEvents)
         scopedOf(::InteractionEntityEvents)

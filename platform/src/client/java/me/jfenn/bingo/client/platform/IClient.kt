@@ -1,7 +1,7 @@
 package me.jfenn.bingo.client.platform
 
 import me.jfenn.bingo.client.platform.renderer.IFont
-import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.screens.Screen
 import org.joml.Vector2i
 import java.util.concurrent.Executor
 

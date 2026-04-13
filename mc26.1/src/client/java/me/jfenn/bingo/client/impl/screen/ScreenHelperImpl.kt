@@ -8,12 +8,12 @@ import me.jfenn.bingo.client.platform.screen.IMutableScreenHelper
 import me.jfenn.bingo.client.platform.screen.IScreenHelper
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.screens.Screen
 import org.joml.Vector2i
 import org.lwjgl.glfw.GLFW
 
@@ -34,11 +34,11 @@ open class ScreenHelperImpl(
 
     override fun addButton(button: IButton) {
         require(button is ButtonImpl)
-        Screens.getButtons(screen).add(button.button)
+        Screens.getWidgets(screen).add(button.button)
     }
 
     override fun close() {
-        screen.close()
+        screen.onClose()
     }
 }
 
@@ -46,19 +46,19 @@ class MutableScreenHelperImpl(
     private val screenImpl: ScreenImpl,
 ) : ScreenHelperImpl(screenImpl), IMutableScreenHelper {
     override fun addDrawable(drawable: IDrawable) {
-        screenImpl.bingoAddDrawableChild(object : Drawable, Element, Selectable {
-            override fun render(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
-                drawable.render(DrawService(context))
+        screenImpl.bingoAddDrawableChild(object : Renderable, GuiEventListener, NarratableEntry {
+            override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, a: Float) {
+                drawable.render(DrawService(graphics))
             }
 
             override fun setFocused(focused: Boolean) {}
             override fun isFocused(): Boolean = false
-            override fun appendNarrations(builder: NarrationMessageBuilder?) {}
-            override fun getType(): Selectable.SelectionType = Selectable.SelectionType.NONE
+            override fun updateNarration(output: NarrationElementOutput) {}
+            override fun narrationPriority(): NarratableEntry.NarrationPriority = NarratableEntry.NarrationPriority.NONE
         })
     }
 
-    override fun addDrawableChild(drawable: Drawable) {
+    override fun addDrawableChild(drawable: Renderable) {
         screenImpl.bingoAddDrawableChild(drawable)
     }
 

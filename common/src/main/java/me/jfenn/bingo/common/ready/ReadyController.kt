@@ -18,7 +18,6 @@ import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.text.Text
 import org.slf4j.Logger
 import java.time.Duration
 
@@ -95,7 +94,7 @@ internal class ReadyController(
                 isPlayerReady -> text.string(StringKey.LobbyStartingPlayersReady, updatePacket.readyPlayers, updatePacket.totalPlayers)
                 readyService.canUseReady(player) -> text.string(
                     StringKey.LobbyStartingReadyUp,
-                    Text.keybind("key.sneak"), Text.keybind(KEYBIND_OPEN_CARD)
+                    text.keybind("key.sneak"), text.keybind(KEYBIND_OPEN_CARD)
                 )
                 else -> text.empty()
             }
@@ -112,8 +111,6 @@ internal class ReadyController(
             )
 
             when {
-                packets.readyUpdateV3.send(player, packet) -> {}
-                packets.readyUpdateV2.send(player, packet) -> {}
                 packets.readyUpdateV1.send(player, packet) -> {}
                 packet.isRunning -> {
                     val message = when {
@@ -162,8 +159,6 @@ internal class ReadyController(
                 )
                 for (player in playerManager.getPlayers()) {
                     when {
-                        packets.readyUpdateV3.send(player, packet) -> {}
-                        packets.readyUpdateV2.send(player, packet) -> {}
                         packets.readyUpdateV1.send(player, packet) -> {}
                     }
                 }

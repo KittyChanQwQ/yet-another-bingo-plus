@@ -78,7 +78,7 @@ internal class ScoreboardService(
         players: List<IPlayerHandle>,
     ) {
         val contentItems = contents.map {
-            ScoreboardView.ScoreboardItem(textSerializer.toRawString(it.value), it.value)
+            ScoreboardView.ScoreboardItem(textSerializer.toRawString(it), it)
         }
 
         // update the server-side objective

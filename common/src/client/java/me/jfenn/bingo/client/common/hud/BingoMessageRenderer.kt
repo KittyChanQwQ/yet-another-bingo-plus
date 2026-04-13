@@ -13,7 +13,7 @@ import me.jfenn.bingo.common.utils.div
 import me.jfenn.bingo.common.utils.milliseconds
 import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.common.utils.seconds
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.Identifier
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -28,9 +28,9 @@ internal class BingoMessageRenderer(
     companion object {
         const val ITEM_HEIGHT = 18
 
-        val ICON_HIDDEN_ID = Identifier.of("minecraft", "bingo/message_item_hidden")!!
-        val ICON_CHECK_ID = Identifier.of("minecraft", "bingo/message_check")!!
-        val ICON_LEADING_ID = Identifier.of("minecraft", "bingo/message_leading")!!
+        val ICON_HIDDEN_ID = Identifier.of("minecraft", "bingo/message_item_hidden")
+        val ICON_CHECK_ID = Identifier.of("minecraft", "bingo/message_check")
+        val ICON_LEADING_ID = Identifier.of("minecraft", "bingo/message_leading")
     }
 
     private val fadeInDuration = 500.milliseconds

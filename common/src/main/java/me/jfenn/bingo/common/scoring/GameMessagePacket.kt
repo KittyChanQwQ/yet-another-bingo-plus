@@ -5,11 +5,11 @@ import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardTileImage
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.readEnum
 import me.jfenn.bingo.platform.text.ITextSerialized
 import me.jfenn.bingo.platform.utils.UuidAsString
-import net.minecraft.util.Identifier
 import java.time.Duration
 
 data class GameMessagePacket(
@@ -25,7 +25,7 @@ data class GameMessagePacket(
 ) {
 
     object V1 : PacketConverter<GameMessagePacket> {
-        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "game_message")!!
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "game_message")
 
         override fun toPacketBuf(source: GameMessagePacket, dest: IPacketBuf) {
             dest.writeUUID(source.id)

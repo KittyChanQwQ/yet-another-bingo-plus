@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.platform.packet.PacketConverter
-import me.jfenn.bingo.platform.player.PlayerProfile
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamScore
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.IPacketBuf
+import me.jfenn.bingo.platform.Identifier
+import me.jfenn.bingo.platform.packet.PacketConverter
+import me.jfenn.bingo.platform.player.PlayerProfile
+import me.jfenn.bingo.platform.text.Formatting
 import java.util.*
 
 data class ScoredItemPacket(
@@ -19,7 +19,7 @@ data class ScoredItemPacket(
     val itemId: String?,
 ) {
     object V1 : PacketConverter<ScoredItemPacket> {
-        override val id = Identifier.of(MOD_ID_BINGO, "score_update")!!
+        override val id = Identifier.of(MOD_ID_BINGO, "score_update")
 
         override fun fromPacketBuf(buf: IPacketBuf): ScoredItemPacket {
             return ScoredItemPacket(

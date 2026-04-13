@@ -16,7 +16,7 @@ import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import java.util.concurrent.CompletableFuture
 
 class JoinCommand(

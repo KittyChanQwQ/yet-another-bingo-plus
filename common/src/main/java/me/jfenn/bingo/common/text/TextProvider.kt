@@ -4,9 +4,9 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.text.ITextFactory
-import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.util.*
 

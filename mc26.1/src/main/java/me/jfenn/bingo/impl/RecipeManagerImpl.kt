@@ -4,15 +4,15 @@ import me.jfenn.bingo.mixinhelper.ServerRecipeBookMixinHelper
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IRecipe
 import me.jfenn.bingo.platform.IRecipeManager
-import net.minecraft.recipe.RecipeEntry
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.crafting.RecipeHolder
 
 class RecipeManagerImpl(
     private val server: MinecraftServer,
 ) : IRecipeManager {
     override fun listRecipes(): List<IRecipe> {
-        return server.recipeManager.values()
+        return server.recipeManager.recipes
             .map { RecipeImpl(it) }
     }
 
@@ -21,8 +21,8 @@ class RecipeManagerImpl(
             .filterIsInstance<RecipeImpl>()
             .map { it.recipe }
 
-        val playerEntity: ServerPlayerEntity = player.player
-        playerEntity.lockRecipes(recipeEntries)
+        val playerEntity: ServerPlayer = player.player
+        playerEntity.resetRecipes(recipeEntries)
     }
 
     override fun unlockRecipes(player: IPlayerHandle, recipes: List<IRecipe>) {
@@ -30,15 +30,15 @@ class RecipeManagerImpl(
             .filterIsInstance<RecipeImpl>()
             .map { it.recipe }
 
-        val playerEntity: ServerPlayerEntity = player.player
+        val playerEntity: ServerPlayer = player.player
 
         try {
             ServerRecipeBookMixinHelper.hideRecipeNotifications = true
-            playerEntity.unlockRecipes(recipeEntries)
+            playerEntity.awardRecipes(recipeEntries)
         } finally {
             ServerRecipeBookMixinHelper.hideRecipeNotifications = false
         }
     }
 }
 
-class RecipeImpl(val recipe: RecipeEntry<*>) : IRecipe
+class RecipeImpl(val recipe: RecipeHolder<*>) : IRecipe

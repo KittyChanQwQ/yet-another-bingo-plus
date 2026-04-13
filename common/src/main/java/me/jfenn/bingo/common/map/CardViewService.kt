@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.map
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
-import me.jfenn.bingo.common.card.CardScreenHandler
+import me.jfenn.bingo.common.card.CardInventory
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -18,16 +18,16 @@ import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IMapService
+import me.jfenn.bingo.platform.IMinecraftServer
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.item.IItemStackFactory
+import me.jfenn.bingo.platform.player.IContainerMenu
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.MinecraftServer
 import java.util.*
 
 internal class CardViewService(
-    private val server: MinecraftServer,
+    private val server: IMinecraftServer,
     private val config: BingoConfig,
     private val options: BingoOptions,
     private val state: BingoState,
@@ -39,6 +39,7 @@ internal class CardViewService(
     private val textProvider: TextProvider,
     private val packets: ServerPacketEvents,
     private val itemStackFactory: IItemStackFactory,
+    private val containerMenuFactory: IContainerMenu.Factory,
 ) {
 
     companion object {
@@ -51,7 +52,7 @@ internal class CardViewService(
      */
     fun supportsCardHud(player: IPlayerHandle): Boolean {
         return config.supportClientHud &&
-                (packets.cardDisplayV1.isSupported(player) || packets.cardDisplayV2.isSupported(player))
+                (packets.cardDisplayV1.isSupported(player))
     }
 
     /**
@@ -73,7 +74,6 @@ internal class CardViewService(
         )
 
         when {
-            packets.cardDisplayV2.send(player, packet) -> {}
             packets.cardDisplayV1.send(player, packet) -> {}
         }
     }
@@ -90,17 +90,8 @@ internal class CardViewService(
             shouldNotify = false,
         )
 
-        @Suppress("Deprecation")
-        val updatePacket = CardUpdatePacket(view)
-
         when {
-            packets.cardTilesV2.send(player, tilesPacket) -> {}
             packets.cardTilesV1.send(player, tilesPacket) -> {}
-            packets.cardUpdateV6.send(player, updatePacket) -> {}
-            packets.cardUpdateV5.send(player, updatePacket) -> {}
-            packets.cardUpdateV4.send(player, updatePacket) -> {}
-            packets.cardUpdateV3.send(player, updatePacket) -> {}
-            packets.cardUpdateV2.send(player, updatePacket) -> {}
         }
     }
 
@@ -373,10 +364,7 @@ internal class CardViewService(
 
         for (player in players) {
             when {
-                packets.cardTilesV2.send(player, cardTilesPacket) -> {}
                 packets.cardTilesV1.send(player, cardTilesPacket) -> {}
-                // Legacy support (when cardTiles is not supported) - is not performant
-                else -> sendEntireCardTilesPacket(player, currentView)
             }
         }
     }
@@ -395,19 +383,11 @@ internal class CardViewService(
             return
         }
 
-        player.player.openHandledScreen(
-            SimpleNamedScreenHandlerFactory(
-                { syncId, inv, _ ->
-                    CardScreenHandler(
-                        syncId = syncId,
-                        view = view,
-                        itemStackFactory = itemStackFactory,
-                        playerInventory = inv,
-                        text = textProvider,
-                    )
-                },
-                textProvider.string(StringKey.CardTitle).value
-            )
-        )
+        containerMenuFactory.createInventory(
+            inventory = CardInventory(view, itemStackFactory, textProvider),
+            name = textProvider.string(StringKey.CardTitle),
+            isInteractable = false,
+            onClose = {},
+        ).let { player.openMenu(it) }
     }
 }

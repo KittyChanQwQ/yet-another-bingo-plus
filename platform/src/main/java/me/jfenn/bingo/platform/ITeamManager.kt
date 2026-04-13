@@ -1,8 +1,8 @@
 package me.jfenn.bingo.platform
 
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Formatting
+import net.minecraft.server.level.ServerPlayer
 
 interface ITeamManager {
 
@@ -14,9 +14,9 @@ interface ITeamManager {
 
     fun deleteTeam(teamName: String)
 
-    fun getPlayerTeam(player: ServerPlayerEntity): ITeamHandle?
+    fun getPlayerTeam(player: ServerPlayer): ITeamHandle?
 
-    fun setPlayerTeam(player: ServerPlayerEntity, team: ITeamHandle?)
+    fun setPlayerTeam(player: ServerPlayer, team: ITeamHandle?)
 
 }
 

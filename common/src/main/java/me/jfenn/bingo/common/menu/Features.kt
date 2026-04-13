@@ -4,10 +4,9 @@ import me.jfenn.bingo.common.commands.BingoPrefsCommand
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Vector3d
 
 private const val TILE_HEIGHT = 0.6

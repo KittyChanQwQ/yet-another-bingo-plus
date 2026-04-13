@@ -1,7 +1,7 @@
 package me.jfenn.bingo.platform.inventory
 
 import me.jfenn.bingo.platform.item.IItemStack
-import net.minecraft.inventory.Inventory
+import net.minecraft.world.entity.player.Inventory
 
 interface IInventory: Collection<IItemStack> {
     override val size: Int

@@ -1,7 +1,7 @@
 package me.jfenn.bingo.platform.packet
 
 import me.jfenn.bingo.platform.IPacketBuf
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.Identifier
 
 interface PacketConverter<T> {
 

@@ -5,12 +5,12 @@ import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.IScrollableWidget
 import me.jfenn.bingo.client.platform.renderer.IDrawService
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.Identifier
+import me.jfenn.bingo.platform.text.Formatting
+import me.jfenn.bingo.platform.text.IText
 import org.koin.core.Koin
 
 internal class MessageHistoryWidget(
@@ -84,7 +84,7 @@ internal class MessageHistoryWidget(
         var titleScale = 2f
 
         drawService.drawNinePatch(
-            texture = Identifier.of("minecraft", "bingo/game_container")!!,
+            texture = Identifier.of("minecraft", "bingo/game_container"),
             x = 0,
             y = 0,
             width = width,
@@ -127,7 +127,7 @@ internal class MessageHistoryWidget(
         var titleY = 9
 
         drawService.drawNinePatch(
-            texture = Identifier.of("minecraft", "bingo/game_container")!!,
+            texture = Identifier.of("minecraft", "bingo/game_container"),
             x = 0,
             y = 0,
             width = width,

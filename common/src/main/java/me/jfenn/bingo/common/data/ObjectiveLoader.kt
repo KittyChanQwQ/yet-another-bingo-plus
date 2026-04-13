@@ -6,14 +6,14 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.ObjectiveDataReference
 import me.jfenn.bingo.common.utils.jsonStrict
-import net.minecraft.resource.ResourceManager
+import me.jfenn.bingo.platform.resource.IResourceManager
 import org.slf4j.Logger
 
 class ObjectiveLoader(
     private val log: Logger,
 ) {
     fun loadObjectives(
-        manager: ResourceManager
+        manager: IResourceManager
     ): ObjectiveType {
         log.info("[ObjectiveLoader] Reloading BINGO objectives...")
 

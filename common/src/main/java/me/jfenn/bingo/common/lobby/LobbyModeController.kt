@@ -17,7 +17,8 @@ import me.jfenn.bingo.platform.IMinecraftServer
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.dialog.*
 import me.jfenn.bingo.platform.text.TextAction
-import net.minecraft.util.Formatting
+import net.minecraft.ChatFormatting
+import net.minecraft.world.level.dimension.end.EnderDragonFight
 
 internal class LobbyModeController(
     events: ScopedEvents,
@@ -32,7 +33,7 @@ internal class LobbyModeController(
     private val openServerSetup get() = text.literal("  \uD83D\uDD17 ")
         .append(
             text.string(StringKey.InstalledServerSetupWiki)
-                .formatted(Formatting.GREEN, Formatting.UNDERLINE)
+                .formatted(ChatFormatting.GREEN, ChatFormatting.UNDERLINE)
         )
         .apply {
             setClickEvent(TextAction.OpenUrl(URL_WIKI_SERVER_SETUP))
@@ -41,7 +42,7 @@ internal class LobbyModeController(
     private val openGettingStarted get() = text.literal("  \uD83D\uDD17 ")
         .append(
             text.string(StringKey.InstalledGettingStartedWiki)
-                .formatted(Formatting.GREEN, Formatting.UNDERLINE)
+                .formatted(ChatFormatting.GREEN, ChatFormatting.UNDERLINE)
         )
         .apply {
             setClickEvent(TextAction.OpenUrl(URL_WIKI_GETTING_STARTED))
@@ -50,7 +51,7 @@ internal class LobbyModeController(
     private val neverShowAgain get() = text.literal("  > ")
         .append(
             text.string(StringKey.InstalledNeverShowAgain)
-                .formatted(Formatting.GRAY, Formatting.UNDERLINE)
+                .formatted(ChatFormatting.GRAY, ChatFormatting.UNDERLINE)
         )
         .apply {
             setClickEvent(

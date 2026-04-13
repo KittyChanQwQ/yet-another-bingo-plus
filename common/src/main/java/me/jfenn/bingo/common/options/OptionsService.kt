@@ -19,11 +19,9 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
-import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.platform.text.TextAction
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import java.time.Duration
 import java.util.*
 import kotlin.reflect.KMutableProperty1
@@ -46,7 +44,6 @@ internal class OptionsService(
     private val teamService: TeamService,
     private val playerManager: IPlayerManager,
     private val text: TextProvider,
-    private val textFactory: ITextFactory,
 ) {
     data class Context(
         val player: IPlayerHandle?,
@@ -59,7 +56,7 @@ internal class OptionsService(
             .filterNot { it.uuid == player.uuid }
             .forEach {
                 it.sendHotbarMessage(
-                    textFactory.translatable("chat.type.admin", null, player.playerName, message)
+                    text.translatable("chat.type.admin", null, player.playerName, message)
                         .formatted(Formatting.GRAY, Formatting.ITALIC)
                 )
             }
@@ -162,7 +159,7 @@ internal class OptionsService(
             text.string(
                 StringKey.OptionsNotifyChanged,
                 StringKey.OptionsGameMode,
-                textFactory.joinText(
+                text.joinText(
                     options.formatGameMode(card)
                         .map { text.string(it) }
                 ).formatted(Formatting.WHITE),
@@ -338,7 +335,7 @@ internal class OptionsService(
 
     fun setSpawnDimension(ctx: Context, dimension: String) {
         options.spawnDimension = dimension
-        val label = Text.literal(dimension.substringAfterLast(':').formatTitle())
+        val label = text.literal(dimension.substringAfterLast(':').formatTitle())
         ctx.sendFeedback(text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsSpawnDimension, label))
     }
 
@@ -348,7 +345,7 @@ internal class OptionsService(
 
         text.string(
             StringKey.ScoreboardMode,
-            textFactory.joinText(
+            text.joinText(
                 options.formatGameMode(card)
                     .map { text.string(it) }
             ).formatted(Formatting.YELLOW)
@@ -363,7 +360,7 @@ internal class OptionsService(
             StringKey.ScoreboardFeatures,
             options.formatFeatures()
                 .map { text.string(it) }
-                .let { textFactory.joinText(it) }
+                .let { text.joinText(it) }
                 .formatted(Formatting.YELLOW)
         )
             .formatted(Formatting.GRAY)
@@ -396,7 +393,7 @@ internal class OptionsService(
                 .append(
                     timeLimit.toMinutes().let { minutes ->
                         String.format(Locale.US, "%dh %02dm", minutes / 60, minutes % 60)
-                            .let { textFactory.literal(it).formatted(Formatting.YELLOW) }
+                            .let { text.literal(it).formatted(Formatting.YELLOW) }
                     }
                 )
                 .formatted(Formatting.GRAY)
@@ -409,10 +406,10 @@ internal class OptionsService(
         text.string(StringKey.OptionsCardDifficulty)
             .append(": ")
             .append(
-                textFactory.joinText(
+                text.joinText(
                     TierLabel.entries
                         .mapIndexed { index, label ->
-                            textFactory.literal(card.options.itemDistribution.getOrNull(index).toString())
+                            text.literal(card.options.itemDistribution.getOrNull(index).toString())
                                 .formatted(label.formatting)
                         }
                 )

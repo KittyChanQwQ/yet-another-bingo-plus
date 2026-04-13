@@ -14,7 +14,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IMapService
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import java.time.format.DateTimeFormatter
 
 internal class MapItemService(

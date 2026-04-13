@@ -12,8 +12,8 @@ import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.ScopeStopped
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.BlockPos
+import net.minecraft.server.level.ServerPlayer
 
 class PlayerManagerMixinHelper internal constructor(
     private val config: BingoConfig,
@@ -41,7 +41,7 @@ class PlayerManagerMixinHelper internal constructor(
         return state.isLobbyMode && dimension.identifier.substringAfter(':') == "the_end"
     }
 
-    fun setPlayerSpawnpoint(serverPlayerEntity: ServerPlayerEntity) {
+    fun setPlayerSpawnpoint(serverPlayerEntity: ServerPlayer) {
         if (!state.isLobbyMode) {
             // if isLobbyMode=false, mixins should never overwrite the player spawnpoint
             return
@@ -83,7 +83,7 @@ class PlayerManagerMixinHelper internal constructor(
 
         fun shouldOverrideEndRespawn() = instance?.shouldOverrideEndRespawn() ?: false
 
-        fun setPlayerSpawnpoint(player: ServerPlayerEntity) {
+        fun setPlayerSpawnpoint(player: ServerPlayer) {
             instance?.setPlayerSpawnpoint(player)
         }
     }

@@ -20,9 +20,8 @@ import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import java.time.Duration
 
 /**
@@ -57,11 +56,11 @@ internal class ScoreboardController(
     private fun getTeamScore(team: BingoTeam?) = team?.score
         ?.let { score ->
             listOfNotNull(
-                text.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}")
+                text.string(StringKey.ScoreboardItemsScored, text.literal("${score.items}")
                     .formatted(team.textColor)),
-                text.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}")
+                text.string(StringKey.ScoreboardLinesScored, text.literal("${score.lines}")
                     .formatted(team.textColor)),
-                text.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}")
+                text.string(StringKey.ScoreboardCardsScored, text.literal("${score.cards}")
                     .formatted(team.textColor))
                     .takeIf { isMultiCardWinCondition },
             )
@@ -158,13 +157,13 @@ internal class ScoreboardController(
             .takeIf { showLeadingScore }
             ?.let { score ->
                 listOfNotNull(
-                    text.string(StringKey.ScoreboardItemsScored, Text.literal("${score.items}")
+                    text.string(StringKey.ScoreboardItemsScored, text.literal("${score.items}")
                         .formatted(leadingTeamFormatting))
                         .takeUnless { showLeadingScoreCards },
-                    text.string(StringKey.ScoreboardLinesScored, Text.literal("${score.lines}")
+                    text.string(StringKey.ScoreboardLinesScored, text.literal("${score.lines}")
                         .formatted(leadingTeamFormatting))
                         .takeUnless { showLeadingScoreCards },
-                    text.string(StringKey.ScoreboardCardsScored, Text.literal("${score.cards}")
+                    text.string(StringKey.ScoreboardCardsScored, text.literal("${score.cards}")
                         .formatted(leadingTeamFormatting))
                         .takeIf { showLeadingScoreCards },
                 )
@@ -213,7 +212,7 @@ internal class ScoreboardController(
                             .also { put("%time%", listOf(it)) }
                     } else if (options.timeLimit == null) {
                         val duration = (state.ingameDuration() ?: Duration.ZERO).formatString()
-                        text.string(StringKey.ScoreboardTime, Text.literal(duration).formatted(Formatting.YELLOW))
+                        text.string(StringKey.ScoreboardTime, text.literal(duration).formatted(Formatting.YELLOW))
                             .also { put("%time%", listOf(it)) }
                     } else {
                         put("%time%", emptyList())

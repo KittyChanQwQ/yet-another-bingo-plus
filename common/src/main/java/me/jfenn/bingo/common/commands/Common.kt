@@ -1,13 +1,13 @@
 package me.jfenn.bingo.common.commands
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.integrations.permissions.PermissionKey
 import me.jfenn.bingo.platform.commands.IExecutionSource
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
+import me.jfenn.bingo.platform.text.IText
 
 val IExecutionSource.runByName get() = when {
     isConsole -> "RCON"

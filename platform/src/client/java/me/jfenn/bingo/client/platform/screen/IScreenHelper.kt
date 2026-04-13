@@ -1,8 +1,8 @@
 package me.jfenn.bingo.client.platform.screen
 
 import me.jfenn.bingo.client.platform.renderer.IDrawService
-import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.screens.Screen
 import org.joml.Vector2i
 
 interface IScreenHelper {
@@ -15,7 +15,7 @@ interface IScreenHelper {
 }
 
 interface IMutableScreenHelper : IScreenHelper {
-    fun addDrawableChild(drawable: Drawable)
+    fun addDrawableChild(drawable: Renderable)
     fun addDrawable(drawable: IDrawable)
     fun clearChildren()
 }

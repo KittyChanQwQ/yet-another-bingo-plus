@@ -17,18 +17,18 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
+import me.jfenn.bingo.platform.IMinecraftServer
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.dialog.IDialogAction
 import me.jfenn.bingo.platform.dialog.IDialogHandle
 import me.jfenn.bingo.platform.dialog.IDialogManager
 import me.jfenn.bingo.platform.item.IItemStackSerialized
 import me.jfenn.bingo.platform.player.PlayerProfile
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.UuidAsString
-import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import java.time.Duration
 import java.time.Instant
 
@@ -37,7 +37,8 @@ internal class GameOverService(
     private val options: BingoOptions,
     private val textProvider: TextProvider,
     private val stats: StatsService,
-    private val server: MinecraftServer,
+    private val server: IMinecraftServer,
+    private val serverWorldFactory: IServerWorldFactory,
     private val playerManager: IPlayerManager,
     private val text: TextProvider,
     private val permissions: IPermissionsApi,
@@ -112,7 +113,7 @@ internal class GameOverService(
                     ?.let { leadingTeamKey ->
                         val leader = state.teams[leadingTeamKey.leader]
                             ?.getName(textProvider, playerName = true)
-                            ?: Text.literal("[unknown]")
+                            ?: text.literal("[unknown]")
 
                         when (leadingTeamKey) {
                             is LeadingTeam.Cards -> textProvider.string(StringKey.GameEndWonWithMoreCards, leader)
@@ -296,7 +297,7 @@ internal class GameOverService(
             isBestTime = info.isBestTime,
             prevBestTime = info.prevBestTime,
 
-            seed = server.overworld.seed,
+            seed = serverWorldFactory.overworld.seed,
             scores = scoreRankings,
             defaultTab = defaultTab,
         )

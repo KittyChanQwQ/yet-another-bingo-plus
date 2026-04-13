@@ -1,15 +1,15 @@
 package me.jfenn.bingo.impl
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IBossBar
 import me.jfenn.bingo.platform.IBossBarManager
 import me.jfenn.bingo.platform.IPlayerHandle
-import net.minecraft.entity.boss.BossBar
-import net.minecraft.entity.boss.CommandBossBar
-import net.minecraft.entity.boss.ServerBossBar
+import me.jfenn.bingo.platform.text.IText
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.server.bossevents.CustomBossEvent
+import net.minecraft.server.level.ServerBossEvent
+import net.minecraft.world.BossEvent
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -18,29 +18,29 @@ internal class BossBarManager(
 ) : IBossBarManager {
     companion object {
         internal val serverBossBars = Collections.synchronizedList(
-            mutableListOf<WeakReference<ServerBossBar>>()
+            mutableListOf<WeakReference<ServerBossEvent>>()
         )
     }
 
     override fun get(id: String): IBossBar? {
-        return server.bossBarManager.get(Identifier.of(id))
+        return server.customBossEvents.get(Identifier.parse(id))
             ?.let { BossBarImpl(it) }
     }
 
     override fun remove(bossBar: IBossBar) {
         require(bossBar is BossBarImpl)
         bossBar.clearPlayers()
-        (bossBar.bossBar as? CommandBossBar)
-            ?.let { server.bossBarManager.remove(it) }
+        (bossBar.bossBar as? CustomBossEvent)
+            ?.let { server.customBossEvents.remove(it) }
     }
 
-    override fun add(id: String, title: Text): IBossBar {
-        val bossBar = server.bossBarManager.add(Identifier.of(id), title)
+    override fun add(id: String, title: Component): IBossBar {
+        val bossBar = server.customBossEvents.create(server.overworld().random, Identifier.parse(id), title)
         return BossBarImpl(bossBar)
     }
 
     override fun list(): List<IBossBar> {
-        return server.bossBarManager.all
+        return server.customBossEvents.events
             .map { BossBarImpl(it) }
             .plus(
                 serverBossBars
@@ -51,10 +51,10 @@ internal class BossBarManager(
 }
 
 internal class BossBarImpl(
-    internal val bossBar: BossBar,
+    internal val bossBar: BossEvent,
 ): IBossBar {
-    private val commandBossBar: CommandBossBar? = bossBar as? CommandBossBar
-    private val serverBossBar: ServerBossBar? = bossBar as? ServerBossBar
+    private val commandBossBar: CustomBossEvent? = bossBar as? CustomBossEvent
+    private val serverBossBar: ServerBossEvent? = bossBar as? ServerBossEvent
 
     override val id: String?
         get() = commandBossBar?.id?.toString()
@@ -67,28 +67,28 @@ internal class BossBarImpl(
         get() = IBossBar.Color.WHITE
         set(value) {
             bossBar.color = when (value) {
-                IBossBar.Color.WHITE -> BossBar.Color.WHITE
+                IBossBar.Color.WHITE -> BossEvent.BossBarColor.WHITE
             }
         }
 
     override var style: IBossBar.Style
         get() = IBossBar.Style.PROGRESS
         set(value) {
-            bossBar.style = when (value) {
-                IBossBar.Style.PROGRESS -> BossBar.Style.PROGRESS
+            bossBar.overlay = when (value) {
+                IBossBar.Style.PROGRESS -> BossEvent.BossBarOverlay.PROGRESS
             }
         }
 
     override var value: Int
-        get() = commandBossBar?.value ?: (bossBar.percent * 100).toInt()
+        get() = commandBossBar?.value() ?: (bossBar.progress * 100).toInt()
         set(value) {
             commandBossBar?.setValue(value)
-                ?: bossBar.setPercent(value / 100f)
+                ?: bossBar.apply { progress = value / 100f }
         }
     override var maxValue: Int
-        get() = commandBossBar?.maxValue ?: 100
+        get() = commandBossBar?.max() ?: 100
         set(value) {
-            commandBossBar?.setMaxValue(value)
+            commandBossBar?.setMax(value)
                 ?: throw UnsupportedOperationException("Cannot set max value on a non-command bossbar")
         }
 
@@ -105,7 +105,7 @@ internal class BossBarImpl(
     }
 
     override fun clearPlayers() {
-        commandBossBar?.clearPlayers()
-        serverBossBar?.clearPlayers()
+        commandBossBar?.removeAllPlayers()
+        serverBossBar?.removeAllPlayers()
     }
 }

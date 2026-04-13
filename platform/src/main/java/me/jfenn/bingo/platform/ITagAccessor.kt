@@ -1,5 +1,7 @@
 package me.jfenn.bingo.platform
 
+import me.jfenn.bingo.platform.text.IText
+
 interface ITagAccessor {
 
     fun getItemTag(id: String): List<String>?
@@ -16,6 +18,10 @@ interface ITagContents<T: IRegistryEntry> {
 }
 
 interface IRegistryEntry {
-    interface Block : IRegistryEntry
+    interface Block : IRegistryEntry {
+        val isDoorBlock: Boolean
+        val isChestLike: Boolean
+        val name: IText
+    }
     interface Biome : IRegistryEntry
 }

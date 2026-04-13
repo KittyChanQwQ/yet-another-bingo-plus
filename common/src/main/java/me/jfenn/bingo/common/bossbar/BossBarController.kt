@@ -9,7 +9,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
-import net.minecraft.util.Formatting
+import net.minecraft.ChatFormatting
 
 /**
  * Displays bossbar score/timer information for all players.
@@ -44,12 +44,12 @@ internal class BossBarController(
                     }
                 }
 
-                val goalText = state.formatCardGoals(team, textProvider).formatted(Formatting.BOLD)
+                val goalText = state.formatCardGoals(team, textProvider).formatted(ChatFormatting.BOLD)
                 bossBar.name = when {
                     options.showRemainingTime -> {
                         textProvider.string(
                             StringKey.BossbarTimeRemainingOrGoal, state.formatTimeRemaining(textProvider).formatted(
-                                Formatting.BOLD
+                                ChatFormatting.BOLD
                             ), goalText)
                     }
                     else -> goalText

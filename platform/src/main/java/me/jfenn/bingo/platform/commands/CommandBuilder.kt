@@ -1,9 +1,9 @@
 package me.jfenn.bingo.platform.commands
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.IPlayerHandle
+import me.jfenn.bingo.platform.text.IText
+import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
 import org.koin.core.scope.Scope
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -40,7 +40,7 @@ class CommandBuilder(
         parent.children += node
     }
 
-    fun text(name: String, configure: CommandBuilder.(arg: CommandArgument<Text>) -> Unit) {
+    fun text(name: String, configure: CommandBuilder.(arg: CommandArgument<Component>) -> Unit) {
         val arg = CommandArgument.Text(name)
         val node = CommandNode.RequiredArgument(arg)
         CommandBuilder(node).configure(arg)
@@ -120,7 +120,7 @@ sealed class CommandArgument<T> {
 
     class Text(
         override val name: kotlin.String,
-    ) : CommandArgument<net.minecraft.text.Text>()
+    ) : CommandArgument<Component>()
 
     class Bool(
         override val name: kotlin.String,
@@ -151,7 +151,7 @@ interface IExecutionSource {
     fun error(text: IText): Nothing
 
     val playerOrThrow
-        get() = player ?: error(Text.translatable("permissions.requires.player"))
+        get() = player ?: error(Component.translatable("permissions.requires.player"))
 }
 
 interface ISignedMessage {

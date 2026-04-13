@@ -1,6 +1,6 @@
 package me.jfenn.bingo.client.platform
 
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
 interface INativeImageFactory {
     fun create(width: Int, height: Int): INativeImage

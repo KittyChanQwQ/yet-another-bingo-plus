@@ -26,7 +26,7 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ReloadEvent
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
 import java.time.Instant
 import java.util.*

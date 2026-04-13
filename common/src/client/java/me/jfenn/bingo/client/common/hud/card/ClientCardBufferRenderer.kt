@@ -11,7 +11,7 @@ import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.utils.milliseconds
 import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.common.utils.seconds
-import net.minecraft.util.Identifier
+import me.jfenn.bingo.platform.Identifier
 
 internal class ClientCardBufferRenderer(
     private val state: BingoHudState,
@@ -25,8 +25,8 @@ internal class ClientCardBufferRenderer(
 
         val BLACK_A40 = Color.BLACK.copy(a = 64)
 
-        val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")!!
-        val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")!!
+        val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")
+        val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")
 
         val SHUFFLE_DURATION = 280.milliseconds
         val SHUFFLE_DURATION_PADDING = 50.milliseconds
@@ -128,7 +128,7 @@ internal class ClientCardBufferRenderer(
 
                 if (tile.isHidden) {
                     val texture = tile.itemTier
-                        ?.let { Identifier.of("minecraft", "bingo/image_hidden_${it.name.lowercase()}")!! }
+                        ?.let { Identifier.of("minecraft", "bingo/image_hidden_${it.name.lowercase()}") }
                         ?: IMAGE_HIDDEN_ID
 
                     service.drawGuiTexture(

@@ -9,7 +9,7 @@ import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import java.time.Instant
 
 internal class InverseObjectiveManager(
@@ -41,7 +41,7 @@ internal class InverseObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.InverseEntry>()) {
             val display = card.objectives[objective.inverseObjective]?.let { inverse ->
                 ObjectiveDisplay.Resolved(
-                    name = text.string(StringKey.ObjectiveInverse, inverse.display.name ?: Text.empty()),
+                    name = text.string(StringKey.ObjectiveInverse, inverse.display.name ?: Component.empty()),
                     item = inverse.display.item,
                     decoration = CardTile.Decoration.FORBIDDEN,
                 )

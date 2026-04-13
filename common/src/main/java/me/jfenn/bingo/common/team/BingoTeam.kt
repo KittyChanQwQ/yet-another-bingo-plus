@@ -6,18 +6,18 @@ import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.BlockPositionType
-import me.jfenn.bingo.common.utils.FormattingSerializer
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.player.PlayerProfile
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.HoverAction
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.text.ITextSerialized
 import me.jfenn.bingo.platform.utils.UuidAsString
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Formatting
+import net.minecraft.ChatFormatting
+import net.minecraft.server.level.ServerPlayer
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
 
@@ -35,7 +35,6 @@ data class BingoTeam(
     var name: ITextSerialized,
     val shouldFormatName: Boolean,
     val symbol: String?,
-    @Serializable(with = FormattingSerializer::class)
     var textColor: Formatting,
     val isTemporary: Boolean = false,
     var cardId: UuidAsString? = null,
@@ -104,7 +103,7 @@ data class BingoTeam(
         return players.any { it.uuid == player.uuid }
     }
 
-    fun includesPlayer(player: ServerPlayerEntity): Boolean {
+    fun includesPlayer(player: ServerPlayer): Boolean {
         return players.any { it.uuid == player.uuid }
     }
 
@@ -113,7 +112,7 @@ data class BingoTeam(
     fun getSymbolText(textProvider: TextProvider): IText? {
         return players.takeIf { it.size == 1 }
             ?.firstOrNull()
-            ?.let { textProvider.player(it.uuid)?.formatted(Formatting.WHITE)?.append(" ") }
+            ?.let { textProvider.player(it.uuid)?.formatted(ChatFormatting.WHITE)?.append(" ") }
             ?: symbol?.let { textProvider.literal("$it ") }
     }
 

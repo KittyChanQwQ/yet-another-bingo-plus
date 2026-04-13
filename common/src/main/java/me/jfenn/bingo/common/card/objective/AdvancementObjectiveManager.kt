@@ -9,8 +9,8 @@ import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.platform.IAdvancementManager
+import net.minecraft.ChatFormatting
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Formatting
 import org.slf4j.Logger
 import java.time.Instant
 
@@ -90,7 +90,7 @@ internal class AdvancementObjectiveManager(
                     text.empty()
                         .append(it)
                         .resetStyle()
-                        .formatted(Formatting.GREEN)
+                        .formatted(ChatFormatting.GREEN)
                 },
             lore = advancement.description
                 ?.let { listOf(it) }

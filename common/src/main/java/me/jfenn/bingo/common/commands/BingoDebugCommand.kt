@@ -1,14 +1,12 @@
 package me.jfenn.bingo.common.commands
 
-import kotlinx.serialization.encodeToString
-import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.json
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.commands.ICommandManager
+import net.minecraft.ChatFormatting
 import org.slf4j.Logger
 
 class BingoDebugCommand(
@@ -28,7 +26,7 @@ class BingoDebugCommand(
                     val stateJson = json.encodeToString(state)
                     log.info(stateJson)
 
-                    sendMessage(text.literal("Debug info printed to server logs.").formatted(Formatting.GRAY))
+                    sendMessage(text.literal("Debug info printed to server logs.").formatted(ChatFormatting.GRAY))
                 }
             }
         }

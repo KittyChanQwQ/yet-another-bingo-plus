@@ -3,13 +3,13 @@ package me.jfenn.bingo.integrations.jei
 import mezz.jei.api.IModPlugin
 import mezz.jei.api.JeiPlugin
 import mezz.jei.api.runtime.IJeiRuntime
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
 @JeiPlugin
 internal class JeiEntrypoint : IModPlugin {
 
     companion object {
-        private val IDENTIFIER = Identifier.of("yet-another-minecraft-bingo", "bingo")!!
+        private val IDENTIFIER = Identifier.fromNamespaceAndPath("yet-another-minecraft-bingo", "bingo")
         var runtime: IJeiRuntime? = null
     }
 

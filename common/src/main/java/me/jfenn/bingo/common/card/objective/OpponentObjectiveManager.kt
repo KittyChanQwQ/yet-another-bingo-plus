@@ -8,7 +8,7 @@ import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 
 internal class OpponentObjectiveManager(
     private val data: ScopedData,
@@ -38,7 +38,7 @@ internal class OpponentObjectiveManager(
         for (objective in card.objectivesByInstance<BingoObjective.OpponentEntry>()) {
             val display = card.objectives[objective.opponentObjective]?.let { opponent ->
                 ObjectiveDisplay.Resolved(
-                    name = text.string(StringKey.ObjectiveOpponent, opponent.display.name ?: Text.empty()),
+                    name = text.string(StringKey.ObjectiveOpponent, opponent.display.name ?: Component.empty()),
                     item = opponent.display.item,
                     decoration = CardTile.Decoration.ADVANCEMENT,
                 )

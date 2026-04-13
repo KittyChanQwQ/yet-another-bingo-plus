@@ -3,27 +3,17 @@ package me.jfenn.bingo.common.card
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardView
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.platform.inventory.IInventory
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.item.IItemStackFactory
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.inventory.Inventory
-import net.minecraft.item.ItemStack
 
 class CardInventory(
     val view: CardView,
     val itemStackFactory: IItemStackFactory,
     val text: TextProvider,
-) : Inventory {
-    override fun clear() {
-    }
-
-    override fun size(): Int {
-        return 25
-    }
-
-    override fun isEmpty(): Boolean {
-        return false
-    }
+) : IInventory {
+    override val size: Int
+        get() = 45
 
     private fun copyDisplay(tile: CardTile, stack: IItemStack) {
         stack.setDisplay(
@@ -67,33 +57,17 @@ class CardInventory(
         val slotY = slot / 9
 
         if (slotX !in 0 until 5 || slotY !in 0 until 5)
-            return@List ItemStack.EMPTY
+            return@List itemStackFactory.emptyStack
 
         val tile = view.tiles.getOrNull(slotX + slotY * 5)
-            ?: return@List ItemStack.EMPTY
+            ?: return@List itemStackFactory.emptyStack
 
-        createTileItem(tile).stack
+        createTileItem(tile)
     }
 
-    override fun getStack(slot: Int): ItemStack {
-        return inventory.getOrNull(slot) ?: ItemStack.EMPTY
+    override fun get(index: Int): IItemStack? {
+        return inventory.getOrNull(index)
     }
 
-    override fun removeStack(slot: Int, amount: Int): ItemStack {
-        return ItemStack.EMPTY
-    }
-
-    override fun removeStack(slot: Int): ItemStack {
-        return ItemStack.EMPTY
-    }
-
-    override fun setStack(slot: Int, stack: ItemStack?) {
-    }
-
-    override fun markDirty() {
-    }
-
-    override fun canPlayerUse(player: PlayerEntity?): Boolean {
-        return true
-    }
+    override fun set(index: Int, stack: IItemStack) {}
 }

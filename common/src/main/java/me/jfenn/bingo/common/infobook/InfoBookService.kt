@@ -19,10 +19,10 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.item.IWrittenBook
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.HoverAction
 import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.platform.text.TextAction
-import net.minecraft.util.Formatting
 
 internal class InfoBookService(
     private val config: BingoConfig,

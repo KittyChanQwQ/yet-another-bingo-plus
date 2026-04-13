@@ -6,7 +6,7 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.platform.IModEnvironment
-import net.minecraft.resource.ResourceManager
+import me.jfenn.bingo.platform.resource.IResourceManager
 import org.slf4j.Logger
 import java.io.IOException
 
@@ -27,7 +27,7 @@ internal class SpawnKitLoader(
     }
 
     fun loadSpawnKits(
-        manager: ResourceManager,
+        manager: IResourceManager,
     ): SpawnKits {
         log.info("[SpawnKitLoader] Reloading BINGO spawn kits...")
 

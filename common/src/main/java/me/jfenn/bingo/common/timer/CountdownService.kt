@@ -8,7 +8,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.text.Formatting
 
 internal class CountdownService(
     private val state: BingoState,

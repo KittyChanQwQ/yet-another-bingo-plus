@@ -6,13 +6,13 @@ import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
 import me.jfenn.bingo.common.datapack.LobbyWorldService
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.screen.ConfirmScreen
-import net.minecraft.client.gui.screen.world.CreateWorldScreen
-import net.minecraft.client.input.MouseInput
-import net.minecraft.resource.DataConfiguration
-import net.minecraft.resource.DataPackSettings
-import net.minecraft.text.TranslatableTextContent
+import net.minecraft.client.gui.screens.ConfirmScreen
+import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.input.MouseButtonInfo
+import net.minecraft.network.chat.contents.TranslatableContents
+import net.minecraft.world.level.DataPackConfig
+import net.minecraft.world.level.WorldDataConfiguration
 import org.slf4j.Logger
 
 class BingoWorldController(
@@ -30,8 +30,8 @@ class BingoWorldController(
         ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
             if (screen is CreateWorldScreen && worldState.state == ScreenState.CreateBingoWorld) {
                 // Add a prefix to the names of bingo worlds
-                if (!screen.worldCreator.worldName.startsWith(BINGO_WORLD_PREFIX)) {
-                    screen.worldCreator.worldName = "$BINGO_WORLD_PREFIX ${screen.worldCreator.worldName}"
+                if (!screen.uiState.name.startsWith(BINGO_WORLD_PREFIX)) {
+                    screen.uiState.name = "$BINGO_WORLD_PREFIX ${screen.uiState.name}"
                 }
             }
         }
@@ -59,7 +59,7 @@ class BingoWorldController(
                     lobbyWorldService.copyDataPack(it.resolve(DATAPACK_FILE))
                 }
 
-                val pair = screen.accessor.invokeGetScannedPack(screen.worldCreator.generatorOptionsHolder.dataConfiguration)
+                val pair = screen.accessor.invokeGetScannedPack(screen.uiState.settings.dataConfiguration)
                     ?: return@register
 
                 // this flag prevents infinite recursion, as there is a setScreen call in applyDataPacks
@@ -68,21 +68,21 @@ class BingoWorldController(
                 worldState.isApplyingLobbyDataPack = false
 
                 if (state == ScreenState.CreateBingoWorld) {
-                    if (DATAPACK_ID !in pair.second.ids) {
+                    if (DATAPACK_ID !in pair.second.availableIds) {
                         log.error("Bingo datapack installation has failed! This will probably cause a crash.")
                     }
 
                     // actually enable the bingo lobby datapack
-                    pair.second.setEnabledProfiles(
-                        (pair.second.enabledIds + DATAPACK_ID)
+                    pair.second.setSelected(
+                        (pair.second.selectedIds + DATAPACK_ID)
                             .reversed()
                     )
 
-                    val enabled = ImmutableList.copyOf(pair.second.enabledIds)
-                    val disabled = pair.second.enabledIds.filter { !enabled.contains(it) }
-                    val dataConfiguration = DataConfiguration(
-                        DataPackSettings(enabled, disabled),
-                        screen.worldCreator.generatorOptionsHolder.dataConfiguration().enabledFeatures()
+                    val enabled = ImmutableList.copyOf(pair.second.selectedIds)
+                    val disabled = pair.second.selectedIds.filter { !enabled.contains(it) }
+                    val dataConfiguration = WorldDataConfiguration(
+                        DataPackConfig(enabled, disabled),
+                        screen.uiState.settings.dataConfiguration.enabledFeatures
                     )
 
                     worldState.state = ScreenState.OpenBingoWorld
@@ -96,14 +96,14 @@ class BingoWorldController(
                 // Once the world creation screen is reached, immediately press the
                 // create world button
 
-                val createWorldButton = Screens.getButtons(screen)
+                val createWorldButton = Screens.getWidgets(screen)
                     .find {
-                        val content = it.message.content as? TranslatableTextContent
+                        val content = it.message.contents as? TranslatableContents
                         content?.key == "selectWorld.create"
                     }
 
                 worldState.state = ScreenState.ConfirmExperimentalFeatures
-                createWorldButton?.onClick(Click(0.0, 0.0, MouseInput(0, 0)), false)
+                createWorldButton?.onClick(MouseButtonEvent(0.0, 0.0, MouseButtonInfo(0, 0)), false)
                     ?: log.error("Error: could not find create world button")
 
                 return@register
@@ -114,14 +114,16 @@ class BingoWorldController(
                 // click yes automatically
                 log.warn("Bypassing experimental warnings for a BINGO world")
 
-                val confirmButton = Screens.getButtons(screen)
+                val confirmButton = Screens.getWidgets(screen)
                     .find {
-                        val content = it.message.content as? TranslatableTextContent
+                        val content = it.message.contents as? TranslatableContents
                         content?.key == "gui.yes"
                     }
 
-                confirmButton?.onClick(Click(0.0, 0.0, MouseInput(0, 0)), false)
+                confirmButton?.onClick(MouseButtonEvent(0.0, 0.0, MouseButtonInfo(0, 0)), false)
                     ?: log.error("Error: could not find the experimental world features confirm button")
+
+                worldState.state = null
             }
         }
     }

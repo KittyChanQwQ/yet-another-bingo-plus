@@ -84,7 +84,9 @@ internal class ClientCardManager(
             updateCard(card.guiCard)
 
             card.isDirty = false
-            log.debug("[ClientCardManager] Card {} redrawn!", card.teamKey)
+            if (drawServiceFactory.isBufferSupported) {
+                log.debug("[ClientCardManager] Card {} redrawn!", card.teamKey)
+            }
         }
     }
 

@@ -2,7 +2,7 @@ package me.jfenn.bingo.platform.packet
 
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.event.IEvent
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.level.ServerPlayer
 
 interface IServerNetworking {
     fun <T> registerC2S(converter: PacketConverter<T>): IServerPacketHandlerC2S<T>
@@ -13,9 +13,9 @@ interface IServerPacketHandlerC2S<T> : IEvent<ServerPacket<T>>
 
 interface IServerPacketHandlerS2C<T> {
     fun isSupported(player: IPlayerHandle): Boolean = isSupported(player.player)
-    fun isSupported(player: ServerPlayerEntity): Boolean
+    fun isSupported(player: ServerPlayer): Boolean
     fun send(player: IPlayerHandle, packet: T) = send(player.player, packet)
-    fun send(player: ServerPlayerEntity, packet: T): Boolean
+    fun send(player: ServerPlayer, packet: T): Boolean
 }
 
 data class ServerPacket<T>(

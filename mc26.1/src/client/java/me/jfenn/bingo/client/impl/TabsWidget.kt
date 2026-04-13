@@ -2,29 +2,31 @@ package me.jfenn.bingo.client.impl
 
 import me.jfenn.bingo.client.platform.ITabsWidget
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.utils.EventListener
+import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.IEventListener
-import net.minecraft.client.gui.ScreenRect
-import net.minecraft.client.gui.tab.Tab
-import net.minecraft.client.gui.tab.TabManager
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.TabNavigationWidget
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.components.tabs.Tab
+import net.minecraft.client.gui.components.tabs.TabManager
+import net.minecraft.client.gui.components.tabs.TabNavigationBar
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.navigation.ScreenRectangle
+import net.minecraft.network.chat.Component
 import java.util.function.Consumer
 
 class TabsWidgetImpl(
     private val tabImpls: List<TabImpl>,
     private val manager: TabManager,
-    override var widget: TabNavigationWidget,
+    override var widget: TabNavigationBar,
     val onTabUpdate: EventListener<Unit>,
 ) : ITabsWidget {
     override val height: Int = 24
     override var width: Int = 0
         set(value) {
             field = value
-            widget.setWidth(value)
-            widget.init()
+            widget.updateWidth(value)
+            widget.arrangeElements()
         }
 
     override var currentTab: Int
@@ -47,19 +49,30 @@ class TabsWidgetImpl(
     }
 }
 
-class TabImpl(private val text: Text) : Tab {
-    override fun getTitle(): Text {
+class TabImpl(private val text: Component) : Tab {
+    override fun getTabTitle(): Component {
         return text
     }
 
-    override fun forEachChild(consumer: Consumer<ClickableWidget?>?) {
+    override fun visitChildren(childrenConsumer: Consumer<AbstractWidget>) {
         // Send at least one event to run onTabChanged
-        consumer?.accept(null)
+        childrenConsumer.accept(DummyWidget)
     }
 
-    override fun refreshGrid(tabArea: ScreenRect?) {}
+    override fun doLayout(screenRectangle: ScreenRectangle) {}
 
-    override fun getNarratedHint(): Text = text
+    override fun getTabExtraNarration(): Component = text
+
+    private object DummyWidget : AbstractWidget(0, 0, 0, 0, Component.empty()) {
+        override fun extractWidgetRenderState(
+            graphics: GuiGraphicsExtractor,
+            mouseX: Int,
+            mouseY: Int,
+            a: Float
+        ) = throw NotImplementedError()
+
+        override fun updateWidgetNarration(output: NarrationElementOutput) = throw NotImplementedError()
+    }
 }
 
 object TabsWidgetFactory : ITabsWidgetFactory {
@@ -71,8 +84,8 @@ object TabsWidgetFactory : ITabsWidgetFactory {
         return TabsWidgetImpl(
             tabImpls = tabImpls,
             manager = manager,
-            widget = TabNavigationWidget.builder(manager, 0)
-                .tabs(*tabImpls.toTypedArray())
+            widget = TabNavigationBar.builder(manager, 0)
+                .addTabs(*tabImpls.toTypedArray())
                 .build(),
             onTabUpdate = onTabUpdate,
         )

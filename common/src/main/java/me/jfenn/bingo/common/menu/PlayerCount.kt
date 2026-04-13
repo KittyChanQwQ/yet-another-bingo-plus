@@ -6,9 +6,8 @@ import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
-import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import me.jfenn.bingo.platform.IMinecraftServer
+import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Vector3d
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -21,7 +20,7 @@ internal const val MENU_PLAYER_COUNT_HEIGHT = 2*MENU_LINE_HEIGHT + 4*MENU_LINE_P
 internal fun MenuComponent.registerPlayerCount(
     position: Vector3d,
     width: Double,
-    server: MinecraftServer = koinScope.get(),
+    server: IMinecraftServer = koinScope.get(),
     state: BingoState = koinScope.get(),
     options: BingoOptions = koinScope.get(),
     stats: StatsService = koinScope.get(),
@@ -53,7 +52,7 @@ internal fun MenuComponent.registerPlayerCount(
                 StringKey.StatsBestTime,
                 statsFuture.getNow(null)
                     ?.formatHHMMSS()
-                    ?.let { Text.literal(it).formatted(Formatting.GREEN) }
+                    ?.let { text.literal(it).formatted(Formatting.GREEN) }
                     ?: text.string(StringKey.StatsBestTimeNotSet).formatted(Formatting.GRAY)
             )
         },
@@ -65,7 +64,7 @@ internal fun MenuComponent.registerPlayerCount(
         titleProp = computedProperty {
             text.string(
                 StringKey.OptionsPlayerCount,
-                Text.literal("${server.currentPlayerCount} / ${server.maxPlayerCount}")
+                text.literal("${server.currentPlayerCount} / ${server.maxPlayerCount}")
                     .formatted(Formatting.GREEN)
             )
         },
