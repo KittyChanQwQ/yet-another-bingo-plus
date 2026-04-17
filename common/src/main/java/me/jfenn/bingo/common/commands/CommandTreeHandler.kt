@@ -4,7 +4,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 
-class CommandTreeHandler(
+internal class CommandTreeHandler(
     private val server: MinecraftServer,
     events: ScopedEvents,
 ) {

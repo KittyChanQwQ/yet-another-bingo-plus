@@ -6,7 +6,6 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.EntityType
-import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.ITextDisplayEntity
 import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Matrix4f
@@ -33,9 +32,8 @@ internal fun MenuComponent.registerItemDistribution(
         title = this.text.string(StringKey.OptionsCardDifficulty)
     )
 
-    fun setItemDistribution(player: IPlayerHandle, dist: List<Int>) {
+    fun setItemDistribution(dist: List<Int>) {
         optionsService.setCardDifficulty(
-            ctx = OptionsService.Context(player),
             card = state.getActiveCard(),
             itemDistInput = dist,
             allowInvalid = true,
@@ -56,11 +54,11 @@ internal fun MenuComponent.registerItemDistribution(
             text = text.literal("+"),
             tooltip = tooltip,
             isActiveProp = ConstantProperty(true),
-        ) { player ->
+        ) {
             itemDistribution = itemDistribution.toMutableList().apply {
                 set(i, (itemDistribution[i] + 1).coerceAtMost(25))
             }.also {
-                setItemDistribution(player, it)
+                setItemDistribution(it)
             }
         }
 
@@ -102,11 +100,11 @@ internal fun MenuComponent.registerItemDistribution(
             text = text.literal("-"),
             tooltip = tooltip,
             isActiveProp = ConstantProperty(true),
-        ) { player ->
+        ) {
             itemDistribution = itemDistribution.toMutableList().apply {
                 set(i, (itemDistribution[i] - 1).coerceAtLeast(0))
             }.also {
-                setItemDistribution(player, it)
+                setItemDistribution(it)
             }
         }
     }

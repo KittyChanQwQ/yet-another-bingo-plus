@@ -5,6 +5,8 @@ import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.model.OptionsChangedEvent
 import me.jfenn.bingo.common.menu.tooltips.TooltipState
+import me.jfenn.bingo.common.options.OptionsService
+import me.jfenn.bingo.common.options.withContext
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.*
@@ -50,10 +52,12 @@ internal fun MenuComponent.registerButtonInteraction(
 
         interactionEntityEvents.onInteract(entity) { player ->
             if (actualPermissionGetter(player)) {
-                try {
-                    onClick(player)
-                } catch (e: Throwable) {
-                    log.error("Exception during interaction onClick:", e)
+                withContext(OptionsService.Context(player)) {
+                    try {
+                        onClick(player)
+                    } catch (e: Throwable) {
+                        log.error("Exception during interaction onClick:", e)
+                    }
                 }
 
                 Sounds.playButtonSound(

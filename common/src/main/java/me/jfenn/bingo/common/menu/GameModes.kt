@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import org.joml.Vector3d
@@ -47,7 +46,6 @@ internal fun MenuComponent.registerGameModes(
         isActiveProp = computedProperty { cardOptions.isLockoutMode },
     ) {
         optionsService.toggleCardMode(
-            ctx = OptionsService.Context(it),
             card = state.getActiveCard(),
             prop = BingoCardOptions::isLockoutMode,
         )
@@ -63,7 +61,6 @@ internal fun MenuComponent.registerGameModes(
         isActiveProp = computedProperty { cardOptions.isInventoryMode },
     ) {
         optionsService.toggleCardMode(
-            ctx = OptionsService.Context(it),
             card = state.getActiveCard(),
             prop = BingoCardOptions::isInventoryMode,
         )
@@ -79,7 +76,6 @@ internal fun MenuComponent.registerGameModes(
         isActiveProp = computedProperty { cardOptions.isHiddenItemsMode },
     ) {
         optionsService.toggleCardMode(
-            ctx = OptionsService.Context(it),
             card = state.getActiveCard(),
             prop = BingoCardOptions::isHiddenItemsMode,
         )
@@ -95,7 +91,6 @@ internal fun MenuComponent.registerGameModes(
         isActiveProp = computedProperty { cardOptions.isConsumeItemsMode },
     ) {
         optionsService.toggleCardMode(
-            ctx = OptionsService.Context(it),
             card = state.getActiveCard(),
             prop = BingoCardOptions::isConsumeItemsMode,
         )

@@ -3,12 +3,10 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.spawn.SpawnKitService
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.item.IItemStack
-import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.IContainerMenu
 import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
@@ -19,14 +17,11 @@ private const val EDIT_HEIGHT = 0.55
 
 internal fun MenuComponent.registerSpawnKit(
     position: Vector3d,
-    state: BingoState = koinScope.get(),
     cardService: CardService = koinScope.get(),
-    itemStackFactory: IItemStackFactory = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
     spawnKitService: SpawnKitService = koinScope.get(),
     containerMenuFactory: IContainerMenu.Factory = koinScope.get(),
 ) {
-    val options by state::options
     val offset = Vector3d()
 
     registerTitlePanel(
@@ -41,18 +36,9 @@ internal fun MenuComponent.registerSpawnKit(
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsSpawnKitPlayer),
         tooltip = buildTooltip(StringKey.OptionsSpawnKitPlayer),
-        isActiveProp = computedProperty { options.isPlayerKit },
+        isActiveProp = computedProperty { optionsService.isPlayerKit },
     ) {
-        options.isPlayerKit = !options.isPlayerKit
-        cardService.generateCard()
-        optionsService.broadcastHotbarMessage(
-            it,
-            text.string(
-                StringKey.OptionsNotifyChanged,
-                StringKey.OptionsSpawnKitPlayer,
-                text.boolean(options.isPlayerKit)
-            )
-        )
+        optionsService.togglePlayerKit()
     }
 
     fun editStacks(
@@ -96,18 +82,9 @@ internal fun MenuComponent.registerSpawnKit(
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsSpawnKitTeam),
         tooltip = buildTooltip(StringKey.OptionsSpawnKitTeam),
-        isActiveProp = computedProperty { options.isTeamKit },
+        isActiveProp = computedProperty { optionsService.isTeamKit },
     ) {
-        options.isTeamKit = !options.isTeamKit
-        cardService.generateCard()
-        optionsService.broadcastHotbarMessage(
-            it,
-            text.string(
-                StringKey.OptionsNotifyChanged,
-                StringKey.OptionsSpawnKitTeam,
-                text.boolean(options.isTeamKit)
-            )
-        )
+        optionsService.toggleTeamKit()
     }
 
     registerTileButton(

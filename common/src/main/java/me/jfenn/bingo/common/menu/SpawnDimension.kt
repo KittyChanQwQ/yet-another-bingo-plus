@@ -23,7 +23,7 @@ internal fun MenuComponent.registerDimensionMenu(
         .filter { it != LOBBY_WORLD_ID.toString() }
         .sorted()
 
-    var dimension by state.options::spawnDimension
+    var dimension by optionsService::spawnDimension
     val indexProp = DelegatedProperty(
         getter = { dimensions.indexOfFirst { it == dimension } },
         setter = { dimension = dimensions[it] },
@@ -38,10 +38,5 @@ internal fun MenuComponent.registerDimensionMenu(
         title = text.string(StringKey.OptionsSpawnDimension),
         options = dimensionLabels,
         selectedIndexProp = indexProp,
-    ) { player, index ->
-        optionsService.setSpawnDimension(
-            OptionsService.Context(player),
-            dimensions[index]
-        )
-    }
+    )
 }

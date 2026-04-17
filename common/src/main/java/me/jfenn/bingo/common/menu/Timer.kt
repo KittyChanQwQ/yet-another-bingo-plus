@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.options.OptionsService
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import org.joml.Vector3d
@@ -12,7 +11,6 @@ const val MAX_TIMER_MINUTES: Int = 360
 internal fun MenuComponent.registerTimer(
     position: Vector3d,
     width: Double,
-    state: BingoState = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
 ) {
     registerTitlePanel(
@@ -22,7 +20,7 @@ internal fun MenuComponent.registerTimer(
     )
 
     val timerProp = DelegatedProperty(
-        getter = { state.options.timeLimit?.toMinutes()?.toInt() ?: 0 },
+        getter = { optionsService.timeLimit?.toMinutes()?.toInt() ?: 0 },
         setter = {},
     )
 
@@ -42,10 +40,7 @@ internal fun MenuComponent.registerTimer(
                 ?.let { text.literal(it) }
                 ?: text.string(StringKey.OptionsTimeLimitOff)
         }
-    ) { player, minutes ->
-        optionsService.setTimeLimit(
-            OptionsService.Context(player),
-            minutes,
-        )
+    ) { _, minutes ->
+        optionsService.setTimeLimit(minutes)
     }
 }

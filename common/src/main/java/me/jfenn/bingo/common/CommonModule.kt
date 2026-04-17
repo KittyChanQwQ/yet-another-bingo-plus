@@ -1,7 +1,12 @@
 package me.jfenn.bingo.common
 
 import me.jfenn.bingo.api.BingoApiImpl
+import me.jfenn.bingo.api.BingoGameImpl
+import me.jfenn.bingo.api.CardServiceImpl
 import me.jfenn.bingo.api.IBingoApi
+import me.jfenn.bingo.api.card.ICardService
+import me.jfenn.bingo.api.data.IBingoGame
+import me.jfenn.bingo.api.options.IOptionsService
 import me.jfenn.bingo.common.autorestart.ResetCommand
 import me.jfenn.bingo.common.autorestart.ResetOnLeaveController
 import me.jfenn.bingo.common.autorestart.ResetService
@@ -202,6 +207,10 @@ val commonModule = module {
         scoped { ScopedEventBus(getKoin().get(), this) } bind IEventBus::class
         scopedOf(::ScopedEvents)
         scopedOf(::InteractionEntityEvents)
+
+        scoped { get<OptionsService>() } bind IOptionsService::class
+        scopedOf(::CardServiceImpl) bind ICardService::class
+        scopedOf(::BingoGameImpl) bind IBingoGame::class
         scopedOf(::BingoApiImpl) bind IBingoApi::class
 
         scopedOf(::PersistentStateManager) bind IPersistentStateManager::class

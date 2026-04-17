@@ -7,6 +7,8 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.mixinhandler.GameRuleOverrideHelper
 import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.event.IEvent
+import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.world.IGameRules
 
 /**
@@ -16,12 +18,15 @@ import me.jfenn.bingo.platform.world.IGameRules
  */
 internal class GameRuleController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     private val options: BingoOptions,
     private val state: BingoState,
     private val datapackFunctionService: DatapackFunctionService,
     private val gameRules: IGameRules,
     private val serverWorldFactory: IServerWorldFactory,
 ) : BingoComponent() {
+
+    object GameRuleChangedEvent: IEvent<Unit>
 
     fun readFromServer() {
         options.isPvpEnabled = gameRules.pvp.value
@@ -63,6 +68,10 @@ internal class GameRuleController(
     }
 
     init {
+        eventBus.register(GameRuleChangedEvent) {
+            writeToServer()
+        }
+
         events.onStateChange { (from, to) ->
             if (from != to && state.isLobbyMode) {
                 when (to) {

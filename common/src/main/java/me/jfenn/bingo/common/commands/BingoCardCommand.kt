@@ -7,11 +7,9 @@ import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import me.jfenn.bingo.common.card.objective.ObjectiveListService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.event.model.CardShuffledEvent
-import me.jfenn.bingo.common.event.model.OptionsChangedEvent
 import me.jfenn.bingo.common.map.CardViewService
-import me.jfenn.bingo.common.options.OptionsService
-import me.jfenn.bingo.common.options.optionsContext
+import me.jfenn.bingo.common.options.format
+import me.jfenn.bingo.common.options.withOptionsService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -21,14 +19,12 @@ import me.jfenn.bingo.platform.commands.CommandArgument
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
-import me.jfenn.bingo.platform.event.IEventBus
 import net.minecraft.ChatFormatting
 
 class BingoCardCommand(
     commandManager: ICommandManager,
     private val config: BingoConfig,
     private val text: TextProvider,
-    private val eventBus: IEventBus,
 ) : BingoComponent() {
 
     companion object {
@@ -111,11 +107,9 @@ class BingoCardCommand(
     }
 
     private fun IExecutionContext.setItemDist(itemDistInput: List<Int>) {
-        scope.get<OptionsService>().setCardDifficulty(
-            ctx = optionsContext,
-            itemDistInput = itemDistInput,
-        )
-        eventBus.emit(OptionsChangedEvent, Unit)
+        withOptionsService {
+            it.setCardDifficulty(itemDistInput = itemDistInput)
+        }
     }
 
     private fun IExecutionContext.rerollCard() {
@@ -127,7 +121,6 @@ class BingoCardCommand(
         }
         cardService.shuffleCard(card, excludedObjectives)
         sendFeedback(text.string(StringKey.OptionsRerollCardSuccess))
-        eventBus.emit(CardShuffledEvent, CardShuffledEvent(card.id))
     }
 
     private fun IExecutionContext.getCardTags() = buildMap {

@@ -1,5 +1,9 @@
 package me.jfenn.bingo.common.scoring
 
+import me.jfenn.bingo.api.options.BingoGoal
+import me.jfenn.bingo.api.options.BingoWinCondition
+import me.jfenn.bingo.api.options.EndWhen
+import me.jfenn.bingo.api.options.StalemateBehavior
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
@@ -14,7 +18,9 @@ import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameEndReason
 import me.jfenn.bingo.common.game.GameService
-import me.jfenn.bingo.common.options.*
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.options.format
+import me.jfenn.bingo.common.options.string
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -77,7 +83,7 @@ internal class ScoredItemCheck(
                 // if the objective has been updated in this tick
                 ?.filter { it.updatedAt(team.key) as Any == tickStart as Any }
                 ?.forEach { objective ->
-                    if (objective.hasAchieved(team.key)) {
+                    if (objective.hasTeamAchieved(team.key)) {
                         // find the player that captured the objective
                         val player = objective.players
                             .mapNotNull { (uuid, instant) ->
@@ -139,7 +145,7 @@ internal class ScoredItemCheck(
                     .filter { line ->
                         // Select lines where the team has achieved every item
                         line.map { card.objectives[it.objectiveId] }
-                            .all { it != null && it.hasAchieved(team.key) }
+                            .all { it != null && it.hasTeamAchieved(team.key) }
                     }
                     .toList()
 
@@ -152,7 +158,7 @@ internal class ScoredItemCheck(
                     is BingoGoal.Items -> card.entries
                         .filter {
                             val objective = card.objectives[it.objectiveId]
-                            objective != null && objective.hasAchieved(team.key)
+                            objective != null && objective.hasTeamAchieved(team.key)
                         }
                 }.filterNot { entry ->
                     // Don't replace free spaces or inverse objectives

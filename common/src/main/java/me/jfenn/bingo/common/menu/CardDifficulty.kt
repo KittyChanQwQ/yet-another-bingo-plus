@@ -54,7 +54,6 @@ internal fun MenuComponent.registerCardDifficulty(
             },
         ) {
             optionsService.setCardDifficulty(
-                ctx = OptionsService.Context(it),
                 card = state.getActiveCard(),
                 itemDistInput = preset,
             )

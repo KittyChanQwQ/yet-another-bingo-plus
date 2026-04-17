@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.scoring
 
+import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardTileImage
-import me.jfenn.bingo.common.options.BingoGoal
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam

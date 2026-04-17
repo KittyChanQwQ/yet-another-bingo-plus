@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.utils.InstantType
 
 @Serializable
-data class TeamCompletedCard(
+internal data class TeamCompletedCard(
     val card: BingoCard,
     val completedAt: InstantType,
     /**

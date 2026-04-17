@@ -1,8 +1,10 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.options.BingoGoal
-import me.jfenn.bingo.common.options.BingoWinCondition
+import me.jfenn.bingo.api.options.BingoGoal
+import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.common.options.OptionsService
+import me.jfenn.bingo.common.options.format
+import me.jfenn.bingo.common.options.string
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
@@ -86,13 +88,12 @@ internal fun MenuComponent.registerCardGoal(
             }
         },
         format = { cardOptions.goal.format(text, supportsFullCard) },
-    ) { player, count ->
+    ) { _, count ->
         val newGoal = when (cardOptions.goal) {
             is BingoGoal.Items -> BingoGoal.Items(count)
             is BingoGoal.Lines -> BingoGoal.Lines(count)
         }
         optionsService.setGoal(
-            ctx = OptionsService.Context(player),
             card = state.getActiveCard(),
             goal = newGoal,
         )
@@ -105,7 +106,7 @@ internal fun MenuComponent.registerCardGoal(
         icon = "⇄",
         text = this.text.empty(),
         textProp = computedProperty { text.string(cardOptions.goal.string()) },
-    ) { player ->
+    ) {
         val newGoal = when (val goal = cardOptions.goal) {
             is BingoGoal.Items -> BingoGoal.Lines(
                 when {
@@ -122,7 +123,6 @@ internal fun MenuComponent.registerCardGoal(
             )
         }
         optionsService.setGoal(
-            ctx = OptionsService.Context(player),
             card = state.getActiveCard(),
             goal = newGoal,
         )

@@ -14,7 +14,7 @@ import me.jfenn.bingo.platform.packet.IServerPacketHandlerC2S
 import me.jfenn.bingo.platform.packet.ServerPacket
 import org.slf4j.Logger
 
-class ScopedEvents(
+internal class ScopedEvents(
     private val log: Logger,
     private val eventBus: IEventBus,
 ) : BingoComponent() {

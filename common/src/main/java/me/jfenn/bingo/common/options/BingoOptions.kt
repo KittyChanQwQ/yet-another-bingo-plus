@@ -3,6 +3,9 @@ package me.jfenn.bingo.common.options
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
+import me.jfenn.bingo.api.options.BingoWinCondition
+import me.jfenn.bingo.api.options.EndWhen
+import me.jfenn.bingo.api.options.StalemateBehavior
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.menu.*
 import me.jfenn.bingo.common.utils.DurationType
@@ -54,7 +57,7 @@ data class BingoOptions(
         return cards.all { it.isValid() }
     }
 
-    fun formatGameMode(card: BingoCard): List<StringKey> {
+    internal fun formatGameMode(card: BingoCard): List<StringKey> {
         val gameMode = buildList {
             if (card.options.isLockoutMode) add(StringKey.OptionsModeLockout)
             if (card.options.isInventoryMode) add(StringKey.OptionsModeInventory)
@@ -67,7 +70,7 @@ data class BingoOptions(
         return gameMode.ifEmpty { listOf(StringKey.OptionsModeStandard) }
     }
 
-    fun formatGameModeIcons(card: BingoCard): List<String> {
+    internal fun formatGameModeIcons(card: BingoCard): List<String> {
         val gameMode = buildList {
             if (card.options.isLockoutMode) add(ICON_LOCKOUT)
             if (card.options.isInventoryMode) add(ICON_INVENTORY)

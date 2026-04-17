@@ -49,10 +49,9 @@ internal fun MenuComponent.registerItemFilters(
             }
         },
         selectedIndexProp = selectedIndexProp,
-    ) { player, index ->
+    ) { _, index ->
         val preset = presets.values.elementAtOrNull(index) ?: return@registerRadioMenu
         optionsService.setCardFilter(
-            ctx = OptionsService.Context(player),
             card = state.getActiveCard(),
             filter = preset.value,
         )

@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.options
+package me.jfenn.bingo.api.options
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

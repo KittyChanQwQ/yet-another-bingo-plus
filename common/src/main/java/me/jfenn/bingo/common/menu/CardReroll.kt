@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
-import me.jfenn.bingo.common.event.model.CardShuffledEvent
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.minus
@@ -76,7 +75,6 @@ internal fun MenuComponent.registerCardReroll(
         val card = state.getActiveCard()
         cardService.shuffleCard(card)
         optionsService.broadcastHotbarMessage(player, text.string(StringKey.OptionsRerollCardSuccess))
-        eventBus.emit(CardShuffledEvent, CardShuffledEvent(card.id))
 
         lastReroll = now
     }

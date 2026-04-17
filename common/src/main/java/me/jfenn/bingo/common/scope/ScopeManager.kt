@@ -23,7 +23,7 @@ import org.koin.core.scope.Scope
 import org.koin.core.scope.ScopeID
 import org.slf4j.Logger
 
-class ScopeManager(
+class ScopeManager internal constructor(
     private val koin: Koin,
     private val log: Logger,
     private val configService: ConfigService,

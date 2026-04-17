@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
+import me.jfenn.bingo.api.card.ICard
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.team.BingoTeam
@@ -14,15 +15,15 @@ import java.util.*
 import kotlin.random.Random
 
 @Serializable
-class BingoCard(
-    val id: UuidAsString = UUID.randomUUID(),
+internal class BingoCard(
+    override val id: UuidAsString = UUID.randomUUID(),
     var nextCardId: UuidAsString? = null,
-    val seed: Long = Random.nextLong(),
+    override val seed: Long = Random.nextLong(),
     val entries: List<BingoCardEntry>,
     val objectives: Map<String, BingoObjective>,
     val options: BingoCardOptions,
     var ticks: Int = 0,
-) {
+) : ICard {
 
     init {
         if (entries.size != 25) throw IllegalArgumentException("BINGO card was created with less than 25 entries! (${entries.size})")
@@ -53,9 +54,9 @@ class BingoCard(
      *
      * Throws if [x] or [y] arguments are not within 0..4
      */
-    fun objective(x: Int, y: Int): Pair<BingoCardEntry, BingoObjective>? {
+    override fun objective(x: Int, y: Int): BingoCardEntryAccess? {
         val entry = entry(x, y)
-        return objectives[entry.objectiveId]?.let { Pair(entry, it) }
+        return objectives[entry.objectiveId]?.let { BingoCardEntryAccess(entry, it) }
     }
 
     fun lines(): Sequence<List<BingoCardEntry>> = sequence {
@@ -86,7 +87,7 @@ class BingoCard(
      * Counts every horizontal, vertical, and diagonal line on the card
      * achieved by the given [team].
      */
-    fun countLines(team: BingoTeam): Int = countLines { it.hasAchieved(team.key) }
+    fun countLines(team: BingoTeam): Int = countLines { it.hasTeamAchieved(team.key) }
 
     fun countItems(predicate: (BingoObjective) -> Boolean): Int = entries
         .mapNotNull { objectives[it.objectiveId] }
@@ -95,7 +96,7 @@ class BingoCard(
     /**
      * Counts the total number of items achieved by the given [team].
      */
-    fun countItems(team: BingoTeam): Int = countItems { it.hasAchieved(team.key) }
+    fun countItems(team: BingoTeam): Int = countItems { it.hasTeamAchieved(team.key) }
 
     fun getTeamScore(team: BingoTeam): TeamScore {
         return TeamScore(

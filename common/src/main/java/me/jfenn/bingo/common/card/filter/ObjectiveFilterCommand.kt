@@ -4,9 +4,7 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.tag.TagService
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
-import me.jfenn.bingo.common.event.model.OptionsChangedEvent
-import me.jfenn.bingo.common.options.OptionsService
-import me.jfenn.bingo.common.options.optionsContext
+import me.jfenn.bingo.common.options.withOptionsService
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -86,12 +84,12 @@ class ObjectiveFilterCommand(
                             }
                         }
 
-                        scope.get<OptionsService>().setCardFilter(
-                            ctx = optionsContext,
-                            filter = list,
-                            includePresetDetails = true,
-                        )
-                        eventBus.emit(OptionsChangedEvent, Unit)
+                        withOptionsService {
+                            it.setCardFilter(
+                                filter = list,
+                                includePresetDetails = true,
+                            )
+                        }
 
                         if (!list.contains(ObjectiveFilter.Exclude(ObjectiveFilter.UNOBTAINABLE))) {
                             sendMessage(text.string(StringKey.CommandFilterIncludesUnobtainable).formatted(ChatFormatting.YELLOW))

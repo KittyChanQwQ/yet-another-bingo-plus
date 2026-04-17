@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.api.options.StalemateBehavior
 import me.jfenn.bingo.common.options.OptionsService
-import me.jfenn.bingo.common.options.StalemateBehavior
+import me.jfenn.bingo.common.options.string
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.text.Formatting
@@ -13,7 +13,6 @@ internal const val MENU_STALEMATE_WIDTH = 2.0
 internal fun MenuComponent.registerStalemateBehavior(
     position: Vector3d,
     width: Double = MENU_STALEMATE_WIDTH,
-    options: BingoOptions = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
 ) {
     val offset = Vector3d()
@@ -38,9 +37,9 @@ internal fun MenuComponent.registerStalemateBehavior(
                         ?: error("No string found for $behavior tooltip!")
                 ))
             },
-            isActiveProp = computedProperty { options.stalemateBehavior == behavior }
+            isActiveProp = computedProperty { optionsService.stalemateBehavior == behavior }
         ) {
-            optionsService.setStalemateBehavior(OptionsService.Context(it), behavior)
+            optionsService.stalemateBehavior = behavior
         }
     }
 }

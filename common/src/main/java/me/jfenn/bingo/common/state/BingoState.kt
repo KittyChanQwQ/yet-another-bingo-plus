@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.state
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.game.GameOverService
@@ -8,8 +9,8 @@ import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.menu.MenuPage
 import me.jfenn.bingo.common.menu.MenuState
 import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.options.BingoWinCondition
 import me.jfenn.bingo.common.options.RestoreOption
+import me.jfenn.bingo.common.options.format
 import me.jfenn.bingo.common.scoring.GameMessage
 import me.jfenn.bingo.common.spawn.PlayerState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -40,12 +41,12 @@ data class BingoState internal constructor(
     var lobbySpawnYaw: Float = 0f,
     var timeOffline: DurationType = Duration.ZERO,
     var timeAdjustment: DurationType = Duration.ZERO,
-    val options: BingoOptions,
-    val restoreOptions: MutableList<RestoreOption> = mutableListOf(),
-    val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
+    internal val options: BingoOptions,
+    internal val restoreOptions: MutableList<RestoreOption> = mutableListOf(),
+    internal val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
     var previewMap: BingoMap? = null,
     // This is a temporary list that should be overwritten by `CardService.generate()`
-    val cards: MutableList<BingoCard> = mutableListOf(),
+    internal val cards: MutableList<BingoCard> = mutableListOf(),
     internal var gameOverInfo: GameOverService.GameOverInfo? = null,
     var gameMessages: MutableList<GameMessage> = mutableListOf(),
     /**
@@ -68,7 +69,7 @@ data class BingoState internal constructor(
     var isForfeit: Boolean = false,
 ) {
 
-    fun getActiveCard(): BingoCard {
+    internal fun getActiveCard(): BingoCard {
         return cards.firstOrNull()
             ?: throw IllegalArgumentException("No cards in state")
     }
@@ -82,13 +83,13 @@ data class BingoState internal constructor(
         }
     }
 
-    fun pushCard(card: BingoCard) {
+    internal fun pushCard(card: BingoCard) {
         val nextCard = cards.firstOrNull()
         card.nextCardId = nextCard?.id
         cards.add(0, card)
     }
 
-    fun pushCardTail(card: BingoCard) {
+    internal fun pushCardTail(card: BingoCard) {
         cards.lastOrNull()?.nextCardId = card.id
         card.nextCardId = null
         cards.add(card)
@@ -106,7 +107,7 @@ data class BingoState internal constructor(
         }
     }
 
-    fun replaceCard(card: BingoCard) {
+    internal fun replaceCard(card: BingoCard) {
         val index = cards.indexOfFirst { it.id == card.id }
             .takeIf { it != -1 }
             ?: throw IllegalArgumentException("Unknown card provided in replaceCard")
@@ -114,7 +115,7 @@ data class BingoState internal constructor(
         cards[index] = card
     }
 
-    fun getCard(team: BingoTeam): BingoCard? {
+    internal fun getCard(team: BingoTeam): BingoCard? {
         return if (team.isWinner() || state == GameState.POSTGAME) {
             team.completedCards.lastOrNull()?.card
         } else {
@@ -122,7 +123,7 @@ data class BingoState internal constructor(
         }
     }
 
-    fun getCard(id: UUID): BingoCard? {
+    internal fun getCard(id: UUID): BingoCard? {
         return cards.find { it.id == id }
     }
 
@@ -133,11 +134,11 @@ data class BingoState internal constructor(
         .distinctBy { it.uuid }
         .count() == 1
 
-    fun getRegisteredTeams(): List<BingoTeam> {
+    internal fun getRegisteredTeams(): List<BingoTeam> {
         return teams.values.filter { it.players.isNotEmpty() }
     }
 
-    fun registerTeam(team: BingoTeam): BingoTeam {
+    internal fun registerTeam(team: BingoTeam): BingoTeam {
         return teams.getOrPut(team.key) {
             team.newInstance().apply {
                 cardId = cards.first().id
@@ -204,7 +205,7 @@ data class BingoState internal constructor(
             .formatted(if (secondsRemaining.toSeconds() <= 30 && secondsRemaining.toSeconds() % 2 == 0L) { alertColor } else { normalColor })
     }
 
-    fun formatCardGoals(team: BingoTeam?, text: TextProvider): IText {
+    internal fun formatCardGoals(team: BingoTeam?, text: TextProvider): IText {
         val card = cards.find { it.id == team?.cardId } ?: cards.first()
         val supportsFullCard = options.winCondition !is BingoWinCondition.ReplaceGoals
         val remainingCards = (options.winCondition as? BingoWinCondition.Cards)
@@ -222,7 +223,7 @@ data class BingoState internal constructor(
             }
     }
 
-    fun formatCardGoalsDescriptive(team: BingoTeam?, text: TextProvider): IText {
+    internal fun formatCardGoalsDescriptive(team: BingoTeam?, text: TextProvider): IText {
         val card = cards.find { it.id == team?.cardId } ?: cards.first()
         val supportsFullCard = options.winCondition !is BingoWinCondition.ReplaceGoals
         val remainingCards = (options.winCondition as? BingoWinCondition.Cards)

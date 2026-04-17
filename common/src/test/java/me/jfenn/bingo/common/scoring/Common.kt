@@ -10,7 +10,7 @@ import me.jfenn.bingo.common.team.TeamWinner
 import java.time.Duration
 import java.time.Instant
 
-fun mockTeam(
+internal fun mockTeam(
     name: String,
     score: TeamScore,
     winner: TeamWinner? = null,
@@ -22,7 +22,7 @@ fun mockTeam(
     every { it.winner } returns winner
 }
 
-fun mockState(
+internal fun mockState(
     teams: List<BingoTeam>,
     startedAt: Instant = Instant.ofEpochSecond(1746464705),
 ) = mockk<BingoState>().also {

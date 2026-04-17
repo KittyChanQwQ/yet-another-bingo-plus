@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.card.objective
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 
-interface IObjectiveManager {
+internal interface IObjectiveManager {
     /**
      * List all objective ids available
      */

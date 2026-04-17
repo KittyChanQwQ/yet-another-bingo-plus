@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.card.objective
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.jfenn.bingo.api.card.ICardObjective
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.team.BingoTeam
@@ -20,7 +21,7 @@ import java.time.Instant
 import java.util.*
 
 @Serializable
-sealed class BingoObjective {
+internal sealed class BingoObjective : ICardObjective {
 
     abstract val id: String
 
@@ -54,11 +55,12 @@ sealed class BingoObjective {
 
     val conflictsWithObjectives get() = data?.conflictsWith ?: conflictsWithObjectivesInternal
 
-    open fun hasAchieved(player: PlayerProfile): Boolean = players.containsKey(player.uuid)
-    open fun hasAchieved(team: BingoTeamKey): Boolean = teamsAchieved.containsKey(team)
+    fun hasAchieved(player: PlayerProfile) = hasPlayerAchieved(player.uuid)
+    override fun hasPlayerAchieved(playerId: UUID): Boolean = players.containsKey(playerId)
+    open fun hasTeamAchieved(team: BingoTeamKey): Boolean = teamsAchieved.containsKey(team)
+    override fun hasTeamAchieved(teamName: String): Boolean = hasTeamAchieved(BingoTeamKey(teamName))
 
     open fun hasAnyAchieved() = teamsAchieved.isNotEmpty()
-    fun hasNoneAchieved() = !hasAnyAchieved()
 
     open fun removePlayer(uuid: UUID) {
         playersHolding.remove(uuid)
@@ -120,7 +122,7 @@ sealed class BingoObjective {
      */
     open fun isFlashing(team: BingoTeamKey?, duration: Duration): Boolean {
         return team != null &&
-                hasAchieved(team) &&
+                hasTeamAchieved(team) &&
                 Duration.between(updatedAt(team), Instant.now()) < duration
     }
 
@@ -133,8 +135,8 @@ sealed class BingoObjective {
         override val data: ObjectiveData? = null
 
         override fun hasAnyAchieved(): Boolean = true
-        override fun hasAchieved(player: PlayerProfile): Boolean = true
-        override fun hasAchieved(team: BingoTeamKey): Boolean = true
+        override fun hasPlayerAchieved(playerId: UUID): Boolean = true
+        override fun hasTeamAchieved(team: BingoTeamKey): Boolean = true
         override fun isFlashing(team: BingoTeamKey?, duration: Duration): Boolean = false
     }
 

@@ -34,11 +34,11 @@ class PlaceholdersIntegration(
 
     init {
         textPlaceholders.registerPlaceholder("time") {
-            text.literal(BingoApi.game?.time?.formatString().orEmpty())
+            text.literal(BingoApi.INSTANCE?.game?.time?.formatString().orEmpty())
         }
 
         textPlaceholders.registerPlaceholder("time_remaining") {
-            text.literal(BingoApi.game?.timeRemaining?.formatString().orEmpty())
+            text.literal(BingoApi.INSTANCE?.game?.timeRemaining?.formatString().orEmpty())
         }
     }
 }

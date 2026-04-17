@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.card.tierlist.TierListConfig
 import me.jfenn.bingo.common.card.tierlist.TierListEntry
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.data.ScopedData
+import me.jfenn.bingo.common.event.model.CardShuffledEvent
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.options.BingoOptions
@@ -25,6 +26,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.text.IText
 import org.slf4j.Logger
 import java.util.*
@@ -42,6 +44,7 @@ internal class CardService(
     private val tagExpansionService: TagExpansionService,
     private val text: TextProvider,
     private val spawnKitService: SpawnKitService,
+    private val eventBus: IEventBus,
 ) {
 
     private val supportedObjectiveIds = cacheFor(5.seconds) { _: Unit ->
@@ -193,6 +196,7 @@ internal class CardService(
         )
         objectiveManager.init(newCard)
         state.replaceCard(newCard)
+        eventBus.emit(CardShuffledEvent, CardShuffledEvent(card.id))
     }
 
     fun generateCard(

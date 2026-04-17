@@ -4,7 +4,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 
-class ChunkyController(
+internal class ChunkyController(
     events: ScopedEvents,
     private val chunkyIntegration: IChunkyApi,
 ) : BingoComponent() {

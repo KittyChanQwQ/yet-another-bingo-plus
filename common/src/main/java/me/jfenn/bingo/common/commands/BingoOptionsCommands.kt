@@ -1,10 +1,13 @@
 package me.jfenn.bingo.common.commands
 
+import me.jfenn.bingo.api.options.BingoGoal
+import me.jfenn.bingo.api.options.BingoWinCondition
+import me.jfenn.bingo.api.options.EndWhen
+import me.jfenn.bingo.api.options.StalemateBehavior
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.event.model.OptionsChangedEvent
-import me.jfenn.bingo.common.options.*
+import me.jfenn.bingo.common.options.BingoCardOptions
+import me.jfenn.bingo.common.options.withOptionsService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IServerWorldFactory
@@ -12,54 +15,54 @@ import me.jfenn.bingo.platform.commands.CommandBuilder
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
-import me.jfenn.bingo.platform.event.IEventBus
 import kotlin.reflect.KMutableProperty1
 
 class BingoOptionsCommands(
     commandManager: ICommandManager,
-    private val eventBus: IEventBus,
 ) : BingoComponent() {
 
     private fun IExecutionSource.hasConfigureGame() = hasState(GameState.PREGAME, GameState.PLAYING) && hasPermission(Permission.CONFIGURE_GAME)
 
     private fun IExecutionContext.setGoal(goal: BingoGoal) {
-        scope.get<OptionsService>().setGoal(
-            ctx = optionsContext,
-            goal = goal,
-        )
-        eventBus.emit(OptionsChangedEvent, Unit)
+        withOptionsService {
+            it.setGoal(goal = goal)
+        }
     }
 
     private fun IExecutionContext.toggleCardMode(
         prop: KMutableProperty1<BingoCardOptions, Boolean>,
         value: Boolean? = null,
     ) {
-        scope.get<OptionsService>().toggleCardMode(
-            ctx = optionsContext,
-            prop = prop,
-            value = value,
-        )
-        eventBus.emit(OptionsChangedEvent, Unit)
+        withOptionsService {
+            it.toggleCardMode(
+                prop = prop,
+                value = value,
+            )
+        }
     }
 
     private fun IExecutionContext.setWinCondition(winCondition: BingoWinCondition) {
-        scope.get<OptionsService>().setWinCondition(optionsContext, winCondition)
-        eventBus.emit(OptionsChangedEvent, Unit)
+        withOptionsService {
+            it.winCondition = winCondition
+        }
     }
 
     private fun IExecutionContext.setStalemateBehavior(stalemateBehavior: StalemateBehavior) {
-        scope.get<OptionsService>().setStalemateBehavior(optionsContext, stalemateBehavior)
-        eventBus.emit(OptionsChangedEvent, Unit)
+        withOptionsService {
+            it.stalemateBehavior = stalemateBehavior
+        }
     }
 
     private fun IExecutionContext.setEndWhen(endWhen: EndWhen) {
-        scope.get<OptionsService>().setEndWhen(optionsContext, endWhen)
-        eventBus.emit(OptionsChangedEvent, Unit)
+        withOptionsService {
+            it.endGameWhen = endWhen
+        }
     }
 
     private fun IExecutionContext.setTimeLimit(minutes: Int?) {
-        scope.get<OptionsService>().setTimeLimit(optionsContext, minutes)
-        eventBus.emit(OptionsChangedEvent, Unit)
+        withOptionsService {
+            it.setTimeLimit(minutes)
+        }
     }
 
     private fun CommandBuilder.executesToggle(callback: IExecutionContext.(Boolean?) -> Unit) {
@@ -184,23 +187,26 @@ class BingoOptionsCommands(
                 literal("pvp") {
                     requires { hasLobby() && hasConfigureGame() }
                     executesToggle { isPvpEnabled ->
-                        scope.get<OptionsService>().togglePvp(optionsContext, isPvpEnabled)
-                        scope.get<IEventBus>().emit(OptionsChangedEvent, Unit)
+                        withOptionsService {
+                            it.togglePvp(isPvpEnabled)
+                        }
                     }
                 }
 
                 literal("elytra") {
                     executesToggle { isElytra ->
-                        scope.get<OptionsService>().toggleElytra(optionsContext, isElytra)
-                        scope.get<IEventBus>().emit(OptionsChangedEvent, Unit)
+                        withOptionsService {
+                            it.toggleElytra(isElytra)
+                        }
                     }
                 }
 
                 literal("night_vision") {
                     requires { hasLobby() && hasConfigureGame() }
                     executesToggle { isNightVision ->
-                        scope.get<OptionsService>().toggleNightVision(optionsContext, isNightVision)
-                        eventBus.emit(OptionsChangedEvent, Unit)
+                        withOptionsService {
+                            it.toggleNightVision(isNightVision)
+                        }
                     }
                 }
 
@@ -209,8 +215,9 @@ class BingoOptionsCommands(
                         hasConfigureGame() && hasState(GameState.PREGAME)
                     }
                     executesToggle { isPreviewCard ->
-                        scope.get<OptionsService>().togglePreviewCard(optionsContext, isPreviewCard)
-                        eventBus.emit(OptionsChangedEvent, Unit)
+                        withOptionsService {
+                            it.togglePreviewCard(isPreviewCard)
+                        }
                     }
                 }
 
@@ -219,8 +226,9 @@ class BingoOptionsCommands(
                     integer("chunks", min = 0) { chunksArg ->
                         executes {
                             val chunks = getArgument(chunksArg)
-                            scope.get<OptionsService>().setSpawnDistance(optionsContext, chunks)
-                            eventBus.emit(OptionsChangedEvent, Unit)
+                            withOptionsService {
+                                it.spawnDistance = chunks
+                            }
                         }
                     }
                 }
@@ -245,8 +253,9 @@ class BingoOptionsCommands(
                                 .find { it.identifier == dimension }
                                 ?: error("Dimension '$dimension' does not exist!")
 
-                            scope.get<OptionsService>().setSpawnDimension(optionsContext, dimension)
-                            eventBus.emit(OptionsChangedEvent, Unit)
+                            withOptionsService {
+                                it.spawnDimension = dimension
+                            }
                         }
                     }
                 }

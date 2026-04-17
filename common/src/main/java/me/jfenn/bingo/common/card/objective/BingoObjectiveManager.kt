@@ -9,7 +9,7 @@ import me.jfenn.bingo.generated.StringKey
 import net.minecraft.ChatFormatting
 import org.slf4j.Logger
 
-class BingoObjectiveManager(
+internal class BingoObjectiveManager(
     private val providers: List<IObjectiveManager>,
     private val text: TextProvider,
     private val log: Logger,

@@ -1,11 +1,12 @@
 package me.jfenn.bingo.common.options
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.text.IText
 
 /**
  * Card options are initialized once and passed by reference into [me.jfenn.bingo.common.card.BingoCard]

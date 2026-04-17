@@ -2,10 +2,10 @@ package me.jfenn.bingo.common.game
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.api.options.BingoWinCondition
+import me.jfenn.bingo.api.options.EndWhen
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.options.BingoWinCondition
-import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.scoring.ScoreRanking
 import me.jfenn.bingo.common.scoring.ScoreRankingService
 import me.jfenn.bingo.common.scoring.ScoreService

@@ -9,4 +9,5 @@ interface IEventBus {
     ): ICallbackHandle
 
     fun <T: Any, R> emit(type: IReturnEvent<T, R>, event: T): List<R>
+    fun <R> emit(type: IReturnEvent<Unit, R>) = emit(type, Unit)
 }

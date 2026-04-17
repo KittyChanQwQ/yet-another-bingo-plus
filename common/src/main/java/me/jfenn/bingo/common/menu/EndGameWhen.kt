@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.options.EndWhen
+import me.jfenn.bingo.api.options.EndWhen
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
@@ -13,7 +12,6 @@ internal const val MENU_END_WHEN_WIDTH = 2.0
 internal fun MenuComponent.registerEndGameWhen(
     position: Vector3d,
     width: Double = MENU_END_WHEN_WIDTH,
-    options: BingoOptions = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
 ) {
     val offset = Vector3d()
@@ -33,9 +31,9 @@ internal fun MenuComponent.registerEndGameWhen(
             add(text.string(StringKey.OptionsEndWhen, StringKey.OptionsEndWhenFirstWin).formatted(Formatting.GREEN))
             add(text.string(StringKey.OptionsEndWhenFirstWinTooltip))
         },
-        isActiveProp = computedProperty { options.endGameWhen == EndWhen.FirstWin }
+        isActiveProp = computedProperty { optionsService.endGameWhen == EndWhen.FirstWin }
     ) {
-        optionsService.setEndWhen(OptionsService.Context(it), EndWhen.FirstWin)
+        optionsService.endGameWhen = EndWhen.FirstWin
     }
 
     registerTileButton(
@@ -47,9 +45,9 @@ internal fun MenuComponent.registerEndGameWhen(
             add(text.string(StringKey.OptionsEndWhen, StringKey.OptionsEndWhenAllWin).formatted(Formatting.GREEN))
             add(text.string(StringKey.OptionsEndWhenAllWinTooltip))
         },
-        isActiveProp = computedProperty { options.endGameWhen == EndWhen.AllWin }
+        isActiveProp = computedProperty { optionsService.endGameWhen == EndWhen.AllWin }
     ) {
-        optionsService.setEndWhen(OptionsService.Context(it), EndWhen.AllWin)
+        optionsService.endGameWhen = EndWhen.AllWin
     }
 
     registerTileButton(
@@ -61,9 +59,9 @@ internal fun MenuComponent.registerEndGameWhen(
             add(text.string(StringKey.OptionsEndWhen, StringKey.OptionsEndWhenNever).formatted(Formatting.GREEN))
             add(text.string(StringKey.OptionsEndWhenNeverTooltip))
         },
-        isActiveProp = computedProperty { options.endGameWhen == EndWhen.Never }
+        isActiveProp = computedProperty { optionsService.endGameWhen == EndWhen.Never }
     ) {
-        optionsService.setEndWhen(OptionsService.Context(it), EndWhen.Never)
+        optionsService.endGameWhen = EndWhen.Never
     }
 
     registerTileButton(
@@ -75,22 +73,21 @@ internal fun MenuComponent.registerEndGameWhen(
             add(text.string(StringKey.OptionsEndWhen, StringKey.OptionsEndWhenNumTeamsWin).formatted(Formatting.GREEN))
             add(text.string(StringKey.OptionsEndWhenNumTeamsWinTooltip))
         },
-        isActiveProp = computedProperty { options.endGameWhen is EndWhen.TeamsWin }
+        isActiveProp = computedProperty { optionsService.endGameWhen is EndWhen.TeamsWin }
     ) {
-        optionsService.setEndWhen(OptionsService.Context(it), EndWhen.TeamsWin(2))
+        optionsService.endGameWhen = EndWhen.TeamsWin(2)
     }
 
     val countProp = DelegatedProperty(
         getter = {
-            when (val endWhen = options.endGameWhen) {
+            when (val endWhen = optionsService.endGameWhen) {
                 is EndWhen.TeamsWin -> endWhen.teams
                 else -> 0
             }
         },
         setter = { count ->
-            options.endGameWhen = when (options.endGameWhen) {
-                is EndWhen.TeamsWin -> EndWhen.TeamsWin(count)
-                else -> options.endGameWhen
+            if (optionsService.endGameWhen is EndWhen.TeamsWin) {
+                optionsService.endGameWhen = EndWhen.TeamsWin(count)
             }
         }
     )
@@ -103,6 +100,6 @@ internal fun MenuComponent.registerEndGameWhen(
         minValueProp = ConstantProperty(2),
         maxValueProp = computedProperty { 100 },
         format = { text.teamCount(it) },
-        isVisible = { options.endGameWhen is EndWhen.TeamsWin },
+        isVisible = { optionsService.endGameWhen is EndWhen.TeamsWin },
     )
 }

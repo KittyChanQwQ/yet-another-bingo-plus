@@ -1,5 +1,9 @@
 package me.jfenn.bingo.common.game
 
+import me.jfenn.bingo.api.options.BingoGoal
+import me.jfenn.bingo.api.options.BingoWinCondition
+import me.jfenn.bingo.api.options.EndWhen
+import me.jfenn.bingo.api.options.StalemateBehavior
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.options.*
@@ -39,10 +43,6 @@ internal class GameResumeService(
     }
 
     fun resume() {
-        require(state.state == GameState.POSTGAME) { "Game can only be resumed from POSTGAME! (is ${state.state})" }
-        val gameOverInfo = requireNotNull(state.gameOverInfo) { "gameOverInfo is null!" }
-        log.info("[GameService] Resuming the game!")
-
         val context = OptionsService.Context(
             player = null,
             receiveFeedback = { message ->
@@ -51,6 +51,16 @@ internal class GameResumeService(
             },
             receiveError = null,
         )
+
+        withContext(context) {
+            resumeWithContext()
+        }
+    }
+
+    private fun resumeWithContext() {
+        require(state.state == GameState.POSTGAME) { "Game can only be resumed from POSTGAME! (is ${state.state})" }
+        val gameOverInfo = requireNotNull(state.gameOverInfo) { "gameOverInfo is null!" }
+        log.info("[GameService] Resuming the game!")
 
         val teams = state.getRegisteredTeams()
 
@@ -103,12 +113,12 @@ internal class GameResumeService(
             val actualCard = state.cards.find { it.id == cardId }
             if (actualCard != null) {
                 state.restoreOptions.add(RestoreGoal(actualCard.options.goal))
-                optionsService.setGoal(context, actualCard, newGoal)
+                optionsService.setGoal(actualCard, newGoal)
             }
         } else if (teams.any { !it.isWinner() }) {
             // if there are teams that aren't done yet, set endWhen=AllWin
             state.restoreOptions.add(RestoreEndWhen(options.endGameWhen))
-            optionsService.setEndWhen(context, EndWhen.AllWin)
+            optionsService.endGameWhen = EndWhen.AllWin
         } else {
             // Reset each team to a non-winner state
             for (team in teams) {
@@ -117,7 +127,7 @@ internal class GameResumeService(
 
             // if the team won for another reason (e.g. a multi-card game), set the winCondition to infinite
             state.restoreOptions.add(RestoreWinCondition(options.winCondition))
-            optionsService.setWinCondition(context, BingoWinCondition.Infinite)
+            optionsService.winCondition = BingoWinCondition.Infinite
         }
 
         for (team in teams) {
@@ -153,7 +163,7 @@ internal class GameResumeService(
         // If the time limit is close (or expired), remove it!
         if (state.remainingDuration()?.let { it < Duration.ofSeconds(30) } == true) {
             optionsService.createRestoreTimeLimit()
-            optionsService.setTimeLimit(context, null)
+            optionsService.timeLimit = null
         }
 
         // If the game ended because of a stalemate, set stalemates to "Do Nothing"
@@ -162,7 +172,7 @@ internal class GameResumeService(
             is GameEndReason.Stalemate,
             is GameEndReason.ImpossibleGoal -> {
                 state.restoreOptions.add(RestoreStalemateBehavior(options.stalemateBehavior))
-                optionsService.setStalemateBehavior(context, StalemateBehavior.NOTHING)
+                optionsService.stalemateBehavior = StalemateBehavior.NOTHING
             }
             else -> {}
         }

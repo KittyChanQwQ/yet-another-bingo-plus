@@ -15,7 +15,7 @@ import kotlin.math.cos
 import kotlin.math.sign
 import kotlin.math.sin
 
-class SpreadPlayers(
+internal class SpreadPlayers(
     private val log: Logger,
     private val taskExecutor: IExecutors.IServerTaskExecutor,
     private val world: IServerWorld,

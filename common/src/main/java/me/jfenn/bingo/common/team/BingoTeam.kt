@@ -30,7 +30,7 @@ value class BingoTeamKey(
 }
 
 @Serializable
-data class BingoTeam(
+internal data class BingoTeam(
     val id: String,
     var name: ITextSerialized,
     val shouldFormatName: Boolean,

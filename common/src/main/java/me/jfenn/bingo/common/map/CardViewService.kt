@@ -213,8 +213,8 @@ internal class CardViewService(
                 state.state != GameState.POSTGAME &&
                 team?.isWinner() != true
         val isLocked =
-            card.options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasAchieved(team.key)
-        val isAchieved = team != null && objective.hasAchieved(team.key)
+            card.options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasTeamAchieved(team.key)
+        val isAchieved = team != null && objective.hasTeamAchieved(team.key)
 
         val image = CardTileImage(
             item = if (isHidden) null else entry.display.item,
@@ -228,7 +228,7 @@ internal class CardViewService(
                 ?.mapNotNull { card.objectives[it] }
                 ?.sortedBy { innerObjective ->
                     // prefer displaying objectives that are not yet achieved
-                    val isInnerAchieved = team?.key?.let { innerObjective.hasAchieved(it) } ?: false
+                    val isInnerAchieved = team?.key?.let { innerObjective.hasTeamAchieved(it) } ?: false
                     if (isInnerAchieved) 1 else 0
                 }
             else -> emptyList()

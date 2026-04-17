@@ -1,20 +1,22 @@
 package me.jfenn.bingo.common.card.tierlist
 
+import me.jfenn.bingo.api.card.ObjectiveTier
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.text.Formatting
 
 enum class TierLabel(
+    val tier: ObjectiveTier,
     val formatting: Formatting,
     val string: StringKey,
     val shortString: StringKey,
 ) {
-    S(Formatting.DARK_RED, StringKey.TierS, StringKey.TierSShort),
-    A(Formatting.RED, StringKey.TierA, StringKey.TierAShort),
-    B(Formatting.GOLD, StringKey.TierB, StringKey.TierBShort),
-    C(Formatting.YELLOW, StringKey.TierC, StringKey.TierCShort),
-    D(Formatting.GREEN, StringKey.TierD, StringKey.TierDShort);
+    S(ObjectiveTier.S, Formatting.DARK_RED, StringKey.TierS, StringKey.TierSShort),
+    A(ObjectiveTier.A, Formatting.RED, StringKey.TierA, StringKey.TierAShort),
+    B(ObjectiveTier.B, Formatting.GOLD, StringKey.TierB, StringKey.TierBShort),
+    C(ObjectiveTier.C, Formatting.YELLOW, StringKey.TierC, StringKey.TierCShort),
+    D(ObjectiveTier.D, Formatting.GREEN, StringKey.TierD, StringKey.TierDShort);
 
     fun text(text: TextProvider) = text.string(this.string).formatted(formatting)
 

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.options
 
+import me.jfenn.bingo.api.options.*
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
@@ -7,6 +8,7 @@ import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.commands.BingoOptionsCommands
 import me.jfenn.bingo.common.controller.GameRuleController
+import me.jfenn.bingo.common.event.model.OptionsChangedEvent
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.spawn.ElytraService
 import me.jfenn.bingo.common.state.BingoState
@@ -19,6 +21,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.commands.IExecutionContext
+import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.text.TextAction
@@ -33,6 +36,21 @@ internal val IExecutionContext.optionsContext
         receiveError = ::error,
     )
 
+internal inline fun withContext(ctx: OptionsService.Context, callback: () -> Unit) {
+    try {
+        OptionsService.localCtx.set(ctx)
+        callback()
+    } finally {
+        OptionsService.localCtx.remove()
+    }
+}
+
+internal inline fun IExecutionContext.withOptionsService(callback: (OptionsService) -> Unit) {
+    withContext(optionsContext) {
+        callback(scope.get<OptionsService>())
+    }
+}
+
 internal class OptionsService(
     private val state: BingoState,
     private val options: BingoOptions,
@@ -40,11 +58,17 @@ internal class OptionsService(
     private val cardViewService: CardViewService,
     private val elytraService: ElytraService,
     private val objectiveFilterService: ObjectiveFilterService,
-    private val gameRuleController: GameRuleController,
     private val teamService: TeamService,
     private val playerManager: IPlayerManager,
     private val text: TextProvider,
-) {
+    private val eventBus: IEventBus,
+) : IOptionsService {
+    companion object {
+        val localCtx = ThreadLocal<Context?>()
+        val fallbackCtx = Context(null)
+        val ctx get() = localCtx.get() ?: fallbackCtx
+    }
+
     data class Context(
         val player: IPlayerHandle?,
         val receiveFeedback: ((IText) -> Unit)? = null,
@@ -75,7 +99,6 @@ internal class OptionsService(
     }
 
     fun setGoal(
-        ctx: Context,
         card: BingoCard = cardViewService.getPlayerCard(ctx.player),
         goal: BingoGoal,
     ) {
@@ -98,10 +121,10 @@ internal class OptionsService(
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsGoal, goalName.formatted(Formatting.WHITE))
         )
+        eventBus.emit(OptionsChangedEvent)
     }
 
     fun setCardDifficulty(
-        ctx: Context,
         card: BingoCard = cardViewService.getPlayerCard(ctx.player),
         itemDistInput: List<Int>,
         allowInvalid: Boolean = false,
@@ -120,10 +143,10 @@ internal class OptionsService(
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsCardDifficulty, card.options.formatItemDist(text))
         )
+        eventBus.emit(OptionsChangedEvent)
     }
 
     fun setCardFilter(
-        ctx: Context,
         card: BingoCard = cardViewService.getPlayerCard(ctx.player),
         filter: ObjectiveFilterList,
         includePresetDetails: Boolean = false
@@ -136,10 +159,10 @@ internal class OptionsService(
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsFilter, objectiveFilterService.formatFilter(filter, includePresetDetails).formatted(Formatting.WHITE))
         )
+        eventBus.emit(OptionsChangedEvent)
     }
 
     fun toggleCardMode(
-        ctx: Context,
         card: BingoCard = cardViewService.getPlayerCard(ctx.player),
         prop: KMutableProperty1<BingoCardOptions, Boolean>,
         value: Boolean? = null,
@@ -165,10 +188,14 @@ internal class OptionsService(
                 ).formatted(Formatting.WHITE),
             )
         )
+        eventBus.emit(OptionsChangedEvent)
     }
 
-    fun setWinCondition(
-        ctx: Context,
+    override var winCondition: BingoWinCondition
+        get() = options.winCondition
+        set(value) = setWinConditionInternal(value)
+
+    private fun setWinConditionInternal(
         winCondition: BingoWinCondition,
     ) {
         options.winCondition = winCondition
@@ -182,10 +209,14 @@ internal class OptionsService(
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsWinCondition, describe.formatted(Formatting.WHITE))
         )
+        eventBus.emit(OptionsChangedEvent, Unit)
     }
 
-    fun setStalemateBehavior(
-        ctx: Context,
+    override var stalemateBehavior: StalemateBehavior
+        get() = options.stalemateBehavior
+        set(value) = setStalemateBehaviorInternal(value)
+
+    private fun setStalemateBehaviorInternal(
         stalemateBehavior: StalemateBehavior,
     ) {
         options.stalemateBehavior = stalemateBehavior
@@ -194,41 +225,57 @@ internal class OptionsService(
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsWinBehaviorWhenStalemate, text.string(stalemateBehavior.string).formatted(Formatting.WHITE))
         )
+        eventBus.emit(OptionsChangedEvent, Unit)
     }
 
-    fun setEndWhen(
-        ctx: Context,
+    override var endGameWhen: EndWhen
+        get() = options.endGameWhen
+        set(value) = setEndWhen(value)
+
+    private fun setEndWhen(
         endWhen: EndWhen,
     ) {
         options.endGameWhen = endWhen
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsWinBehaviorEndWhen, endWhen.string(text).formatted(Formatting.WHITE))
         )
+        eventBus.emit(OptionsChangedEvent, Unit)
     }
 
+    override var isKeepInventory: Boolean
+        get() = options.isKeepInventory
+        set(value) = toggleKeepInventory(value)
+
     fun toggleKeepInventory(
-        ctx: Context,
         isKeepInventory: Boolean = !options.isKeepInventory,
     ) {
         options.isKeepInventory = isKeepInventory
-        gameRuleController.writeToServer()
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsKeepInventory, text.boolean(isKeepInventory))
         )
+        eventBus.emit(GameRuleController.GameRuleChangedEvent)
+        eventBus.emit(OptionsChangedEvent)
     }
 
+    override var showPreviewCard: Boolean
+        get() = options.showPreviewCard
+        set(value) = togglePreviewCard(value)
+
     fun togglePreviewCard(
-        ctx: Context,
         showPreviewCard: Boolean? = null,
     ) {
         options.showPreviewCard = showPreviewCard ?: !options.showPreviewCard
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsPreviewCard, text.boolean(options.showPreviewCard))
         )
+        eventBus.emit(OptionsChangedEvent)
     }
 
+    override var isElytra: Boolean
+        get() = options.isElytra
+        set(value) = toggleElytra(value)
+
     fun toggleElytra(
-        ctx: Context,
         isElytra: Boolean? = null,
     ) {
         options.isElytra = isElytra ?: !options.isElytra
@@ -243,10 +290,14 @@ internal class OptionsService(
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsElytra, text.boolean(options.isElytra))
         )
+        eventBus.emit(OptionsChangedEvent)
     }
 
+    override var isNightVision: Boolean
+        get() = options.isNightVision
+        set(value) = toggleNightVision(value)
+
     fun toggleNightVision(
-        ctx: Context,
         isNightVision: Boolean? = null,
     ) {
         options.isNightVision = isNightVision ?: !options.isNightVision
@@ -261,21 +312,29 @@ internal class OptionsService(
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsNightVis, text.boolean(options.isNightVision))
         )
+        eventBus.emit(OptionsChangedEvent)
     }
 
+    override var isPvpEnabled: Boolean
+        get() = options.isPvpEnabled
+        set(value) = togglePvp(value)
+
     fun togglePvp(
-        ctx: Context,
         isPvpEnabled: Boolean? = null,
     ) {
         options.isPvpEnabled = isPvpEnabled ?: !options.isPvpEnabled
-        gameRuleController.writeToServer()
         ctx.sendFeedback(
             text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsAllowPvp, text.boolean(options.isPvpEnabled))
         )
+        eventBus.emit(GameRuleController.GameRuleChangedEvent)
+        eventBus.emit(OptionsChangedEvent)
     }
 
+    override var isUnlockRecipes: Boolean
+        get() = options.isUnlockRecipes
+        set(value) = toggleUnlockRecipes(value)
+
     fun toggleUnlockRecipes(
-        ctx: Context,
         isUnlockRecipes: Boolean = !options.isUnlockRecipes,
     ) {
         options.isUnlockRecipes = isUnlockRecipes
@@ -284,8 +343,11 @@ internal class OptionsService(
         )
     }
 
+    override var timeLimit: Duration?
+        get() = options.timeLimit
+        set(value) = setTimeLimit(value?.toMinutes()?.toInt())
+
     fun setTimeLimit(
-        ctx: Context,
         minutes: Int?
     ) {
         // If the game is playing, the command should set the remaining time (add the current time before applying)
@@ -308,6 +370,7 @@ internal class OptionsService(
                 }
             )
         )
+        eventBus.emit(OptionsChangedEvent, Unit)
     }
 
     fun createRestoreTimeLimit() {
@@ -322,7 +385,11 @@ internal class OptionsService(
         )
     }
 
-    fun setSpawnDistance(ctx: Context, distance: Int) {
+    override var spawnDistance: Int
+        get() = options.spawnDistance
+        set(value) = setSpawnDistanceInternal(value)
+
+    private fun setSpawnDistanceInternal(distance: Int) {
         options.spawnDistance = distance
         ctx.sendFeedback(
             text.string(
@@ -331,12 +398,48 @@ internal class OptionsService(
                 text.string(StringKey.OptionsSpawnDistanceChunks, distance)
             )
         )
+        eventBus.emit(OptionsChangedEvent, Unit)
     }
 
-    fun setSpawnDimension(ctx: Context, dimension: String) {
+    override var spawnDimension: String
+        get() = options.spawnDimension
+        set(value) = setSpawnDimensionInternal(value)
+
+    private fun setSpawnDimensionInternal(dimension: String) {
         options.spawnDimension = dimension
         val label = text.literal(dimension.substringAfterLast(':').formatTitle())
         ctx.sendFeedback(text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsSpawnDimension, label))
+        eventBus.emit(OptionsChangedEvent)
+    }
+
+    override var isPlayerKit: Boolean
+        get() = options.isPlayerKit
+        set(value) = togglePlayerKit(value)
+
+    fun togglePlayerKit(isPlayerKit: Boolean = !options.isPlayerKit) {
+        options.isPlayerKit = isPlayerKit
+        cardService.generateCard()
+        ctx.sendFeedback(text.string(
+            StringKey.OptionsNotifyChanged,
+            StringKey.OptionsSpawnKitPlayer,
+            text.boolean(options.isPlayerKit)
+        ))
+        eventBus.emit(OptionsChangedEvent)
+    }
+
+    override var isTeamKit: Boolean
+        get() = options.isTeamKit
+        set(value) = toggleTeamKit(value)
+
+    fun toggleTeamKit(isTeamKit: Boolean = !options.isTeamKit) {
+        options.isTeamKit = isTeamKit
+        cardService.generateCard()
+        ctx.sendFeedback(text.string(
+            StringKey.OptionsNotifyChanged,
+            StringKey.OptionsSpawnKitTeam,
+            text.boolean(options.isTeamKit)
+        ))
+        eventBus.emit(OptionsChangedEvent)
     }
 
     fun getOptionsSummary(player: IPlayerHandle?): Sequence<IText> = sequence {

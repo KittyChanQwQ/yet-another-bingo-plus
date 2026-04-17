@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.menu
 import me.jfenn.bingo.common.commands.BingoPrefsCommand
 import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.options.OptionsService
-import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.text.Formatting
@@ -21,11 +20,8 @@ internal const val ICON_PVP = "\uD83D\uDDE1"
 
 internal fun MenuComponent.registerFeatures(
     position: Vector3d,
-    state: BingoState = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
 ) {
-    val options by state::options
-
     registerTitlePanel(
         position = position + Vector3d(0.0, -0.5, 0.0),
         width = MENU_FEATURES_WIDTH,
@@ -42,9 +38,9 @@ internal fun MenuComponent.registerFeatures(
         icon = "᎒᎒᎒",
         text = text.string(StringKey.OptionsPreviewCard),
         tooltip = buildTooltip(StringKey.OptionsPreviewCard),
-        isActiveProp = computedProperty { options.showPreviewCard },
+        isActiveProp = computedProperty { optionsService.showPreviewCard },
     ) {
-        optionsService.togglePreviewCard(OptionsService.Context(it))
+        optionsService.togglePreviewCard()
     }
 
     registerIconButton(
@@ -57,9 +53,9 @@ internal fun MenuComponent.registerFeatures(
             text.string(StringKey.OptionsKeepInventory).formatted(Formatting.GREEN),
             this.text.translatable("gamerule.keepInventory", null),
         ),
-        isActiveProp = computedProperty { options.isKeepInventory },
+        isActiveProp = computedProperty { optionsService.isKeepInventory },
     ) {
-        optionsService.toggleKeepInventory(OptionsService.Context(it))
+        optionsService.toggleKeepInventory()
     }
 
     registerIconButton(
@@ -69,9 +65,9 @@ internal fun MenuComponent.registerFeatures(
         icon = ICON_ELYTRA,
         text = text.string(StringKey.OptionsElytra),
         tooltip = buildTooltip(StringKey.OptionsElytra),
-        isActiveProp = computedProperty { options.isElytra },
+        isActiveProp = computedProperty { optionsService.isElytra },
     ) {
-        optionsService.toggleElytra(OptionsService.Context(it))
+        optionsService.toggleElytra()
     }
 
     registerIconButton(
@@ -82,9 +78,9 @@ internal fun MenuComponent.registerFeatures(
         text = text.string(StringKey.OptionsNightVis),
         tooltip = buildTooltip(StringKey.OptionsNightVis) +
                 text.string(StringKey.OptionsNightVisTooltip_2, BingoPrefsCommand.getCommand(PlayerSettings::nightVision)),
-        isActiveProp = computedProperty { options.isNightVision },
+        isActiveProp = computedProperty { optionsService.isNightVision },
     ) {
-        optionsService.toggleNightVision(OptionsService.Context(it))
+        optionsService.toggleNightVision()
     }
 
     registerIconButton(
@@ -94,9 +90,9 @@ internal fun MenuComponent.registerFeatures(
         icon = ICON_PVP,
         text = text.string(StringKey.OptionsAllowPvp),
         tooltip = buildTooltip(StringKey.OptionsAllowPvp),
-        isActiveProp = computedProperty { options.isPvpEnabled },
+        isActiveProp = computedProperty { optionsService.isPvpEnabled },
     ) {
-        optionsService.togglePvp(OptionsService.Context(it))
+        optionsService.togglePvp()
     }
 
     registerIconButton(
@@ -106,8 +102,8 @@ internal fun MenuComponent.registerFeatures(
         icon = "\uD83D\uDD6E",
         text = text.string(StringKey.OptionsUnlockRecipes),
         tooltip = buildTooltip(StringKey.OptionsUnlockRecipes),
-        isActiveProp = computedProperty { options.isUnlockRecipes },
+        isActiveProp = computedProperty { optionsService.isUnlockRecipes },
     ) {
-        optionsService.toggleUnlockRecipes(OptionsService.Context(it))
+        optionsService.toggleUnlockRecipes()
     }
 }

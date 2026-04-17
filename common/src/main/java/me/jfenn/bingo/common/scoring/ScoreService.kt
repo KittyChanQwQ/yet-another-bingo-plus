@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.scoring
 
+import me.jfenn.bingo.api.options.BingoGoal
+import me.jfenn.bingo.api.options.BingoWinCondition
+import me.jfenn.bingo.api.options.EndWhen
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
-import me.jfenn.bingo.common.options.BingoGoal
-import me.jfenn.bingo.common.options.BingoWinCondition
-import me.jfenn.bingo.common.options.EndWhen
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamScore
@@ -54,7 +54,7 @@ internal object ScoreService {
         // - could be stored in objective.canAchieveTeams on each tick
         // - also needs objective.canLose
         fun isPossible(team: BingoTeam, objective: BingoObjective): Boolean {
-            if (objective.hasAchieved(team.key)) return true
+            if (objective.hasTeamAchieved(team.key)) return true
 
             if (objective is BingoObjective.InverseEntry && objective.permanent)
                 return false

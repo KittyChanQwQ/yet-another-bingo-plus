@@ -5,7 +5,7 @@ import me.jfenn.bingo.api.data.IBingoTeam
 import me.jfenn.bingo.common.team.BingoTeam
 import java.util.*
 
-class BingoTeamImpl(
+internal class BingoTeamImpl(
     val team: BingoTeam,
 ) : IBingoTeam {
     override val id: String

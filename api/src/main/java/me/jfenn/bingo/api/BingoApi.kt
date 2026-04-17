@@ -1,29 +1,17 @@
 package me.jfenn.bingo.api
 
-import me.jfenn.bingo.api.internal.ExtensionManager.inventoryProviders
 import me.jfenn.bingo.api.annotations.BingoInternalApi
+import me.jfenn.bingo.api.internal.ExtensionManager.inventoryProviders
 import me.jfenn.bingo.api.provider.IInventoryProvider
-import java.util.*
 
 object BingoApi {
     @JvmStatic
-    private var current: IBingoApi? = null
+    var INSTANCE: IBingoApi? = null
+        private set
 
     @BingoInternalApi
     @JvmStatic
-    fun set(api: IBingoApi?) { current = api }
-
-    @JvmStatic
-    val game get() = current?.game
-
-    @JvmStatic
-    val teams get() = current?.teams
-
-    @JvmStatic
-    fun getPlayerStats(id: UUID) = current?.getPlayerStats(id)
-
-    @JvmStatic
-    val config get() = current?.config
+    fun set(api: IBingoApi?) { INSTANCE = api }
 
     @OptIn(BingoInternalApi::class)
     @JvmStatic

@@ -7,7 +7,7 @@ import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
 import kotlin.random.Random
 import kotlin.reflect.full.findAnnotation
 
-class ObjectiveTagProvider(
+internal class ObjectiveTagProvider(
     private val objectiveManager: BingoObjectiveManager,
 ) : ITagProvider {
     override fun listTags(): Map<String, TagData> {

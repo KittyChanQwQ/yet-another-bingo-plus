@@ -1,10 +1,15 @@
 package me.jfenn.bingo.api
 
+import me.jfenn.bingo.api.card.ICardService
 import me.jfenn.bingo.api.config.IBingoConfig
-import me.jfenn.bingo.api.data.*
+import me.jfenn.bingo.api.data.IBingoGame
+import me.jfenn.bingo.api.data.IBingoPlayerStats
+import me.jfenn.bingo.api.data.IBingoTeam
+import me.jfenn.bingo.api.data.IBingoTeams
 import me.jfenn.bingo.api.event.GameEndedEvent
 import me.jfenn.bingo.api.event.GameStartedEvent
 import me.jfenn.bingo.api.event.TeamChangedEvent
+import me.jfenn.bingo.api.options.IOptionsService
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
@@ -16,24 +21,11 @@ internal class BingoApiImpl(
     override val server: MinecraftServer,
     private val state: BingoState,
     private val statsService: StatsService,
+    override val game: IBingoGame,
+    override val cards: ICardService,
+    override val options: IOptionsService,
     events: ScopedEvents,
 ) : IBingoApi, IBingoTeams, IBingoConfig {
-    override val game: BingoGame
-        get() = BingoGame(
-            id = state.gameId,
-            status = when (state.state) {
-                GameState.UNINITIALIZED,
-                GameState.PREGAME -> BingoGameStatus.PREGAME
-                GameState.STARTING,
-                GameState.PRELOADING,
-                GameState.LOADING,
-                GameState.COUNTDOWN -> BingoGameStatus.STARTING
-                GameState.PLAYING -> BingoGameStatus.PLAYING
-                GameState.POSTGAME -> BingoGameStatus.POSTGAME
-            },
-            time = state.ingameDuration(),
-            timeRemaining = state.remainingDuration()
-        )
 
     override val teams: IBingoTeams get() = this
 
