@@ -95,3 +95,5 @@ loom.nestJars(tasks.named('shadowJar', org.gradle.jvm.tasks.Jar), objects.fileCo
     it.setFrom(fileTree(tasks.processIncludeJars.outputDirectory))
     it.builtBy(tasks.processIncludeJars)
 })
+
+tasks.assemble.dependsOn(tasks.named('shadowJar'))
