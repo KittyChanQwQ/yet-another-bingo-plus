@@ -2,163 +2,109 @@
   "items": [
     {
       "id": "minecraft:netherite_helmet",
-      "Count": 1,
-      "tag": {
-        "Damage": 0,
-        "Unbreakable": 1,
-        "Enchantments": [
-          {
-            "lvl": 4,
-            "id": "minecraft:protection"
-          },
-          {
-            "lvl": 1,
-            "id": "minecraft:aqua_affinity"
-          },
-          {
-            "lvl": 3,
-            "id": "minecraft:respiration"
-          }
-        ]
+      "count": 1,
+      "components": {
+        "minecraft:unbreakable": {},
+        "minecraft:enchantments": {
+          "minecraft:protection": 4,
+          "minecraft:aqua_affinity": 1,
+          "minecraft:respiration": 3
+        }
       }
     },
     {
       "id": "minecraft:netherite_chestplate",
-      "Count": 1,
-      "tag": {
-        "Damage": 0,
-        "Unbreakable": 1,
-        "Enchantments": [
-          {
-            "lvl": 4,
-            "id": "minecraft:protection"
-          }
-        ]
+      "count": 1,
+      "components": {
+        "minecraft:unbreakable": {},
+        "minecraft:enchantments": {
+          "minecraft:protection": 4
+        }
       }
     },
     {
       "id": "minecraft:netherite_leggings",
-      "Count": 1,
-      "tag": {
-        "Damage": 0,
-        "Unbreakable": 1,
-        "Enchantments": [
-          {
-            "lvl": 4,
-            "id": "minecraft:protection"
-          },
-          {
-            "lvl": 3,
-            "id": "minecraft:swift_sneak"
-          }
-        ]
+      "count": 1,
+      "components": {
+        "minecraft:unbreakable": {},
+        "minecraft:enchantments": {
+          "minecraft:protection": 4,
+          "minecraft:swift_sneak": 3
+        }
       }
     },
     {
       "id": "minecraft:netherite_boots",
-      "Count": 1,
-      "tag": {
-        "Damage": 0,
-        "Unbreakable": 1,
-        "Enchantments": [
-          {
-            "lvl": 4,
-            "id": "minecraft:protection"
-          },
-          {
-            "lvl": 4,
-            "id": "minecraft:feather_falling"
-          },
-          {
-            "lvl": 3,
-            "id": "minecraft:depth_strider"
-          }
-        ]
+      "count": 1,
+      "components": {
+        "minecraft:unbreakable": {},
+        "minecraft:enchantments": {
+          "minecraft:protection": 4,
+          "minecraft:feather_falling": 4,
+          "minecraft:depth_strider": 3
+        }
       }
     },
     {
       "id": "minecraft:netherite_pickaxe",
-      "Count": 1,
-      "tag": {
-        "Damage": 0,
-        "Unbreakable": 1,
-        "Enchantments": [
-          {
-            "lvl": 3,
-            "id": "minecraft:fortune"
-          },
-          {
-            "lvl": 5,
-            "id": "minecraft:efficiency"
-          }
-        ]
+      "count": 1,
+      "components": {
+        "minecraft:unbreakable": {},
+        "minecraft:enchantments": {
+          "minecraft:fortune": 3,
+          "minecraft:efficiency": 5
+        }
       }
     },
     {
       "id": "minecraft:netherite_axe",
-      "Count": 1,
-      "tag": {
-        "Damage": 0,
-        "Unbreakable": 1,
-        "Enchantments": [
-          {
-            "lvl": 5,
-            "id": "minecraft:efficiency"
-          },
-          {
-            "lvl": 5,
-            "id": "minecraft:sharpness"
-          }
-        ]
+      "count": 1,
+      "components": {
+        "minecraft:unbreakable": {},
+        "minecraft:enchantments": {
+          "minecraft:sharpness": 5,
+          "minecraft:efficiency": 5
+        }
       }
     },
     {
       "id": "minecraft:netherite_shovel",
-      "Count": 1,
-      "tag": {
-        "Damage": 0,
-        "Unbreakable": 1,
-        "Enchantments": [
-          {
-            "lvl": 5,
-            "id": "minecraft:efficiency"
-          }
-        ]
+      "count": 1,
+      "components": {
+        "minecraft:unbreakable": {},
+        "minecraft:enchantments": {
+          "minecraft:efficiency": 5
+        }
       }
     },
     {
       "id": "minecraft:iron_pickaxe",
-      "Count": 1,
-      "tag": {
-        "Damage": 0,
-        "Unbreakable": 1,
-        "Enchantments": [
-          {
-            "lvl": 1,
-            "id": "minecraft:silk_touch"
-          }
-        ]
+      "count": 1,
+      "components": {
+        "minecraft:unbreakable": {},
+        "minecraft:enchantments": {
+          "minecraft:silk_touch": 1
+        }
       }
     },
     {
       "id": "minecraft:shield",
-      "Count": 1,
-      "tag": {
-        "Damage": 0,
-        "Unbreakable": 1
+      "count": 1,
+      "components": {
+        "minecraft:unbreakable": {}
       }
     },
     {
       "id": "minecraft:torch",
-      "Count": 64
+      "count": 64
     },
     {
       "id": "minecraft:golden_carrot",
-      "Count": 64
+      "count": 64
     },
     {
       "id": "minecraft:oak_log",
-      "Count": 16
+      "count": 16
     }
   ]
 }
