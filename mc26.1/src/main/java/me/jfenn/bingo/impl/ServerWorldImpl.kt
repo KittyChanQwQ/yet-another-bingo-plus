@@ -55,10 +55,8 @@ class ServerWorldFactory(
     override val overworld: IServerWorld
         get() = forWorld(server.overworld())
 
-    override fun forWorld(world: ServerLevel): IServerWorld = ServerWorldImpl(world, itemStackFactory)
-    override fun listWorlds(): List<IServerWorld> {
-        return server.allLevels.map { forWorld(it) }
-    }
+    override fun forWorld(world: ServerLevel) = ServerWorldImpl(world, itemStackFactory)
+    override fun listWorlds() = server.allLevels.map { forWorld(it) }
 
     private fun tickKeepAlive() {
         server.connection.tick()
@@ -111,6 +109,11 @@ class ServerWorldFactory(
             ServerChunkManagerMixinHelper.shouldCancelSaving = true
 
             for (world in listWorlds()) {
+                val level = world.world
+                if (level.dimensionType().hasEnderDragonFight) {
+                    level.dataStorage.set(EnderDragonFight.TYPE, EnderDragonFight.createDefault())
+                }
+
                 log.measureTime("[Reset] Closing ${world.identifier}...") {
                     world.close()
                 }
@@ -130,11 +133,6 @@ class ServerWorldFactory(
 
             log.measureTime("[Reset] Loading new worlds...") {
                 server.worldGenSettings.options().withSeed(OptionalLong.of(seed))
-                server.allLevels.forEach {
-                    if (it.dragonFight != null) {
-                        it.accessor.setDragonFight(EnderDragonFight.createDefault())
-                    }
-                }
                 server.worldGenSettings.accessor.apply {
                     worldOptions = worldOptions.withSeed(OptionalLong.of(seed))
                 }
