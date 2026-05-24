@@ -205,7 +205,7 @@ class ServerWorldImpl(
 
     override fun createBlockState(type: IBlockState.Type): IBlockState {
         val block = when (type) {
-            is IChestBlockState.Type -> Blocks.OAK_WALL_SIGN
+            is IChestBlockState.Type -> Blocks.CHEST
             is ITorchBlockState.Type -> Blocks.TORCH
         }
         return BlockStateImpl.fromBlockState(block.defaultBlockState())
