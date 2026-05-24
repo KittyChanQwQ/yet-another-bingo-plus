@@ -112,6 +112,8 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
       echo $1 | jq -r .model
     elif [ "$_type" == "minecraft:select" ]; then
       resolve_model "$(echo $1 | jq -c .cases[0].model)"
+    elif [ "$_type" == "minecraft:composite" ]; then
+      resolve_model "$(echo $1 | jq -c .models[0])"
     elif [ "$_type" == "minecraft:special" ]; then
       echo $1 | jq -r .base
     elif [ "$_type" == "minecraft:condition" ]; then
@@ -180,6 +182,15 @@ for item in $(jq -r ".[]" $ITEMS_FILE); do
       exit 1
     }
 
+    if [[ "$block_texture" == "#"* ]]; then
+      block_texture=$(jq ".textures.${block_texture:1}" tmp.json)
+    fi
+
+    if [[ "$block_texture" == "{"* ]]; then
+      block_texture=$(echo "$block_texture" | jq .sprite)
+    fi
+
+    echo -e block parent texture $block_texture
     block_texture_file=$(get_texture_file $block_texture)
 
     # see if any image masks are included in the item models
