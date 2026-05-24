@@ -49,6 +49,8 @@ open class BlockStateImpl(
         return blockState.canSurvive(world.world, pos.toBlockPos())
     }
 
+    override fun toString(): String = blockState.toString()
+
     companion object {
         fun fromBlockState(blockState: BlockState): IBlockState {
             return when (blockState.block) {

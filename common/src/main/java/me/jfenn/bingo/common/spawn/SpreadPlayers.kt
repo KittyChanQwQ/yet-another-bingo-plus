@@ -15,6 +15,8 @@ import kotlin.math.cos
 import kotlin.math.sign
 import kotlin.math.sin
 
+internal const val SPAWN_TIMEOUT_SECONDS = 60L
+
 internal class SpreadPlayers(
     private val log: Logger,
     private val taskExecutor: IExecutors.IServerTaskExecutor,
@@ -334,7 +336,7 @@ internal class SpreadPlayers(
 
             val future = findSpawnPosAsync(startChunk)
                 // if this takes an entire minute, something is wrong
-                .orTimeout(60L, TimeUnit.SECONDS)
+                .orTimeout(SPAWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .exceptionally { e ->
                     log.error("findSpawnPosAsync for ${team.id} failed:", e)
                     // fall back to the world's spawnPos - this isn't ideal, but it should work in most dimensions

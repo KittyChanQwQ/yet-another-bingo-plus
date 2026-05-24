@@ -146,8 +146,7 @@ internal class StatsLobbyController(
 
     private fun getArmorStand() = serverWorldFactory.lobbyWorld
         ?.let { entityManager.iterateEntities(it) }
-        ?.mapNotNull { it as? IArmorStandEntity }
-        ?.firstOrNull()
+        ?.firstNotNullOfOrNull { it as? IArmorStandEntity }
 
     private fun spawnSummary(
         player: IPlayerHandle,

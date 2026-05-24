@@ -97,7 +97,7 @@ class ItemStackFactory(
             get() = BuiltInRegistries.ITEM.getKey(item)
 
         override val displayName: IText
-            get() = TextImpl(stack.displayName.copy())
+            get() = TextImpl(stack.hoverName.copy())
 
         override val lore: List<IText>
             get() = stack[DataComponents.LORE]?.lines?.map { TextImpl(it.copy()) } ?: emptyList()

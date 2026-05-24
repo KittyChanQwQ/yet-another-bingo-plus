@@ -145,7 +145,7 @@ internal class ReadyController(
             update()
 
             // If the timer is not running, send an extra packet to dismiss the ready GUI
-            if (!readyState.isRunning) {
+            if (!readyState.isRunning && it.to != GameState.PRELOADING) {
                 val packet = ReadyUpdatePacket(
                     isRunning = false,
                     isReady = false,

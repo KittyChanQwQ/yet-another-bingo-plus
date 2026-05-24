@@ -32,12 +32,19 @@ dependencies {
     api project(path: ":common")
     clientApi project(path: ":common", configuration: "archives")
     shade project(path: ":common")
+    api project(path: ":integration-chunky")
     shade project(path: ":integration-chunky")
+    api project(path: ":integration-jei")
     shade project(path: ":integration-jei")
+    api project(path: ":integration-permissions")
     shade project(path: ":integration-permissions")
+    api project(path: ":integration-placeholders")
     shade project(path: ":integration-placeholders")
+    api project(path: ":integration-vanish")
     shade project(path: ":integration-vanish")
+    api project(path: ":integration-voicechat")
     shade project(path: ":integration-voicechat")
+    api project(path: ":integration-waystones")
     shade project(path: ":integration-waystones")
 }
 
@@ -49,6 +56,8 @@ processResources {
 }
 
 shadowJar {
+    archiveClassifier.set(null)
+
     from sourceSets.main.output
     from sourceSets.client.output
 
@@ -81,3 +90,8 @@ shadowJar {
         include { it.moduleGroup == "app.cash.sqldelight" }
     }
 }
+
+loom.nestJars(tasks.named('shadowJar', org.gradle.jvm.tasks.Jar), objects.fileCollection().tap {
+    it.setFrom(fileTree(tasks.processIncludeJars.outputDirectory))
+    it.builtBy(tasks.processIncludeJars)
+})

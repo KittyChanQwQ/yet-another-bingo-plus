@@ -16,11 +16,14 @@ import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.block.ChunkPosition
 import me.jfenn.bingo.platform.event.IEventBus
 import org.slf4j.Logger
+import java.time.Duration
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.CompletableFuture
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 
 /**
  * Wait until chunks around spawn are generated
@@ -94,6 +97,47 @@ internal class SpawnPreloadingController(
                 }, serverTaskExecutor)
         }
 
+        var spawnTimeoutAt = Instant.MIN
+        events.onEnter(GameState.STARTING) {
+            spawnTimeoutAt = Instant.now().plus(SPAWN_TIMEOUT_SECONDS, ChronoUnit.SECONDS)
+        }
+
+        events.onGameTick {
+            if (state.state != GameState.STARTING) return@onGameTick
+            val message = text.empty().append(text.string(StringKey.LobbyLoadingTerrain))
+
+            val totalTime = Duration.ofSeconds(SPAWN_TIMEOUT_SECONDS).toMillis()
+            val millisUntilTimeout = Instant.now()
+                .until(spawnTimeoutAt, ChronoUnit.MILLIS)
+                .coerceIn(0L, totalTime)
+                .toFloat()
+                .div(totalTime)
+                .pow(3)
+                .times(totalTime)
+                .toLong()
+
+            val updatePacket = ReadyUpdatePacket(
+                isRunning = true,
+                isReady = true,
+                state = state.state,
+                // remainingDuration only drives the progress bar, so this does not need to be accurate
+                remainingDuration = Duration.ofMillis(millisUntilTimeout + totalTime),
+                totalDuration = Duration.ofSeconds(SPAWN_TIMEOUT_SECONDS*2),
+                readyPlayers = 0,
+                totalPlayers = 0,
+                title = text.string(StringKey.LobbyLoadingTerrain),
+                subtitle = text.literal("0%"),
+                canSendReady = false,
+            )
+
+            for (player in playerManager.getPlayers()) {
+                when {
+                    packet.readyUpdateV1.send(player, updatePacket) -> {}
+                    else -> player.sendHotbarMessage(message)
+                }
+            }
+        }
+
         events.onGameTick {
             if (state.state != GameState.PRELOADING) return@onGameTick
             if (chunkFutureList.isEmpty()) return@onGameTick
@@ -114,7 +158,7 @@ internal class SpawnPreloadingController(
                 state = state.state,
                 // remainingDuration only drives the progress bar, so this does not need to be accurate
                 remainingDuration = (totalCount - doneCount).seconds,
-                totalDuration = totalCount.seconds,
+                totalDuration = (totalCount*2).seconds,
                 readyPlayers = 0,
                 totalPlayers = 0,
                 title = text.string(StringKey.LobbyLoadingTerrain),

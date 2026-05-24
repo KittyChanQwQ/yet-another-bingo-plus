@@ -138,6 +138,7 @@ internal class MenuController(
                 val lobbyWorld = serverWorldFactory.lobbyWorld ?: return@onStateChange
                 entityManager.iterateEntities(lobbyWorld)
                     .filter { !it.isPlayer && it.commandTags.contains(instanceTag) }
+                    .toList()
                     .forEach { it.discard() }
             }
         }

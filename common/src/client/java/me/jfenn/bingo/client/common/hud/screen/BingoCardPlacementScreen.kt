@@ -76,6 +76,8 @@ internal class BingoCardPlacementScreen(
     private val saveButton = buttonFactory.createDefaultButton(
         message = text.translatable("gui.ok", "Ok"),
         onClick = {
+            initCardPosition()
+            applyCardPosition()
             writeCardPosition()
             onCloseCallback(Result.Ok(
                 cardScale = cardScale,
