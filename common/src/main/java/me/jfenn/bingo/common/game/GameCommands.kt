@@ -1,8 +1,6 @@
 package me.jfenn.bingo.common.game
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.commands.formatWarning
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.scope.BingoComponent
@@ -24,16 +22,10 @@ class GameCommands(
 
         scope.get<IExecutors.IServerTaskExecutor>().execute {
             // Start the game!
-            val warnings = mutableListOf<IText>()
             gameService.start(
-                warnings = warnings,
                 ignoreWarnings = ignoreWarnings,
                 allowSpectators = ignoreWarnings,
             )
-
-            warnings.forEachIndexed { i, warning ->
-                sendMessage(text.formatWarning(warning, i == 0))
-            }
         }
 
         sendFeedback(text.string(StringKey.CommandStartSuccess))

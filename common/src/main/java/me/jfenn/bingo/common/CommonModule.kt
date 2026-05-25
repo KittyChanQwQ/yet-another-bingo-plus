@@ -286,6 +286,7 @@ val commonModule = module {
         scopedOf(::GameOverService)
         scopedOf(::GameOverController)
         scopedOf(::GameResumeService)
+        scopedOf(::GameWarningController)
 
         scopedOf(::InfoBookController)
         scopedOf(::InfoBookService)
@@ -432,6 +433,7 @@ fun Scope.commonInit() {
     get<GameStatusController>()
     get<GameMessageController>()
     get<GameOverController>()
+    get<GameWarningController>()
 
     get<LobbyModeController>()
 

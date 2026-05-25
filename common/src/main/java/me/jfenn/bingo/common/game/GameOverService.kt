@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scoring.ScoreRanking
 import me.jfenn.bingo.common.scoring.ScoreRankingService
 import me.jfenn.bingo.common.scoring.ScoreService
+import me.jfenn.bingo.common.scoring.StalemateReason
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.team.BingoTeam

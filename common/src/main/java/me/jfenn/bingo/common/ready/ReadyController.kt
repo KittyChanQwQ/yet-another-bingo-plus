@@ -3,7 +3,6 @@ package me.jfenn.bingo.common.ready
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.autorestart.ResetService
-import me.jfenn.bingo.common.commands.formatWarning
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -17,7 +16,6 @@ import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.text.IText
 import org.slf4j.Logger
 import java.time.Duration
 
@@ -61,12 +59,7 @@ internal class ReadyController(
         if (isComplete && state.state == GameState.PREGAME) {
             log.info("[ReadyController] Reached the end of the PREGAME timer - starting the game!")
             readyService.reset()
-            val warnings = mutableListOf<IText>()
-            gameService.start(warnings, allowSpectators = true)
-            warnings.forEachIndexed { i, warning ->
-                playerManager.getPlayers()
-                    .forEach { it.sendMessage(text.formatWarning(warning, i == 0)) }
-            }
+            gameService.start(allowSpectators = true)
         }
 
         if (isComplete && state.state == GameState.POSTGAME) {

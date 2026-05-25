@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.datapack.LobbyWorldService
 import me.jfenn.bingo.common.event.InteractionEntityEvents
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.game.GameWarningEvent
 import me.jfenn.bingo.common.lobbyWorld
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -31,7 +32,6 @@ import org.koin.core.scope.Scope
 import org.slf4j.Logger
 import java.io.IOException
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.time.Instant
 import java.util.*
@@ -153,6 +153,14 @@ internal class MenuController(
 
         events.onPlayerDisconnect {
             menu?.markDirty()
+        }
+
+        eventBus.register(GameWarningEvent) {
+            if (it.severe) {
+                state.menu.warnings = it.warnings
+                state.menu.page = MenuPage.WARNINGS
+                menu?.markDirty()
+            }
         }
     }
 

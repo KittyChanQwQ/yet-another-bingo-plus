@@ -1,23 +1,25 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commands.formatWarning
 import me.jfenn.bingo.common.config.ConfigService
-import me.jfenn.bingo.common.event.model.CardShuffledEvent
 import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.EntityType
+import me.jfenn.bingo.platform.IDisplayEntity
+import me.jfenn.bingo.platform.ITextDisplayEntity
+import me.jfenn.bingo.platform.text.Formatting
+import org.joml.Matrix4f
 import org.joml.Vector3d
 import org.koin.core.scope.Scope
 
 private fun createRootPage(
     koinScope: Scope,
     position: Vector3d,
-    state: BingoState = koinScope.get(),
     options: BingoOptions = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
     gameService: GameService = koinScope.get(),
@@ -82,14 +84,9 @@ private fun createRootPage(
     ) { player ->
         // Start the game!
         optionsService.broadcastHotbarMessage(player, text.string(StringKey.CommandStartSuccess))
-        val warnings = mutableListOf<IText>()
         gameService.start(
-            warnings = warnings,
             allowSpectators = player.isSneaking,
         )
-        warnings.forEachIndexed { i, warning ->
-            player.sendMessage(text.formatWarning(warning, i == 0))
-        }
     }
 }
 
@@ -197,6 +194,68 @@ private fun createItemsPage(
     pos.add(MENU_ITEM_DISTRIBUTION_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
 }
 
+private fun createWarningPage(
+    koinScope: Scope,
+    position: Vector3d,
+    state: BingoState = koinScope.get(),
+    optionsService: OptionsService = koinScope.get(),
+    gameService: GameService = koinScope.get(),
+) = component(koinScope) {
+    registerEntity(EntityType.BLOCK_DISPLAY) {
+        pos = position + Vector3d(-2.0, -2.1, -0.051)
+        blockIdentifier = MENU_BUTTON_OFF_MATERIAL
+        brightness = MENU_BRIGHTNESS_ALT
+        transformation = Matrix4f().scale(4f, 2f, 0.05f)
+    }
+
+    registerEntity(EntityType.TEXT_DISPLAY) {
+        this.pos = position + Vector3d(0.0, -0.5, 0.0)
+        this.value = text.formatWarning(text.string(StringKey.OptionsWarning))
+
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.LEFT
+        background = 0
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
+    }
+
+    registerEntity(EntityType.TEXT_DISPLAY) {
+        this.pos = position + Vector3d(0.0, -1.7, 0.0)
+        this.value = text.joinText(state.menu.warnings, text.literal("\n\n"))
+            .apply { setColor(0x999955) }
+
+        billboard = ITextDisplayEntity.Billboard.FIXED
+        alignment = ITextDisplayEntity.TextAlignment.LEFT
+        background = 0
+        transformation = Matrix4f().scale(MENU_TEXT_SCALE)
+    }
+
+    registerTileButton(
+        position = position + Vector3d(-0.1 - (1.9/2), -2.55, 0.0),
+        width = 1.9,
+        height = MENU_LINE_HEIGHT,
+        text = text.string(StringKey.GuiClose),
+        brightness = MENU_BRIGHTNESS_ALT,
+    ) {
+        state.menu.page = MenuPage.ROOT
+    }
+
+    registerTileButton(
+        position = position + Vector3d(0.1 + (1.9/2), -2.55, 0.0),
+        width = 1.9,
+        height = MENU_LINE_HEIGHT,
+        text = text.string(StringKey.OptionsWarningStartAnyway).apply { setColor(0xff9999) },
+        brightness = IDisplayEntity.Brightness(0, 3),
+        blockIdentifier = MENU_DANGER_MATERIAL,
+    ) { player ->
+        // Start the game!
+        optionsService.broadcastHotbarMessage(player, text.string(StringKey.CommandStartSuccess))
+        gameService.start(
+            ignoreWarnings = true,
+            allowSpectators = player.isSneaking,
+        )
+    }
+}
+
 internal fun MenuComponent.registerMenuPage(
     position: Vector3d,
     state: BingoState = koinScope.get(),
@@ -209,6 +268,7 @@ internal fun MenuComponent.registerMenuPage(
             MenuPage.FEATURES -> createFeaturesPage(koinScope, position)
             MenuPage.GOAL -> createGoalPage(koinScope, position)
             MenuPage.ITEMS -> createItemsPage(koinScope, position)
+            MenuPage.WARNINGS -> createWarningPage(koinScope, position)
         }
     }
 

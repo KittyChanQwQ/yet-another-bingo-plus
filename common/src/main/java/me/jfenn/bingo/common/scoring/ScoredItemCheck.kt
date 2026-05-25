@@ -242,9 +242,11 @@ internal class ScoredItemCheck(
         val stalemate = ScoreService.isStalemate(state, card)
             .takeIf { state.state == GameState.PLAYING }
         when (stalemate) {
-            is StalemateReason.WinByStalemate -> {
-                log.info("[ScoredItemCheck] Completing the current card because {} has won by stalemate", stalemate.team.key)
-                onCardCompleted(stalemate.team, card, isWinner = true, isAutoWin = true)
+            is StalemateReason.Win -> {
+                log.info("[ScoredItemCheck] Completing the current card because {} has won by stalemate", stalemate.team)
+                state.teams[stalemate.team]?.let { winningTeam ->
+                    onCardCompleted(winningTeam, card, isWinner = true, stalemate = stalemate)
+                }
             }
             is StalemateReason.Stalemate,
             is StalemateReason.Lockout,
@@ -333,7 +335,7 @@ internal class ScoredItemCheck(
             .forEach { itemObjectiveManager.confiscateScoredItem(player, it) }
     }
 
-    private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean, isAutoWin: Boolean = false) {
+    private fun onCardCompleted(team: BingoTeam, card: BingoCard, isWinner: Boolean, stalemate: StalemateReason? = null) {
         val now = state.updatedAt ?: Instant.now()
 
         val completedCard = team.completedCards.find { it.card.id == card.id } ?: run {
@@ -342,7 +344,7 @@ internal class ScoredItemCheck(
                 card = card.copy().also { objectiveManager.init(it) },
                 completedAt = now,
                 isWinner = isWinner,
-                isAutoWin = isAutoWin,
+                stalemate = stalemate,
                 score = team.score,
             ).also {
                 team.completedCards += it

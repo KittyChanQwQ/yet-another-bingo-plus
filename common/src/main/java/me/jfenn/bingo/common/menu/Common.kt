@@ -22,6 +22,7 @@ internal const val MENU_LINE_PADDING = 0.1
 internal const val MENU_TITLE_MATERIAL = "minecraft:lime_concrete"
 internal const val MENU_BUTTON_MATERIAL = "minecraft:white_concrete"
 internal const val MENU_BUTTON_OFF_MATERIAL = "minecraft:gray_concrete"
+internal const val MENU_DANGER_MATERIAL = "minecraft:red_concrete"
 
 internal val MENU_BRIGHTNESS_ON = IDisplayEntity.Brightness(0, 15)
 internal val MENU_BRIGHTNESS_OFF = IDisplayEntity.Brightness(0, 14)

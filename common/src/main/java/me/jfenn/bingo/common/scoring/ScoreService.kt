@@ -1,5 +1,7 @@
 package me.jfenn.bingo.common.scoring
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.api.options.EndWhen
@@ -7,12 +9,21 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamScore
 
+@Serializable
 internal sealed interface StalemateReason {
-    class WinByStalemate(val team: BingoTeam) : StalemateReason
+    interface Win : StalemateReason { val team: BingoTeamKey }
+    @SerialName("win_by_stalemate")
+    data class WinByStalemate(override val team: BingoTeamKey) : StalemateReason, Win
+    @SerialName("win_by_lockout")
+    data class WinByLockout(override val team: BingoTeamKey) : StalemateReason, Win
+    @SerialName("stalemate")
     data object Stalemate : StalemateReason
+    @SerialName("lockout")
     data object Lockout : StalemateReason
+    @SerialName("impossible_goal")
     data object ImpossibleGoal: StalemateReason
 }
 
@@ -32,13 +43,15 @@ internal object ScoreService {
         if (state.options.winCondition is BingoWinCondition.ReplaceGoals)
             return null
 
+        val leadingTeam = getLeading(state)?.takeIf { it.cardId == card.id }
+
         if (
             card.options.isLockoutMode && card.entries
                 .mapNotNull { card.objectives[it.objectiveId] }
                 .all { it.hasAnyAchieved() }
         ) {
             // if the entire card is full, then it is a lockout (regardless of the goal)
-            return StalemateReason.Lockout
+            return if (leadingTeam != null) StalemateReason.WinByLockout(leadingTeam.key) else StalemateReason.Lockout
         }
 
         val cardGoal = card.options.goal
@@ -118,11 +131,9 @@ internal object ScoreService {
             }
         }
 
-        val leadingTeam = getLeading(state)?.takeIf { it.cardId == card.id }
-
         return when {
             // If there is a leading team when a stalemate is triggered, that team should win the card
-            isStalemate && !isGoalImpossible && leadingTeam != null -> StalemateReason.WinByStalemate(leadingTeam)
+            isStalemate && !isGoalImpossible && leadingTeam != null -> StalemateReason.WinByStalemate(leadingTeam.key)
             isGoalImpossible -> StalemateReason.ImpossibleGoal
             isStalemate -> StalemateReason.Stalemate
             else -> null

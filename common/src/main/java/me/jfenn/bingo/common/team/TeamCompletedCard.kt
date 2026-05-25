@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.team
 
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.card.BingoCard
+import me.jfenn.bingo.common.scoring.StalemateReason
 import me.jfenn.bingo.common.utils.InstantType
 
 @Serializable
@@ -14,8 +15,10 @@ internal data class TeamCompletedCard(
      */
     val isWinner: Boolean,
     /**
-     * True if the team won the card automatically because of a stalemate
+     * If the team won the card automatically because of a stalemate
      */
-    val isAutoWin: Boolean,
+    val stalemate: StalemateReason?,
     val score: TeamScore,
-)
+) {
+    val isAutoWin get() = stalemate is StalemateReason.WinByStalemate
+}

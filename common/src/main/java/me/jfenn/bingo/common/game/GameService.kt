@@ -72,10 +72,10 @@ internal class GameService(
     }
 
     fun start(
-        warnings: MutableList<IText>,
         ignoreWarnings: Boolean = false,
         allowSpectators: Boolean = false,
     ): Boolean {
+        val warnings = mutableListOf<IText>()
         val playersWithoutATeam = playerManager.getPlayers()
             // filter for players that have not chosen a team
             .filter { !teamService.isTeamChosen(it) }
@@ -83,8 +83,15 @@ internal class GameService(
         if (playersWithoutATeam.isNotEmpty() && !allowSpectators) {
             // If there's more than one player, teams need to be set up manually!
             if (playerManager.getPlayers().size > 1) {
-                warnings += text.string(StringKey.CommandStartPlayersMissingTeams, playersWithoutATeam.joinToString { it.playerName })
-                warnings += text.string(StringKey.CommandStartPlayersMissingTeamsHint, ShuffleTeamsCommand.SHUFFLE_TEAMS_COMMAND, GameCommands.IGNORE_WARNINGS_COMMAND)
+                warnings += text.string(
+                    StringKey.CommandStartPlayersMissingTeams,
+                    playersWithoutATeam.joinToString { it.playerName })
+                warnings += text.string(
+                    StringKey.CommandStartPlayersMissingTeamsHint,
+                    ShuffleTeamsCommand.SHUFFLE_TEAMS_COMMAND,
+                    GameCommands.IGNORE_WARNINGS_COMMAND
+                )
+                eventBus.emit(GameWarningEvent, GameWarningEvent.info(warnings))
                 notifyPlayersMissingTeams(playersWithoutATeam)
                 return false
             }
@@ -101,7 +108,12 @@ internal class GameService(
 
         // Warn if Lockout mode & Lines goal are used together
         val activeCard = state.getActiveCard()
-        if (!ignoreWarnings && activeCard.options.isLockoutMode && activeCard.options.goal is BingoGoal.Lines) {
+        if (
+            !ignoreWarnings &&
+            activeCard.options.isLockoutMode &&
+            activeCard.options.goal.let { it is BingoGoal.Lines && it.lines > 1 } &&
+            state.getRegisteredTeams().size > 1
+        ) {
             hasWarning = true
 
             val goalText = activeCard.options.goal.format(
@@ -116,17 +128,20 @@ internal class GameService(
         }
 
         if (hasWarning) {
+            eventBus.emit(GameWarningEvent, GameWarningEvent.severe(warnings))
             return false
         }
 
         // if the game has already been started, ignore
         if (state.state != GameState.PREGAME) {
             warnings.add(text.string(StringKey.CommandStartAlreadyStarted))
+            eventBus.emit(GameWarningEvent, GameWarningEvent.info(warnings))
             return false
         }
 
         if (!options.isValid()) {
             warnings.add(text.string(StringKey.CommandStartInvalidDistribution))
+            eventBus.emit(GameWarningEvent, GameWarningEvent.severe(warnings))
             return false
         }
 
@@ -142,14 +157,24 @@ internal class GameService(
             // If these immediately satisfy the goal, then the config is invalid
             val goal = card.options.goal
             if (goal is BingoGoal.Lines && goal.lines <= initialLines) {
-                val feedback = text.string(StringKey.CommandStartWillImmediatelyEnd, goal.format(text), text.lineCount(initialLines))
+                val feedback = text.string(
+                    StringKey.CommandStartWillImmediatelyEnd,
+                    goal.format(text),
+                    text.lineCount(initialLines)
+                )
                 warnings.add(feedback)
+                eventBus.emit(GameWarningEvent, GameWarningEvent.severe(warnings))
                 return false
             }
 
             if (goal is BingoGoal.Items && goal.items <= initialItems) {
-                val feedback = text.string(StringKey.CommandStartWillImmediatelyEnd, goal.format(text), text.itemCount(initialItems))
+                val feedback = text.string(
+                    StringKey.CommandStartWillImmediatelyEnd,
+                    goal.format(text),
+                    text.itemCount(initialItems)
+                )
                 warnings.add(feedback)
+                eventBus.emit(GameWarningEvent, GameWarningEvent.severe(warnings))
                 return false
             }
         }
@@ -201,7 +226,7 @@ internal class GameService(
                     card = card.copy().also { objectiveManager.init(it) },
                     completedAt = endedAt,
                     isWinner = false,
-                    isAutoWin = false,
+                    stalemate = null,
                     score = team.score
                 )
             }

@@ -403,6 +403,8 @@
   "bingo.options.spawn_kit_team.tooltip": "If enabled, a chest is created near each team's spawnpoint.",
   "bingo.options.spawn_kit_team_edit": "Edit Team Chest",
   "bingo.options.start": "START",
+  "bingo.options.warning": "Warning",
+  "bingo.options.warning.start_anyway": "Start Anyway",
   "bingo.options.teams": "Shufflificator",
   "bingo.options.teams_shuffle": "Shuffle!",
   "bingo.options.teams_shuffle.message": "Teams have been shuffled!",

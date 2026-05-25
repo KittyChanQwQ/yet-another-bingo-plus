@@ -39,7 +39,7 @@ internal class GameResumeService(
                 hasPermission &&
                 state.state == GameState.POSTGAME &&
                 // If a team won because of an auto-win (stalemate in lockout mode), the game cannot be resumed
-                state.teams.values.none { it.completedCards.lastOrNull()?.isAutoWin == true }
+                state.teams.values.none { it.completedCards.lastOrNull()?.stalemate != null }
     }
 
     fun resume() {
