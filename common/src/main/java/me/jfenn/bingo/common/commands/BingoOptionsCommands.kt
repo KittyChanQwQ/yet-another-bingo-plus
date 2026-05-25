@@ -275,6 +275,6 @@ class BingoOptionsCommands(
 
     companion object {
         const val END_WHEN = "/bingo options end_when"
-        const val GOAL_FULL_CARD_ITEMS = "/bingo goal full_card items"
+        const val STALEMATE_DO_NOTHING = "/bingo options stalemate do_nothing"
     }
 }

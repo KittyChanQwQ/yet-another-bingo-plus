@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.game
 
 import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.api.options.BingoWinCondition
+import me.jfenn.bingo.api.options.StalemateBehavior
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
@@ -111,7 +112,8 @@ internal class GameService(
         if (
             !ignoreWarnings &&
             activeCard.options.isLockoutMode &&
-            activeCard.options.goal.let { it is BingoGoal.Lines && it.lines > 1 } &&
+            activeCard.options.goal.let { it is BingoGoal.Lines } &&
+            options.stalemateBehavior != StalemateBehavior.NOTHING &&
             state.getRegisteredTeams().size > 1
         ) {
             hasWarning = true
@@ -123,8 +125,8 @@ internal class GameService(
             )
 
             warnings += text.string(StringKey.CommandStartLockoutWithLinesGoal, goalText)
-            warnings += text.literal(BingoOptionsCommands.GOAL_FULL_CARD_ITEMS).formatted(Formatting.UNDERLINE)
-                .also { it.setClickEvent(TextAction.SuggestCommand(BingoOptionsCommands.GOAL_FULL_CARD_ITEMS)) }
+            warnings += text.literal(BingoOptionsCommands.STALEMATE_DO_NOTHING).formatted(Formatting.UNDERLINE)
+                .also { it.setClickEvent(TextAction.SuggestCommand(BingoOptionsCommands.STALEMATE_DO_NOTHING)) }
         }
 
         if (hasWarning) {
