@@ -242,7 +242,11 @@ internal class CardViewService(
 
         val lore = if (team != null && objective is BingoObjective.SomeOfEntry && objective.valueMin > 1) {
             val count = objective.someOfObjectives.count { card.objectives[it]?.hasTeamAchieved(team.key) == true }
-            entry.display.lore.orEmpty() + textProvider.literal("$count / ${objective.valueMin}").formatted(Formatting.GRAY)
+            entry.display.lore.orEmpty() + textProvider.string(
+                StringKey.CardObjectiveProgress,
+                count.toString(),
+                objective.valueMin.toString(),
+            ).formatted(Formatting.GRAY)
         } else entry.display.lore
 
         val action = when (
