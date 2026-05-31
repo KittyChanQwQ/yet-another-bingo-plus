@@ -232,6 +232,7 @@
   "bingo.lobby.team_changed": "➾ 你已被移至 %s",
   "bingo.lobby.team_spectators": "➾ 你已被移至旁觀者",
   "bingo.objective.all_of": "所有：%s",
+  "bingo.objective.example.your_nose": "你的鼻子",
   "bingo.objective.challenge.all_chicken_eggs": "取得所有種類的雞蛋",
   "bingo.objective.challenge.all_copper_armor": "全套銅製盔甲",
   "bingo.objective.challenge.all_copper_tools": "全套銅製工具",

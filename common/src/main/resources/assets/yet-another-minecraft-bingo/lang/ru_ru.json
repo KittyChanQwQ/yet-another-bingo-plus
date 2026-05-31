@@ -232,6 +232,7 @@
   "bingo.lobby.team_changed": "➾ Вы были перемещены в %s",
   "bingo.lobby.team_spectators": "➾ Вы были перемещены к наблюдателям",
   "bingo.objective.all_of": "Все из: %s",
+  "bingo.objective.example.your_nose": "Твой нос",
   "bingo.objective.challenge.all_chicken_eggs": "Все Куриные Яйца",
   "bingo.objective.challenge.all_copper_armor": "Вся медная броня",
   "bingo.objective.challenge.all_copper_tools": "Все медные инструменты",

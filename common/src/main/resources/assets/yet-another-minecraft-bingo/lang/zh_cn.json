@@ -232,6 +232,7 @@
   "bingo.lobby.team_changed": "➾ 你被转移到了 %s ",
   "bingo.lobby.team_spectators": "➾ 你转为旁观模式",
   "bingo.objective.all_of": "此格所有：%s",
+  "bingo.objective.example.your_nose": "你的鼻子",
   "bingo.objective.challenge.all_chicken_eggs": "获得所有种类的鸡蛋",
   "bingo.objective.challenge.all_copper_armor": "获得一整套铜盔甲",
   "bingo.objective.challenge.all_copper_tools": "获得一整套铜质工具",

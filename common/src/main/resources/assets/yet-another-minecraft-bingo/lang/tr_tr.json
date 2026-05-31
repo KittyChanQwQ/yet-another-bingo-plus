@@ -1,5 +1,6 @@
 {
   "bingo.bossbar.time_remaining_or_goal": "Kalan Süre: %s ya da %s",
+  "bingo.card.settings_button": "Ayarlar",
   "bingo.card.close": "Kapat",
   "bingo.card.free_space": "Boş Alan",
   "bingo.card.no_cards": "Görüntülenebilecek Bingo Kartı yok...",
