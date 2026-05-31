@@ -6,6 +6,7 @@ import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.renderer.IDrawServiceFactory
+import me.jfenn.bingo.client.platform.renderer.use
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -135,17 +136,19 @@ internal class ClientCardRenderer(
             val (tileX, tileY) = getItem(x.toInt(), y.toInt(), cardScale, mouseX, mouseY) ?: return
             val tile = card.view.tile(tileX, tileY) ?: return
 
-            drawTooltip(service, tile, mouseX, mouseY, z)
+            drawTooltip(service, card, tile, mouseX, mouseY, z)
         }
     }
 
     private fun drawTooltip(
         service: IDrawService,
+        card: ClientCard,
         tile: CardTile,
         mouseX: Int,
         mouseY: Int,
         z: Int,
     ) {
+        val colors = card.colors
         val tooltip = tile.clientTooltip ?: buildList {
             tile.name?.let { add(it) }
             addAll(
@@ -210,12 +213,29 @@ internal class ClientCardRenderer(
                     tile.imageList.forEachIndexed { index, cardTileImage ->
                         val row = index / columns
                         val col = index % columns
-                        cardTileRenderer.renderTileImage(
-                            drawService = service,
-                            image = cardTileImage,
-                            itemX = x + 9 + 20 * col,
-                            itemY = y + 9 + 20 * row,
-                        )
+                        val itemX = x + 8 + 20 * col
+                        val itemY = y + 8 + 20 * row
+
+                        service.matrices.use {
+                            service.matrices.translate(itemX.toFloat(), itemY.toFloat(), 0f)
+
+                            if (cardTileImage.isAchieved) {
+                                service.fill(0, 0, 18, 18, colors.tileAchievedColor.asInt)
+                            }
+
+                            cardTileRenderer.renderTileImage(service, cardTileImage, 1, 1)
+
+                            if (cardTileImage.isAchieved) {
+                                service.draw()
+                                service.overlayFill(
+                                    0,
+                                    0,
+                                    18,
+                                    18,
+                                    colors.tileAchievedColor.copy(a = colors.tileAchievedColor.a / 4).asIntWithAlpha
+                                )
+                            }
+                        }
                     }
                 }
             }

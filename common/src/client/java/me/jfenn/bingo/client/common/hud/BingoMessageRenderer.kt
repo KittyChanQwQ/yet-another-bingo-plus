@@ -124,10 +124,9 @@ internal class BingoMessageRenderer(
                 drawService,
                 message.packet.image,
                 message.packet.imageList,
-                message.packet.imageStyle,
                 itemX, itemY
             )
-            cardTileRenderer.renderTileDecorations(drawService, message.packet.decoration, message.packet.decorationTexture, itemX, itemY)
+            cardTileRenderer.renderTileDecorations(drawService, message.packet.image, itemX, itemY)
         } else {
             val iconTexture = when (message.packet.messageType) {
                 GameMessagePacket.MessageType.LEADING_TEAM -> ICON_LEADING_ID

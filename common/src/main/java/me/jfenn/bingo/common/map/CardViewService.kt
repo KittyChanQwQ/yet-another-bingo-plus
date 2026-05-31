@@ -5,7 +5,6 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.CardInventory
 import me.jfenn.bingo.common.card.objective.BingoObjective
-import me.jfenn.bingo.common.card.objective.display.Decoration
 import me.jfenn.bingo.common.card.objective.display.ItemStyle
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -25,6 +24,7 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.IContainerMenu
+import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
 import java.util.*
 
@@ -218,11 +218,8 @@ internal class CardViewService(
             card.options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasTeamAchieved(team.key)
         val isAchieved = team != null && objective.hasTeamAchieved(team.key)
 
-        val image = CardTileImage(
-            item = if (isHidden) null else entry.display.item,
-            texture = if (isHidden) null else entry.display.image,
-            mapTexture = if (isHidden) null else entry.display.mapImage,
-        )
+        val image = (if (isHidden) CardTileImage.EMPTY else entry.display.toCardTileImage())
+            .copy(isAchieved = isAchieved)
 
         val imageListObjectives = when (objective) {
             is BingoObjective.SomeOfEntry -> objective.someOfObjectives
@@ -237,13 +234,16 @@ internal class CardViewService(
         }
 
         val imageList = imageListObjectives
-            ?.map { innerObjective ->
-                CardTileImage(
-                    item = innerObjective.display.item,
-                    texture = innerObjective.display.image,
-                )
+            ?.map {
+                val isAchieved = team != null && it.hasTeamAchieved(team.key)
+                it.display.toCardTileImage().copy(isAchieved = isAchieved)
             }
             .orEmpty()
+
+        val lore = if (team != null && objective is BingoObjective.SomeOfEntry && objective.valueMin > 1) {
+            val count = objective.someOfObjectives.count { card.objectives[it]?.hasTeamAchieved(team.key) == true }
+            entry.display.lore.orEmpty() + textProvider.literal("$count / ${objective.valueMin}").formatted(Formatting.GRAY)
+        } else entry.display.lore
 
         val action = when (
             val actionObjective = imageListObjectives?.firstOrNull() ?: objective
@@ -264,19 +264,14 @@ internal class CardViewService(
             id = objective.id.takeIf { !isHidden },
             image = image,
             imageList = imageList,
-            imageStyle = entry.display.itemStyle.takeIf { !isHidden } ?: ItemStyle.NORMAL,
             action = action.takeIf { !isHidden } ?: CardTileAction.None,
             itemTier = entry.tier.takeIf { !card.options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
             name = entry.display.name.takeIf { !isHidden },
-            lore = entry.display.lore.takeIf { !isHidden } ?: emptyList(),
-            decoration = entry.display.decoration.takeIf { isFreeSpace || !isHidden }
-                ?: Decoration.NONE,
-            decorationTexture = entry.display.decorationTexture.takeIf { isFreeSpace || !isHidden },
+            lore = lore.takeIf { !isHidden } ?: emptyList(),
             isHidden = isHidden,
             isLocked = isLocked,
             isFlashingOnMap = isFlashing && (server.ticks / 10) % 2 == 0,
             isFlashing = isFlashing,
-            isAchieved = isAchieved,
             progress = when {
                 isAchieved -> 1f
                 !isLocked && team != null -> objective.getProgress(team.key)

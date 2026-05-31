@@ -1,14 +1,11 @@
 package me.jfenn.bingo.common.map
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.card.objective.display.Decoration
-import me.jfenn.bingo.common.card.objective.display.ItemStyle
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.packet.PacketConverter
-import me.jfenn.bingo.platform.readEnum
 import me.jfenn.bingo.platform.text.IText
 import java.time.Instant
 
@@ -16,14 +13,11 @@ data class CardTile(
     val id: String? = null,
     val image: CardTileImage,
     val imageList: List<CardTileImage> = emptyList(),
-    val imageStyle: ItemStyle = ItemStyle.NORMAL,
     val action: CardTileAction = image.item?.let { CardTileAction.Item(it) }
         ?: CardTileAction.None,
     val itemTier: TierLabel? = null,
     val name: IText? = image.item?.displayName,
     val lore: List<IText> = image.item?.lore ?: emptyList(),
-    val decoration: Decoration = Decoration.NONE,
-    val decorationTexture: String? = null,
     val isHidden: Boolean = false,
     val isLocked: Boolean = false,
     /**
@@ -34,7 +28,6 @@ data class CardTile(
      * True if the tile has been recently scored
      */
     val isFlashing: Boolean? = null,
-    val isAchieved: Boolean = false,
     val progress: Float = 0f,
     val teamKeys: List<BingoTeamKey> = emptyList(),
 ) {
@@ -48,7 +41,7 @@ data class CardTile(
             name = item.identifier.toString(),
             image = image.mapTexture ?: image.texture,
             count = item.count,
-            decoration = decoration,
+            decoration = image.decoration,
         )
     }
 
@@ -62,19 +55,15 @@ data class CardTile(
             val id = buf.readString().takeIf { it.isNotEmpty() }
             val image = CardTileImage.V1.fromPacketBuf(buf)
             val imageList = buf.readList { CardTileImage.V1.fromPacketBuf(buf) }
-            val imageStyle = buf.readEnum<ItemStyle>()
             val action = CardTileAction.V1.fromPacketBuf(buf)
             val itemTier = buf.readNullable {
                 TierLabel.valueOf(buf.readString())
             }
             val name = buf.readNullable(buf::readText)
             val lore = List(buf.readInt()) { buf.readText() }
-            val decoration = buf.readEnum<Decoration>()
-            val decorationTexture = buf.readNullable(buf::readString)
             val isHidden = buf.readBoolean()
             val isLocked = buf.readBoolean()
             val isFlashing = buf.readBoolean()
-            val isAchieved = buf.readBoolean()
             val progress = buf.readFloat()
             val teamKeys = List(buf.readInt()) {
                 BingoTeamKey(buf.readString())
@@ -83,17 +72,13 @@ data class CardTile(
                 id = id,
                 image = image,
                 imageList = imageList,
-                imageStyle = imageStyle,
                 action = action,
                 itemTier = itemTier,
                 name = name,
                 lore = lore,
-                decoration = decoration,
-                decorationTexture = decorationTexture,
                 isHidden = isHidden,
                 isLocked = isLocked,
                 isFlashing = isFlashing,
-                isAchieved = isAchieved,
                 progress = progress,
                 teamKeys = teamKeys,
             )
@@ -105,7 +90,6 @@ data class CardTile(
             dest.writeList(source.imageList) {
                 CardTileImage.V1.toPacketBuf(it, dest)
             }
-            dest.writeEnum(source.imageStyle)
             CardTileAction.V1.toPacketBuf(source.action, dest)
             dest.writeNullable(source.itemTier?.name, dest::writeString)
             dest.writeNullable(source.name, dest::writeText)
@@ -115,13 +99,9 @@ data class CardTile(
                 dest.writeText(text)
             }
 
-            dest.writeEnum(source.decoration)
-            dest.writeNullable(source.decorationTexture, dest::writeString)
-
             dest.writeBoolean(source.isHidden)
             dest.writeBoolean(source.isLocked)
             dest.writeBoolean(source.isFlashing ?: false)
-            dest.writeBoolean(source.isAchieved)
 
             dest.writeFloat(source.progress)
 
@@ -134,15 +114,11 @@ data class CardTile(
 
     companion object {
         val EMPTY = CardTile(
-            image = CardTileImage(
-                item = null,
-                texture = null,
-            ),
+            image = CardTileImage.EMPTY,
             itemTier = null,
             isHidden = false,
             isLocked = false,
             isFlashing = false,
-            isAchieved = false,
             teamKeys = emptyList(),
         )
     }

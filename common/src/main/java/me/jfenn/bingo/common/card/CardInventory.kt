@@ -33,7 +33,7 @@ class CardInventory(
 
         val tileItem = tile.image.item
         val stack = when {
-            tile.isAchieved -> runCatching { itemStackFactory.createStack("minecraft:lime_stained_glass_pane") }
+            tile.image.isAchieved -> runCatching { itemStackFactory.createStack("minecraft:lime_stained_glass_pane") }
                 .getOrNull()
                 ?.also { copyDisplay(tile, it) }
                 ?: tileItem

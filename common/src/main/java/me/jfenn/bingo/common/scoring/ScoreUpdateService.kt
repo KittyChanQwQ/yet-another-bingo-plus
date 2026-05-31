@@ -4,7 +4,7 @@ import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
-import me.jfenn.bingo.common.map.CardTileImage
+import me.jfenn.bingo.common.map.toCardTileImage
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
@@ -79,9 +79,8 @@ internal class ScoreUpdateService(
         val imageList = if (objective is BingoObjective.SomeOfEntry) {
             objective.someOfObjectives
                 .mapNotNull { card.objectives[it] }
-                .mapNotNull { it.display.item }
                 .take(4)
-                .map { CardTileImage(it, null) }
+                .map { it.display.toCardTileImage() }
         } else emptyList()
 
         gameMessageService.addGameMessage(
@@ -89,11 +88,8 @@ internal class ScoreUpdateService(
                 timeElapsed = state.ingameDuration() ?: Duration.ZERO,
                 team = team.key,
                 cardId = card.id,
-                image = CardTileImage(objective.display.item, objective.display.image),
+                image = objective.display.toCardTileImage(),
                 imageList = imageList,
-                imageStyle = objective.display.itemStyle,
-                decoration = objective.display.decoration,
-                decorationTexture = objective.display.decorationTexture,
                 itemName = objective.display.name ?: text.literal("unknown"),
                 player = scoredPlayer,
                 isLost = false,
@@ -119,9 +115,8 @@ internal class ScoreUpdateService(
         val imageList = if (objective is BingoObjective.SomeOfEntry) {
             objective.someOfObjectives
                 .mapNotNull { card.objectives[it] }
-                .mapNotNull { it.display.item }
                 .take(4)
-                .map { CardTileImage(it, null) }
+                .map { it.display.toCardTileImage() }
         } else emptyList()
 
         gameMessageService.addGameMessage(
@@ -129,11 +124,8 @@ internal class ScoreUpdateService(
                 timeElapsed = state.ingameDuration() ?: Duration.ZERO,
                 team = team.key,
                 cardId = card.id,
-                image = CardTileImage(objective.display.item, objective.display.image),
+                image = objective.display.toCardTileImage(),
                 imageList = imageList,
-                imageStyle = objective.display.itemStyle,
-                decoration = objective.display.decoration,
-                decorationTexture = objective.display.decorationTexture,
                 itemName = objective.display.name ?: text.literal("unknown"),
                 player = null,
                 isLost = true,

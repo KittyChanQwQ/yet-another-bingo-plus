@@ -25,7 +25,6 @@ internal class CardTileRenderer(
             drawService,
             tile.image,
             tile.imageList,
-            tile.imageStyle,
             itemX,
             itemY,
         )
@@ -35,11 +34,10 @@ internal class CardTileRenderer(
         drawService: IDrawService,
         image: CardTileImage,
         imageList: List<CardTileImage>,
-        imageStyle: ItemStyle,
         itemX: Int,
         itemY: Int,
     ) {
-        if (imageList.size > 1 && imageStyle == ItemStyle.ONE_OF) {
+        if (imageList.size > 1 && image.itemStyle == ItemStyle.ONE_OF) {
             drawService.matrices.push()
             drawService.matrices.translate(itemX.toFloat(), itemY.toFloat(), 0f)
             val scale = (12f / 16f)
@@ -65,7 +63,7 @@ internal class CardTileRenderer(
 
             drawService.setShaderColor(1f, 1f, 1f, 1f)
             drawService.matrices.pop()
-        } else if (imageList.size > 1 && imageStyle == ItemStyle.ALL_OF) {
+        } else if (imageList.size > 1 && image.itemStyle == ItemStyle.ALL_OF) {
             drawService.matrices.push()
             drawService.matrices.translate(itemX.toFloat(), itemY.toFloat(), 0f)
             val scale = (9f / 16f)
@@ -112,19 +110,18 @@ internal class CardTileRenderer(
         itemX: Int,
         itemY: Int,
     ) {
-        renderTileDecorations(drawService, tile.decoration, tile.decorationTexture, itemX, itemY)
+        renderTileDecorations(drawService, tile.image, itemX, itemY)
     }
 
     fun renderTileDecorations(
         drawService: IDrawService,
-        decoration: Decoration,
-        decorationTexture: String?,
+        image: CardTileImage,
         itemX: Int,
         itemY: Int,
     ) {
-        val texture = decorationTexture
+        val texture = image.decorationTexture
             ?.let { Identifier(it) }
-            ?: when (decoration) {
+            ?: when (image.decoration) {
                 Decoration.ADVANCEMENT -> DECORATION_ADVANCEMENT_ID
                 Decoration.FORBIDDEN -> DECORATION_FORBIDDEN_ID
                 Decoration.FREE_SPACE -> DECORATION_FREE_SPACE_ID

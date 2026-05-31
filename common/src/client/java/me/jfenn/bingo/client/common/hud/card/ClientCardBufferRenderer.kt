@@ -118,7 +118,7 @@ internal class ClientCardBufferRenderer(
                 val isFlashing = shouldRenderFlashing(tile)
                 when {
                     isFlashing -> service.fill(0, 0, 18, 18, colors.tileFlashingColor.asInt)
-                    tile.isAchieved -> service.fill(0, 0, 18, 18, colors.tileAchievedColor.asInt)
+                    tile.image.isAchieved -> service.fill(0, 0, 18, 18, colors.tileAchievedColor.asInt)
                     tile.progress >= (1/18f) -> service.fill(
                         0, (18 * (1f - tile.progress)).toInt().coerceIn(0, 18),
                         18, 18,
@@ -142,7 +142,7 @@ internal class ClientCardBufferRenderer(
 
                 cardTileRenderer.renderTile(service, tile, 1, 1)
 
-                if (tile.isAchieved && !isFlashing && !card.isGui) {
+                if (tile.image.isAchieved && !isFlashing && !card.isGui) {
                     service.draw()
                     service.overlayFill(
                         0,

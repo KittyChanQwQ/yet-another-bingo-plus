@@ -19,9 +19,6 @@ data class GameMessagePacket(
     val team: BingoTeamKey,
     val image: CardTileImage = CardTileImage.EMPTY,
     val imageList: List<CardTileImage> = emptyList(),
-    val imageStyle: ItemStyle = ItemStyle.NORMAL,
-    val decoration: Decoration = Decoration.NONE,
-    val decorationTexture: String? = null,
     val messageType: MessageType,
     val message: ITextSerialized,
     val isUpdate: Boolean = false,
@@ -45,9 +42,6 @@ data class GameMessagePacket(
             dest.writeList(source.imageList) {
                 CardTileImage.V1.toPacketBuf(it, dest)
             }
-            dest.writeEnum(source.imageStyle)
-            dest.writeEnum(source.decoration)
-            dest.writeNullable(source.decorationTexture, dest::writeString)
 
             dest.writeEnum(source.messageType)
             dest.writeText(source.message)
@@ -61,9 +55,6 @@ data class GameMessagePacket(
 
             val image = CardTileImage.V1.fromPacketBuf(buf)
             val imageList = buf.readList { CardTileImage.V1.fromPacketBuf(buf) }
-            val imageStyle = buf.readEnum<ItemStyle>()
-            val decoration = buf.readEnum<Decoration>()
-            val decorationTexture = buf.readNullable { buf.readString() }
 
             val messageType = buf.readEnum<MessageType>()
             val message = buf.readText()
@@ -76,9 +67,6 @@ data class GameMessagePacket(
                 team = team,
                 image = image,
                 imageList = imageList,
-                imageStyle = imageStyle,
-                decoration = decoration,
-                decorationTexture = decorationTexture,
                 messageType = messageType,
                 message = message,
                 isUpdate = isUpdate,

@@ -324,6 +324,9 @@ class ItemStackFactory(
                 inventory.map { it.stack }
             )
         }
+
+        override fun equals(other: Any?): Boolean = other is ItemStackImpl && stack == other.stack
+        override fun hashCode(): Int = stack.hashCode()
     }
 
     inner class WrittenBookImpl(
