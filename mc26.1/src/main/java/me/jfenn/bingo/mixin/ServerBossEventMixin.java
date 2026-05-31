@@ -14,7 +14,7 @@ public class ServerBossEventMixin {
     @Inject(at = @At("TAIL"), method = "<init>")
     public void init(CallbackInfo ci) {
         ServerBossEvent bossBar = (ServerBossEvent) (Object) this;
-        BossBarManager.Companion.getServerBossBars$bingo()
+        BossBarManager.Companion.getServerBossBars()
                 .add(new WeakReference<>(bossBar));
     }
 }

@@ -17,6 +17,7 @@ internal class BossBarManager(
     private val server: MinecraftServer,
 ) : IBossBarManager {
     companion object {
+        @get:JvmName("getServerBossBars")
         internal val serverBossBars = Collections.synchronizedList(
             mutableListOf<WeakReference<ServerBossEvent>>()
         )
