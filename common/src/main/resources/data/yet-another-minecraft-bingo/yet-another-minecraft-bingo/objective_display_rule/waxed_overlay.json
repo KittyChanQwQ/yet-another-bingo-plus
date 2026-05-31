@@ -1,0 +1,9 @@
+{
+    "predicate": {
+        "type": "match_identifier",
+        "identifier": "minecraft:waxed_*"
+    },
+    "display": {
+        "decorationTexture": "minecraft:bingo/image_frame_waxed"
+    }
+}

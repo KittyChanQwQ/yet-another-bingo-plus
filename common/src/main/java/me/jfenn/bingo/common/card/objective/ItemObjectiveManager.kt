@@ -93,7 +93,7 @@ internal class ItemObjectiveManager(
 
         val display = ObjectiveDisplay.Resolved(
             name = stack.displayName.copy()
-                .append(if (objective.itemCount > 1) " x${FORMAT_COUNT}" else ""),
+                .append(if (objective.itemCount > 1) " x${objective.itemCount}" else ""),
             item = stack,
             decoration = when {
                 !objective.itemComponents.isNullOrEmpty() -> Decoration.ADVANCEMENT

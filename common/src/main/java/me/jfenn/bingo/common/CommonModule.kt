@@ -193,6 +193,7 @@ val commonModule = module {
     singleOf(::TrackedFileService)
     singleOf(::FilterPresetsLoader)
     singleOf(::ObjectiveLoader)
+    singleOf(::ObjectiveDisplayRuleLoader)
     singleOf(::SpawnKitLoader)
     singleOf(::TierListLoader)
     singleOf(::TagLoader)
@@ -252,6 +253,8 @@ val commonModule = module {
                     get<StatsObjectiveManager>(),
                     get<ScoreboardObjectiveManager>(),
                 ),
+                get(),
+                get(),
                 get(),
                 get(),
             )

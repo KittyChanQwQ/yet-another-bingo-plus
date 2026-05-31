@@ -15,6 +15,7 @@ internal class DataLoaderManager(
     private val scopedData: ScopedData,
     private val filterPresetsLoader: FilterPresetsLoader,
     private val objectiveLoader: ObjectiveLoader,
+    private val objectiveDisplayRuleLoader: ObjectiveDisplayRuleLoader,
     private val spawnKitLoader: SpawnKitLoader,
     private val tierListLoader: TierListLoader,
     private val tagLoader: TagLoader,
@@ -31,6 +32,9 @@ internal class DataLoaderManager(
 
             val objectivesFuture = CompletableFuture.supplyAsync({
                 newData.objectives = objectiveLoader.loadObjectives(event.resourceManager)
+            }, event.prepareExecutor)
+            val objectiveDisplayRulesFuture = CompletableFuture.supplyAsync({
+                newData.objectiveDisplayRules = objectiveDisplayRuleLoader.loadObjectiveDisplayRules(event.resourceManager)
             }, event.prepareExecutor)
             val tierListsFuture = CompletableFuture.supplyAsync({
                 newData.tierLists = tierListLoader.loadTierLists(event.resourceManager)
@@ -59,6 +63,7 @@ internal class DataLoaderManager(
 
             CompletableFuture.allOf(
                 objectivesFuture,
+                objectiveDisplayRulesFuture,
                 tierListsFuture,
                 tagsFuture,
                 obtainableItemsFuture,

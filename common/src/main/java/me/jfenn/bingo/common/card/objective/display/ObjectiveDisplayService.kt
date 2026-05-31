@@ -32,12 +32,11 @@ class ObjectiveDisplayService(
         substitutions: Map<String, String> = emptyMap(),
     ): ObjectiveDisplay.Resolved = run {
         try {
-            val nameJson = data?.name?.let { jsonUnpretty.encodeToString(it) }
-                ?: fallback.name?.let { textSerializer.toJson(it) }
-
-            val name = nameJson?.let { insertSubstitutions(it, substitutions) }
-                ?.let { textSerializer.fromJson(it) }
-                ?.let { textProvider.from(it) }
+            val name = data?.name?.let { dataName ->
+                insertSubstitutions(jsonUnpretty.encodeToString(dataName), substitutions)
+                    .let { textSerializer.fromJson(it) }
+                    .let { textProvider.from(it) }
+            } ?: fallback.name
 
             val lore = data?.lore?.map {
                 textSerializer.fromJson(jsonUnpretty.encodeToString(it))
@@ -48,7 +47,7 @@ class ObjectiveDisplayService(
                 ?.let {
                     try {
                         itemStackFactory.createStack(data.item)
-                    } catch (e: IllegalArgumentException) {
+                    } catch (_: IllegalArgumentException) {
                         log.objectiveError(id, "Unable to find display item ${data.item}")
                         null
                     }

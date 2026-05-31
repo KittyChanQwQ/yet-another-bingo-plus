@@ -6,6 +6,8 @@ import me.jfenn.bingo.common.card.data.ObjectiveRequirements
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterPreset
 import me.jfenn.bingo.common.card.objective.display.Decoration
 import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplayService
+import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.ChatFormatting
@@ -15,6 +17,8 @@ internal class BingoObjectiveManager(
     private val providers: List<IObjectiveManager>,
     private val text: TextProvider,
     private val log: Logger,
+    private val objectiveDisplayService: ObjectiveDisplayService,
+    private val data: ScopedData,
 ) : IObjectiveManager {
     override fun list(): Iterable<String> {
         return providers.flatMap { it.list() }
@@ -127,6 +131,16 @@ internal class BingoObjectiveManager(
             }
 
             entry.display = display.copy(lore = lore, item = item)
+
+            for ((id, rule) in data.objectiveDisplayRules.entries) {
+                if (rule.predicate.matches(objective)) {
+                    entry.display = objectiveDisplayService.resolve(
+                        id = id,
+                        data = rule.display,
+                        fallback = entry.display,
+                    )
+                }
+            }
         }
     }
 

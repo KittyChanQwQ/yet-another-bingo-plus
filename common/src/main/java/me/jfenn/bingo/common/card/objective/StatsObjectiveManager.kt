@@ -68,7 +68,7 @@ internal class StatsObjectiveManager(
             ?: text.literal(statNameFallback)
 
         val display = ObjectiveDisplay.Resolved(
-            name = statName.append(": $FORMAT_MIN"),
+            name = statName.append(": ${objective.valueMin}"),
             decoration = Decoration.ADVANCEMENT,
         )
         objective.display = objectiveDisplayService.resolve(

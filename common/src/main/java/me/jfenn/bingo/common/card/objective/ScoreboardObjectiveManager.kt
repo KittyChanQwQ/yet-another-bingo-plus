@@ -61,7 +61,7 @@ internal class ScoreboardObjectiveManager(
 
         val display = ObjectiveDisplay.Resolved(
             name = text.literal(objective.data.scoreboardName.formatTitle())
-                .append(": $FORMAT_MIN"),
+                .append(": ${objective.valueMin}"),
             decoration = Decoration.ADVANCEMENT,
         )
         objective.display = objectiveDisplayService.resolve(

@@ -269,9 +269,9 @@ internal class CardViewService(
             itemTier = entry.tier.takeIf { !card.options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
             name = entry.display.name.takeIf { !isHidden },
             lore = entry.display.lore.takeIf { !isHidden } ?: emptyList(),
-            decoration = objective.display.decoration.takeIf { !isHidden }
+            decoration = entry.display.decoration.takeIf { isFreeSpace || !isHidden }
                 ?: Decoration.NONE,
-            decorationTexture = objective.display.decorationTexture.takeIf { isFreeSpace || !isHidden },
+            decorationTexture = entry.display.decorationTexture.takeIf { isFreeSpace || !isHidden },
             isHidden = isHidden,
             isLocked = isLocked,
             isFlashingOnMap = isFlashing && (server.ticks / 10) % 2 == 0,
