@@ -152,10 +152,6 @@ class ItemStackFactory(
             )
         }
 
-        override fun setNbtString(nbt: String?) = true
-
-        override fun getNbtString(): String? = null
-
         override fun setComponentsString(components: Map<String, String?>): Boolean {
             var isSuccessful = true
 
@@ -247,7 +243,7 @@ class ItemStackFactory(
             return false
         }
 
-        override fun isDataOverlapping(nbt: String?, components: Map<String, String?>?): Boolean {
+        override fun isDataOverlapping(components: Map<String, String?>?): Boolean {
             if (components == null) return true
 
             val itemComponents = getComponentsString()

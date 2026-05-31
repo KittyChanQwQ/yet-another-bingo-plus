@@ -48,14 +48,10 @@ interface IItemStack {
     fun setUnbreakable(value: Boolean)
     fun setHideFlags(hideFlags: Int)
 
-    fun setNbtString(nbt: String?): Boolean
-    fun getNbtString(): String?
-
     fun setComponentsString(components: Map<String, String?>): Boolean
     fun getComponentsString(): Map<String, String?>?
 
     fun isDataOverlapping(
-        nbt: String?,
         components: Map<String, String?>?,
     ): Boolean
 

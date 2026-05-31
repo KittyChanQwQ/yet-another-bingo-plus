@@ -153,7 +153,6 @@ internal sealed class BingoObjective : ICardObjective {
             get() = super.conflictsWithObjectivesInternal + itemId
 
         val itemId get() = data.item
-        val itemNbt get() = data.nbt
 
         @Transient
         val itemComponents = data.components?.mapValues { (_, data) -> data?.let { jsonUnpretty.encodeToString(it) } }

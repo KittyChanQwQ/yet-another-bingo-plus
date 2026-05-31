@@ -26,6 +26,7 @@ class ObjectiveDisplay {
         val name: JsonElement? = null,
         val lore: List<JsonElement>? = null,
         val item: String? = null,
+        @Deprecated("Not used - components should be provided instead")
         val itemNbt: String? = null,
         val itemComponents: Map<String, JsonElement>? = null,
         val itemStyle: ItemStyle? = null,

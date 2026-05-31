@@ -81,10 +81,9 @@ internal class ItemObjectiveManager(
             return false
         }
 
-        val isNbtSuccessful = stack.setNbtString(objective.itemNbt)
         val isComponentsSuccessful = objective.itemComponents?.let { stack.setComponentsString(it) } ?: true
 
-        if (!isNbtSuccessful || !isComponentsSuccessful) {
+        if (!isComponentsSuccessful) {
             log.objectiveError(objective.id, "Item ${objective.itemId} NBT failed to parse")
             return false
         }
@@ -97,7 +96,7 @@ internal class ItemObjectiveManager(
                 .append(if (objective.itemCount > 1) " x${FORMAT_COUNT}" else ""),
             item = stack,
             decoration = when {
-                objective.itemNbt != null || !objective.itemComponents.isNullOrEmpty() -> Decoration.ADVANCEMENT
+                !objective.itemComponents.isNullOrEmpty() -> Decoration.ADVANCEMENT
                 else -> Decoration.NONE
             },
         )
@@ -126,7 +125,7 @@ internal class ItemObjectiveManager(
         val objectiveStack = objective.itemStack ?: return false
         return stack.item == objectiveStack.item &&
                 !stack.hasCustomTag(NBT_BINGO_IGNORE) &&
-                stack.isDataOverlapping(nbt = objective.itemNbt, components = objective.itemComponents)
+                stack.isDataOverlapping(components = objective.itemComponents)
     }
 
     private fun countSatisfied(stacks: List<IItemStack>, objective: BingoObjective.ItemEntry) : Int {

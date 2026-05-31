@@ -54,7 +54,6 @@ class ObjectiveDisplayService(
                     }
                 }
                 ?.also { stack ->
-                    stack.setNbtString(data.itemNbt)
                     data.itemComponents?.let {
                         stack.setComponentsString(it.mapValues { (_, data) ->
                             jsonUnpretty.encodeToString(data)

@@ -49,6 +49,7 @@ sealed class ObjectiveData {
     data class Item(
         val item: String,
         val count: NumberProviderPolymorphic = NumberProvider.Constant(1),
+        @Deprecated("Not used - components should be provided instead")
         val nbt: String? = null,
         val components: Map<String, JsonElement?>? = null,
         override val permanent: Boolean = false,
