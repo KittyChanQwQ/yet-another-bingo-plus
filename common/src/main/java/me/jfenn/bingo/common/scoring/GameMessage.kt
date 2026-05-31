@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.scoring
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.common.map.CardTile
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ItemStyle
 import me.jfenn.bingo.common.map.CardTileImage
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.DurationType
@@ -24,7 +25,9 @@ sealed class GameMessage {
         val cardId: UuidAsString,
         val image: CardTileImage,
         val imageList: List<CardTileImage>,
-        val decoration: CardTile.Decoration?,
+        val imageStyle: ItemStyle,
+        val decoration: Decoration,
+        val decorationTexture: String?,
         val itemName: ITextSerialized,
         val player: PlayerProfile?,
         val isLost: Boolean,

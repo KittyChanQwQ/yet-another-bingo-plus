@@ -11,7 +11,6 @@ import me.jfenn.bingo.client.platform.screen.*
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.scoring.GameMessagePacket
-import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -263,8 +262,7 @@ internal class BingoCardPlacementScreen(
                     id = UUID(0L, 0L),
                     timeElapsed = Duration.ZERO,
                     team = BingoTeamKey(""),
-                    decoration = null,
-                    messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
+                    messageType = GameMessagePacket.MessageType.ITEM_SCORED,
                     message = message,
                 )
             )

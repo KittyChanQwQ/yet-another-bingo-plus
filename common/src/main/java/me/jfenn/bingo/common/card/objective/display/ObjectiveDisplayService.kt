@@ -1,5 +1,6 @@
-package me.jfenn.bingo.common.card.objective
+package me.jfenn.bingo.common.card.objective.display
 
+import me.jfenn.bingo.common.card.objective.objectiveError
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.platform.ITextSerializer
@@ -66,7 +67,9 @@ class ObjectiveDisplayService(
                 name = name,
                 lore = lore,
                 item = item,
+                itemStyle = data?.itemStyle ?: fallback.itemStyle,
                 decoration = data?.decoration ?: fallback.decoration,
+                decorationTexture = data?.decorationTexture ?: fallback.decorationTexture,
                 image = data?.image ?: fallback.image,
                 mapImage = data?.mapImage ?: fallback.mapImage,
             )

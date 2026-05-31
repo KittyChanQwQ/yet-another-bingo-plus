@@ -1,5 +1,7 @@
 package me.jfenn.bingo.common.scoring
 
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ItemStyle
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardTileImage
@@ -81,8 +83,10 @@ internal class GameMessageService(
             team = team.key,
             image = message.image.takeIf { !isItemHidden } ?: CardTileImage.EMPTY,
             imageList = message.imageList.takeIf { !isItemHidden }.orEmpty(),
-            decoration = message.decoration.takeIf { !isItemHidden },
-            messageType = ScoreMessagePacket.MessageType.ITEM_SCORED,
+            imageStyle = message.imageStyle.takeIf { !isItemHidden } ?: ItemStyle.NORMAL,
+            decoration = message.decoration.takeIf { !isItemHidden } ?: Decoration.NONE,
+            decorationTexture = message.decorationTexture.takeIf { !isItemHidden },
+            messageType = GameMessagePacket.MessageType.ITEM_SCORED,
             message = chatMessage,
         )
     }
@@ -100,8 +104,7 @@ internal class GameMessageService(
             id = message.id,
             timeElapsed = message.timeElapsed,
             team = team.key,
-            decoration = null,
-            messageType = ScoreMessagePacket.MessageType.LINE_SCORED,
+            messageType = GameMessagePacket.MessageType.LINE_SCORED,
             message = chatMessage,
         )
     }
@@ -119,8 +122,7 @@ internal class GameMessageService(
             id = message.id,
             timeElapsed = message.timeElapsed,
             team = team.key,
-            decoration = null,
-            messageType = ScoreMessagePacket.MessageType.CARD_COMPLETED,
+            messageType = GameMessagePacket.MessageType.CARD_COMPLETED,
             message = chatMessage,
         )
     }
@@ -153,8 +155,7 @@ internal class GameMessageService(
             id = message.id,
             timeElapsed = message.timeElapsed,
             team = team.key,
-            decoration = null,
-            messageType = ScoreMessagePacket.MessageType.LEADING_TEAM,
+            messageType = GameMessagePacket.MessageType.LEADING_TEAM,
             message = chatMessage,
         )
     }
@@ -179,25 +180,7 @@ internal class GameMessageService(
     ) {
         when {
             packets.gameMessageV1.send(player, packet) -> {}
-            !packet.isUpdate -> {
-                val isViewerOnTeam = when (packet.messageType) {
-                    ScoreMessagePacket.MessageType.ITEM_SCORED -> {
-                        state.teams[packet.team]?.includesPlayer(player) != false ||
-                                !teamService.isPlaying(player)
-                    }
-                    ScoreMessagePacket.MessageType.LINE_SCORED,
-                    ScoreMessagePacket.MessageType.CARD_COMPLETED,
-                    ScoreMessagePacket.MessageType.LEADING_TEAM -> true
-                }
-                val scoreMessagePacket = ScoreMessagePacket.fromGameMessage(
-                    gameMessagePacket = packet,
-                    isViewerOnTeam = isViewerOnTeam
-                )
-                when {
-                    packets.scoreMessageV1.send(player, scoreMessagePacket) -> {}
-                    else -> player.sendMessage(packet.message)
-                }
-            }
+            !packet.isUpdate -> player.sendMessage(packet.message)
         }
     }
 

@@ -1,7 +1,8 @@
 package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.map.CardTile
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ItemStyle
 import me.jfenn.bingo.common.map.CardTileImage
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.IPacketBuf
@@ -18,11 +19,19 @@ data class GameMessagePacket(
     val team: BingoTeamKey,
     val image: CardTileImage = CardTileImage.EMPTY,
     val imageList: List<CardTileImage> = emptyList(),
-    val decoration: CardTile.Decoration?,
-    val messageType: ScoreMessagePacket.MessageType,
+    val imageStyle: ItemStyle = ItemStyle.NORMAL,
+    val decoration: Decoration = Decoration.NONE,
+    val decorationTexture: String? = null,
+    val messageType: MessageType,
     val message: ITextSerialized,
     val isUpdate: Boolean = false,
 ) {
+    enum class MessageType {
+        LEADING_TEAM,
+        LINE_SCORED,
+        ITEM_SCORED,
+        CARD_COMPLETED,
+    }
 
     object V1 : PacketConverter<GameMessagePacket> {
         override val id: Identifier = Identifier.of(MOD_ID_BINGO, "game_message")
@@ -36,7 +45,9 @@ data class GameMessagePacket(
             dest.writeList(source.imageList) {
                 CardTileImage.V1.toPacketBuf(it, dest)
             }
-            dest.writeNullable(source.decoration, dest::writeEnum)
+            dest.writeEnum(source.imageStyle)
+            dest.writeEnum(source.decoration)
+            dest.writeNullable(source.decorationTexture, dest::writeString)
 
             dest.writeEnum(source.messageType)
             dest.writeText(source.message)
@@ -50,9 +61,11 @@ data class GameMessagePacket(
 
             val image = CardTileImage.V1.fromPacketBuf(buf)
             val imageList = buf.readList { CardTileImage.V1.fromPacketBuf(buf) }
-            val decoration = buf.readNullable { buf.readEnum<CardTile.Decoration>() }
+            val imageStyle = buf.readEnum<ItemStyle>()
+            val decoration = buf.readEnum<Decoration>()
+            val decorationTexture = buf.readNullable { buf.readString() }
 
-            val messageType = buf.readEnum<ScoreMessagePacket.MessageType>()
+            val messageType = buf.readEnum<MessageType>()
             val message = buf.readText()
 
             val isUpdate = buf.readBoolean()
@@ -63,7 +76,9 @@ data class GameMessagePacket(
                 team = team,
                 image = image,
                 imageList = imageList,
+                imageStyle = imageStyle,
                 decoration = decoration,
+                decorationTexture = decorationTexture,
                 messageType = messageType,
                 message = message,
                 isUpdate = isUpdate,

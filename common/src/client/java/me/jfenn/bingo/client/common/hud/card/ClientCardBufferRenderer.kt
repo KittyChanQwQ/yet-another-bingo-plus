@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.common.hud.card
 
+import me.jfenn.bingo.client.common.DECORATION_LOCKED_ID
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.common.utils.Interpolate
@@ -25,7 +26,6 @@ internal class ClientCardBufferRenderer(
 
         val BLACK_A40 = Color.BLACK.copy(a = 64)
 
-        val FRAME_LOCKED_ID = Identifier.of("minecraft", "bingo/image_frame_locked")
         val IMAGE_HIDDEN_ID = Identifier.of("minecraft", "bingo/image_hidden")
 
         val SHUFFLE_DURATION = 280.milliseconds
@@ -157,7 +157,7 @@ internal class ClientCardBufferRenderer(
 
                 if (tile.isLocked) {
                     service.drawGuiTexture(
-                        texture = FRAME_LOCKED_ID,
+                        texture = DECORATION_LOCKED_ID,
                         x = -1, y = -1, z = 301,
                         u = 0f, v = 0f,
                         width = 20, height = 20,

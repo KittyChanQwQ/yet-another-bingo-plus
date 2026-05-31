@@ -1,14 +1,15 @@
 package me.jfenn.bingo.common.card.objective
 
-import java.time.Instant
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.rootObjectives
-import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MAX
-import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MIN
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay.Companion.FORMAT_MAX
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay.Companion.FORMAT_MIN
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplayService
 import me.jfenn.bingo.common.data.ScopedData
-import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.OfflinePlayerCache
 import me.jfenn.bingo.common.text.TextProvider
@@ -17,6 +18,7 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IStatHandle
 import me.jfenn.bingo.platform.IStatManager
 import org.slf4j.Logger
+import java.time.Instant
 
 internal class StatsObjectiveManager(
     private val log: Logger,
@@ -67,7 +69,7 @@ internal class StatsObjectiveManager(
 
         val display = ObjectiveDisplay.Resolved(
             name = statName.append(": $FORMAT_MIN"),
-            decoration = CardTile.Decoration.ADVANCEMENT,
+            decoration = Decoration.ADVANCEMENT,
         )
         objective.display = objectiveDisplayService.resolve(
             id = objective.id,

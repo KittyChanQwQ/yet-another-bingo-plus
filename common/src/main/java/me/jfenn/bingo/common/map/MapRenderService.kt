@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.map
 
-import me.jfenn.bingo.common.BINGO
 import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.card.objective.display.Decoration
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.config.readStream
 import me.jfenn.bingo.common.state.BingoState
@@ -13,7 +13,6 @@ import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.InputStream
 import javax.imageio.ImageIO
@@ -177,7 +176,7 @@ internal class MapRenderService(
         val name: String,
         val image: String?,
         val count: Int,
-        val decoration: CardTile.Decoration?,
+        val decoration: Decoration,
     )
 
     // keep a full card of 25 items in-memory, using LRU eviction
@@ -192,7 +191,7 @@ internal class MapRenderService(
         crossinline callback: (x: Int, y: Int, color: Byte) -> Unit,
     ) {
         // Draw the advancement frame if the tile is an advancement
-        if (tile.decoration == CardTile.Decoration.ADVANCEMENT) {
+        if (tile.decoration == Decoration.ADVANCEMENT) {
             for (x in 0 until IMAGE_SIZE) for (y in 0 until IMAGE_SIZE) {
                 val frameIndex = x + y * IMAGE_SIZE
                 if (frameIndex !in IMAGE_FRAME_ADVANCEMENT.indices) continue
@@ -204,7 +203,7 @@ internal class MapRenderService(
         }
 
         // Draw a "+" if the tile can be captured multiple ways
-        if (tile.decoration in CardTile.MULTI_ITEM_ENUMS) {
+        if (tile.decoration == Decoration.MULTI_ITEM) {
             val offset = 6
             for (innerT in offset-2..offset+2) {
                 callback(offset, innerT, COLOR_WHITE.asByte)
@@ -213,7 +212,7 @@ internal class MapRenderService(
         }
 
         // Draw the locked "X" if the tile is forbidden
-        if (tile.decoration == CardTile.Decoration.FORBIDDEN) {
+        if (tile.decoration == Decoration.FORBIDDEN) {
             for (x in 0 until IMAGE_SIZE) for (y in 0 until IMAGE_SIZE) {
                 val frameIndex = x + y * IMAGE_SIZE
                 if (frameIndex !in IMAGE_FRAME_FORBIDDEN.indices) continue

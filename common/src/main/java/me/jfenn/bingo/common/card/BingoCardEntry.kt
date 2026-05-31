@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.jfenn.bingo.api.card.ICardEntry
 import me.jfenn.bingo.api.card.ObjectiveTier
-import me.jfenn.bingo.common.card.objective.ObjectiveDisplay
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 
 @Serializable

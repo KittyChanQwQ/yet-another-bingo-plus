@@ -3,7 +3,7 @@ package me.jfenn.bingo.common.card.data
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import me.jfenn.bingo.common.card.objective.ObjectiveDisplay
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay
 
 @Serializable
 sealed class ObjectiveData {

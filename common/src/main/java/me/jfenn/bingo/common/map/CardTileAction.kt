@@ -5,6 +5,7 @@ import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.packet.PacketConverter
+import me.jfenn.bingo.platform.readEnum
 
 sealed interface CardTileAction {
     data class Advancement(val id: String) : CardTileAction
@@ -18,14 +19,20 @@ sealed interface CardTileAction {
     }
     data object None : CardTileAction
 
+    enum class Type {
+        NONE,
+        ADVANCEMENT,
+        ITEM,
+    }
+
     object V1 : PacketConverter<CardTileAction> {
         override val id: Identifier = Identifier.of(MOD_ID_BINGO, "card_tile_action")
 
         override fun fromPacketBuf(buf: IPacketBuf): CardTileAction {
-            val type = buf.readString()
+            val type = buf.readEnum<Type>()
             return when (type) {
-                "advancement" -> Advancement(buf.readString())
-                "item" -> Item(buf.readItemStack())
+                Type.ADVANCEMENT -> Advancement(buf.readString())
+                Type.ITEM -> Item(buf.readItemStack())
                 else -> None
             }
         }
@@ -33,14 +40,14 @@ sealed interface CardTileAction {
         override fun toPacketBuf(source: CardTileAction, dest: IPacketBuf) {
             when (source) {
                 is Advancement -> {
-                    dest.writeString("advancement")
+                    dest.writeEnum(Type.ADVANCEMENT)
                     dest.writeString(source.id)
                 }
                 is Item -> {
-                    dest.writeString("item")
+                    dest.writeEnum(Type.ITEM)
                     dest.writeItemStack(source.item)
                 }
-                else -> dest.writeString("none")
+                else -> dest.writeEnum(Type.NONE)
             }
         }
 

@@ -4,8 +4,10 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.rootObjectives
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplayService
 import me.jfenn.bingo.common.data.ScopedData
-import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.platform.IAdvancementManager
@@ -96,7 +98,7 @@ internal class AdvancementObjectiveManager(
                 ?.let { listOf(it) }
                 ?: emptyList(),
             item = advancement.displayIcon,
-            decoration = CardTile.Decoration.ADVANCEMENT,
+            decoration = Decoration.ADVANCEMENT,
         )
         goal.display = objectiveDisplayService.resolve(goal.id, goal.data.display, display)
 

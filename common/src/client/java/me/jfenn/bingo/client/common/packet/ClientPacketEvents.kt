@@ -28,7 +28,6 @@ internal class ClientPacketEvents(
     val gameOverV1 = clientNetworking.registerS2C(GameOverPacket.V1)
     val scoredItemV1 = clientNetworking.registerS2C(ScoredItemPacket.V1)
     val scoredItemLostV1 = clientNetworking.registerS2C(ScoredItemLostPacket.V1)
-    val scoreMessageV1 = clientNetworking.registerS2C(ScoreMessagePacket.V1)
     val gameStatusV1 = clientNetworking.registerS2C(GameStatusPacket.V1)
     val gameMessageV1 = clientNetworking.registerS2C(GameMessagePacket.V1)
     val gameMessageClearV1 = clientNetworking.registerS2C(GameMessageClearPacket.V1)

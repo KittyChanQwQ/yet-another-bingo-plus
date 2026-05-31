@@ -30,7 +30,6 @@ import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.ready.SetReadyPacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.GameMessagePacket
-import me.jfenn.bingo.common.scoring.ScoreMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.div
@@ -311,12 +310,6 @@ internal class BingoHudController(
         eventBus.emit(HudStateChangedEvent, Unit)
     }
 
-    private fun onScoreMessage(packet: ClientPacket<ScoreMessagePacket>) {
-        if (packet.packet.isViewerOnTeam || config.client.messageFromOtherTeams) {
-            onMessagePacket(packet.packet.toGameMessagePacket())
-        }
-    }
-
     private fun onGameMessage(packet: ClientPacket<GameMessagePacket>) {
         onMessagePacket(packet.packet)
     }
@@ -454,8 +447,6 @@ internal class BingoHudController(
                 fireworkRenderer = BingoEndFireworkRenderer(text, range = (100 * config.client.cardScale).toInt())
             }
         }
-
-        eventBus.register(packetEvents.scoreMessageV1, ::onScoreMessage)
 
         eventBus.register(packetEvents.gameStatusV1) {
             state.gameStatus = it.packet

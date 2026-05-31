@@ -8,7 +8,7 @@ import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
 import me.jfenn.bingo.common.map.rgba
-import me.jfenn.bingo.common.scoring.ScoreMessagePacket
+import me.jfenn.bingo.common.scoring.GameMessagePacket
 import me.jfenn.bingo.common.utils.div
 import me.jfenn.bingo.common.utils.milliseconds
 import me.jfenn.bingo.common.utils.minus
@@ -124,16 +124,16 @@ internal class BingoMessageRenderer(
                 drawService,
                 message.packet.image,
                 message.packet.imageList,
-                message.packet.decoration,
+                message.packet.imageStyle,
                 itemX, itemY
             )
-            cardTileRenderer.renderTileDecorations(drawService, message.packet.decoration, itemX, itemY)
+            cardTileRenderer.renderTileDecorations(drawService, message.packet.decoration, message.packet.decorationTexture, itemX, itemY)
         } else {
             val iconTexture = when (message.packet.messageType) {
-                ScoreMessagePacket.MessageType.LEADING_TEAM -> ICON_LEADING_ID
-                ScoreMessagePacket.MessageType.CARD_COMPLETED,
-                ScoreMessagePacket.MessageType.LINE_SCORED -> ICON_CHECK_ID
-                ScoreMessagePacket.MessageType.ITEM_SCORED -> ICON_HIDDEN_ID
+                GameMessagePacket.MessageType.LEADING_TEAM -> ICON_LEADING_ID
+                GameMessagePacket.MessageType.CARD_COMPLETED,
+                GameMessagePacket.MessageType.LINE_SCORED -> ICON_CHECK_ID
+                GameMessagePacket.MessageType.ITEM_SCORED -> ICON_HIDDEN_ID
             }
 
             drawService.drawGuiTexture(

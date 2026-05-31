@@ -4,6 +4,8 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveRequirements
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterPreset
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import net.minecraft.ChatFormatting
@@ -93,7 +95,8 @@ internal class BingoObjectiveManager(
 
             val display = when {
                 objective is BingoObjective.FreeSpace -> ObjectiveDisplay.Resolved(
-                    name = text.string(StringKey.CardFreeSpace)
+                    name = text.string(StringKey.CardFreeSpace),
+                    decoration = Decoration.FREE_SPACE,
                 )
                 else -> objective.display
             }

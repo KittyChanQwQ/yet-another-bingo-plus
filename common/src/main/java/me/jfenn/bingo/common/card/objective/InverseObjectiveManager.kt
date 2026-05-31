@@ -4,8 +4,10 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.rootObjectives
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplayService
 import me.jfenn.bingo.common.data.ScopedData
-import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -43,7 +45,7 @@ internal class InverseObjectiveManager(
                 ObjectiveDisplay.Resolved(
                     name = text.string(StringKey.ObjectiveInverse, inverse.display.name ?: Component.empty()),
                     item = inverse.display.item,
-                    decoration = CardTile.Decoration.FORBIDDEN,
+                    decoration = Decoration.FORBIDDEN,
                 )
             } ?: ObjectiveDisplay.Resolved.EMPTY
 

@@ -5,10 +5,12 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.rootObjectives
-import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_COUNT
-import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MIN
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay.Companion.FORMAT_COUNT
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay.Companion.FORMAT_MIN
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplayService
 import me.jfenn.bingo.common.data.ScopedData
-import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.InventoryVisitor
 import me.jfenn.bingo.common.utils.allHeldStacks
@@ -95,9 +97,9 @@ internal class ItemObjectiveManager(
                 .append(if (objective.itemCount > 1) " x${FORMAT_COUNT}" else ""),
             item = stack,
             decoration = when {
-                objective.itemNbt != null || !objective.itemComponents.isNullOrEmpty() -> CardTile.Decoration.ADVANCEMENT
-                else -> CardTile.Decoration.NONE
-            }
+                objective.itemNbt != null || !objective.itemComponents.isNullOrEmpty() -> Decoration.ADVANCEMENT
+                else -> Decoration.NONE
+            },
         )
         objective.display = objectiveDisplayService.resolve(
             id = objective.id,

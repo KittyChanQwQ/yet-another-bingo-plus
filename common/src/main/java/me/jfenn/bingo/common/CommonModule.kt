@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterCommand
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.card.objective.*
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplayService
 import me.jfenn.bingo.common.card.tag.*
 import me.jfenn.bingo.common.chat.ChatCommand
 import me.jfenn.bingo.common.chat.ChatMessageController

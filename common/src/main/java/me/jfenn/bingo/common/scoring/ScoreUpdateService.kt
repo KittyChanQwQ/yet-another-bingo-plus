@@ -32,21 +32,15 @@ internal class ScoreUpdateService(
         objective: BingoObjective,
         card: BingoCard,
     ) {
-        val item = objective.display.item
-
         val packet = ScoredItemPacket(
-            player = scoredPlayer,
             isViewerOnTeam = true,
             team = team.key,
-            teamColor = team.textColor,
             score = team.currentScore.copy(items = team.currentScore.items + 1),
-            itemId = item?.identifier?.toString(),
         )
 
         // unless showCompletedItems=false, the exact scored item should be hidden from other teams
         val otherTeamPacket = when {
-            !options.showCompletedItems -> packet.copy(isViewerOnTeam = false, score = TeamScore.ZERO, itemId = null)
-            card.options.isHiddenItemsMode -> packet.copy(isViewerOnTeam = false, itemId = null)
+            !options.showCompletedItems -> packet.copy(isViewerOnTeam = false, score = TeamScore.ZERO)
             else -> packet.copy(isViewerOnTeam = false)
         }
 
@@ -97,7 +91,9 @@ internal class ScoreUpdateService(
                 cardId = card.id,
                 image = CardTileImage(objective.display.item, objective.display.image),
                 imageList = imageList,
+                imageStyle = objective.display.itemStyle,
                 decoration = objective.display.decoration,
+                decorationTexture = objective.display.decorationTexture,
                 itemName = objective.display.name ?: text.literal("unknown"),
                 player = scoredPlayer,
                 isLost = false,
@@ -135,7 +131,9 @@ internal class ScoreUpdateService(
                 cardId = card.id,
                 image = CardTileImage(objective.display.item, objective.display.image),
                 imageList = imageList,
+                imageStyle = objective.display.itemStyle,
                 decoration = objective.display.decoration,
+                decorationTexture = objective.display.decorationTexture,
                 itemName = objective.display.name ?: text.literal("unknown"),
                 player = null,
                 isLost = true,

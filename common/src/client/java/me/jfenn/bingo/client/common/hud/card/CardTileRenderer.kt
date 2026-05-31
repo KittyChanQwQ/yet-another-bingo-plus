@@ -1,8 +1,13 @@
 package me.jfenn.bingo.client.common.hud.card
 
+import me.jfenn.bingo.client.common.DECORATION_ADVANCEMENT_ID
+import me.jfenn.bingo.client.common.DECORATION_FORBIDDEN_ID
+import me.jfenn.bingo.client.common.DECORATION_FREE_SPACE_ID
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer.Companion.CARD_WIDTH
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.renderer.IDrawService
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ItemStyle
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.map.CardTileImage
 import me.jfenn.bingo.platform.Identifier
@@ -10,14 +15,6 @@ import me.jfenn.bingo.platform.Identifier
 internal class CardTileRenderer(
     private val hudState: BingoHudState,
 ) {
-
-    private companion object {
-        val ADVANCEMENT_FRAME_ID = Identifier.of("minecraft", "bingo/image_frame_advancement")
-        val FRAME_FREE_SPACE_ID = Identifier.of("minecraft", "bingo/image_frame_free_space")
-        val FRAME_MULTI_ID = Identifier.of("minecraft", "bingo/image_frame_multi")
-        val FRAME_FORBIDDEN_ID = Identifier.of("minecraft", "bingo/image_frame_forbidden")
-    }
-
     fun renderTile(
         drawService: IDrawService,
         tile: CardTile,
@@ -28,7 +25,7 @@ internal class CardTileRenderer(
             drawService,
             tile.image,
             tile.imageList,
-            tile.decoration,
+            tile.imageStyle,
             itemX,
             itemY,
         )
@@ -38,11 +35,11 @@ internal class CardTileRenderer(
         drawService: IDrawService,
         image: CardTileImage,
         imageList: List<CardTileImage>,
-        decoration: CardTile.Decoration?,
+        imageStyle: ItemStyle,
         itemX: Int,
         itemY: Int,
     ) {
-        if (imageList.size > 1 && decoration == CardTile.Decoration.ONE_OF) {
+        if (imageList.size > 1 && imageStyle == ItemStyle.ONE_OF) {
             drawService.matrices.push()
             drawService.matrices.translate(itemX.toFloat(), itemY.toFloat(), 0f)
             val scale = (12f / 16f)
@@ -68,7 +65,7 @@ internal class CardTileRenderer(
 
             drawService.setShaderColor(1f, 1f, 1f, 1f)
             drawService.matrices.pop()
-        } else if (imageList.size > 1 && decoration == CardTile.Decoration.MANY_OF) {
+        } else if (imageList.size > 1 && imageStyle == ItemStyle.ALL_OF) {
             drawService.matrices.push()
             drawService.matrices.translate(itemX.toFloat(), itemY.toFloat(), 0f)
             val scale = (9f / 16f)
@@ -115,53 +112,32 @@ internal class CardTileRenderer(
         itemX: Int,
         itemY: Int,
     ) {
-        renderTileDecorations(drawService, tile.decoration, itemX, itemY)
+        renderTileDecorations(drawService, tile.decoration, tile.decorationTexture, itemX, itemY)
     }
 
     fun renderTileDecorations(
         drawService: IDrawService,
-        decoration: CardTile.Decoration?,
+        decoration: Decoration,
+        decorationTexture: String?,
         itemX: Int,
         itemY: Int,
     ) {
-        if (decoration == CardTile.Decoration.ADVANCEMENT) {
-            drawService.drawGuiTexture(
-                texture = ADVANCEMENT_FRAME_ID,
-                x = itemX - 2, y = itemY - 2, z = 300,
-                u = 0f, v = 0f,
-                width = 20, height = 20,
-                textureWidth = 20, textureHeight = 20,
-            )
-        }
+        val texture = decorationTexture
+            ?.let { Identifier(it) }
+            ?: when (decoration) {
+                Decoration.ADVANCEMENT -> DECORATION_ADVANCEMENT_ID
+                Decoration.FORBIDDEN -> DECORATION_FORBIDDEN_ID
+                Decoration.FREE_SPACE -> DECORATION_FREE_SPACE_ID
+                Decoration.MULTI_ITEM, Decoration.NONE -> null
+            }
+            ?: return
 
-        if (decoration == CardTile.Decoration.FREE_SPACE) {
-            drawService.drawGuiTexture(
-                texture = FRAME_FREE_SPACE_ID,
-                x = itemX - 2, y = itemY - 2, z = 301,
-                u = 0f, v = 0f,
-                width = 20, height = 20,
-                textureWidth = 20, textureHeight = 20,
-            )
-        }
-
-        if (decoration == @Suppress("Deprecation") (CardTile.Decoration.MULTI_ITEM)) {
-            drawService.drawGuiTexture(
-                texture = FRAME_MULTI_ID,
-                x = itemX - 2, y = itemY - 2, z = 300,
-                u = 0f, v = 0f,
-                width = 20, height = 20,
-                textureWidth = 20, textureHeight = 20,
-            )
-        }
-
-        if (decoration == CardTile.Decoration.FORBIDDEN) {
-            drawService.drawGuiTexture(
-                texture = FRAME_FORBIDDEN_ID,
-                x = itemX - 2, y = itemY - 2, z = 301,
-                u = 0f, v = 0f,
-                width = 20, height = 20,
-                textureWidth = 20, textureHeight = 20,
-            )
-        }
+        drawService.drawGuiTexture(
+            texture = texture,
+            x = itemX - 2, y = itemY - 2, z = 301,
+            u = 0f, v = 0f,
+            width = 20, height = 20,
+            textureWidth = 20, textureHeight = 20,
+        )
     }
 }

@@ -5,6 +5,8 @@ import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
 import me.jfenn.bingo.common.card.CardInventory
 import me.jfenn.bingo.common.card.objective.BingoObjective
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ItemStyle
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.options.BingoOptions
@@ -224,7 +226,7 @@ internal class CardViewService(
 
         val imageListObjectives = when (objective) {
             is BingoObjective.SomeOfEntry -> objective.someOfObjectives
-                .takeIf { !isHidden && objective.display.decoration in arrayOf(CardTile.Decoration.ONE_OF, CardTile.Decoration.MANY_OF) }
+                .takeIf { !isHidden && objective.display.itemStyle in arrayOf(ItemStyle.ONE_OF, ItemStyle.ALL_OF) }
                 ?.mapNotNull { card.objectives[it] }
                 ?.sortedBy { innerObjective ->
                     // prefer displaying objectives that are not yet achieved
@@ -262,15 +264,18 @@ internal class CardViewService(
             id = objective.id.takeIf { !isHidden },
             image = image,
             imageList = imageList,
+            imageStyle = entry.display.itemStyle.takeIf { !isHidden } ?: ItemStyle.NORMAL,
             action = action.takeIf { !isHidden } ?: CardTileAction.None,
             itemTier = entry.tier.takeIf { !card.options.isHiddenItemsMode || options.showHiddenTiers || !isHidden },
             name = entry.display.name.takeIf { !isHidden },
             lore = entry.display.lore.takeIf { !isHidden } ?: emptyList(),
-            decoration = objective.display.decoration.takeIf { isFreeSpace || !isHidden },
+            decoration = objective.display.decoration.takeIf { !isHidden }
+                ?: Decoration.NONE,
+            decorationTexture = objective.display.decorationTexture.takeIf { isFreeSpace || !isHidden },
             isHidden = isHidden,
             isLocked = isLocked,
-            isFlashing = isFlashing,
             isFlashingOnMap = isFlashing && (server.ticks / 10) % 2 == 0,
+            isFlashing = isFlashing,
             isAchieved = isAchieved,
             progress = when {
                 isAchieved -> 1f

@@ -6,6 +6,7 @@ import kotlinx.serialization.Transient
 import me.jfenn.bingo.api.card.ICardObjective
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.card.data.ObjectiveData
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.utils.InstantType

@@ -5,10 +5,13 @@ import me.jfenn.bingo.common.card.CardGeneratorState
 import me.jfenn.bingo.common.card.TagExpansionService
 import me.jfenn.bingo.common.card.data.ObjectiveData
 import me.jfenn.bingo.common.card.data.rootObjectives
-import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MAX
-import me.jfenn.bingo.common.card.objective.ObjectiveDisplay.Companion.FORMAT_MIN
+import me.jfenn.bingo.common.card.objective.display.Decoration
+import me.jfenn.bingo.common.card.objective.display.ItemStyle
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay.Companion.FORMAT_MAX
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplay.Companion.FORMAT_MIN
+import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplayService
 import me.jfenn.bingo.common.data.ScopedData
-import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import org.slf4j.Logger
@@ -65,10 +68,12 @@ internal class SomeOfObjectiveManager(
                     else -> text.string(StringKey.ObjectiveSomeOf, FORMAT_MIN, contentsName)
                 },
                 item = objectives.firstNotNullOfOrNull { it.display.item },
-                decoration = when {
-                    isOneOf -> CardTile.Decoration.ONE_OF
-                    else -> CardTile.Decoration.MANY_OF
+                itemStyle = when {
+                    objective.data.display?.item != null -> ItemStyle.NORMAL
+                    isOneOf -> ItemStyle.ONE_OF
+                    else -> ItemStyle.ALL_OF
                 },
+                decoration = Decoration.MULTI_ITEM,
             )
 
             objective.display = objectiveDisplayService.resolve(
