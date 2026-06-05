@@ -46,6 +46,8 @@ dependencies {
     shade project(path: ":integration-voicechat")
     api project(path: ":integration-waystones")
     shade project(path: ":integration-waystones")
+    api project(path: ":integration-journeymap")
+    shade project(path: ":integration-journeymap")
 }
 
 processResources {

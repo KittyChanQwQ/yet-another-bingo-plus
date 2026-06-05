@@ -1,0 +1,11 @@
+plugins {
+    alias(libs.plugins.kotlin.plugin.serialization)
+    id 'bingo.common'
+}
+
+base.archivesName.set("${project.archives_base_name}-integration-journeymap")
+
+dependencies {
+    compileOnly project(path: ":platform")
+    compileOnly project(path: ":api")
+}
