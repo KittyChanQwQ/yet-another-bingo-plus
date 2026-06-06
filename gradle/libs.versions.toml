@@ -19,6 +19,7 @@ insert-koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", versio
 vanish = { module = "maven.modrinth:vanish", version = "1.6.8+26.1" }
 modmenu = { module = "com.terraformersmc:modmenu", version = "18.0.0-alpha.8" }
 yacl = { module = "maven.modrinth:yacl", version = "3.9.3+26.1-fabric" }
+journeymap = { module = "maven.modrinth:journeymap", version = "26.1-6.0.0-beta.67+fabric"}
 jei = { module = "mezz.jei:jei-26.1-fabric-api", version = "29.2.0.21" }
 roughlyenoughitems = { module = "me.shedaniel:RoughlyEnoughItems-api-fabric", version = "15.0.728" }
 emi = { module = "dev.emi:emi-fabric", version = "1.1.6+1.20.1" }
