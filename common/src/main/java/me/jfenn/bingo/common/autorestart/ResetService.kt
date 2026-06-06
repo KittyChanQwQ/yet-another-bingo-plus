@@ -1,6 +1,8 @@
 package me.jfenn.bingo.common.autorestart
 
 import me.jfenn.bingo.common.bossbar.BossBarService
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.game.GameResetPacket
 import me.jfenn.bingo.common.menu.MenuController
 import me.jfenn.bingo.common.scoreboard.ScoreboardService
 import me.jfenn.bingo.common.spawn.SpawnService
@@ -29,6 +31,7 @@ internal class ResetService(
     private val menuController: MenuController,
     private val persistentStateManager: IPersistentStateManager,
     private val persistentStates: PersistentStates,
+    private val packets: ServerPacketEvents,
     private val log: Logger,
 ) {
 
@@ -66,6 +69,7 @@ internal class ResetService(
 
         // if any player is still in the world, teleport to the lobby
         for (player in playerManager.getPlayers()) {
+            packets.gameResetV1.send(player, GameResetPacket())
             spawnService.teleportToLobby(player)
             state.playersJoinedIds += player.uuid
         }
