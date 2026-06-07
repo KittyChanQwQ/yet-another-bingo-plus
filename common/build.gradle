@@ -45,11 +45,6 @@ dependencies {
         exclude(group: "com.twelvemonkeys.imageio")
         exclude(group: "org.quiltmc.parsers")
     }
-    compileOnly(libs.journeymap) {
-        exclude(group: "journeymap.api")
-        exclude(group: "journeymap.common")
-        exclude(group: "journeymap.compat")
-    }
 
     api project(path: ":platform")
     api project(path: ":api")

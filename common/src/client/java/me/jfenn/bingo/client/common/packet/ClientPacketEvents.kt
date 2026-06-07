@@ -16,7 +16,7 @@ import me.jfenn.bingo.common.stats.packets.StatsIndexPacket
 import me.jfenn.bingo.common.timer.CountdownPacket
 import me.jfenn.bingo.common.timer.TimerPacket
 
-internal class ClientPacketEvents(
+class ClientPacketEvents(
     clientNetworking: IClientNetworking,
 ) {
 

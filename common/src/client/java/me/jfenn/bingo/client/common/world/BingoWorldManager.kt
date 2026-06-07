@@ -1,7 +1,5 @@
 package me.jfenn.bingo.client.common.world
 
-import me.jfenn.bingo.client.common.packet.ClientPacketEvents
-import me.jfenn.bingo.client.integrations.JourneymapIntegration
 import me.jfenn.bingo.client.platform.IWorldService
 import me.jfenn.bingo.client.platform.event.model.ScreenEvent
 import me.jfenn.bingo.client.platform.event.model.ScreenType
@@ -14,19 +12,14 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.ScopeStopped
 import net.minecraft.server.MinecraftServer
-import org.koin.core.Koin
 
 internal class BingoWorldManager(
-    koin: Koin,
     eventBus: IEventBus,
-    events: ClientPacketEvents,
     private val buttonFactory: IButtonFactory,
     private val worldService: IWorldService,
     private val config: BingoConfig,
     private val text: ITextFactory,
 ) : BingoComponent() {
-
-    private val journeymap by koin.inject<JourneymapIntegration>()
 
     init {
         eventBus.register(ScopeStopped) {
@@ -54,10 +47,6 @@ internal class BingoWorldManager(
                     )
                 )
             }
-        }
-
-        eventBus.register(events.gameResetV1) {
-            journeymap.resetJourneymapData()
         }
     }
 }

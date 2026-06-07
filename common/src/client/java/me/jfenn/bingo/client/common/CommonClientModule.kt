@@ -20,7 +20,6 @@ import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.stats.ClientStatsSyncController
 import me.jfenn.bingo.client.common.world.BingoWorldManager
 import me.jfenn.bingo.client.integrations.JeiIntegration
-import me.jfenn.bingo.client.integrations.JourneymapIntegration
 import me.jfenn.bingo.client.integrations.YetAnotherConfigLibIntegration
 import me.jfenn.bingo.client.integrations.jei.IJeiApi
 import me.jfenn.bingo.client.integrations.jei.IJeiApiFactory
@@ -58,8 +57,6 @@ val commonClientModule = module {
     singleOf(::ClientSettingsService)
     singleOf(::ClientSettingsController) withOptions { createdAtStart() }
     factoryOf(YetAnotherConfigLibIntegration::create)
-
-    factoryOf(JourneymapIntegration::create)
 
     single {
         JeiIntegration(
