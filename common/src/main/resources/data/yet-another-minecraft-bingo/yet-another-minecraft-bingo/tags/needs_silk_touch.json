@@ -72,5 +72,6 @@
         "yet-another-minecraft-bingo:simplified/one_of_coral_fan",
         "yet-another-minecraft-bingo:simplified/one_of_dead_coral",
         "yet-another-minecraft-bingo:simplified/one_of_dead_coral_fan"
-    ]
+    ],
+    "replace": false
 }

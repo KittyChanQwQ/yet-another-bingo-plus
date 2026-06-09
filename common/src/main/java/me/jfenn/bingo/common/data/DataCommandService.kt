@@ -26,27 +26,27 @@ internal class DataCommandService(
             }, executors.main)
     }
 
-    fun addToTag(tagName: String, objective: String) {
+    fun addToTag(tagName: String, objectives: Set<String>) {
         val tag = scopedData.tags[tagName] ?: TagData.EMPTY
-        tagLoader.writeTag(tagName, tag.plus(objective))
+        tagLoader.writeTag(tagName, tag.plus(objectives))
         reload()
     }
 
-    fun removeFromTag(tagName: String, objective: String) {
+    fun removeFromTag(tagName: String, objectives: Set<String>) {
         val tag = scopedData.tags[tagName] ?: TagData.EMPTY
-        tagLoader.writeTag(tagName, tag.minus(objective))
+        tagLoader.writeTag(tagName, tag.minus(objectives))
         reload()
     }
 
-    fun addToTierList(listName: String, objective: String, tier: TierLabel?) {
+    fun addToTierList(listName: String, objectives: List<Pair<String, TierLabel?>>) {
         val tierList = scopedData.tierLists[listName] ?: TierListConfig.EMPTY
-        tierListLoader.writeTierList(listName, tierList.plus(objective, tier))
+        tierListLoader.writeTierList(listName, tierList.plus(objectives))
         reload()
     }
 
-    fun removeFromTierList(listName: String, objective: String) {
+    fun removeFromTierList(listName: String, objectives: List<String>) {
         val tierList = scopedData.tierLists[listName] ?: TierListConfig.EMPTY
-        tierListLoader.writeTierList(listName, tierList.minus(objective))
+        tierListLoader.writeTierList(listName, tierList.minus(objectives))
         reload()
     }
 }

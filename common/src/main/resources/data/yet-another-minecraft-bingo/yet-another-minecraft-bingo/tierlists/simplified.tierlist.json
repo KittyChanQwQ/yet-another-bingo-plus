@@ -1,4 +1,5 @@
 {
+    "replace": false,
     "values": [],
     "S": [
         "minecraft:breeze_rod",
@@ -50,6 +51,7 @@
         "minecraft:cherry_log",
         "minecraft:cherry_planks",
         "minecraft:cherry_sapling",
+        "minecraft:cinnabar",
         "minecraft:cocoa_beans",
         "minecraft:comparator",
         "minecraft:cookie",
@@ -111,6 +113,8 @@
         "minecraft:sniffer_egg",
         "minecraft:spectral_arrow",
         "minecraft:sponge",
+        "minecraft:sulfur",
+        "minecraft:sulfur_cube_bucket",
         "minecraft:turtle_helmet",
         "minecraft:twisting_vines",
         "minecraft:warped_nylium",
@@ -403,9 +407,9 @@
         "minecraft:cooked_mutton",
         "minecraft:cooked_porkchop",
         "minecraft:copper_ingot",
+        "minecraft:copper_lantern",
         "minecraft:copper_ore",
         "minecraft:copper_torch",
-        "minecraft:copper_lantern",
         "minecraft:crafting_table",
         "minecraft:deepslate",
         "minecraft:diorite",
