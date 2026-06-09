@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.ITeamManager
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
 
 internal class TeamController(
@@ -45,7 +46,7 @@ internal class TeamController(
                     }
 
                     bingoTeam.name = mcTeam.displayName
-                    bingoTeam.textColor = mcTeam.color
+                    bingoTeam.textColor = mcTeam.color ?: Formatting.WHITE
                 } else if (mcTeam != null && state.isLobbyMode && !teamId.startsWith(BINGO_TEAM_PREFIX)) {
                     log.info("[TeamController] Creating a bingo team for '$teamId'")
                     val newTeam = BingoTeam(
@@ -53,7 +54,7 @@ internal class TeamController(
                         name = mcTeam.displayName,
                         shouldFormatName = false,
                         symbol = null,
-                        textColor = mcTeam.color,
+                        textColor = mcTeam.color ?: Formatting.WHITE,
                     )
                     state.registerTeam(newTeam)
                 } else if (mcTeam == null && bingoTeam != null) {

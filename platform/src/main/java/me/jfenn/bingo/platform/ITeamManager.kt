@@ -23,5 +23,5 @@ interface ITeamManager {
 interface ITeamHandle {
     val name: String
     var displayName: IText
-    var color: Formatting
+    var color: Formatting?
 }
