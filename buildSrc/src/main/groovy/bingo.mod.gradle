@@ -48,6 +48,8 @@ dependencies {
     shade project(path: ":integration-waystones")
     api project(path: ":integration-journeymap")
     shade project(path: ":integration-journeymap")
+    api project(path: ":integration-xaeros")
+    shade project(path: ":integration-xaeros")
 }
 
 processResources {
@@ -76,6 +78,7 @@ shadowJar {
         include(project(":integration-voicechat"))
         include(project(":integration-waystones"))
         include(project(":integration-journeymap"))
+        include(project(":integration-xaeros"))
         include(project(":platform"))
         include { it.moduleGroup == "io.insert-koin" }
         include { it.moduleGroup == "app.cash.sqldelight" }

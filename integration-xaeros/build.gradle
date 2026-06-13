@@ -1,0 +1,16 @@
+plugins {
+    alias(libs.plugins.kotlin.plugin.serialization)
+    id 'bingo.common'
+}
+
+base.archivesName.set("${project.archives_base_name}-integration-xaeros")
+
+dependencies {
+    compileOnly(libs.xaerosminimap)
+    compileOnly(libs.xaerosworldmap)
+
+    compileOnly project(path: ":platform")
+    clientCompileOnly project(path: ":platform", configuration: "archives")
+    compileOnly project(path: ":common")
+    clientCompileOnly project(path: ":common", configuration: "archives")
+}
