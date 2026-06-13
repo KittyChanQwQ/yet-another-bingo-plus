@@ -6,17 +6,19 @@ import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.plugin.IBingoInternalPlugin
 import org.koin.core.Koin
 
-internal class JourneymapPluginController(
-    private val events: ClientPacketEvents
-) : IBingoInternalPlugin {
-
-    // TODO: This currently does not build, because the serviceloader expects a parameterless constructor
+internal class JourneymapPluginController : IBingoInternalPlugin {
 
     override fun initialize(
         koin: Koin,
     ) {
         val environment = koin.get<IModEnvironment>()
+        // This plugin is only required client-side. Trying to load the ClientPacketEvents on the server causes a crash.
+        if (environment.envType != IModEnvironment.EnvType.CLIENT) {
+            return;
+        }
+
         val eventBus = koin.get<IEventBus>()
+        val events = koin.get<ClientPacketEvents>()
 
         if (environment.isModLoaded("journeymap")) {
             val plugin = JourneymapPlugin()
