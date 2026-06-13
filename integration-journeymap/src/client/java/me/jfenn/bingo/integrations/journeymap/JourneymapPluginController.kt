@@ -12,20 +12,20 @@ internal class JourneymapPluginController : IBingoInternalPlugin {
         koin: Koin,
     ) {
         val environment = koin.get<IModEnvironment>()
-        // This plugin is only required client-side. Trying to load the ClientPacketEvents on the server causes a crash.
-        if (environment.envType != IModEnvironment.EnvType.CLIENT) {
-            return;
-        }
 
-        val eventBus = koin.get<IEventBus>()
-        val events = koin.get<ClientPacketEvents>()
-
-        if (environment.isModLoaded("journeymap")) {
+        if (
+            // This plugin is only required client-side. Trying to load the ClientPacketEvents on the server causes a crash.
+            environment.envType == IModEnvironment.EnvType.CLIENT &&
+            environment.isModLoaded("journeymap")
+        ) {
+            val eventBus = koin.get<IEventBus>()
+            val events = koin.get<ClientPacketEvents>()
             val plugin = JourneymapPlugin()
 
             eventBus.register(events.gameResetV1) {
                 plugin.resetJourneymapData()
             }
         }
+
     }
 }
