@@ -62,16 +62,23 @@ data class TierListConfig(
         }
     }
 
-    fun plus(objective: String, tier: TierLabel?): TierListConfig {
-        val entry = TierListEntry(null, objective)
+    fun plus(objectives: List<Pair<String, TierLabel?>>): TierListConfig {
         return this.mapTiers { set, setTier ->
-            if (setTier == tier) set + entry else set - entry
+            val entriesToAdd = objectives
+                .filter { (_, tier) -> setTier == tier }
+                .map { (objective, _) -> TierListEntry(null, objective) }
+
+            val entriesToRemove = objectives
+                .filter { (_, tier) -> setTier != tier }
+                .map { (objective, _) -> TierListEntry(null, objective) }
+
+            (set + entriesToAdd) - entriesToRemove.toSet()
         }.sort()
     }
 
-    fun minus(objective: String): TierListConfig {
-        val entry = TierListEntry(null, objective)
-        return this.mapTiers { set, _ -> set - entry }.sort()
+    fun minus(objectives: List<String>): TierListConfig {
+        val entries = objectives.map { TierListEntry(null, it) }.toSet()
+        return this.mapTiers { set, _ -> set - entries }.sort()
     }
 
     fun getTier(tier: TierLabel) = when (tier) {

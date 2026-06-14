@@ -1,4 +1,5 @@
 {
+    "replace": false,
     "values": [],
     "S": [
         "minecraft:adventure/adventuring_time",
@@ -69,6 +70,7 @@
         "minecraft:husbandry/break_diamond_hoe",
         "minecraft:husbandry/obtain_sniffer_egg",
         "minecraft:husbandry/place_dried_ghast_in_water",
+        "minecraft:husbandry/uh_oh",
         "minecraft:nether/charge_respawn_anchor",
         "minecraft:nether/explore_nether",
         "minecraft:nether/fast_travel",

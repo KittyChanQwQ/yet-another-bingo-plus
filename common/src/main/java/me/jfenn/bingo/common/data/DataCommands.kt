@@ -45,13 +45,12 @@ class DataCommands(
                                 val objectivePattern = getArgument(objectiveArg)
                                 val matchedObjectives = scope.get<ObjectiveListService>().getAllObjectives()
                                     .filter { matchesWildcardString(objectivePattern, it) }
+                                    .toSet()
 
-                                for (objective in matchedObjectives) {
-                                    scope.get<DataCommandService>().addToTag(
-                                        tagName = tag,
-                                        objective = objective,
-                                    )
-                                }
+                                scope.get<DataCommandService>().addToTag(
+                                    tagName = tag,
+                                    objectives = matchedObjectives,
+                                )
 
                                 sendFeedback(
                                     text.string(
@@ -83,13 +82,12 @@ class DataCommands(
                                 val objectivePattern = getArgument(objectiveArg)
                                 val matchedObjectives = scope.get<ScopedData>().tags[tag]?.values.orEmpty()
                                     .filter { matchesWildcardString(objectivePattern, it) }
+                                    .toSet()
 
-                                for (objective in matchedObjectives) {
-                                    scope.get<DataCommandService>().removeFromTag(
-                                        tagName = tag,
-                                        objective = objective,
-                                    )
-                                }
+                                scope.get<DataCommandService>().removeFromTag(
+                                    tagName = tag,
+                                    objectives = matchedObjectives,
+                                )
 
                                 sendFeedback(
                                     text.string(
@@ -135,14 +133,12 @@ class DataCommands(
                                         val matchedObjectives = scope.get<ObjectiveListService>()
                                             .getAllObjectives()
                                             .filter { matchesWildcardString(objectivePattern, it) }
+                                            .map { Pair(it, tier) }
 
-                                        for (objective in matchedObjectives) {
-                                            scope.get<DataCommandService>().addToTierList(
-                                                listName = list,
-                                                objective = objective,
-                                                tier = tier,
-                                            )
-                                        }
+                                        scope.get<DataCommandService>().addToTierList(
+                                            listName = list,
+                                            objectives = matchedObjectives,
+                                        )
 
                                         sendFeedback(
                                             text.string(
@@ -180,12 +176,10 @@ class DataCommands(
                                     .map { it.item }
                                     .filter { matchesWildcardString(objectivePattern, it) }
 
-                                for (objective in matchedObjectives) {
-                                    scope.get<DataCommandService>().removeFromTierList(
-                                        listName = list,
-                                        objective = objective,
-                                    )
-                                }
+                                scope.get<DataCommandService>().removeFromTierList(
+                                    listName = list,
+                                    objectives = matchedObjectives,
+                                )
 
                                 sendFeedback(
                                     text.string(

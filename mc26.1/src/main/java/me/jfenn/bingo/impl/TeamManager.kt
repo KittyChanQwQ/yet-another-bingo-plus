@@ -4,6 +4,7 @@ import me.jfenn.bingo.platform.ITeamHandle
 import me.jfenn.bingo.platform.ITeamManager
 import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
+import net.minecraft.ChatFormatting
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.scores.PlayerTeam
@@ -64,7 +65,7 @@ class TeamHandle(
         get() = TextImpl(team.displayName.copy())
         set(value) { team.displayName = value.value }
 
-    override var color: Formatting
+    override var color: Formatting?
         get() = team.color.toPlatformFormatting()
-        set(value) { team.color = value.toMinecraftFormatting() }
+        set(value) { team.color = value?.toMinecraftFormatting() ?: ChatFormatting.WHITE }
 }
