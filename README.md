@@ -96,6 +96,8 @@ The logo design was inspired by [Aikoyori/ProgrammingVTuberLogos](https://github
 **Help translate this mod into your language!** <br>All text in this project is available [on CrowdIn](https://crowdin.com/project/yet-another-bingo) for anyone to submit translations.
 
 
+Arabic translations were contributed by Ksmly!<br>
+Bulgarian translations were contributed by Кирил Цветков!<br>
 Chinese Simplified translations were contributed by Fishlanding, tovv3r, Young912, BoredYukolin, yzy_sheep, nageih, teaSummer, Nattiden, ZnianXgang, and SpongeCouna!<br>
 Chinese Traditional translations were contributed by Leo_768, BoredYukolin, notlin4, Lavskiy Ilias, and Sear!<br>
 Chinese Traditional (Hong Kong) translations were contributed by Furina_de_zh_hant and Sear!<br>
@@ -106,14 +108,16 @@ Finnish translations were contributed by Diamonddevv!<br>
 French translations were contributed by Yosh64, Guillarda, Narkotiqu, and Barbie192!<br>
 German translations were contributed by Butterkeks and CryptoGamer1612!<br>
 Hungarian translations were contributed by petya0927 and Remarci!<br>
-Italian translations were contributed by noah and sculk1!<br>
+Italian translations were contributed by noah, sculk1, and fmixolydian!<br>
 Japanese translations were contributed by おほしさまちゃんねる!<br>
 Korean translations were contributed by LegendLier!<br>
 Literary Chinese translations were contributed by Sorajima Asugawa!<br>
-Polish translations were contributed by Toniemax!<br>
-Portuguese translations were contributed by Lucsdev_!<br>
+Polish translations were contributed by Toniemax and Jimmy Green!<br>
+Portuguese translations were contributed by Lucsdev_ and NotKweerk!<br>
+Romanian translations were contributed by Astraljoker!<br>
 Russian translations were contributed by Milleol, XakVit, Ofterkino, Mrpavel, Май, Lucky Wayч, yukkovna, lazdni, and Encidi!<br>
-Spanish translations were contributed by ANDY, GatoEnCaja, and TheJokerDev!<br>
-Swedish translations were contributed by Vica50 Rosvall!<br>
-Turkish translations were contributed by Erkin_!<br>
+Spanish translations were contributed by ANDY, GatoEnCaja, TheJokerDev, and SergioRaEsp!<br>
+Spanish (Mexico) translations were contributed by SergioRaEsp!<br>
+Swedish translations were contributed by Vica50 Rosvall and Alexander Landgren!<br>
+Turkish translations were contributed by Erkin_ and NoNate!<br>
 Ukrainian translations were contributed by Dan4ikPlayUA and RealWinord!<br>

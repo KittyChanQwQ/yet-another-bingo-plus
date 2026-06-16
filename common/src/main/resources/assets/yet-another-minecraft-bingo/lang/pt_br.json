@@ -11,6 +11,7 @@
   "bingo.card.team_card_title": "Equipe %s",
   "bingo.card.title": "Carta de bingo",
   "bingo.card.winner": "VENCEDOR!",
+  "bingo.card.objective_progress": "Progresso: %s / %s",
   "bingo.card_difficulty.easy": "Fácil",
   "bingo.card_difficulty.extreme": "Extremo",
   "bingo.card_difficulty.hard": "Difícil",
