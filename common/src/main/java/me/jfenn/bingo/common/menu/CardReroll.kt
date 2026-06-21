@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.card.CardService
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.minus
@@ -22,6 +23,7 @@ internal fun MenuComponent.registerCardReroll(
     width: Double,
     height: Double,
     state: BingoState = koinScope.get(),
+    config: BingoConfig = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
     cardService: CardService = koinScope.get(),
     playerManager: IPlayerManager = koinScope.get(),
@@ -36,7 +38,7 @@ internal fun MenuComponent.registerCardReroll(
         brightness = MENU_BRIGHTNESS_ALT,
     ) { player ->
         val now = Instant.now()
-        if (now - lastReroll < 1.seconds) {
+        if (now - lastReroll < 1.seconds && !config.preventLobbyChaos) {
             if (rerolls++ > REROLL_SPAM_AMOUNT) {
                 rerolls = 0
 

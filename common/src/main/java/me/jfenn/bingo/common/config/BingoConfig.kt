@@ -9,7 +9,6 @@ import me.jfenn.bingo.platform.utils.UuidAsString
 import java.util.*
 
 @Serializable
-@OptIn(ExperimentalSerializationApi::class)
 data class BingoConfig(
     var version: Int = 0,
 
@@ -49,7 +48,6 @@ data class BingoConfig(
     val countdownSeconds: Int = 3,
 
     // resets the server once all players log out after a game
-    @JsonNames("autoShutDownInPostgame", "shutDownWhenEveryoneDisconnects")
     val nextRoundWhenEveryoneDisconnects: Boolean = true,
     // shuts down the server faster, at the risk of bugs or data corruption
     val unsafeSkipWorldClose: Boolean = false,
