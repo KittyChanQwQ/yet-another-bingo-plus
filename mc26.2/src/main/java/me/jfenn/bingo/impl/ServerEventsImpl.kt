@@ -53,6 +53,10 @@ class ServerEventsImpl(
     }
 
     init {
+        ServerLifecycleEvents.SERVER_STARTING.register { server ->
+            eventBus.emit(ServerEvent.Starting, ServerEvent(server))
+        }
+
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             eventBus.emit(ServerEvent.Started, ServerEvent(server))
         }

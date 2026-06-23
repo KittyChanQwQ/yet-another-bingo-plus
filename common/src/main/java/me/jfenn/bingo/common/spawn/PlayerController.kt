@@ -3,6 +3,8 @@ package me.jfenn.bingo.common.spawn
 import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamWinnerEvent
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.game.GameResetPacket
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.options.BingoOptions
@@ -14,6 +16,7 @@ import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.game.GameResetEvent
 import me.jfenn.bingo.platform.world.IGameRules
 import org.slf4j.Logger
 
@@ -35,6 +38,7 @@ internal class PlayerController(
     private val log: Logger,
     private val state: BingoState,
     private val options: BingoOptions,
+    private val packets: ServerPacketEvents,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
     private val statManager: IStatManager,
@@ -224,6 +228,15 @@ internal class PlayerController(
 
             // schedule an updateGameMode (handled in the next onGameTick)
             state.playersJoinedIds.add(player.uuid)
+        }
+
+        eventBus.register(GameResetEvent) {
+            // if any player is still in the world, teleport to the lobby
+            for (player in playerManager.getPlayers()) {
+                packets.gameResetV1.send(player, GameResetPacket())
+                spawnService.teleportToLobby(player)
+                state.playersJoinedIds += player.uuid
+            }
         }
 
         events.onPlayerRespawn { event ->

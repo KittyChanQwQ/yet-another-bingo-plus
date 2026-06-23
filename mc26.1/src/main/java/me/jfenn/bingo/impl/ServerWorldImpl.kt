@@ -28,6 +28,9 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity
 import net.minecraft.world.level.border.WorldBorder
 import net.minecraft.world.level.chunk.status.ChunkStatus
 import net.minecraft.world.level.dimension.end.EnderDragonFight
+import net.minecraft.world.level.saveddata.maps.MapId
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData
+import net.minecraft.world.level.storage.LevelResource
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.slf4j.Logger
@@ -62,10 +65,15 @@ class ServerWorldFactory(
         server.connection.tick()
     }
 
-    override fun recreateWorlds(
-        seed: Long,
-        callback: () -> Unit
-    ) {
+    override var seed: Long
+        get() = server.worldGenSettings.options().seed()
+        set(value) {
+            server.worldGenSettings.accessor.apply {
+                worldOptions = worldOptions.withSeed(OptionalLong.of(value))
+            }
+        }
+
+    override fun recreateWorlds(callback: () -> Unit) {
         log.debug("[Reset] Started recreateWorlds")
         tickKeepAlive()
 
@@ -125,6 +133,14 @@ class ServerWorldFactory(
                     .filter { it.exists() }
                     .onEach { it.deleteRecursively() }
 
+                // Remove old map data files
+                MapItemSavedData.type(MapId(0)).id()
+                    .resolveAgainst(server.accessor.storageSource.getLevelPath(LevelResource.DATA))
+                    .parent
+                    .toFile()
+                    .listFiles()
+                    .forEach { it.deleteRecursively() }
+
                 tickKeepAlive()
             }
 
@@ -132,10 +148,6 @@ class ServerWorldFactory(
             tickKeepAlive()
 
             log.measureTime("[Reset] Loading new worlds...") {
-                server.worldGenSettings.options().withSeed(OptionalLong.of(seed))
-                server.worldGenSettings.accessor.apply {
-                    worldOptions = worldOptions.withSeed(OptionalLong.of(seed))
-                }
                 server.accessor.invokeLoadWorld()
             }
             tickKeepAlive()

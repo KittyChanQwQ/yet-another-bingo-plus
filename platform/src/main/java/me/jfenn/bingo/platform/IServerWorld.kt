@@ -14,9 +14,12 @@ import java.util.concurrent.CompletableFuture
 
 interface IServerWorldFactory {
     val overworld: IServerWorld
+    val serverDataDir: Path
+    var seed: Long
     fun forWorld(world: ServerLevel): IServerWorld
     fun listWorlds(): List<IServerWorld>
-    fun recreateWorlds(seed: Long, callback: () -> Unit)
+    fun copyFromTemplate(templatePath: Path)
+    fun recreateWorlds(callback: () -> Unit)
 }
 
 interface IServerWorld {

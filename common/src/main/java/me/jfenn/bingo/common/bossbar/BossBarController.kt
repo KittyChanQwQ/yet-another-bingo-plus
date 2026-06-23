@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.game.GameResetEvent
 import net.minecraft.ChatFormatting
 
 /**
@@ -25,6 +26,10 @@ internal class BossBarController(
 ) : BingoComponent() {
 
     init {
+        eventBus.register(GameResetEvent.BeforeClose) {
+            bossBarService.clearBossBars()
+        }
+
         events.onPlayerJoin { (player) -> bossBarService.updateBossBar(player) }
         events.onChangeTeam { (player) -> bossBarService.updateBossBar(player) }
         eventBus.register(PlayerSettingsEvent) { (player) -> bossBarService.updateBossBar(player) }

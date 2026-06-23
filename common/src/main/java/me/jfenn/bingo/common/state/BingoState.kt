@@ -26,6 +26,7 @@ import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.UuidAsString
 import java.time.Duration
 import java.util.*
+import kotlin.random.Random
 
 @Serializable
 @ConsistentCopyVisibility
@@ -67,7 +68,12 @@ data class BingoState internal constructor(
      * Stores if the game was ended manually (with "/bingo end")
      */
     var isForfeit: Boolean = false,
+    var randomSeed: Long = Random.nextLong(),
+    var randomOps: Long = 0,
 ) {
+
+    internal fun randomSeed(): Long = randomSeed + (randomOps++)
+    internal fun random(): Random = Random(randomSeed())
 
     internal fun getActiveCard(): BingoCard {
         return cards.firstOrNull()
@@ -268,6 +274,11 @@ data class BingoState internal constructor(
         // restore any temporary options to their initial state
         restoreOptions.forEach { it.apply(options) }
         restoreOptions.clear()
+    }
+
+    fun resetSeed(seed: Long) {
+        randomSeed = seed
+        randomOps = 0
     }
 
 }

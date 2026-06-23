@@ -45,8 +45,7 @@ class PersistentStateManager(
         kType: KType,
         default: () -> T
     ): IPersistentStateType<T> {
-        val path = serverWorldFactory.overworld.directory.resolve("data")
-            .resolve("$id.json.gz")
+        val path = serverWorldFactory.serverDataDir.resolve("$id.json.gz")
 
         val type = Type(
             id,

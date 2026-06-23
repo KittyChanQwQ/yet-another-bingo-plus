@@ -173,7 +173,7 @@ internal class CardService(
     fun newCard(cardOptions: BingoCardOptions): BingoCard {
         val newCard = generate(
             id = UUID.randomUUID(),
-            seed = Random.nextLong(),
+            seed = state.randomSeed(),
             cardOptions = cardOptions,
         )
 
@@ -187,10 +187,9 @@ internal class CardService(
         if (!card.options.isValid()) throw IllegalArgumentException("Cannot reroll card; invalid options")
 
         // Change the BINGO seed to a new value
-        val newSeed = Random.nextLong()
         val newCard = generate(
             id = card.id,
-            seed = newSeed,
+            seed = state.randomSeed(),
             cardOptions = card.options,
             excludeObjectives = excludeObjectives,
         )

@@ -495,7 +495,7 @@ internal class ScoredItemCheck(
         if (teamsWithoutCards.isNotEmpty()) {
             val newCard = cardService.generate(
                 id = UUID.randomUUID(),
-                seed = Random.nextLong(),
+                seed = state.randomSeed(),
                 cardOptions = state.cards.last().options.copy(),
                 excludeObjectives = objectiveManager.listExcludedIds().toSet(),
             )

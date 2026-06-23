@@ -14,6 +14,7 @@ import me.jfenn.bingo.platform.world.IBlockEntity
 import me.jfenn.bingo.platform.world.IChunk
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
@@ -27,14 +28,23 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.ChestBlockEntity
 import net.minecraft.world.level.border.WorldBorder
 import net.minecraft.world.level.chunk.status.ChunkStatus
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.level.dimension.end.EnderDragonFight
+import net.minecraft.world.level.levelgen.WorldGenSettings
+import net.minecraft.world.level.saveddata.maps.MapId
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData
+import net.minecraft.world.level.storage.LevelResource
+import net.minecraft.world.level.storage.SavedDataStorage
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.slf4j.Logger
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.copyToRecursively
 import kotlin.jvm.optionals.getOrNull
 
 internal object ChunkTickets {
@@ -47,6 +57,8 @@ internal object ChunkTickets {
     }
 }
 
+private val WORLD_SUBFOLDERS_TO_COPY = arrayOf("region", "poi", "entities")
+
 class ServerWorldFactory(
     private val log: Logger,
     private val server: MinecraftServer,
@@ -55,6 +67,17 @@ class ServerWorldFactory(
     override val overworld: IServerWorld
         get() = forWorld(server.overworld())
 
+    override var seed: Long
+        get() = server.worldGenSettings.options().seed()
+        set(value) {
+            server.worldGenSettings.accessor.apply {
+                worldOptions = worldOptions.withSeed(OptionalLong.of(value))
+            }
+        }
+
+    override val serverDataDir: Path
+        get() = server.accessor.storageSource.getLevelPath(LevelResource.DATA)
+
     override fun forWorld(world: ServerLevel) = ServerWorldImpl(world, itemStackFactory)
     override fun listWorlds() = server.allLevels.map { forWorld(it) }
 
@@ -62,10 +85,39 @@ class ServerWorldFactory(
         server.connection.tick()
     }
 
-    override fun recreateWorlds(
-        seed: Long,
-        callback: () -> Unit
-    ) {
+    @OptIn(ExperimentalPathApi::class)
+    override fun copyFromTemplate(templatePath: Path) {
+        // Read and apply the seed from the templatePath
+        val templateDataDir = templatePath.resolve(LevelResource.DATA.id())
+        val worldGenSettings = SavedDataStorage(templateDataDir, server.fixerUpper, server.registries().compositeAccess()).use { templateDataStorage ->
+            templateDataStorage.get(WorldGenSettings.TYPE)
+        }
+        if (worldGenSettings != null) {
+            server.worldGenSettings.accessor.apply {
+                worldOptions = worldGenSettings.accessor.worldOptions
+            }
+        }
+
+        val dimensions = server.registryAccess().lookupOrThrow(Registries.DIMENSION).registryKeySet()
+        for (dimension in dimensions) {
+            val from = DimensionType.getStorageFolder(dimension, templatePath)
+            val to = server.accessor.storageSource.getDimensionPath(dimension)
+            for (subfolder in WORLD_SUBFOLDERS_TO_COPY) {
+                try {
+                    from.resolve(subfolder)
+                        .copyToRecursively(
+                            target = to.resolve(subfolder),
+                            followLinks = false,
+                            overwrite = true,
+                        )
+                } catch (_: NoSuchFileException) {
+                    // do nothing
+                }
+            }
+        }
+    }
+
+    override fun recreateWorlds(callback: () -> Unit) {
         log.debug("[Reset] Started recreateWorlds")
         tickKeepAlive()
 
@@ -120,10 +172,18 @@ class ServerWorldFactory(
 
                 tickKeepAlive()
 
-                arrayOf("region", "poi", "entities")
+                WORLD_SUBFOLDERS_TO_COPY
                     .map { world.directory.resolve(it).toFile() }
                     .filter { it.exists() }
                     .onEach { it.deleteRecursively() }
+
+                // Remove old map data files
+                MapItemSavedData.type(MapId(0)).id()
+                    .resolveAgainst(serverDataDir)
+                    .parent
+                    .toFile()
+                    .listFiles()
+                    .forEach { it.deleteRecursively() }
 
                 tickKeepAlive()
             }
@@ -132,10 +192,6 @@ class ServerWorldFactory(
             tickKeepAlive()
 
             log.measureTime("[Reset] Loading new worlds...") {
-                server.worldGenSettings.options().withSeed(OptionalLong.of(seed))
-                server.worldGenSettings.accessor.apply {
-                    worldOptions = worldOptions.withSeed(OptionalLong.of(seed))
-                }
                 server.accessor.invokeLoadWorld()
             }
             tickKeepAlive()

@@ -20,6 +20,8 @@ import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.game.GameResetEvent
 import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
 import java.time.Duration
@@ -29,6 +31,7 @@ import java.time.Duration
  */
 internal class ScoreboardController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     private val options: BingoOptions,
     private val state: BingoState,
     private val teamService: TeamService,
@@ -174,6 +177,10 @@ internal class ScoreboardController(
     init {
         events.onEnter(GameState.PREGAME) {
             // reset the scoreboard views when entering a new game
+            scoreboardService.clearScoreboards()
+        }
+
+        eventBus.register(GameResetEvent.BeforeClose) {
             scoreboardService.clearScoreboards()
         }
 

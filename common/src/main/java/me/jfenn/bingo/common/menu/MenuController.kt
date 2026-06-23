@@ -22,6 +22,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.*
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.game.GameResetEvent
 import me.jfenn.bingo.platform.event.model.EntityLoadEvent
 import me.jfenn.bingo.platform.event.model.TickEvent
 import me.jfenn.bingo.platform.world.IChunkHeightmap
@@ -162,9 +163,13 @@ internal class MenuController(
                 menu?.markDirty()
             }
         }
+
+        eventBus.register(GameResetEvent.Copy) {
+            prepareLobbyFiles()
+        }
     }
 
-    fun prepareLobbyFiles() = log.measureTime("[MenuController] Preparing the BINGO lobby...") {
+    private fun prepareLobbyFiles() = log.measureTime("[MenuController] Preparing the BINGO lobby...") {
         val storageDir = levelStorage.getLevelSaveDir(LOBBY_WORLD_ID)
             ?: run {
                 log.error("Unable to find world storage dir for $LOBBY_WORLD_ID")

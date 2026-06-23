@@ -1,37 +1,28 @@
 package me.jfenn.bingo.common.autorestart
 
-import me.jfenn.bingo.common.bossbar.BossBarService
-import me.jfenn.bingo.common.event.packet.ServerPacketEvents
-import me.jfenn.bingo.common.game.GameResetPacket
-import me.jfenn.bingo.common.menu.MenuController
-import me.jfenn.bingo.common.scoreboard.ScoreboardService
-import me.jfenn.bingo.common.spawn.SpawnService
+import me.jfenn.bingo.common.MOD_ID_BINGO
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.state.PersistentStates
-import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.IPersistentStateManager
-import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.GameResetEvent
 import org.slf4j.Logger
+import kotlin.io.path.exists
 import kotlin.random.Random
 
 internal class ResetService(
     private val eventBus: IEventBus,
     private val state: BingoState,
-    private val playerManager: IPlayerManager,
-    private val spawnService: SpawnService,
-    private val teamService: TeamService,
-    private val scoreboardService: ScoreboardService,
-    private val bossBarService: BossBarService,
+    private val configManager: IConfigManager,
+    private val config: BingoConfig,
     private val serverWorldFactory: IServerWorldFactory,
-    private val menuController: MenuController,
     private val persistentStateManager: IPersistentStateManager,
     private val persistentStates: PersistentStates,
-    private val packets: ServerPacketEvents,
     private val log: Logger,
 ) {
 
@@ -43,18 +34,37 @@ internal class ResetService(
         }
     }
 
+    fun copyWorldTemplate() {
+        val templateDir = configManager.configDir.resolve(MOD_ID_BINGO).resolve(config.server.templateDir)
+        when {
+            config.server.templateEnabled && templateDir.exists() -> {
+                log.info("[Reset] Copying world template from $templateDir...")
+                serverWorldFactory.copyFromTemplate(templateDir)
+            }
+            config.server.fixedSeedEnabled -> {
+                val seed = config.server.fixedSeed
+                log.info("[Reset] Applying fixed world seed $seed...")
+                serverWorldFactory.seed = seed
+            }
+            else -> {
+                log.info("[Reset] Applying random world seed...")
+                serverWorldFactory.seed = Random.nextLong()
+            }
+        }
+    }
+
     private fun resetGameWorlds() = log.measureTime("Resetting worlds...") {
         // Clear scoreboards (otherwise this causes an error when recreated)
         log.info("[Reset] Clearing game data")
-        teamService.clearTeams()
-        scoreboardService.clearScoreboards()
-        bossBarService.clearBossBars()
+        eventBus.emit(GameResetEvent.BeforeClose)
         state.reset()
 
         log.info("[Reset] Recreating worlds")
-        serverWorldFactory.recreateWorlds(Random.Default.nextLong()) {
-            menuController.prepareLobbyFiles()
+        serverWorldFactory.recreateWorlds {
+            eventBus.emit(GameResetEvent.Copy)
+            copyWorldTemplate()
         }
+        state.resetSeed(serverWorldFactory.seed)
 
         log.info("[Reset] Transferring game state")
         // This is important! Otherwise the bingo persistent state does not get copied into the new world data
@@ -67,14 +77,7 @@ internal class ResetService(
         log.info("[Reset] Teleporting players back to lobby")
         state.changeState(eventBus, GameState.PREGAME) // invokes createInitialCards in ScoredItemCheck
 
-        // if any player is still in the world, teleport to the lobby
-        for (player in playerManager.getPlayers()) {
-            packets.gameResetV1.send(player, GameResetPacket())
-            spawnService.teleportToLobby(player)
-            state.playersJoinedIds += player.uuid
-        }
-
-        eventBus.emit(GameResetEvent, GameResetEvent())
+        eventBus.emit(GameResetEvent)
     }
 
 }

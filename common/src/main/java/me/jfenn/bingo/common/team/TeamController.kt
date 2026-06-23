@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.ITeamManager
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.game.GameResetEvent
 import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
 
@@ -24,6 +25,10 @@ internal class TeamController(
         events.onEnter(GameState.PREGAME) {
             // clear the team of all online players when entering PREGAME
             // (so that they must rejoin a team for the next game)
+            teamService.clearTeams()
+        }
+
+        eventBus.register(GameResetEvent.BeforeClose) {
             teamService.clearTeams()
         }
 

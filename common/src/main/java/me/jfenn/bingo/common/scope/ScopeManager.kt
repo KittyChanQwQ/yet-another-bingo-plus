@@ -3,14 +3,15 @@ package me.jfenn.bingo.common.scope
 import me.jfenn.bingo.api.BingoApi
 import me.jfenn.bingo.api.BingoEvents
 import me.jfenn.bingo.api.IBingoApi
-import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.BINGO
+import me.jfenn.bingo.common.autorestart.ResetService
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.ScopeStarted
 import me.jfenn.bingo.platform.event.game.ScopeStopped
@@ -44,8 +45,8 @@ class ScopeManager internal constructor(
     }
 
     init {
-        eventBus.register(ServerEvent.Started) { (server) ->
-            val isLobbyMode = server.allLevels.any { it.dimension().identifier().toString() == LOBBY_WORLD_IDENTIFIER }
+        eventBus.register(ServerEvent.Starting) { (server) ->
+            val isLobbyMode = server.worldData.dataConfiguration.dataPacks.enabled.contains("file/$BINGO.zip")
             if (isLobbyMode) log.info("[ScopeManager] $BINGO.zip datapack exists - starting with isLobbyMode=true")
             else log.info("[ScopeManager] $BINGO.zip datapack does not exist - starting with isLobbyMode=false")
 
@@ -54,9 +55,20 @@ class ScopeManager internal constructor(
             val scopeId = getScopeId(server)
             val scope = koin.createScope<BingoScope>(scopeId, ctx)
 
+            if (isLobbyMode) {
+                // write the server seed or template files
+                scope.get<ResetService>().copyWorldTemplate()
+            }
+
             // obtain the bingo game state from the save file
             val state = scope.get<BingoState>()
             state.isLobbyMode = isLobbyMode
+            state.randomSeed = scope.get<IServerWorldFactory>().seed
+        }
+
+        eventBus.register(ServerEvent.Started) { (server) ->
+            val scope = getScope(server) ?: return@register
+            val state = scope.get<BingoState>()
 
             scope.commonInit()
 

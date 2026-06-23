@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.cos
 import kotlin.math.sign
 import kotlin.math.sin
+import kotlin.random.Random
 
 internal const val SPAWN_TIMEOUT_SECONDS = 60L
 
@@ -23,6 +24,7 @@ internal class SpreadPlayers(
     private val world: IServerWorld,
     private val invalidSpawnBiomes: ITagContents<IRegistryEntry.Biome>,
     private val invalidSpawnBlocks: ITagContents<IRegistryEntry.Block>,
+    private val random: Random,
 ) {
 
     class Factory(
@@ -30,12 +32,13 @@ internal class SpreadPlayers(
         private val taskExecutor: IExecutors.IServerTaskExecutor,
         private val tagAccessor: ITagAccessor,
     ) {
-        fun forWorld(world: IServerWorld) = SpreadPlayers(
+        fun forWorld(world: IServerWorld, seed: Long) = SpreadPlayers(
             log = log,
             taskExecutor = taskExecutor,
             world = world,
             invalidSpawnBiomes = tagAccessor.getBiomeTag("$MOD_ID_BINGO:invalid_spawn"),
             invalidSpawnBlocks = tagAccessor.getBlockTag("$MOD_ID_BINGO:invalid_spawn"),
+            random = Random(seed),
         )
     }
 
@@ -65,7 +68,7 @@ internal class SpreadPlayers(
             .coerceAtMost((worldBorder.maxRadius / 16).toDouble() - 16.0)
             .coerceAtLeast(0.0)
 
-        val theta = 2 * Math.PI * Math.random()
+        val theta = 2 * Math.PI * random.nextDouble()
 
         return buildList {
             for (i in 0 until count) {
@@ -138,7 +141,7 @@ internal class SpreadPlayers(
         if (world.hasCeiling) {
             // choose random positions in the chunk until a valid one is found
             val spawnBlockPos = everyChunkIndex(2)
-                .shuffled()
+                .shuffled(random)
                 .map {
                     chunk.getBlockPos(it % 16, logicalHeight - 2, it / 16)
                 }
@@ -181,7 +184,7 @@ internal class SpreadPlayers(
             val heightmap = chunk.getHeightmap(IChunkHeightmap.Type.MOTION_BLOCKING_NO_LEAVES)
 
             return everyChunkIndex(1)
-                .shuffled()
+                .shuffled(random)
                 .map {
                     val x = it % 16
                     val z = it / 16

@@ -13,6 +13,7 @@ import me.jfenn.bingo.platform.block.ITorchBlockState
 import me.jfenn.bingo.platform.world.IChestBlockEntity
 import me.jfenn.bingo.platform.world.IChunkHeightmap
 import org.slf4j.Logger
+import kotlin.random.Random
 
 internal class ChestService(
     private val log: Logger,
@@ -37,12 +38,12 @@ internal class ChestService(
 
         for (team in state.getRegisteredTeams()) {
             if (team.chestSpawnpoint == null) {
-                createChestSpawnpoint(team)
+                createChestSpawnpoint(team, state.randomSeed())
             }
         }
     }
 
-    private fun createChestSpawnpoint(team: BingoTeam): BlockPosition? {
+    private fun createChestSpawnpoint(team: BingoTeam, seed: Long): BlockPosition? {
         if (!options.isTeamKit) return null
         if (!state.isLobbyMode) return null
         val world = getSpawnDimension()
@@ -67,7 +68,7 @@ internal class ChestService(
                     }
                 }
             }
-                .shuffled()
+                .shuffled(Random(seed))
                 .asSequence()
                 .map { (x, z) ->
                     val y = heightmap.get(x, z)
@@ -91,7 +92,7 @@ internal class ChestService(
         if (!options.isTeamKit) return
         if (!state.isLobbyMode) return
         val world = getSpawnDimension()
-        val chestSpawnpoint = team.chestSpawnpoint ?: createChestSpawnpoint(team) ?: run {
+        val chestSpawnpoint = team.chestSpawnpoint ?: createChestSpawnpoint(team, state.randomSeed()) ?: run {
             log.error("[ChestService] createChestBlock - Cannot create a team chest, as there is no chestSpawnpoint.")
             return
         }
