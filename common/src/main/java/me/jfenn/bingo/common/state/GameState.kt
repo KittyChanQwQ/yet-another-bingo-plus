@@ -15,6 +15,11 @@ enum class GameState(
     PLAYING("§c", "IN-GAME"),
     POSTGAME("§6", "POST-GAME");
 
+    val isInLobby get() = when (this) {
+        PREGAME, LOBBY_EDITOR, STARTING, PRELOADING -> true
+        else -> false
+    }
+
     val isPlayingOrCountdown get() = when (this) {
         LOADING, COUNTDOWN, PLAYING -> true
         else -> false

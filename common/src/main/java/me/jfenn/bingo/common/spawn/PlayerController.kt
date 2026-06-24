@@ -18,6 +18,7 @@ import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.GameResetEvent
 import me.jfenn.bingo.platform.world.IGameRules
+import org.joml.Vector3d
 import org.slf4j.Logger
 
 /**
@@ -198,7 +199,7 @@ internal class PlayerController(
         // reset advancements state
         advancementManager.clearAdvancements(player.player)
 
-        if (state.state == GameState.PREGAME || state.state == GameState.STARTING || state.state == GameState.PRELOADING) {
+        if (state.state.isInLobby) {
             spawnService.teleportToLobby(player)
         } else {
             // teleport the player to their spawnpoint
@@ -235,6 +236,10 @@ internal class PlayerController(
             // if any player is still in the world, teleport to the lobby
             for (player in playerManager.getPlayers()) {
                 packets.gameResetV1.send(player, GameResetPacket())
+                if (player.world.identifier == LOBBY_WORLD_IDENTIFIER) {
+                    // hack: teleport the player to the overworld to force reloading the dimension
+                    player.teleport(serverWorldFactory.overworld, Vector3d(0.0), 0f, 0f)
+                }
                 spawnService.teleportToLobby(player)
                 state.playersJoinedIds += player.uuid
             }
