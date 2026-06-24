@@ -85,6 +85,17 @@ internal class BingoLobbyCommand(
         }
     }
 
+    private fun IExecutionContext.save() {
+        val lobbyWorldService = scope.get<LobbyWorldService>()
+        val resetService = scope.get<ResetService>()
+        val serverTaskExecutor = scope.get<IExecutors.IServerTaskExecutor>()
+        sendFeedback(text.string(StringKey.CommandResetSuccess))
+        serverTaskExecutor.execute {
+            lobbyWorldService.writeLobbyFiles()
+            resetService.resetGame(GameState.PREGAME)
+        }
+    }
+
     init {
         commandManager.register("bingo") {
             literal("reset") {
@@ -129,9 +140,7 @@ internal class BingoLobbyCommand(
 
                 literal("save") {
                     requires { canUseEdit() && hasState(GameState.LOBBY_EDITOR) }
-                    executes {
-
-                    }
+                    executes { save() }
                 }
             }
         }

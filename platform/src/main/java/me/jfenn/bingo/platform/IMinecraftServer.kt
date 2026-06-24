@@ -12,5 +12,6 @@ interface IMinecraftServer {
     val currentPlayerCount: Int
     val maxPlayerCount: Int
     val resourceManager: IResourceManager
+    fun saveAll()
     fun stop(shutdownEventLoop: Boolean)
 }

@@ -24,7 +24,7 @@ import me.jfenn.bingo.common.commands.*
 import me.jfenn.bingo.common.config.*
 import me.jfenn.bingo.common.controller.*
 import me.jfenn.bingo.common.data.*
-import me.jfenn.bingo.common.datapack.LobbyWorldService
+import me.jfenn.bingo.common.datapack.LobbyConfigService
 import me.jfenn.bingo.common.datapack.ServerDatapackManager
 import me.jfenn.bingo.common.datapack.ServerProps
 import me.jfenn.bingo.common.event.EventBus
@@ -36,11 +36,11 @@ import me.jfenn.bingo.common.game.*
 import me.jfenn.bingo.common.infobook.InfoBookCommand
 import me.jfenn.bingo.common.infobook.InfoBookController
 import me.jfenn.bingo.common.infobook.InfoBookService
-import me.jfenn.bingo.common.lobby.BingoLobbyCommand
-import me.jfenn.bingo.common.lobby.LobbyModeController
-import me.jfenn.bingo.common.lobby.LobbyModeService
+import me.jfenn.bingo.common.lobby.*
 import me.jfenn.bingo.common.map.*
 import me.jfenn.bingo.common.menu.MenuController
+import me.jfenn.bingo.common.menu.poi.MenuPoiController
+import me.jfenn.bingo.common.menu.poi.MenuPoiState
 import me.jfenn.bingo.common.menu.tooltips.TooltipController
 import me.jfenn.bingo.common.menu.tooltips.TooltipState
 import me.jfenn.bingo.common.options.OptionsService
@@ -91,7 +91,6 @@ import me.jfenn.bingo.integrations.voice.VoiceGroupController
 import me.jfenn.bingo.mixinhandler.PlayerAdvancementTrackerMixinHelper
 import me.jfenn.bingo.mixinhandler.PlayerEntityMixinHandler
 import me.jfenn.bingo.mixinhandler.PlayerManagerMixinHelper
-import me.jfenn.bingo.platform.IPersistentStateManager
 import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.scope.IScopeManager
@@ -124,7 +123,7 @@ val commonModule = module {
     singleOf(::TextProvider)
     singleOf(::ServerProps)
 
-    singleOf(::LobbyWorldService)
+    singleOf(::LobbyConfigService)
     singleOf(::ServerDatapackManager)
     singleOf(::EventBus) bind IEventBus::class
     singleOf(::ScopeManager) bind IScopeManager::class
@@ -213,10 +212,10 @@ val commonModule = module {
         scopedOf(::BingoGameImpl) bind IBingoGame::class
         scopedOf(::BingoApiImpl) bind IBingoApi::class
 
-        scopedOf(::PersistentStateManager) bind IPersistentStateManager::class
+        scopedOf(::PersistentStateManager)
         scopedOf(::PersistentStates)
         scoped<BingoState> {
-            get<IPersistentStateManager>().getFromWorld(
+            get<PersistentStateManager>().read(
                 type = get<PersistentStates>().bingo,
             )
         }
@@ -316,6 +315,10 @@ val commonModule = module {
         scopedOf(::TooltipState)
         scopedOf(::TooltipController)
         scopedOf(::MenuController)
+        scoped { MenuPoiState() }
+        scopedOf(::MenuPoiController)
+        scopedOf(::LobbyWorldService)
+        scopedOf(::LobbyWorldController)
 
         scopedOf(::BossBarService)
         scopedOf(::BossBarController)
@@ -413,6 +416,8 @@ fun Scope.commonInit() {
 
     get<TooltipController>()
     get<MenuController>()
+    get<MenuPoiController>()
+    get<LobbyWorldController>()
     get<InfoBookController>()
 
     get<BingoMapController>()

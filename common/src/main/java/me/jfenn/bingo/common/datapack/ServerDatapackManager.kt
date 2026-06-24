@@ -12,7 +12,7 @@ class ServerDatapackManager(
     config: BingoConfig,
     environment: IModEnvironment,
     serverProps: ServerProps,
-    lobbyWorldService: LobbyWorldService,
+    lobbyConfigService: LobbyConfigService,
 ) : BingoComponent() {
 
     init {
@@ -21,7 +21,7 @@ class ServerDatapackManager(
             val datapackPath = environment.gameDir.resolve("${serverProps.levelName}/datapacks/$BINGO.zip")
             if (config.server.isLobbyMode) {
                 log.info("[ServerDatapackManager] isLobbyMode=true - Installing the $BINGO datapack in $datapackPath")
-                lobbyWorldService.copyDataPack(datapackPath)
+                lobbyConfigService.copyDataPack(datapackPath)
             } else {
                 log.info("[ServerDatapackManager] isLobbyMode=false - Verifying that $datapackPath does not exist...")
                 if (datapackPath.deleteIfExists()) {

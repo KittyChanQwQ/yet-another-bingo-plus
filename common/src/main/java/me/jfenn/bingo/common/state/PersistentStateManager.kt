@@ -7,8 +7,6 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.platform.IJsonSerializers
-import me.jfenn.bingo.platform.IPersistentStateManager
-import me.jfenn.bingo.platform.IPersistentStateType
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ServerEvent
@@ -20,14 +18,15 @@ import java.nio.file.StandardOpenOption
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 @OptIn(ExperimentalSerializationApi::class)
-class PersistentStateManager(
+internal class PersistentStateManager(
     val logger: Logger,
     serializers: IJsonSerializers,
     val serverWorldFactory: IServerWorldFactory,
     eventBus: IEventBus,
-) : IPersistentStateManager {
+) {
 
     private val json = Json(serializers.json) {
         prettyPrint = true
@@ -38,13 +37,15 @@ class PersistentStateManager(
         StandardOpenOption.WRITE,
         StandardOpenOption.CREATE,
         StandardOpenOption.TRUNCATE_EXISTING
-    );
+    )
 
-    override fun <T : Any> register(
+    inline fun <reified T: Any> register(id: String, noinline default: () -> T) = register(id, typeOf<T>(), default)
+
+    fun <T : Any> register(
         id: String,
         kType: KType,
         default: () -> T
-    ): IPersistentStateType<T> {
+    ): Type<T> {
         val path = serverWorldFactory.serverDataDir.resolve("$id.json.gz")
 
         val type = Type(
@@ -57,10 +58,9 @@ class PersistentStateManager(
         return type
     }
 
-    override fun <T : Any> getFromWorld(
-        type: IPersistentStateType<T>
+    fun <T : Any> read(
+        type: Type<T>
     ): T {
-        require(type is Type)
         val path = type.path
         if (Files.exists(path)) {
             try {
@@ -79,11 +79,10 @@ class PersistentStateManager(
         return type.value
     }
 
-    override fun <T : Any> put(
-        type: IPersistentStateType<T>,
+    fun <T : Any> write(
+        type: Type<T>,
         value: T
     ) {
-        require(type is Type)
         val path = type.path
 
         try {
@@ -102,18 +101,22 @@ class PersistentStateManager(
         logger.debug("Writing persistent state ${type.id}... Done!")
     }
 
-    private class Type<T: Any>(
+    fun writeAll() {
+        registeredTypes.values.forEach {
+            this.write(@Suppress("UNCHECKED_CAST") (it as Type<Any>), it.value)
+        }
+    }
+
+    class Type<T: Any>(
         val id: String,
         val path: Path,
         val serializer: KSerializer<T>,
         var value: T,
-    ) : IPersistentStateType<T>
+    )
 
     init {
         eventBus.register(ServerEvent.Saved) {
-            registeredTypes.values.forEach {
-                this.put<Any>(@Suppress("UNCHECKED_CAST") (it as Type<Any>), it.value)
-            }
+            writeAll()
         }
     }
 }

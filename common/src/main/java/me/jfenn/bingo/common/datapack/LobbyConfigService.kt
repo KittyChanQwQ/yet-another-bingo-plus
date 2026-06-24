@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.datapack
 
 import me.jfenn.bingo.common.config.readStream
+import me.jfenn.bingo.common.config.writeStream
 import me.jfenn.bingo.platform.config.IConfigManager
 import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
@@ -10,7 +11,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
-class LobbyWorldService(
+class LobbyConfigService(
     private val log: Logger,
     private val configManager: IConfigManager,
 ) {
@@ -19,10 +20,12 @@ class LobbyWorldService(
         private const val LOBBY_WORLD_ZIP = "lobby_world.zip"
     }
 
-    fun readLastModified() = configManager.readLastModified(LOBBY_WORLD_ZIP)
-
     fun openLobbyZip(): ZipInputStream {
         return ZipInputStream(configManager.readStream(LOBBY_WORLD_ZIP, shouldWriteDefault = false).buffered())
+    }
+
+    fun writeLobbyZip(): ZipOutputStream {
+        return ZipOutputStream(configManager.writeStream(LOBBY_WORLD_ZIP).buffered())
     }
 
     fun copyDataPack(toPath: Path) {

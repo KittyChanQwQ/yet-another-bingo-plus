@@ -3,7 +3,7 @@ package me.jfenn.bingo.client.world
 import com.google.common.collect.ImmutableList
 import me.jfenn.bingo.client.impl.accessor
 import me.jfenn.bingo.common.BINGO_WORLD_PREFIX
-import me.jfenn.bingo.common.datapack.LobbyWorldService
+import me.jfenn.bingo.common.datapack.LobbyConfigService
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.screens.ConfirmScreen
@@ -18,7 +18,7 @@ import org.slf4j.Logger
 class BingoWorldController(
     private val log: Logger,
     private val worldState: BingoWorldState,
-    private val lobbyWorldService: LobbyWorldService,
+    private val lobbyConfigService: LobbyConfigService,
 ) {
 
     companion object {
@@ -56,7 +56,7 @@ class BingoWorldController(
                 // - we want this to happen on every world creation, so that the pack is available
                 //   even if the user has not specifically pressed the "BINGO!" button.
                 screen.accessor.invokeGetDataPackTempDir()?.let {
-                    lobbyWorldService.copyDataPack(it.resolve(DATAPACK_FILE))
+                    lobbyConfigService.copyDataPack(it.resolve(DATAPACK_FILE))
                 }
 
                 val pair = screen.accessor.invokeGetScannedPack(screen.uiState.settings.dataConfiguration)

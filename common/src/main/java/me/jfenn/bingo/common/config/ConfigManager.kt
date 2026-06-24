@@ -122,5 +122,18 @@ fun IConfigManager.readStream(
     return FileInputStream(filePath.toFile())
 }
 
+fun IConfigManager.writeStream(
+    file: String,
+): OutputStream {
+    val filePath = configDir.resolve("$MOD_ID_BINGO/$file")
+    return Files.newOutputStream(
+        filePath,
+        StandardOpenOption.SYNC,
+        StandardOpenOption.WRITE,
+        StandardOpenOption.CREATE,
+        StandardOpenOption.TRUNCATE_EXISTING
+    )
+}
+
 inline fun <reified T: Any> IConfigManager.config(file: String) =
     ConfigManager.ConfigDelegate<T>(this, typeOf<T>(), file)

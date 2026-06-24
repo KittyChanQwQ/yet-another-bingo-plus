@@ -14,7 +14,10 @@ import java.util.concurrent.CompletableFuture
 
 interface IServerWorldFactory {
     val overworld: IServerWorld
+    val baseDir: Path
     val serverDataDir: Path
+    fun getLevelSaveDir(worldId: Identifier): Path?
+    fun getLevelDataDir(worldId: Identifier): Path?
     var seed: Long
     fun forWorld(world: ServerLevel): IServerWorld
     fun listWorlds(): List<IServerWorld>

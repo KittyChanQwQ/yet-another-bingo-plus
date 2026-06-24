@@ -1,14 +1,14 @@
 package me.jfenn.bingo.impl
 
 import me.jfenn.bingo.impl.resource.ResourceManagerImpl
-import me.jfenn.bingo.platform.*
+import me.jfenn.bingo.platform.IMinecraftServer
+import me.jfenn.bingo.platform.ITickManager
 import me.jfenn.bingo.platform.resource.IResourceManager
 import net.minecraft.server.MinecraftServer
-import java.nio.file.Path
 
 class MinecraftServerImpl(
     override val server: MinecraftServer,
-): ITickManager, ILevelStorage, IMinecraftServer {
+): ITickManager, IMinecraftServer {
     override val isSingleplayer: Boolean
         get() = server.isSingleplayer
 
@@ -29,16 +29,12 @@ class MinecraftServerImpl(
         server.tickRateManager().isFrozen = frozen
     }
 
-    override fun getLevelSaveDir(worldId: Identifier): Path? {
-        val identifier = worldId.toMinecraftIdentifier()
-        val world = server.allLevels.find { it.dimension().identifier() == identifier }
-            ?: return null
-
-        return server.accessor.storageSource.getDimensionPath(world.dimension())
-    }
-
     override val resourceManager: IResourceManager
         get() = ResourceManagerImpl(server.resourceManager)
+
+    override fun saveAll() {
+        server.saveEverything(true, false, true)
+    }
 
     override fun stop(shutdownEventLoop: Boolean) {
         server.halt(shutdownEventLoop)
