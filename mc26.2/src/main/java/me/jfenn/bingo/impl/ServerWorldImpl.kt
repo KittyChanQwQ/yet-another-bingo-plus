@@ -182,8 +182,9 @@ class ServerWorldFactory(
                     .resolveAgainst(serverDataDir)
                     .parent
                     .toFile()
-                    .listFiles()
-                    .forEach { it.deleteRecursively() }
+                    .takeIf { it.exists() }
+                    ?.listFiles()
+                    ?.forEach { it.deleteRecursively() }
 
                 tickKeepAlive()
             }
