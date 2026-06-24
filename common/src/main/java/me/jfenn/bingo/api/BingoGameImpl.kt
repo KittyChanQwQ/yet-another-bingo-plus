@@ -16,7 +16,8 @@ internal class BingoGameImpl(
     override val status: BingoGameStatus
         get() = when (state.state) {
             GameState.UNINITIALIZED,
-            GameState.PREGAME -> BingoGameStatus.PREGAME
+            GameState.PREGAME,
+            GameState.LOBBY_EDITOR -> BingoGameStatus.PREGAME
             GameState.STARTING,
             GameState.PRELOADING,
             GameState.LOADING,
