@@ -31,12 +31,12 @@ import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.game.GameResetEvent
 import me.jfenn.bingo.platform.event.model.ReloadEvent
 import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
 import java.time.Instant
 import java.util.*
-import kotlin.random.Random
 
 /**
  * Searches for items in each player's inventory that can
@@ -538,6 +538,14 @@ internal class ScoredItemCheck(
         )
     }
 
+    private fun reset() {
+        pendingCardCompletedPackets.clear()
+        pendingTeamWinners.clear()
+
+        // When entering PREGAME, regenerate initial cards from the config
+        cardService.createInitialCards()
+    }
+
     init {
         // Re-initialize completed cards when loading from a saved state
         for (team in state.getRegisteredTeams()) {
@@ -576,13 +584,8 @@ internal class ScoredItemCheck(
             }
         }
 
-        events.onEnter(GameState.PREGAME) {
-            pendingCardCompletedPackets.clear()
-            pendingTeamWinners.clear()
-
-            // When entering PREGAME, regenerate initial cards from the config
-            cardService.createInitialCards()
-        }
+        events.onEnter(GameState.PREGAME) { reset() }
+        eventBus.register(GameResetEvent) { reset() }
 
         events.onEnter(GameState.PLAYING) {
             for (card in state.cards) {

@@ -75,9 +75,8 @@ internal class ResetService(
         )
 
         log.info("[Reset] Teleporting players back to lobby")
-        state.changeState(eventBus, newState) // invokes createInitialCards in ScoredItemCheck
-
         eventBus.emit(GameResetEvent)
+        state.changeState(eventBus, newState)
     }
 
 }
