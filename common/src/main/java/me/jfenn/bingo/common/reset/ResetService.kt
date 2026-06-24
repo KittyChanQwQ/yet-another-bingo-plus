@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.autorestart
+package me.jfenn.bingo.common.reset
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoConfig

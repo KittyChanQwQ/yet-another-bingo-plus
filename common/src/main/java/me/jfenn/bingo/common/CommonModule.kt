@@ -7,9 +7,9 @@ import me.jfenn.bingo.api.IBingoApi
 import me.jfenn.bingo.api.card.ICardService
 import me.jfenn.bingo.api.data.IBingoGame
 import me.jfenn.bingo.api.options.IOptionsService
-import me.jfenn.bingo.common.autorestart.ResetCommand
-import me.jfenn.bingo.common.autorestart.ResetOnLeaveController
-import me.jfenn.bingo.common.autorestart.ResetService
+import me.jfenn.bingo.common.reset.ResetCommand
+import me.jfenn.bingo.common.reset.ResetOnLeaveController
+import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.bossbar.BossBarController
 import me.jfenn.bingo.common.bossbar.BossBarService
 import me.jfenn.bingo.common.card.CardService

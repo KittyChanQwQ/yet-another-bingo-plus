@@ -1,4 +1,4 @@
-package me.jfenn.bingo.common.autorestart
+package me.jfenn.bingo.common.reset
 
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasLobby

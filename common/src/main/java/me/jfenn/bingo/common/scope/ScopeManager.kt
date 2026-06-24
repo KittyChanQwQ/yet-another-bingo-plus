@@ -4,7 +4,7 @@ import me.jfenn.bingo.api.BingoApi
 import me.jfenn.bingo.api.BingoEvents
 import me.jfenn.bingo.api.IBingoApi
 import me.jfenn.bingo.common.BINGO
-import me.jfenn.bingo.common.autorestart.ResetService
+import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.config.ConfigService

@@ -2,7 +2,7 @@ package me.jfenn.bingo.common.ready
 
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.autorestart.ResetService
+import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
