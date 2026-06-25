@@ -46,6 +46,7 @@ import java.util.function.Function
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.copyToRecursively
 import kotlin.jvm.optionals.getOrNull
+import me.jfenn.bingo.platform.Identifier as PlatformIdentifier
 
 internal object ChunkTickets {
     lateinit var TICKET_HELD: TicketType
@@ -75,8 +76,22 @@ class ServerWorldFactory(
             }
         }
 
+    override val baseDir: Path
+        get() = server.accessor.storageSource.levelDirectory.path()
+
     override val serverDataDir: Path
         get() = server.accessor.storageSource.getLevelPath(LevelResource.DATA)
+
+    override fun getLevelSaveDir(worldId: PlatformIdentifier): Path? {
+        val identifier = worldId.toMinecraftIdentifier()
+        val dimension = server.registryAccess().lookupOrThrow(Registries.DIMENSION).registryKeySet()
+            .find { it.identifier() == identifier }
+            ?: return null
+
+        return server.accessor.storageSource.getDimensionPath(dimension)
+    }
+
+    override fun getLevelDataDir(worldId: PlatformIdentifier): Path? = getLevelDataDir(worldId)?.resolve("data")
 
     override fun forWorld(world: ServerLevel) = ServerWorldImpl(world, itemStackFactory)
     override fun listWorlds() = server.allLevels.map { forWorld(it) }

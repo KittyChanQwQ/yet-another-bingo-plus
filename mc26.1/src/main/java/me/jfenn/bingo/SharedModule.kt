@@ -23,7 +23,6 @@ import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.withOptions
 import org.koin.dsl.bind
-import org.koin.dsl.binds
 import org.koin.dsl.module
 
 fun sharedInit() {
@@ -66,7 +65,7 @@ val sharedModule = module {
         scopedOf(::TagAccessorImpl) bind ITagAccessor::class
         scopedOf(::TeamManager) bind ITeamManager::class
         scopedOf(::MapServiceImpl) bind IMapService::class
-        scopedOf(::MinecraftServerImpl) binds arrayOf(ITickManager::class, ILevelStorage::class)
+        scopedOf(::MinecraftServerImpl) bind ITickManager::class
         scopedOf(::MinecraftServerImpl) bind IMinecraftServer::class
         scopedOf(::ItemStackFactory) bind IItemStackFactory::class
         scopedOf(::JsonSerializers) bind IJsonSerializers::class
