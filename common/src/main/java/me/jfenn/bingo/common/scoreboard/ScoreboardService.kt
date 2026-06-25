@@ -1,6 +1,5 @@
 package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.map.CardViewService
@@ -15,6 +14,7 @@ import me.jfenn.bingo.platform.PlayerGameMode
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
 import me.jfenn.bingo.platform.scoreboard.ScoreChange
+import me.jfenn.bingo.platform.text.IText
 
 internal class ScoreboardService(
     private val state: BingoState,
@@ -78,7 +78,8 @@ internal class ScoreboardService(
         players: List<IPlayerHandle>,
     ) {
         val contentItems = contents.map {
-            ScoreboardView.ScoreboardItem(textSerializer.toRawString(it), it)
+            val raw = textSerializer.toRawString(it).let { raw -> if (raw.startsWith('#')) " $raw" else raw }
+            ScoreboardView.ScoreboardItem(raw, it)
         }
 
         // update the server-side objective
