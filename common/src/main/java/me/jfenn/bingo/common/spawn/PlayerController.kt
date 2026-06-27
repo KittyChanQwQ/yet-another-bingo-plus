@@ -1,6 +1,7 @@
 package me.jfenn.bingo.common.spawn
 
 import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
+import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -13,6 +14,7 @@ import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.allHeldStacks
+import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
@@ -53,6 +55,7 @@ internal class PlayerController(
     private val playerManager: IPlayerManager,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
     private val serverWorldFactory: IServerWorldFactory,
+    private val permissions: IPermissionsApi,
 ) : BingoComponent() {
 
     private fun updateVanishStatus(
@@ -107,7 +110,10 @@ internal class PlayerController(
                 cardViewService.supportsCardHud(player) -> PlayerGameMode.SPECTATOR
                 else -> PlayerGameMode.CREATIVE
             }
-            GameState.LOBBY_EDITOR -> PlayerGameMode.CREATIVE
+            GameState.LOBBY_EDITOR -> when {
+                permissions.hasPermission(player, Permission.CONFIGURE_LOBBY) -> PlayerGameMode.CREATIVE
+                else -> PlayerGameMode.SPECTATOR
+            }
         }
 
         // This indicates that a player is starting the game, or has logged back on after a game has started
