@@ -85,6 +85,11 @@ internal class GameRuleController(
                 }
             }
 
+            if (state.isLobbyMode) {
+                GameRuleOverrideHelper.setOverride(gameRules.randomTickSpeed, if (to == GameState.LOBBY_EDITOR) 0 else null)
+                GameRuleOverrideHelper.setOverride(gameRules.fireSpreadRange, if (to == GameState.LOBBY_EDITOR) 0 else null)
+            }
+
             if (from != to && from != GameState.POSTGAME) {
                 datapackFunctionService.runStateChange(to)
             }

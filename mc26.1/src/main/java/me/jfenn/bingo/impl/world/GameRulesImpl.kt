@@ -17,6 +17,8 @@ class GameRulesImpl(
     override val showDeathMessages = BooleanRule(GameRules.SHOW_DEATH_MESSAGES)
     override val keepInventory = BooleanRule(GameRules.KEEP_INVENTORY)
     override val pvp = BooleanRule(GameRules.PVP)
+    override val randomTickSpeed = IntRule(GameRules.RANDOM_TICK_SPEED)
+    override val fireSpreadRange = IntRule(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER)
 
     override fun get(name: String): IGameRule<*>? {
         val rule = BuiltInRegistries.GAME_RULE.getValue(Identifier.withDefaultNamespace(name))

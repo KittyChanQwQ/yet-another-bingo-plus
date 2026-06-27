@@ -18,6 +18,7 @@ import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.commands.IExecutionSource
 import me.jfenn.bingo.platform.dialog.IDialogAction
 import me.jfenn.bingo.platform.dialog.IDialogManager
+import me.jfenn.bingo.platform.text.Formatting
 import java.util.*
 
 internal class BingoLobbyCommand(
@@ -58,7 +59,7 @@ internal class BingoLobbyCommand(
 
     private fun IExecutionSource.canUseReset(): Boolean {
         return hasPermission(Permission.COMMAND_RESET) &&
-                hasState(GameState.PLAYING, GameState.POSTGAME, GameState.LOBBY_EDITOR) &&
+                hasState(GameState.PLAYING, GameState.POSTGAME) &&
                 hasLobby()
     }
 
@@ -79,9 +80,11 @@ internal class BingoLobbyCommand(
     private fun IExecutionContext.edit() {
         val resetService = scope.get<ResetService>()
         val serverTaskExecutor = scope.get<IExecutors.IServerTaskExecutor>()
-        sendFeedback(text.string(StringKey.CommandResetSuccess))
+        sendFeedback(text.string(StringKey.LobbyEditMessage1Entering))
         serverTaskExecutor.execute {
             resetService.resetGame(GameState.LOBBY_EDITOR)
+            sendFeedback(text.string(StringKey.LobbyEditMessage2KeepChanges, SAVE_COMMAND).formatted(Formatting.YELLOW))
+            sendFeedback(text.string(StringKey.LobbyEditMessage3Return, CANCEL_COMMAND).formatted(Formatting.YELLOW))
         }
     }
 
@@ -89,7 +92,7 @@ internal class BingoLobbyCommand(
         val lobbyWorldService = scope.get<LobbyWorldService>()
         val resetService = scope.get<ResetService>()
         val serverTaskExecutor = scope.get<IExecutors.IServerTaskExecutor>()
-        sendFeedback(text.string(StringKey.CommandResetSuccess))
+        sendFeedback(text.string(StringKey.LobbyEditSaving))
         serverTaskExecutor.execute {
             lobbyWorldService.writeLobbyFiles()
             resetService.resetGame(GameState.PREGAME)
@@ -142,6 +145,11 @@ internal class BingoLobbyCommand(
                     requires { canUseEdit() && hasState(GameState.LOBBY_EDITOR) }
                     executes { save() }
                 }
+
+                literal("cancel") {
+                    requires { canUseEdit() && hasState(GameState.LOBBY_EDITOR) }
+                    executes { reset() }
+                }
             }
         }
     }
@@ -149,5 +157,7 @@ internal class BingoLobbyCommand(
     companion object {
         const val LOBBY_COMMAND = "/bingo lobby"
         const val CONFIRM_COMMAND = "/bingo lobby confirm"
+        const val SAVE_COMMAND = "/bingo lobby save"
+        const val CANCEL_COMMAND = "/bingo lobby cancel"
     }
 }

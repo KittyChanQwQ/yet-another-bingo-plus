@@ -183,20 +183,22 @@ class ServerEventsImpl(
                 ?: InteractionResult.PASS
         }
 
-        BlockEvents.USE_ITEM_ON.register { _, _, level, blockPos, player, _, _ ->
-            if (player !is ServerPlayer || level !is ServerLevel) return@register InteractionResult.PASS
-            val server = level.server ?: return@register InteractionResult.PASS
+        ItemEvents.USE_ON.register { useOnContext ->
+            val player = useOnContext.player
+            val level = useOnContext.level
+            if (player !is ServerPlayer || level !is ServerLevel) return@register null
+            val server = level.server ?: return@register null
             val playerImpl = getPlayerImpl(player)
             eventBus.emit(
-                UseItemOnBlockEvent,
-                UseItemOnBlockEvent(
+                UseItemOnEvent,
+                UseItemOnEvent(
                     server,
                     playerImpl,
                     ServerWorldImpl(level, null),
-                    BlockPosition.fromBlockPos(blockPos),
+                    BlockPosition.fromBlockPos(useOnContext.clickedPos),
                 )
             )
-            InteractionResult.PASS
+            null
         }
 
         PlayerBlockBreakEvents.AFTER.register { level, player, blockPos, _, _ ->

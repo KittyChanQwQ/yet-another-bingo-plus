@@ -4,7 +4,10 @@ import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IExecutors
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.ILodestoneBlockState
@@ -13,7 +16,8 @@ import me.jfenn.bingo.platform.block.IWallSignBlockState
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ActionResult
 import me.jfenn.bingo.platform.event.model.BreakBlockEvent
-import me.jfenn.bingo.platform.event.model.UseItemOnBlockEvent
+import me.jfenn.bingo.platform.event.model.UseItemOnEvent
+import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
 import kotlin.math.atan2
 
@@ -24,25 +28,33 @@ internal class MenuPoiController(
     private val data: ScopedData,
     private val state: BingoState,
     private val logger: Logger,
+    private val text: TextProvider,
 ) {
-    private fun invalidateAround(world: IServerWorld, pos: BlockPosition) {
+    private data class Context(
+        val world: IServerWorld,
+        val pos: BlockPosition,
+        val player: IPlayerHandle,
+    )
+
+    private fun invalidateAround(ctx: Context) {
         for (x in -1..1) {
             for (y in -2..2) {
                 for (z in -1..1) {
-                    invalidate(world, pos.move(x, y, z))
+                    invalidate(ctx.copy(pos = ctx.pos.move(x, y, z)))
                 }
             }
         }
     }
 
-    private fun invalidate(world: IServerWorld, pos: BlockPosition) {
+    private fun invalidate(ctx: Context) {
+        val pos = ctx.pos
         menuPoiState.poi.removeIf { it.pos == pos }
 
         // Test for spawnpoint
-        val blockState = world.getBlockState(pos)
+        val blockState = ctx.world.getBlockState(pos)
         if (blockState is IPlayerHeadBlockState) {
             val yaw = (blockState.rotation - 8).toFloat() * 360f / 16f
-            addPoi(MenuPoi.Spawn(pos, yaw))
+            ctx.addPoi(MenuPoi.Spawn(pos, yaw))
         }
 
         // Test for menu blocks
@@ -51,7 +63,7 @@ internal class MenuPoiController(
             pos.toBlockPos(),
             pos.move(y = -1).toBlockPos()
         ).associateWith {
-            world.getBlockState(BlockPosition.fromBlockPos(it))
+            ctx.world.getBlockState(BlockPosition.fromBlockPos(it))
                     as? IWallSignBlockState
         }
 
@@ -64,33 +76,39 @@ internal class MenuPoiController(
             val directionVec = centerState.facing
             val yaw = atan2(directionVec.x.toDouble(), directionVec.z.toDouble())
 
-            addPoi(MenuPoi.Menu(pos, yaw))
+            ctx.addPoi(MenuPoi.Menu(pos, yaw))
         }
 
         // Test for team preset
-        val isLodestone = world.getBlockState(pos.move(0, -1, 0)) is ILodestoneBlockState
+        val isLodestone = ctx.world.getBlockState(pos.move(0, -1, 0)) is ILodestoneBlockState
         if (isLodestone) {
-            val blockState = world.getBlockState(pos)
+            val blockState = ctx.world.getBlockState(pos)
             val teamKey = data.teamPresets.entries
                 .find { it.value.blockId == blockState.identifier }
                 ?.key
 
             if (teamKey != null) {
-                addPoi(MenuPoi.Team(pos, teamKey))
+                ctx.addPoi(MenuPoi.Team(pos, teamKey))
             }
         }
     }
 
-    private fun addPoi(poi: MenuPoi) {
+    private fun Context.addPoi(poi: MenuPoi) {
         logger.info("[MenuPoiController] Created poi: $poi")
         menuPoiState.poi.add(poi)
+
+        when (poi) {
+            is MenuPoi.Spawn -> text.string(StringKey.LobbyEditCreatedSpawn, poi.pos.toString())
+            is MenuPoi.Team -> text.string(StringKey.LobbyEditCreatedTeam, poi.key.id, poi.pos.toString())
+            is MenuPoi.Menu -> text.string(StringKey.LobbyEditCreatedMenu, poi.pos.toString())
+        }.let { player.sendMessage(it.formatted(Formatting.GRAY)) }
     }
 
     init {
-        eventBus.register(UseItemOnBlockEvent.Companion) {
+        eventBus.register(UseItemOnEvent) {
             if (state.state == GameState.LOBBY_EDITOR && it.world.identifier == LOBBY_WORLD_IDENTIFIER) {
                 serverTaskExecutor.execute {
-                    invalidateAround(it.world, it.blockPos)
+                    invalidateAround(Context(it.world, it.blockPos, it.player))
                 }
             }
             ActionResult.Pass(Unit)
@@ -98,7 +116,7 @@ internal class MenuPoiController(
 
         eventBus.register(BreakBlockEvent.After) {
             if (state.state == GameState.LOBBY_EDITOR && it.world.identifier == LOBBY_WORLD_IDENTIFIER) {
-                invalidateAround(it.world, it.blockPos)
+                invalidateAround(Context(it.world, it.blockPos, it.player))
             }
         }
     }

@@ -5,6 +5,8 @@ interface IGameRules {
     val showDeathMessages: IGameRule<Boolean>
     val keepInventory: IGameRule<Boolean>
     val pvp: IGameRule<Boolean>
+    val randomTickSpeed: IGameRule<Int>
+    val fireSpreadRange: IGameRule<Int>
 
     fun get(name: String): IGameRule<*>?
 }

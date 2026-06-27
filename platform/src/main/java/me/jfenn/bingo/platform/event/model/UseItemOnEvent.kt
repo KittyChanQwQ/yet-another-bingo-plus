@@ -5,13 +5,12 @@ import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.event.IEvent
 import net.minecraft.server.MinecraftServer
-import net.minecraft.world.level.Level
 
-class UseItemOnBlockEvent(
+class UseItemOnEvent(
     val server: MinecraftServer,
     val player: IPlayerHandle,
     val world: IServerWorld,
     val blockPos: BlockPosition,
 ) {
-    companion object : IEvent<UseItemOnBlockEvent>
+    companion object : IEvent<UseItemOnEvent>
 }

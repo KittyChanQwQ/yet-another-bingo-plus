@@ -17,5 +17,9 @@ public class GameRuleOverrideMixin {
             cir.setReturnValue((T) b);
             cir.cancel();
         }
+        if (override instanceof Integer i) {
+            cir.setReturnValue((T) i);
+            cir.cancel();
+        }
     }
 }
