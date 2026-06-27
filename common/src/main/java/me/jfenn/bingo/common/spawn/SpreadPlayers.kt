@@ -242,9 +242,15 @@ internal class SpreadPlayers(
         return Result.Success(Unit)
     }
 
-    private fun processChunk(chunkPos: ChunkPosition, chunk: IChunk): Result<BlockPosition> {
+    private fun processChunk(chunkPos: ChunkPosition, chunk: IChunk?): Result<BlockPosition> {
         var (x, z) = chunkPos
         val xSign = x.sign.takeIf { it != 0 } ?: 1
+
+        if (chunk == null) {
+            log.error("Skipping chunk ($x, $z) because getChunk returned null")
+            x += 1 * xSign
+            return Result.NextChunk(ChunkPosition(x, z))
+        }
 
         val spawnBlockPos = selectChunkPosition(chunk)
         if (spawnBlockPos == null) {
@@ -267,33 +273,23 @@ internal class SpreadPlayers(
      * outwards on the X axis.
      */
     fun findSpawnPosAsync(startChunk: ChunkPosition): CompletableFuture<BlockPosition> {
-        var chunkPos = startChunk
-
-        while (true) {
-            when (val result = processChunkCoords(chunkPos)) {
-                is Result.Success -> {}
-                is Result.NextChunk -> {
-                    chunkPos = result.nextChunk
-                    continue
-                }
-                is Result.Finish -> {
-                    return CompletableFuture.completedFuture(result.block)
-                }
+        return world.getChunkAsync(startChunk).thenComposeAsync({
+            when (val result = processChunkCoords(startChunk)) {
+                is Result.NextChunk -> findSpawnPosAsync(result.nextChunk)
+                is Result.Finish -> CompletableFuture.completedFuture(result.block)
+                is Result.Success -> findSpawnPosAsyncInChunk(startChunk)
             }
+        }, taskExecutor)
+    }
 
-            return world.getChunkAsync(startChunk).thenComposeAsync({ chunk ->
-                if (chunk == null) {
-                    log.error("Could not find any valid spawn location because getChunk returned null. Using the default world spawn, which may be buggy...")
-                    return@thenComposeAsync CompletableFuture.completedFuture(worldSpawnPos)
-                }
-
-                when (val result = processChunk(chunkPos, chunk)) {
-                    is Result.NextChunk -> findSpawnPosAsync(result.nextChunk)
-                    is Result.Finish -> CompletableFuture.completedFuture(result.block)
-                    is Result.Success -> CompletableFuture.completedFuture(result.result)
-                }
-            }, taskExecutor)
-        }
+    private fun findSpawnPosAsyncInChunk(chunkPos: ChunkPosition): CompletableFuture<BlockPosition> {
+        return world.getChunkAsync(chunkPos).thenComposeAsync({ chunk ->
+            when (val result = processChunk(chunkPos, chunk)) {
+                is Result.NextChunk -> findSpawnPosAsync(result.nextChunk)
+                is Result.Finish -> CompletableFuture.completedFuture(result.block)
+                is Result.Success -> CompletableFuture.completedFuture(result.result)
+            }
+        }, taskExecutor)
     }
 
     /**
