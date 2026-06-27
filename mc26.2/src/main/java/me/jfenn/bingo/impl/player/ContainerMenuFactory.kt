@@ -14,9 +14,9 @@ import kotlin.math.ceil
 class ContainerMenuFactory(
     private val itemStackFactory: IItemStackFactory,
 ) : IContainerMenu.Factory {
-    override fun createSimpleContainer(stacks: List<IItemStack>): IInventory {
-        val container = SimpleContainer(stacks.size)
-        stacks.forEachIndexed { i, stack ->
+    override fun createSimpleContainer(stacks: List<IItemStack>, size: Int): IInventory {
+        val container = SimpleContainer(size)
+        stacks.take(size).forEachIndexed { i, stack ->
             container.setItem(i, stack.stack)
         }
         return InventoryImpl(itemStackFactory, container)
