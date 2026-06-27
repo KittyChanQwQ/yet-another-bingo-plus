@@ -5,25 +5,26 @@ import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.player.PlayerProfile
 import org.slf4j.Logger
+import java.lang.ref.SoftReference
 
 class OfflinePlayerCache(
     private val playerManager: IPlayerManager,
     private val log: Logger,
 ) {
 
-    private val offlinePlayerCache = mutableMapOf<PlayerProfile, IPlayerHandle>()
+    private val offlinePlayerCache = mutableMapOf<PlayerProfile, SoftReference<IPlayerHandle>>()
 
     fun getOfflinePlayer(profile: PlayerProfile): IPlayerHandle {
         // If the player is online, return the current player entity
         val onlinePlayer = playerManager.getPlayer(profile.uuid)
         if (onlinePlayer != null) {
             // and set their offline cache entry
-            offlinePlayerCache[profile] = onlinePlayer
+            offlinePlayerCache[profile] = SoftReference(onlinePlayer)
             return onlinePlayer
         }
 
         // If the player is in the offline cache, return it
-        val cachedPlayer = offlinePlayerCache[profile]
+        val cachedPlayer = offlinePlayerCache[profile]?.get()
         if (cachedPlayer != null) {
             return cachedPlayer
         }
@@ -33,7 +34,7 @@ class OfflinePlayerCache(
             playerManager.getOfflinePlayer(profile)
         }
 
-        offlinePlayerCache[profile] = player
+        offlinePlayerCache[profile] = SoftReference(player)
         return player
     }
 
