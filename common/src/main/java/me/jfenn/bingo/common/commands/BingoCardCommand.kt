@@ -187,6 +187,7 @@ class BingoCardCommand(
     init {
         commandManager.register("bingo") {
             literal("card") {
+                requires { hasState(GameState.PREGAME, GameState.PLAYING, GameState.POSTGAME) }
                 executes {
                     cardViewService.openCard(playerOrThrow)
                 }

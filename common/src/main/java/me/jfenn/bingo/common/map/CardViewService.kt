@@ -376,6 +376,9 @@ internal class CardViewService(
     fun openCard(player: IPlayerHandle) {
         val team = teamService.getPlayerTeam(player)
 
+        if (packets.cardOpenV1.send(player, CardOpenPacket(team?.key)))
+            return
+
         val view = when {
             !isViewingCard(player, team) -> null
             team == null -> state.previewMap?.view

@@ -23,6 +23,7 @@ class ClientPacketEvents(
     val cardResetV1 = clientNetworking.registerS2C(CardResetPacket.V1)
     val cardDisplayV1 = clientNetworking.registerS2C(CardDisplayPacket.V1)
     val cardTilesV1 = clientNetworking.registerS2C(CardTilesPacket.V1)
+    val cardOpenV1 = clientNetworking.registerS2C(CardOpenPacket.V1)
     val cardShuffledV1 = clientNetworking.registerS2C(CardShuffledPacket.V1)
     val cardCompletedV1 = clientNetworking.registerS2C(CardCompletedPacket.V1)
     val cardImageV1 = clientNetworking.registerS2C(CardImagePacket.V1)

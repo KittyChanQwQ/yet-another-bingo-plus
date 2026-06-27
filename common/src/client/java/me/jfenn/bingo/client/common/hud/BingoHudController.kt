@@ -55,7 +55,7 @@ internal class BingoHudController(
     private val clientCardManager: ClientCardManager,
     private val itemScoredRenderer: BingoMessageRenderer,
     private val readyHudRenderer: ReadyHudRenderer,
-    private val endScreenFactory: BingoHudScreen.Factory,
+    private val cardScreenFactory: BingoHudScreen.Factory,
     private val state: BingoHudState,
     private val text: TextProvider,
     keyBindingManager: IKeyBindingManager,
@@ -283,7 +283,7 @@ internal class BingoHudController(
 
         if (!packet.isUpdate) {
             // when the game first ends, open the end screen
-            client.screen = endScreenFactory.create(
+            client.screen = cardScreenFactory.create(
                 gameOver,
                 originalCardKey = getSelectedCard()?.teamKey,
                 originalCardPos = getCardPos(),
@@ -411,6 +411,24 @@ internal class BingoHudController(
         }
     }
 
+    private fun openCardScreen(originalCardKey: BingoTeamKey?) {
+        val gameOver = state.gameOver
+        val hudScreen = if (gameOver != null || state.cards.isNotEmpty()) {
+            cardScreenFactory.create(
+                gameOver = gameOver,
+                originalCardKey = originalCardKey,
+                originalCardPos = getCardPos(),
+                canEscape = true,
+                onClose = { onCardHudClosed(it.getCardPositions()) }
+            )
+        } else {
+            client.player.sendHotbarMessage(text.string(StringKey.CardNoCards))
+            return
+        }
+
+        client.screen = hudScreen
+    }
+
     private val cardColorsId = Identifier.of(MOD_ID_BINGO, "gui/card_colors.json")
 
     private fun loadCardColors(manager: IResourceManager) {
@@ -446,6 +464,10 @@ internal class BingoHudController(
             if (it.packet.isWinner) {
                 fireworkRenderer = BingoEndFireworkRenderer(text, range = (100 * config.client.cardScale).toInt())
             }
+        }
+
+        eventBus.register(packetEvents.cardOpenV1) {
+            openCardScreen(it.packet.teamKey)
         }
 
         eventBus.register(packetEvents.gameStatusV1) {
@@ -566,21 +588,7 @@ internal class BingoHudController(
             }
 
             if (shouldOpenCard) {
-                val gameOver = state.gameOver
-                val hudScreen = if (gameOver != null || state.cards.isNotEmpty()) {
-                    endScreenFactory.create(
-                        gameOver = gameOver,
-                        originalCardKey = getSelectedCard()?.teamKey,
-                        originalCardPos = getCardPos(),
-                        canEscape = true,
-                        onClose = { onCardHudClosed(it.getCardPositions()) }
-                    )
-                } else {
-                    client.player.sendHotbarMessage(text.string(StringKey.CardNoCards))
-                    return@register
-                }
-
-                client.screen = hudScreen
+                openCardScreen(getSelectedCard()?.teamKey)
             }
 
             if (toggleHudKey.wasPressed()) {
