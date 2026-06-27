@@ -126,6 +126,7 @@ internal class GameOverController(
 
             when {
                 packetManager.gameOverV1.send(player.player, packet) -> {}
+                isUpdate -> return
                 openGameOverDialog(player, packet) -> {
                     Sounds.playGameOver(player)
                 }
