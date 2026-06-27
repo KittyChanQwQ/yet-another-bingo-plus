@@ -9,7 +9,6 @@ import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.platform.ITextSerializer
 import me.jfenn.bingo.platform.PlayerGameMode
 import me.jfenn.bingo.platform.scoreboard.IObjectiveHandle
 import me.jfenn.bingo.platform.scoreboard.IScoreboardManager
@@ -23,7 +22,6 @@ internal class ScoreboardService(
     private val playerSettingsService: PlayerSettingsService,
     private val cardViewService: CardViewService,
     private val mapItemService: MapItemService,
-    private val textSerializer: ITextSerializer,
     private val teamService: TeamService,
 ) {
 
@@ -77,9 +75,8 @@ internal class ScoreboardService(
         contents: List<IText>,
         players: List<IPlayerHandle>,
     ) {
-        val contentItems = contents.map {
-            val raw = textSerializer.toRawString(it).let { raw -> if (raw.startsWith('#')) " $raw" else raw }
-            ScoreboardView.ScoreboardItem(raw, it)
+        val contentItems = contents.mapIndexed { i, text ->
+            ScoreboardView.ScoreboardItem($$"$line$$i", text)
         }
 
         // update the server-side objective
