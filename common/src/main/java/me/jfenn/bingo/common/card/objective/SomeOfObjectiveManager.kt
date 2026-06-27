@@ -69,7 +69,6 @@ internal class SomeOfObjectiveManager(
                 },
                 item = objectives.firstNotNullOfOrNull { it.display.item },
                 itemStyle = when {
-                    objective.data.display?.item != null -> ItemStyle.NORMAL
                     isOneOf -> ItemStyle.ONE_OF
                     else -> ItemStyle.ALL_OF
                 },
