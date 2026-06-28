@@ -31,7 +31,9 @@ internal class SpawnKitService(
 
     fun writePlayerItems(items: List<IItemStack>) {
         val spawnKit = SpawnKit(
-            items.map { serializers.json.encodeToJsonElement<IItemStackSerialized>(it) }
+            items
+                .dropLastWhile { it.isEmpty }
+                .map { serializers.json.encodeToJsonElement<IItemStackSerialized>(it) }
         )
         data.spawnKits.playerKit = spawnKit
         spawnKitLoader.writeSpawnKit(SpawnKitLoader.KIT_PLAYER, spawnKit)
@@ -39,7 +41,9 @@ internal class SpawnKitService(
 
     fun writeTeamItems(items: List<IItemStack>) {
         val spawnKit = SpawnKit(
-            items.map { serializers.json.encodeToJsonElement<IItemStackSerialized>(it) }
+            items
+                .dropLastWhile { it.isEmpty }
+                .map { serializers.json.encodeToJsonElement<IItemStackSerialized>(it) }
         )
         data.spawnKits.teamKit = spawnKit
         spawnKitLoader.writeSpawnKit(SpawnKitLoader.KIT_TEAM, spawnKit)

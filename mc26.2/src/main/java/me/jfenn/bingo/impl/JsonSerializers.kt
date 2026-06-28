@@ -1,6 +1,10 @@
 package me.jfenn.bingo.impl
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import com.mojang.serialization.Codec
+import com.mojang.serialization.JsonOps
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -26,7 +30,9 @@ class JsonSerializers(
     server: MinecraftServer?,
 ) : IJsonSerializers {
 
-    private val registryOps = server?.registryAccess()?.createSerializationContext(JsonOpsKotlinx) ?: JsonOpsKotlinx
+    private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
+    private val gsonAdapter = gson.getAdapter(JsonElement::class.java)
+    private val registryOps = server?.registryAccess()?.createSerializationContext(JsonOps.INSTANCE) ?: JsonOps.INSTANCE
 
     inner class CodecSerializer<T: Any>(
         private val codec: Codec<T>,
@@ -37,14 +43,16 @@ class JsonSerializers(
 
         override fun deserialize(decoder: Decoder): T {
             require(decoder is JsonDecoder)
-            val jsonElement = decoder.decodeJsonElement()
-            return codec.parse(registryOps, jsonElement).getOrThrow()
+            val str = decoder.json.encodeToString(decoder.decodeJsonElement())
+            val gsonElement = gsonAdapter.fromJson(str)
+            return codec.parse(registryOps, gsonElement).getOrThrow()
         }
 
         override fun serialize(encoder: Encoder, value: T) {
             require(encoder is JsonEncoder)
-            val jsonElement = codec.encodeStart(registryOps, value).getOrThrow()
-            encoder.encodeJsonElement(jsonElement)
+            val gsonElement = codec.encodeStart(registryOps, value).getOrThrow()
+            val str = gsonAdapter.toJson(gsonElement)
+            encoder.encodeJsonElement(encoder.json.parseToJsonElement(str))
         }
     }
 
