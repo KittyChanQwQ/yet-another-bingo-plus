@@ -45,8 +45,8 @@ class DrawService(
             val client = Minecraft.getInstance()
             val mouse = client.mouseHandler
             return Vector2i(
-                (mouse.xpos() * client.window.guiScaledWidth.toDouble() / client.window.width.toDouble()).toInt(),
-                (mouse.ypos() * client.window.guiScaledHeight.toDouble() / client.window.height.toDouble()).toInt(),
+                mouse.getScaledXPos(client.window).toInt(),
+                mouse.getScaledYPos(client.window).toInt(),
             )
         }
 
