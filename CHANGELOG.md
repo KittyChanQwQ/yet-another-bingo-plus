@@ -1,15 +1,12 @@
-### New Features:
-
-- Added a "lobby editor" mode for much easier server customization (`/bingo lobby edit`)
-
 ### Bugs Squashed:
 
-- Fixed display of "All of" / "One of" objectives
-- Fixed vanilla players being unable to close the game over screen
-- Fixed some scoreboard rows not displaying
-- Fixed `/bingo card` opening the vanilla card inventory on modded clients
-- Reduced lag spikes when locating team spawnpoints
+- Fixed issues with the scoreboard not updating
+- Fixed tooltip/mouse position bugs on MacOS
+- Fixed issues storing some items in spawn kits
+- Fixed "Exposed Copper Golem Statue" missing a texture for unmodded clients
 
 ### Translations:
 
-- New Chinese Traditional translations from Sear!
+- New Chinese Simplified translations from Young912!
+- New Portuguese translations from NotKweerk!
+- New Russian translations from lazdni!
