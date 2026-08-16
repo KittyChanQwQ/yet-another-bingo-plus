@@ -18,5 +18,7 @@ interface IScreen {
 }
 
 interface IKeyInput {
+    val isArrowLeft: Boolean
+    val isArrowRight: Boolean
     val isEscape: Boolean
 }

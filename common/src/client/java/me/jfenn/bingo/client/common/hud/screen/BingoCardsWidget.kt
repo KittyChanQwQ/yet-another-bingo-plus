@@ -7,6 +7,7 @@ import me.jfenn.bingo.client.common.state.ClientCardBase
 import me.jfenn.bingo.client.common.utils.Interpolate
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.screen.IDrawable
+import me.jfenn.bingo.client.platform.screen.IKeyInput
 import me.jfenn.bingo.common.map.CardTile
 import me.jfenn.bingo.common.team.BingoTeamKey
 import org.koin.core.Koin
@@ -55,12 +56,27 @@ internal class BingoCardsWidget(
         duration = interpolateDuration,
     )
 
-    private var targetScrollX: Float = 0f
-    private var scrollX: Float = 0f // 0-1
+    val initialScollX: Float = run {
+        if (winner == null) return@run 0f
+        val winnerIndex = views.indexOfFirst {
+            it.teamKey == winner
+        }
+            .takeIf { it != -1 }
+            ?: return@run 0f
+
+        winnerIndex.toFloat() / (views.size - 1)
+    }
+
+    private var targetScrollX: Float = initialScollX
+    private var scrollX: Float = initialScollX // 0-1
     private var preventMovementScrolling = false
 
     private val cardsAreaWidth get() = width * 6/10
     private val cardsTotalWidth get() =  views.size * ClientCardBufferRenderer.CARD_WIDTH
+
+    private var dragStart: Pair<Double, Double>? = null
+    private var dragInitialScrollX: Float = initialScollX
+    private var isDraggingScrollBar: Boolean = false
 
     fun viewsWithPositions(
         callback: (view: ClientCard, x: Float, y: Float, z: Int) -> Unit
@@ -134,25 +150,6 @@ internal class BingoCardsWidget(
         val mouseX = mouse.x
         val mouseY = mouse.y
 
-        if (isInBounds(mouseX, mouseY)) {
-            val boundaryMin = x - cardsAreaWidth*.5f
-            val boundaryMax = x + cardsAreaWidth*.5f
-            val baseVelocity = 0.01f / (1 + views.size)
-            val velocity = when {
-                mouseX < boundaryMin -> (mouseX - boundaryMin) * baseVelocity
-                mouseX > boundaryMax -> (mouseX - boundaryMax) * baseVelocity
-                else -> 0f
-            }
-
-            if (!preventMovementScrolling) {
-                targetScrollX = (targetScrollX + velocity * drawService.delta).coerceIn(0f, 1f)
-            } else if (velocity == 0f) {
-                preventMovementScrolling = false
-            }
-        } else {
-            preventMovementScrolling = false
-        }
-
         // Animate scrollX towards targetScrollX
         scrollX = (scrollX * 3 + targetScrollX) / 4
         if (!targetScrollX.isFinite() || !scrollX.isFinite()) {
@@ -203,6 +200,14 @@ internal class BingoCardsWidget(
                 && mouseY in (y - height/2).toInt()..(y + height/2).toInt()
     }
 
+    private fun isInScrollBarBounds(mouseX: Int, mouseY: Int): Boolean {
+        val barY = y.toInt() + (height/2) + 3
+        val barHeight = 2
+        val barPadding = 2
+        return mouseX in (x - width/2).toInt()..(x + width/2).toInt()
+                && mouseY in (barY - barPadding)..(barY + barHeight + barPadding)
+    }
+
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
         if (isInBounds(mouseX.toInt(), mouseY.toInt())) {
             if (amount.absoluteValue > 0.1) {
@@ -214,6 +219,45 @@ internal class BingoCardsWidget(
         } else {
             return false
         }
+    }
+
+    fun onMouseDragged(mouseX: Double, mouseY: Double): Boolean {
+        val initialMouseX: Double = dragStart?.first ?: mouseX
+
+        if (dragStart == null) {
+            isDraggingScrollBar = when {
+                isInScrollBarBounds(mouseX.toInt(), mouseY.toInt()) -> true
+                isInBounds(mouseX.toInt(), mouseY.toInt()) -> false
+                else -> return false
+            }
+            dragStart = Pair(mouseX, mouseY)
+            dragInitialScrollX = scrollX
+        }
+
+        if (isDraggingScrollBar) {
+            val barFilledWidth = cardsAreaWidth * cardsAreaWidth / cardsTotalWidth.coerceAtLeast(1)
+            (mouseX - initialMouseX).toFloat()
+                .div((cardsAreaWidth - barFilledWidth).coerceAtLeast(1))
+                .plus(dragInitialScrollX)
+                .coerceIn(0f, 1f)
+                .also { targetScrollX = it }
+                .also { scrollX = it }
+        } else {
+            (initialMouseX - mouseX).toFloat()
+                .div((cardsTotalWidth - cardsAreaWidth).coerceAtLeast(1))
+                .plus(dragInitialScrollX)
+                .coerceIn(0f, 1f)
+                .also { targetScrollX = it }
+        }
+
+        return true
+    }
+
+    fun onMouseReleased(mouseX: Double, mouseY: Double): Boolean {
+        return dragStart?.let {
+            dragStart = null
+            true
+        } ?: false
     }
 
     fun onMouseClicked(mouseX: Double, mouseY: Double): Boolean {
@@ -242,4 +286,15 @@ internal class BingoCardsWidget(
         return isHandled
     }
 
+    fun onKeyPressed(input: IKeyInput): Boolean {
+        val currentIndex = (scrollX * (views.size - 1)).roundToInt().coerceIn(views.indices)
+        val newIndex = when {
+            input.isArrowLeft -> currentIndex - 1
+            input.isArrowRight -> currentIndex + 1
+            else -> return false
+        }
+
+        targetScrollX = (newIndex.toFloat() / (views.size - 1)).coerceIn(0f, 1f)
+        return true
+    }
 }

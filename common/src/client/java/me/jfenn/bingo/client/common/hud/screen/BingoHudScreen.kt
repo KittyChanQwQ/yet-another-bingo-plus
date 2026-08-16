@@ -114,6 +114,9 @@ internal class BingoHudScreen(
         interpolateFromScale = originalCardScale,
         interpolateDuration = 150.milliseconds,
 
+        views = gameOver?.cards ?: state.cards.values,
+        winner = gameOver?.packet?.winner,
+
         onTileClick = { tile ->
             if (gameOver != null) return@BingoCardsWidget false
             when (val action = tile.action) {
@@ -493,12 +496,24 @@ internal class BingoHudScreen(
         fireworkRenderer?.render(drawService, (width - sidebarWidth)/2, height/2, state.now)
     }
 
+    override fun mouseDragged(mouseX: Double, mouseY: Double): Boolean {
+        return cardsWidget.onMouseDragged(mouseX, mouseY)
+    }
+
+    override fun mouseReleased(mouseX: Double, mouseY: Double): Boolean {
+        return cardsWidget.onMouseReleased(mouseX, mouseY)
+    }
+
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         return cardsWidget.onMouseClicked(mouseX, mouseY)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
         return cardsWidget.mouseScrolled(mouseX, mouseY, amount) || super.mouseScrolled(mouseX, mouseY, amount)
+    }
+
+    override fun keyPressed(input: IKeyInput): Boolean {
+        return cardsWidget.onKeyPressed(input)
     }
 
     override fun shouldPause() = config.client.cardPausesGame
