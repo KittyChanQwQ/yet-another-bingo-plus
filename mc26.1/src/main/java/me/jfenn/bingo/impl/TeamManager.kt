@@ -1,5 +1,6 @@
 package me.jfenn.bingo.impl
 
+import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.ITeamHandle
 import me.jfenn.bingo.platform.ITeamManager
 import me.jfenn.bingo.platform.text.Formatting
@@ -37,20 +38,22 @@ class TeamManager(
         if (team != null) server.scoreboard.removePlayerTeam(team)
     }
 
-    override fun getPlayerTeam(player: ServerPlayer): TeamHandle? {
+    override fun getPlayerTeam(player: IPlayerHandle): TeamHandle? {
+        val player: ServerPlayer = player.player
         return server.scoreboard.getPlayersTeam(player.scoreboardName)
             ?.let { TeamHandle(it) }
     }
 
-    override fun setPlayerTeam(player: ServerPlayer, team: ITeamHandle?) {
+    override fun setPlayerTeam(player: IPlayerHandle, team: ITeamHandle?) {
         require(team is TeamHandle?)
+        val serverPlayer: ServerPlayer = player.player
 
         if (team != null) {
-            server.scoreboard.addPlayerToTeam(player.scoreboardName, team.team)
+            server.scoreboard.addPlayerToTeam(serverPlayer.scoreboardName, team.team)
         } else {
             // leave the player's current team (set to null)
             val currentTeam = getPlayerTeam(player) ?: return
-            server.scoreboard.removePlayerFromTeam(player.scoreboardName, currentTeam.team)
+            server.scoreboard.removePlayerFromTeam(serverPlayer.scoreboardName, currentTeam.team)
         }
     }
 }

@@ -14,9 +14,9 @@ interface ITeamManager {
 
     fun deleteTeam(teamName: String)
 
-    fun getPlayerTeam(player: ServerPlayer): ITeamHandle?
+    fun getPlayerTeam(player: IPlayerHandle): ITeamHandle?
 
-    fun setPlayerTeam(player: ServerPlayer, team: ITeamHandle?)
+    fun setPlayerTeam(player: IPlayerHandle, team: ITeamHandle?)
 
 }
 

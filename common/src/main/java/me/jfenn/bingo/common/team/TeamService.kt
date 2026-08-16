@@ -13,6 +13,7 @@ import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
 import kotlin.math.ceil
+import kotlin.math.floor
 
 internal class TeamService(
     private val log: Logger,
@@ -27,7 +28,7 @@ internal class TeamService(
 ) {
 
     fun getPlayerTeam(player: IPlayerHandle): BingoTeam? {
-        val team = teamManager.getPlayerTeam(player.player) ?: return null
+        val team = teamManager.getPlayerTeam(player) ?: return null
         return state.teams[BingoTeamKey(team.name)]
     }
 
@@ -66,7 +67,7 @@ internal class TeamService(
         getPlayerTeam(player)?.players?.remove(playerProfile)
 
         state.playersSpectatingIds.remove(player.uuid)
-        teamManager.setPlayerTeam(player.player, createTeam(team))
+        teamManager.setPlayerTeam(player, createTeam(team))
         team.players.add(playerProfile)
         player.sendMessage(
             text.string(StringKey.LobbyTeamChanged, team.getName(text))
@@ -80,7 +81,7 @@ internal class TeamService(
         val team = getPlayerTeam(player)
 
         if (team != null) {
-            teamManager.setPlayerTeam(player.player, null)
+            teamManager.setPlayerTeam(player, null)
             val removed = team.players.remove(player.profile)
             if (removed) {
                 eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, null))
@@ -113,10 +114,11 @@ internal class TeamService(
             // Prefer shuffling onto teams that have the most players
             .sortedByDescending { state.teams[it.key]?.players?.size ?: 0 }
             .map { BingoTeam.fromPreset(it.key, it.value) }
+            .take(numTeams)
             .toMutableList()
 
         // If numTeams is more than the default team list, create temporary teams until full
-        for (i in teams.size..numTeams) {
+        for (i in teams.size until numTeams) {
             val temporaryTeam = BingoTeam(
                 id = "temp_bingo_$i",
                 name = text.string(StringKey.TeamName, "$i"),
@@ -134,15 +136,24 @@ internal class TeamService(
 
         val players = playerManager.getPlayers()
             .filter { !state.playersSpectatingIds.contains(it.uuid) }
-        val playersPerTeam = ceil(players.size / numTeams.coerceIn(1, teams.size).toDouble()).toInt()
+
+        val minPlayersPerTeam = floor(players.size / numTeams.coerceIn(1, teams.size).toDouble()).toInt()
 
         players.shuffled()
-            .chunked(playersPerTeam)
+            .chunked(minPlayersPerTeam)
             .forEachIndexed { i, teamPlayers ->
-                val teamTemplate = teams[i % teams.size]
+                if (teamPlayers.size == minPlayersPerTeam) {
+                    // put all players on one team
+                    val teamTemplate = teams[i % teams.size]
 
-                for (teamPlayer in teamPlayers)
-                    joinTeam(teamPlayer, teamTemplate)
+                    for (teamPlayer in teamPlayers)
+                        joinTeam(teamPlayer, teamTemplate)
+                } else {
+                    // remainder, distribute evenly between the teams
+                    teamPlayers.forEachIndexed { index, handle ->
+                        joinTeam(handle, teams[index % teams.size])
+                    }
+                }
             }
     }
 
