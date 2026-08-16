@@ -26,6 +26,7 @@ import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.IContainerMenu
 import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
+import me.jfenn.bingo.stats.sql.Game
 import java.util.*
 
 internal class CardViewService(
@@ -172,13 +173,17 @@ internal class CardViewService(
 
     fun isViewingSpectatorCards(player: IPlayerHandle): Boolean {
         val team = teamService.getPlayerTeam(player)
+        val canViewSpectatorCards = (team == null || team.isWinner()) && permissions.hasPermission(
+            player,
+            Permission.SPECTATOR_VIEW_CARDS
+        )
         return when (state.state) {
             // if the state is not POSTGAME, players must have permission to receive the spectator cards
-            GameState.PLAYING -> (team == null || team.isWinner()) && permissions.hasPermission(
-                player,
-                Permission.SPECTATOR_VIEW_CARDS
-            )
-
+            GameState.STARTING,
+            GameState.PRELOADING,
+            GameState.LOADING,
+            GameState.COUNTDOWN -> options.showPreviewCard && canViewSpectatorCards
+            GameState.PLAYING -> canViewSpectatorCards
             GameState.POSTGAME -> true
             else -> false
         }
