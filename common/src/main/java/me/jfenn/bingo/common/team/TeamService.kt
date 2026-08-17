@@ -137,7 +137,9 @@ internal class TeamService(
         val players = playerManager.getPlayers()
             .filter { !state.playersSpectatingIds.contains(it.uuid) }
 
-        val minPlayersPerTeam = floor(players.size / numTeams.coerceIn(1, teams.size).toDouble()).toInt()
+        val minPlayersPerTeam = floor(players.size / numTeams.coerceIn(1, teams.size).toDouble())
+            .toInt()
+            .coerceAtLeast(1)
 
         players.shuffled()
             .chunked(minPlayersPerTeam)

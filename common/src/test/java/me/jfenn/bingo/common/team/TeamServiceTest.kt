@@ -113,6 +113,38 @@ class TeamServiceTest {
     }
 
     @Test
+    fun `Given 2 players, when shuffling into 3 teams, the players should be shuffled correctly`() {
+        val state = fakeBingoState()
+        val teamManager = mockk<ITeamManager>().also {
+            every { it.createTeam(any(), any(), any()) } returns mockk()
+            // no players have picked a team yet
+            every { it.getPlayerTeam(any()) } returns null
+            every { it.setPlayerTeam(any(), any()) } returns Unit
+        }
+        val playerManager = mockk<IPlayerManager>().also {
+            every { it.getPlayers() } returns List(2) { mockPlayer() }
+        }
+        val teamService = TeamService(
+            log = mockk(relaxed = true),
+            eventBus = mockk(relaxed = true),
+            state = state,
+            data = mockScopedData,
+            teamManager = teamManager,
+            text = mockk(relaxed = true),
+            playerManager = playerManager,
+            mapService = mockk(),
+            permissions = mockk(),
+        )
+
+        teamService.shuffleTeams(3)
+
+        val teamEntries = state.teams.values.sortedBy { it.players.size }
+        assertThat(teamEntries).hasSize(2)
+        assertThat(teamEntries[0].players).hasSize(1)
+        assertThat(teamEntries[1].players).hasSize(1)
+    }
+
+    @Test
     fun `Given only 2 presets, when shuffling into 3 teams, a temporary team should be created`() {
         val state = fakeBingoState()
         val teamManager = mockk<ITeamManager>().also {
