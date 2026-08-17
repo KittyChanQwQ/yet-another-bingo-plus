@@ -110,7 +110,7 @@ German translations were contributed by Butterkeks and CryptoGamer1612!<br>
 Hungarian translations were contributed by petya0927 and Remarci!<br>
 Italian translations were contributed by noah, sculk1, and fmixolydian!<br>
 Japanese translations were contributed by おほしさまちゃんねる!<br>
-Korean translations were contributed by LegendLier!<br>
+Korean translations were contributed by LegendLier and enarkay!<br>
 Literary Chinese translations were contributed by Sorajima Asugawa!<br>
 Polish translations were contributed by Toniemax and Jimmy Green!<br>
 Portuguese translations were contributed by Lucsdev_ and NotKweerk!<br>
