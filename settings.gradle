@@ -28,5 +28,6 @@ include 'integration-journeymap'
 include 'integration-xaeros'
 include 'mc26.1'
 include 'mc26.2'
+include 'mc26.3'
 include 'platform'
 
