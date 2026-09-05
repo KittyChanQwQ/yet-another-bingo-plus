@@ -1,0 +1,26 @@
+{
+  "type": "one_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.simplified.one_of_explorer_map",
+      "fallback": "Any Explorer Map"
+    },
+    "item": "minecraft:abandoned_camp_map"
+  },
+  "objectives": [
+    "minecraft:abandoned_camp_map",
+    "minecraft:buried_ancient_city_map",
+    "minecraft:buried_mineshaft_map",
+    "minecraft:buried_treasure_map",
+    "minecraft:buried_trial_chambers_map",
+    "minecraft:desert_pyramid_map",
+    "minecraft:jungle_pyramid_map",
+    "minecraft:warm_ocean_ruins_map",
+    "minecraft:woodland_mansion_map"
+  ],
+  "validate": {
+    "objectives": [
+      "minecraft:abandoned_camp_map"
+    ]
+  }
+}
