@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.impl.screen
 
+import com.mojang.blaze3d.platform.InputConstants
 import me.jfenn.bingo.client.impl.draw.DrawService
 import me.jfenn.bingo.client.impl.screen.button.ButtonImpl
 import me.jfenn.bingo.client.platform.screen.IButton
@@ -22,13 +23,9 @@ open class ScreenHelperImpl(
     override val width get() = screen.width
     override val height get() = screen.height
 
-    companion object {
-        private const val MOUSE_BUTTON_LEFT = 1
-    }
-
     override fun onAfterLeftClick(callback: (Vector2i) -> Unit) {
         ScreenMouseEvents.afterMouseClick(screen).register { _, click, _ ->
-            if (click.button() == MOUSE_BUTTON_LEFT) {
+            if (click.button() == InputConstants.MOUSE_BUTTON_LEFT) {
                 callback(Vector2i(click.x.toInt(), click.y.toInt()))
                 true
             } else false

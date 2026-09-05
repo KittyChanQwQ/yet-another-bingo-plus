@@ -12,10 +12,7 @@ import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.state.ClientCard
 import me.jfenn.bingo.client.common.utils.Interpolate
-import me.jfenn.bingo.client.platform.ClientPacket
-import me.jfenn.bingo.client.platform.IClient
-import me.jfenn.bingo.client.platform.IKeyBindingManager
-import me.jfenn.bingo.client.platform.IOptionsAccessor
+import me.jfenn.bingo.client.platform.*
 import me.jfenn.bingo.client.platform.event.model.*
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
@@ -42,7 +39,6 @@ import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ServerEvent
 import me.jfenn.bingo.platform.resource.IResourceManager
 import net.minecraft.client.gui.screens.ChatScreen
-import org.lwjgl.glfw.GLFW
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -68,13 +64,13 @@ internal class BingoHudController(
     private var openCardKeyAlreadyPressed: Boolean = false
     private val openCardKey = keyBindingManager.registerKey(
         KEYBIND_OPEN_CARD,
-        GLFW.GLFW_KEY_Y,
+        KeyCode.KEY_Y,
         StringKey.FullName.key,
     )
 
     private val toggleHudKey = keyBindingManager.registerKey(
         KEYBIND_TOGGLE_HUD,
-        GLFW.GLFW_KEY_UNKNOWN,
+        KeyCode.UNKNOWN,
         StringKey.FullName.key,
     )
 
