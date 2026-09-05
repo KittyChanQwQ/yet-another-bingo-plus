@@ -34,6 +34,7 @@ internal class SpawnPreloadingController(
     private val state: BingoState,
     private val config: BingoConfig,
     private val spawnService: SpawnService,
+    private val chestService: ChestService,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
     private val playerManager: IPlayerManager,
     private val packet: ServerPacketEvents,
@@ -53,6 +54,22 @@ internal class SpawnPreloadingController(
     }
 
     init {
+        events.onEnter(GameState.STARTING) {
+            if (state.isLobbyMode) {
+                // spread player teams to spawnpoint
+                spawnService.createSpawnpoints()
+                    .thenRunAsync({
+                        chestService.createChestSpawnpoints()
+
+                        // change to the loading state (until all players have loaded terrain)
+                        state.changeState(eventBus, GameState.PRELOADING)
+                    }, serverTaskExecutor)
+            } else {
+                // change to the loading state (until all players have loaded terrain)
+                state.changeState(eventBus, GameState.PRELOADING)
+            }
+        }
+
         events.onEnter(GameState.PRELOADING) {
             val startedLoading = Instant.now()
 

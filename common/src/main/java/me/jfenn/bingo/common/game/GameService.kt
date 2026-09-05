@@ -11,8 +11,6 @@ import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.options.format
-import me.jfenn.bingo.common.spawn.ChestService
-import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.WriteStatsService
@@ -30,17 +28,13 @@ import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.text.TextAction
-import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import java.time.Instant
 
 internal class GameService(
     private val state: BingoState,
     private val options: BingoOptions,
-    private val server: MinecraftServer,
     private val eventBus: IEventBus,
-    private val spawnService: SpawnService,
-    private val chestService: ChestService,
     private val teamService: TeamService,
     private val configService: ConfigService,
     private val cardService: CardService,
@@ -194,23 +188,7 @@ internal class GameService(
 
         // change to the starting state (ensures that start cannot be used again, if this is async)
         state.changeState(eventBus, GameState.STARTING)
-
-        if (state.isLobbyMode) {
-            // spread player teams to spawnpoint
-            spawnService.createSpawnpoints()
-                .thenRunAsync({
-                    chestService.createChestSpawnpoints()
-
-                    // change to the loading state (until all players have loaded terrain)
-                    state.changeState(eventBus, GameState.PRELOADING)
-                }, server)
-        } else {
-            // change to the loading state (until all players have loaded terrain)
-            state.changeState(eventBus, GameState.PRELOADING)
-        }
-
         broadcastStart()
-
         return true
     }
 
