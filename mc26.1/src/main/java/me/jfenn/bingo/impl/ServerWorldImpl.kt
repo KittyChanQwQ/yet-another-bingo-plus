@@ -250,7 +250,7 @@ class ServerWorldImpl(
     override val coordinateScale: Double
         get() = world.dimensionType().coordinateScale()
     override val logicalHeight: Int
-        get() = world.height
+        get() = world.dimensionType().logicalHeight()
     override val bottomY: Int
         get() = world.minY
     override val seaLevel: Int
