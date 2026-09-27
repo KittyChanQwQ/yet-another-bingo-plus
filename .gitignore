@@ -47,3 +47,4 @@ crowdin.json
 *.log
 /docs
 drawing.svg
+TODO.md
