@@ -55,6 +55,7 @@ public abstract class PlayerEntityMixin {
                     }
                 }
 
+                stack.setCount(0);
                 ci.setReturnValue(null);
                 ci.cancel();
             }
