@@ -10,7 +10,7 @@
 # https://github.com/gradle/gradle
 
 Test:
-  image: gradle:9.5.0-jdk25
+  image: gradle:9.7.1-jdk25
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
     - gradle --build-cache --no-parallel assemble
@@ -32,7 +32,7 @@ Test:
       - mc*/build/libs/*.jar
 
 Sync README:
-  image: gradle:9.5.0-jdk25
+  image: gradle:9.7.1-jdk25
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
     - gradle --build-cache -no-parallel :modrinthSyncBody
@@ -48,7 +48,7 @@ Sync README:
         - README.md
 
 Build and Deploy:
-  image: gradle:9.5.0-jdk25
+  image: gradle:9.7.1-jdk25
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
     - gradle --build-cache -no-parallel publish modrinth -x test
