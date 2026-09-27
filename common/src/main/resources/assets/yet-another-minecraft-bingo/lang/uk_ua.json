@@ -379,5 +379,7 @@
   "bingo.options.unlock_recipes": "Відкрити рецепти",
   "bingo.options.unlock_recipes.tooltip": "Робить всі рецепти крафту доступними в книзі рецептів.",
   "bingo.options.value.off": "Вимкнути",
-  "bingo.options.value.on": "Увімкнути"
+  "bingo.options.value.on": "Увімкнути",
+  "bingo.scoreboard.mode": "Режим: %s",
+  "bingo.scoreboard.time": "Час: %s"
 }

@@ -236,6 +236,8 @@
   "bingo.lobby.edit.message2_keep_changes": "Pokud chcete uložit změny, použijte '%s' pro uložení.",
   "bingo.lobby.edit.message3_return": "Jinak použijte '%s' pro návrat do lobby.",
   "bingo.lobby.edit.saving": "Ukládání lobby...",
+  "bingo.lobby.edit.created_team": "Vybírač týmů vytvořen pro %s na %s",
+  "bingo.lobby.edit.created_menu": "Lobby vytvořeno na %s",
   "bingo.lobby.edit.created_spawn": "Bod narození nastaven na %s",
   "bingo.objective.all_of": "Vše z: %s",
   "bingo.objective.example.your_nose": "Tvůj nos",
