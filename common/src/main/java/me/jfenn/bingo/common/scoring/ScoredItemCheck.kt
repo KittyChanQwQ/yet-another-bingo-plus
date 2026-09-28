@@ -360,8 +360,7 @@ internal class ScoredItemCheck(
         }
         if (requiredCards != null && team.countCards() >= requiredCards) {
             // the team has won the game
-            team.winner = TeamWinner(now)
-            team.cardId = null
+            team.state = TeamState.Finished(now)
             // tells [PlayerController] to run updateGameMode which should place winning teams in spectator
             pendingTeamWinners.add(team.key)
         } else {
@@ -388,7 +387,7 @@ internal class ScoredItemCheck(
             }
 
             val nextCard = card.nextCardId?.let { state.getCard(it) }
-            team.cardId = nextCard?.id
+            team.state = TeamState.PendingCard(nextCard?.id)
 
             if (nextCard != null) {
                 onCardAssigned(nextCard, listOf(team))
@@ -431,9 +430,9 @@ internal class ScoredItemCheck(
             val endWhen = options.endGameWhen
         ) {
             is EndWhen.Never -> false
-            is EndWhen.FirstWin -> teams.any { it.isWinner() }
-            is EndWhen.TeamsWin -> teams.count { it.isWinner() } >= endWhen.teams
-            is EndWhen.AllWin -> teams.all { it.isWinner() }
+            is EndWhen.FirstWin -> teams.any { it.isFinished() }
+            is EndWhen.TeamsWin -> teams.count { it.isFinished() } >= endWhen.teams
+            is EndWhen.AllWin -> teams.all { it.isFinished() }
         }
 
         if (shouldEnd) {
@@ -444,7 +443,7 @@ internal class ScoredItemCheck(
 
         val finishedTeams = cardCompletedPackets
             .mapNotNull { (teamKey, _) -> state.teams[teamKey] }
-            .filter { it.isWinner() }
+            .filter { it.isFinished() }
 
         // Notify players that the game is not ending because of endGameWhenComplete
         val message = text.string(StringKey.GameNotEndingComplete)
@@ -488,9 +487,19 @@ internal class ScoredItemCheck(
         }
 
         // if a team overruns / is missing a card, assign one!
-        val teamsWithoutCards = teams
-            .filter { !it.isWinner() }
-            .filter { team -> team.cardId == null || state.cards.none { it.id == team.cardId } }
+        val teamsWithoutCards = mutableListOf<BingoTeam>()
+        for (team in teams) {
+            when (val teamState = team.state) {
+                is TeamState.PendingCard -> {
+                    if (teamState.cardId != null && state.cards.any { it.id == teamState.cardId }) {
+                        team.state = TeamState.Playing(teamState.cardId)
+                    } else {
+                        teamsWithoutCards.add(team)
+                    }
+                }
+                else -> {}
+            }
+        }
 
         if (teamsWithoutCards.isNotEmpty()) {
             val newCard = cardService.generate(
@@ -503,7 +512,7 @@ internal class ScoredItemCheck(
             state.pushCardTail(newCard)
 
             teamsWithoutCards.forEach {
-                it.cardId = newCard.id
+                it.state = TeamState.Playing(newCard.id)
             }
 
             onCardAssigned(newCard, teamsWithoutCards)

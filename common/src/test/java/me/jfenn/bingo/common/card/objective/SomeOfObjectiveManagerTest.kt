@@ -12,6 +12,7 @@ import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.team.OfflinePlayerCache
 import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.platform.IPlayerHandle
@@ -152,7 +153,7 @@ class SomeOfObjectiveManagerTest {
         every { it.players } returns mutableSetOf(player)
         every { it.cardId } returns CARD_ID
         every { it.isPlaying() } returns true
-        every { it.winner } returns null
+        every { it.state } returns TeamState.Playing(CARD_ID)
     }
 
     private fun mockHandle(profile: PlayerProfile) = mockk<IPlayerHandle>(relaxed = true).also {

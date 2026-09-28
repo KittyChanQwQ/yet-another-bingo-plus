@@ -10,7 +10,9 @@ import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.team.TeamScore
+import java.time.Instant
 
 @Serializable
 internal sealed interface StalemateReason {
@@ -160,9 +162,27 @@ internal object ScoreService {
     }
 
     fun getLeading(state: BingoState, allowTies: Boolean = false): BingoTeam? {
-        return getLeadingByCards(state, false)
+        return getLeadingByCompletion(state, allowTies)
+            ?: getLeadingByCards(state, false)
                 ?: getLeadingByLines(state, false)
                     ?: getLeadingByItems(state, allowTies)
+    }
+
+    fun getLeadingByCompletion(state: BingoState, allowTies: Boolean = false): BingoTeam? {
+        var min: BingoTeam? = null
+        var minCompletion: Instant = Instant.MIN
+        for (team in state.getRegisteredTeams()) {
+            val teamCompletion = (team.state as? TeamState.Finished)?.completedAt ?: continue
+
+            if (teamCompletion < minCompletion) {
+                min = team
+                minCompletion = teamCompletion
+            } else if (teamCompletion == minCompletion && !allowTies) {
+                min = null
+            }
+        }
+
+        return min
     }
 
     fun getLeadingByCards(state: BingoState, allowTies: Boolean = false): BingoTeam? {

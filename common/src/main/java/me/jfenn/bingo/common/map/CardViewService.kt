@@ -26,7 +26,6 @@ import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.player.IContainerMenu
 import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.IText
-import me.jfenn.bingo.stats.sql.Game
 import java.util.*
 
 internal class CardViewService(
@@ -173,7 +172,7 @@ internal class CardViewService(
 
     fun isViewingSpectatorCards(player: IPlayerHandle): Boolean {
         val team = teamService.getPlayerTeam(player)
-        val canViewSpectatorCards = (team == null || team.isWinner()) && permissions.hasPermission(
+        val canViewSpectatorCards = (team == null || team.isFinished()) && permissions.hasPermission(
             player,
             Permission.SPECTATOR_VIEW_CARDS
         )
@@ -218,7 +217,7 @@ internal class CardViewService(
                 !isFreeSpace &&
                 // If the team has won or the state is POSTGAME, tiles are no longer hidden
                 state.state != GameState.POSTGAME &&
-                team?.isWinner() != true
+                team?.isFinished() != true
         val isLocked =
             card.options.isLockoutMode && objective.hasAnyAchieved() && team != null && !objective.hasTeamAchieved(team.key)
         val isAchieved = team != null && objective.hasTeamAchieved(team.key)

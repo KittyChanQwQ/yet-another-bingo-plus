@@ -67,7 +67,7 @@ internal class WriteStatsService(
             duration = state.ingameDuration() ?: Duration.ZERO,
             playerCount = teams.sumOf { it.players.size },
             // the game is a draw if nobody won and there is more than one team
-            isDraw = teams.none { it.isWinner() } && teams.size > 1,
+            isDraw = teams.none { it.isFinished() } && teams.size > 1,
             isForfeit = state.isForfeit,
             hostId = config.statsHostId,
         )
@@ -77,7 +77,7 @@ internal class WriteStatsService(
                 id = team.key,
                 gameId = insertGame.id,
                 name = serializers.json.encodeToString(team.getSimpleName()),
-                isWinner = team.isWinner()
+                isWinner = team.isFinished()
             ).also { insertTeams.add(it) }
 
             for (player in team.players) {

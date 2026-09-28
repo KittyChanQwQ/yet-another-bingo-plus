@@ -9,7 +9,6 @@ import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scoring.ScoreRanking
 import me.jfenn.bingo.common.scoring.ScoreRankingService
 import me.jfenn.bingo.common.scoring.ScoreService
-import me.jfenn.bingo.common.scoring.StalemateReason
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.stats.StatsService
 import me.jfenn.bingo.common.team.BingoTeam
@@ -127,22 +126,9 @@ internal class GameOverService(
         )?.formatted(Formatting.YELLOW)
     }
 
-    private fun getTeamDuration(team: BingoTeam): Duration? {
-        return team.winner?.instant?.let { completedAt ->
-            Duration.between(state.startedAt ?: completedAt, completedAt)
-        }
-            ?.plus(state.timeAdjustment)
-            ?.minus(state.timeOffline)
-    }
-
     fun getGameInfo(reason: GameEndReason?, endedAt: Instant): GameOverInfo {
-        val winningTeams = state.getRegisteredTeams()
-            .filter { it.isWinner() }
-
-        // The winning team, if there is only one winner
-        val winningTeam = winningTeams
-            .takeIf { it.size == 1 }
-            ?.firstOrNull()
+        // The winning team, if there is one
+        val winningTeam = ScoreService.getLeadingByCompletion(state)
 
         val leadingTeam =
             ScoreService.getLeadingByCards(state)?.let { LeadingTeam.Cards(it.key) }
@@ -173,7 +159,7 @@ internal class GameOverService(
         // ... and the game was actually completed & won by a team
         val isBestTime = (prevBestTime == null || gameDuration?.let { it < prevBestTime } == true)
                 && !state.isForfeit
-                && winningTeams.isNotEmpty()
+                && state.getRegisteredTeams().any { it.isFinished() }
 
         val scoreRankings = ScoreRankingService.getScoreRankings(state)
             .let { rankings ->
@@ -201,12 +187,12 @@ internal class GameOverService(
     }
 
     private fun getPlayerInfo(team: BingoTeam, player: PlayerProfile): GameOverPlayerInfo {
-        val isWinner = team.isWinner()
+        val isWinner = team.isFinished()
 
         // must align with the logic in WriteStatsService
         // - a game is a draw if there is at least one opponent and no winning team
         val teams = state.getRegisteredTeams()
-        val isDraw = teams.none { it.isWinner() } && teams.size > 1
+        val isDraw = teams.none { it.isFinished() } && teams.size > 1
 
         val winStreak = when {
             isWinner -> stats.getPlayerWinStreak(player.uuid) + 1

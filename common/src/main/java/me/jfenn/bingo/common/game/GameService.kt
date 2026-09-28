@@ -14,6 +14,7 @@ import me.jfenn.bingo.common.options.format
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.WriteStatsService
+import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.team.ShuffleTeamsCommand
 import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamService
@@ -201,7 +202,6 @@ internal class GameService(
             val card = state.cards.find { it.id == team.cardId }
             val completedCard = team.completedCards.find { it.card.id == team.cardId }
             if (card != null && completedCard == null) {
-                team.cardId = null
                 team.completedCards += TeamCompletedCard(
                     card = card.copy().also { objectiveManager.init(it) },
                     completedAt = endedAt,

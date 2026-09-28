@@ -15,7 +15,6 @@ import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.HoverAction
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.text.ITextSerialized
-import me.jfenn.bingo.platform.utils.UuidAsString
 import net.minecraft.ChatFormatting
 import net.minecraft.server.level.ServerPlayer
 import java.time.Instant
@@ -37,13 +36,12 @@ internal data class BingoTeam(
     val symbol: String?,
     var textColor: Formatting,
     val isTemporary: Boolean = false,
-    var cardId: UuidAsString? = null,
+    var state: TeamState = TeamState.PendingCard(null),
     var currentScore: TeamScore = TeamScore.ZERO,
     /**
      * Used when winCondition=ReplaceItems to track scored lines/items that no longer exist on the card
      */
     var persistentScore: TeamScore = TeamScore.ZERO,
-    var winner: TeamWinner? = null,
     val completedCards: MutableList<TeamCompletedCard> = mutableListOf(),
     var spawnpoint: BlockPositionType? = null,
     var chestSpawnpoint: BlockPositionType? = null,
@@ -54,6 +52,8 @@ internal data class BingoTeam(
 
     @Transient
     var scoreUpdatedAt: Instant = Instant.MIN
+
+    val cardId get() = (state as? TeamState.Playing)?.cardId
 
     /**
      * Creates a copy of the team that does not share any mutable
@@ -95,9 +95,9 @@ internal data class BingoTeam(
         )
     }
 
-    fun isWinner(): Boolean = this.winner != null
+    fun isFinished(): Boolean = this.state is TeamState.Finished
 
-    fun isPlaying() = !isWinner()
+    fun isPlaying() = !isFinished()
 
     fun includesPlayer(player: IPlayerHandle): Boolean {
         return players.any { it.uuid == player.uuid }

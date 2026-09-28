@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamScore
-import me.jfenn.bingo.common.team.TeamWinner
+import me.jfenn.bingo.common.team.TeamState
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.Instant
@@ -20,7 +20,7 @@ class ScoreRankingServiceTest {
                 mockTeam(
                     name = "yellow",
                     score = TeamScore(25, 5, 0),
-                    winner = TeamWinner(Instant.ofEpochSecond(1746468305)),
+                    state = TeamState.Finished(Instant.ofEpochSecond(1746468305)),
                 ),
             )
         )
@@ -95,12 +95,12 @@ class ScoreRankingServiceTest {
                 mockTeam(
                     name = "green",
                     score = TeamScore(25, 5, 0),
-                    winner = TeamWinner(Instant.ofEpochSecond(1746471905)),
+                    state = TeamState.Finished(Instant.ofEpochSecond(1746471905)),
                 ),
                 mockTeam(
                     name = "yellow",
                     score = TeamScore(25, 5, 0),
-                    winner = TeamWinner(Instant.ofEpochSecond(1746468305)),
+                    state = TeamState.Finished(Instant.ofEpochSecond(1746468305)),
                 ),
             )
         )

@@ -2,15 +2,17 @@ package me.jfenn.bingo.common.scoring
 
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
+import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.utils.minus
 import java.time.Duration
 
 internal object ScoreRankingService {
 
     private fun getTeamDuration(state: BingoState, team: BingoTeam): Duration? {
-        return team.winner?.instant?.let { completedAt ->
-            completedAt - (state.startedAt ?: completedAt)
-        }
+        return (team.state as? TeamState.Finished)
+            ?.let {
+                it.completedAt - (state.startedAt ?: it.completedAt)
+            }
             ?.plus(state.timeAdjustment)
             ?.minus(state.timeOffline)
     }

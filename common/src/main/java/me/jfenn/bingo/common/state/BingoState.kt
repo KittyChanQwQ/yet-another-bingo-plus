@@ -15,6 +15,7 @@ import me.jfenn.bingo.common.scoring.GameMessage
 import me.jfenn.bingo.common.spawn.PlayerState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.generated.StringKey
@@ -85,7 +86,7 @@ data class BingoState internal constructor(
      */
     fun resetTeamCards() {
         for (team in teams.values) {
-            team.cardId = cards.first().id
+            team.state = TeamState.Playing(cards.first().id)
         }
     }
 
@@ -109,7 +110,7 @@ data class BingoState internal constructor(
         val firstCard = cards.first()
         for (team in teams.values) {
             if (team.cardId == removedCard.id)
-                team.cardId = firstCard.id
+                team.state = TeamState.Playing(firstCard.id)
         }
     }
 
@@ -122,7 +123,7 @@ data class BingoState internal constructor(
     }
 
     internal fun getCard(team: BingoTeam): BingoCard? {
-        return if (team.isWinner() || state == GameState.POSTGAME) {
+        return if (team.isFinished() || state == GameState.POSTGAME) {
             team.completedCards.lastOrNull()?.card
         } else {
             team.cardId?.let { cardId -> cards.find { it.id == cardId } }
@@ -147,7 +148,7 @@ data class BingoState internal constructor(
     internal fun registerTeam(team: BingoTeam): BingoTeam {
         return teams.getOrPut(team.key) {
             team.newInstance().apply {
-                cardId = cards.first().id
+                state = TeamState.Playing(cards.first().id)
             }
         }
     }

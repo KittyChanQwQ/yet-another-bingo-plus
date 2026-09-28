@@ -63,7 +63,7 @@ internal class MapItemService(
             setDisplay(
                 name = textProvider.string(
                     when {
-                        team.winner != null -> StringKey.CardTeamCardMementoWon
+                        team.isFinished() -> StringKey.CardTeamCardMementoWon
                         else -> StringKey.CardTeamCardMementoLost
                     }
                 ).formatted(team.textColor, Formatting.ITALIC),

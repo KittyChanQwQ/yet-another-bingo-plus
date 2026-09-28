@@ -5,21 +5,21 @@ import io.mockk.mockk
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.team.TeamScore
-import me.jfenn.bingo.common.team.TeamWinner
 import java.time.Duration
 import java.time.Instant
 
 internal fun mockTeam(
     name: String,
     score: TeamScore,
-    winner: TeamWinner? = null,
+    state: TeamState = TeamState.Playing(mockk()),
 ) = mockk<BingoTeam>().also {
     every { it.id } returns name
     every { it.key } returns BingoTeamKey(name)
     every { it.countCards() } returns score.cards
     every { it.score } returns score
-    every { it.winner } returns winner
+    every { it.state } returns state
 }
 
 internal fun mockState(

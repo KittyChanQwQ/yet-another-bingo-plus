@@ -13,6 +13,7 @@ import me.jfenn.bingo.common.options.withOptionsService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.commands.CommandArgument
@@ -175,7 +176,7 @@ class BingoCardCommand(
         val card = getCardTags()[cardTag]
             ?: throw IllegalArgumentException("Could not find card '$cardTag'")
 
-        team.cardId = card.id
+        team.state = TeamState.Playing(card.id)
         sendFeedback(
             text.empty()
                 .append("Team ")
@@ -257,7 +258,7 @@ class BingoCardCommand(
 
                             state.teams.values
                                 .filter { it.cardId == null || it.cardId == prevCard.id }
-                                .forEach { it.cardId = newCard.id }
+                                .forEach { it.state = TeamState.Playing(newCard.id) }
                         }
                     }
 

@@ -83,7 +83,7 @@ internal class VoiceGroupController(
             team == null -> spectatorsGroup
             isUsingCombinedGroup() -> combinedGroup
             // if the game is _not_ using a combined group, move winning teams to spectator
-            team.isWinner() -> spectatorsGroup
+            team.isFinished() -> spectatorsGroup
             else -> createTeamGroup(team)
         }
     }

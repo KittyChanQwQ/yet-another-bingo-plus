@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.options.*
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
@@ -66,7 +67,7 @@ internal class GameResumeService(
 
         // Find if any card can just be resumed with no changes
         val canResumeAllCards = teams.all { team ->
-            team.winner == null && team.completedCards.lastOrNull()?.isWinner == false
+            team.state !is TeamState.Finished && team.completedCards.lastOrNull()?.isWinner == false
         }
 
         // Find if any winning card has a goal that can be increased
@@ -86,16 +87,16 @@ internal class GameResumeService(
             // Resume each team's last completed card
             for (team in teams) {
                 val resumeCard = team.completedCards.removeLast()
-                team.cardId = resumeCard.card.id
+                team.state = TeamState.Playing(resumeCard.card.id)
             }
         } else if (canIncreaseCardGoal != null) {
             val cardId = canIncreaseCardGoal.card.id
 
-            // Remove the team's last completedCard and restore the cardIds
+            // Reset each team to the Playing state
             for (team in teams) {
-                team.cardId = cardId
-                team.completedCards.removeIf { it.card.id == cardId }
-                team.winner = null
+                team.completedCards.removeLastOrNull()?.let { lastCard ->
+                    team.state = TeamState.Playing(lastCard.card.id)
+                }
             }
 
             // if the game ended because a team won, and the goal wasn't full card, increase it!
@@ -115,14 +116,22 @@ internal class GameResumeService(
                 state.restoreOptions.add(RestoreGoal(actualCard.options.goal))
                 optionsService.setGoal(actualCard, newGoal)
             }
-        } else if (teams.any { !it.isWinner() }) {
+        } else if (teams.any { !it.isFinished() }) {
+            // Reset each team to the Playing state
+            for (team in teams) {
+                team.completedCards.removeLastOrNull()?.let { lastCard ->
+                    team.state = TeamState.Playing(lastCard.card.id)
+                }
+            }
+
             // if there are teams that aren't done yet, set endWhen=AllWin
             state.restoreOptions.add(RestoreEndWhen(options.endGameWhen))
             optionsService.endGameWhen = EndWhen.AllWin
         } else {
-            // Reset each team to a non-winner state
+            // Set each team to the PendingCard state
             for (team in teams) {
-                team.winner = null
+                val lastCard = team.completedCards.lastOrNull()
+                team.state = TeamState.PendingCard(lastCard?.card?.nextCardId)
             }
 
             // if the team won for another reason (e.g. a multi-card game), set the winCondition to infinite
@@ -132,7 +141,7 @@ internal class GameResumeService(
 
         for (team in teams) {
             // If in lobby mode, restore each player's inventory/position (if they continue the game)
-            if (state.isLobbyMode && !team.isWinner()) {
+            if (state.isLobbyMode && !team.isFinished()) {
                 val players = team.players.iterator()
                 for (player in players) {
                     val playerImpl = playerManager.getPlayer(player.uuid)
