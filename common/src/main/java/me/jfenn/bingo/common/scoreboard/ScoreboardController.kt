@@ -143,15 +143,10 @@ internal class ScoreboardController(
             else -> leadingTeam?.textColor ?: Formatting.WHITE
         }
 
-        val leadingTeamScore = when {
-            leadingTeam == null -> TeamScore(
-                // if the leading team is a tie, find one of the tied teams to get the item/line/card count
-                items = ScoreService.getLeadingByItems(state, allowTies = true)?.score?.items ?: 0,
-                lines = ScoreService.getLeadingByLines(state, allowTies = true)?.score?.lines ?: 0,
-                cards = ScoreService.getLeadingByCards(state, allowTies = true)?.score?.cards ?: 0,
-            )
-            else -> leadingTeam.score
-        }
+        val leadingTeamScore = leadingTeam?.score
+            // if the leading team is a tie, find one of the tied teams to get the item/line/card count
+            ?: ScoreService.getLeading(state, allowTies = true)?.score
+            ?: TeamScore.ZERO
 
         val showLeadingScore = (options.showCompletedItems || options.showCompletedLines) && team != leadingTeam
         val showLeadingScoreCards = isMultiCardWinCondition && leadingTeamScore.cards != team?.score?.cards

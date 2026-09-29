@@ -5,6 +5,7 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import me.jfenn.bingo.api.card.ICard
+import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.team.BingoTeam
@@ -101,7 +102,7 @@ internal class BingoCard(
     fun getTeamScore(team: BingoTeam): TeamScore {
         return TeamScore(
             items = countItems(team),
-            lines = countLines(team),
+            lines = if (options.goal is BingoGoal.Lines) countLines(team) else 0,
             cards = team.countCards(),
         )
     }

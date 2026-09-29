@@ -10,8 +10,8 @@ import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.team.TeamScore
+import me.jfenn.bingo.common.team.TeamState
 import java.time.Instant
 
 @Serializable
@@ -142,124 +142,41 @@ internal object ScoreService {
         }
     }
 
-    fun getComparator(state: BingoState): Comparator<BingoTeam> {
-        val teams = state.getRegisteredTeams()
-        val maxCards = teams.maxOfOrNull { it.countCards() } ?: 0
-        val leadingTeamsByCards = teams.filter { it.countCards() >= maxCards }
-
-        val isLinesGoal = leadingTeamsByCards
-            .mapNotNull { team -> state.cards.find { it.id == team.cardId } }
-            .all { it.options.goal is BingoGoal.Lines }
-
-        return if (isLinesGoal) {
-            compareBy<BingoTeam> { it.score.cards }
-                .thenBy { it.score.lines }
-                .thenBy { it.score.items }
-        } else {
-            compareBy<BingoTeam> { it.score.cards }
-                .thenBy { it.score.items }
-        }
+    private val compareByCompletion = compareByDescending<BingoTeam> {
+        (it.state as? TeamState.Finished)?.completedAt ?: Instant.MAX
     }
 
-    fun getLeading(state: BingoState, allowTies: Boolean = false): BingoTeam? {
-        return getLeadingByCompletion(state, allowTies)
-            ?: getLeadingByCards(state, false)
-                ?: getLeadingByLines(state, false)
-                    ?: getLeadingByItems(state, allowTies)
-    }
+    private val compareByCards = compareByCompletion.thenBy { it.score.cards }
+    private val compareByLines = compareByCards.thenBy { it.score.lines }
+    private val compareByItems = compareByLines.thenBy { it.score.items}
 
-    fun getLeadingByCompletion(state: BingoState, allowTies: Boolean = false): BingoTeam? {
-        var min: BingoTeam? = null
-        var minCompletion: Instant = Instant.MIN
+    val comparator = compareByItems
+
+    fun getLeading(
+        state: BingoState,
+        allowTies: Boolean = false,
+        comparator: Comparator<BingoTeam> = ScoreService.comparator
+    ): BingoTeam? {
+        var ret: BingoTeam? = null
+        var leadingTeam: BingoTeam? = null
         for (team in state.getRegisteredTeams()) {
-            val teamCompletion = (team.state as? TeamState.Finished)?.completedAt ?: continue
-
-            if (teamCompletion < minCompletion) {
-                min = team
-                minCompletion = teamCompletion
-            } else if (teamCompletion == minCompletion && !allowTies) {
-                min = null
+            val comparison = leadingTeam?.let { comparator.compare(team, it) }
+            if (comparison == null || comparison > 0) {
+                ret = team
+                leadingTeam = team
+            } else if (comparison == 0 && !allowTies) {
+                ret = null
             }
         }
-
-        return min
+        return ret
     }
 
-    fun getLeadingByCards(state: BingoState, allowTies: Boolean = false): BingoTeam? {
-        var max: BingoTeam? = null
-        var maxCards = -1
-        for (team in state.getRegisteredTeams()) {
-            val teamCards = team.score.cards
+    fun getLeadingByCompletion(state: BingoState) = getLeading(state, comparator = compareByCompletion)
 
-            if (teamCards > maxCards) {
-                max = team
-                maxCards = teamCards
-            } else if (teamCards == maxCards && !allowTies) {
-                max = null
-            }
-        }
+    fun getLeadingByCards(state: BingoState, allowTies: Boolean = false) = getLeading(state, allowTies, compareByCards)
 
-        return max
-    }
+    fun getLeadingByLines(state: BingoState, allowTies: Boolean = false) = getLeading(state, allowTies, compareByLines)
 
-    fun getLeadingByLines(state: BingoState, allowTies: Boolean = false): BingoTeam? {
-        val teams = state.getRegisteredTeams()
-        val maxCards = teams.maxOfOrNull { it.countCards() } ?: 0
-        val leadingTeams = teams.filter { it.countCards() >= maxCards }
-
-        val isLinesGoal = leadingTeams
-            .mapNotNull { team -> state.cards.find { it.id == team.cardId } }
-            .all { it.options.goal is BingoGoal.Lines }
-
-        if (!isLinesGoal)
-            return null
-
-        var max: BingoTeam? = null
-        var maxLines = -1
-        for (team in leadingTeams) {
-            val teamLines = team.score.lines
-
-            if (teamLines > maxLines) {
-                max = team
-                maxLines = teamLines
-            } else if (teamLines == maxLines && !allowTies) {
-                max = null
-            }
-        }
-
-        return max
-    }
-
-    fun getLeadingByItems(state: BingoState, allowTies: Boolean = false): BingoTeam? {
-        val teams = state.getRegisteredTeams()
-        val maxCards = teams.maxOfOrNull { it.countCards() } ?: 0
-        val leadingTeamsByCards = teams.filter { it.countCards() >= maxCards }
-
-        val isLinesGoal = leadingTeamsByCards
-            .mapNotNull { team -> state.cards.find { it.id == team.cardId } }
-            .all { it.options.goal is BingoGoal.Lines }
-
-        // If the goal is lines, further restrict leading teams to include teams that are tied by max lines
-        val maxLines = leadingTeamsByCards.maxOfOrNull { it.score.lines } ?: 0
-        val leadingTeams = when {
-            isLinesGoal -> leadingTeamsByCards.filter { it.score.lines == maxLines }
-            else -> leadingTeamsByCards
-        }
-
-        var max: BingoTeam? = null
-        var maxItems = -1
-        for (team in leadingTeams) {
-            val teamItems = team.score.items
-
-            if (teamItems > maxItems) {
-                max = team
-                maxItems = teamItems
-            } else if (teamItems == maxItems && !allowTies) {
-                max = null
-            }
-        }
-
-        return max
-    }
+    fun getLeadingByItems(state: BingoState, allowTies: Boolean = false) = getLeading(state, allowTies, compareByItems)
 
 }

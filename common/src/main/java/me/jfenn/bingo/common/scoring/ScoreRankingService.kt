@@ -18,13 +18,8 @@ internal object ScoreRankingService {
     }
 
     fun getScoreRankings(state: BingoState): List<ScoreRanking> {
-        val scoreRankingComparator = Comparator.comparing<BingoTeam, Duration> { team ->
-            getTeamDuration(state, team) ?: Duration.ofMillis(Long.MAX_VALUE)
-        }
-            .thenByDescending(ScoreService.getComparator(state)) { it }
-
         val scoreRankingScores = state.getRegisteredTeams()
-            .sortedWith(scoreRankingComparator)
+            .sortedWith(ScoreService.comparator.reversed())
             .map { team ->
                 val duration = getTeamDuration(state, team)
 

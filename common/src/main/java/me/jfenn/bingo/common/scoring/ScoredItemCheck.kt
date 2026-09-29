@@ -478,8 +478,7 @@ internal class ScoredItemCheck(
                 // Find the tied team that was most recently updated
                 val tiedTeam = ScoreService.getLeading(state, allowTies = true)
                 if (tiedTeam != null) {
-                    val comparator = ScoreService.getComparator(state)
-                    teams.filter { comparator.compare(it, tiedTeam) == 0 }
+                    teams.filter { ScoreService.comparator.compare(it, tiedTeam) == 0 }
                         .maxByOrNull { it.scoreUpdatedAt }
                         ?.let { scoreUpdateService.sendTeamTied(it) }
                 }
