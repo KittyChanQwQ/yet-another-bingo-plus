@@ -74,14 +74,13 @@ internal class TeamController(
 
                 // If the player has switched teams, update the player UUID sets...
                 // (this is necessary because teams could be changed without us knowing, using /team join)
-                val playerProfile = player.profile
                 val isTeamLeft = state.teams.values
                     .filter { it.key != playerTeam?.key }
                     .any { team ->
-                        team.players.remove(playerProfile)
+                        team.removePlayer(player.uuid)
                     }
 
-                val isTeamJoined = playerTeam?.players?.add(playerProfile) ?: false
+                val isTeamJoined = playerTeam?.addPlayer(player.profile) ?: false
 
                 if (isTeamLeft || isTeamJoined) {
                     log.info("[TeamController] Manually updated teams for '${player.playerName}'")

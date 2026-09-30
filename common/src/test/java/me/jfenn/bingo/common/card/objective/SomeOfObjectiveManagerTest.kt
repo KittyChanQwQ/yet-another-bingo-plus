@@ -12,15 +12,15 @@ import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.BingoTeamKey
-import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.team.OfflinePlayerCache
+import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.player.PlayerProfile
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 class SomeOfObjectiveManagerTest {
 
@@ -126,8 +126,8 @@ class SomeOfObjectiveManagerTest {
     }
 
     private fun tick(card: BingoCard) {
-        val redTeam = mockTeam(red)
-        val blueTeam = mockTeam(blue)
+        val redTeam = fakeTeam(red)
+        val blueTeam = fakeTeam(blue)
         val state = mockk<BingoState>(relaxed = true).also {
             every { it.getRegisteredTeams() } returns listOf(redTeam, blueTeam)
             every { it.teams } returns mutableMapOf(redTeam.key to redTeam, blueTeam.key to blueTeam)
@@ -147,13 +147,12 @@ class SomeOfObjectiveManagerTest {
         ).tick(card)
     }
 
-    private fun mockTeam(player: PlayerProfile) = mockk<BingoTeam>(relaxed = true).also {
-        every { it.id } returns player.name
-        every { it.key } returns BingoTeamKey(player.name)
-        every { it.players } returns mutableSetOf(player)
-        every { it.cardId } returns CARD_ID
-        every { it.isPlaying() } returns true
-        every { it.state } returns TeamState.Playing(CARD_ID)
+    private fun fakeTeam(player: PlayerProfile) = BingoTeam(
+        id = player.name,
+        name = mockk(),
+        state = TeamState.Playing(CARD_ID),
+    ).also { team ->
+        team.addPlayer(player)
     }
 
     private fun mockHandle(profile: PlayerProfile) = mockk<IPlayerHandle>(relaxed = true).also {

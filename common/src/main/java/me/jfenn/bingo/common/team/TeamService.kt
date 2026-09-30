@@ -12,7 +12,6 @@ import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.text.Formatting
 import org.slf4j.Logger
-import kotlin.math.ceil
 import kotlin.math.floor
 
 internal class TeamService(
@@ -64,11 +63,11 @@ internal class TeamService(
         val playerProfile = player.profile
 
         // Remove player from their existing team
-        getPlayerTeam(player)?.players?.remove(playerProfile)
+        getPlayerTeam(player)?.removePlayer(playerProfile.uuid)
 
         state.playersSpectatingIds.remove(player.uuid)
         teamManager.setPlayerTeam(player, createTeam(team))
-        team.players.add(playerProfile)
+        team.addPlayer(playerProfile)
         player.sendMessage(
             text.string(StringKey.LobbyTeamChanged, team.getName(text))
                 .formatted(Formatting.YELLOW)
@@ -82,7 +81,7 @@ internal class TeamService(
 
         if (team != null) {
             teamManager.setPlayerTeam(player, null)
-            val removed = team.players.remove(player.profile)
+            val removed = team.removePlayer(player.uuid)
             if (removed) {
                 eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, null))
             }

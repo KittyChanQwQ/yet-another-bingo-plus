@@ -314,7 +314,7 @@ internal class CardViewService(
             display = CardDisplay(
                 teamColor = team?.mapColor,
                 teamName = getMapName(team),
-                players = team?.players?.toList() ?: emptyList(),
+                players = team?.players?.map { it.profile } ?: emptyList(),
             ),
             tiles = card.entries
                 .map { entry ->

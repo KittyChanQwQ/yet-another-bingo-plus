@@ -113,7 +113,7 @@ internal class StatsObjectiveManager(
             val teamPlayers = state.getRegisteredTeams()
                 .associate { it.key to it.players }
                 .mapValues { (_, players) ->
-                    players.map { offlinePlayerCache.getOfflinePlayer(it) }
+                    players.map { offlinePlayerCache.getOfflinePlayer(it.profile) }
                 }
 
             val teamsProgress = teamPlayers.map { (team, players) ->

@@ -6,6 +6,7 @@ import me.jfenn.bingo.common.chat.CoordsCommand
 import me.jfenn.bingo.common.map.BingoMap
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.BlockPositionType
+import me.jfenn.bingo.common.utils.Vector3dAsArray
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
@@ -15,10 +16,14 @@ import me.jfenn.bingo.platform.text.Formatting
 import me.jfenn.bingo.platform.text.HoverAction
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.text.ITextSerialized
+import me.jfenn.bingo.platform.utils.UuidAsString
 import net.minecraft.ChatFormatting
 import net.minecraft.server.level.ServerPlayer
+import org.joml.Vector3d
 import java.time.Instant
+import java.util.*
 import java.util.concurrent.CompletableFuture
+import kotlin.random.Random
 
 @Serializable
 @JvmInline
@@ -32,9 +37,9 @@ value class BingoTeamKey(
 internal data class BingoTeam(
     val id: String,
     var name: ITextSerialized,
-    val shouldFormatName: Boolean,
-    val symbol: String?,
-    var textColor: Formatting,
+    val shouldFormatName: Boolean = false,
+    val symbol: String? = null,
+    var textColor: Formatting = Formatting.RESET,
     val isTemporary: Boolean = false,
     var state: TeamState = TeamState.PendingCard(null),
     var currentScore: TeamScore = TeamScore.ZERO,
@@ -47,8 +52,23 @@ internal data class BingoTeam(
     var chestSpawnpoint: BlockPositionType? = null,
     val chatCoordinates: MutableList<CoordsCommand.CoordinatesEntry> = mutableListOf(),
     var map: BingoMap? = null,
-    val players: MutableSet<PlayerProfile> = mutableSetOf(),
+    private val playerMap: MutableMap<UuidAsString, Player> = mutableMapOf(),
 ) {
+
+    @Serializable
+    data class Player(
+        val uuid: UuidAsString,
+        val name: String,
+        val randomOffset: Vector3dAsArray = Vector3d(Random.nextDouble(), 0.0, Random.nextDouble()),
+    ) {
+        constructor(profile: PlayerProfile): this(profile.uuid, profile.name)
+        val profile get() = PlayerProfile(uuid, name)
+    }
+
+    val players: Collection<Player> get() = playerMap.values
+    fun player(uuid: UUID) = playerMap[uuid]
+    fun addPlayer(profile: PlayerProfile) = playerMap.putIfAbsent(profile.uuid, Player(profile)) == null
+    fun removePlayer(uuid: UUID) = playerMap.remove(uuid) != null
 
     @Transient
     var scoreUpdatedAt: Instant = Instant.MIN
@@ -63,7 +83,7 @@ internal data class BingoTeam(
         return copy(
             completedCards = mutableListOf(),
             chatCoordinates = mutableListOf(),
-            players = mutableSetOf(),
+            playerMap = mutableMapOf(),
         )
     }
 
@@ -81,36 +101,28 @@ internal data class BingoTeam(
         else -> textColor
     }
 
-    val singlePlayer get() = players.takeIf { it.size == 1 }?.first()
+    val singlePlayer get() = playerMap.values.takeIf { it.size == 1 }?.first()
 
     val score get() = currentScore + persistentScore
-
-    val totalScore: TeamScore get() {
-        val containsScore = completedCards.any { it.card.id == cardId }
-        val scores = completedCards.map { it.score } + (if (containsScore) emptyList() else listOf(score))
-        return TeamScore(
-            cards = score.cards,
-            lines = scores.sumOf { it.lines },
-            items = scores.sumOf { it.items },
-        )
-    }
 
     fun isFinished(): Boolean = this.state is TeamState.Finished
 
     fun isPlaying() = !isFinished()
 
     fun includesPlayer(player: IPlayerHandle): Boolean {
-        return players.any { it.uuid == player.uuid }
+        return playerMap.containsKey(player.uuid)
     }
 
     fun includesPlayer(player: ServerPlayer): Boolean {
-        return players.any { it.uuid == player.uuid }
+        return playerMap.containsKey(player.uuid)
     }
+
+    fun includesPlayer(profile: PlayerProfile) = playerMap.containsKey(profile.uuid)
 
     fun getSimpleName() = name.copy()
 
     fun getSymbolText(textProvider: TextProvider): IText? {
-        return players.takeIf { it.size == 1 }
+        return playerMap.values.takeIf { it.size == 1 }
             ?.firstOrNull()
             ?.let { textProvider.player(it.uuid)?.formatted(ChatFormatting.WHITE)?.append(" ") }
             ?: symbol?.let { textProvider.literal("$it ") }
@@ -119,7 +131,7 @@ internal data class BingoTeam(
     fun getName(
         textProvider: TextProvider,
         playerName: Boolean = false,
-        symbol: Boolean = playerName && players.size == 1,
+        symbol: Boolean = playerName && playerMap.size == 1,
         bracketed: Boolean = true,
         teamNameKey: StringKey? = StringKey.TeamName,
     ): IText {
@@ -137,7 +149,10 @@ internal data class BingoTeam(
                 t.setHoverEvent(
                     HoverAction.ShowText(
                         textProvider.joinText(
-                            list = players.map { textProvider.literal(it.name) },
+                            list = playerMap.values.map {
+                                (textProvider.player(it.uuid)?.append(" ") ?: textProvider.empty())
+                                    .append(it.name)
+                            },
                             separator = textProvider.literal("\n"),
                         )
                     )

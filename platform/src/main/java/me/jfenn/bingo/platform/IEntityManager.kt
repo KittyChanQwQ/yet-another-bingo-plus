@@ -106,6 +106,7 @@ interface IArmorStandEntity : IEntity {
 
 interface IBatEntity : ILivingEntity {
     override val type get() = EntityType.BAT
+    var isResting: Boolean
 }
 
 interface ITntEntity : IEntity {

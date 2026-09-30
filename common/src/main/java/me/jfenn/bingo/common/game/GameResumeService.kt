@@ -142,8 +142,7 @@ internal class GameResumeService(
         for (team in teams) {
             // If in lobby mode, restore each player's inventory/position (if they continue the game)
             if (state.isLobbyMode && !team.isFinished()) {
-                val players = team.players.iterator()
-                for (player in players) {
+                for (player in team.players) {
                     val playerImpl = playerManager.getPlayer(player.uuid)
                     // If a player isn't online when resumed, they'll get reset by PlayerController
                     // (and lose their inventory... bad luck. sorry)

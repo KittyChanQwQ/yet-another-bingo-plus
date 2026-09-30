@@ -286,7 +286,7 @@ class TntEntityImpl(
 }
 
 open class LivingEntityImpl(
-    final override val entity: LivingEntity
+    override val entity: LivingEntity
 ) : ILivingEntity, EntityImpl(entity) {
     override var invulnerable: Boolean by NbtBooleanDelegate("Invulnerable")
     override var noGravity: Boolean by NbtBooleanDelegate("NoGravity")
@@ -335,8 +335,12 @@ open class LivingEntityImpl(
 }
 
 class BatEntityImpl(
-    entity: Bat
-) : IBatEntity, LivingEntityImpl(entity)
+    override val entity: Bat
+) : IBatEntity, LivingEntityImpl(entity) {
+    override var isResting: Boolean
+        get() = entity.isResting
+        set(value) { entity.isResting = value }
+}
 
 class ChestMinecartEntityImpl(
     private val itemStackFactory: IItemStackFactory,

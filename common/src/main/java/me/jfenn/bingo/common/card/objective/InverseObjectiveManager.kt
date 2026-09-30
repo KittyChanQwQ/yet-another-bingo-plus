@@ -79,7 +79,7 @@ internal class InverseObjectiveManager(
                     { (team, player) ->
                         BingoObjectiveCapture(
                             team = team.key,
-                            player = player,
+                            player = player.profile,
                             instant = state.startedAt ?: Instant.MIN
                         )
                     }

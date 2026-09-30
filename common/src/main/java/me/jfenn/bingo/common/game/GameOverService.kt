@@ -138,7 +138,7 @@ internal class GameOverService(
         val playerInfo = buildMap {
             for (team in state.getRegisteredTeams()) {
                 for (player in team.players) {
-                    this[player.uuid] = getPlayerInfo(team, player)
+                    this[player.uuid] = getPlayerInfo(team, player.profile)
                 }
             }
         }

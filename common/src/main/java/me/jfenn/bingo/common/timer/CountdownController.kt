@@ -6,20 +6,18 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.*
-import net.minecraft.server.MinecraftServer
 import org.joml.Vector3d
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 internal class CountdownController(
     events: ScopedEvents,
-    private val server: MinecraftServer,
     private val config: BingoConfig,
     private val state: BingoState,
     private val eventBus: IEventBus,
@@ -34,7 +32,7 @@ internal class CountdownController(
 
     private var countdownDelayTicks: Int? = null
 
-    private val entityMap = mutableMapOf<BingoTeamKey, IBatEntity>()
+    private val entityMap = mutableMapOf<UUID, IBatEntity>()
 
     private val playingPlayerList get() = playerManager.getPlayers()
         .filter { teamService.isPlaying(it) }
@@ -54,36 +52,40 @@ internal class CountdownController(
     }
 
     private fun forcePlayersOnBats() {
+        val world = spawnService.getSpawnDimension()
+
         state.getRegisteredTeams().forEach { team ->
-            val entity = entityMap.getOrPut(team.key) {
-                // Create a new bat entity in the spawn dimension
-                val world = spawnService.getSpawnDimension()
-                val marker = entityManager.createEntity(EntityType.BAT, world)
-                marker.apply {
-                    invulnerable = true
-                    noGravity = true
-                    silent = true
-                    noAI = true
-                    persistenceRequired = true
+            for (teamPlayer in team.players) {
+                val player = playerManager.getPlayer(teamPlayer.uuid) ?: continue
+
+                val entity = entityMap.getOrPut(teamPlayer.uuid) {
+                    // Create a new bat entity in the spawn dimension
+                    val marker = entityManager.createEntity(EntityType.BAT, world)
+                    marker.apply {
+                        invulnerable = true
+                        noGravity = true
+                        silent = true
+                        noAI = true
+                        persistenceRequired = true
+                    }
+
+                    val spawnPoint = team.spawnpoint ?: return@forEach
+                    marker.isResting = false
+                    marker.pos = spawnPoint.toVector3d() + teamPlayer.randomOffset + Vector3d(0.0, -0.3, 0.0)
+                    entityManager.spawnEntity(world, marker)
+
+                    // Make the bat invisible
+                    marker.addEffect(
+                        type = EffectType.INVISIBILITY,
+                        duration = -1,
+                        amplifier = 0,
+                        ambient = false,
+                        visible = false,
+                    )
+
+                    marker
                 }
 
-                val spawnPoint = team.spawnpoint ?: return@forEach
-                marker.pos = spawnPoint.toVector3d() + Vector3d(0.5, -0.4, 0.5)
-                entityManager.spawnEntity(world, marker)
-
-                // Make the bat invisible
-                marker.addEffect(
-                    type = EffectType.INVISIBILITY,
-                    duration = -1,
-                    amplifier = 0,
-                    ambient = false,
-                    visible = false,
-                )
-
-                marker
-            }
-
-            for (player in team.players.mapNotNull { playerManager.getPlayer(it.uuid) }) {
                 player.startRiding(entity, true)
             }
         }

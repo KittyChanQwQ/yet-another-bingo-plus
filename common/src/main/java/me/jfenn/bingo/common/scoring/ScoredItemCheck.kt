@@ -87,7 +87,7 @@ internal class ScoredItemCheck(
                         // find the player that captured the objective
                         val player = objective.players
                             .mapNotNull { (uuid, instant) ->
-                                team.players.find { it.uuid == uuid }?.let { it to instant }
+                                team.player(uuid)?.let { it to instant }
                             }
                             .maxByOrNull { (_, capture) -> capture.instant }
                             ?.first
@@ -104,7 +104,7 @@ internal class ScoredItemCheck(
                         }
 
                         scoreUpdateService.sendItemCaptured(
-                            scoredPlayer = player,
+                            scoredPlayer = player?.profile,
                             team = team,
                             objective = objective,
                             card = card,

@@ -187,7 +187,11 @@ internal class BingoCardsWidget(
             val barOffsetScrolled = (scrollX * barOffsetMax).roundToInt()
 
             val barColorBg = 0x80000000.toInt()
-            val barColorFilled = 0xff6b6b85.toInt()
+            val barColorFilled = when {
+                dragStart == null && isInScrollBarBounds(mouseX, mouseY) -> 0xffb3b3c9.toInt()
+                dragStart != null && isDraggingScrollBar -> 0xffffffff.toInt()
+                else -> 0xff6b6b85.toInt()
+            }
 
             drawService.fill(barX, barY, barX + barOffsetScrolled, barY + barHeight, barColorBg)
             drawService.fill(barX + barOffsetScrolled, barY, barX + barOffsetScrolled + barFilledWidth, barY + barHeight, barColorFilled)

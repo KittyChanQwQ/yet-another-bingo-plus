@@ -7,18 +7,19 @@ import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
+import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IServerWorld
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.ChunkPosition
+import org.joml.Vector3d
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import java.util.function.Function
 import kotlin.math.absoluteValue
 import kotlin.math.sign
-import kotlin.random.Random
 
 internal class SpawnService(
     private val log: Logger,
@@ -137,7 +138,8 @@ internal class SpawnService(
         if (!needsTeleport) return
 
         // random offset for each player to prevent collision grouping
-        player.teleport(world, spawn.toVector3d().add(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()), player.yaw, player.pitch)
+        val randomOffset = team?.player(player.uuid)?.randomOffset ?: Vector3d()
+        player.teleport(world, spawn.toVector3d() + randomOffset, player.yaw, player.pitch)
         player.setSpawnPoint(
             world = world,
             spawn = spawn,

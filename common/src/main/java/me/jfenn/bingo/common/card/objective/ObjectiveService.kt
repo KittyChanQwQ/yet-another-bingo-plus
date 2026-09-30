@@ -24,7 +24,7 @@ internal class ObjectiveService(
     fun getAllTeamPlayers(): Sequence<Pair<BingoTeam, IPlayerHandle>> = sequence {
         for (team in getAllTeams()) {
             for (player in team.players) {
-                yield(Pair(team, offlinePlayerCache.getOfflinePlayer(player)))
+                yield(Pair(team, offlinePlayerCache.getOfflinePlayer(player.profile)))
             }
         }
     }
@@ -37,7 +37,7 @@ internal class ObjectiveService(
     fun getTeamPlayers(card: BingoCard): Sequence<Pair<BingoTeam, IPlayerHandle>> = sequence {
         for (team in getTeams(card)) {
             for (player in team.players) {
-                yield(Pair(team, offlinePlayerCache.getOfflinePlayer(player)))
+                yield(Pair(team, offlinePlayerCache.getOfflinePlayer(player.profile)))
             }
         }
     }
@@ -45,7 +45,7 @@ internal class ObjectiveService(
     fun getPlayersByTeam(card: BingoCard): Map<BingoTeam, List<IPlayerHandle>> {
         return getTeams(card)
             .associateWith { team ->
-                team.players.map { offlinePlayerCache.getOfflinePlayer(it) }
+                team.players.map { offlinePlayerCache.getOfflinePlayer(it.profile) }
             }
     }
 
@@ -112,7 +112,7 @@ internal class ObjectiveService(
                     ?.let { state.teams[it] }
 
                 if (teamHolding != null)
-                    combinedPlayersHolding.filter { teamHolding.players.contains(it.value.player) }.toMutableMap()
+                    combinedPlayersHolding.filter { teamHolding.includesPlayer(it.value.player) }.toMutableMap()
                 else mutableMapOf()
             }
             else -> combinedPlayersHolding.entries
