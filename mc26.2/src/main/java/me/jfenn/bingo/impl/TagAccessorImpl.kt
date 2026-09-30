@@ -93,4 +93,7 @@ class BiomeTagContentsImpl(
 
 class BiomeRegistryEntry(
     val entry: Holder<Biome>
-): IRegistryEntry.Biome
+): IRegistryEntry.Biome {
+    override val registeredName: String
+        get() = entry.registeredName
+}

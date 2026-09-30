@@ -23,5 +23,7 @@ interface IRegistryEntry {
         val isChestLike: Boolean
         val name: IText
     }
-    interface Biome : IRegistryEntry
+    interface Biome : IRegistryEntry {
+        val registeredName: String
+    }
 }

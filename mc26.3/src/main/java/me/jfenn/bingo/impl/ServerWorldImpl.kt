@@ -12,14 +12,13 @@ import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.scope.BingoKoin
 import me.jfenn.bingo.platform.world.IBlockEntity
 import me.jfenn.bingo.platform.world.IChunk
+import net.minecraft.core.QuartPos
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.level.ServerLevel
-import net.minecraft.server.level.Ticket
-import net.minecraft.server.level.TicketType
+import net.minecraft.server.level.*
 import net.minecraft.world.clock.WorldClocks
 import net.minecraft.world.entity.projectile.ProjectileUtil
 import net.minecraft.world.level.ChunkPos
@@ -334,7 +333,13 @@ class ServerWorldImpl(
     }
 
     override fun getBiome(pos: BlockPosition): IRegistryEntry.Biome {
-        return BiomeRegistryEntry(world.getBiome(pos.toBlockPos()))
+        val biome = world.chunkSource.generator.biomeSource.let { biomeSource ->
+            val quartX = QuartPos.fromBlock(pos.x)
+            val quartY = QuartPos.fromBlock(pos.y)
+            val quartZ = QuartPos.fromBlock(pos.z)
+            biomeSource.createCachingResolver(world.chunkSource.randomState()).getNoiseBiome(quartX, quartY, quartZ)
+        }
+        return BiomeRegistryEntry(biome)
     }
 
     private val taskExecutor = Executors.createServerTaskExecutor(serverOrThrow)

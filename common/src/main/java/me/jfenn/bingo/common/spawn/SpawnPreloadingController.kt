@@ -20,6 +20,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Semaphore
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -43,6 +44,7 @@ internal class SpawnPreloadingController(
 ) : BingoComponent() {
 
     private var chunkFutureList: List<CompletableFuture<*>> = emptyList()
+    private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors() * 4)
 
     private fun isWithinDistance(dx: Int, dz: Int, distance: Int): Boolean {
         val deltaX = max(0, dx.absoluteValue - 1)
@@ -84,24 +86,34 @@ internal class SpawnPreloadingController(
             }
 
             val chunks = state.getRegisteredTeams()
-                .mapNotNull { it.spawnpoint }
-                .flatMap { (x, z) ->
-                    chunkOffsets
-                        .map { (offsetX, offsetZ) ->
-                            ChunkPosition(x + offsetX, z + offsetZ)
-                        }
+                .mapNotNull { it.spawnpoint?.toChunkPos() }
+                .flatMap { spawnpoint ->
+                    chunkOffsets.map { spawnpoint + it }
                 }
                 .toSet()
 
             log.info("[SpawnPreloadingController] Pre-generating ${chunks.size} chunks within a view distance of ${viewDistance}...")
             val futures = chunks.map { chunk ->
-                world.getChunkAsync(chunk)
+                var startedLoadingChunk: Instant = startedLoading
+                CompletableFuture.runAsync {
+                    try {
+                        semaphore.acquire();
+                    } catch (e: InterruptedException) {
+                        Thread.currentThread().interrupt();
+                        throw IllegalStateException(e);
+                    }
+                }
+                    .thenCompose {
+                        startedLoadingChunk = Instant.now()
+                        world.getChunkAsync(chunk)
+                    }
                     .whenComplete { _, _ ->
                         log.debug(
                             "[SpawnPreloadingController] Finished chunk {} in {}",
                             chunk,
-                            Instant.now() - startedLoading
+                            Instant.now() - startedLoadingChunk
                         )
+                        semaphore.release()
                     }
             }
 

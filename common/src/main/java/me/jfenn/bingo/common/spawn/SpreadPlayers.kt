@@ -82,6 +82,9 @@ internal class SpreadPlayers(
     }
 
     private fun isValidSpawn(chunk: IChunk, groundPos: BlockPosition): Boolean {
+        if (world.isOverworld && groundPos.y <= seaLevel)
+            return false
+
         // scale the groundPos to match overworld positions for the worldBorder
         val groundPosInOverworld = BlockPosition(
             groundPos.x.times(coordinateScale).toInt(),
@@ -90,11 +93,6 @@ internal class SpreadPlayers(
         )
         if (!worldBorder.contains(groundPosInOverworld)) {
             log.debug("Skipping block {} to avoid spawning outside the world border", groundPos)
-            return false
-        }
-
-        if (world.isOverworld && groundPos.y <= seaLevel) {
-            log.debug("Skipping block {} to avoid spawning underwater (y <= {})", groundPos, seaLevel)
             return false
         }
 
@@ -129,7 +127,7 @@ internal class SpreadPlayers(
         for (x in -range..range) {
             for (z in -range..range) {
                 if (x == 0 && z == 0) continue
-                yield(BlockPosition(pos.x + x, pos.y, pos.z + z))
+                yield(pos.move(x = x, z = z))
             }
         }
     }
@@ -191,10 +189,6 @@ internal class SpreadPlayers(
                     val height = heightmap.get(x, z)
                     chunk.getBlockPos(x, height - 1, z)
                 }
-                .filter {
-                    // if the block is below sea level, skip it!
-                    !(world.isOverworld && it.y <= seaLevel)
-                }
                 .find { pos ->
                     isValidSpawn(chunk, pos) && adjacentBlocks(pos, 1).all { isValidSpawn(chunk, it) }
                 }
@@ -212,14 +206,23 @@ internal class SpreadPlayers(
         val xSign = x.sign.takeIf { it != 0 } ?: 1
 
         // test the rough chunk biome first, to make sure this isn't an ocean before generating the chunk
-        val chunkCenter = BlockPosition(x*16 + 8, logicalHeight, z*16 + 8)
-        val biomeTest = world.getBiome(chunkCenter)
-        if (invalidSpawnBiomes.contains(biomeTest)) {
+        val biomeTestPositions = arrayOf(0, 4, 8, 12)
+        var biomeTest: IRegistryEntry.Biome? = null
+        val isInvalidBiome = biomeTestPositions
+            .flatMap { x -> biomeTestPositions.map { x to it } }
+            .map { (x, y) -> chunk.getBlockPos(x, logicalHeight, y) }
+            .all { pos ->
+                val biome = world.getBiome(pos).also { biomeTest = it }
+                invalidSpawnBiomes.contains(biome)
+            }
+        if (isInvalidBiome) {
+            log.debug("Skipping chunk ($x, $z) to avoid biome ${biomeTest?.registeredName}")
             x += 4 * xSign
             return Result.NextChunk(ChunkPosition(x, z))
         }
 
         // Scale the chunkCenter to match overworld positions for the worldBorder
+        val chunkCenter = chunk.getBlockPos(8, logicalHeight, 8)
         val chunkCenterInOverworld = BlockPosition(
             chunkCenter.x.times(coordinateScale).toInt(),
             chunkCenter.y,
