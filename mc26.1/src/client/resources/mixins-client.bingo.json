@@ -6,7 +6,8 @@
   "mixins": [],
   "client": [
       "CreateWorldScreenAccessor",
-      "DrawContextAccessor"
+      "DrawContextAccessor",
+      "GuiGraphicsExtractorTintMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -145,7 +145,7 @@ internal class BingoMessageRenderer(
         }
 
         if (usingShaderColor) {
-            drawService.setShaderColor(1f, 1f, 1f, 1f)
+            drawService.clearShaderColor()
         }
 
         val messageWidth = message.messageLines.maxOf {

@@ -5,27 +5,29 @@ import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.text.IText
-import java.time.Instant
+import java.util.*
 
 class TooltipPacket(
     val text: List<IText>,
-    val createdAt: Instant = Instant.now(),
+    val entityId: UUID,
 ) {
 
     @Transient
     var clientWrappedText: List<IText>? = null
 
     object V1 : PacketConverter<TooltipPacket> {
-        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "tooltip")
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "tooltip_v2")
 
         override fun fromPacketBuf(buf: IPacketBuf): TooltipPacket {
-            val tooltip = List(buf.readInt()) { buf.readText() }
-            return TooltipPacket(tooltip)
+            return TooltipPacket(
+                text = buf.readList(buf::readText),
+                entityId = buf.readUUID(),
+            )
         }
 
         override fun toPacketBuf(source: TooltipPacket, dest: IPacketBuf) {
-            dest.writeInt(source.text.size)
-            source.text.forEach { dest.writeText(it) }
+            dest.writeList(source.text, dest::writeText)
+            dest.writeUUID(source.entityId)
         }
     }
 }

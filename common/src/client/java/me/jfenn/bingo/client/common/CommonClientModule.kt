@@ -1,9 +1,6 @@
 package me.jfenn.bingo.client.common
 
-import me.jfenn.bingo.client.common.hud.BingoCardImageController
-import me.jfenn.bingo.client.common.hud.BingoHudController
-import me.jfenn.bingo.client.common.hud.BingoMessageRenderer
-import me.jfenn.bingo.client.common.hud.ReadyHudRenderer
+import me.jfenn.bingo.client.common.hud.*
 import me.jfenn.bingo.client.common.hud.card.CardTileRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardManager
@@ -41,6 +38,7 @@ val commonClientModule = module {
     singleOf(::BingoMessageRenderer)
     singleOf(::CardTileRenderer)
     singleOf(::ReadyHudRenderer)
+    singleOf(::TooltipHudRenderer)
     singleOf(BingoHudScreen::Factory)
     singleOf(BingoCardPlacementScreen::Factory)
     singleOf(::BingoHudController) withOptions { createdAtStart() }

@@ -29,7 +29,6 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.GameMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.div
 import me.jfenn.bingo.common.utils.json
 import me.jfenn.bingo.common.utils.milliseconds
 import me.jfenn.bingo.common.utils.minus
@@ -39,6 +38,7 @@ import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ServerEvent
 import me.jfenn.bingo.platform.resource.IResourceManager
 import net.minecraft.client.gui.screens.ChatScreen
+import org.slf4j.Logger
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -51,6 +51,7 @@ internal class BingoHudController(
     private val clientCardManager: ClientCardManager,
     private val itemScoredRenderer: BingoMessageRenderer,
     private val readyHudRenderer: ReadyHudRenderer,
+    private val tooltipHudRenderer: TooltipHudRenderer,
     private val cardScreenFactory: BingoHudScreen.Factory,
     private val state: BingoHudState,
     private val text: TextProvider,
@@ -58,6 +59,7 @@ internal class BingoHudController(
     packetEvents: ClientPacketEvents,
     private val eventBus: IEventBus,
     private val client: IClient,
+    private val log: Logger
 ) : BingoComponent() {
 
     private var cardHudWasClicked: Boolean = false
@@ -229,33 +231,7 @@ internal class BingoHudController(
             width = 100
         )
 
-        val now = state.now
-        val tooltipPacket = state.tooltip
-        val tooltipText = tooltipPacket?.text?.let { tooltipText ->
-            // Get or create clientWrappedText
-            tooltipPacket.clientWrappedText
-                ?: tooltipText.flatMap { line -> drawService.font.wrapLines(line, 200) }
-                    .also { tooltipPacket.clientWrappedText = it }
-        }
-        val tooltipStartedAt = state.tooltipStartedAt ?: Instant.MIN
-        if (tooltipText != null && client.screen == null) {
-            val tooltipSize = tooltipText.maxOfOrNull { drawService.font.getTextWidth(it) } ?: 0
-            val tooltipX = drawService.window.scaledWindowWidth/2 - tooltipSize/2 - 12
-            val tooltipY = (drawService.window.scaledWindowHeight * 0.5).toInt() + 18 + 12
-
-            val fadeIn = ((now - tooltipStartedAt) / 250.milliseconds).coerceIn(0.0, 1.0)
-            val fadeOut = 1.0 - ((now - tooltipPacket.createdAt.plus(100.milliseconds)) / 250.milliseconds).coerceIn(0.0, 1.0)
-
-            drawService.setShaderColor(1f, 1f, 1f, (fadeIn * fadeOut).toFloat())
-            drawService.drawTooltip(tooltipText, tooltipX, tooltipY)
-            drawService.drawTooltipImmediate()
-            drawService.setShaderColor(1f, 1f, 1f, 1f)
-
-            if (fadeOut <= 0.0) {
-                state.tooltip = null
-                state.tooltipStartedAt = null
-            }
-        }
+        tooltipHudRenderer.drawTooltip(drawService)
     }
 
     private fun updateGameOverViews() {
@@ -482,10 +458,7 @@ internal class BingoHudController(
         eventBus.register(packetEvents.readyUpdateV1, ::onReadyUpdate)
 
         eventBus.register(packetEvents.tooltipV1) {
-            state.tooltip = it.packet
-            if (state.tooltipStartedAt == null) {
-                state.tooltipStartedAt = it.packet.createdAt
-            }
+            state.tooltipsByEntity[it.packet.entityId] = it.packet
         }
 
         eventBus.register(HudRenderEvent) {
@@ -592,6 +565,8 @@ internal class BingoHudController(
                 config.client.enableHud = !config.client.enableHud
                 configService.writeConfig(config)
             }
+
+            tooltipHudRenderer.tick()
         }
 
         eventBus.register(ScreenEvent.AfterInit) {

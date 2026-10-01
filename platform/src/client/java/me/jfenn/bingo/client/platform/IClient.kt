@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.platform
 
 import me.jfenn.bingo.client.platform.renderer.IFont
+import me.jfenn.bingo.platform.HitResult
 import net.minecraft.client.gui.screens.Screen
 import org.joml.Vector2i
 import java.util.concurrent.Executor
@@ -14,4 +15,5 @@ interface IClient {
     var screen: Screen?
     fun execute(callback: () -> Unit)
     val executor: Executor
+    fun lookingAt(): HitResult?
 }

@@ -1,13 +1,11 @@
 package me.jfenn.bingo.platform
 
-import me.jfenn.bingo.platform.block.AABB
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.ChunkPosition
 import me.jfenn.bingo.platform.block.IBlockState
 import me.jfenn.bingo.platform.world.IBlockEntity
 import me.jfenn.bingo.platform.world.IChunk
 import net.minecraft.server.level.ServerLevel
-import org.joml.Vector3d
 import java.io.Closeable
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
@@ -53,15 +51,6 @@ interface IServerWorld {
     fun isAir(pos: BlockPosition): Boolean
     fun isEmptyCollision(pos: BlockPosition): Boolean
     fun getBiome(pos: BlockPosition): IRegistryEntry.Biome
-
-    fun getEntityHitResult(
-        except: IEntity,
-        from: Vector3d,
-        to: Vector3d,
-        aabb: AABB,
-        predicate: (IEntity) -> Boolean,
-        maxValue: Double,
-    ): EntityHitResult?
 
     fun addTicket(chunk: ChunkPosition): IChunkTicketHandle
 

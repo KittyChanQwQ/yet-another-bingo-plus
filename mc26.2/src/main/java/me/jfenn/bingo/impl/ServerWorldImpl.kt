@@ -6,7 +6,10 @@ import me.jfenn.bingo.impl.block.BlockStateImpl
 import me.jfenn.bingo.impl.world.ChestBlockEntityImpl
 import me.jfenn.bingo.impl.world.ChunkImpl
 import me.jfenn.bingo.mixinhelper.ServerChunkManagerMixinHelper
-import me.jfenn.bingo.platform.*
+import me.jfenn.bingo.platform.IRegistryEntry
+import me.jfenn.bingo.platform.IServerWorld
+import me.jfenn.bingo.platform.IServerWorldFactory
+import me.jfenn.bingo.platform.IWorldBorder
 import me.jfenn.bingo.platform.block.*
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.scope.BingoKoin
@@ -21,7 +24,6 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.Ticket
 import net.minecraft.server.level.TicketType
 import net.minecraft.world.clock.WorldClocks
-import net.minecraft.world.entity.projectile.ProjectileUtil
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
@@ -35,8 +37,6 @@ import net.minecraft.world.level.saveddata.maps.MapId
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData
 import net.minecraft.world.level.storage.LevelResource
 import net.minecraft.world.level.storage.SavedDataStorage
-import net.minecraft.world.phys.Vec3
-import org.joml.Vector3d
 import org.slf4j.Logger
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
@@ -308,29 +308,6 @@ class ServerWorldImpl(
     override fun isEmptyCollision(pos: BlockPosition): Boolean {
         val blockPos = pos.toBlockPos()
         return world.getBlockState(blockPos).getCollisionShape(world, blockPos).isEmpty
-    }
-
-    override fun getEntityHitResult(
-        except: IEntity,
-        from: Vector3d,
-        to: Vector3d,
-        aabb: AABB,
-        predicate: (IEntity) -> Boolean,
-        maxValue: Double
-    ): EntityHitResult? {
-        require(except is EntityImpl)
-        val hit = ProjectileUtil.getEntityHitResult(
-            except.entity,
-            Vec3(from.x, from.y, from.z),
-            Vec3(to.x, to.y, to.z),
-            net.minecraft.world.phys.AABB(
-                aabb.min.x, aabb.min.y, aabb.min.z,
-                aabb.max.x, aabb.max.y, aabb.max.z,
-            ),
-            { entity -> predicate(EntityImpl(entity)) },
-            maxValue,
-        )
-        return hit?.let { EntityHitResult(EntityImpl(it.entity)) }
     }
 
     override fun getBiome(pos: BlockPosition): IRegistryEntry.Biome {

@@ -35,6 +35,7 @@ interface IDrawService {
     fun disableBlend()
 
     fun setShaderColor(r: Float, g: Float, b: Float, a: Float)
+    fun clearShaderColor()
 
     fun drawText(text: IText, x: Int, y: Int, color: Int, shadow: Boolean = false)
     fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int)

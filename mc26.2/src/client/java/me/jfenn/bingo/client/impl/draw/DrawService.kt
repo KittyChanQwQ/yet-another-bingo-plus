@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.util.ARGB
 import net.minecraft.world.item.ItemStack
 import org.joml.Vector2f
 import org.joml.Vector2i
@@ -51,6 +52,9 @@ class DrawService(
         }
 
     companion object : IDrawServiceFactory, IWindow {
+        @JvmField
+        var COLOR_TINT: Int? = null
+
         override val window: IWindow = this
 
         override val scaleFactor: Double get() = Minecraft.getInstance().window.guiScale.toDouble()
@@ -106,8 +110,11 @@ class DrawService(
     override fun disableBlend() {}
 
     override fun setShaderColor(r: Float, g: Float, b: Float, a: Float) {
-        // context.draw()
-        // TODO: RenderSystem.setShaderColor(r, g, b, a)
+        COLOR_TINT = ARGB.colorFromFloat(a, r, g, b)
+    }
+
+    override fun clearShaderColor() {
+        COLOR_TINT = null
     }
 
     override fun drawText(text: IText, x: Int, y: Int, color: Int, shadow: Boolean) {
@@ -139,7 +146,9 @@ class DrawService(
         }
     }
 
-    override fun drawTooltipImmediate() {}
+    override fun drawTooltipImmediate() {
+        context.extractDeferredElements(0, 0, 1f)
+    }
 
     override fun drawDynamicTexture(texture: INativeImage, x: Int, y: Int, width: Int, height: Int) {
         require(texture is NativeImageImpl)

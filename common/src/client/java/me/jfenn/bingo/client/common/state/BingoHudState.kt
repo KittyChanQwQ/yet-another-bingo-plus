@@ -11,6 +11,7 @@ import me.jfenn.bingo.common.scoring.GameMessagePacket
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.text.IText
 import java.time.Instant
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 internal class BingoHudState(
@@ -22,16 +23,13 @@ internal class BingoHudState(
     val messages: MutableList<ScoreMessage> = mutableListOf(),
     val pastMessages: MutableList<ScoreMessage> = mutableListOf(),
     val images: MutableMap<String, INativeImage> = ConcurrentHashMap(),
-    var tooltip: TooltipPacket? = null,
-    var tooltipStartedAt: Instant? = null,
+    var tooltipsByEntity: MutableMap<UUID, TooltipPacket> = mutableMapOf(),
     var ready: ReadyUpdatePacket? = null,
     var cardColors: BingoCardColors = BingoCardColors(),
 ) {
     fun reset() {
         selectedTeam = null
         resetGameOver()
-        tooltip = null
-        tooltipStartedAt = null
         ready = null
     }
 

@@ -61,7 +61,7 @@ internal class CardTileRenderer(
                 drawService.matrices.pop()
             }
 
-            drawService.setShaderColor(1f, 1f, 1f, 1f)
+            drawService.clearShaderColor()
             drawService.matrices.pop()
         } else if (imageList.size > 1 && image.itemStyle == ItemStyle.ALL_OF) {
             drawService.matrices.push()

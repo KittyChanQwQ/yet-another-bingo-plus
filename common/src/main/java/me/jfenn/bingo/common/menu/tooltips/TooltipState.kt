@@ -12,6 +12,11 @@ internal class TooltipState {
         registeredTooltips[entity.uuid] = tooltip
     }
 
-    operator fun get(uuid: UUID) = registeredTooltips[uuid]
+    fun tooltips() = registeredTooltips.map {
+        TooltipPacket(
+            text = it.value,
+            entityId = it.key,
+        )
+    }
 
 }
