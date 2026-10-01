@@ -2,11 +2,11 @@ package me.jfenn.bingo.common.ready
 
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.game.GameService
+import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
@@ -83,46 +83,34 @@ internal class ReadyController(
 
         for (player in playersToUpdate) {
             val isPlayerReady = readyState.isReady(player.uuid)
-            val title = when {
-                isPlayerReady -> text.string(StringKey.LobbyStartingPlayersReady, updatePacket.readyPlayers, updatePacket.totalPlayers)
-                readyService.canUseReady(player) -> text.string(
-                    StringKey.LobbyStartingReadyUp,
-                    text.keybind("key.sneak"), text.keybind(KEYBIND_OPEN_CARD)
-                )
-                else -> text.empty()
+            val textReadyUp = when {
+                isPlayerReady -> text.string(StringKey.LobbyVotePlayersReady, updatePacket.readyPlayers, updatePacket.totalPlayers)
+                readyService.canUseReady(player) -> when {
+                    packets.readyUpdateV1.isSupported(player) -> text.string(
+                        StringKey.LobbyVoteReadyUpKeybind,
+                        text.keybind("key.sneak"), text.keybind(KEYBIND_OPEN_CARD)
+                    )
+                    else -> text.string(StringKey.LobbyVoteReadyUpCommand, ReadyCommand.READY)
+                }
+                else -> null
             }
-            val subtitle = when {
-                state.state == GameState.PREGAME -> text.string(StringKey.LobbyStartingTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
-                else -> text.string(StringKey.LobbyNextRoundTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
+            val textTimeRemaining = when {
+                state.state == GameState.POSTGAME -> text.string(StringKey.LobbyVoteStartingTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
+                else -> text.string(StringKey.LobbyVoteLeavingTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
             }
 
             val packet = updatePacket.copy(
                 isReady = isPlayerReady,
-                title = title,
-                subtitle = subtitle,
+                title = textReadyUp ?: text.empty(),
+                subtitle = textTimeRemaining,
                 canSendReady = isVotingEnabled && permissions.hasPermission(player, Permission.COMMAND_READY)
             )
 
             when {
                 packets.readyUpdateV1.send(player, packet) -> {}
                 packet.isRunning -> {
-                    val message = when {
-                        !isPlayerReady -> text.string(
-                            when (state.state) {
-                                GameState.POSTGAME -> StringKey.LobbyLeavingInRunCommand
-                                else -> StringKey.LobbyStartingInRunCommand
-                            },
-                            packet.remainingDuration.formatHHMMSS()
-                        )
-                        else -> text.string(
-                            when (state.state) {
-                                GameState.POSTGAME -> StringKey.LobbyLeavingInReady
-                                else -> StringKey.LobbyStartingInReady
-                            },
-                            packet.remainingDuration.formatHHMMSS(),
-                            packet.readyPlayers,
-                            packet.totalPlayers
-                        )
+                    val message = text.empty().append(textTimeRemaining).let {
+                        if (textReadyUp != null) it.append(" - ").append(textReadyUp) else it
                     }
                     player.sendHotbarMessage(message)
                 }

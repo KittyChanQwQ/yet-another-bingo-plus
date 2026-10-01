@@ -157,10 +157,7 @@
   "bingo.game.team_count_3": "3 squadre",
   "bingo.game.team_count_4": "4 squadre",
   "bingo.game.team_count_5": "5 squadre",
-  "bingo.lobby.leaving_in_ready": "Partenza tra %s - %s su %s pronti!",
-  "bingo.lobby.leaving_in_run_command": "Partenza tra %s - digita /ready per partire prima!",
   "bingo.lobby.loading_terrain": "Caricamento terreno...",
-  "bingo.lobby.next_round_time_remaining": "Partenza fra %s",
   "bingo.lobby.sounds_muted": "In questa lobby, alcuni suoni potrebbero essere disattivati per evitare spam.",
-  "bingo.lobby.starting_in_ready": "Inizio tra %s - %s su %s pronti!"
+  "bingo.lobby.vote.leaving_time_remaining": "Partenza fra %s"
 }

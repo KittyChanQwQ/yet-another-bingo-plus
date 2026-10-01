@@ -44,4 +44,8 @@ class ReadyCommand(
             }
         }
     }
+
+    companion object {
+        const val READY = "/ready"
+    }
 }
