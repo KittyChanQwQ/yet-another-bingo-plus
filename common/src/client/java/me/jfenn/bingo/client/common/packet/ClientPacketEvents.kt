@@ -27,6 +27,7 @@ class ClientPacketEvents(
     val cardShuffledV1 = clientNetworking.registerS2C(CardShuffledPacket.V1)
     val cardCompletedV1 = clientNetworking.registerS2C(CardCompletedPacket.V1)
     val cardImageV1 = clientNetworking.registerS2C(CardImagePacket.V1)
+    val gameOverV2 = clientNetworking.registerS2C(GameOverPacket.V2)
     val gameOverV1 = clientNetworking.registerS2C(GameOverPacket.V1)
     val scoredItemV1 = clientNetworking.registerS2C(ScoredItemPacket.V1)
     val scoredItemLostV1 = clientNetworking.registerS2C(ScoredItemLostPacket.V1)

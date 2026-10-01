@@ -46,6 +46,7 @@ internal class ScorePacketReceiver(
             )
         }
 
+        eventBus.register(clientPacketEvents.gameOverV2, ::onGameOver)
         eventBus.register(clientPacketEvents.gameOverV1, ::onGameOver)
 
         eventBus.register(clientPacketEvents.timerV1) { (packet) ->

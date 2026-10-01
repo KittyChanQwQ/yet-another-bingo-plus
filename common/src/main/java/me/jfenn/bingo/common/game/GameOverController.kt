@@ -125,6 +125,7 @@ internal class GameOverController(
             )
 
             when {
+                packetManager.gameOverV2.send(player.player, packet) -> {}
                 packetManager.gameOverV1.send(player.player, packet) -> {}
                 isUpdate -> return
                 openGameOverDialog(player, packet) -> {

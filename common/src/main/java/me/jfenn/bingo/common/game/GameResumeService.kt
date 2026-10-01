@@ -10,6 +10,9 @@ import me.jfenn.bingo.common.options.*
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamState
+import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatStringSmall
+import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
@@ -28,6 +31,7 @@ internal class GameResumeService(
     private val permissions: IPermissionsApi,
     private val playerManager: IPlayerManager,
     private val serverWorldFactory: IServerWorldFactory,
+    private val text: TextProvider,
     private val eventBus: IEventBus,
 ) {
 
@@ -58,11 +62,9 @@ internal class GameResumeService(
         }
     }
 
-    private fun resumeWithContext() {
-        require(state.state == GameState.POSTGAME) { "Game can only be resumed from POSTGAME! (is ${state.state})" }
-        val gameOverInfo = requireNotNull(state.gameOverInfo) { "gameOverInfo is null!" }
-        log.info("[GameService] Resuming the game!")
+    private val isNearTimeLimit get() = state.remainingDuration()?.let { it < Duration.ofSeconds(30) } == true
 
+    private fun getResumeInfo(): GameResumeInfo {
         val teams = state.getRegisteredTeams()
 
         // Find if any card can just be resumed with no changes
@@ -83,22 +85,15 @@ internal class GameResumeService(
             } else null
         }
 
-        if (canResumeAllCards) {
-            // Resume each team's last completed card
-            for (team in teams) {
-                val resumeCard = team.completedCards.removeLast()
-                team.state = TeamState.Playing(resumeCard.card.id)
-            }
+        val timeLimit = options.timeLimit
+
+        return if (canResumeAllCards && isNearTimeLimit && timeLimit != null) {
+            // if all cards are resumable but the time limit expired, extend it by 15 mins
+            GameResumeInfo.IncreaseTimeLimit(timeLimit.plusMinutes(15))
+        } else if (canResumeAllCards) {
+            // if all cards are resumable, just continue the game with no changes
+            GameResumeInfo.KeepPlaying
         } else if (canIncreaseCardGoal != null) {
-            val cardId = canIncreaseCardGoal.card.id
-
-            // Reset each team to the Playing state
-            for (team in teams) {
-                team.completedCards.removeLastOrNull()?.let { lastCard ->
-                    team.state = TeamState.Playing(lastCard.card.id)
-                }
-            }
-
             // if the game ended because a team won, and the goal wasn't full card, increase it!
             val newGoal = if (options.winCondition is BingoWinCondition.ReplaceGoals) {
                 when (
@@ -108,35 +103,82 @@ internal class GameResumeService(
                     is BingoGoal.Items -> BingoGoal.Items(goal.items + 25)
                 }
             } else {
-                BingoGoal.Items(BingoGoal.MAX_ITEMS)
-            }
-
-            val actualCard = state.cards.find { it.id == cardId }
-            if (actualCard != null) {
-                state.restoreOptions.add(RestoreGoal(actualCard.options.goal))
-                optionsService.setGoal(actualCard, newGoal)
-            }
-        } else if (teams.any { !it.isFinished() }) {
-            // Reset each team to the Playing state
-            for (team in teams) {
-                team.completedCards.removeLastOrNull()?.let { lastCard ->
-                    team.state = TeamState.Playing(lastCard.card.id)
+                when (
+                    val goal = canIncreaseCardGoal.card.options.goal
+                ) {
+                    is BingoGoal.Lines -> BingoGoal.Lines(goal.lines + 2)
+                    is BingoGoal.Items -> BingoGoal.Items((goal.items + 8).coerceAtMost(BingoGoal.MAX_ITEMS))
                 }
             }
 
+            GameResumeInfo.IncreaseGoal(
+                cardId = canIncreaseCardGoal.card.id,
+                goal = newGoal,
+            )
+        } else if (teams.any { !it.isFinished() }) {
             // if there are teams that aren't done yet, set endWhen=AllWin
-            state.restoreOptions.add(RestoreEndWhen(options.endGameWhen))
-            optionsService.endGameWhen = EndWhen.AllWin
+            GameResumeInfo.WaitUntilAllWin
         } else {
-            // Set each team to the PendingCard state
-            for (team in teams) {
-                val lastCard = team.completedCards.lastOrNull()
-                team.state = TeamState.PendingCard(lastCard?.card?.nextCardId)
-            }
-
             // if the team won for another reason (e.g. a multi-card game), set the winCondition to infinite
-            state.restoreOptions.add(RestoreWinCondition(options.winCondition))
-            optionsService.winCondition = BingoWinCondition.Infinite
+            GameResumeInfo.InfiniteMode
+        }
+    }
+
+    fun getResumeDescription() = when (val info = getResumeInfo()) {
+        is GameResumeInfo.KeepPlaying -> text.string(StringKey.WorldKeepPlaying)
+        is GameResumeInfo.IncreaseTimeLimit -> text.string(StringKey.WorldExtendTimeLimitTo, info.timeLimit.formatStringSmall())
+        is GameResumeInfo.IncreaseGoal -> text.string(StringKey.WorldExtendGoalTo, info.goal.format(
+            textProvider = text,
+            supportsFullCard = options.winCondition !is BingoWinCondition.ReplaceGoals
+        ))
+        is GameResumeInfo.WaitUntilAllWin -> text.string(StringKey.WorldExtendGameTo, EndWhen.AllWin.string(text))
+        is GameResumeInfo.InfiniteMode -> text.string(StringKey.WorldExtendGameToInfinite)
+    }
+
+    private fun resumeWithContext() {
+        require(state.state == GameState.POSTGAME) { "Game can only be resumed from POSTGAME! (is ${state.state})" }
+        val gameOverInfo = requireNotNull(state.gameOverInfo) { "gameOverInfo is null!" }
+        log.info("[GameService] Resuming the game!")
+
+        val teams = state.getRegisteredTeams()
+
+        val info = getResumeInfo()
+        when (info) {
+            is GameResumeInfo.InfiniteMode -> {
+                // Set each team to the PendingCard state
+                for (team in teams) {
+                    val lastCard = team.completedCards.lastOrNull()
+                    team.state = TeamState.PendingCard(lastCard?.card?.nextCardId)
+                }
+            }
+            else -> {
+                // Reset each team to the Playing state on their last card
+                for (team in teams) {
+                    team.completedCards.removeLastOrNull()?.let { lastCard ->
+                        team.state = TeamState.Playing(lastCard.card.id)
+                    }
+                }
+            }
+        }
+
+        when (info) {
+            is GameResumeInfo.KeepPlaying -> {}
+            is GameResumeInfo.IncreaseTimeLimit -> {}
+            is GameResumeInfo.IncreaseGoal -> {
+                val actualCard = state.cards.find { it.id == info.cardId }
+                if (actualCard != null) {
+                    state.restoreOptions.add(RestoreGoal(actualCard.options.goal))
+                    optionsService.setGoal(actualCard, info.goal)
+                }
+            }
+            is GameResumeInfo.WaitUntilAllWin -> {
+                state.restoreOptions.add(RestoreEndWhen(options.endGameWhen))
+                optionsService.endGameWhen = EndWhen.AllWin
+            }
+            is GameResumeInfo.InfiniteMode -> {
+                state.restoreOptions.add(RestoreWinCondition(options.winCondition))
+                optionsService.winCondition = BingoWinCondition.Infinite
+            }
         }
 
         for (team in teams) {
@@ -169,9 +211,9 @@ internal class GameResumeService(
         }
 
         // If the time limit is close (or expired), remove it!
-        if (state.remainingDuration()?.let { it < Duration.ofSeconds(30) } == true) {
+        if (isNearTimeLimit) {
             optionsService.createRestoreTimeLimit()
-            optionsService.timeLimit = null
+            optionsService.timeLimit = (info as? GameResumeInfo.IncreaseTimeLimit)?.timeLimit
         }
 
         // If the game ended because of a stalemate, set stalemates to "Do Nothing"

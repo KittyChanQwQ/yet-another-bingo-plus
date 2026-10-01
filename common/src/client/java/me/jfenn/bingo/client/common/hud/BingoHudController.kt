@@ -476,6 +476,7 @@ internal class BingoHudController(
             eventBus.emit(HudStateChangedEvent, Unit)
         }
 
+        eventBus.register(packetEvents.gameOverV2, ::onGameOver)
         eventBus.register(packetEvents.gameOverV1, ::onGameOver)
 
         eventBus.register(packetEvents.readyUpdateV1, ::onReadyUpdate)

@@ -268,6 +268,7 @@ internal class GameOverService(
             isReturnToLobbyAvailable = permissions.hasPermission(player, Permission.COMMAND_READY)
                     && state.isLobbyMode,
             isResumeAvailable = gameResumeService.isResumeAvailable(player),
+            resumeDescription = gameResumeService.getResumeDescription(),
             isWinner = isWinner,
             isUpdate = isUpdate,
 

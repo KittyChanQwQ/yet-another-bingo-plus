@@ -173,7 +173,7 @@ internal class BingoHudScreen(
         texture = "minecraft:bingo/button_game_generic",
         focusedTexture = "minecraft:bingo/button_game_generic_focused"
     ).also {
-        it.message = text.string(StringKey.WorldKeepPlaying)
+        it.message = gameOver?.packet?.resumeDescription ?: text.string(StringKey.WorldKeepPlaying)
         it.onClick {
             client.player.sendCommand(GameCommands.RESUME_COMMAND)
             helper.close()
@@ -476,7 +476,7 @@ internal class BingoHudScreen(
         val ready = state.ready
         primaryButton.active = ready?.isReady == false
         if (ready != null && ready.isRunning) {
-            primaryButton.message = text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
+            primaryButton.message = text.string(StringKey.LobbyVoteLeavingTimeRemaining, ready.remainingDuration.formatHHMMSS())
         } else {
             primaryButton.message = text.string(StringKey.WorldReturnToLobby)
         }

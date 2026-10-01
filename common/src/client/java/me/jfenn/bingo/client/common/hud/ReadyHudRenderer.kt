@@ -2,14 +2,10 @@ package me.jfenn.bingo.client.common.hud
 
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.renderer.IDrawService
-import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.map.rgba
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.div
-import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.seconds
-import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.text.IText
 import kotlin.math.PI
 import kotlin.math.roundToInt
@@ -41,15 +37,6 @@ internal class ReadyHudRenderer(
         if (!ready.isRunning) return
         val font = drawService.font
 
-        val titleText = ready.title ?: when {
-            ready.isReady -> text.string(StringKey.LobbyStartingPlayersReady, ready.readyPlayers, ready.totalPlayers)
-            else -> text.string(StringKey.LobbyStartingReadyUp, text.keybind("key.sneak"), text.keybind(KEYBIND_OPEN_CARD))
-        }
-        val bodyText = ready.subtitle ?: when {
-            ready.state == GameState.PREGAME -> text.string(StringKey.LobbyStartingTimeRemaining, ready.remainingDuration.formatHHMMSS())
-            else -> text.string(StringKey.LobbyNextRoundTimeRemaining, ready.remainingDuration.formatHHMMSS())
-        }
-
         val titleColor = when {
             ready.isReady -> LOADING_COLOR
             else -> {
@@ -58,8 +45,12 @@ internal class ReadyHudRenderer(
             }
         }
 
-        drawService.drawText(titleText, x + width/2 - font.getTextWidth(titleText)/2, y, titleColor, true)
-        drawService.drawText(bodyText, x + width/2 - font.getTextWidth(bodyText)/2, y + font.getTextHeight() + 2, TEXT_COLOR, true)
+        ready.title?.let { titleText ->
+            drawService.drawText(titleText, x + width/2 - font.getTextWidth(titleText)/2, y, titleColor, true)
+        }
+        ready.subtitle?.let { bodyText ->
+            drawService.drawText(bodyText, x + width/2 - font.getTextWidth(bodyText)/2, y + font.getTextHeight() + 2, TEXT_COLOR, true)
+        }
 
         val remainingProgress = ready.remainingDuration / ready.totalDuration.coerceAtLeast(1.seconds)
         drawProgressBar(drawService, x, y + (font.getTextHeight() * 2) + 5, width, 5, 1f - remainingProgress.toFloat().coerceIn(0f, 1f))
