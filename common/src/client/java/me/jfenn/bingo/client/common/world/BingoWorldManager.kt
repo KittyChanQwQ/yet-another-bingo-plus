@@ -1,6 +1,7 @@
 package me.jfenn.bingo.client.common.world
 
 import me.jfenn.bingo.api.state.GameState
+import me.jfenn.bingo.client.common.BUTTON_BINGO
 import me.jfenn.bingo.client.platform.IWorldService
 import me.jfenn.bingo.client.platform.event.model.ScreenEvent
 import me.jfenn.bingo.client.platform.event.model.ScreenType
@@ -40,8 +41,7 @@ internal class BingoWorldManager(
                         y = it.screen.height - 70,
                         width = 80,
                         height = 50,
-                        texture = "minecraft:bingo/button",
-                        focusedTexture = "minecraft:bingo/button_focused",
+                        textures = BUTTON_BINGO,
                         onClick = { worldService.createBingoWorld() },
                         message = text.literal("BINGO!"),
                     )

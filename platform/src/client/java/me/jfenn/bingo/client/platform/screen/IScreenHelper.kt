@@ -15,6 +15,7 @@ interface IScreenHelper {
 }
 
 interface IMutableScreenHelper : IScreenHelper {
+    fun setParent(parent: IScreenHelper?)
     fun addDrawableChild(drawable: Renderable)
     fun addDrawable(drawable: IDrawable)
     fun clearChildren()

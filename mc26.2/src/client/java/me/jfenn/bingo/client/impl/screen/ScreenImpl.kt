@@ -12,8 +12,11 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
 import kotlin.math.absoluteValue
 
-class ScreenImpl(title: Component) : Screen(title) {
+class ScreenImpl(
+    title: Component,
+) : Screen(title) {
     var impl: IScreen? = null
+    var parent: Screen? = null
     val helper = MutableScreenHelperImpl(this)
 
     override fun init() {
@@ -79,6 +82,16 @@ class ScreenImpl(title: Component) : Screen(title) {
 
     override fun onClose() {
         impl?.onClose()
-        super.onClose()
+        minecraft.gui.setScreen(parent)
+    }
+
+    override fun added() {
+        super.added()
+        impl?.added()
+    }
+
+    override fun removed() {
+        super.removed()
+        impl?.removed()
     }
 }

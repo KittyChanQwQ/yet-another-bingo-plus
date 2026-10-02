@@ -1,10 +1,10 @@
 package me.jfenn.bingo.client.common.hud.screen
 
+import me.jfenn.bingo.client.common.BUTTON_GAME_GENERIC
 import me.jfenn.bingo.client.common.event.HudStateChangedEvent
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.common.utils.Interpolate
-import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.screen.*
 import me.jfenn.bingo.common.config.BingoConfig
@@ -14,6 +14,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.milliseconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.Identifier
+import me.jfenn.bingo.platform.event.ICallbackHandle
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Vector2i
@@ -24,15 +25,13 @@ import kotlin.math.roundToInt
 internal class BingoVoteOptionsScreen(
     koin: Koin,
     private val gameOver: BingoHudState.GameOver?,
-    private val canEscape: Boolean = false,
     private val text: TextProvider,
     private val packets: ClientPacketEvents,
     private val state: BingoHudState,
     private val config: BingoConfig,
-    private val client: IClient,
     private val helper: IMutableScreenHelper,
     private val buttonFactory: IButtonFactory,
-    eventBus: IEventBus,
+    private val eventBus: IEventBus,
 ) : IScreen {
 
     class Factory(
@@ -41,24 +40,22 @@ internal class BingoVoteOptionsScreen(
         private val packets: ClientPacketEvents,
         private val state: BingoHudState,
         private val config: BingoConfig,
-        private val client: IClient,
         private val screenFactory: IScreenFactory,
         private val buttonFactory: IButtonFactory,
         private val eventBus: IEventBus,
     ) {
         fun create(
             gameOver: BingoHudState.GameOver?,
-            canEscape: Boolean,
+            parent: IScreenHelper?,
         ) = screenFactory.build(text.string(StringKey.CardTitle)) { helper ->
+            helper.setParent(parent)
             BingoVoteOptionsScreen(
                 koin = koin,
                 gameOver = gameOver,
-                canEscape = canEscape,
                 text = text,
                 packets = packets,
                 state = state,
                 config = config,
-                client = client,
                 helper = helper,
                 buttonFactory = buttonFactory,
                 eventBus = eventBus,
@@ -80,8 +77,7 @@ internal class BingoVoteOptionsScreen(
     private val closeButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 20),
-        texture = "minecraft:bingo/button_game_generic",
-        focusedTexture = "minecraft:bingo/button_game_generic_focused"
+        textures = BUTTON_GAME_GENERIC,
     ).also {
         it.message = text.string(StringKey.CardClose)
         it.onClick {
@@ -89,20 +85,19 @@ internal class BingoVoteOptionsScreen(
         }
     }
 
-    private val hudStateListener = eventBus.register(HudStateChangedEvent) {
-        init()
-    }
-
+    private var sendingReadyPacket: Boolean = false
     private fun sendReady(voteOption: VoteOption?) {
+        state.ready?.voteOptions?.forEach {
+            it.clientSelected = it.id == voteOption?.id
+        }
+
         val packet = SetReadyPacket(true, voteOption?.id)
         when {
             packets.readySetV2.send(packet) -> {}
             packets.readySetV1.send(packet) -> {}
         }
-        // If the screen is paused, it must be closed so that the server can process the ready packet
-        if (client.isInSingleplayer && shouldPause()) {
-            helper.close()
-        }
+        // the game must be unpaused so that the server can process the ready packet
+        sendingReadyPacket = true
     }
 
     private val sidebarDrawable = object : IDrawable {
@@ -154,8 +149,7 @@ internal class BingoVoteOptionsScreen(
                 buttonFactory.createNinePatchButton(
                     sliceSize = 8,
                     textureSize = Vector2i(200, 20),
-                    texture = "minecraft:bingo/button_game_generic",
-                    focusedTexture = "minecraft:bingo/button_game_generic_focused"
+                    textures = BUTTON_GAME_GENERIC,
                 ).also {
                     it.onClick { sendReady(voteOption) }
                 }
@@ -173,9 +167,8 @@ internal class BingoVoteOptionsScreen(
         updatePositions()
 
         helper.addDrawable(sidebarDrawable)
-        helper.addButton(closeButton)
-
         optionButtons.values.forEach { helper.addButton(it) }
+        helper.addButton(closeButton)
     }
 
     override fun resize(width: Int, height: Int) {
@@ -197,12 +190,12 @@ internal class BingoVoteOptionsScreen(
             updatePositions()
         }
 
-        val maxVotes = voteOptions.maxOf { it.votes }
+        val maxVotes = voteOptions.maxOfOrNull { it.votes } ?: 0
         val voteToCharRatio = maxVotes.coerceAtMost(8).toFloat() / maxVotes.coerceAtLeast(1)
 
         for (voteOption in voteOptions) {
             val button = optionButtons[voteOption.id] ?: continue
-            button.active = !voteOption.isSelected
+            button.active = !voteOption.clientSelected
 
             val votesChars = (voteOption.votes * voteToCharRatio).roundToInt()
             if (votesChars > 0) {
@@ -220,12 +213,18 @@ internal class BingoVoteOptionsScreen(
         }
     }
 
-    override fun shouldPause() = config.client.cardPausesGame
+    override fun shouldPause() = config.client.cardPausesGame && !sendingReadyPacket
 
-    override fun shouldCloseOnEsc() = canEscape
+    private var hudStateListener: ICallbackHandle? = null
 
-    override fun onClose() {
-        hudStateListener.close()
+    override fun added() {
+        hudStateListener = eventBus.register(HudStateChangedEvent) {
+            init()
+        }
     }
 
+    override fun removed() {
+        hudStateListener?.close()
+        hudStateListener = null
+    }
 }

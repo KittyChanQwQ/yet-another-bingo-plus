@@ -45,6 +45,10 @@ open class ScreenHelperImpl(
 class MutableScreenHelperImpl(
     private val screenImpl: ScreenImpl,
 ) : ScreenHelperImpl(screenImpl), IMutableScreenHelper {
+    override fun setParent(parent: IScreenHelper?) {
+        screenImpl.parent = parent?.screen
+    }
+
     override fun addDrawable(drawable: IDrawable) {
         screenImpl.bingoAddDrawableChild(object : Renderable, GuiEventListener, NarratableEntry {
             override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, a: Float) {

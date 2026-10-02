@@ -1,5 +1,7 @@
 package me.jfenn.bingo.client.common.hud.screen
 
+import me.jfenn.bingo.client.common.BUTTON_GAME_CONTINUE
+import me.jfenn.bingo.client.common.BUTTON_GAME_GENERIC
 import me.jfenn.bingo.client.common.event.HudStateChangedEvent
 import me.jfenn.bingo.client.common.hud.BingoEndFireworkRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
@@ -26,6 +28,7 @@ import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.*
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.Identifier
+import me.jfenn.bingo.platform.event.ICallbackHandle
 import me.jfenn.bingo.platform.event.IEventBus
 import org.joml.Vector2i
 import org.koin.core.Koin
@@ -49,7 +52,7 @@ internal class BingoHudScreen(
     tabsWidgetFactory: ITabsWidgetFactory = koin.get(),
     buttonFactory: IButtonFactory = koin.get(),
     private val onCloseCallback: (BingoHudScreen) -> Unit,
-    eventBus: IEventBus,
+    private val eventBus: IEventBus,
 ) : IScreen {
 
     private val jei by koin.inject<IJeiApi>()
@@ -149,8 +152,7 @@ internal class BingoHudScreen(
     private val settingsButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 20),
-        texture = "minecraft:bingo/button_game_generic",
-        focusedTexture = "minecraft:bingo/button_game_generic_focused"
+        textures = BUTTON_GAME_GENERIC,
     ).also {
         it.message = text.string(StringKey.CardSettingsButton)
         it.onClick {
@@ -161,8 +163,7 @@ internal class BingoHudScreen(
     private val closeButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 20),
-        texture = "minecraft:bingo/button_game_generic",
-        focusedTexture = "minecraft:bingo/button_game_generic_focused"
+        textures = BUTTON_GAME_GENERIC,
     ).also {
         it.message = text.string(StringKey.CardClose)
         it.onClick {
@@ -176,12 +177,11 @@ internal class BingoHudScreen(
     private val moreOptionsButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 20),
-        texture = "minecraft:bingo/button_game_generic",
-        focusedTexture = "minecraft:bingo/button_game_generic_focused"
+        textures = BUTTON_GAME_GENERIC,
     ).also {
         it.message = text.string(StringKey.OptionsMore)
         it.onClick {
-            client.screen = voteOptionsScreenFactory.create(gameOver, canEscape)
+            client.screen = voteOptionsScreenFactory.create(gameOver, helper)
         }
     }
 
@@ -190,9 +190,7 @@ internal class BingoHudScreen(
     private val primaryButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 40),
-        texture = "minecraft:bingo/button_game_continue",
-        focusedTexture = "minecraft:bingo/button_game_continue_focused",
-        inactiveTexture = "minecraft:bingo/button_game_continue_inactive",
+        textures = BUTTON_GAME_CONTINUE,
     ).also { button ->
         button.message = text.string(StringKey.WorldReturnToLobby)
         button.onClick {
@@ -227,20 +225,19 @@ internal class BingoHudScreen(
     private val messagesWidgetImpl = MessageHistoryWidget(koin, gameOver)
     private val messagesWidget = scrollableWidgetFactory.create(messagesWidgetImpl)
 
-    private val hudStateListener = eventBus.register(HudStateChangedEvent) {
-        init()
-    }
-
+    private var sendingReadyPacket: Boolean = false
     private fun sendReady(voteOption: VoteOption?) {
+        state.ready?.voteOptions?.forEach {
+            it.clientSelected = it.id == voteOption?.id
+        }
+
         val packet = SetReadyPacket(true, voteOption?.id)
         when {
             packets.readySetV2.send(packet) -> {}
             packets.readySetV1.send(packet) -> {}
         }
-        // If the screen is paused, it must be closed so that the server can process the ready packet
-        if (client.isInSingleplayer && shouldPause()) {
-            helper.close()
-        }
+        // the game must be unpaused so that the server can process the ready packet
+        sendingReadyPacket = true
     }
 
     private val sidebarDrawable = object : IDrawable {
@@ -330,22 +327,22 @@ internal class BingoHudScreen(
 
         helper.addDrawable(sidebarDrawable)
 
-        helper.addButton(closeButton)
+        messagesWidgetImpl.resize()
+        helper.addDrawableChild(messagesWidget.widget!!)
 
-        if (settingsButton != null) {
-            helper.addButton(settingsButton)
+        if (isPrimaryButtonVisible) {
+            helper.addButton(primaryButton)
         }
 
         if (isMoreOptionsVisible) {
             helper.addButton(moreOptionsButton)
         }
 
-        if (isPrimaryButtonVisible) {
-            helper.addButton(primaryButton)
-        }
+        helper.addButton(closeButton)
 
-        messagesWidgetImpl.resize()
-        helper.addDrawableChild(messagesWidget.widget!!)
+        if (settingsButton != null) {
+            helper.addButton(settingsButton)
+        }
     }
 
     override fun resize(width: Int, height: Int) {
@@ -484,7 +481,7 @@ internal class BingoHudScreen(
         primaryVoteOption = ready?.voteOptions?.find { it.id == ready.votePending }
         primaryVoteOption?.let {
             primaryButton.message = it.title
-            primaryButton.active = !it.isSelected
+            primaryButton.active = !it.clientSelected
         } ?: run {
             primaryButton.active = ready?.isReady == false
         }
@@ -534,13 +531,24 @@ internal class BingoHudScreen(
         return cardsWidget.onKeyPressed(input)
     }
 
-    override fun shouldPause() = config.client.cardPausesGame
+    override fun shouldPause() = config.client.cardPausesGame && !sendingReadyPacket
 
     override fun shouldCloseOnEsc() = canEscape
 
     override fun onClose() {
         onCloseCallback.invoke(this)
-        hudStateListener.close()
     }
 
+    private var hudStateListener: ICallbackHandle? = null
+
+    override fun added() {
+        hudStateListener = eventBus.register(HudStateChangedEvent) {
+            init()
+        }
+    }
+
+    override fun removed() {
+        hudStateListener?.close()
+        hudStateListener = null
+    }
 }

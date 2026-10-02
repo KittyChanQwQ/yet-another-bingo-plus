@@ -15,6 +15,8 @@ interface IScreen {
     fun shouldPause(): Boolean = false
     fun shouldCloseOnEsc(): Boolean = true
     fun onClose(): Unit = Unit
+    fun added(): Unit = Unit
+    fun removed(): Unit = Unit
 }
 
 interface IKeyInput {

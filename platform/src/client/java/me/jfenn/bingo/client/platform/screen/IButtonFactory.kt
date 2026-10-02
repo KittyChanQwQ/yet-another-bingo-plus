@@ -1,5 +1,6 @@
 package me.jfenn.bingo.client.platform.screen
 
+import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.IEventListener
 import net.minecraft.client.gui.components.Button
@@ -17,9 +18,7 @@ interface IButtonFactory {
         y: Int,
         width: Int,
         height: Int,
-        texture: String,
-        focusedTexture: String = texture,
-        inactiveTexture: String = texture,
+        textures: ButtonTextures,
         onClick: (Button) -> Unit,
         message: IText,
     ) : IButton
@@ -27,11 +26,14 @@ interface IButtonFactory {
     fun createNinePatchButton(
         sliceSize: Int,
         textureSize: Vector2i,
-        texture: String,
-        focusedTexture: String = texture,
-        inactiveTexture: String = texture,
+        textures: ButtonTextures,
     ) : IButton
 
+    data class ButtonTextures(
+        val texture: Identifier,
+        val focusedTexture: Identifier = texture,
+        val inactiveTexture: Identifier = texture,
+    )
 }
 
 interface IButton {

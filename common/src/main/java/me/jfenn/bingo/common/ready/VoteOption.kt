@@ -13,6 +13,8 @@ data class VoteOption(
     val votes: Int,
     val isSelected: Boolean,
 ) {
+    var clientSelected: Boolean = isSelected
+
     object V1 : PacketConverter<VoteOption> {
         override val id = Identifier.of(MOD_ID_BINGO, "vote_option")
 

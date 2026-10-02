@@ -5,6 +5,7 @@ import me.jfenn.bingo.client.platform.screen.IButton
 import me.jfenn.bingo.client.platform.screen.IButtonFactory
 import me.jfenn.bingo.common.utils.EventListener
 import me.jfenn.bingo.impl.TextImpl
+import me.jfenn.bingo.impl.toMinecraftIdentifier
 import me.jfenn.bingo.impl.toPlatformIdentifier
 import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.platform.utils.IEventListener
@@ -13,7 +14,6 @@ import net.minecraft.client.gui.components.*
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.input.InputWithModifiers
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.Identifier
 import org.joml.Vector2i
 
 class ButtonFactory : IButtonFactory {
@@ -29,9 +29,7 @@ class ButtonFactory : IButtonFactory {
         y: Int,
         width: Int,
         height: Int,
-        texture: String,
-        focusedTexture: String,
-        inactiveTexture: String,
+        textures: IButtonFactory.ButtonTextures,
         onClick: (Button) -> Unit,
         message: IText
     ): IButton = ImageButton(
@@ -39,12 +37,7 @@ class ButtonFactory : IButtonFactory {
         y,
         width,
         height,
-        WidgetSprites(
-            texture.let { Identifier.parse(it) },
-            inactiveTexture.let { Identifier.parse(it) },
-            focusedTexture.let { Identifier.parse(it) },
-            inactiveTexture.let { Identifier.parse(it) },
-        ),
+        textures.toWidgetSprites(),
         onClick,
         message.value,
     ).let { TexturedButtonImpl(it) }
@@ -52,11 +45,9 @@ class ButtonFactory : IButtonFactory {
     override fun createNinePatchButton(
         sliceSize: Int,
         textureSize: Vector2i,
-        texture: String,
-        focusedTexture: String,
-        inactiveTexture: String,
+        textures: IButtonFactory.ButtonTextures,
     ): IButton {
-        return NinePatchButton(sliceSize, textureSize, texture, focusedTexture, inactiveTexture)
+        return NinePatchButton(sliceSize, textureSize, textures.toWidgetSprites())
     }
 }
 
@@ -95,17 +86,8 @@ class TexturedButtonImpl(
 class NinePatchButton(
     private val sliceSize: Int,
     private val textureSize: Vector2i,
-    texture: String,
-    focusedTexture: String,
-    inactiveTexture: String,
+    private val textures: WidgetSprites,
 ) : ButtonImpl {
-
-    private val textures = WidgetSprites(
-        texture.let { Identifier.parse(it) },
-        inactiveTexture.let { Identifier.parse(it) },
-        focusedTexture.let { Identifier.parse(it) },
-        inactiveTexture.let { Identifier.parse(it) },
-    )
 
     override val button = object : AbstractButton(
         0, 0, 0, 0,
@@ -151,3 +133,10 @@ class NinePatchButton(
 
     override val onClick: IEventListener<Unit> = EventListener()
 }
+
+private fun IButtonFactory.ButtonTextures.toWidgetSprites() = WidgetSprites(
+    texture.toMinecraftIdentifier(),
+    inactiveTexture.toMinecraftIdentifier(),
+    focusedTexture.toMinecraftIdentifier(),
+    inactiveTexture.toMinecraftIdentifier(),
+)
