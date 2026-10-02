@@ -4,6 +4,9 @@ import me.jfenn.bingo.api.event.EventListener;
 import me.jfenn.bingo.api.event.GameEndedEvent;
 import me.jfenn.bingo.api.event.GameStartedEvent;
 import me.jfenn.bingo.api.event.TeamChangedEvent;
+import me.jfenn.bingo.api.internal.ExtensionManager;
+import me.jfenn.bingo.api.state.GameState;
+import me.jfenn.bingo.api.state.GameStateChangedEvent;
 
 public class BingoEvents {
     public static final EventListener<IBingoApi> INIT = new EventListener<>("INIT");
@@ -13,4 +16,14 @@ public class BingoEvents {
     public static final EventListener<GameEndedEvent> GAME_ENDED = new EventListener<>("GAME_ENDED");
     public static final EventListener<Void> GAME_RESET = new EventListener<>("GAME_RESET");
     public static final EventListener<TeamChangedEvent> TEAM_CHANGED = new EventListener<>("TEAM_CHANGED");
+
+    public static EventListener<GameStateChangedEvent> onStateChanged(GameState state) {
+        var consumers = ExtensionManager.INSTANCE.getGameStateListeners();
+        var listener = consumers.get(state);
+        if (listener == null) {
+            listener = new EventListener<>("STATE_CHANGED:" + state.getIdentifier());
+            consumers.put(state, listener);
+        }
+        return listener;
+    }
 }

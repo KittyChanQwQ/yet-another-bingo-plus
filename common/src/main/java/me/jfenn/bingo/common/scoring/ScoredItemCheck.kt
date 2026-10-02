@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoring
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.api.options.EndWhen
@@ -23,7 +24,6 @@ import me.jfenn.bingo.common.options.format
 import me.jfenn.bingo.common.options.string
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.*
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey

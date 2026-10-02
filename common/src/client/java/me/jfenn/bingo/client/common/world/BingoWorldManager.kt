@@ -1,16 +1,16 @@
 package me.jfenn.bingo.client.common.world
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.client.platform.IWorldService
 import me.jfenn.bingo.client.platform.event.model.ScreenEvent
 import me.jfenn.bingo.client.platform.event.model.ScreenType
 import me.jfenn.bingo.client.platform.screen.IButtonFactory
-import me.jfenn.bingo.platform.text.ITextFactory
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.ScopeStopped
+import me.jfenn.bingo.platform.text.ITextFactory
 import net.minecraft.server.MinecraftServer
 
 internal class BingoWorldManager(

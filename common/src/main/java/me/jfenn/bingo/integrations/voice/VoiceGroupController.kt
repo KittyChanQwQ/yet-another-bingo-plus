@@ -1,9 +1,10 @@
 package me.jfenn.bingo.integrations.voice
 
+import me.jfenn.bingo.api.data.BingoGameStatus
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.formatTitle
@@ -77,8 +78,8 @@ internal class VoiceGroupController(
 
     private fun getGroup(team: BingoTeam?): IGroupHandle? {
         return when {
-            state.state == GameState.PREGAME -> null
-            state.state == GameState.POSTGAME -> combinedGroup
+            state.state.status == BingoGameStatus.PREGAME -> null
+            state.state.status == BingoGameStatus.POSTGAME -> combinedGroup
             config.useCombinedGroupAlways -> combinedGroup
             team == null -> spectatorsGroup
             isUsingCombinedGroup() -> combinedGroup

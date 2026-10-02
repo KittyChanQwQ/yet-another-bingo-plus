@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.spawn
 
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.platform.utils.UuidAsString
 

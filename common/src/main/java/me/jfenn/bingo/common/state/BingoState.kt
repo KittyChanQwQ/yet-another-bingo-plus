@@ -1,6 +1,8 @@
 package me.jfenn.bingo.common.state
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.api.state.GameAction
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.event.model.StateChangedEvent
@@ -165,6 +167,10 @@ data class BingoState internal constructor(
             previewMap = map
             return@run map
         }
+    }
+
+    fun changeState(eventBus: IEventBus, action: GameAction) {
+        changeState(eventBus, action.getNext(state))
     }
 
     fun changeState(eventBus: IEventBus, newState: GameState) {

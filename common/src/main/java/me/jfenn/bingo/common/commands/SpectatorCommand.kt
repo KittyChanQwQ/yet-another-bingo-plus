@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.commands
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.platform.IPlayerHandle

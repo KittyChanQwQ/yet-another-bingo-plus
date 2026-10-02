@@ -1,11 +1,11 @@
 package me.jfenn.bingo.mixinhandler
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.spawn.SpawnData
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.IPlayerManager

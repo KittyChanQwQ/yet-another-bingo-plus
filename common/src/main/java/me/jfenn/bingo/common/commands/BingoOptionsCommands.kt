@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.commands
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.api.options.EndWhen
@@ -9,7 +10,6 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.options.BingoCardOptions
 import me.jfenn.bingo.common.options.withOptionsService
 import me.jfenn.bingo.common.scope.BingoComponent
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.commands.CommandBuilder
 import me.jfenn.bingo.platform.commands.ICommandManager

@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.data
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterPresets
 import me.jfenn.bingo.common.card.objective.display.ObjectiveDisplayRule
 import me.jfenn.bingo.common.spawn.SpawnKits
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.BingoTeamPreset
 import me.jfenn.bingo.common.text.MessageData

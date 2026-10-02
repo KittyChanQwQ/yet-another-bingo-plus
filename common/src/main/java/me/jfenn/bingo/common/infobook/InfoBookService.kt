@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.infobook
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.*
 import me.jfenn.bingo.common.commands.BingoPrefsCommand
 import me.jfenn.bingo.common.config.BingoConfig
@@ -7,7 +8,6 @@ import me.jfenn.bingo.common.config.PlayerSettings
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.InventoryVisitor
 import me.jfenn.bingo.common.utils.allHeldStacks

@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.mixinhandler.GameRuleOverrideHelper
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.event.IEvent

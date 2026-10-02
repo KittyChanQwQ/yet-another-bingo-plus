@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.menu.tooltips
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.event.ICallbackHandle
 import me.jfenn.bingo.platform.event.IEventBus

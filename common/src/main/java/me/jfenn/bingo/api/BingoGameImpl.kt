@@ -2,34 +2,36 @@ package me.jfenn.bingo.api
 
 import me.jfenn.bingo.api.data.BingoGameStatus
 import me.jfenn.bingo.api.data.IBingoGame
+import me.jfenn.bingo.api.state.GameAction
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.platform.event.IEventBus
 import java.time.Duration
 import java.util.*
 
 internal class BingoGameImpl(
-    private val state: BingoState,
+    private val bingoState: BingoState,
+    private val events: IEventBus,
 ) : IBingoGame {
     override val id: UUID
-        get() = state.gameId
+        get() = bingoState.gameId
 
     override val status: BingoGameStatus
-        get() = when (state.state) {
-            GameState.UNINITIALIZED,
-            GameState.PREGAME,
-            GameState.LOBBY_EDITOR -> BingoGameStatus.PREGAME
-            GameState.STARTING,
-            GameState.PRELOADING,
-            GameState.LOADING,
-            GameState.COUNTDOWN -> BingoGameStatus.STARTING
-            GameState.PLAYING -> BingoGameStatus.PLAYING
-            GameState.POSTGAME,
-            GameState.STARTING_NEXT_ROUND -> BingoGameStatus.POSTGAME
+        get() = bingoState.state.status
+
+    override var state: GameState
+        get() = bingoState.state
+        set(value) {
+            bingoState.changeState(events, value)
         }
 
+    override fun changeState(action: GameAction) {
+        bingoState.changeState(events, action)
+    }
+
     override val time: Duration?
-        get() = state.ingameDuration()
+        get() = bingoState.ingameDuration()
 
     override val timeRemaining: Duration?
-        get() = state.remainingDuration()
+        get() = bingoState.remainingDuration()
 }

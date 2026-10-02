@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.menu.poi
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IExecutors

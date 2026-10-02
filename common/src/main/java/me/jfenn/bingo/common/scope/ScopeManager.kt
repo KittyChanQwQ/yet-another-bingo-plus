@@ -3,14 +3,14 @@ package me.jfenn.bingo.common.scope
 import me.jfenn.bingo.api.BingoApi
 import me.jfenn.bingo.api.BingoEvents
 import me.jfenn.bingo.api.IBingoApi
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.BINGO
-import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commonInit
 import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.event.model.StateChangedEvent
+import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.ScopeStarted

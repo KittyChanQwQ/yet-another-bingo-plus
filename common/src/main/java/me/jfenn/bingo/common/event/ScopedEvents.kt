@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.event
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.event.model.OptionsChangedEvent
 import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.scope.BingoComponent
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.event.IEvent
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.game.ScopeStopped

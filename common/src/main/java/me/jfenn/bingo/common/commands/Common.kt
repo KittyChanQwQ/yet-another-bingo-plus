@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.commands
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.integrations.permissions.PermissionKey

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.lobby
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasLobby
 import me.jfenn.bingo.common.commands.hasPermission
@@ -7,7 +8,6 @@ import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.commands.runByName
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.reset.ResetService
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IExecutors

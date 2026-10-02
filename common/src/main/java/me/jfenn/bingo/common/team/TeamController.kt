@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.team
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.ITeamManager
 import me.jfenn.bingo.platform.event.IEventBus

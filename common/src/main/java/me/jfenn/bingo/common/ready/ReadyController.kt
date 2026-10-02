@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.ready
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
@@ -9,7 +10,6 @@ import me.jfenn.bingo.common.game.GameResumeService
 import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey

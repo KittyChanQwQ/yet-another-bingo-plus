@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.spawn
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 
 internal class ChestController(
     private val state: BingoState,

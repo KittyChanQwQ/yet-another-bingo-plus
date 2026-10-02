@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.ready
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.event.model.OptionsChangedEvent
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.commands.ICommandManager

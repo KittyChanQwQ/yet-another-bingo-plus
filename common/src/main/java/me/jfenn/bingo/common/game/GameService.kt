@@ -3,6 +3,8 @@ package me.jfenn.bingo.common.game
 import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.api.options.StalemateBehavior
+import me.jfenn.bingo.api.state.GameAction
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.objective.BingoObjective
 import me.jfenn.bingo.common.card.objective.BingoObjectiveManager
@@ -12,7 +14,7 @@ import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.options.format
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.state.canStartNewRound
 import me.jfenn.bingo.common.stats.WriteStatsService
 import me.jfenn.bingo.common.team.ShuffleTeamsCommand
 import me.jfenn.bingo.common.team.TeamCompletedCard
@@ -221,7 +223,7 @@ internal class GameService(
         writeStatsService.writeGame()
 
         // Finally, change state to POSTGAME (announces in GameOverController)
-        state.changeState(eventBus, GameState.POSTGAME)
+        state.changeState(eventBus, GameAction.END)
 
         // if lobbyMode=false, immediately change state back to PREGAME once the POSTGAME events are sent
         if (!state.isLobbyMode) {

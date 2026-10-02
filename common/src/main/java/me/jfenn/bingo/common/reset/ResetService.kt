@@ -1,11 +1,11 @@
 package me.jfenn.bingo.common.reset
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.game.GameResetPacket
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.state.PersistentStateManager
 import me.jfenn.bingo.common.utils.measureTime
 import me.jfenn.bingo.platform.IPlayerManager

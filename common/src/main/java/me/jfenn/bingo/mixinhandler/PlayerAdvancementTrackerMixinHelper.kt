@@ -1,7 +1,7 @@
 package me.jfenn.bingo.mixinhandler
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.event.IEventBus

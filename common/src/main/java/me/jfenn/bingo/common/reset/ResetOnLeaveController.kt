@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.reset
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.platform.IPlayerManager

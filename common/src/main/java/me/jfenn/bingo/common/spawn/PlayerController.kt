@@ -1,5 +1,7 @@
 package me.jfenn.bingo.common.spawn
 
+import me.jfenn.bingo.api.data.BingoGameStatus
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -10,7 +12,8 @@ import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.state.isInLobby
+import me.jfenn.bingo.common.state.isPlayingOrCountdown
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
@@ -63,7 +66,7 @@ internal class PlayerController(
         val isOnActiveTeam = team?.isPlaying() == true
 
         // if the player is not on a team, they should be vanished
-        val isVanished = !isOnActiveTeam && (state.state == GameState.LOADING || state.state == GameState.COUNTDOWN || state.state == GameState.PLAYING)
+        val isVanished = !isOnActiveTeam && state.state.isPlayingOrCountdown
         vanishApi.setVanish(player, isVanished)
         return isVanished
     }
@@ -90,36 +93,33 @@ internal class PlayerController(
         )
 
         val gameMode = when (state.state) {
-            GameState.UNINITIALIZED,
-            GameState.PREGAME,
-            GameState.STARTING,
-            GameState.PRELOADING -> PlayerGameMode.ADVENTURE
-            GameState.LOADING,
-            GameState.COUNTDOWN,
-            GameState.PLAYING -> when {
-                isOnActiveTeam -> when (state.state) {
-                    GameState.PLAYING -> PlayerGameMode.SURVIVAL
-                    else -> PlayerGameMode.ADVENTURE
-                }
-                !cardViewService.supportsCardHud(player) && vanishApi.isInstalled() -> PlayerGameMode.ADVENTURE
-                else -> PlayerGameMode.SPECTATOR
-            }
-            GameState.POSTGAME,
-            GameState.STARTING_NEXT_ROUND -> when {
-                cardViewService.supportsCardHud(player) -> PlayerGameMode.SPECTATOR
-                else -> PlayerGameMode.CREATIVE
-            }
             GameState.LOBBY_EDITOR -> when {
                 permissions.hasPermission(player, Permission.CONFIGURE_LOBBY) -> PlayerGameMode.CREATIVE
                 else -> PlayerGameMode.SPECTATOR
+            }
+            else -> when (state.state.status) {
+                BingoGameStatus.PREGAME -> PlayerGameMode.ADVENTURE
+                BingoGameStatus.STARTING,
+                BingoGameStatus.PLAYING -> when {
+                    isOnActiveTeam -> when (state.state.status) {
+                        BingoGameStatus.PLAYING -> PlayerGameMode.SURVIVAL
+                        else -> PlayerGameMode.ADVENTURE
+                    }
+                    !cardViewService.supportsCardHud(player) && vanishApi.isInstalled() -> PlayerGameMode.ADVENTURE
+                    else -> PlayerGameMode.SPECTATOR
+                }
+                BingoGameStatus.POSTGAME -> when {
+                    cardViewService.supportsCardHud(player) -> PlayerGameMode.SPECTATOR
+                    else -> PlayerGameMode.CREATIVE
+                }
             }
         }
 
         // This indicates that a player is starting the game, or has logged back on after a game has started
         // Note: if force-gamemode=true in server.properties, the player's gamemode might not match even if the state has not changed
         // (this also happens on LAN)
-        val preGameStates = arrayOf(GameState.PREGAME, GameState.STARTING, GameState.PRELOADING, GameState.LOADING, GameState.COUNTDOWN)
-        val isRespawnNeeded = (newPlayerState != oldPlayerState || forceReset) && (state.state in preGameStates || isOnActiveTeam) && state.state != GameState.POSTGAME
+        val isBeforePlaying = state.state.status == BingoGameStatus.PREGAME || state.state.status == BingoGameStatus.STARTING
+        val isRespawnNeeded = (newPlayerState != oldPlayerState || forceReset) && (isBeforePlaying || isOnActiveTeam) && state.state != GameState.POSTGAME
         val isInLobby = player.world.identifier == LOBBY_WORLD_IDENTIFIER
         val isStuckInLobby = isInLobby && state.state != GameState.PREGAME
         val isStuckInWorld = !isInLobby && state.state == GameState.PREGAME

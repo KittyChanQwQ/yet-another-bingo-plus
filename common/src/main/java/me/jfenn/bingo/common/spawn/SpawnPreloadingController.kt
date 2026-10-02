@@ -1,12 +1,13 @@
 package me.jfenn.bingo.common.spawn
 
+import me.jfenn.bingo.api.state.GameAction
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.common.utils.seconds
@@ -64,11 +65,11 @@ internal class SpawnPreloadingController(
                         chestService.createChestSpawnpoints()
 
                         // change to the loading state (until all players have loaded terrain)
-                        state.changeState(eventBus, GameState.PRELOADING)
+                        state.changeState(eventBus, GameAction.START)
                     }, serverTaskExecutor)
             } else {
                 // change to the loading state (until all players have loaded terrain)
-                state.changeState(eventBus, GameState.PRELOADING)
+                state.changeState(eventBus, GameAction.START)
             }
         }
 

@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.scoreboard
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.common.card.BingoCard
@@ -10,7 +11,6 @@ import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreRankingService
 import me.jfenn.bingo.common.scoring.ScoreService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeam
 import me.jfenn.bingo.common.team.TeamScore
 import me.jfenn.bingo.common.team.TeamService

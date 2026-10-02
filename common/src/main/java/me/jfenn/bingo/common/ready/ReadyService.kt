@@ -1,9 +1,9 @@
 package me.jfenn.bingo.common.ready
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.JoinCommand
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider

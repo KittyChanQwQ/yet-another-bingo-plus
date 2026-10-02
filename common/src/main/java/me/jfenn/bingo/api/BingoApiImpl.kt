@@ -10,9 +10,10 @@ import me.jfenn.bingo.api.event.GameEndedEvent
 import me.jfenn.bingo.api.event.GameStartedEvent
 import me.jfenn.bingo.api.event.TeamChangedEvent
 import me.jfenn.bingo.api.options.IOptionsService
+import me.jfenn.bingo.api.state.GameState
+import me.jfenn.bingo.api.state.GameStateChangedEvent
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.StatsService
 import net.minecraft.server.MinecraftServer
 import java.util.*
@@ -60,6 +61,12 @@ internal class BingoApiImpl(
 
         events.onEnter(GameState.POSTGAME, true) {
             BingoEvents.GAME_ENDED.invoke(GameEndedEvent(game.id))
+        }
+
+        events.onStateChange {
+            BingoEvents.onStateChanged(it.to).invoke(
+                GameStateChangedEvent(it.from, it.to)
+            )
         }
 
         events.onChangeTeam { event ->

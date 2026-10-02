@@ -1,9 +1,10 @@
 package me.jfenn.bingo.common.timer
 
+import me.jfenn.bingo.api.state.GameAction
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.milliseconds
 import me.jfenn.bingo.common.utils.minus
@@ -53,12 +54,7 @@ internal class WaitUntilLoadedController(
             log.info("Waiting until all players have loaded spawn terrain... Done! (${(Instant.now() - startedLoading)})")
 
             // change to the playing state
-            if (config.countdownDelayTicks > 0 || config.countdownSeconds > 0) {
-                state.changeState(eventBus, GameState.COUNTDOWN)
-            } else {
-                state.changeState(eventBus, GameState.PLAYING)
-                countdownService.sendCountdownPacket(CountdownPacket(0))
-            }
+            state.changeState(eventBus, GameAction.START)
         }
     }
 }

@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.chat
 
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.isPlayingOrCountdown
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.AllowChatMessageEvent

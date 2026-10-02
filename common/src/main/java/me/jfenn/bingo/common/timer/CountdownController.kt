@@ -1,11 +1,12 @@
 package me.jfenn.bingo.common.timer
 
+import me.jfenn.bingo.api.state.GameAction
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.spawn.SpawnService
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.platform.*
@@ -104,7 +105,7 @@ internal class CountdownController(
 
                     // When the countdown ends, start the game!
                     if (remainingSeconds == 0) {
-                        state.changeState(eventBus, GameState.PLAYING)
+                        state.changeState(eventBus, GameAction.START)
                     }
                 }
         }
@@ -114,10 +115,16 @@ internal class CountdownController(
 
     init {
         events.onEnter(GameState.COUNTDOWN) {
-            countdownDelayTicks = config.countdownDelayTicks
+            if (config.countdownDelayTicks > 0 || config.countdownSeconds > 0) {
+                countdownDelayTicks = config.countdownDelayTicks
 
-            if (state.isLobbyMode)
-                forcePlayersInvisible()
+                if (state.isLobbyMode)
+                    forcePlayersInvisible()
+            } else {
+                // if no countdown is configured, start the game immediately
+                countdownService.sendCountdownPacket(CountdownPacket(0))
+                state.changeState(eventBus, GameAction.START)
+            }
         }
 
         events.onStateChange { (_, toState) ->

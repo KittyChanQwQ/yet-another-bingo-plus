@@ -1,11 +1,11 @@
 package me.jfenn.bingo.common.game
 
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.OptionsChangedEvent
 import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IExecutors
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager

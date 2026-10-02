@@ -1,10 +1,12 @@
 package me.jfenn.bingo.common.ready
 
+import me.jfenn.bingo.api.data.BingoGameStatus
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.MOD_ID_BINGO
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.platform.IPacketBuf
 import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.packet.PacketConverter
+import me.jfenn.bingo.platform.readEnum
 import me.jfenn.bingo.platform.text.IText
 import java.time.Duration
 import java.util.*
@@ -30,11 +32,7 @@ data class ReadyUpdatePacket(
             return ReadyUpdatePacket(
                 isRunning = buf.readBoolean(),
                 isReady = buf.readBoolean(),
-                state = try {
-                    GameState.valueOf(buf.readString())
-                } catch (_: IllegalArgumentException) {
-                    GameState.PREGAME
-                },
+                state = GameState(buf.readString(), buf.readEnum()),
                 remainingDuration = buf.readDuration(),
                 totalDuration = buf.readDuration(),
                 readyPlayers = buf.readInt(),
@@ -50,7 +48,8 @@ data class ReadyUpdatePacket(
         override fun toPacketBuf(source: ReadyUpdatePacket, dest: IPacketBuf) {
             dest.writeBoolean(source.isRunning)
             dest.writeBoolean(source.isReady)
-            dest.writeString(source.state.name)
+            dest.writeString(source.state.identifier)
+            dest.writeEnum(source.state.status)
             dest.writeDuration(source.remainingDuration)
             dest.writeDuration(source.totalDuration)
             dest.writeInt(source.readyPlayers)
@@ -72,11 +71,7 @@ data class ReadyUpdatePacket(
             return ReadyUpdatePacket(
                 isRunning = buf.readBoolean(),
                 isReady = buf.readBoolean(),
-                state = try {
-                    GameState.valueOf(buf.readString())
-                } catch (_: IllegalArgumentException) {
-                    GameState.PREGAME
-                },
+                state = GameState(buf.readString().lowercase(), BingoGameStatus.PREGAME),
                 remainingDuration = buf.readDuration(),
                 totalDuration = buf.readDuration(),
                 readyPlayers = buf.readInt(),
@@ -90,7 +85,7 @@ data class ReadyUpdatePacket(
         override fun toPacketBuf(source: ReadyUpdatePacket, dest: IPacketBuf) {
             dest.writeBoolean(source.isRunning)
             dest.writeBoolean(source.isReady)
-            dest.writeString(source.state.name)
+            dest.writeString(source.state.identifier.uppercase())
             dest.writeDuration(source.remainingDuration)
             dest.writeDuration(source.totalDuration)
             dest.writeInt(source.readyPlayers)

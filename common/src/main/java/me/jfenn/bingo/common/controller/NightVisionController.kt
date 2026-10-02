@@ -1,16 +1,17 @@
 package me.jfenn.bingo.common.controller
 
+import me.jfenn.bingo.api.state.GameState
+import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.config.PlayerSettingsService
+import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.isPlayingOrCountdown
+import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.platform.EffectType
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
-import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.config.PlayerSettingsService
-import me.jfenn.bingo.common.event.ScopedEvents
-import me.jfenn.bingo.common.scope.BingoComponent
-import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
-import me.jfenn.bingo.common.team.TeamService
 import org.slf4j.Logger
 
 internal class NightVisionController(
