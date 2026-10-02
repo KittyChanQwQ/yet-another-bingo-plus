@@ -80,10 +80,14 @@ internal data class BingoTeam(
      * references with the original
      */
     fun newInstance(): BingoTeam {
-        return copy(
-            completedCards = mutableListOf(),
-            chatCoordinates = mutableListOf(),
-            playerMap = mutableMapOf(),
+        return BingoTeam(
+            id = id,
+            name = name,
+            shouldFormatName = shouldFormatName,
+            symbol = symbol,
+            textColor = textColor,
+            isTemporary = isTemporary,
+            playerMap = playerMap.toMutableMap(),
         )
     }
 

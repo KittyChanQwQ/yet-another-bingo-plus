@@ -12,7 +12,7 @@ internal class WaystonesPlugin(
     events: IEventBus,
 ) {
     init {
-        events.register(GameResetEvent) {
+        events.register(GameResetEvent.After) {
             log.info("[WaystonesPlugin] Game resetting...")
 
             WaystonesAPI.getAllWaystones(server)

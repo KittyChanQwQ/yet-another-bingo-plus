@@ -5,7 +5,6 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
-import me.jfenn.bingo.common.game.GameResetPacket
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.options.BingoOptions
@@ -18,7 +17,6 @@ import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.integrations.vanish.IVanishApi
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.event.IEventBus
-import me.jfenn.bingo.platform.event.game.GameResetEvent
 import me.jfenn.bingo.platform.world.IGameRules
 import org.joml.Vector3d
 import org.slf4j.Logger
@@ -106,7 +104,8 @@ internal class PlayerController(
                 !cardViewService.supportsCardHud(player) && vanishApi.isInstalled() -> PlayerGameMode.ADVENTURE
                 else -> PlayerGameMode.SPECTATOR
             }
-            GameState.POSTGAME -> when {
+            GameState.POSTGAME,
+            GameState.STARTING_NEXT_ROUND -> when {
                 cardViewService.supportsCardHud(player) -> PlayerGameMode.SPECTATOR
                 else -> PlayerGameMode.CREATIVE
             }
@@ -238,10 +237,9 @@ internal class PlayerController(
             state.playersJoinedIds.add(player.uuid)
         }
 
-        eventBus.register(GameResetEvent) {
+        events.onEnter(GameState.PREGAME, requireChange = true) {
             // if any player is still in the world, teleport to the lobby
             for (player in playerManager.getPlayers()) {
-                packets.gameResetV1.send(player, GameResetPacket())
                 if (player.world.identifier == LOBBY_WORLD_IDENTIFIER) {
                     // hack: teleport the player to the overworld to force reloading the dimension
                     player.teleport(serverWorldFactory.overworld, Vector3d(0.0), 0f, 0f)
@@ -282,7 +280,15 @@ internal class PlayerController(
             if (prevState == GameState.LOADING) return@onEnter
 
             for (player in playerManager.getPlayers()) {
-                if (state.isLobbyMode) updateGameMode(player, forceReset = true)
+                if (state.isLobbyMode) {
+                    if (player.world.isOverworld) {
+                        // hack: teleport the player to the lobby to force reloading the dimension
+                        // (this is needed for STARTING_NEXT_ROUND)
+                        spawnService.teleportToLobby(player)
+                    }
+
+                    updateGameMode(player, forceReset = true)
+                }
             }
         }
 

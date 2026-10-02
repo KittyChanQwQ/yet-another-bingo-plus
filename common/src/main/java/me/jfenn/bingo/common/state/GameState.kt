@@ -13,7 +13,9 @@ enum class GameState(
     LOADING("§c", "IN-GAME"),
     COUNTDOWN("§c", "IN-GAME"),
     PLAYING("§c", "IN-GAME"),
-    POSTGAME("§6", "POST-GAME");
+    POSTGAME("§6", "POST-GAME"),
+    /** Used when "Next Round" is clicked on the end menu */
+    STARTING_NEXT_ROUND("§6", "POST-GAME");
 
     val isInLobby get() = when (this) {
         PREGAME, LOBBY_EDITOR, STARTING, PRELOADING -> true
@@ -22,6 +24,11 @@ enum class GameState(
 
     val isPlayingOrCountdown get() = when (this) {
         LOADING, COUNTDOWN, PLAYING -> true
+        else -> false
+    }
+
+    val canStartNewRound get() = when (this) {
+        PREGAME, STARTING_NEXT_ROUND -> true
         else -> false
     }
 }

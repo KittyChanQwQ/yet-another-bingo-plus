@@ -46,6 +46,10 @@ data class BingoState internal constructor(
     internal val options: BingoOptions,
     internal val restoreOptions: MutableList<RestoreOption> = mutableListOf(),
     internal val teams: MutableMap<BingoTeamKey, BingoTeam> = mutableMapOf(),
+    /**
+     * Stores the teams in POSTGAME to optionally recreate after the game is reset
+     */
+    internal var teamRestore: List<BingoTeam> = listOf(),
     var previewMap: BingoMap? = null,
     // This is a temporary list that should be overwritten by `CardService.generate()`
     internal val cards: MutableList<BingoCard> = mutableListOf(),

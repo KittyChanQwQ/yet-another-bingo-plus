@@ -2,10 +2,13 @@ package me.jfenn.bingo.common.reset
 
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.game.GameResetPacket
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.state.PersistentStateManager
 import me.jfenn.bingo.common.utils.measureTime
+import me.jfenn.bingo.platform.IPlayerManager
 import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.config.IConfigManager
 import me.jfenn.bingo.platform.event.IEventBus
@@ -21,6 +24,8 @@ internal class ResetService(
     private val config: BingoConfig,
     private val serverWorldFactory: IServerWorldFactory,
     private val persistentStateManager: PersistentStateManager,
+    private val playerManager: IPlayerManager,
+    private val packets: ServerPacketEvents,
     private val log: Logger,
 ) {
 
@@ -64,9 +69,12 @@ internal class ResetService(
         }
         state.resetSeed(serverWorldFactory.seed)
         persistentStateManager.writeAll()
+        playerManager.getPlayers().forEach {
+            packets.gameResetV1.send(it, GameResetPacket())
+        }
 
-        log.info("[Reset] Teleporting players back to lobby")
-        eventBus.emit(GameResetEvent)
+        log.info("[Reset] Done!")
+        eventBus.emit(GameResetEvent.After)
         state.changeState(eventBus, newState)
     }
 

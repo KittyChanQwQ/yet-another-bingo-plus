@@ -14,7 +14,6 @@ import me.jfenn.bingo.common.options.format
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.stats.WriteStatsService
-import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.team.ShuffleTeamsCommand
 import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamService
@@ -130,7 +129,7 @@ internal class GameService(
         }
 
         // if the game has already been started, ignore
-        if (state.state != GameState.PREGAME) {
+        if (!state.state.canStartNewRound) {
             warnings.add(text.string(StringKey.CommandStartAlreadyStarted))
             eventBus.emit(GameWarningEvent, GameWarningEvent.info(warnings))
             return false

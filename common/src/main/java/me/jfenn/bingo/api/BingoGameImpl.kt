@@ -23,7 +23,8 @@ internal class BingoGameImpl(
             GameState.LOADING,
             GameState.COUNTDOWN -> BingoGameStatus.STARTING
             GameState.PLAYING -> BingoGameStatus.PLAYING
-            GameState.POSTGAME -> BingoGameStatus.POSTGAME
+            GameState.POSTGAME,
+            GameState.STARTING_NEXT_ROUND -> BingoGameStatus.POSTGAME
         }
 
     override val time: Duration?

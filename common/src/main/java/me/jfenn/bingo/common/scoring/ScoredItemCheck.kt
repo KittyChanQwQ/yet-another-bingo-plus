@@ -593,7 +593,7 @@ internal class ScoredItemCheck(
         }
 
         events.onEnter(GameState.PREGAME) { reset() }
-        eventBus.register(GameResetEvent) { reset() }
+        eventBus.register(GameResetEvent.After) { reset() }
 
         events.onEnter(GameState.PLAYING) {
             for (card in state.cards) {

@@ -110,7 +110,10 @@ internal class ReadyController(
                     }
                 }
                 VoteType.NEXT_ROUND -> {
-                    // TODO
+                    serverTaskExecutor.execute {
+                        resetService.resetGame(GameState.STARTING_NEXT_ROUND)
+                        gameService.start(ignoreWarnings = true, allowSpectators = true)
+                    }
                 }
                 null -> {}
             }
@@ -126,7 +129,6 @@ internal class ReadyController(
             totalPlayers = playerManager.getPlayers().size,
             title = null,
             subtitle = null,
-            voteOptions = emptyList(),
             votePending = readyService.currentVote()?.id,
         )
 
@@ -188,6 +190,7 @@ internal class ReadyController(
                     totalPlayers = 0,
                     title = null,
                     subtitle = null,
+                    votePending = readyService.currentVote()?.id,
                 )
                 for (player in playerManager.getPlayers()) {
                     val packet = basePacket.copy(voteOptions = createVoteOptions(player))

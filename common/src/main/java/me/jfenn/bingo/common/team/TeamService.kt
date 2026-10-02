@@ -57,6 +57,14 @@ internal class TeamService(
         )
     }
 
+    fun restoreTeam(teamTemplate: BingoTeam) {
+        val team = state.registerTeam(teamTemplate)
+        for (teamPlayer in team.players) {
+            val player = playerManager.getPlayer(teamPlayer.uuid) ?: continue
+            eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, team))
+        }
+    }
+
     fun joinTeam(player: IPlayerHandle, teamTemplate: BingoTeam) {
         if (getPlayerTeam(player)?.key == teamTemplate.key) return
         val team = state.registerTeam(teamTemplate)

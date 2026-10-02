@@ -28,6 +28,18 @@ internal class TeamController(
             teamService.clearTeams()
         }
 
+        events.onEnter(GameState.POSTGAME) {
+            state.teamRestore = state.teams.values.map {
+                it.newInstance()
+            }
+        }
+
+        events.onEnter(GameState.STARTING_NEXT_ROUND) {
+            for (team in state.teamRestore) {
+                teamService.restoreTeam(team)
+            }
+        }
+
         eventBus.register(GameResetEvent.BeforeClose) {
             teamService.clearTeams()
         }
