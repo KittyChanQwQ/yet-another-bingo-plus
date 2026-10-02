@@ -7,6 +7,7 @@ import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.packet.PacketConverter
 import me.jfenn.bingo.platform.text.IText
 import java.time.Duration
+import java.util.*
 
 data class ReadyUpdatePacket(
     val isRunning: Boolean,
@@ -19,7 +20,51 @@ data class ReadyUpdatePacket(
     val title: IText?,
     val subtitle: IText?,
     val canSendReady: Boolean = false,
+    val voteOptions: List<VoteOption> = emptyList(),
+    val votePending: UUID? = null,
 ) {
+    object V2 : PacketConverter<ReadyUpdatePacket> {
+        override val id: Identifier = Identifier.of(MOD_ID_BINGO, "ready_timer_update_v2")
+
+        override fun fromPacketBuf(buf: IPacketBuf): ReadyUpdatePacket {
+            return ReadyUpdatePacket(
+                isRunning = buf.readBoolean(),
+                isReady = buf.readBoolean(),
+                state = try {
+                    GameState.valueOf(buf.readString())
+                } catch (_: IllegalArgumentException) {
+                    GameState.PREGAME
+                },
+                remainingDuration = buf.readDuration(),
+                totalDuration = buf.readDuration(),
+                readyPlayers = buf.readInt(),
+                totalPlayers = buf.readInt(),
+                title = buf.readNullable(buf::readText),
+                subtitle = buf.readNullable(buf::readText),
+                canSendReady = buf.readBoolean(),
+                voteOptions = buf.readList { VoteOption.V1.fromPacketBuf(buf) },
+                votePending = buf.readNullable(buf::readUUID),
+            )
+        }
+
+        override fun toPacketBuf(source: ReadyUpdatePacket, dest: IPacketBuf) {
+            dest.writeBoolean(source.isRunning)
+            dest.writeBoolean(source.isReady)
+            dest.writeString(source.state.name)
+            dest.writeDuration(source.remainingDuration)
+            dest.writeDuration(source.totalDuration)
+            dest.writeInt(source.readyPlayers)
+            dest.writeInt(source.totalPlayers)
+            dest.writeNullable(source.title, dest::writeText)
+            dest.writeNullable(source.subtitle, dest::writeText)
+            dest.writeBoolean(source.canSendReady)
+            dest.writeList(source.voteOptions) {
+                VoteOption.V1.toPacketBuf(it, dest)
+            }
+            dest.writeNullable(source.votePending, dest::writeUUID)
+        }
+    }
+
     object V1 : PacketConverter<ReadyUpdatePacket> {
         override val id: Identifier = Identifier.of(MOD_ID_BINGO, "ready_timer_update")
 

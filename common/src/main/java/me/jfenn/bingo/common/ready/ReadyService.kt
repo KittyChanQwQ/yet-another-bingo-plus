@@ -24,6 +24,14 @@ internal class ReadyService(
     private val text: TextProvider,
     private val log: Logger,
 ) {
+    fun currentVote(): VoteType? {
+        return readyTimerState.leadingVote() ?: when (state.state) {
+            GameState.PREGAME -> VoteType.START
+            GameState.POSTGAME -> VoteType.NEXT_ROUND
+            else -> null
+        }
+    }
+
     fun isReadyEnabled(player: IPlayerHandle): Boolean {
         val isLobbyMode = state.isLobbyMode
         val isPregameCountdown = state.state == GameState.PREGAME && config.startWhenReadySeconds != null
@@ -74,7 +82,7 @@ internal class ReadyService(
         }
     }
 
-    fun setReady(player: IPlayerHandle, isReady: Boolean): ReadyResult {
+    fun setReady(player: IPlayerHandle, voteType: VoteType?): ReadyResult {
         if (!canUseReady(player)) {
             return ReadyResult.Failed(
                 text.string(
@@ -84,7 +92,7 @@ internal class ReadyService(
             )
         }
 
-        if (isReady && !readyTimerState.isRunning && isConditionSatisfied()) {
+        if (voteType != null && !readyTimerState.isRunning && isConditionSatisfied()) {
             startTimer()
         }
 
@@ -92,20 +100,37 @@ internal class ReadyService(
             return ReadyResult.Failed(text.string(StringKey.CommandReadyNotRunning))
         }
 
-        readyTimerState.setReady(player.uuid, isReady)
+        readyTimerState.setReady(player.uuid, voteType)
+        if (permissions.hasPermission(player, Permission.CONFIGURE_GAME)) {
+            // if the player is an operator, lock the next action to operators only
+            readyTimerState.operatorVote = voteType
+
+            // clear the votes of any other options
+            playerManager.getPlayers()
+                .filter { readyTimerState.getVote(it.uuid) != voteType }
+                .forEach { readyTimerState.setReady(it.uuid, null) }
+        }
+
         playerManager.updatePlayerListName(player)
         return ReadyResult.ChangedTo(
-            ready = isReady,
+            vote = voteType,
             message = text.string(
-                if (isReady) StringKey.CommandReadyTrue else StringKey.CommandReadyFalse,
+                if (voteType != null) StringKey.CommandReadyTrue else StringKey.CommandReadyFalse,
                 player.playerName
             )
         )
     }
 
+    fun setReady(player: IPlayerHandle, isReady: Boolean): ReadyResult =
+        setReady(player, if (isReady) currentVote() else null)
+
     fun toggleReady(player: IPlayerHandle): ReadyResult {
         val isReady = !readyTimerState.isReady(player.uuid)
         return setReady(player, isReady)
+    }
+
+    fun setVote(player: IPlayerHandle, voteType: VoteType? = currentVote()): ReadyResult {
+        return setReady(player, voteType)
     }
 
     fun tick() {

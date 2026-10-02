@@ -34,9 +34,7 @@ internal class MessageHistoryWidget(
     private var subtitleText: List<IText> = emptyList()
     private var titleHeight: Int = 0
 
-    private var statusText: List<IText> = emptyList()
-    private var statusTextWidths: List<Int> = emptyList()
-    private var statusHeight: Int = 0
+    private val statusWidget = GameInfoWidget(koin)
 
     private var messages: List<BingoHudState.ScoreMessage> = emptyList()
 
@@ -51,7 +49,7 @@ internal class MessageHistoryWidget(
                 (subtitleText.size * (client.font.getTextHeight() + 2)) +
                 4 + 12 + 8
 
-        statusText = listOfNotNull(
+        statusWidget.text = listOfNotNull(
             state.gameStatus.remainingDuration
                 ?.let { text.string(StringKey.ScoreboardTimeLeft, text.literal(it.formatString()).formatted(Formatting.YELLOW)) }
                 ?: state.gameStatus.ingameDuration
@@ -60,9 +58,8 @@ internal class MessageHistoryWidget(
                 .formatted(Formatting.GRAY)
                 .takeIf { !state.gameStatus.isDefaultInstance && state.gameStatus.ingameDuration == null }
         )
-        statusTextWidths = statusText.map { client.font.getTextWidth(it) }
-        statusHeight = (statusText.size * (client.font.getTextHeight() + 2)) +
-                8 + 8
+        statusWidget.size.x = width
+        statusWidget.resize()
 
         messages = state.pastMessages.map {
             messageRenderer.getMessageWrapped(it, width - 4)
@@ -72,7 +69,7 @@ internal class MessageHistoryWidget(
     override fun measureContentHeight(): Int {
         val gameOverHeight = when {
             state.gameOver != null -> titleHeight + 8
-            else -> 0
+            else -> statusWidget.size.y + 8
         }
 
         val messagesHeight = messages.sumOf { it.height }
@@ -123,32 +120,6 @@ internal class MessageHistoryWidget(
         }
     }
 
-    private fun renderGameStatus(drawService: IDrawService) {
-        var titleY = 9
-
-        drawService.drawNinePatch(
-            texture = Identifier.of("minecraft", "bingo/game_container"),
-            x = 0,
-            y = 0,
-            width = width,
-            height = statusHeight,
-            sliceSize = 8,
-            textureWidth = 200,
-            textureHeight = 40,
-        )
-
-        for ((line, lineWidth) in statusText.zip(statusTextWidths)) {
-            drawService.drawText(
-                line,
-                (width - lineWidth)/2,
-                titleY,
-                0xff_ffffff.toInt(),
-                false,
-            )
-            titleY += drawService.font.getTextHeight() + 2
-        }
-    }
-
     override fun renderContents(drawService: IDrawService, mouseX: Int, mouseY: Int) {
         var drawY = marginY
 
@@ -159,13 +130,13 @@ internal class MessageHistoryWidget(
             drawService.matrices.pop()
 
             drawY += titleHeight + 8
-        } else if (statusText.isNotEmpty()) {
+        } else if (statusWidget.text.isNotEmpty()) {
             drawService.matrices.push()
             drawService.matrices.translate(0f, drawY.toFloat(), 0f)
-            renderGameStatus(drawService)
+            statusWidget.render(drawService)
             drawService.matrices.pop()
 
-            drawY += statusHeight + 8
+            drawY += statusWidget.size.y + 8
         }
 
         messages.reversed().forEach { scoreMessage ->

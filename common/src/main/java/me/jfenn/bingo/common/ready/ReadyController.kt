@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
+import me.jfenn.bingo.common.game.GameResumeService
 import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.state.BingoState
@@ -28,12 +29,46 @@ internal class ReadyController(
     private val gameService: GameService,
     private val playerManager: IPlayerManager,
     private val resetService: ResetService,
+    private val resumeService: GameResumeService,
     private val packets: ServerPacketEvents,
     private val permissions: IPermissionsApi,
     private val readyService: ReadyService,
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
     events: ScopedEvents,
 ) {
+    private fun isReadyKeybindSupported(player: IPlayerHandle) =
+        packets.readyUpdateV1.isSupported(player)
+            || packets.readyUpdateV2.isSupported(player)
+
+    private fun createVoteOption(type: VoteType, isSelected: Boolean) = VoteOption(
+        id = type.id,
+        title = when (type) {
+            VoteType.START -> text.string(StringKey.GameStart)
+            VoteType.KEEP_PLAYING -> resumeService.getResumeDescription()
+            VoteType.NEXT_ROUND -> text.string(StringKey.WorldNextRound)
+            VoteType.RETURN_TO_LOBBY -> text.string(StringKey.WorldReturnToLobby)
+        },
+        votes = readyState.countVotes(type),
+        isSelected = isSelected
+    )
+
+    private fun createVoteOptions(player: IPlayerHandle): List<VoteOption> {
+        val vote = readyState.getVote(player.uuid)
+        val operatorVote = readyState.operatorVote
+        val isOperator = permissions.hasPermission(player, Permission.CONFIGURE_GAME)
+        return when (state.state) {
+            GameState.POSTGAME -> listOf(VoteType.NEXT_ROUND, VoteType.KEEP_PLAYING, VoteType.RETURN_TO_LOBBY)
+            else -> emptyList()
+        }
+            // if operatorVote is set, limit the non-operator choices to the chosen vote
+            .filter { operatorVote == null || it == operatorVote || isOperator }
+            .map {
+                createVoteOption(
+                    type = it,
+                    isSelected = vote == it,
+                )
+            }
+    }
 
     private fun update(
         playersToUpdate: List<IPlayerHandle> = playerManager.getPlayers(),
@@ -56,16 +91,28 @@ internal class ReadyController(
 
         readyService.tick()
 
-        if (isComplete && state.state == GameState.PREGAME) {
-            log.info("[ReadyController] Reached the end of the PREGAME timer - starting the game!")
-            readyService.reset()
-            gameService.start(allowSpectators = true)
-        }
-
-        if (isComplete && state.state == GameState.POSTGAME) {
-            log.info("[ReadyController] Reached the end of the POSTGAME timer - running reset.")
-            serverTaskExecutor.execute {
-                resetService.resetGame()
+        if (isComplete) {
+            val vote = readyService.currentVote()
+            log.info("[ReadyController] Reached the end of the ${state.state} timer - running ${vote}!")
+            when (vote) {
+                VoteType.START -> {
+                    readyService.reset()
+                    gameService.start(allowSpectators = true)
+                }
+                VoteType.RETURN_TO_LOBBY -> {
+                    serverTaskExecutor.execute {
+                        resetService.resetGame()
+                    }
+                }
+                VoteType.KEEP_PLAYING -> {
+                    serverTaskExecutor.execute {
+                        resumeService.resume()
+                    }
+                }
+                VoteType.NEXT_ROUND -> {
+                    // TODO
+                }
+                null -> {}
             }
         }
 
@@ -79,6 +126,8 @@ internal class ReadyController(
             totalPlayers = playerManager.getPlayers().size,
             title = null,
             subtitle = null,
+            voteOptions = emptyList(),
+            votePending = readyService.currentVote()?.id,
         )
 
         for (player in playersToUpdate) {
@@ -86,7 +135,7 @@ internal class ReadyController(
             val textReadyUp = when {
                 isPlayerReady -> text.string(StringKey.LobbyVotePlayersReady, updatePacket.readyPlayers, updatePacket.totalPlayers)
                 readyService.canUseReady(player) -> when {
-                    packets.readyUpdateV1.isSupported(player) -> text.string(
+                    isReadyKeybindSupported(player) -> text.string(
                         StringKey.LobbyVoteReadyUpKeybind,
                         text.keybind("key.sneak"), text.keybind(KEYBIND_OPEN_CARD)
                     )
@@ -94,24 +143,26 @@ internal class ReadyController(
                 }
                 else -> null
             }
-            val textTimeRemaining = when {
-                state.state == GameState.POSTGAME -> text.string(StringKey.LobbyVoteStartingTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
-                else -> text.string(StringKey.LobbyVoteLeavingTimeRemaining, updatePacket.remainingDuration.formatHHMMSS())
+            val textTimeRemaining = readyService.currentVote()?.let {
+                text.string(it.timeRemainingKey, updatePacket.remainingDuration.formatHHMMSS())
             }
 
             val packet = updatePacket.copy(
                 isReady = isPlayerReady,
                 title = textReadyUp ?: text.empty(),
                 subtitle = textTimeRemaining,
-                canSendReady = isVotingEnabled && permissions.hasPermission(player, Permission.COMMAND_READY)
+                canSendReady = isVotingEnabled && permissions.hasPermission(player, Permission.COMMAND_READY),
+                voteOptions = createVoteOptions(player),
             )
 
             when {
+                packets.readyUpdateV2.send(player, packet) -> {}
                 packets.readyUpdateV1.send(player, packet) -> {}
                 packet.isRunning -> {
-                    val message = text.empty().append(textTimeRemaining).let {
-                        if (textReadyUp != null) it.append(" - ").append(textReadyUp) else it
-                    }
+                    val message = text.joinText(
+                        listOfNotNull(textTimeRemaining, textReadyUp),
+                        text.literal(" - ")
+                    )
                     player.sendHotbarMessage(message)
                 }
             }
@@ -127,7 +178,7 @@ internal class ReadyController(
 
             // If the timer is not running, send an extra packet to dismiss the ready GUI
             if (!readyState.isRunning && it.to != GameState.PRELOADING) {
-                val packet = ReadyUpdatePacket(
+                val basePacket = ReadyUpdatePacket(
                     isRunning = false,
                     isReady = false,
                     state = state.state,
@@ -139,7 +190,9 @@ internal class ReadyController(
                     subtitle = null,
                 )
                 for (player in playerManager.getPlayers()) {
+                    val packet = basePacket.copy(voteOptions = createVoteOptions(player))
                     when {
+                        packets.readyUpdateV2.send(player, packet) -> {}
                         packets.readyUpdateV1.send(player, packet) -> {}
                     }
                 }
@@ -156,7 +209,7 @@ internal class ReadyController(
         events.onChangeTeam {
             // If the player leaves their team, un-ready them
             if (it.team == null) {
-                readyState.setReady(it.player.uuid, false)
+                readyState.setReady(it.player.uuid, null)
                 playerManager.updatePlayerListName(it.player)
             }
             // If the player changes team while ready, update the tab name
@@ -171,6 +224,17 @@ internal class ReadyController(
             // Only send the chat message if the player is in multiplayer (or if it failed)
             if (!state.isSingleplayer() || result !is ReadyResult.ChangedTo) {
                 it.player.sendMessage(result.message)
+            }
+        }
+
+        events.onPacket(packets.readySetV2) { (player, packet) ->
+            val voteType = VoteType.entries.find { it.id == packet.optionId }
+                ?.takeIf { packet.isReady }
+                ?: (if (packet.isReady) readyService.currentVote() else null)
+
+            val result = readyService.setReady(player, voteType)
+            if (result !is ReadyResult.ChangedTo) {
+                player.sendMessage(result.message)
             }
         }
 

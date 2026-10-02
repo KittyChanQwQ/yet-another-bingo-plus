@@ -7,6 +7,7 @@ import me.jfenn.bingo.client.common.hud.card.ClientCardManager
 import me.jfenn.bingo.client.common.hud.card.ClientCardRenderer
 import me.jfenn.bingo.client.common.hud.screen.BingoCardPlacementScreen
 import me.jfenn.bingo.client.common.hud.screen.BingoHudScreen
+import me.jfenn.bingo.client.common.hud.screen.BingoVoteOptionsScreen
 import me.jfenn.bingo.client.common.packet.ClientPacketEvents
 import me.jfenn.bingo.client.common.settings.ClientSettingsController
 import me.jfenn.bingo.client.common.settings.ClientSettingsService
@@ -40,6 +41,7 @@ val commonClientModule = module {
     singleOf(::ReadyHudRenderer)
     singleOf(::TooltipHudRenderer)
     singleOf(BingoHudScreen::Factory)
+    singleOf(BingoVoteOptionsScreen::Factory)
     singleOf(BingoCardPlacementScreen::Factory)
     singleOf(::BingoHudController) withOptions { createdAtStart() }
     singleOf(::BingoCardImageController) withOptions { createdAtStart() }

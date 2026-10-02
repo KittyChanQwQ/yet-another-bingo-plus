@@ -16,11 +16,11 @@ import me.jfenn.bingo.client.platform.ITabsWidgetFactory
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.screen.*
 import me.jfenn.bingo.common.config.BingoConfig
-import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardTileAction
 import me.jfenn.bingo.common.map.Color
 import me.jfenn.bingo.common.ready.SetReadyPacket
+import me.jfenn.bingo.common.ready.VoteOption
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.*
@@ -41,6 +41,7 @@ internal class BingoHudScreen(
     private val client: IClient = koin.get(),
     private val config: BingoConfig = koin.get(),
     private val helper: IMutableScreenHelper,
+    private val voteOptionsScreenFactory: BingoVoteOptionsScreen.Factory,
     originalCardKey: BingoTeamKey?,
     originalCardPos: Pair<Float, Float>,
     originalCardScale: Float = config.client.cardScale,
@@ -63,6 +64,7 @@ internal class BingoHudScreen(
         private val scrollableWidgetFactory: IScrollableWidgetFactory,
         private val tabsWidgetFactory: ITabsWidgetFactory,
         private val screenFactory: IScreenFactory,
+        private val voteOptionsScreenFactory: BingoVoteOptionsScreen.Factory,
         private val eventBus: IEventBus,
     ) {
         fun create(
@@ -81,6 +83,7 @@ internal class BingoHudScreen(
                 state = state,
                 config = config,
                 helper = helper,
+                voteOptionsScreenFactory = voteOptionsScreenFactory,
                 originalCardKey = originalCardKey,
                 originalCardPos = originalCardPos,
                 scrollableWidgetFactory = scrollableWidgetFactory,
@@ -134,7 +137,7 @@ internal class BingoHudScreen(
     fun getCardPositions() = buildMap {
         // if the tab is not showing CARDS, don't interpolate the card positions
         if (tab != GameOverPacket.EndScreenTab.CARDS) return@buildMap
-        cardsWidget.viewsWithPositions { view, x, y, z ->
+        cardsWidget.viewsWithPositions { view, x, y, _ ->
             put(view.teamKey, Pair(x, y))
         }
     }
@@ -167,19 +170,23 @@ internal class BingoHudScreen(
         }
     }
 
-    private val keepPlayingButton = buttonFactory.createNinePatchButton(
+    private val isMoreOptionsVisible get() = gameOver != null
+            && packets.readySetV2.isSupported()
+            && state.ready?.voteOptions.orEmpty().size > 1
+    private val moreOptionsButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 20),
         texture = "minecraft:bingo/button_game_generic",
         focusedTexture = "minecraft:bingo/button_game_generic_focused"
     ).also {
-        it.message = gameOver?.packet?.resumeDescription ?: text.string(StringKey.WorldKeepPlaying)
+        it.message = text.string(StringKey.OptionsMore)
         it.onClick {
-            client.player.sendCommand(GameCommands.RESUME_COMMAND)
-            helper.close()
+            client.screen = voteOptionsScreenFactory.create(gameOver, canEscape)
         }
     }
 
+    private val isPrimaryButtonVisible get() = gameOver != null && (gameOver.packet.isReturnToLobbyAvailable || state.ready?.canSendReady == true)
+    private var primaryVoteOption: VoteOption? = null
     private val primaryButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 40),
@@ -189,14 +196,14 @@ internal class BingoHudScreen(
     ).also { button ->
         button.message = text.string(StringKey.WorldReturnToLobby)
         button.onClick {
-            sendReadyForNextRound()
+            sendReady(primaryVoteOption)
         }
     }
 
     private val tabsWidget = tabsWidgetFactory.create(GameOverPacket.EndScreenTab.entries.map { text.string(it.title) })
         .apply {
             currentTab = gameOver?.tab?.ordinal ?: 0
-            onTabChanged(::onTabChanged)
+            onTabChanged { this@BingoHudScreen.onTabChanged() }
         }
 
     // If multiple teams have a duration (i.e. have completed the game), show the score list by default
@@ -209,7 +216,7 @@ internal class BingoHudScreen(
             )
     private val tabsHeight get() = tabsWidget.height / 2
 
-    private fun onTabChanged(newTab: Int) {
+    private fun onTabChanged() {
         init()
         tab?.let { gameOver?.tab = it }
     }
@@ -224,8 +231,12 @@ internal class BingoHudScreen(
         init()
     }
 
-    private fun sendReadyForNextRound() {
-        packets.readySetV1.send(SetReadyPacket(true))
+    private fun sendReady(voteOption: VoteOption?) {
+        val packet = SetReadyPacket(true, voteOption?.id)
+        when {
+            packets.readySetV2.send(packet) -> {}
+            packets.readySetV1.send(packet) -> {}
+        }
         // If the screen is paused, it must be closed so that the server can process the ready packet
         if (client.isInSingleplayer && shouldPause()) {
             helper.close()
@@ -286,24 +297,22 @@ internal class BingoHudScreen(
         settingsButton?.size = Vector2i(closeButtonSize, 20)
         settingsButton?.position = Vector2i(width - interpolatedSidebarWidth + marginX + closeButtonSize + 2, buttonY)
 
-        if (gameOver != null) {
-            if (gameOver.packet.isResumeAvailable) {
-                keepPlayingButton.size = Vector2i(sidebarWidth - marginX * 2, 20)
-                buttonY -= marginY + keepPlayingButton.size.y
-                keepPlayingButton.position = Vector2i(width - interpolatedSidebarWidth + marginX, buttonY)
-            }
+        if (isMoreOptionsVisible) {
+            moreOptionsButton.size = Vector2i(sidebarWidth - marginX * 2, 20)
+            buttonY -= marginY + moreOptionsButton.size.y
+            moreOptionsButton.position = Vector2i(width - interpolatedSidebarWidth + marginX, buttonY)
+        }
 
-            if (gameOver.packet.isReturnToLobbyAvailable || state.ready?.canSendReady == true) {
-                primaryButton.size = Vector2i(sidebarWidth - marginX * 2, 40)
-                buttonY -= marginY + primaryButton.size.y
-                primaryButton.position = Vector2i(width - interpolatedSidebarWidth + marginX, buttonY)
-            }
+        if (isPrimaryButtonVisible) {
+            primaryButton.size = Vector2i(sidebarWidth - marginX * 2, 40)
+            buttonY -= marginY + primaryButton.size.y
+            primaryButton.position = Vector2i(width - interpolatedSidebarWidth + marginX, buttonY)
         }
 
         messagesWidget.x = width - interpolatedSidebarWidth + marginX
         messagesWidget.y = 0
         messagesWidget.width = sidebarWidth - marginX*2
-        messagesWidget.height = buttonY
+        messagesWidget.height = buttonY - 10
     }
 
     override fun init() {
@@ -327,14 +336,12 @@ internal class BingoHudScreen(
             helper.addButton(settingsButton)
         }
 
-        if (gameOver != null) {
-            if (gameOver.packet.isResumeAvailable) {
-                helper.addButton(keepPlayingButton)
-            }
+        if (isMoreOptionsVisible) {
+            helper.addButton(moreOptionsButton)
+        }
 
-            if (gameOver.packet.isReturnToLobbyAvailable || state.ready?.canSendReady == true) {
-                helper.addButton(primaryButton)
-            }
+        if (isPrimaryButtonVisible) {
+            helper.addButton(primaryButton)
         }
 
         messagesWidgetImpl.resize()
@@ -474,11 +481,22 @@ internal class BingoHudScreen(
         }
 
         val ready = state.ready
-        primaryButton.active = ready?.isReady == false
-        if (ready != null && ready.isRunning) {
-            primaryButton.message = text.string(StringKey.LobbyVoteLeavingTimeRemaining, ready.remainingDuration.formatHHMMSS())
-        } else {
-            primaryButton.message = text.string(StringKey.WorldReturnToLobby)
+        primaryVoteOption = ready?.voteOptions?.find { it.id == ready.votePending }
+        primaryVoteOption?.let {
+            primaryButton.message = it.title
+            primaryButton.active = !it.isSelected
+        } ?: run {
+            primaryButton.active = ready?.isReady == false
+        }
+
+        state.ready?.takeIf { it.isRunning }?.subtitle?.let { title ->
+            val titleWidth = drawService.font.getTextWidth(title)
+            drawService.drawText(
+                title,
+                x = primaryButton.position.x + (primaryButton.size.x / 2) - (titleWidth / 2),
+                y = primaryButton.position.y - 9,
+                color = 0xff_888888.toInt(),
+            )
         }
 
         val cardTop = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT /2)

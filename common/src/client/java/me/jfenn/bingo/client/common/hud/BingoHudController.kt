@@ -38,7 +38,6 @@ import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.event.model.ServerEvent
 import me.jfenn.bingo.platform.resource.IResourceManager
 import net.minecraft.client.gui.screens.ChatScreen
-import org.slf4j.Logger
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -59,7 +58,6 @@ internal class BingoHudController(
     packetEvents: ClientPacketEvents,
     private val eventBus: IEventBus,
     private val client: IClient,
-    private val log: Logger
 ) : BingoComponent() {
 
     private var cardHudWasClicked: Boolean = false
@@ -290,7 +288,10 @@ internal class BingoHudController(
         val packet = clientPacket.packet
         val isStateChanged = state.ready?.canSendReady != packet.canSendReady ||
                 state.ready?.isReady != packet.isReady ||
-                state.ready?.isRunning != packet.isRunning
+                state.ready?.isRunning != packet.isRunning ||
+                state.ready?.voteOptions != packet.voteOptions ||
+                state.ready?.title != packet.title ||
+                state.ready?.subtitle != packet.subtitle
 
         state.ready = packet
         if (isStateChanged) {
@@ -456,6 +457,7 @@ internal class BingoHudController(
         eventBus.register(packetEvents.gameOverV1, ::onGameOver)
 
         eventBus.register(packetEvents.readyUpdateV1, ::onReadyUpdate)
+        eventBus.register(packetEvents.readyUpdateV2, ::onReadyUpdate)
 
         eventBus.register(packetEvents.tooltipV1) {
             state.tooltipsByEntity[it.packet.entityId] = it.packet
@@ -554,7 +556,11 @@ internal class BingoHudController(
             }
 
             if (shouldSendReady && state.ready?.isRunning == true) {
-                packetEvents.readySetV1.send(SetReadyPacket(!(state.ready?.isReady ?: false)))
+                val packet = SetReadyPacket(!(state.ready?.isReady ?: false))
+                when {
+                    packetEvents.readySetV2.send(packet) -> {}
+                    packetEvents.readySetV1.send(packet) -> {}
+                }
             }
 
             if (shouldOpenCard) {

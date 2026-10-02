@@ -9,9 +9,10 @@ import java.util.*
 class ReadyTimerState {
 
     private var totalPlayers = listOf<UUID>()
-    private val readyPlayers = mutableSetOf<UUID>()
+    private val readyPlayers = mutableMapOf<VoteType, MutableSet<UUID>>()
     private var startedAt: Instant? = null
     private var totalDuration: Duration? = null
+    var operatorVote: VoteType? = null
 
     /**
      * If the timer is cancelled with /ready cancel
@@ -25,13 +26,18 @@ class ReadyTimerState {
         totalPlayers = players.map { it.uuid }
     }
 
-    fun isReady(player: UUID): Boolean = player in readyPlayers
+    fun leadingVote() = operatorVote ?: readyPlayers.maxByOrNull { it.value.size }?.key
 
-    fun setReady(player: UUID, ready: Boolean) {
-        if (ready) {
-            readyPlayers.add(player)
-        } else {
-            readyPlayers.remove(player)
+    fun countVotes(voteType: VoteType) = readyPlayers[voteType]?.size ?: 0
+
+    fun isReady(player: UUID): Boolean = leadingVote()?.let { readyPlayers[it]?.contains(player) } ?: false
+
+    fun getVote(player: UUID): VoteType? = readyPlayers.entries.find { it.value.contains(player) }?.key
+
+    fun setReady(player: UUID, voteType: VoteType?) {
+        readyPlayers.values.forEach { it.remove(player) }
+        if (voteType != null) {
+            readyPlayers.getOrPut(voteType) { mutableSetOf() }.add(player)
         }
     }
 
@@ -65,6 +71,7 @@ class ReadyTimerState {
         startedAt = null
         totalDuration = null
         isCancelled = false
+        operatorVote = null
     }
 
 }

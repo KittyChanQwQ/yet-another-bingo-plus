@@ -40,7 +40,9 @@ internal class ServerPacketEvents(
     val gameResetV1 = serverNetworking.registerS2C(GameResetPacket.V1)
 
     val readyUpdateV1 = serverNetworking.registerS2C(ReadyUpdatePacket.V1)
+    val readyUpdateV2 = serverNetworking.registerS2C(ReadyUpdatePacket.V2)
     val readySetV1 = serverNetworking.registerC2S(SetReadyPacket.V1)
+    val readySetV2 = serverNetworking.registerC2S(SetReadyPacket.V2)
 
     val sendPlayerSettingsV1 = serverNetworking.registerC2S(PlayerSettings.V2)
     val receivePlayerSettingsV1 = serverNetworking.registerS2C(PlayerSettings.V2)
