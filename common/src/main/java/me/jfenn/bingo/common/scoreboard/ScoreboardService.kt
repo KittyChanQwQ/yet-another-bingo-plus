@@ -74,17 +74,17 @@ internal class ScoreboardService(
 
     fun setScoreboardContents(
         objective: IObjectiveHandle,
-        contents: List<IText>,
+        contents: List<ScoreboardRow>,
         players: List<IPlayerHandle>,
     ) {
         val contentItems = contents.map {
-            val raw = textSerializer.toRawString(it).let { raw -> if (raw.startsWith('#')) " $raw" else raw }
-            ScoreboardView.ScoreboardItem(raw, it)
+            val raw = textSerializer.toRawString(it.text).let { raw -> if (raw.startsWith('#')) " $raw" else raw }
+            ScoreboardView.ScoreboardItem(raw, it.text, it.score)
         }
 
         // update the server-side objective
         //   note: the "value" is currently unused in this function
-        scoreboardManager.setScoreboardText(objective, contentItems.map { ScoreChange.Create(it.string, it.text, 0) })
+        scoreboardManager.setScoreboardText(objective, contentItems.map { ScoreChange.Create(it.string, it.text, it.score, 0) })
 
         val view = scoreboardViews.getOrPut(objective.name) { ScoreboardView(objective.name) }
         val changes = view.updateContents(contentItems)

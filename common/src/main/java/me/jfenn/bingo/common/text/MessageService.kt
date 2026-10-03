@@ -101,8 +101,18 @@ internal class MessageService(
 
     fun getLines(
         type: String,
-        replacements: Map<String, List<IText>>
-    ): List<IText> {
+        replacements: Map<String, List<IText>>,
+    ): List<IText> = getWrappedLines(
+        type = type,
+        replacements = replacements,
+        wrap = { it }
+    )
+
+    fun <T> getWrappedLines(
+        type: String,
+        replacements: Map<String, List<T>>,
+        wrap: (IText) -> T,
+    ): List<T> {
         val typeWithState = "${type}_${state.state.identifier}"
         val message = scopedData.messages[typeWithState]
             ?: scopedData.messages[type]
@@ -113,11 +123,13 @@ internal class MessageService(
                 line
                     .takeIf { it is JsonPrimitive && it.isString }
                     ?.let { replacements[(it as? JsonPrimitive)?.content] }
-                    ?: listOf(serializers.json.decodeFromJsonElement<ITextSerialized>(line))
+                    ?: listOf(
+                        wrap(
+                            placeholderService.parseText(serializers.json.decodeFromJsonElement<ITextSerialized>(line))
+                        )
+                    )
             }
 
-        return lines.map { line ->
-            placeholderService.parseText(line)
-        }
+        return lines
     }
 }

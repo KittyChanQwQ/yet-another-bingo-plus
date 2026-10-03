@@ -15,10 +15,11 @@ class ScoreboardView(
     class ScoreboardItem(
         val string: String,
         val text: IText,
+        val score: IText?,
     )
 
     fun createChanges(list: List<ScoreboardItem>): List<ScoreChange>
-        = list.mapIndexed { i, item -> ScoreChange.Create(item.string, item.text, list.size - i) }
+        = list.mapIndexed { i, item -> ScoreChange.Create(item.string, item.text, item.score, list.size - i) }
 
     fun updateContents(newList: List<ScoreboardItem>): List<ScoreChange> {
         val changes = mutableListOf<ScoreChange>()
@@ -29,15 +30,15 @@ class ScoreboardView(
             if (prevIndex == newIndex) continue
 
             if (prevIndex != null) {
-                changes.add(ScoreChange.Update(newText.string, newText.text, newIndex))
+                changes.add(ScoreChange.Update(newText.string, newText.text, newText.score, newIndex))
             } else {
-                changes.add(ScoreChange.Create(newText.string, newText.text, newIndex))
+                changes.add(ScoreChange.Create(newText.string, newText.text, newText.score, newIndex))
             }
         }
 
         for ((oldString, i) in contents) {
             if (newList.none { it.string == oldString }) {
-                changes.add(ScoreChange.Remove(oldString, null, i))
+                changes.add(ScoreChange.Remove(oldString, null, null, i))
             }
         }
 

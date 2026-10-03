@@ -72,8 +72,9 @@ internal class ScoreboardController(
                     .takeIf { isMultiCardWinCondition },
             )
         }
+        ?.map { it.toScoreboardRow() }
 
-    private fun getTeamScores(team: BingoTeam?, teamCard: BingoCard): List<IText> {
+    private fun getTeamScores(team: BingoTeam?, teamCard: BingoCard): List<ScoreboardRow> {
         val rankings = ScoreRankingService.getScoreRankings(state)
         return ScoreRankingService.getScoreRankings(state)
             .filter { options.showLeadingTeam || it.key == team?.key || team == null }
@@ -101,7 +102,8 @@ internal class ScoreboardController(
                         .takeIf { options.showCompletedItems || isTeamVisible }
                         ?.let { text.itemCount(it) }
 
-                text.empty()
+                val formatting = if (ranking.key == team?.key || team == null) Formatting.WHITE else Formatting.GRAY
+                val text = text.empty()
                     .append(
                         if (ranking.key == team?.key) {
                             text.literal("➤ ").formatted(team.textColor)
@@ -121,14 +123,11 @@ internal class ScoreboardController(
                             )
                             ?: text.empty()
                     )
-                    .let {
-                        if (score != null) {
-                            it.append(" · ").append(score)
-                        } else {
-                            it
-                        }
-                    }
-                    .formatted(if (ranking.key == team?.key || team == null) Formatting.WHITE else Formatting.GRAY)
+
+                ScoreboardRow(
+                    text = text.formatted(formatting),
+                    score = score?.formatted(formatting),
+                )
             }
     }
 
@@ -187,7 +186,7 @@ internal class ScoreboardController(
             for (team in state.teams.values + null) {
                 val teamCard = team?.let { state.getCard(it) } ?: state.getActiveCard()
 
-                val placeholders: Map<String, List<IText>> = buildMap {
+                val placeholders: Map<String, List<ScoreboardRow>> = buildMap {
                     options.formatGameModeIcons(teamCard)
                         .joinToString(" ")
                         .let {
@@ -197,6 +196,7 @@ internal class ScoreboardController(
                             }
                         }
                         .let { text.string(StringKey.ScoreboardMode, it.formatted(Formatting.YELLOW)) }
+                        .toScoreboardRow()
                         .also { put("%mode%", listOf(it)) }
 
                     options.formatFeaturesIcons()
@@ -208,28 +208,32 @@ internal class ScoreboardController(
                             }
                         }
                         .let { text.string(StringKey.ScoreboardFeatures, it.formatted(Formatting.YELLOW)) }
+                        .toScoreboardRow()
                         .also { put("%features%", listOf(it)) }
 
                     text.string(StringKey.ScoreboardGoal, state.formatCardGoals(team, text).formatted(Formatting.YELLOW))
+                        .toScoreboardRow()
                         .also { put("%goal%", listOf(it)) }
 
                     if (options.showRemainingTime && options.timeLimit != null) {
                         text.string(StringKey.ScoreboardTimeLeft, state.formatTimeRemaining(text, normalColor = Formatting.YELLOW))
+                            .toScoreboardRow()
                             .also { put("%time%", listOf(it)) }
                     } else if (options.timeLimit == null) {
                         val duration = (state.ingameDuration() ?: Duration.ZERO).formatString()
                         text.string(StringKey.ScoreboardTime, text.literal(duration).formatted(Formatting.YELLOW))
+                            .toScoreboardRow()
                             .also { put("%time%", listOf(it)) }
                     } else {
                         put("%time%", emptyList())
                     }
 
-                    put("%team%", listOfNotNull(getTeamName(team)))
+                    put("%team%", listOfNotNull(getTeamName(team)?.toScoreboardRow()))
                     put("%team_score%", getTeamScore(team).orEmpty())
 
                     val leadingTeam = ScoreService.getLeading(state)
-                    put("%leading%", listOfNotNull(getLeadingName(leadingTeam)))
-                    put("%leading_score%", getLeadingScore(team, leadingTeam))
+                    put("%leading%", listOfNotNull(getLeadingName(leadingTeam)?.toScoreboardRow()))
+                    put("%leading_score%", getLeadingScore(team, leadingTeam).map { it.toScoreboardRow() })
 
                     if (state.getRegisteredTeams().size <= 1) {
                         // if in singleplayer, fall back to the explicit "Team:" and "Lines:" score text
@@ -238,7 +242,7 @@ internal class ScoreboardController(
                             listOfNotNull(
                                 get("%team%"),
                                 get("%team_score%"),
-                                listOf(text.empty()),
+                                listOf(text.empty().toScoreboardRow()),
                                 get("%leading%"),
                                 get("%leading_score%"),
                             ).flatten()
@@ -247,7 +251,7 @@ internal class ScoreboardController(
                         put("%scores_list%", getTeamScores(team, teamCard))
                     }
 
-                    put("%ready_up%", readyService.getGlobalMessage().let { listOfNotNull(it.readyUp, it.timeRemaining) })
+                    put("%ready_up%", readyService.getGlobalMessage().let { listOfNotNull(it.readyUp, it.timeRemaining) }.map { it.toScoreboardRow() })
 
                     put(
                         "%game_over%",
@@ -255,14 +259,18 @@ internal class ScoreboardController(
                             listOfNotNull(
                                 gameOverService.getTitle(gameOverInfo),
                                 gameOverService.getMessage(gameOverInfo)
-                            )
+                            ).map { it.toScoreboardRow() }
                         }.orEmpty()
                     )
                 }
 
-                val scoreboardText = messageService.getLines(MessageService.MessageType.SCOREBOARD, placeholders)
+                val scoreboardText = messageService.getWrappedLines(
+                    type = MessageService.MessageType.SCOREBOARD,
+                    replacements = placeholders,
+                    wrap = { it.toScoreboardRow() }
+                )
                     .let { lines ->
-                        val reducedLines: List<IText> = buildList {
+                        val reducedLines: List<ScoreboardRow> = buildList {
                             for (line in lines) {
                                 if (line.toString().isEmpty() && lastOrNull()?.toString()?.isEmpty() == true)
                                     continue
@@ -274,7 +282,7 @@ internal class ScoreboardController(
                         reducedLines.subList(0, reducedLines.size - emptyLines)
                     }
                     .mapIndexed { index, line ->
-                        if (line.toString().isEmpty()) text.literal(" ".repeat(index)) else line
+                        if (line.toString().isEmpty()) text.literal(" ".repeat(index)).toScoreboardRow() else line
                     }
 
                 // Determine which players should be shown the scoreboard
@@ -284,7 +292,7 @@ internal class ScoreboardController(
                     .filter { scoreboardService.shouldDisplayScoreboard(it) }
 
                 val objective = scoreboardService.getScoreboardObjective(team)
-                val displayName = scoreboardText.firstOrNull()
+                val displayName = scoreboardText.firstOrNull()?.text
                     ?: text.string(StringKey.ScoreboardName)
 
                 scoreboardService.setScoreboardTitle(objective, displayName, players)

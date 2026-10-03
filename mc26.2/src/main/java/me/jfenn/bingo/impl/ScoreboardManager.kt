@@ -7,6 +7,8 @@ import me.jfenn.bingo.platform.scoreboard.ScoreChange
 import me.jfenn.bingo.platform.text.IText
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.numbers.BlankFormat
+import net.minecraft.network.chat.numbers.FixedFormat
+import net.minecraft.network.chat.numbers.NumberFormat
 import net.minecraft.network.protocol.game.ClientboundResetScorePacket
 import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket
 import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket
@@ -114,12 +116,14 @@ class ScoreboardManager(
         val serverPlayer: ServerPlayer = player.player
 
         for (change in changes) {
+            val numberFormat: Optional<NumberFormat> = Optional.ofNullable(change.score?.let { FixedFormat(it.value) })
+
             when (change) {
                 is ScoreChange.Create -> {
-                    serverPlayer.connection.send(ClientboundSetScorePacket(change.name, handle.name, change.value, Optional.of(change.text.value), Optional.empty()))
+                    serverPlayer.connection.send(ClientboundSetScorePacket(change.name, handle.name, change.value, Optional.of(change.text.value), numberFormat))
                 }
                 is ScoreChange.Update -> {
-                    serverPlayer.connection.send(ClientboundSetScorePacket(change.name, handle.name, change.value, Optional.of(change.text.value), Optional.empty()))
+                    serverPlayer.connection.send(ClientboundSetScorePacket(change.name, handle.name, change.value, Optional.of(change.text.value), numberFormat))
                 }
                 is ScoreChange.Remove -> {
                     serverPlayer.connection.send(ClientboundResetScorePacket(change.name, handle.name))
