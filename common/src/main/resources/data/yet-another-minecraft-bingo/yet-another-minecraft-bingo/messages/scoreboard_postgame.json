@@ -1,0 +1,11 @@
+{
+  "lines": [
+    {
+      "translate": "bingo.scoreboard.name",
+      "fallback": "Minecraft Bingo"
+    },
+    "%game_over%",
+    "",
+    "%scores_list%"
+  ]
+}

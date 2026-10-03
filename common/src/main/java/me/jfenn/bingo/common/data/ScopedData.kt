@@ -7,7 +7,6 @@ import me.jfenn.bingo.common.spawn.SpawnKits
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.BingoTeamPreset
 import me.jfenn.bingo.common.text.MessageData
-import me.jfenn.bingo.common.text.MessageService.MessageType
 
 internal class ScopedData {
     var teamPresets: Map<BingoTeamKey, BingoTeamPreset> = emptyMap()
@@ -19,7 +18,7 @@ internal class ScopedData {
     var tags: TagType = emptyMap()
     var obtainableItems: Set<String> = emptySet()
     var commandFiles: Map<GameState, String> = emptyMap()
-    var messages: Map<MessageType, MessageData> = emptyMap()
+    var messages: Map<String, MessageData> = emptyMap()
 
     fun copyFrom(other: ScopedData) {
         teamPresets = other.teamPresets

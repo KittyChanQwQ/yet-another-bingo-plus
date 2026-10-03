@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.ready
 
 import me.jfenn.bingo.api.state.GameState
-import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
@@ -11,7 +10,6 @@ import me.jfenn.bingo.common.game.GameService
 import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IExecutors
@@ -36,9 +34,7 @@ internal class ReadyController(
     private val serverTaskExecutor: IExecutors.IServerTaskExecutor,
     events: ScopedEvents,
 ) {
-    private fun isReadyKeybindSupported(player: IPlayerHandle) =
-        packets.readyUpdateV1.isSupported(player)
-            || packets.readyUpdateV2.isSupported(player)
+
 
     private fun createVoteOption(type: VoteType, isSelected: Boolean) = VoteOption(
         id = type.id,
@@ -134,25 +130,11 @@ internal class ReadyController(
 
         for (player in playersToUpdate) {
             val isPlayerReady = readyState.isReady(player.uuid)
-            val textReadyUp = when {
-                isPlayerReady -> text.string(StringKey.LobbyVotePlayersReady, updatePacket.readyPlayers, updatePacket.totalPlayers)
-                readyService.canUseReady(player) -> when {
-                    isReadyKeybindSupported(player) -> text.string(
-                        StringKey.LobbyVoteReadyUpKeybind,
-                        text.keybind("key.sneak"), text.keybind(KEYBIND_OPEN_CARD)
-                    )
-                    else -> text.string(StringKey.LobbyVoteReadyUpCommand, ReadyCommand.READY)
-                }
-                else -> null
-            }
-            val textTimeRemaining = readyService.currentVote()?.let {
-                text.string(it.timeRemainingKey, updatePacket.remainingDuration.formatHHMMSS())
-            }
-
+            val message = readyService.getMessage(player)
             val packet = updatePacket.copy(
                 isReady = isPlayerReady,
-                title = textReadyUp ?: text.empty(),
-                subtitle = textTimeRemaining,
+                title = message.readyUp ?: text.empty(),
+                subtitle = message.timeRemaining,
                 canSendReady = isVotingEnabled && permissions.hasPermission(player, Permission.COMMAND_READY),
                 voteOptions = createVoteOptions(player),
             )
@@ -162,7 +144,7 @@ internal class ReadyController(
                 packets.readyUpdateV1.send(player, packet) -> {}
                 packet.isRunning -> {
                     val message = text.joinText(
-                        listOfNotNull(textTimeRemaining, textReadyUp),
+                        listOfNotNull(message.timeRemaining, message.readyUp),
                         text.literal(" - ")
                     )
                     player.sendHotbarMessage(message)

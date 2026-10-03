@@ -91,7 +91,7 @@ internal class TagLoader(
     }
 
     companion object {
-        const val FILE_SUFFIX = ".json"
+        private const val FILE_SUFFIX = ".json"
         const val TAGS_PATH = "$MOD_ID_BINGO/tags"
     }
 }

@@ -1,18 +1,23 @@
 package me.jfenn.bingo.common.ready
 
 import me.jfenn.bingo.api.state.GameState
+import me.jfenn.bingo.common.KEYBIND_OPEN_CARD
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.JoinCommand
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatHHMMSS
 import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.text.IText
 import org.slf4j.Logger
+import java.time.Duration
 
 internal class ReadyService(
     private val state: BingoState,
@@ -21,6 +26,7 @@ internal class ReadyService(
     private val readyTimerState: ReadyTimerState,
     private val playerManager: IPlayerManager,
     private val permissions: IPermissionsApi,
+    private val packets: ServerPacketEvents,
     private val text: TextProvider,
     private val log: Logger,
 ) {
@@ -151,5 +157,52 @@ internal class ReadyService(
         playerManager.getPlayers().forEach { player ->
             playerManager.updatePlayerListName(player)
         }
+    }
+
+    private fun isReadyKeybindSupported(player: IPlayerHandle) =
+        packets.readyUpdateV1.isSupported(player)
+                || packets.readyUpdateV2.isSupported(player)
+
+    private fun getTimeRemainingMessage(): IText? = currentVote()?.let {
+        if (readyTimerState.isRunning) {
+            val timeRemaining = (readyTimerState.remainingTime() ?: Duration.ZERO).formatHHMMSS()
+            text.string(it.timeRemainingKey, timeRemaining)
+        } else {
+            text.string(StringKey.GameWaitingToStart)
+        }
+    }
+
+    private fun getPlayersReadyMessage(): IText? = when {
+        readyTimerState.isRunning -> {
+            val readyPlayers = playerManager.getPlayers().count { readyTimerState.isReady(it.uuid) }
+            val totalPlayers = playerManager.getPlayers().size
+            text.string(StringKey.LobbyVotePlayersReady, readyPlayers, totalPlayers)
+        }
+        else -> null
+    }
+
+    fun getGlobalMessage(): ReadyUpMessage = ReadyUpMessage(
+        readyUp = getPlayersReadyMessage(),
+        timeRemaining = getTimeRemainingMessage(),
+    )
+
+    fun getMessage(player: IPlayerHandle): ReadyUpMessage {
+        val isPlayerReady = readyTimerState.isReady(player.uuid)
+        val textReadyUp = when {
+            isPlayerReady -> getPlayersReadyMessage()
+            canUseReady(player) -> when {
+                isReadyKeybindSupported(player) -> text.string(
+                    StringKey.LobbyVoteReadyUpKeybind,
+                    text.keybind("key.sneak"), text.keybind(KEYBIND_OPEN_CARD)
+                )
+                else -> text.string(StringKey.LobbyVoteReadyUpCommand, ReadyCommand.READY)
+            }
+            else -> null
+        }
+
+        return ReadyUpMessage(
+            readyUp = textReadyUp,
+            timeRemaining = getTimeRemainingMessage()
+        )
     }
 }

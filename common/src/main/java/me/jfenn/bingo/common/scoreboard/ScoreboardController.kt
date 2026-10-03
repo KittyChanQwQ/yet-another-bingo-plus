@@ -1,12 +1,14 @@
 package me.jfenn.bingo.common.scoreboard
 
-import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.api.options.BingoWinCondition
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.config.PlayerSettingsService
 import me.jfenn.bingo.common.event.ScopedEvents
+import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.ready.ReadyService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.scoring.ScoreRankingService
 import me.jfenn.bingo.common.scoring.ScoreService
@@ -38,11 +40,13 @@ internal class ScoreboardController(
     private val scoreboardService: ScoreboardService,
     private val playerManager: IPlayerManager,
     private val playerSettingsService: PlayerSettingsService,
+    private val readyService: ReadyService,
+    private val gameOverService: GameOverService,
     private val messageService: MessageService,
     private val text: TextProvider,
 ) : BingoComponent() {
 
-    val isMultipleTeams get() = state.state == GameState.PREGAME || state.getRegisteredTeams().size > 1
+    val isMultipleTeams get() = state.getRegisteredTeams().size > 1
 
     val isMultiCardWinCondition get() = when (
         val winCondition = options.winCondition
@@ -242,6 +246,18 @@ internal class ScoreboardController(
                     } else {
                         put("%scores_list%", getTeamScores(team, teamCard))
                     }
+
+                    put("%ready_up%", readyService.getGlobalMessage().let { listOfNotNull(it.readyUp, it.timeRemaining) })
+
+                    put(
+                        "%game_over%",
+                        state.gameOverInfo?.let { gameOverInfo ->
+                            listOfNotNull(
+                                gameOverService.getTitle(gameOverInfo),
+                                gameOverService.getMessage(gameOverInfo)
+                            )
+                        }.orEmpty()
+                    )
                 }
 
                 val scoreboardText = messageService.getLines(MessageService.MessageType.SCOREBOARD, placeholders)

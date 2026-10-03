@@ -34,13 +34,12 @@ class ReadyCommand(
                 sendReadyResult(scope.get<ReadyService>().toggleReady(playerOrThrow))
             }
 
-            // TODO: uncomment when NEXT_ROUND is implemented
-            /*literal("next_round") {
+            literal("next_round") {
                 requires {
                     scope.get<ReadyService>().isReadyEnabled(playerOrThrow) && hasState(GameState.POSTGAME)
                 }
                 executes { voteFor(VoteType.NEXT_ROUND) }
-            }*/
+            }
 
             literal("keep_playing") {
                 requires {
