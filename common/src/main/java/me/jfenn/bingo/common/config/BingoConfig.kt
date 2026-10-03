@@ -44,8 +44,8 @@ data class BingoConfig(
     // when continuing a round, specifies the amount to extend the time limit
     val extendRoundTimeLimitByMinutes: Int = 15,
 
-    // whether teams are removed when returning to the lobby after a game
-    val teamsRemoveWhenReturningToLobby: Boolean = true,
+    // whether teams are persisted when returning to the lobby after a game
+    val teamsPersistWhenReturningToLobby: Boolean = true,
 
     // amount of time to wait before starting the game
     val countdownDelayTicks: Int = 100,

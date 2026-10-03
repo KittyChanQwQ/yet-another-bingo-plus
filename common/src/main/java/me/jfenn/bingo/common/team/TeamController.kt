@@ -2,6 +2,7 @@ package me.jfenn.bingo.common.team
 
 import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.BINGO_TEAM_PREFIX
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.state.BingoState
@@ -15,6 +16,7 @@ import org.slf4j.Logger
 internal class TeamController(
     private val teamService: TeamService,
     private val state: BingoState,
+    private val config: BingoConfig,
     private val playerManager: IPlayerManager,
     private val teamManager: ITeamManager,
     events: ScopedEvents,
@@ -26,6 +28,12 @@ internal class TeamController(
             // clear the team of all online players when entering PREGAME
             // (so that they must rejoin a team for the next game)
             teamService.clearTeams()
+
+            if (config.teamsPersistWhenReturningToLobby) {
+                for (team in state.teamRestore) {
+                    teamService.restoreTeam(team)
+                }
+            }
         }
 
         events.onEnter(GameState.POSTGAME) {

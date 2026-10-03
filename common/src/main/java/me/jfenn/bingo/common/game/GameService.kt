@@ -72,6 +72,10 @@ internal class GameService(
         ignoreWarnings: Boolean = false,
         allowSpectators: Boolean = false,
     ): Boolean {
+        if (options.teamAutoShuffle) {
+            teamService.shuffleTeams(options.teamCount)
+        }
+
         val warnings = mutableListOf<IText>()
         val playersWithoutATeam = playerManager.getPlayers()
             // filter for players that have not chosen a team
