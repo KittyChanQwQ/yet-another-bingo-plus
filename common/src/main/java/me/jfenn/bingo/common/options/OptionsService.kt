@@ -8,6 +8,7 @@ import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterService
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.common.commands.BingoOptionsCommands
+import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.controller.GameRuleController
 import me.jfenn.bingo.common.event.model.OptionsChangedEvent
 import me.jfenn.bingo.common.map.CardViewService
@@ -56,6 +57,7 @@ internal class OptionsService(
     private val state: BingoState,
     private val options: BingoOptions,
     private val cardService: CardService,
+    private val configService: ConfigService,
     private val cardViewService: CardViewService,
     private val elytraService: ElytraService,
     private val objectiveFilterService: ObjectiveFilterService,
@@ -443,6 +445,16 @@ internal class OptionsService(
             text.boolean(options.isTeamKit)
         ))
         eventBus.emit(OptionsChangedEvent)
+    }
+
+    fun resetToDefaults() {
+        // Reset the menu to the default options
+        options.copyFrom(configService.optionsDefault)
+
+        // Reset the active card options to the defaults
+        cardService.createInitialCards()
+
+        ctx.sendFeedback(text.string(StringKey.OptionsResetDefaults))
     }
 
     fun getOptionsSummary(player: IPlayerHandle?): Sequence<IText> = sequence {

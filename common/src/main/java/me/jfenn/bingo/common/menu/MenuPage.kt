@@ -1,10 +1,7 @@
 package me.jfenn.bingo.common.menu
 
-import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.commands.formatWarning
-import me.jfenn.bingo.common.config.ConfigService
 import me.jfenn.bingo.common.game.GameService
-import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.OptionsService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.plus
@@ -12,7 +9,6 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.EntityType
 import me.jfenn.bingo.platform.IDisplayEntity
 import me.jfenn.bingo.platform.ITextDisplayEntity
-import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Matrix4f
 import org.joml.Vector3d
 import org.koin.core.scope.Scope
@@ -20,11 +16,9 @@ import org.koin.core.scope.Scope
 private fun createRootPage(
     koinScope: Scope,
     position: Vector3d,
-    options: BingoOptions = koinScope.get(),
     optionsService: OptionsService = koinScope.get(),
     gameService: GameService = koinScope.get(),
-    cardService: CardService = koinScope.get(),
-    configService: ConfigService = koinScope.get(),
+    state: BingoState = koinScope.get(),
 ) = component(koinScope) {
     val pos = position + Vector3d(-5.5 + MENU_LINE_PADDING*2, 0.0, 0.0)
     registerGameModes(
@@ -50,22 +44,6 @@ private fun createRootPage(
         width = MENU_TEAMS_WIDTH,
         height = 0.55,
     )
-    registerTileButton(
-        position = pos + Vector3d(MENU_TEAMS_WIDTH/2, -0.5 - 2*MENU_LINE_HEIGHT - 3*MENU_LINE_PADDING - 1.2, 0.0),
-        width = MENU_TEAMS_WIDTH,
-        height = 0.55,
-        icon = "⟳",
-        text = text.string(StringKey.OptionsResetDefaults),
-        brightness = MENU_BRIGHTNESS_ALT,
-    ) {
-        // Reset the menu to the default options
-        options.copyFrom(configService.optionsDefault)
-
-        // Reset the active card options to the defaults
-        cardService.createInitialCards()
-
-        optionsService.broadcastHotbarMessage(it, text.string(StringKey.OptionsResetDefaults))
-    }
     pos.add(MENU_TEAMS_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
 
     val startWidth = (position.x + 5.5 - MENU_LINE_PADDING*2) - pos.x
@@ -75,10 +53,11 @@ private fun createRootPage(
         width = startWidth,
     )
 
+    val startButtonHeight = 2.0 - MENU_PLAYER_COUNT_HEIGHT + 2*MENU_LINE_PADDING
     registerTileButton(
-        position = pos + Vector3d(startWidth/2, -2.4 - 2*MENU_LINE_PADDING, 0.0),
+        position = pos + Vector3d(startWidth/2, -2.0 - 2*MENU_LINE_PADDING, 0.0),
         width = startWidth,
-        height = 2.4 - MENU_PLAYER_COUNT_HEIGHT + 2*MENU_LINE_PADDING,
+        height = startButtonHeight,
         text = text.string(StringKey.OptionsStart),
         brightness = MENU_BRIGHTNESS_ALT,
     ) { player ->
@@ -87,6 +66,19 @@ private fun createRootPage(
         gameService.start(
             allowSpectators = player.isSneaking,
         )
+    }
+
+    registerTileButton(
+        position = pos + Vector3d(startWidth/2, -1.0 - 4*MENU_LINE_PADDING - startButtonHeight, 0.0),
+        width = startWidth,
+        height = MENU_LINE_HEIGHT,
+        icon = "⟳",
+        text = text.string(StringKey.OptionsResetDefaults),
+        brightness = MENU_BRIGHTNESS_ALT,
+        tooltip = listOf(text.string(StringKey.OptionsResetDefaultsWarning))
+    ) {
+        state.menu = MenuState.ResetPrompt
+        markDirty()
     }
 }
 
@@ -104,7 +96,7 @@ private fun MenuComponent.registerBackButton(
         textScale = 3.5f,
         brightness = MENU_BRIGHTNESS_ALT,
     ) {
-        state.menu.page = MenuPage.ROOT
+        state.menu = MenuState.Root
     }
 }
 
@@ -220,8 +212,13 @@ private fun createWarningPage(
 
     registerEntity(EntityType.TEXT_DISPLAY) {
         this.pos = position + Vector3d(0.0, -1.7, 0.0)
-        this.value = text.joinText(state.menu.warnings, text.literal("\n\n"))
-            .apply { setColor(0x999955) }
+        this.value = when (val menu = state.menu) {
+            is MenuState.Warnings -> text.joinText(menu.warnings, text.literal("\n\n"))
+                .apply { setColor(0x999955) }
+            is MenuState.ResetPrompt -> text.string(StringKey.OptionsResetDefaultsWarning)
+                .apply { setColor(0x999955) }
+            else -> text.empty()
+        }
 
         billboard = ITextDisplayEntity.Billboard.FIXED
         alignment = ITextDisplayEntity.TextAlignment.LEFT
@@ -236,23 +233,39 @@ private fun createWarningPage(
         text = text.string(StringKey.GuiClose),
         brightness = MENU_BRIGHTNESS_ALT,
     ) {
-        state.menu.page = MenuPage.ROOT
+        state.menu = MenuState.Root
     }
 
     registerTileButton(
         position = position + Vector3d(0.1 + (1.9/2), -2.55, 0.0),
         width = 1.9,
         height = MENU_LINE_HEIGHT,
-        text = text.string(StringKey.OptionsWarningStartAnyway).apply { setColor(0xff9999) },
+        text = text.empty(),
+        textProp = computedProperty {
+            when (state.menu) {
+                is MenuState.Warnings -> text.string(StringKey.OptionsWarningStartAnyway)
+                is MenuState.ResetPrompt -> text.string(StringKey.OptionsResetDefaults)
+                else -> text.empty()
+            }.apply { setColor(0xff9999) }
+        },
         brightness = IDisplayEntity.Brightness(0, 3),
         blockIdentifier = MENU_DANGER_MATERIAL,
     ) { player ->
-        // Start the game!
-        optionsService.broadcastHotbarMessage(player, text.string(StringKey.CommandStartSuccess))
-        gameService.start(
-            ignoreWarnings = true,
-            allowSpectators = player.isSneaking,
-        )
+        when (state.menu) {
+            is MenuState.Warnings -> {
+                // Start the game!
+                optionsService.broadcastHotbarMessage(player, text.string(StringKey.CommandStartSuccess))
+                gameService.start(
+                    ignoreWarnings = true,
+                    allowSpectators = player.isSneaking,
+                )
+            }
+            is MenuState.ResetPrompt -> {
+                optionsService.resetToDefaults()
+                state.menu = MenuState.Root
+            }
+            else -> {}
+        }
     }
 }
 
@@ -268,7 +281,7 @@ internal fun MenuComponent.registerMenuPage(
             MenuPage.FEATURES -> createFeaturesPage(koinScope, position)
             MenuPage.GOAL -> createGoalPage(koinScope, position)
             MenuPage.ITEMS -> createItemsPage(koinScope, position)
-            MenuPage.WARNINGS -> createWarningPage(koinScope, position)
+            MenuPage.PROMPT -> createWarningPage(koinScope, position)
         }
     }
 

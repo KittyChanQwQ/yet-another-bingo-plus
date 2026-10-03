@@ -104,6 +104,6 @@ internal fun MenuComponent.registerGameModes(
         text = text.string(StringKey.OptionsFeatures),
         brightness = MENU_BRIGHTNESS_ALT,
     ) {
-        state.menu.page = MenuPage.FEATURES
+        state.menu = MenuState.Features
     }
 }

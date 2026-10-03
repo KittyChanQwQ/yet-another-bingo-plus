@@ -138,8 +138,7 @@ internal class MenuController(
 
         eventBus.register(GameWarningEvent) {
             if (it.severe) {
-                state.menu.warnings = it.warnings
-                state.menu.page = MenuPage.WARNINGS
+                state.menu = MenuState.Warnings(it.warnings)
                 menu?.markDirty()
             }
         }

@@ -1,14 +1,13 @@
 package me.jfenn.bingo.common.state
 
 import kotlinx.serialization.Serializable
+import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.api.state.GameAction
 import me.jfenn.bingo.api.state.GameState
-import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.event.model.StateChangedEvent
 import me.jfenn.bingo.common.game.GameOverService
 import me.jfenn.bingo.common.map.BingoMap
-import me.jfenn.bingo.common.menu.MenuPage
 import me.jfenn.bingo.common.menu.MenuState
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.options.RestoreOption
@@ -37,7 +36,7 @@ data class BingoState internal constructor(
     var isLobbyMode: Boolean = false,
     var gameId: UuidAsString = UUID.randomUUID(),
     var state: GameState = GameState.UNINITIALIZED,
-    val menu: MenuState = MenuState(),
+    var menu: MenuState = MenuState.Root,
     var startedAt: InstantType? = null,
     var updatedAt: InstantType? = null,
     var endedAt: InstantType? = null,
@@ -281,7 +280,7 @@ data class BingoState internal constructor(
         gameOverInfo = null
         gameMessages.clear()
         isForfeit = false
-        menu.page = MenuPage.ROOT
+        menu = MenuState.Root
         // restore any temporary options to their initial state
         restoreOptions.forEach { it.apply(options) }
         restoreOptions.clear()

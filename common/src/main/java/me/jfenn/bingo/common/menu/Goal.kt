@@ -37,7 +37,7 @@ internal fun MenuComponent.registerGoal(
         text = text.string(StringKey.OptionsMore),
         brightness = MENU_BRIGHTNESS_ALT,
     ) {
-        state.menu.page = MenuPage.GOAL
+        state.menu = MenuState.Goal
     }
 }
 

@@ -395,6 +395,7 @@
   "bingo.options.reroll_card": "Re-roll Card",
   "bingo.options.reroll_card.success": "Card re-rolled.",
   "bingo.options.reset_defaults": "Reset Defaults",
+  "bingo.options.reset_defaults.warning": "This will reset all options to their default values! Any modified settings will be cleared.",
   "bingo.options.score_info": "Score Info",
   "bingo.options.show_hidden_tiers": "Show Tier if Hidden",
   "bingo.options.show_hidden_tiers.tooltip": "In 'Hidden Items' mode, the tier of each item will be shown on the card.",
