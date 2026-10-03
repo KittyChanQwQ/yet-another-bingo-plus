@@ -3,6 +3,7 @@ package me.jfenn.bingo.common.config
 import kotlinx.serialization.Serializable
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.tierlist.TierLabel
+import me.jfenn.bingo.common.ready.VoteType
 import me.jfenn.bingo.platform.utils.UuidAsString
 import java.util.*
 
@@ -43,6 +44,9 @@ data class BingoConfig(
 
     // when continuing a round, specifies the amount to extend the time limit
     val extendRoundTimeLimitByMinutes: Int = 15,
+
+    // when the game is over, specifies the default option to choose on '/ready' if no player has voted yet
+    val defaultPostGameReadyUpAction: VoteType = VoteType.NEXT_ROUND,
 
     // whether teams are persisted when returning to the lobby after a game
     val teamsPersistWhenReturningToLobby: Boolean = true,

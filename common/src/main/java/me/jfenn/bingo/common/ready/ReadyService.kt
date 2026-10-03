@@ -27,7 +27,7 @@ internal class ReadyService(
     fun currentVote(): VoteType? {
         return readyTimerState.leadingVote() ?: when (state.state) {
             GameState.PREGAME -> VoteType.START
-            GameState.POSTGAME -> VoteType.NEXT_ROUND
+            GameState.POSTGAME -> config.defaultPostGameReadyUpAction
             else -> null
         }
     }

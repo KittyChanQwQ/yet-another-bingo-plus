@@ -1,8 +1,10 @@
 package me.jfenn.bingo.common.ready
 
+import kotlinx.serialization.Serializable
 import me.jfenn.bingo.generated.StringKey
 import java.util.*
 
+@Serializable
 enum class VoteType(val id: UUID) {
     /**
      * Eligible in PREGAME only - starts the round
