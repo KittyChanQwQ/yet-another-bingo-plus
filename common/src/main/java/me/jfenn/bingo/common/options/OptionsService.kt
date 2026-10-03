@@ -1,7 +1,7 @@
 package me.jfenn.bingo.common.options
 
-import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.api.options.*
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.CardService
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
@@ -15,6 +15,7 @@ import me.jfenn.bingo.common.spawn.ElytraService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamService
 import me.jfenn.bingo.common.text.TextProvider
+import me.jfenn.bingo.common.utils.formatString
 import me.jfenn.bingo.common.utils.formatTitle
 import me.jfenn.bingo.common.utils.minutes
 import me.jfenn.bingo.generated.StringKey
@@ -360,14 +361,16 @@ internal class OptionsService(
             state.restoreOptions.add(RestoreTimeLimit(newTimeLimit))
         }
 
+        broadcastTimeLimitChanged(newTimeLimit)
+    }
+
+    fun broadcastTimeLimitChanged(timeLimit: Duration?) {
         ctx.sendFeedback(
             text.string(
                 StringKey.OptionsNotifyChanged,
                 StringKey.OptionsTimeLimit,
-                when {
-                    options.timeLimit != null -> state.formatTimeRemaining(text)
-                    else -> text.string(StringKey.OptionsTimeLimitOff)
-                }
+                timeLimit?.formatString()
+                    ?: text.string(StringKey.OptionsTimeLimitOff)
             )
         )
         eventBus.emit(OptionsChangedEvent, Unit)

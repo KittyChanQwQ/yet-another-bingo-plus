@@ -2,13 +2,14 @@ package me.jfenn.bingo.common.game
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import me.jfenn.bingo.platform.text.IText
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
+import me.jfenn.bingo.platform.text.IText
 
 @Serializable
 sealed interface GameEndReason {
-    fun format(text: TextProvider): IText
+    val isForfeit: Boolean get() = false
+    fun format(text: TextProvider): IText = text.string(StringKey.GameEndGameOver)
 
     @Serializable
     @SerialName("bingo")
@@ -45,6 +46,7 @@ sealed interface GameEndReason {
     @Serializable
     @SerialName("timer")
     data object Timer : GameEndReason {
+        override val isForfeit = true
         override fun format(text: TextProvider): IText {
             return text.string(StringKey.GameEndReasonTimer)
         }
@@ -53,8 +55,15 @@ sealed interface GameEndReason {
     @Serializable
     @SerialName("command")
     class Command(val playerName: String) : GameEndReason {
+        override val isForfeit = true
         override fun format(text: TextProvider): IText {
             return text.string(StringKey.GameEndReasonCommand, playerName)
         }
+    }
+
+    @Serializable
+    @SerialName("error")
+    data object Error : GameEndReason {
+        override val isForfeit = true
     }
 }

@@ -1,17 +1,19 @@
 package me.jfenn.bingo.common.game
 
-import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.api.options.EndWhen
 import me.jfenn.bingo.api.options.StalemateBehavior
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.options.*
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.team.TeamState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.formatStringSmall
+import me.jfenn.bingo.common.utils.formatString
+import me.jfenn.bingo.common.utils.minutes
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.integrations.permissions.IPermissionsApi
 import me.jfenn.bingo.platform.IPlayerHandle
@@ -25,6 +27,7 @@ import java.time.Duration
 internal class GameResumeService(
     private val log: Logger,
     private val state: BingoState,
+    private val config: BingoConfig,
     private val options: BingoOptions,
     private val optionsService: OptionsService,
     private val cardViewService: CardViewService,
@@ -89,7 +92,7 @@ internal class GameResumeService(
 
         return if (canResumeAllCards && isNearTimeLimit && timeLimit != null) {
             // if all cards are resumable but the time limit expired, extend it by 15 mins
-            GameResumeInfo.IncreaseTimeLimit(timeLimit.plusMinutes(15))
+            GameResumeInfo.IncreaseTimeLimit(timeLimit.plusMinutes(config.extendRoundTimeLimitByMinutes.toLong()))
         } else if (canResumeAllCards) {
             // if all cards are resumable, just continue the game with no changes
             GameResumeInfo.KeepPlaying
@@ -126,7 +129,10 @@ internal class GameResumeService(
 
     fun getResumeDescription() = when (val info = getResumeInfo()) {
         is GameResumeInfo.KeepPlaying -> text.string(StringKey.WorldKeepPlaying)
-        is GameResumeInfo.IncreaseTimeLimit -> text.string(StringKey.WorldExtendTimeLimitTo, info.timeLimit.formatStringSmall())
+        is GameResumeInfo.IncreaseTimeLimit -> text.string(
+            StringKey.WorldExtendTimeLimitBy,
+            config.extendRoundTimeLimitByMinutes.minutes.formatString()
+        )
         is GameResumeInfo.IncreaseGoal -> text.string(StringKey.WorldExtendGoalTo, info.goal.format(
             textProvider = text,
             supportsFullCard = options.winCondition !is BingoWinCondition.ReplaceGoals
@@ -213,7 +219,8 @@ internal class GameResumeService(
         // If the time limit is close (or expired), remove it!
         if (isNearTimeLimit) {
             optionsService.createRestoreTimeLimit()
-            optionsService.timeLimit = (info as? GameResumeInfo.IncreaseTimeLimit)?.timeLimit
+            options.timeLimit = (info as? GameResumeInfo.IncreaseTimeLimit)?.timeLimit
+            optionsService.broadcastTimeLimitChanged(options.timeLimit)
         }
 
         // If the game ended because of a stalemate, set stalemates to "Do Nothing"

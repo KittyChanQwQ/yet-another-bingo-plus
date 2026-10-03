@@ -194,7 +194,7 @@ internal class GameService(
         return true
     }
 
-    fun end(reason: GameEndReason?) {
+    fun end(reason: GameEndReason) {
         if (state.endedAt != null) return
 
         // Create completion info for any teams that have not already completed the card

@@ -48,7 +48,7 @@ internal class GameOverService(
 
     @Serializable
     class GameOverInfo(
-        val reason: GameEndReason?,
+        val reason: GameEndReason,
         val endedAt: InstantType,
         val duration: DurationType,
         val winningTeamKey: BingoTeamKey?,
@@ -96,8 +96,7 @@ internal class GameOverService(
     }
 
     fun getTitle(info: GameOverInfo): IText {
-        return info.reason?.format(textProvider)
-            ?: textProvider.string(StringKey.GameEndGameOver)
+        return info.reason.format(textProvider)
     }
 
     fun getMessage(info: GameOverInfo): IText? {
@@ -126,9 +125,9 @@ internal class GameOverService(
         )?.formatted(Formatting.YELLOW)
     }
 
-    fun getGameInfo(reason: GameEndReason?, endedAt: Instant): GameOverInfo {
+    fun getGameInfo(reason: GameEndReason, endedAt: Instant): GameOverInfo {
         // The winning team, if there is one
-        val winningTeam = ScoreService.getLeadingByCompletion(state)
+        val winningTeam = if (reason.isForfeit) null else ScoreService.getLeadingByCompletion(state)
 
         val leadingTeam =
             ScoreService.getLeadingByCards(state)?.let { LeadingTeam.Cards(it.key) }

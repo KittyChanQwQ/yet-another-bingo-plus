@@ -537,7 +537,7 @@
   "bingo.world.return_to_lobby": "Return to Lobby",
   "bingo.world.extend_game_to": "Extend to '%s'",
   "bingo.world.extend_goal_to": "Extend goal to %s",
-  "bingo.world.extend_time_limit_to": "Extend time to %s",
+  "bingo.world.extend_time_limit_by": "Extend time by %s",
   "bingo.world.extend_game_to_infinite": "Extend to Infinite Mode",
   "bingo.world.keep_playing": "Keep Playing",
   "bingo.world.preparing": "Preparing a new Bingo world...",

@@ -1,10 +1,10 @@
 package me.jfenn.bingo.common.scoring
 
-import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.api.options.BingoGoal
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.api.options.EndWhen
 import me.jfenn.bingo.api.options.StalemateBehavior
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.card.BingoCard
 import me.jfenn.bingo.common.card.BingoCardEntry
@@ -382,7 +382,7 @@ internal class ScoredItemCheck(
                 log.error(" - This is done to avoid repeatedly creating new cards in a loop. You should check the 'Goal' settings to make sure that cards aren't completed as soon as the game starts.")
 
                 state.isForfeit = true
-                gameService.end(null)
+                gameService.end(GameEndReason.Error)
                 return
             }
 

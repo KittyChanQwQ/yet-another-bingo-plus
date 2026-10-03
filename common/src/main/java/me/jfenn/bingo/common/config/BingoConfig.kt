@@ -1,8 +1,6 @@
 package me.jfenn.bingo.common.config
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonNames
 import me.jfenn.bingo.common.card.filter.ObjectiveFilterList
 import me.jfenn.bingo.common.card.tierlist.TierLabel
 import me.jfenn.bingo.platform.utils.UuidAsString
@@ -42,6 +40,8 @@ data class BingoConfig(
     // resets after a time limit - reduced when players vote /ready
     val nextRoundWhenReadySeconds: Int? = 600,
     val nextRoundWhenReadyWaitsForFirstVote: Boolean = true,
+
+    val extendRoundTimeLimitByMinutes: Int = 15,
 
     // amount of time to wait before starting the game
     val countdownDelayTicks: Int = 100,
