@@ -1,7 +1,6 @@
 package me.jfenn.bingo.common.menu
 
 import me.jfenn.bingo.common.options.BingoOptions
-import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import org.joml.Vector3d
@@ -27,7 +26,7 @@ internal fun MenuComponent.registerScoreInfo(
         width = width,
         height = TILE_HEIGHT,
         text = text.string(StringKey.OptionsRemainingTime),
-        tooltip = buildTooltip(StringKey.OptionsRemainingTime),
+        tooltip = buildTooltip(StringKey.OptionsRemainingTimeTooltip),
         toggleProp = propertyRef(options::showRemainingTime),
     )
 
@@ -36,7 +35,7 @@ internal fun MenuComponent.registerScoreInfo(
         width = width,
         height = TILE_HEIGHT,
         text = text.string(StringKey.OptionsCompletedItems),
-        tooltip = buildTooltip(StringKey.OptionsCompletedItems),
+        tooltip = buildTooltip(StringKey.OptionsCompletedItemsTooltip),
         toggleProp = propertyRef(options::showCompletedItems),
     )
 
@@ -45,7 +44,7 @@ internal fun MenuComponent.registerScoreInfo(
         width = width,
         height = TILE_HEIGHT,
         text = text.string(StringKey.OptionsCompletedLines),
-        tooltip = buildTooltip(StringKey.OptionsCompletedLines),
+        tooltip = buildTooltip(StringKey.OptionsCompletedLinesTooltip),
         toggleProp = propertyRef(options::showCompletedLines),
     )
 
@@ -54,7 +53,7 @@ internal fun MenuComponent.registerScoreInfo(
         width = width,
         height = TILE_HEIGHT,
         text = text.string(StringKey.OptionsLeadingTeam),
-        tooltip = buildTooltip(StringKey.OptionsLeadingTeam),
+        tooltip = buildTooltip(StringKey.OptionsLeadingTeamTooltip),
         toggleProp = propertyRef(options::showLeadingTeam),
     )
 }

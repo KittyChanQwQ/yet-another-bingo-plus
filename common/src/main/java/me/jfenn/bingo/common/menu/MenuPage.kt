@@ -40,9 +40,9 @@ private fun createRootPage(
         position = pos + Vector3d(MENU_TEAMS_WIDTH/2, 0.0, 0.0),
     )
     registerCardReroll(
-        position = pos + Vector3d(MENU_TEAMS_WIDTH/2, -0.5 - 2*MENU_LINE_HEIGHT - 3*MENU_LINE_PADDING - 0.55, 0.0),
+        position = pos + Vector3d(MENU_TEAMS_WIDTH/2, -0.5 - 3*MENU_LINE_HEIGHT - 4*MENU_LINE_PADDING - 0.8, 0.0),
         width = MENU_TEAMS_WIDTH,
-        height = 0.55,
+        height = 0.8,
     )
     pos.add(MENU_TEAMS_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
 
@@ -75,7 +75,7 @@ private fun createRootPage(
         icon = "⟳",
         text = text.string(StringKey.OptionsResetDefaults),
         brightness = MENU_BRIGHTNESS_ALT,
-        tooltip = listOf(text.string(StringKey.OptionsResetDefaultsWarning))
+        tooltip = buildTooltip(StringKey.OptionsResetDefaultsTooltip)
     ) {
         state.menu = MenuState.ResetPrompt
         markDirty()

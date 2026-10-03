@@ -11,12 +11,13 @@ enum class TierLabel(
     val formatting: Formatting,
     val string: StringKey,
     val shortString: StringKey,
+    val tooltipString: StringKey,
 ) {
-    S(ObjectiveTier.S, Formatting.DARK_RED, StringKey.TierS, StringKey.TierSShort),
-    A(ObjectiveTier.A, Formatting.RED, StringKey.TierA, StringKey.TierAShort),
-    B(ObjectiveTier.B, Formatting.GOLD, StringKey.TierB, StringKey.TierBShort),
-    C(ObjectiveTier.C, Formatting.YELLOW, StringKey.TierC, StringKey.TierCShort),
-    D(ObjectiveTier.D, Formatting.GREEN, StringKey.TierD, StringKey.TierDShort);
+    S(ObjectiveTier.S, Formatting.DARK_RED, StringKey.TierS, StringKey.TierSShort, StringKey.TierSTooltip),
+    A(ObjectiveTier.A, Formatting.RED, StringKey.TierA, StringKey.TierAShort, StringKey.TierATooltip),
+    B(ObjectiveTier.B, Formatting.GOLD, StringKey.TierB, StringKey.TierBShort, StringKey.TierBTooltip),
+    C(ObjectiveTier.C, Formatting.YELLOW, StringKey.TierC, StringKey.TierCShort, StringKey.TierCTooltip),
+    D(ObjectiveTier.D, Formatting.GREEN, StringKey.TierD, StringKey.TierDShort, StringKey.TierDTooltip);
 
     fun text(text: TextProvider) = text.string(this.string).formatted(formatting)
 

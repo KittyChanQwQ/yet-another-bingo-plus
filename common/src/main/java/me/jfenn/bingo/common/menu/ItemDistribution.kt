@@ -44,7 +44,7 @@ internal fun MenuComponent.registerItemDistribution(
         i: Int,
         tier: TierLabel,
     ) {
-        val tooltip = buildTooltip(tier.string, tier.formatting)
+        val tooltip = buildTooltip(tier.tooltipString, tier.formatting)
         val offset = Vector3d(i*(TIER_WIDTH + TIER_PADDING) + TIER_WIDTH/2, -MENU_LINE_HEIGHT - MENU_LINE_PADDING, 0.0)
 
         registerTileButton(

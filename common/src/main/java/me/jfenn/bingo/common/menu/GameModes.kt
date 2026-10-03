@@ -42,7 +42,7 @@ internal fun MenuComponent.registerGameModes(
         height = TILE_HEIGHT,
         icon = ICON_LOCKOUT,
         text = text.string(StringKey.OptionsModeLockout),
-        tooltip = buildTooltip(StringKey.OptionsModeLockout),
+        tooltip = buildTooltip(StringKey.OptionsModeLockoutTooltip),
         isActiveProp = computedProperty { cardOptions.isLockoutMode },
     ) {
         optionsService.toggleCardMode(
@@ -57,7 +57,7 @@ internal fun MenuComponent.registerGameModes(
         height = TILE_HEIGHT,
         icon = ICON_INVENTORY,
         text = text.string(StringKey.OptionsModeInventory),
-        tooltip = buildTooltip(StringKey.OptionsModeInventory),
+        tooltip = buildTooltip(StringKey.OptionsModeInventoryTooltip),
         isActiveProp = computedProperty { cardOptions.isInventoryMode },
     ) {
         optionsService.toggleCardMode(
@@ -72,7 +72,7 @@ internal fun MenuComponent.registerGameModes(
         height = TILE_HEIGHT,
         icon = ICON_HIDDEN,
         text = text.string(StringKey.OptionsModeHiddenItems),
-        tooltip = buildTooltip(StringKey.OptionsModeHiddenItems),
+        tooltip = buildTooltip(StringKey.OptionsModeHiddenItemsTooltip),
         isActiveProp = computedProperty { cardOptions.isHiddenItemsMode },
     ) {
         optionsService.toggleCardMode(
@@ -87,7 +87,7 @@ internal fun MenuComponent.registerGameModes(
         height = TILE_HEIGHT,
         icon = ICON_CONSUME,
         text = text.string(StringKey.OptionsModeConsumeItems),
-        tooltip = buildTooltip(StringKey.OptionsModeConsumeItems),
+        tooltip = buildTooltip(StringKey.OptionsModeConsumeItemsTooltip),
         isActiveProp = computedProperty { cardOptions.isConsumeItemsMode },
     ) {
         optionsService.toggleCardMode(

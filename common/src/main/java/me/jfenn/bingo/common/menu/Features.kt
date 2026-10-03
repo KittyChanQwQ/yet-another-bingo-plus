@@ -37,7 +37,7 @@ internal fun MenuComponent.registerFeatures(
         height = TILE_HEIGHT,
         icon = "᎒᎒᎒",
         text = text.string(StringKey.OptionsPreviewCard),
-        tooltip = buildTooltip(StringKey.OptionsPreviewCard),
+        tooltip = buildTooltip(StringKey.OptionsPreviewCardTooltip),
         isActiveProp = computedProperty { optionsService.showPreviewCard },
     ) {
         optionsService.togglePreviewCard()
@@ -64,7 +64,7 @@ internal fun MenuComponent.registerFeatures(
         height = TILE_HEIGHT,
         icon = ICON_ELYTRA,
         text = text.string(StringKey.OptionsElytra),
-        tooltip = buildTooltip(StringKey.OptionsElytra),
+        tooltip = buildTooltip(StringKey.OptionsElytraTooltip),
         isActiveProp = computedProperty { optionsService.isElytra },
     ) {
         optionsService.toggleElytra()
@@ -76,7 +76,7 @@ internal fun MenuComponent.registerFeatures(
         height = TILE_HEIGHT,
         icon = ICON_NIGHTVIS,
         text = text.string(StringKey.OptionsNightVis),
-        tooltip = buildTooltip(StringKey.OptionsNightVis) +
+        tooltip = buildTooltip(StringKey.OptionsNightVisTooltip) +
                 text.string(StringKey.OptionsNightVisTooltip_2, BingoPrefsCommand.getCommand(PlayerSettings::nightVision)),
         isActiveProp = computedProperty { optionsService.isNightVision },
     ) {
@@ -89,7 +89,7 @@ internal fun MenuComponent.registerFeatures(
         height = TILE_HEIGHT,
         icon = ICON_PVP,
         text = text.string(StringKey.OptionsAllowPvp),
-        tooltip = buildTooltip(StringKey.OptionsAllowPvp),
+        tooltip = buildTooltip(StringKey.OptionsAllowPvpTooltip),
         isActiveProp = computedProperty { optionsService.isPvpEnabled },
     ) {
         optionsService.togglePvp()
@@ -101,7 +101,7 @@ internal fun MenuComponent.registerFeatures(
         height = TILE_HEIGHT,
         icon = "\uD83D\uDD6E",
         text = text.string(StringKey.OptionsUnlockRecipes),
-        tooltip = buildTooltip(StringKey.OptionsUnlockRecipes),
+        tooltip = buildTooltip(StringKey.OptionsUnlockRecipesTooltip),
         isActiveProp = computedProperty { optionsService.isUnlockRecipes },
     ) {
         optionsService.toggleUnlockRecipes()

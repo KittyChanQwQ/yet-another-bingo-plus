@@ -51,6 +51,10 @@ data class BingoOptions(
     // spawn kit settings
     var isPlayerKit: Boolean = false,
     var isTeamKit: Boolean = false,
+
+    // team shuffle settings
+    var teamAutoShuffle: Boolean = false,
+    var teamCount: Int = 3,
 ) {
 
     fun isValid(): Boolean {

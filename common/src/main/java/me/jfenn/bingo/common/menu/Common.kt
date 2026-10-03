@@ -142,8 +142,11 @@ internal open class MenuComponent(
     }
 }
 
-internal fun MenuComponent.buildTooltip(title: StringKey, formatting: Formatting = Formatting.GREEN): List<IText> {
-    val description = StringKey.entries.find { it.key == "${title.key}.tooltip" }!!
+internal fun MenuComponent.buildTooltip(
+    description: StringKey,
+    formatting: Formatting = Formatting.GREEN
+): List<IText> {
+    val title = StringKey.entries.find { it.key == description.key.removeSuffix(".tooltip") }!!
     return buildList {
         add(text.string(title).formatted(formatting))
         add(text.string(description))

@@ -35,7 +35,7 @@ internal fun MenuComponent.registerSpawnKit(
         width = MENU_SPAWN_KIT_WIDTH,
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsSpawnKitPlayer),
-        tooltip = buildTooltip(StringKey.OptionsSpawnKitPlayer),
+        tooltip = buildTooltip(StringKey.OptionsSpawnKitPlayerTooltip),
         isActiveProp = computedProperty { optionsService.isPlayerKit },
     ) {
         optionsService.togglePlayerKit()
@@ -81,7 +81,7 @@ internal fun MenuComponent.registerSpawnKit(
         width = MENU_SPAWN_KIT_WIDTH,
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsSpawnKitTeam),
-        tooltip = buildTooltip(StringKey.OptionsSpawnKitTeam),
+        tooltip = buildTooltip(StringKey.OptionsSpawnKitTeamTooltip),
         isActiveProp = computedProperty { optionsService.isTeamKit },
     ) {
         optionsService.toggleTeamKit()

@@ -24,7 +24,7 @@ internal fun MenuComponent.registerWinCondition(
         width = width,
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsWinConditionReplaceGoals),
-        tooltip = buildTooltip(StringKey.OptionsWinConditionReplaceGoals),
+        tooltip = buildTooltip(StringKey.OptionsWinConditionReplaceGoalsTooltip),
         isActiveProp = computedProperty { optionsService.winCondition is BingoWinCondition.ReplaceGoals }
     ) {
         optionsService.winCondition = BingoWinCondition.ReplaceGoals
@@ -35,7 +35,7 @@ internal fun MenuComponent.registerWinCondition(
         width = width,
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsWinConditionInfinite),
-        tooltip = buildTooltip(StringKey.OptionsWinConditionInfinite),
+        tooltip = buildTooltip(StringKey.OptionsWinConditionInfiniteTooltip),
         isActiveProp = computedProperty { optionsService.winCondition is BingoWinCondition.Infinite }
     ) {
         optionsService.winCondition = BingoWinCondition.Infinite
@@ -46,7 +46,7 @@ internal fun MenuComponent.registerWinCondition(
         width = width,
         height = MENU_LINE_HEIGHT,
         text = text.string(StringKey.OptionsWinConditionNumCards),
-        tooltip = buildTooltip(StringKey.OptionsWinConditionNumCards),
+        tooltip = buildTooltip(StringKey.OptionsWinConditionNumCardsTooltip),
         isActiveProp = computedProperty { optionsService.winCondition is BingoWinCondition.Cards }
     ) {
         optionsService.winCondition = BingoWinCondition.Cards(1)
