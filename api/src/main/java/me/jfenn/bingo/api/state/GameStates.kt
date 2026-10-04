@@ -10,6 +10,7 @@ class GameState(
 ) {
     override fun equals(other: Any?) = other is GameState && other.identifier == identifier
     override fun hashCode() = identifier.hashCode()
+    override fun toString(): String = identifier
 
     companion object {
         /** This state shouldn't show up in actual use; it's immediately changed from the default in ScopeManager */

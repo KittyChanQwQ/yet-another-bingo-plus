@@ -15,6 +15,7 @@ import me.jfenn.bingo.common.card.objective.ItemObjectiveManager
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.CardShuffledEvent
 import me.jfenn.bingo.common.event.model.ScoreChangedEvent
+import me.jfenn.bingo.common.event.model.TeamChangedEvent
 import me.jfenn.bingo.common.event.model.TeamWinnerEvent
 import me.jfenn.bingo.common.game.GameCommands
 import me.jfenn.bingo.common.game.GameEndReason
@@ -570,7 +571,7 @@ internal class ScoredItemCheck(
             // Team cards might have their own (copied) instances that don't get initialized right away
             state.getRegisteredTeams()
                 .mapNotNull { state.getCard(it) }
-                .map { objectiveManager.init(it) }
+                .forEach { objectiveManager.init(it) }
 
             for (card in state.cards) {
                 objectiveManager.init(card)
@@ -604,10 +605,11 @@ internal class ScoredItemCheck(
             }
         }
 
-        events.onChangeTeam { (player) ->
+        eventBus.register(TeamChangedEvent) {
+            log.info("[TeamChangedEvent] Player ${it.player.playerName} team changed -> ${it.team?.id}")
             // Remove any of the player's held/scored items from the card
             for (card in state.cards) {
-                card.removePlayer(player.uuid)
+                card.removePlayer(it.player.uuid)
             }
         }
     }

@@ -9,7 +9,6 @@ import me.jfenn.bingo.common.ready.ReadyUpdatePacket
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.minus
 import me.jfenn.bingo.common.utils.seconds
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IExecutors
@@ -26,6 +25,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.time.TimeSource
 
 /**
  * Wait until chunks around spawn are generated
@@ -74,7 +74,7 @@ internal class SpawnPreloadingController(
         }
 
         events.onEnter(GameState.PRELOADING) {
-            val startedLoading = Instant.now()
+            val startedLoading = TimeSource.Monotonic.markNow()
 
             val world = spawnService.getSpawnDimension()
             val viewDistance = config.server.preloadViewDistance
@@ -95,7 +95,6 @@ internal class SpawnPreloadingController(
 
             log.info("[SpawnPreloadingController] Pre-generating ${chunks.size} chunks within a view distance of ${viewDistance}...")
             val futures = chunks.map { chunk ->
-                var startedLoadingChunk: Instant = startedLoading
                 CompletableFuture.runAsync {
                     try {
                         semaphore.acquire();
@@ -105,14 +104,12 @@ internal class SpawnPreloadingController(
                     }
                 }
                     .thenCompose {
-                        startedLoadingChunk = Instant.now()
                         world.getChunkAsync(chunk)
                     }
                     .whenComplete { _, _ ->
                         log.debug(
-                            "[SpawnPreloadingController] Finished chunk {} in {}",
+                            "[SpawnPreloadingController] Finished chunk {}",
                             chunk,
-                            Instant.now() - startedLoadingChunk
                         )
                         semaphore.release()
                     }
@@ -121,7 +118,7 @@ internal class SpawnPreloadingController(
             chunkFutureList = futures
             CompletableFuture.allOf(*futures.toTypedArray())
                 .whenCompleteAsync({ _, _ ->
-                    log.info("[SpawnPreloadingController] Finished preloading spawn chunks in ${Instant.now() - startedLoading}")
+                    log.info("[SpawnPreloadingController] Finished preloading spawn chunks in ${startedLoading.elapsedNow()}")
                     chunkFutureList = emptyList()
                     state.changeState(eventBus, GameState.LOADING)
                 }, serverTaskExecutor)

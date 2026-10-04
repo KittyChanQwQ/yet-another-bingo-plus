@@ -73,6 +73,7 @@ internal class GameService(
         allowSpectators: Boolean = false,
     ): Boolean {
         if (options.teamAutoShuffle) {
+            log.info("Auto-shuffle enabled - randomizing teams...")
             teamService.shuffleTeams(options.teamCount)
         }
 

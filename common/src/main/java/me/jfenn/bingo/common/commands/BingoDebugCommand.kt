@@ -4,7 +4,7 @@ import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
-import me.jfenn.bingo.common.utils.json
+import me.jfenn.bingo.platform.IJsonSerializers
 import me.jfenn.bingo.platform.commands.ICommandManager
 import net.minecraft.ChatFormatting
 import org.slf4j.Logger
@@ -23,7 +23,7 @@ class BingoDebugCommand(
                 }
                 executes {
                     val state = scope.get<BingoState>()
-                    val stateJson = json.encodeToString(state)
+                    val stateJson = scope.get<IJsonSerializers>().json.encodeToString(state)
                     log.info(stateJson)
 
                     sendMessage(text.literal("Debug info printed to server logs.").formatted(ChatFormatting.GRAY))

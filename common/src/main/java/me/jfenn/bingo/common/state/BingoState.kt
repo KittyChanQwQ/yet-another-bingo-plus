@@ -275,7 +275,6 @@ data class BingoState internal constructor(
         timeOffline = Duration.ZERO
         timeAdjustment = Duration.ZERO
         teams.clear()
-        playersSpectatingIds.clear()
         previewMap = null
         // [ScoredItemCheck] calls createInitialCards when entering PREGAME, so this card should be immediately replaced
         cards.clear()

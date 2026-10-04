@@ -28,6 +28,7 @@ internal class TeamController(
             // clear the team of all online players when entering PREGAME
             // (so that they must rejoin a team for the next game)
             teamService.clearTeams()
+            state.playersSpectatingIds.clear()
 
             if (config.teamsPersistWhenReturningToLobby) {
                 for (team in state.teamRestore) {
@@ -38,6 +39,7 @@ internal class TeamController(
 
         events.onEnter(GameState.POSTGAME) {
             state.teamRestore = state.teams.values.map {
+                log.info("Storing team ${it.id}")
                 it.newInstance()
             }
         }
