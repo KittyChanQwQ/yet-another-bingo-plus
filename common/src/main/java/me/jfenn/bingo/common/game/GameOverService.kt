@@ -264,7 +264,7 @@ internal class GameOverService(
             subtitle = message ?: text.empty(),
             winner = info.winningTeamKey,
             duration = state.ingameDuration() ?: Duration.ZERO,
-            isReturnToLobbyAvailable = permissions.hasPermission(player, Permission.COMMAND_READY)
+            isReadyVoteAvailable = permissions.hasPermission(player, Permission.COMMAND_READY)
                     && state.isLobbyMode,
             isResumeAvailable = gameResumeService.isResumeAvailable(player),
             resumeDescription = gameResumeService.getResumeDescription(),
@@ -346,7 +346,7 @@ internal class GameOverService(
             action = IDialogAction.RunCommand("bingo card"),
         )
 
-        if (packet.isReturnToLobbyAvailable) {
+        if (packet.isReadyVoteAvailable) {
             builder.addAction(
                 label = text.string(StringKey.WorldReturnToLobby),
                 action = IDialogAction.RunCommand("ready"),

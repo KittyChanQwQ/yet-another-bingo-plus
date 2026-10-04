@@ -17,7 +17,8 @@ data class GameOverPacket(
     val winner: BingoTeamKey?,
     val duration: Duration,
     val isOperator: Boolean = false,
-    val isReturnToLobbyAvailable: Boolean = false,
+    val isReadyVoteAvailable: Boolean = false,
+    @Deprecated("No longer in use")
     val isResumeAvailable: Boolean = false,
     val resumeDescription: IText? = null,
     val isWinner: Boolean,
@@ -72,8 +73,7 @@ data class GameOverPacket(
                 subtitle = buf.readText(),
                 winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
                 duration = buf.readDuration(),
-                isReturnToLobbyAvailable = buf.readBoolean(),
-                isResumeAvailable = buf.readBoolean(),
+                isReadyVoteAvailable = buf.readBoolean(),
                 resumeDescription = buf.readNullable(buf::readText),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
@@ -116,8 +116,7 @@ data class GameOverPacket(
             dest.writeNullable(source.winner?.id, dest::writeString)
 
             dest.writeDuration(source.duration)
-            dest.writeBoolean(source.isReturnToLobbyAvailable)
-            dest.writeBoolean(source.isResumeAvailable)
+            dest.writeBoolean(source.isReadyVoteAvailable)
             dest.writeNullable(source.resumeDescription, dest::writeText)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)
@@ -156,7 +155,7 @@ data class GameOverPacket(
                 subtitle = buf.readText(),
                 winner = buf.readNullable(buf::readString)?.let { BingoTeamKey(it) },
                 duration = buf.readDuration(),
-                isReturnToLobbyAvailable = buf.readBoolean(),
+                isReadyVoteAvailable = buf.readBoolean(),
                 isResumeAvailable = buf.readBoolean(),
                 isWinner = buf.readBoolean(),
                 isUpdate = buf.readBoolean(),
@@ -199,7 +198,8 @@ data class GameOverPacket(
             dest.writeNullable(source.winner?.id, dest::writeString)
 
             dest.writeDuration(source.duration)
-            dest.writeBoolean(source.isReturnToLobbyAvailable)
+            dest.writeBoolean(source.isReadyVoteAvailable)
+            @Suppress("DEPRECATION")
             dest.writeBoolean(source.isResumeAvailable)
             dest.writeBoolean(source.isWinner)
             dest.writeBoolean(source.isUpdate)

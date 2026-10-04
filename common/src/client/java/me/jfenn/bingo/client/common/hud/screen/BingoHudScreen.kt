@@ -185,7 +185,7 @@ internal class BingoHudScreen(
         }
     }
 
-    private val isPrimaryButtonVisible get() = gameOver != null && (gameOver.packet.isReturnToLobbyAvailable || state.ready?.canSendReady == true)
+    private val isPrimaryButtonVisible get() = gameOver != null && (gameOver.packet.isReadyVoteAvailable || state.ready?.canSendReady == true)
     private var primaryVoteOption: VoteOption? = null
     private val primaryButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
