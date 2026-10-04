@@ -127,7 +127,11 @@ internal class ClientCardRenderer(
         ) {
             service.matrices.push()
             service.matrices.translate(0f, 0f, z + 2000f)
-            service.drawTooltip(card.display.players.map { text.literal(it.name) }, mouseX, mouseY)
+            service.drawTooltip(card.display.players.map { player ->
+                text.player(player.uuid)?.let {
+                    text.empty().append(it).append(" ").append(player.name)
+                } ?: text.literal(player.name)
+            }, mouseX, mouseY)
             service.matrices.pop()
         }
 
