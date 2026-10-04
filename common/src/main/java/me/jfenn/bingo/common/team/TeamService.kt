@@ -60,6 +60,7 @@ internal class TeamService(
     fun restoreTeam(teamTemplate: BingoTeam) {
         log.info("Restoring team ${teamTemplate.id}...")
         val team = state.registerTeam(teamTemplate)
+        createTeam(team)
         for (teamPlayer in team.players) {
             val player = playerManager.getPlayer(teamPlayer.uuid) ?: continue
             eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, team))
