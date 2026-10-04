@@ -1,8 +1,8 @@
 package me.jfenn.bingo.common.game
 
-import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.api.options.EndWhen
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.Sounds
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
@@ -94,7 +94,7 @@ internal class GameOverController(
         player: IPlayerHandle,
         packet: GameOverPacket,
     ): Boolean {
-        val dialog = gameOverService.createDialog(packet) ?: return false
+        val dialog = gameOverService.createDialog(player, packet) ?: return false
         dialogManager.showDialog(player, dialog)
         return true
     }

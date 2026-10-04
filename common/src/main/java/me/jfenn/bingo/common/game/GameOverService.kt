@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.api.options.EndWhen
 import me.jfenn.bingo.common.Permission
+import me.jfenn.bingo.common.lobby.BingoLobbyCommand
 import me.jfenn.bingo.common.options.BingoOptions
 import me.jfenn.bingo.common.scoring.ScoreRanking
 import me.jfenn.bingo.common.scoring.ScoreRankingService
@@ -291,6 +292,7 @@ internal class GameOverService(
     }
 
     fun createDialog(
+        player: IPlayerHandle,
         packet: GameOverPacket
     ): IDialogHandle? {
         val builder = dialogManager.multiActionBuilder() ?: return null
@@ -346,10 +348,10 @@ internal class GameOverService(
             action = IDialogAction.RunCommand("bingo card"),
         )
 
-        if (packet.isReadyVoteAvailable) {
+        if (state.isLobbyMode && permissions.hasPermission(player, Permission.COMMAND_RESET)) {
             builder.addAction(
                 label = text.string(StringKey.WorldReturnToLobby),
-                action = IDialogAction.RunCommand("ready"),
+                action = IDialogAction.RunCommand(BingoLobbyCommand.RESET_COMMAND),
             )
         }
 

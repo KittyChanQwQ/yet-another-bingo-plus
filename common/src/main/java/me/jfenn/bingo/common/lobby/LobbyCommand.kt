@@ -155,6 +155,7 @@ internal class BingoLobbyCommand(
     }
 
     companion object {
+        const val RESET_COMMAND = "/bingo reset"
         const val LOBBY_COMMAND = "/bingo lobby"
         const val CONFIRM_COMMAND = "/bingo lobby confirm"
         const val SAVE_COMMAND = "/bingo lobby save"

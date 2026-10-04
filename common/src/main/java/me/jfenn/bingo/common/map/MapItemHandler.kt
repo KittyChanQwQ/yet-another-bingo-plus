@@ -35,7 +35,7 @@ internal class MapItemHandler(
                 info = gameOverInfo,
                 isUpdate = false,
             )
-            val dialog = gameOverService.createDialog(packet)
+            val dialog = gameOverService.createDialog(player, packet)
             if (dialog != null) {
                 dialogManager.showDialog(player, dialog)
                 return
