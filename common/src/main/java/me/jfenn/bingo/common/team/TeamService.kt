@@ -63,6 +63,7 @@ internal class TeamService(
         createTeam(team)
         for (teamPlayer in team.players) {
             val player = playerManager.getPlayer(teamPlayer.uuid) ?: continue
+            teamManager.setPlayerTeam(player, createTeam(team))
             eventBus.emit(TeamChangedEvent, TeamChangedEvent(player, team))
         }
     }
