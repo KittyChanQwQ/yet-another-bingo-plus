@@ -64,9 +64,9 @@ internal class BingoApiImpl(
         }
 
         events.onStateChange {
-            BingoEvents.onStateChanged(it.to).invoke(
-                GameStateChangedEvent(it.from, it.to)
-            )
+            val event = GameStateChangedEvent(it.from, it.to)
+            BingoEvents.STATE_CHANGED.invoke(event)
+            BingoEvents.onStateChanged(it.to).invoke(event)
         }
 
         events.onChangeTeam { event ->

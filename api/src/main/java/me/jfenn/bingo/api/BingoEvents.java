@@ -16,6 +16,7 @@ public class BingoEvents {
     public static final EventListener<GameEndedEvent> GAME_ENDED = new EventListener<>("GAME_ENDED");
     public static final EventListener<Void> GAME_RESET = new EventListener<>("GAME_RESET");
     public static final EventListener<TeamChangedEvent> TEAM_CHANGED = new EventListener<>("TEAM_CHANGED");
+    public static final EventListener<GameStateChangedEvent> STATE_CHANGED = new EventListener<>("STATE_CHANGED");
 
     public static EventListener<GameStateChangedEvent> onStateChanged(GameState state) {
         var consumers = ExtensionManager.INSTANCE.getGameStateListeners();

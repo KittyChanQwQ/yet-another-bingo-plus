@@ -9,6 +9,7 @@ import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.utils.jsonStrict
+import me.jfenn.bingo.common.utils.name
 import me.jfenn.bingo.platform.IJsonSerializers
 import me.jfenn.bingo.platform.IModEnvironment
 import me.jfenn.bingo.platform.resource.IResourceManager
@@ -113,7 +114,7 @@ internal class MessageService(
         replacements: Map<String, List<T>>,
         wrap: (IText) -> T,
     ): List<T> {
-        val typeWithState = "${type}_${state.state.identifier}"
+        val typeWithState = "${type}_${state.state.name}"
         val message = scopedData.messages[typeWithState]
             ?: scopedData.messages[type]
             ?: MessageData(emptyList())

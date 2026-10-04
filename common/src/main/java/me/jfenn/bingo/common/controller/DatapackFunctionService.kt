@@ -5,6 +5,7 @@ import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.config.TrackedFileService
 import me.jfenn.bingo.common.data.ScopedData
 import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.common.utils.name
 import me.jfenn.bingo.platform.ICommandRunner
 import me.jfenn.bingo.platform.IModEnvironment
 import net.minecraft.server.MinecraftServer
@@ -26,7 +27,7 @@ internal class DatapackFunctionService(
             GameState.POSTGAME
         )
 
-        fun filePath(state: GameState) = "$MOD_ID_BINGO/commands/on_${state.identifier}.mcfunction"
+        fun filePath(state: GameState) = "$MOD_ID_BINGO/commands/on_${state.name}.mcfunction"
     }
 
     internal class Loader(
@@ -68,7 +69,7 @@ internal class DatapackFunctionService(
         if (state !in SUPPORTED_EVENTS)
             return
 
-        runCommand("function #${MOD_ID_BINGO}:on_${state.identifier}")
+        runCommand("function #${MOD_ID_BINGO}:on_${state.name}")
 
         scopedData.commandFiles[state]
             ?.split(Regex("\\R"))
