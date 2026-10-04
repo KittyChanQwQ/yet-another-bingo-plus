@@ -30,7 +30,6 @@ interface IServerWorld {
     val directory: Path
 
     val world: ServerLevel
-    val seed: Long
 
     val worldBorder: IWorldBorder
     val coordinateScale: Double

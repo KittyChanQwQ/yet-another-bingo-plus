@@ -8,4 +8,5 @@ base.archivesName.set("${project.archives_base_name}-integration-chunky")
 dependencies {
     compileOnly project(path: ":platform")
     compileOnly project(path: ":api")
+    compileOnly "maven.modrinth:fALzjamp:4Eotm6ov"
 }

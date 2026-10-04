@@ -285,7 +285,7 @@ internal class GameOverService(
             isBestTime = info.isBestTime,
             prevBestTime = info.prevBestTime,
 
-            seed = serverWorldFactory.overworld.seed,
+            seed = serverWorldFactory.seed,
             scores = scoreRankings,
             defaultTab = defaultTab,
         )

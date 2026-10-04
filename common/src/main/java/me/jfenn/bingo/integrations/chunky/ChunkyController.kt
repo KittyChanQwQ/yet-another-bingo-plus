@@ -21,16 +21,8 @@ internal class ChunkyController(
             chunkyIntegration.cancelTasks()
         }
 
-        events.onEnter(GameState.PRELOADING) {
-            chunkyIntegration.cancelTasks()
-        }
-
-        events.onEnter(GameState.PLAYING) {
-            chunkyIntegration.cancelTasks()
-        }
-
         eventBus.register(GameResetEvent.BeforeClose) {
-            chunkyIntegration.cancelTasks()
+            chunkyIntegration.clearAllTasks()
         }
     }
 

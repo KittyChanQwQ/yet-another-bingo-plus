@@ -242,9 +242,6 @@ class ServerWorldImpl(
     override val directory: Path
         get() = serverOrThrow.accessor.storageSource.getDimensionPath(world.dimension())
 
-    override val seed: Long
-        get() = world.seed
-
     override val worldBorder: IWorldBorder
         get() = WorldBorderImpl(world.worldBorder)
     override val coordinateScale: Double

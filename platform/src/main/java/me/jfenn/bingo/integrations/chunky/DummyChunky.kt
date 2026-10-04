@@ -3,6 +3,7 @@ package me.jfenn.bingo.integrations.chunky
 import org.koin.core.scope.Scope
 
 object DummyChunky : IChunkyApi {
+    override fun clearAllTasks() {}
     override fun startPregen() {}
     override fun cancelTasks() {}
 

@@ -75,7 +75,7 @@ internal class GameOverController(
                 .let { listOf(text.literal("  ").append(it)) },
             "%seed%" to text.string(
                 StringKey.GameEndSeed,
-                text.bracketedCopyable(serverWorldFactory.overworld.seed.toString())
+                text.bracketedCopyable(serverWorldFactory.seed.toString())
             ).let { listOf(text.literal("  ").append(it)) },
             "%scores%" to scores,
         )

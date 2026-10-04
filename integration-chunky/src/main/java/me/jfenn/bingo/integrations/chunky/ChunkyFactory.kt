@@ -25,16 +25,11 @@ class ChunkyFactory : IChunkyApiFactory {
             }
             configManager.write(CONFIG_PATH, config)
 
-            if (config.enabled) {
-                ChunkyImpl(
-                    server = scope.get(),
-                    config = config,
-                    commandRunner = scope.get(),
-                    log = scope.get(),
-                )
-            } else {
-                DummyChunky
-            }
+            ChunkyImpl(
+                config = config,
+                serverWorldFactory = scope.get(),
+                log = scope.get(),
+            )
         } else {
             DummyChunky
         }
