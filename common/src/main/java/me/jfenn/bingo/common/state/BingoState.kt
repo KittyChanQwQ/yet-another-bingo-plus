@@ -75,11 +75,10 @@ data class BingoState internal constructor(
      */
     var isForfeit: Boolean = false,
     var randomSeed: Long = Random.nextLong(),
-    var randomOps: Long = 0,
 ) {
 
-    internal fun randomSeed(): Long = randomSeed + (randomOps++)
-    internal fun random(): Random = Random(randomSeed())
+    internal fun getCardSeed(index: Int = cards.size) = randomSeed + (31 * index)
+    internal fun getBaseSeed(cardSeed: Long, index: Int) = cardSeed - (31 * index)
 
     internal fun getActiveCard(): BingoCard {
         return cards.firstOrNull()
@@ -119,11 +118,14 @@ data class BingoState internal constructor(
         }
     }
 
-    internal fun replaceCard(card: BingoCard) {
-        val index = cards.indexOfFirst { it.id == card.id }
-            .takeIf { it != -1 }
-            ?: throw IllegalArgumentException("Unknown card provided in replaceCard")
+    internal fun getCardIndexOrThrow(card: BingoCard) = cards.indexOfFirst { it.id == card.id }
+        .takeIf { it != -1 }
+        ?: throw IllegalArgumentException("Unknown card provided in replaceCard")
 
+    internal fun replaceCard(
+        card: BingoCard,
+        index: Int = getCardIndexOrThrow(card)
+    ) {
         cards[index] = card
     }
 
@@ -288,7 +290,6 @@ data class BingoState internal constructor(
 
     fun resetSeed(seed: Long) {
         randomSeed = seed
-        randomOps = 0
     }
 
 }

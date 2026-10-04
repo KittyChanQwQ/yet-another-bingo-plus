@@ -29,9 +29,15 @@ internal class ResetService(
     private val log: Logger,
 ) {
 
-    fun resetGame(newState: GameState = GameState.PREGAME) {
+    fun preserveOptions(state: GameState) = ResetOptions(
+        newState = state,
+        worldSeed = serverWorldFactory.seed,
+        cardSeed = this.state.randomSeed,
+    )
+
+    fun resetGame(options: ResetOptions = ResetOptions()) {
         if (state.isLobbyMode) {
-            resetGameWorlds(newState)
+            resetGameWorlds(options)
         } else {
             error("This shouldn't be happening. Tell fennifith to stop writing bad code.")
         }
@@ -56,7 +62,7 @@ internal class ResetService(
         }
     }
 
-    private fun resetGameWorlds(newState: GameState) = log.measureTime("Resetting worlds...") {
+    private fun resetGameWorlds(options: ResetOptions) = log.measureTime("Resetting worlds...") {
         // Clear scoreboards (otherwise this causes an error when recreated)
         log.info("[Reset] Clearing game data")
         eventBus.emit(GameResetEvent.BeforeClose)
@@ -65,9 +71,15 @@ internal class ResetService(
         log.info("[Reset] Recreating worlds")
         serverWorldFactory.recreateWorlds {
             eventBus.emit(GameResetEvent.Copy)
-            copyWorldTemplate()
+            if (options.worldSeed != null) {
+                val seed = options.worldSeed
+                log.info("[Reset] Applying requested world seed $seed...")
+                serverWorldFactory.seed = seed
+            } else {
+                copyWorldTemplate()
+            }
         }
-        state.resetSeed(serverWorldFactory.seed)
+        state.resetSeed(options.cardSeed ?: serverWorldFactory.seed)
         persistentStateManager.writeAll()
         playerManager.getPlayers().forEach {
             packets.gameResetV1.send(it, GameResetPacket())
@@ -75,7 +87,7 @@ internal class ResetService(
 
         log.info("[Reset] Done!")
         eventBus.emit(GameResetEvent.After)
-        state.changeState(eventBus, newState)
+        state.changeState(eventBus, options.newState)
     }
 
 }

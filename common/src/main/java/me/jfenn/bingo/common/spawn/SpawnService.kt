@@ -72,7 +72,7 @@ internal class SpawnService(
      */
     fun createSpawnpoints(): CompletableFuture<Void> {
         val world = getSpawnDimension()
-        val spread = spreadPlayersFactory.forWorld(world, state.randomSeed())
+        val spread = spreadPlayersFactory.forWorld(world, serverWorldFactory.seed)
 
         val distance = options.spawnDistance
         return if (distance <= 0) {
@@ -203,7 +203,7 @@ internal class SpawnService(
         return when (val result = getTeamSpawnpointInternal(team)) {
             is GetSpawnpointResult.SearchChunk -> {
                 val world = getSpawnDimension()
-                val spread = spreadPlayersFactory.forWorld(world, state.randomSeed())
+                val spread = spreadPlayersFactory.forWorld(world, serverWorldFactory.seed)
                 val future = spread.findSpawnPosAsync(result.startChunk)
 
                 team.spawnpointFuture = future
@@ -228,7 +228,7 @@ internal class SpawnService(
         return when (val result = getTeamSpawnpointInternal(team)) {
             is GetSpawnpointResult.SearchChunk -> {
                 val world = getSpawnDimension()
-                val spread = spreadPlayersFactory.forWorld(world, state.randomSeed())
+                val spread = spreadPlayersFactory.forWorld(world, serverWorldFactory.seed)
                 val spawnPos = spread.findSpawnPos(result.startChunk)
 
                 onSpawnpointUpdated(team, spawnPos)

@@ -173,7 +173,7 @@ internal class CardService(
     fun newCard(cardOptions: BingoCardOptions): BingoCard {
         val newCard = generate(
             id = UUID.randomUUID(),
-            seed = state.randomSeed(),
+            seed = state.getCardSeed(),
             cardOptions = cardOptions,
         )
 
@@ -185,16 +185,18 @@ internal class CardService(
         excludeObjectives: Set<String> = emptySet(),
     ) {
         if (!card.options.isValid()) throw IllegalArgumentException("Cannot reroll card; invalid options")
+        val index = state.getCardIndexOrThrow(card)
+        state.resetSeed(Random.nextLong())
 
         // Change the BINGO seed to a new value
         val newCard = generate(
             id = card.id,
-            seed = state.randomSeed(),
+            seed = state.getCardSeed(index),
             cardOptions = card.options,
             excludeObjectives = excludeObjectives,
         )
         objectiveManager.init(newCard)
-        state.replaceCard(newCard)
+        state.replaceCard(newCard, index)
         eventBus.emit(CardShuffledEvent, CardShuffledEvent(card.id))
     }
 

@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.game.GameResumeService
 import me.jfenn.bingo.common.game.GameService
+import me.jfenn.bingo.common.reset.ResetOptions
 import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.state.BingoState
 import me.jfenn.bingo.common.text.TextProvider
@@ -107,7 +108,7 @@ internal class ReadyController(
                 }
                 VoteType.NEXT_ROUND -> {
                     serverTaskExecutor.execute {
-                        resetService.resetGame(GameState.STARTING_NEXT_ROUND)
+                        resetService.resetGame(ResetOptions(GameState.STARTING_NEXT_ROUND))
                         gameService.start(ignoreWarnings = true, allowSpectators = true)
                     }
                 }

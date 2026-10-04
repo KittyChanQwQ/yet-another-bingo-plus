@@ -7,6 +7,7 @@ import me.jfenn.bingo.common.commands.hasPermission
 import me.jfenn.bingo.common.commands.hasState
 import me.jfenn.bingo.common.commands.runByName
 import me.jfenn.bingo.common.config.BingoConfig
+import me.jfenn.bingo.common.reset.ResetOptions
 import me.jfenn.bingo.common.reset.ResetService
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.generated.StringKey
@@ -82,7 +83,7 @@ internal class BingoLobbyCommand(
         val serverTaskExecutor = scope.get<IExecutors.IServerTaskExecutor>()
         sendFeedback(text.string(StringKey.LobbyEditMessage1Entering))
         serverTaskExecutor.execute {
-            resetService.resetGame(GameState.LOBBY_EDITOR)
+            resetService.resetGame(resetService.preserveOptions(GameState.LOBBY_EDITOR))
             sendFeedback(text.string(StringKey.LobbyEditMessage2KeepChanges, SAVE_COMMAND).formatted(Formatting.YELLOW))
             sendFeedback(text.string(StringKey.LobbyEditMessage3Return, CANCEL_COMMAND).formatted(Formatting.YELLOW))
         }
@@ -95,7 +96,7 @@ internal class BingoLobbyCommand(
         sendFeedback(text.string(StringKey.LobbyEditSaving))
         serverTaskExecutor.execute {
             lobbyWorldService.writeLobbyFiles()
-            resetService.resetGame(GameState.PREGAME)
+            resetService.resetGame(resetService.preserveOptions(GameState.PREGAME))
         }
     }
 

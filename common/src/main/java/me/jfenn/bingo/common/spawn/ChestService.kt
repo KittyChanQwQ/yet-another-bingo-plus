@@ -38,7 +38,7 @@ internal class ChestService(
 
         for (team in state.getRegisteredTeams()) {
             if (team.chestSpawnpoint == null) {
-                createChestSpawnpoint(team, state.randomSeed())
+                createChestSpawnpoint(team, serverWorldFactory.seed)
             }
         }
     }
@@ -92,7 +92,7 @@ internal class ChestService(
         if (!options.isTeamKit) return
         if (!state.isLobbyMode) return
         val world = getSpawnDimension()
-        val chestSpawnpoint = team.chestSpawnpoint ?: createChestSpawnpoint(team, state.randomSeed()) ?: run {
+        val chestSpawnpoint = team.chestSpawnpoint ?: createChestSpawnpoint(team, serverWorldFactory.seed) ?: run {
             log.error("[ChestService] createChestBlock - Cannot create a team chest, as there is no chestSpawnpoint.")
             return
         }

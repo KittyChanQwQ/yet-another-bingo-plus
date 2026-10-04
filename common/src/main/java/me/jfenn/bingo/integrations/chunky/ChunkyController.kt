@@ -3,9 +3,12 @@ package me.jfenn.bingo.integrations.chunky
 import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.scope.BingoComponent
+import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.game.GameResetEvent
 
 internal class ChunkyController(
     events: ScopedEvents,
+    eventBus: IEventBus,
     private val chunkyIntegration: IChunkyApi,
 ) : BingoComponent() {
 
@@ -23,6 +26,10 @@ internal class ChunkyController(
         }
 
         events.onEnter(GameState.PLAYING) {
+            chunkyIntegration.cancelTasks()
+        }
+
+        eventBus.register(GameResetEvent.BeforeClose) {
             chunkyIntegration.cancelTasks()
         }
     }

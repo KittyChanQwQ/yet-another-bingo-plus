@@ -22,6 +22,7 @@ import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.block.BlockPosition
 import me.jfenn.bingo.platform.block.ChunkPosition
 import me.jfenn.bingo.platform.event.IEventBus
+import me.jfenn.bingo.platform.event.game.GameResetEvent
 import me.jfenn.bingo.platform.event.model.EntityLoadEvent
 import me.jfenn.bingo.platform.event.model.TickEvent
 import me.jfenn.bingo.platform.world.IChunkHeightmap
@@ -112,15 +113,7 @@ internal class MenuController(
 
         events.onStateChange { (_, to) ->
             if (to != GameState.PREGAME) {
-                menu?.cleanup()
-                menu = null
-
-                // discard team picker entities which aren't part of the menu
-                val lobbyWorld = serverWorldFactory.lobbyWorld ?: return@onStateChange
-                entityManager.iterateEntities(lobbyWorld)
-                    .filter { !it.isPlayer && it.commandTags.contains(instanceTag) }
-                    .toList()
-                    .forEach { it.discard() }
+                despawnMenu()
             }
         }
 
@@ -142,6 +135,22 @@ internal class MenuController(
                 menu?.markDirty()
             }
         }
+
+        eventBus.register(GameResetEvent.BeforeClose) {
+            despawnMenu()
+        }
+    }
+
+    private fun despawnMenu() {
+        menu?.cleanup()
+        menu = null
+
+        // discard team picker entities which aren't part of the menu
+        val lobbyWorld = serverWorldFactory.lobbyWorld ?: return
+        entityManager.iterateEntities(lobbyWorld)
+            .filter { !it.isPlayer && it.commandTags.contains(instanceTag) }
+            .toList()
+            .forEach { it.discard() }
     }
 
     private fun getMenuPosition(lobbyWorld: IServerWorld): Matrix4d? {

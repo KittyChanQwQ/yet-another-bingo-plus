@@ -98,6 +98,11 @@ class BingoCardCommand(
 
     private fun IExecutionContext.setCardSeed(seed: Long) {
         val card = cardViewService.getPlayerCard(player)
+        val cardIndex = state.getCardIndexOrThrow(card)
+        // set the base seed (this reverses the calculation used for the initial card seed)
+        // to ensure the card is recreated with the same seed if the world is reset
+        state.resetSeed(state.getBaseSeed(seed, cardIndex))
+
         val newCard = cardService.generateCard(card, seed = seed)
         sendFeedback(
             text.string(

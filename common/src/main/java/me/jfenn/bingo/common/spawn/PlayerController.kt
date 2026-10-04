@@ -6,7 +6,6 @@ import me.jfenn.bingo.common.LOBBY_WORLD_IDENTIFIER
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.event.ScopedEvents
 import me.jfenn.bingo.common.event.model.TeamWinnerEvent
-import me.jfenn.bingo.common.event.packet.ServerPacketEvents
 import me.jfenn.bingo.common.map.CardViewService
 import me.jfenn.bingo.common.map.MapItemService
 import me.jfenn.bingo.common.options.BingoOptions
@@ -42,7 +41,6 @@ internal class PlayerController(
     private val log: Logger,
     private val state: BingoState,
     private val options: BingoOptions,
-    private val packets: ServerPacketEvents,
     private val spawnService: SpawnService,
     private val teamService: TeamService,
     private val statManager: IStatManager,
@@ -237,7 +235,7 @@ internal class PlayerController(
             state.playersJoinedIds.add(player.uuid)
         }
 
-        events.onEnter(GameState.PREGAME, requireChange = true) {
+        events.onEnter(GameState.PREGAME) {
             // if any player is still in the world, teleport to the lobby
             for (player in playerManager.getPlayers()) {
                 if (player.world.identifier == LOBBY_WORLD_IDENTIFIER) {
