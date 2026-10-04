@@ -22,6 +22,7 @@ import me.jfenn.bingo.common.utils.minutes
 import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.IPlayerManager
+import me.jfenn.bingo.platform.IServerWorldFactory
 import me.jfenn.bingo.platform.commands.IExecutionContext
 import me.jfenn.bingo.platform.event.IEventBus
 import me.jfenn.bingo.platform.text.Formatting
@@ -63,6 +64,7 @@ internal class OptionsService(
     private val objectiveFilterService: ObjectiveFilterService,
     private val teamService: TeamService,
     private val playerManager: IPlayerManager,
+    private val serverWorldFactory: IServerWorldFactory,
     private val text: TextProvider,
     private val eventBus: IEventBus,
 ) : IOptionsService {
@@ -450,6 +452,7 @@ internal class OptionsService(
     fun resetToDefaults() {
         // Reset the menu to the default options
         options.copyFrom(configService.optionsDefault)
+        state.resetSeed(serverWorldFactory.seed)
 
         // Reset the active card options to the defaults
         cardService.createInitialCards()

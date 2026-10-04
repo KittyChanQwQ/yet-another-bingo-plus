@@ -42,7 +42,7 @@ private fun createRootPage(
     registerCardReroll(
         position = pos + Vector3d(MENU_TEAMS_WIDTH/2, -0.5 - 3*MENU_LINE_HEIGHT - 4*MENU_LINE_PADDING - 0.8, 0.0),
         width = MENU_TEAMS_WIDTH,
-        height = 0.8,
+        height = 0.4,
     )
     pos.add(MENU_TEAMS_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
 
@@ -53,9 +53,9 @@ private fun createRootPage(
         width = startWidth,
     )
 
-    val startButtonHeight = 2.0 - MENU_PLAYER_COUNT_HEIGHT + 2*MENU_LINE_PADDING
+    val startButtonHeight = 1.9 - MENU_PLAYER_COUNT_HEIGHT + 2*MENU_LINE_PADDING
     registerTileButton(
-        position = pos + Vector3d(startWidth/2, -2.0 - 2*MENU_LINE_PADDING, 0.0),
+        position = pos + Vector3d(startWidth/2, -1.9 - 2*MENU_LINE_PADDING, 0.0),
         width = startWidth,
         height = startButtonHeight,
         text = text.string(StringKey.OptionsStart),
@@ -69,9 +69,9 @@ private fun createRootPage(
     }
 
     registerTileButton(
-        position = pos + Vector3d(startWidth/2, -1.0 - 4*MENU_LINE_PADDING - startButtonHeight, 0.0),
+        position = pos + Vector3d(startWidth/2, -1.0 - 5*MENU_LINE_PADDING - startButtonHeight, 0.0),
         width = startWidth,
-        height = MENU_LINE_HEIGHT,
+        height = 0.4,
         icon = "⟳",
         text = text.string(StringKey.OptionsResetDefaults),
         brightness = MENU_BRIGHTNESS_ALT,
