@@ -1,5 +1,6 @@
 package me.jfenn.bingo.common.commands
 
+import kotlinx.serialization.json.Json
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.common.state.BingoState
@@ -23,8 +24,11 @@ class BingoDebugCommand(
                 }
                 executes {
                     val state = scope.get<BingoState>()
-                    val stateJson = scope.get<IJsonSerializers>().json.encodeToString(state)
-                    log.info(stateJson)
+                    val json = Json(scope.get<IJsonSerializers>().json) {
+                        prettyPrint = true
+                    }
+
+                    log.info(json.encodeToString(state))
 
                     sendMessage(text.literal("Debug info printed to server logs.").formatted(ChatFormatting.GRAY))
                 }
