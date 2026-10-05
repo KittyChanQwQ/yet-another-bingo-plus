@@ -5,7 +5,7 @@ import me.jfenn.bingo.client.impl.NativeImageImpl
 import me.jfenn.bingo.client.impl.accessor
 import me.jfenn.bingo.client.platform.INativeImage
 import me.jfenn.bingo.client.platform.renderer.*
-import me.jfenn.bingo.impl.ItemStackFactory
+import me.jfenn.bingo.impl.item.ItemStackImpl
 import me.jfenn.bingo.platform.Identifier
 import me.jfenn.bingo.platform.item.IItemStack
 import me.jfenn.bingo.platform.text.IText
@@ -122,7 +122,7 @@ class DrawService(
     }
 
     override fun drawItemStack(stack: IItemStack, x: Int, y: Int, seed: Int) {
-        require(stack is ItemStackFactory.ItemStackImpl)
+        require(stack is ItemStackImpl)
         val itemStack: ItemStack = stack.stack
         context.item(itemStack, x, y, seed)
 
