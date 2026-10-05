@@ -42,18 +42,21 @@ internal class BingoCardsWidget(
         from = interpolateFromX,
         to = 0f,
         duration = interpolateDuration,
+        easing = Interpolate.Easing.EXP_OUT,
     )
 
     val interpolateY = Interpolate(
         from = interpolateFromY,
         to = 0f,
         duration = interpolateDuration,
+        easing = Interpolate.Easing.EXP_OUT,
     )
 
     val interpolateScale = Interpolate(
         from = interpolateFromScale,
         to = 1f,
         duration = interpolateDuration,
+        easing = Interpolate.Easing.EXP_OUT,
     )
 
     val initialScollX: Float = run {
@@ -77,6 +80,7 @@ internal class BingoCardsWidget(
     private var dragStart: Pair<Double, Double>? = null
     private var dragInitialScrollX: Float = initialScollX
     private var isDraggingScrollBar: Boolean = false
+    var isGui: Boolean = true
 
     fun viewsWithPositions(
         callback: (view: ClientCard, x: Float, y: Float, z: Int) -> Unit
@@ -120,14 +124,15 @@ internal class BingoCardsWidget(
                     interpolateX.to = xCoerced
                     interpolateY.to = y
                     Pair(
-                        interpolateX.get(Interpolate.Easing.IN_OUT),
-                        interpolateY.get(Interpolate.Easing.IN_OUT)
+                        interpolateX.get(),
+                        interpolateY.get()
                     )
                 }
                 else -> Pair(xCoerced, y)
             }
 
-            callback(view.guiCard, currentX, currentY, z)
+            val view = if (isGui) view.guiCard else view
+            callback(view, currentX, currentY, z)
         }
     }
 
@@ -168,7 +173,7 @@ internal class BingoCardsWidget(
                 x = x,
                 y = y,
                 z = z,
-                cardScale = interpolateScale.get(Interpolate.Easing.IN_OUT),
+                cardScale = interpolateScale.get(),
                 mouseX = mouseX,
                 mouseY = mouseY,
                 isFocused = isHovered && !isSingleView && onViewClick != null,
@@ -274,7 +279,7 @@ internal class BingoCardsWidget(
             val (tileX, tileY) = renderer.getItem(
                 x = x.toInt(),
                 y = y.toInt(),
-                cardScale = interpolateScale.get(Interpolate.Easing.IN_OUT),
+                cardScale = interpolateScale.get(),
                 mouseX = mouseX.toInt(),
                 mouseY = mouseY.toInt(),
             ) ?: return@viewsWithPositions

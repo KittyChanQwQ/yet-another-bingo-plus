@@ -21,6 +21,7 @@ import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.game.GameOverPacket
 import me.jfenn.bingo.common.map.CardTileAction
 import me.jfenn.bingo.common.map.Color
+import me.jfenn.bingo.common.map.setAlpha
 import me.jfenn.bingo.common.ready.SetReadyPacket
 import me.jfenn.bingo.common.ready.VoteOption
 import me.jfenn.bingo.common.team.BingoTeamKey
@@ -32,6 +33,8 @@ import me.jfenn.bingo.platform.event.ICallbackHandle
 import me.jfenn.bingo.platform.event.IEventBus
 import org.joml.Vector2i
 import org.koin.core.Koin
+import java.time.Instant
+import java.util.*
 import kotlin.math.*
 
 internal class BingoHudScreen(
@@ -44,14 +47,12 @@ internal class BingoHudScreen(
     private val client: IClient = koin.get(),
     private val config: BingoConfig = koin.get(),
     private val helper: IMutableScreenHelper,
-    private val voteOptionsScreenFactory: BingoVoteOptionsScreen.Factory,
     originalCardKey: BingoTeamKey?,
     originalCardPos: Pair<Float, Float>,
     originalCardScale: Float = config.client.cardScale,
     scrollableWidgetFactory: IScrollableWidgetFactory = koin.get(),
     tabsWidgetFactory: ITabsWidgetFactory = koin.get(),
-    buttonFactory: IButtonFactory = koin.get(),
-    private val onCloseCallback: (BingoHudScreen) -> Unit,
+    private val buttonFactory: IButtonFactory = koin.get(),
     private val eventBus: IEventBus,
 ) : IScreen {
 
@@ -67,7 +68,6 @@ internal class BingoHudScreen(
         private val scrollableWidgetFactory: IScrollableWidgetFactory,
         private val tabsWidgetFactory: ITabsWidgetFactory,
         private val screenFactory: IScreenFactory,
-        private val voteOptionsScreenFactory: BingoVoteOptionsScreen.Factory,
         private val eventBus: IEventBus,
     ) {
         fun create(
@@ -75,7 +75,6 @@ internal class BingoHudScreen(
             originalCardKey: BingoTeamKey?,
             originalCardPos: Pair<Float, Float>,
             canEscape: Boolean,
-            onClose: (BingoHudScreen) -> Unit,
         ) = screenFactory.build(text.string(StringKey.CardTitle)) { helper ->
             BingoHudScreen(
                 koin = koin,
@@ -86,12 +85,10 @@ internal class BingoHudScreen(
                 state = state,
                 config = config,
                 helper = helper,
-                voteOptionsScreenFactory = voteOptionsScreenFactory,
                 originalCardKey = originalCardKey,
                 originalCardPos = originalCardPos,
                 scrollableWidgetFactory = scrollableWidgetFactory,
                 tabsWidgetFactory = tabsWidgetFactory,
-                onCloseCallback = onClose,
                 eventBus = eventBus,
             )
         }
@@ -104,12 +101,16 @@ internal class BingoHudScreen(
     private val width by helper::width
     private val height by helper::height
 
-    private val sidebarOffsetInterpolate = Interpolate(
+    private val screenInterpolate = Interpolate(
         from = 0f,
         to = 1f,
         duration = 150.milliseconds,
+        easing = Interpolate.Easing.EXP_OUT,
     )
+    private var screenInterpolation = 0f
     private var sidebarWidth = 0
+    private var sidebarX = 0
+    private var lastButtonY = 0
 
     private val cardsWidget = BingoCardsWidget(
         koin,
@@ -132,23 +133,16 @@ internal class BingoHudScreen(
         },
         onViewClick = { view: ClientCard ->
             state.selectedTeam = view.teamKey
-            helper.close()
+            requestClose()
             true
-        }.takeIf { gameOver == null },
+        }.takeIf { state.cards.size > 1 && gameOver == null },
     )
-
-    fun getCardPositions() = buildMap {
-        // if the tab is not showing CARDS, don't interpolate the card positions
-        if (tab != GameOverPacket.EndScreenTab.CARDS) return@buildMap
-        cardsWidget.viewsWithPositions { view, x, y, _ ->
-            put(view.teamKey, Pair(x, y))
-        }
-    }
 
     private val fireworkRenderer = BingoEndFireworkRenderer(text)
         .takeIf { gameOver != null && gameOver.isFirstOpen && gameOver.packet.isWinner }
         ?.also { gameOver?.isFirstOpen = false }
 
+    private val isSettingsButtonVisible get() = settingsButton != null && !isMoreOptionsOpen
     private val settingsButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 20),
@@ -167,13 +161,25 @@ internal class BingoHudScreen(
     ).also {
         it.message = text.string(StringKey.CardClose)
         it.onClick {
-            helper.close()
+            if (isMoreOptionsOpen) {
+                isMoreOptionsOpen = false
+            } else {
+                requestClose()
+            }
         }
     }
 
     private val isMoreOptionsVisible get() = gameOver != null
             && packets.readySetV2.isSupported()
             && state.ready?.voteOptions.orEmpty().size > 1
+            && !isMoreOptionsOpen
+
+    private var isMoreOptionsOpen = false
+        set(value) {
+            field = value
+            init()
+        }
+
     private val moreOptionsButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 20),
@@ -181,11 +187,11 @@ internal class BingoHudScreen(
     ).also {
         it.message = text.string(StringKey.OptionsMore)
         it.onClick {
-            client.screen = voteOptionsScreenFactory.create(gameOver, helper)
+            isMoreOptionsOpen = true
         }
     }
 
-    private val isPrimaryButtonVisible get() = gameOver != null && (gameOver.packet.isReadyVoteAvailable || state.ready?.canSendReady == true)
+    private val isPrimaryButtonVisible get() = gameOver != null && (gameOver.packet.isReadyVoteAvailable || state.ready?.canSendReady == true) && !isMoreOptionsOpen
     private var primaryVoteOption: VoteOption? = null
     private val primaryButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
@@ -242,14 +248,11 @@ internal class BingoHudScreen(
 
     private val sidebarDrawable = object : IDrawable {
         override fun render(drawService: IDrawService) {
-            drawService.matrices.push()
-            drawService.matrices.translate((1f-sidebarOffsetInterpolate.get(Interpolate.Easing.IN_OUT)) * sidebarWidth, 0f, 0f)
-
             // Ensure that the texture is rendered with an even width
             val evenOffset = if (sidebarWidth % 2 == 0) 0 else 1
             drawService.drawNinePatch(
                 texture = Identifier.of("minecraft", "bingo/game_sidebar_background"),
-                x = width - sidebarWidth - evenOffset,
+                x = sidebarX - evenOffset,
                 y = 0,
                 width = sidebarWidth + evenOffset,
                 height = height,
@@ -257,14 +260,14 @@ internal class BingoHudScreen(
                 textureWidth = 128,
                 textureHeight = 128,
             )
-
-            drawService.matrices.pop()
         }
     }
 
+    private val optionButtons = mutableMapOf<UUID, IButton>()
+
     private fun updatePositions() {
         sidebarWidth = (width * 0.2f).toInt() + 100
-        val interpolatedSidebarWidth = sidebarOffsetInterpolate.get(Interpolate.Easing.IN_OUT)
+        sidebarX = width - screenInterpolation
             .times(sidebarWidth)
             .roundToInt()
 
@@ -282,31 +285,53 @@ internal class BingoHudScreen(
 
         val marginX = 12
         val marginY = 4
+        val buttonWidth = sidebarWidth - marginX * 2
 
         val closeButtonSize = when {
-            settingsButton != null -> (sidebarWidth - marginX * 2) / 2 - 1
-            else -> sidebarWidth - marginX * 2
+            isSettingsButtonVisible -> buttonWidth / 2 - 1
+            else -> buttonWidth
         }
         closeButton.size = Vector2i(closeButtonSize, 20)
         var buttonY = height - closeButton.size.y - 12
-        closeButton.position = Vector2i(width - interpolatedSidebarWidth + marginX, buttonY)
+        closeButton.position = Vector2i(sidebarX + marginX, buttonY)
 
         settingsButton?.size = Vector2i(closeButtonSize, 20)
-        settingsButton?.position = Vector2i(width - interpolatedSidebarWidth + marginX + closeButtonSize + 2, buttonY)
+        settingsButton?.position = Vector2i(sidebarX + marginX + closeButtonSize + 2, buttonY)
 
         if (isMoreOptionsVisible) {
-            moreOptionsButton.size = Vector2i(sidebarWidth - marginX * 2, 20)
+            moreOptionsButton.size = Vector2i(buttonWidth, 20)
             buttonY -= marginY + moreOptionsButton.size.y
-            moreOptionsButton.position = Vector2i(width - interpolatedSidebarWidth + marginX, buttonY)
+            moreOptionsButton.position = Vector2i(sidebarX + marginX, buttonY)
         }
 
         if (isPrimaryButtonVisible) {
-            primaryButton.size = Vector2i(sidebarWidth - marginX * 2, 40)
+            primaryButton.size = Vector2i(buttonWidth, 40)
             buttonY -= marginY + primaryButton.size.y
-            primaryButton.position = Vector2i(width - interpolatedSidebarWidth + marginX, buttonY)
+            primaryButton.position = Vector2i(sidebarX + marginX, buttonY)
         }
 
-        messagesWidget.x = width - interpolatedSidebarWidth + marginX
+        if (isMoreOptionsOpen) {
+            for (voteOption in state.ready?.voteOptions?.reversed().orEmpty()) {
+                val optionButton = optionButtons.getOrPut(voteOption.id) {
+                    buttonFactory.createNinePatchButton(
+                        sliceSize = 8,
+                        textureSize = Vector2i(200, 20),
+                        textures = BUTTON_GAME_GENERIC,
+                    ).also {
+                        it.onClick { sendReady(voteOption) }
+                    }
+                }
+
+                optionButton.message = voteOption.title
+                optionButton.size = Vector2i(buttonWidth, 40)
+                buttonY -= marginY + optionButton.size.y
+                optionButton.position = Vector2i(sidebarX + marginX, buttonY)
+            }
+        }
+
+        lastButtonY = buttonY
+
+        messagesWidget.x = sidebarX + marginX
         messagesWidget.y = 0
         messagesWidget.width = sidebarWidth - marginX*2
         messagesWidget.height = buttonY - 10
@@ -338,9 +363,15 @@ internal class BingoHudScreen(
             helper.addButton(moreOptionsButton)
         }
 
+        if (isMoreOptionsOpen) {
+            for (voteOption in state.ready?.voteOptions.orEmpty()) {
+                optionButtons[voteOption.id]?.let { helper.addButton(it) }
+            }
+        }
+
         helper.addButton(closeButton)
 
-        if (settingsButton != null) {
+        if (settingsButton != null && isSettingsButtonVisible) {
             helper.addButton(settingsButton)
         }
     }
@@ -351,6 +382,7 @@ internal class BingoHudScreen(
 
     private fun renderGameDuration(drawService: IDrawService, titleY: Int, x: Float) {
         if (gameOver == null) return
+        val alpha = (255 * screenInterpolation).toInt()
 
         drawService.matrices.push()
         drawService.matrices.translate(x, titleY.toFloat(), 0f)
@@ -362,14 +394,14 @@ internal class BingoHudScreen(
         drawService.drawText(
             gameDuration,
             -drawService.font.getTextWidth(gameDuration)/2, 0,
-            0xFF_A3F5A3.toInt(),
+            setAlpha(0xA3F5A3, alpha),
             true,
         )
 
         drawService.matrices.pop()
 
         val title = text.string(StringKey.StatsGameDuration)
-        drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
+        drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, setAlpha(0xFFFFFF, alpha), true)
 
         gameOver.packet.prevBestTime?.let { prevBestTime ->
             drawService.matrices.push()
@@ -383,14 +415,14 @@ internal class BingoHudScreen(
                 val bestDiff = gameOver.packet.duration - prevBestTime
                 val bestText = text.string(StringKey.StatsBestTimeNew, bestDiff.formatStringSmall())
                 val bestColor = Color.fromInt(ClientCardRenderer.getWinColor(now))
-                    .copy(a = (animProgress * 255).toInt().coerceAtLeast(6))
+                    .copy(a = (screenInterpolation * animProgress * 255).toInt().coerceAtLeast(6))
                     .asIntWithAlpha
 
                 drawService.matrices.scale(bestScale, bestScale, 1f)
                 drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, bestColor, true)
             } else {
                 val bestText = text.string(StringKey.StatsBestTime, prevBestTime.formatString())
-                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
+                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, setAlpha(0xCCA3F5, alpha), true)
             }
 
             drawService.matrices.pop()
@@ -402,6 +434,7 @@ internal class BingoHudScreen(
     private fun renderWinStreak(drawService: IDrawService, titleY: Int, x: Float) {
         val winStreak = gameOver?.packet?.winStreak ?: return
         val now = state.now
+        val alpha = (255 * screenInterpolation).toInt()
 
         drawService.matrices.push()
         drawService.matrices.translate(x, titleY.toFloat(), 0f)
@@ -413,14 +446,14 @@ internal class BingoHudScreen(
         drawService.drawText(
             winStreakText,
             -drawService.font.getTextWidth(winStreakText)/2, 0,
-            0xFF_F5A3D6.toInt(),
+            setAlpha(0xF5A3D6, alpha),
             true,
         )
 
         drawService.matrices.pop()
 
         val title = text.string(StringKey.StatsWinStreak)
-        drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, 0xFF_FFFFFF.toInt(), true)
+        drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, setAlpha(0xFFFFFF, alpha), true)
 
         gameOver.packet.bestWinStreak?.let { bestWinStreak ->
             drawService.matrices.push()
@@ -432,14 +465,14 @@ internal class BingoHudScreen(
                 val bestScale = 2f - animProgress
                 val bestText = text.string(StringKey.StatsWinStreakNewMax)
                 val bestColor = Color.fromInt(ClientCardRenderer.getWinColor(now))
-                    .copy(a = (animProgress * 255).toInt().coerceAtLeast(6))
+                    .copy(a = (screenInterpolation * animProgress * 255).toInt().coerceAtLeast(6))
                     .asIntWithAlpha
 
                 drawService.matrices.scale(bestScale, bestScale, 1f)
                 drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, bestColor, true)
             } else {
                 val bestText = text.string(StringKey.StatsWinStreakMax, bestWinStreak)
-                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, 0xFF_CCA3F5.toInt(), true)
+                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, setAlpha(0xCCA3F5, alpha), true)
             }
 
             drawService.matrices.pop()
@@ -460,20 +493,47 @@ internal class BingoHudScreen(
             drawService.matrices.push()
             drawService.matrices.translate(-2f, -2f, 0f)
 
-            drawService.fill(0, 0, 4, 4, 0x30_F5A3D6)
+            drawService.fill(0, 0, 4, 4, setAlpha(0xF5A3D6, alpha * 30 / 255))
 
             drawService.matrices.pop()
             drawService.matrices.pop()
         }
     }
 
+    private fun renderVoteButtonIndicators(drawService: IDrawService) {
+        // If there are no options available, close the screen!
+        val voteOptions = state.ready?.voteOptions.orEmpty()
+        if (voteOptions.isEmpty()) {
+            isMoreOptionsOpen = false
+            return
+        }
+
+        val maxVotes = voteOptions.maxOfOrNull { it.votes } ?: 0
+        val voteToCharRatio = maxVotes.coerceAtMost(8).toFloat() / maxVotes.coerceAtLeast(1)
+
+        for (voteOption in voteOptions) {
+            val button = optionButtons[voteOption.id] ?: continue
+            button.active = !voteOption.clientSelected
+
+            val votesChars = (voteOption.votes * voteToCharRatio).roundToInt()
+            if (votesChars > 0) {
+                val votesText = text.literal(List(votesChars) { "·" }.joinToString(" "))
+                val votesWidth = drawService.font.getTextWidth(votesText)
+                val votesX = button.position.x + (button.size.x / 2) - (votesWidth / 2)
+                val votesY = button.position.y + button.size.y - 10
+                drawService.drawText(votesText, x = votesX, y = votesY, -1)
+            }
+        }
+    }
+
     override fun render(drawService: IDrawService, mouseX: Int, mouseY: Int, delta: Float) {
         // If the gameOver state is cleared, close the screen!
         if (gameOver != null && state.gameOver == null) {
-            helper.close()
+            requestClose()
         }
 
-        if (sidebarOffsetInterpolate.update()) {
+        if (screenInterpolate.update()) {
+            screenInterpolation = screenInterpolate.get()
             updatePositions()
         }
 
@@ -490,10 +550,14 @@ internal class BingoHudScreen(
             val titleWidth = drawService.font.getTextWidth(title)
             drawService.drawText(
                 title,
-                x = primaryButton.position.x + (primaryButton.size.x / 2) - (titleWidth / 2),
-                y = primaryButton.position.y - 9,
+                x = sidebarX + (sidebarWidth / 2) - (titleWidth / 2),
+                y = lastButtonY - 9,
                 color = 0xff_888888.toInt(),
             )
+        }
+
+        if (isMoreOptionsOpen) {
+            renderVoteButtonIndicators(drawService)
         }
 
         val cardTop = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT /2)
@@ -509,6 +573,10 @@ internal class BingoHudScreen(
         }
 
         fireworkRenderer?.render(drawService, (width - sidebarWidth)/2, height/2, state.now)
+
+        if (isClosing && screenInterpolate.isDone()) {
+            helper.close()
+        }
     }
 
     override fun mouseDragged(mouseX: Double, mouseY: Double): Boolean {
@@ -535,8 +603,27 @@ internal class BingoHudScreen(
 
     override fun shouldCloseOnEsc() = canEscape
 
-    override fun onClose() {
-        onCloseCallback.invoke(this)
+    override fun getBlurriness(): Float = screenInterpolate.get()
+
+    private var isClosing = false
+    override fun requestClose() {
+        if (isClosing) return
+        isClosing = true
+        val now = Instant.now()
+        screenInterpolate.easing = Interpolate.Easing.EXP_OUT_REVERSE
+        screenInterpolate.startedAt = now
+        cardsWidget.apply {
+            interpolateX.easing = Interpolate.Easing.EXP_OUT_REVERSE
+            interpolateX.startedAt = now
+
+            interpolateY.easing = Interpolate.Easing.EXP_OUT_REVERSE
+            interpolateY.startedAt = now
+
+            interpolateScale.easing = Interpolate.Easing.EXP_OUT_REVERSE
+            interpolateScale.startedAt = now
+
+            isGui = false
+        }
     }
 
     private var hudStateListener: ICallbackHandle? = null

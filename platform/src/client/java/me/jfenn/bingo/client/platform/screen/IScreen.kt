@@ -14,7 +14,8 @@ interface IScreen {
     fun keyPressed(input: IKeyInput) = false
     fun shouldPause(): Boolean = false
     fun shouldCloseOnEsc(): Boolean = true
-    fun onClose(): Unit = Unit
+    fun getBlurriness(): Float = 1f
+    fun requestClose(): Unit = Unit
     fun added(): Unit = Unit
     fun removed(): Unit = Unit
 }

@@ -11,11 +11,7 @@
         "FoodDataAccessor",
         "GameRuleOverrideMixin",
         "InteractionEntityMixin",
-<<<<<<<
-=======
         "ItemStackMixin",
-        "LivingEntityMixin",
->>>>>>>
         "MapItemSavedDataAccessor",
         "MinecraftServerAccessor",
         "MinecraftServerSkipStartRegionMixin",

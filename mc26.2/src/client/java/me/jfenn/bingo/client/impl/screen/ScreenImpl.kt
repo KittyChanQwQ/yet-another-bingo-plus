@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
+import net.minecraft.util.ARGB
 import kotlin.math.absoluteValue
 
 class ScreenImpl(
@@ -18,6 +19,7 @@ class ScreenImpl(
     var impl: IScreen? = null
     var parent: Screen? = null
     val helper = MutableScreenHelperImpl(this)
+    val blurIntensity get() = impl?.getBlurriness() ?: 1f
 
     override fun init() {
         super.init()
@@ -37,6 +39,12 @@ class ScreenImpl(
     override fun resize(width: Int, height: Int) {
         super.resize(width, height)
         impl?.resize(width, height)
+    }
+
+    override fun extractMenuBackground(graphics: GuiGraphicsExtractor) {
+        DrawService.COLOR_TINT = ARGB.colorFromFloat(blurIntensity, 1f, 1f, 1f)
+        super.extractMenuBackground(graphics)
+        DrawService.COLOR_TINT = null
     }
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
@@ -81,7 +89,10 @@ class ScreenImpl(
     }
 
     override fun onClose() {
-        impl?.onClose()
+        impl?.requestClose()
+    }
+
+    fun finishClose() {
         minecraft.gui.setScreen(parent)
     }
 

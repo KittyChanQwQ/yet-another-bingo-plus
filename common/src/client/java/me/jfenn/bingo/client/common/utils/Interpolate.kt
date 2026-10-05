@@ -6,34 +6,45 @@ import java.time.Duration
 import java.time.Instant
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.pow
 
 class Interpolate(
     var from: Float,
     var to: Float,
     var duration: Duration = Duration.ZERO,
     var startedAt: Instant = Instant.now(),
+    var easing: Easing = Easing.LINEAR,
 ) {
     enum class Easing {
         LINEAR,
-        IN_OUT
+        IN_OUT,
+        IN_OUT_REVERSE,
+        EXP_OUT,
+        EXP_OUT_REVERSE,
     }
 
+    private fun easeInOut(progress: Float) = -(cos(PI * progress) - 1).toFloat() / 2f
+    private fun expOut(progress: Float) = 1f - 2f.pow(-10 * progress)
+
     fun progress(
-        easing: Easing = Easing.LINEAR,
+        easing: Easing = this.easing,
         now: Instant = Instant.now(),
     ): Float {
         val animTimeSince = now - startedAt
         val progress = (animTimeSince / duration).toFloat().coerceIn(0f, 1f)
         return when (easing) {
             Easing.LINEAR -> progress
-            Easing.IN_OUT -> -(cos(PI * progress()) - 1).toFloat() / 2f
+            Easing.IN_OUT -> easeInOut(progress)
+            Easing.IN_OUT_REVERSE -> 1f - easeInOut(progress)
+            Easing.EXP_OUT -> expOut(progress)
+            Easing.EXP_OUT_REVERSE -> 1f - expOut(progress)
         }
     }
 
-    fun isDone() = progress() > 0.9999f
+    fun isDone() = Instant.now() > startedAt + duration
 
     fun get(
-        easing: Easing = Easing.LINEAR,
+        easing: Easing = this.easing,
         now: Instant = Instant.now(),
     ): Float {
         val progress = progress(easing, now)

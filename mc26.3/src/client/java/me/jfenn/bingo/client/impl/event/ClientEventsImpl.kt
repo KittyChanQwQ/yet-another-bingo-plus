@@ -36,6 +36,10 @@ class ClientEventsImpl(
             eventBus.emit(InvalidateRenderStateEvent, InvalidateRenderStateEvent())
         }
 
+        ClientTickEvents.START_CLIENT_TICK.register {
+            eventBus.emit(ClientTickEvent.Start, ClientTickEvent())
+        }
+
         ClientTickEvents.END_CLIENT_TICK.register {
             eventBus.emit(ClientTickEvent.End, ClientTickEvent())
         }

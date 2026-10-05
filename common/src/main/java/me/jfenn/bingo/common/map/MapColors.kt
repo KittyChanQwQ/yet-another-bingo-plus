@@ -11,6 +11,10 @@ fun rgba(r: Int, g: Int, b: Int, a: Int): Int {
     return (a shl 24 and -0x1000000) or (r shl 16 and 0x00FF0000) or (g shl 8 and 0x0000FF00) or (b and 0x000000FF)
 }
 
+fun setAlpha(color: Int, a: Int): Int {
+    return (a shl 24 and -0x1000000) or (color and 0x00FFFFFF)
+}
+
 data class Color(val r: Int, val g: Int, val b: Int, val a: Int = 255) {
     fun map(mapper: (Int) -> Int): Color {
         return Color(

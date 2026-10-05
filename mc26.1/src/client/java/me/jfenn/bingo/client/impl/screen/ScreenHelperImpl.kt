@@ -69,4 +69,8 @@ class MutableScreenHelperImpl(
     override fun clearChildren() {
         screenImpl.bingoClearChildren()
     }
+
+    override fun close() {
+        screenImpl.finishClose()
+    }
 }

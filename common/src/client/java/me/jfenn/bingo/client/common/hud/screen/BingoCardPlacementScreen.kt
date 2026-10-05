@@ -339,6 +339,10 @@ internal class BingoCardPlacementScreen(
 
     override fun shouldCloseOnEsc(): Boolean = false
 
+    override fun requestClose() {
+        helper.close()
+    }
+
     override fun keyPressed(input: IKeyInput): Boolean {
         if (input.isEscape) {
             onCloseCallback(Result.Cancel)
