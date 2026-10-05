@@ -79,7 +79,8 @@ internal class ScoreboardService(
     ) {
         val contentItems = contents.map {
             val raw = textSerializer.toRawString(it.text).let { raw -> if (raw.startsWith('#')) " $raw" else raw }
-            ScoreboardView.ScoreboardItem(raw, it.text, it.score)
+            val rawScore = it.score?.let { score -> textSerializer.toRawString(score) }.orEmpty()
+            ScoreboardView.ScoreboardItem("$raw$rawScore", it.text, it.score)
         }
 
         // update the server-side objective
