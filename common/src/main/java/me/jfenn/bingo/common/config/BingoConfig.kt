@@ -49,7 +49,7 @@ data class BingoConfig(
     val defaultPostGameReadyUpAction: VoteType = VoteType.NEXT_ROUND,
 
     // whether teams are persisted when returning to the lobby after a game
-    val teamsPersistWhenReturningToLobby: Boolean = true,
+    val teamsPersistWhenReturningToLobby: Boolean = false,
 
     // amount of time to wait before starting the game
     val countdownDelayTicks: Int = 100,
