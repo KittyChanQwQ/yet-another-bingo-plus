@@ -17,6 +17,7 @@ import me.jfenn.bingo.common.utils.allHeldStacks
 import me.jfenn.bingo.common.utils.visitInventories
 import me.jfenn.bingo.platform.IPlayerHandle
 import me.jfenn.bingo.platform.item.IItemStack
+import me.jfenn.bingo.platform.item.IItemStackComponentOps
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
@@ -28,6 +29,7 @@ internal class ItemObjectiveManager(
     private val server: MinecraftServer,
     private val state: BingoState,
     private val itemStackFactory: IItemStackFactory,
+    private val componentOps: IItemStackComponentOps,
     private val data: ScopedData,
     private val objectiveDisplayService: ObjectiveDisplayService,
     private val objectiveService: ObjectiveService,
@@ -81,7 +83,7 @@ internal class ItemObjectiveManager(
             return false
         }
 
-        val isComponentsSuccessful = objective.itemComponents?.let { stack.setComponentsString(it) } ?: true
+        val isComponentsSuccessful = objective.itemComponents?.let { componentOps.setComponentsString(stack, it) } ?: true
 
         if (!isComponentsSuccessful) {
             log.objectiveError(objective.id, "Item ${objective.itemId} NBT failed to parse")
@@ -125,7 +127,7 @@ internal class ItemObjectiveManager(
         val objectiveStack = objective.itemStack ?: return false
         return stack.item == objectiveStack.item &&
                 !stack.hasCustomTag(NBT_BINGO_IGNORE) &&
-                stack.isDataOverlapping(components = objective.itemComponents)
+                componentOps.isDataOverlapping(stack, components = objective.itemComponents)
     }
 
     private fun countSatisfied(stacks: List<IItemStack>, objective: BingoObjective.ItemEntry) : Int {

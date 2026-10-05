@@ -4,6 +4,8 @@ import me.jfenn.bingo.common.scope.BingoScope
 import me.jfenn.bingo.impl.*
 import me.jfenn.bingo.impl.dialog.DialogManager
 import me.jfenn.bingo.impl.event.ServerCloseEvent
+import me.jfenn.bingo.impl.item.ItemStackComponentOpsImpl
+import me.jfenn.bingo.impl.item.ItemStackFactory
 import me.jfenn.bingo.impl.networking.ServerNetworkingImpl
 import me.jfenn.bingo.impl.particle.ParticleFactory
 import me.jfenn.bingo.impl.player.ContainerMenuFactory
@@ -11,6 +13,7 @@ import me.jfenn.bingo.impl.world.GameRulesImpl
 import me.jfenn.bingo.platform.*
 import me.jfenn.bingo.platform.commands.ICommandManager
 import me.jfenn.bingo.platform.dialog.IDialogManager
+import me.jfenn.bingo.platform.item.IItemStackComponentOps
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import me.jfenn.bingo.platform.packet.IServerNetworking
 import me.jfenn.bingo.platform.particle.IParticleFactory
@@ -46,7 +49,7 @@ val sharedModule = module {
     singleOf(::CommandRunner) bind ICommandRunner::class
     singleOf(::DialogManager) bind IDialogManager::class
     single { Executors } bind IExecutors::class
-    single { ItemStackFactory(get(), null) } bind IItemStackFactory::class
+    single { ItemStackFactory } bind IItemStackFactory::class
     singleOf(::MapColorServiceImpl) bind IMapColorService::class
     single { ParticleFactory } bind IParticleFactory::class
     singleOf(::ServerEventsImpl) withOptions { createdAtStart() }
@@ -67,7 +70,7 @@ val sharedModule = module {
         scopedOf(::MapServiceImpl) bind IMapService::class
         scopedOf(::MinecraftServerImpl) bind ITickManager::class
         scopedOf(::MinecraftServerImpl) bind IMinecraftServer::class
-        scopedOf(::ItemStackFactory) bind IItemStackFactory::class
+        scopedOf(::ItemStackComponentOpsImpl) bind IItemStackComponentOps::class
         scopedOf(::JsonSerializers) bind IJsonSerializers::class
         scopedOf(::RecipeManagerImpl) bind IRecipeManager::class
         scopedOf(::ScoreboardManager) bind IScoreboardManager::class

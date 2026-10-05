@@ -4,6 +4,7 @@ import me.jfenn.bingo.common.card.objective.objectiveError
 import me.jfenn.bingo.common.text.TextProvider
 import me.jfenn.bingo.common.utils.jsonUnpretty
 import me.jfenn.bingo.platform.ITextSerializer
+import me.jfenn.bingo.platform.item.IItemStackComponentOps
 import me.jfenn.bingo.platform.item.IItemStackFactory
 import net.minecraft.ChatFormatting
 import org.slf4j.Logger
@@ -12,6 +13,7 @@ class ObjectiveDisplayService(
     private val textSerializer: ITextSerializer,
     private val textProvider: TextProvider,
     private val itemStackFactory: IItemStackFactory,
+    private val componentOps: IItemStackComponentOps,
     private val log: Logger,
 ) {
     private fun insertSubstitutions(
@@ -54,7 +56,7 @@ class ObjectiveDisplayService(
                 }
                 ?.also { stack ->
                     data.itemComponents?.let {
-                        stack.setComponentsString(it.mapValues { (_, data) ->
+                        componentOps.setComponentsString(stack, it.mapValues { (_, data) ->
                             jsonUnpretty.encodeToString(data)
                         })
                     }

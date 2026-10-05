@@ -48,13 +48,6 @@ interface IItemStack {
     fun setUnbreakable(value: Boolean)
     fun setHideFlags(hideFlags: Int)
 
-    fun setComponentsString(components: Map<String, String?>): Boolean
-    fun getComponentsString(): Map<String, String?>?
-
-    fun isDataOverlapping(
-        components: Map<String, String?>?,
-    ): Boolean
-
     fun copy(): IItemStack
 
     fun asFilledMap(): IFilledMap?
@@ -67,6 +60,15 @@ interface IItemStack {
 
     val containerInventory: IInventory?
     fun setContainerInventory(inventory: Collection<IItemStack>)
+}
+
+interface IItemStackComponentOps {
+    fun setComponentsString(stack: IItemStack, components: Map<String, String?>): Boolean
+    fun getComponentsString(stack: IItemStack): Map<String, String?>?
+    fun isDataOverlapping(
+        stack: IItemStack,
+        components: Map<String, String?>?,
+    ): Boolean
 }
 
 typealias IItemStackSerialized = @Contextual IItemStack
