@@ -30,7 +30,7 @@ internal class TeamController(
             teamService.clearTeams()
             state.playersSpectatingIds.clear()
 
-            if (config.teamsPersistWhenReturningToLobby) {
+            if (config.keepTeamsAfterRoundEnds) {
                 for (team in state.teamRestore) {
                     teamService.restoreTeam(team)
                 }

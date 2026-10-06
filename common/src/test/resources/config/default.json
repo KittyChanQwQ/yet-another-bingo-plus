@@ -1,0 +1,192 @@
+{
+    "version": 0,
+
+    // Provides preset filter settings for the lobby menu and the `/bingo filter` command.
+    "itemFilterPresets": {
+        "everything": "-tedious -unobtainable"
+    },
+
+    // Provides preset card difficulty settings for the lobby menu and the `/bingo difficulty` command.
+    "difficultyPresets": {
+        "easy": [
+            0,
+            0,
+            0,
+            9,
+            16
+        ],
+        "medium": [
+            0,
+            0,
+            3,
+            10,
+            12
+        ],
+        "hard": [
+            0,
+            1,
+            5,
+            10,
+            9
+        ],
+        "extreme": [
+            0,
+            5,
+            7,
+            7,
+            6
+        ],
+        "impossible": [
+            5,
+            7,
+            6,
+            5,
+            2
+        ]
+    },
+
+    // Adds component tags to all spawn kit items, which prevents them from being scored. (however, this has some drawbacks)
+    "preventScoringSpawnKitItems": false,
+
+    // Prevents cards from generating with any of the items that are in the enabled spawn kits.
+    "excludeSpawnKitItemsFromCards": true,
+
+    // Turns off sounds that can be caused by other players in the pre-game lobby. This prevents large groups from causing a racket.
+    "preventLobbyChaos": false,
+
+    // Gives players a book that explains how to play the game and adjust player settings when in the lobby.
+    // When this is turned off, players can only obtain the book with the `/bingo book` command.
+    "lobbyTutorialBook": true,
+
+    // In survival/SMP mode, the mod gives players a permanent "memento" map of each bingo game they complete.
+    "giveMementoInSurvival": true,
+
+    // Controls whether all spectating players are given the night vision effect.
+    "nightVisionInSpectator": true,
+
+    // Controls whether all players are given the night vision effect when the game is over.
+    "nightVisionInPostgame": true,
+
+    // Whether players with the client-side mod can see the bingo card through the HUD.
+    // If this is false, all players are given a map item the same as vanilla players.
+    "supportClientHud": true,
+
+    // The timer that counts down to start the game once all players are on a team.
+    // Players can vote `/ready` to speed this up, proportionally to the player count. Can be set to `null` to turn off.
+    "startWhenReadySeconds": 600,
+
+    // Whether the start timer should wait until every player is on a team to start counting down.
+    "startWhenReadyWaitsForTeams": true,
+
+    // Whether the start timer should wait until a player votes /ready to start counting down.
+    "startWhenReadyWaitsForFirstVote": false,
+
+    // The timer that counts down to start the next game or return to the lobby when a game is over. Can be set to `null` to turn off.
+    "nextRoundWhenReadySeconds": 600,
+
+    // Whether the "Next Round" timer should wait until at least one player has voted `/ready` to start counting down.
+    "nextRoundWhenReadyWaitsForFirstVote": true,
+
+    // The number of minutes to extend a match by if the 'Extend by ...' (KEEP_PLAYING) option is picked.
+    "extendRoundTimeLimitByMinutes": 15,
+
+    // The default option to choose after the game ends. This can be `NEXT_ROUND`, `KEEP_PLAYING`, or `RETURN_TO_LOBBY`.
+    "defaultPostGameReadyOption": "NEXT_ROUND",
+
+    // Whether to keep players on the same teams when returning to the lobby after a game has finished.
+    // By default, all teams are removed, and players must choose their teams again.
+    "keepTeamsAfterRoundEnds": false,
+
+    // Amount of ticks to wait after teleporting players into the world before starting the countdown.
+    "countdownDelayTicks": 100,
+
+    // Number of seconds to count down before starting the game.
+    "countdownSeconds": 3,
+
+    // Automatically resets the server if all players disconnect after a game has ended.
+    "resetWhenEveryoneDisconnects": true,
+    "chat": {
+
+        // Whether player chat messages should be sent to their team's chat while in-game.
+        "defaultToTeamChat": true,
+
+        // Whether spectating players' chat messages should be sent to an isolated (spectator-only) chat while in-game.
+        "defaultToSpectatorChat": true,
+        "globalCommandAliases": [
+            "g",
+            "global",
+            "all"
+        ],
+        "teamCommandAliases": []
+    },
+
+    // Provides a [JDBC database URL](https://docs.oracle.com/javase/tutorial/jdbc/basics/connecting.html), username, and password.
+    // Currently, only SQLite is supported. By default, this uses a `bingo.db` file in the mod's config directory.
+    "databaseUrl": null,
+    "databaseUser": null,
+    "databasePass": null,
+
+    // Whether to sync player statistics (playtime, win/loss, items scored) with any connected clients.
+    // By default, your bingo statistics include all games you've played across any server or singleplayer world.
+    // Turning this off will only keep statistics for games that are played on your server.
+    "syncStats": true,
+
+    // Provides a unique ID for each host that can be used to determine which server a game was played on, for calculating the "Best Time" statistics.
+    "statsHostId": "00000000-0000-0000-0000-000000000000",
+
+    // Client-side settings can all be edited in the settings through [ModMenu](https://modrinth.com/mod/modmenu).
+    // You don't need to change these manually.
+    "client": {
+        "enableHud": true,
+        "showQuickStartButton": true,
+        "cardPausesGame": true,
+        "cardScale": 1.0,
+        "cardAlignment": "TOP_LEFT",
+        "cardOffsetX": 0,
+        "cardOffsetY": 0,
+        "cardOverlap": "ABOVE",
+        "cardTeamOutlines": true,
+        "showMultipleCards": false,
+        "hideOnF3": true,
+        "hideOnChat": false,
+        "messageFromOtherTeams": true,
+        "messageDurationSeconds": 5,
+        "messageScale": 1.0,
+        "soundVolumes": {}
+    },
+    "server": {
+
+        // Whether the bingo lobby (and other destructive game options) are enabled.
+        // **Use the `/bingo lobby` command to read the warnings before turning this on. This will delete your world folder!**
+        "isLobbyMode": false,
+
+        // Specifies a fixed seed to apply to each new world in lobby mode.
+        // If this is enabled, each round will start on this seed, unless it is manually changed with `/bingo world seed`.
+        "fixedSeed": 0,
+        "fixedSeedEnabled": false,
+
+        // Specifies a template world (within the config folder) to copy for each new round.
+        // The world should be copied so that "level.dat" is directly within this folder, i.e. `config/yet-another-minecraft-bingo/template/level.dat`.
+        // This can be used to pregenerate a large world to run a tournament or event, to avoid world generation lag.
+        // If enabled, this takes precedence over the fixed seed; the seed from the template will be applied instead.
+        "templateDir": "template",
+        "templateEnabled": true,
+
+        // Lobby-mode only: Sets the view distance that should be preloaded around each player's spawn before starting the game.
+        // Increasing this can make games much slower to start.
+        "preloadViewDistance": 4,
+
+        // The default per-player settings. Players can change these with `/bingoprefs`, or in the client mod settings screen.
+        "defaultPlayerSettings": {
+            "seenTutorial": false,
+            "hideLobbyPrompt": false,
+            "bossbar": false,
+            "scoreboard": true,
+            "scoreboardAutoHide": false,
+            "leadingMessages": true,
+            "scoreMessages": true,
+            "itemMessages": true,
+            "nightVision": true
+        }
+    }
+}

@@ -19,8 +19,8 @@ data class ObjectiveFilterList(
 
     companion object {
         val EVERYTHING = ObjectiveFilterList(
-            ObjectiveFilter.Exclude(ObjectiveFilter.UNOBTAINABLE),
-            ObjectiveFilter.Exclude(ObjectiveFilter.TEDIOUS)
+            ObjectiveFilter.Exclude(ObjectiveFilter.TEDIOUS),
+            ObjectiveFilter.Exclude(ObjectiveFilter.UNOBTAINABLE)
         )
 
         val PRESETS = mapOf(

@@ -16,7 +16,6 @@
         "MapItemSavedDataAccessor",
         "MinecraftServerAccessor",
         "MinecraftServerSkipStartRegionMixin",
-        "MinecraftServerUnsafeSkipCloseMixin",
         "PlayerAdvancementsPreventSpectatorsMixin",
         "PlayerManagerMixin",
         "RaidsAccessor",

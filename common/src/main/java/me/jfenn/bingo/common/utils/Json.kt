@@ -7,6 +7,7 @@ val json = Json {
     isLenient = true
     encodeDefaults = true
     prettyPrint = true
+    allowComments = true
 }
 
 val jsonUnpretty = Json {

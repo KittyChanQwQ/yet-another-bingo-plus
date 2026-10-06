@@ -1,9 +1,6 @@
 package me.jfenn.bingo.common.config
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
 import kotlinx.serialization.serializer
 import me.jfenn.bingo.common.MOD_ID_BINGO
 import me.jfenn.bingo.common.utils.json
@@ -17,10 +14,10 @@ import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.StandardOpenOption
-import java.time.Instant
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
+import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.typeOf
 
 class ConfigManager(
@@ -30,25 +27,31 @@ class ConfigManager(
     private val log = LoggerFactory.getLogger("bingo")
     override val configDir = environment.configDir
 
-    override fun inputStream(path: String): InputStream {
+    private fun readText(path: String): String {
         val filePath = configDir.resolve(path)
-        return Files.newInputStream(filePath)
+        return Files.readString(filePath)
     }
 
-    override fun outputStream(path: String): OutputStream {
+    private fun writeText(path: String, text: String) {
         val filePath = configDir.resolve(path)
         if (!Files.exists(filePath)) {
             filePath.parent.toFile().mkdirs()
         }
-        return Files.newOutputStream(filePath)
+        Files.writeString(
+            filePath,
+            text,
+            StandardOpenOption.SYNC,
+            StandardOpenOption.WRITE,
+            StandardOpenOption.CREATE,
+            StandardOpenOption.TRUNCATE_EXISTING
+        )
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     override fun <T: Any> read(type: KType, file: String): T {
         @Suppress("UNCHECKED_CAST")
         val serializer = serializer(type) as KSerializer<T>
         return try {
-            inputStream(file).use { json.decodeFromStream(serializer, it) }
+            json.decodeFromString(serializer, readText(file))
         } catch (e: NoSuchFileException) {
             null
         } catch (e: Exception) {
@@ -59,22 +62,38 @@ class ConfigManager(
         }
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     override fun <T: Any> write(type: KType, file: String, config: T) {
         @Suppress("UNCHECKED_CAST")
         val serializer = serializer(type) as KSerializer<T>
-        outputStream(file).use {
-            json.encodeToStream(serializer, config, it)
-        }
+        val jsonString = json.encodeToString(serializer, config)
+        val jsonStringWithComments = injectDescriptions(type.jvmErasure.java, jsonString)
+        writeText(file, jsonStringWithComments)
     }
 
-    override fun readLastModified(fileName: String): Instant {
-        val file = configDir.resolve("$MOD_ID_BINGO/$fileName").toFile()
-        return if (file.exists()) {
-            Instant.ofEpochMilli(file.lastModified())
-        } else {
-            Instant.MIN
+    private fun injectDescriptions(
+        javaClass: Class<*>,
+        config: String,
+        visited: MutableSet<Class<*>> = mutableSetOf()
+    ): String {
+        visited.add(javaClass)
+
+        var ret = config
+        for (field in javaClass.declaredFields) {
+            val description = field.getAnnotation(Description::class.java)
+            if (description != null) {
+                val regex = Regex("^(\\s+)(\"${Regex.escape(field.name)}\":)", RegexOption.MULTILINE)
+                ret = ret.replace(regex) { match ->
+                    val indent = match.groupValues[1]
+                    val jsonComment = description.description.trim().lines().joinToString("\n") { "${indent}// ${it.trim()}" }
+                    val jsonProperty = match.groupValues[2]
+                    "\n${jsonComment}\n${indent}${jsonProperty}"
+                }
+            }
+            if (field.type.name.startsWith("me.jfenn.bingo") && !visited.contains(field.type)) {
+                ret = injectDescriptions(field.type, ret, visited)
+            }
         }
+        return ret
     }
 
     class ConfigDelegate<T: Any>(

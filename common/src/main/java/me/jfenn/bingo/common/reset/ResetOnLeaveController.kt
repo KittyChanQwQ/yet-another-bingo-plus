@@ -22,7 +22,7 @@ internal class ResetOnLeaveController(
     events: ScopedEvents,
 ) {
     private fun checkRestartOnLeave() {
-        if (config.nextRoundWhenEveryoneDisconnects && state.isLobbyMode && state.state == GameState.POSTGAME && playerManager.getPlayers().isEmpty()) {
+        if (config.resetWhenEveryoneDisconnects && state.isLobbyMode && state.state == GameState.POSTGAME && playerManager.getPlayers().isEmpty()) {
             log.info("[ResetOnLeaveController] Last player has disconnected and 'nextRoundWhenEveryoneDisconnects' is true; Resetting...")
             serverTaskExecutor.execute {
                 resetService.resetGame()
