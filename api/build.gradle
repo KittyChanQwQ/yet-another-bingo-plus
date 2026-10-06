@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.dokka)
     id 'bingo.common'
     id 'maven-publish'
 }
@@ -36,6 +37,21 @@ publishing {
             authentication {
                 create("header", HttpHeaderAuthentication)
             }
+        }
+    }
+}
+
+dokka {
+    moduleName.set("api")
+    dokkaPublications.html {
+        failOnWarning.set(true)
+    }
+    dokkaSourceSets.main {
+        includes.from("README.md")
+        sourceLink {
+            localDirectory.set(file("src/main/java"))
+            remoteUrl("https://gitlab.com/horrificdev/bingo/-/blob/main/api/src/main/java")
+            remoteLineSuffix.set("#L")
         }
     }
 }

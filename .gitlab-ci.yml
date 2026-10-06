@@ -63,3 +63,17 @@ Build and Deploy:
   artifacts:
     paths:
       - mc*/build/libs/*.jar
+
+Pages:
+  image: gradle:9.7.1-jdk25
+  script:
+    - export GRADLE_USER_HOME="$(pwd)/.gradle"
+    - gradle --build-cache -no-parallel :api:dokkaGenerateHtml
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull-push
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
+  pages:
+    publish: api/build/dokka/html

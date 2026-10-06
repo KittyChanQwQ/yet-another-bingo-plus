@@ -11,10 +11,34 @@ import java.util.*
 
 interface IBingoApi {
     val server: MinecraftServer
+
+    /**
+     * Interact with the game state, round id, time remaining.
+     */
     val game: IBingoGame
+
+    /**
+     * Get the set of teams in a round.
+     */
     val teams: IBingoTeams
+
+    /**
+     * Request player statistics from the database.
+     */
     fun getPlayerStats(id: UUID): IBingoPlayerStats
+
+    /**
+     * Get the mod configuration.
+     */
     val config: IBingoConfig
+
+    /**
+     * Interact with the card(s) in a round.
+     */
     val cards: ICardService
+
+    /**
+     * Read or modify the game options in a round.
+     */
     val options: IOptionsService
 }

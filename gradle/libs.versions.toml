@@ -7,6 +7,7 @@ sqldelight = "2.0.2"
 mockk = "1.14.9"
 assertk = "0.28.1"
 junit = "6.0.3"
+dokka = "2.2.0"
 
 [libraries]
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
@@ -47,3 +48,4 @@ assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assert
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

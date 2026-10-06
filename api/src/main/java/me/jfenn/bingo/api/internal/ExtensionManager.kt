@@ -6,6 +6,9 @@ import me.jfenn.bingo.api.provider.IInventoryProvider
 import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.api.state.GameStateChangedEvent
 
+/**
+ * @suppress
+ */
 @BingoInternalApi
 object ExtensionManager {
     val inventoryProviders = mutableListOf<IInventoryProvider>()
