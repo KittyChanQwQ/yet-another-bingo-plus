@@ -69,11 +69,11 @@ Pages:
   script:
     - export GRADLE_USER_HOME="$(pwd)/.gradle"
     - gradle --build-cache -no-parallel :api:dokkaGenerateHtml
+    - mv api/build/dokka/html/* public/
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull-push
     paths:
       - .gradle/wrapper
       - .gradle/caches
-  pages:
-    publish: api/build/dokka/html
+  pages: true
