@@ -8,41 +8,11 @@
 
     // Provides preset card difficulty settings for the lobby menu and the `/bingo difficulty` command.
     "difficultyPresets": {
-        "easy": [
-            0,
-            0,
-            0,
-            9,
-            16
-        ],
-        "medium": [
-            0,
-            0,
-            3,
-            10,
-            12
-        ],
-        "hard": [
-            0,
-            1,
-            5,
-            10,
-            9
-        ],
-        "extreme": [
-            0,
-            5,
-            7,
-            7,
-            6
-        ],
-        "impossible": [
-            5,
-            7,
-            6,
-            5,
-            2
-        ]
+        "easy": [0, 0, 0, 9, 16],
+        "medium": [0, 0, 3, 10, 12],
+        "hard": [0, 1, 5, 10, 9],
+        "extreme": [0, 5, 7, 7, 6],
+        "impossible": [5, 7, 6, 5, 2]
     },
 
     // Adds component tags to all spawn kit items, which prevents them from being scored. (however, this has some drawbacks)

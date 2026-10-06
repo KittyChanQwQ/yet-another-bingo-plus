@@ -1,0 +1,33 @@
+{
+    "enabled": true,
+
+    // Uses a single combined group when there is only one player per team.
+    "useCombinedGroupForSingleplayerTeams": true,
+
+    // Uses a single combined group, regardless of the player/team count
+    "useCombinedGroupAlways": false,
+
+    // Group settings used for the per-team groups
+    "teamGroups": {
+        "name": "Bingo: %s Team",
+        "type": "OPEN",
+        "password": null,
+        "hidden": false
+    },
+
+    // Group settings used for the spectator group
+    "spectatorGroup": {
+        "name": "Bingo: Spectators",
+        "type": "NORMAL",
+        "password": null,
+        "hidden": false
+    },
+
+    // Group settings used for the combined group
+    "combinedGroup": {
+        "name": "Bingo",
+        "type": "OPEN",
+        "password": null,
+        "hidden": false
+    }
+}

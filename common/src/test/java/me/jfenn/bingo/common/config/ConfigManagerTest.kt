@@ -3,12 +3,17 @@ package me.jfenn.bingo.common.config
 import assertk.assertThat
 import assertk.assertions.isDataClassEqualTo
 import me.jfenn.bingo.common.isEqualToFile
+import me.jfenn.bingo.integrations.voice.VoiceConfig
 import me.jfenn.bingo.platform.IModEnvironment
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.writeText
+import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 class ConfigManagerTest {
@@ -26,25 +31,39 @@ class ConfigManagerTest {
         environment = fakeModEnvironment(tempDir)
     )
 
-    @Test
-    fun `given the default configuration, when written to a file, the result matches the expected snapshot`() {
-        val config = BingoConfig(
-            statsHostId = UUID(0L, 0L)
+    companion object {
+        @JvmStatic
+        private fun testArgs() = listOf(
+            Arguments.of("config.jsonc", typeOf<BingoConfig>(), BingoConfig(
+                statsHostId = UUID(0L, 0L)
+            )),
+            Arguments.of("voice-chat.jsonc", typeOf<VoiceConfig>(), VoiceConfig())
         )
-        subject.write(typeOf<BingoConfig>(), "config.json", config)
-        assertThat(tempDir.resolve("config.json").toFile().readText()).isEqualToFile("/config/default.json")
     }
 
-    @Test
-    fun `given the configuration snapshot, when read to the config class, the result matches the default values`() {
-        val expectedConfig = BingoConfig(
-            statsHostId = UUID(0L, 0L)
-        )
-        val actualConfigJson = this::class.java.getResource("/config/default.json")!!.readText()
-        tempDir.resolve("config-fixture.json").writeText(actualConfigJson)
+    @ParameterizedTest
+    @MethodSource("testArgs")
+    fun `given the {0} configuration, when written to a file, the result matches the expected snapshot`(
+        name: String,
+        type: KType,
+        value: Any
+    ) {
+        subject.write(type, name, value)
+        assertThat(tempDir.resolve(name).toFile().readText()).isEqualToFile("/config/${name}")
+    }
 
-        val actualConfig = subject.read<BingoConfig>(typeOf<BingoConfig>(), "config-fixture.json")
-        assertThat(actualConfig).isDataClassEqualTo(expectedConfig)
+    @ParameterizedTest
+    @MethodSource("testArgs")
+    fun `given the configuration snapshot, when read to the config class, the result matches the default values`(
+        name: String,
+        type: KType,
+        value: Any
+    ) {
+        val actualConfigJson = this::class.java.getResource("/config/${name}")!!.readText()
+        tempDir.resolve(name).writeText(actualConfigJson)
+
+        val actualConfig = subject.read<Any>(type, name)
+        assertThat(actualConfig).isDataClassEqualTo(value)
     }
 
     @Test

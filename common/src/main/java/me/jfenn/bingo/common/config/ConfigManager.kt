@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory
 import java.io.FileInputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.reflect.Field
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.StandardOpenOption
@@ -68,32 +69,6 @@ class ConfigManager(
         val jsonString = json.encodeToString(serializer, config)
         val jsonStringWithComments = injectDescriptions(type.jvmErasure.java, jsonString)
         writeText(file, jsonStringWithComments)
-    }
-
-    private fun injectDescriptions(
-        javaClass: Class<*>,
-        config: String,
-        visited: MutableSet<Class<*>> = mutableSetOf()
-    ): String {
-        visited.add(javaClass)
-
-        var ret = config
-        for (field in javaClass.declaredFields) {
-            val description = field.getAnnotation(Description::class.java)
-            if (description != null) {
-                val regex = Regex("^(\\s+)(\"${Regex.escape(field.name)}\":)", RegexOption.MULTILINE)
-                ret = ret.replace(regex) { match ->
-                    val indent = match.groupValues[1]
-                    val jsonComment = description.description.trim().lines().joinToString("\n") { "${indent}// ${it.trim()}" }
-                    val jsonProperty = match.groupValues[2]
-                    "\n${jsonComment}\n${indent}${jsonProperty}"
-                }
-            }
-            if (field.type.name.startsWith("me.jfenn.bingo") && !visited.contains(field.type)) {
-                ret = injectDescriptions(field.type, ret, visited)
-            }
-        }
-        return ret
     }
 
     class ConfigDelegate<T: Any>(
@@ -156,3 +131,64 @@ fun IConfigManager.writeStream(
 
 inline fun <reified T: Any> IConfigManager.config(file: String) =
     ConfigManager.ConfigDelegate<T>(this, typeOf<T>(), file)
+
+internal data class FieldInfo(
+    val field: Field,
+    val description: String,
+    val indent: String,
+    val jsonProperty: String,
+)
+
+private fun injectDescriptions(
+    javaClass: Class<*>,
+    config: String,
+): String = injectDescriptionsBase(
+    javaClass = javaClass,
+    config = config,
+    replace = { (_, description, indent, jsonProperty) ->
+        val jsonComment = description.trim().lines().joinToString("\n") { "${indent}// ${it.trim()}" }
+        "\n${jsonComment}\n${indent}${jsonProperty}"
+    }
+)
+
+internal fun injectDescriptionsBase(
+    javaClass: Class<*>,
+    config: String,
+    replace: (FieldInfo) -> String,
+    visited: MutableSet<Class<*>> = mutableSetOf(),
+): String {
+    visited.add(javaClass)
+
+    var ret = config
+
+    ret = ret.replace(Regex("\\[([\\s\\d,]+)]")) { matchResult ->
+        "[" + matchResult.groupValues[1].split(",").joinToString(", ") { it.trim() } + "]"
+    }
+
+    for (field in javaClass.declaredFields) {
+        val description = field.getAnnotation(Description::class.java)
+        if (description != null) {
+            val regex = Regex("^(\\s+)(\"${Regex.escape(field.name)}\":)", RegexOption.MULTILINE)
+            ret = ret.replace(regex) { match ->
+                val indent = match.groupValues[1]
+                val jsonProperty = match.groupValues[2]
+                replace(FieldInfo(field, description.description, indent, jsonProperty))
+            }
+        }
+        if (field.type.name.startsWith("me.jfenn.bingo") && !visited.contains(field.type)) {
+            ret = injectDescriptionsBase(field.type, ret, replace, visited)
+        }
+    }
+    return ret
+}
+
+internal inline fun <reified T> createDocumentationConfig(config: T): String {
+    return injectDescriptionsBase(
+        javaClass = T::class.java,
+        config = json.encodeToString(config),
+        replace = { (field, description, indent, jsonProperty) ->
+            val jsonComment = description.trim().lines().joinToString("\n") { "${indent}// [!callout /${field.name}/] ${it.trim()}" }
+            "\n${jsonComment}\n${indent}${jsonProperty}"
+        }
+    )
+}
