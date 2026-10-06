@@ -55,15 +55,17 @@ class ScopeManager internal constructor(
             val scopeId = getScopeId(server)
             val scope = koin.createScope<BingoScope>(scopeId, ctx)
 
-            if (isLobbyMode) {
-                // write the server seed or template files
-                scope.get<ResetService>().copyWorldTemplate()
-            }
-
             // obtain the bingo game state from the save file
             val state = scope.get<BingoState>()
             state.isLobbyMode = isLobbyMode
-            state.randomSeed = scope.get<IServerWorldFactory>().seed
+
+            if (state.state == GameState.UNINITIALIZED) {
+                if (isLobbyMode) {
+                    // write the server seed or template files
+                    scope.get<ResetService>().copyWorldTemplate()
+                }
+                state.randomSeed = scope.get<IServerWorldFactory>().seed
+            }
         }
 
         eventBus.register(ServerEvent.Started) { (server) ->

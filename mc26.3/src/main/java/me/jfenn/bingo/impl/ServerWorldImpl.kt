@@ -34,6 +34,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus
 import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.level.dimension.end.EnderDragonFight
 import net.minecraft.world.level.levelgen.WorldGenSettings
+import net.minecraft.world.level.levelgen.WorldOptions
 import net.minecraft.world.level.saveddata.maps.MapId
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData
 import net.minecraft.world.level.storage.LevelResource
@@ -61,6 +62,16 @@ internal object ChunkTickets {
 
 private val WORLD_SUBFOLDERS_TO_COPY = arrayOf("region", "poi", "entities")
 
+private fun applyWorldOptions(server: MinecraftServer, callback: (WorldOptions) -> WorldOptions) {
+    server.worldGenSettings.let { worldGenSettings ->
+        worldGenSettings.accessor.let { accessor ->
+            accessor.worldOptions = callback(accessor.worldOptions)
+        }
+        worldGenSettings.setDirty()
+    }
+    server.dataStorage.saveAndJoin()
+}
+
 class ServerWorldFactory(
     private val log: Logger,
     private val server: MinecraftServer,
@@ -72,9 +83,7 @@ class ServerWorldFactory(
     override var seed: Long
         get() = server.worldGenSettings.options().seed()
         set(value) {
-            server.worldGenSettings.accessor.apply {
-                worldOptions = worldOptions.withSeed(OptionalLong.of(value))
-            }
+            applyWorldOptions(server) { it.withSeed(OptionalLong.of(value)) }
         }
 
     override val baseDir: Path
@@ -109,9 +118,7 @@ class ServerWorldFactory(
             templateDataStorage.get(WorldGenSettings.TYPE)
         }
         if (worldGenSettings != null) {
-            server.worldGenSettings.accessor.apply {
-                worldOptions = worldGenSettings.accessor.worldOptions
-            }
+            applyWorldOptions(server) { worldGenSettings.accessor.worldOptions }
         }
 
         val dimensions = server.registryAccess().lookupOrThrow(Registries.DIMENSION).registryKeySet()
