@@ -51,7 +51,7 @@ internal fun MenuComponent.registerFeatures(
         text = text.string(StringKey.OptionsKeepInventory),
         tooltip = listOf(
             text.string(StringKey.OptionsKeepInventory).formatted(Formatting.GREEN),
-            this.text.translatable("gamerule.keepInventory", null),
+            text.translatable("gamerule.minecraft.keep_inventory", null),
         ),
         isActiveProp = computedProperty { optionsService.isKeepInventory },
     ) {
