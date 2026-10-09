@@ -4,6 +4,7 @@ import me.jfenn.bingo.client.common.hud.card.CardTileRenderer
 import me.jfenn.bingo.client.common.hud.card.ClientCardBufferRenderer
 import me.jfenn.bingo.client.common.state.BingoHudState
 import me.jfenn.bingo.client.platform.IClient
+import me.jfenn.bingo.client.platform.IOptionsAccessor
 import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.config.CardAlignment
@@ -23,6 +24,7 @@ internal class BingoMessageRenderer(
     private val config: BingoConfig,
     private val cardTileRenderer: CardTileRenderer,
     private val client: IClient,
+    private val options: IOptionsAccessor,
 ) {
 
     companion object {
@@ -35,12 +37,15 @@ internal class BingoMessageRenderer(
 
     private val fadeInDuration = 500.milliseconds
 
+    private fun getMessageScale() = (config.client.messageScale * options.chatScale.toFloat())
+        .coerceIn(0.01f..10f)
+
     fun drawMessages(
         drawService: IDrawService,
         x: Int,
         y: Int,
         z: Int,
-        messageScale: Float = config.client.messageScale,
+        messageScale: Float = getMessageScale(),
         cardAlignment: CardAlignment = config.client.cardAlignment,
         cardScale: Float = config.client.cardScale,
         messages: List<BingoHudState.ScoreMessage> = state.messages,

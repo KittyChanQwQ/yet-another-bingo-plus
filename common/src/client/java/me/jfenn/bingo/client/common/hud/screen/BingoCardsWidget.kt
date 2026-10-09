@@ -9,6 +9,7 @@ import me.jfenn.bingo.client.platform.renderer.IDrawService
 import me.jfenn.bingo.client.platform.screen.IDrawable
 import me.jfenn.bingo.client.platform.screen.IKeyInput
 import me.jfenn.bingo.common.map.CardTile
+import me.jfenn.bingo.common.map.setAlpha
 import me.jfenn.bingo.common.team.BingoTeamKey
 import org.koin.core.Koin
 import java.time.Duration
@@ -58,6 +59,8 @@ internal class BingoCardsWidget(
         duration = interpolateDuration,
         easing = Interpolate.Easing.EXP_OUT,
     )
+
+    var opacity = 1f
 
     val initialScollX: Float = run {
         if (winner == null) return@run 0f
@@ -165,6 +168,10 @@ internal class BingoCardsWidget(
         val hoveredView = getHoveredView(mouseX, mouseY)
 
         viewsWithPositions { view, x, y, z ->
+            if (view.teamKey != interpolateKey) {
+                drawService.setShaderColor(1f, 1f, 1f, opacity)
+            }
+
             val isHovered = hoveredView != null && hoveredView.teamKey == view.teamKey
             val isSingleView = views.size <= 1
             renderer.draw(
@@ -177,9 +184,11 @@ internal class BingoCardsWidget(
                 mouseX = mouseX,
                 mouseY = mouseY,
                 isFocused = isHovered && !isSingleView && onViewClick != null,
-                isMouseOver = interpolateX.isDone() && isHovered,
+                isMouseOver = interpolateX.isDone() && isHovered && opacity > 0.5f,
                 isWinner = winner != null && winner == view.teamKey,
+                isScreenTransition = view.teamKey != interpolateKey && opacity < 0.5f,
             )
+            drawService.clearShaderColor()
         }
 
         if (cardsTotalWidth > cardsAreaWidth) {
@@ -191,12 +200,16 @@ internal class BingoCardsWidget(
             val barOffsetMax = cardsAreaWidth - barFilledWidth
             val barOffsetScrolled = (scrollX * barOffsetMax).roundToInt()
 
-            val barColorBg = 0x80000000.toInt()
-            val barColorFilled = when {
-                dragStart == null && isInScrollBarBounds(mouseX, mouseY) -> 0xffb3b3c9.toInt()
-                dragStart != null && isDraggingScrollBar -> 0xffffffff.toInt()
-                else -> 0xff6b6b85.toInt()
-            }
+            val colorAlpha = (opacity * 255).roundToInt()
+            val barColorBg = setAlpha(0, colorAlpha * 80 / 255)
+            val barColorFilled = setAlpha(
+                when {
+                    dragStart == null && isInScrollBarBounds(mouseX, mouseY) -> 0xb3b3c9
+                    dragStart != null && isDraggingScrollBar -> 0xffffff
+                    else -> 0x6b6b85
+                },
+                colorAlpha,
+            )
 
             drawService.fill(barX, barY, barX + barOffsetScrolled, barY + barHeight, barColorBg)
             drawService.fill(barX + barOffsetScrolled, barY, barX + barOffsetScrolled + barFilledWidth, barY + barHeight, barColorFilled)

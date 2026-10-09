@@ -129,6 +129,7 @@
   "bingo.game.end.reason_lockout": "Lockout!",
   "bingo.game.end.reason_stalemate": "Stalemate!",
   "bingo.game.end.reason_timer": "Out of time!",
+  "bingo.game.end.scores.dnf": "DNF",
   "bingo.game.end.scores.score": "Score",
   "bingo.game.end.scores.team": "Team",
   "bingo.game.end.scores.time": "Time",

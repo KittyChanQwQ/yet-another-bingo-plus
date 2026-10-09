@@ -46,14 +46,8 @@ internal class ClientCardBufferRenderer(
         return tile.isFlashing?.let { isFlashRender && it } ?: tile.isFlashingOnMap
     }
 
-    fun drawCard(
-        service: IDrawService,
-        card: ClientCard,
-    ) {
+    fun drawBlankCard(service: IDrawService, card: ClientCard) {
         val colors = card.colors
-
-        service.enableBlend()
-
         service.drawGuiTexture(
             texture = if (card.isGui) colors.cardTextureGui else colors.cardTexture,
             x = 0, y = 0,
@@ -63,6 +57,16 @@ internal class ClientCardBufferRenderer(
             textureWidth = CARD_WIDTH,
             textureHeight = CARD_HEIGHT,
         )
+    }
+
+    fun drawCard(
+        service: IDrawService,
+        card: ClientCard,
+    ) {
+        val colors = card.colors
+
+        service.enableBlend()
+        drawBlankCard(service, card)
 
         card.display.teamName?.let { teamName ->
             // Get or create clientTeamName (truncated to fit on the card)

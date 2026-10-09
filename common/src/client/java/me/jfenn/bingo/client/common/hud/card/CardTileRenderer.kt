@@ -50,8 +50,8 @@ internal class CardTileRenderer(
 
                 drawService.matrices.push()
                 drawService.matrices.translate(translate*i, translate*i, 10f * (3-i))
-                val tint = 0.5f + (1f - i/2f)*0.5f
-                drawService.setShaderColor(tint, tint, tint, 1f)
+                // val tint = 0.5f + (1f - i/2f)*0.5f
+                // drawService.setShaderColor(tint, tint, tint, 1f)
                 renderTileImage(
                     drawService = drawService,
                     image = imageListImage,

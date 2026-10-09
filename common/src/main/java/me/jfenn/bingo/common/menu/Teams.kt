@@ -54,6 +54,7 @@ internal fun MenuComponent.registerTeams(
             }
         },
     ) { player ->
+        if (options.teamAutoShuffle) return@registerTileButton
         teamService.shuffleTeams(options.teamCount)
         player.sendMessage(
             text.literal("ℹ  ")

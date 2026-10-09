@@ -156,8 +156,6 @@ internal class BingoHudController(
             x = x.toInt(),
             y = y.toInt() + (ClientCardBufferRenderer.CARD_HEIGHT * cardScale * (1 - config.client.cardAlignment.y)).toInt(),
             z = config.client.cardOverlap.z,
-            messageScale = config.client.messageScale,
-            cardAlignment = config.client.cardAlignment,
         )
 
         // Attempt to draw additional cards if showMultipleCards=true

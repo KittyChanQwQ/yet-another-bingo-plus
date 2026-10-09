@@ -82,13 +82,18 @@ internal class ClientCardRenderer(
         isFocused: Boolean = false,
         isMouseOver: Boolean = false,
         isWinner: Boolean = false,
+        isScreenTransition: Boolean = false,
     ) {
         service.matrices.push()
         service.matrices.translate(x, y, z.toFloat())
         service.matrices.scale(cardScale, cardScale, 1f)
 
         if (!drawServiceFactory.isBufferSupported) {
-            cardBufferRenderer.drawCard(service, card)
+            if (isScreenTransition) {
+                cardBufferRenderer.drawBlankCard(service, card)
+            } else {
+                cardBufferRenderer.drawCard(service, card)
+            }
         } else {
             service.enableBlend()
             card.framebuffer.draw(service, CARD_WIDTH, CARD_HEIGHT)

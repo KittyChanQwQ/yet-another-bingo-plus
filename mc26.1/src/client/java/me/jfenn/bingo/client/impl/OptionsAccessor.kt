@@ -6,6 +6,8 @@ import net.minecraft.client.Minecraft
 object OptionsAccessor : IOptionsAccessor {
     private val client = Minecraft.getInstance()
 
+    override val chatScale: Double get() = client.options.chatScale().get()
+
     override fun isDebugEnabled(): Boolean {
         return client.debugEntries.isOverlayVisible
     }

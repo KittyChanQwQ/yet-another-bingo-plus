@@ -16,6 +16,7 @@ import me.jfenn.bingo.client.platform.IClient
 import me.jfenn.bingo.client.platform.IScrollableWidgetFactory
 import me.jfenn.bingo.client.platform.ITabsWidgetFactory
 import me.jfenn.bingo.client.platform.renderer.IDrawService
+import me.jfenn.bingo.client.platform.renderer.use
 import me.jfenn.bingo.client.platform.screen.*
 import me.jfenn.bingo.common.config.BingoConfig
 import me.jfenn.bingo.common.game.GameOverPacket
@@ -35,7 +36,10 @@ import org.joml.Vector2i
 import org.koin.core.Koin
 import java.time.Instant
 import java.util.*
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 internal class BingoHudScreen(
     koin: Koin,
@@ -225,8 +229,8 @@ internal class BingoHudScreen(
         tab?.let { gameOver?.tab = it }
     }
 
-    private val scoresWidget = gameOver
-        ?.let { scrollableWidgetFactory.create(BingoEndScoresWidget(koin, gameOver)) }
+    private val scoresWidgetImpl = gameOver?.let { BingoEndScoresWidget(koin, gameOver) }
+    private val scoresWidget = scoresWidgetImpl?.let { scrollableWidgetFactory.create(it) }
 
     private val messagesWidgetImpl = MessageHistoryWidget(koin, gameOver)
     private val messagesWidget = scrollableWidgetFactory.create(messagesWidgetImpl)
@@ -341,12 +345,15 @@ internal class BingoHudScreen(
         helper.clearChildren()
         updatePositions()
 
-        if (isShowingTabs) helper.addDrawableChild(tabsWidget.widget)
+        if (isShowingTabs && !isClosing) {
+            helper.addDrawableChild(tabsWidget.widget)
+        }
 
         if (tab == GameOverPacket.EndScreenTab.CARDS) {
             helper.addDrawable(cardsWidget)
         }
-        if (scoresWidget != null && tab == GameOverPacket.EndScreenTab.SCORES) {
+        if (scoresWidget != null && tab == GameOverPacket.EndScreenTab.SCORES && !isClosing) {
+            scoresWidgetImpl?.resize()
             helper.addDrawableChild(scoresWidget.widget!!)
         }
 
@@ -380,52 +387,54 @@ internal class BingoHudScreen(
         init()
     }
 
+    private fun titleScale(titleY: Int) = ((titleY - tabsWidget.height).toFloat() / 14f).coerceIn(1f..2f)
+
     private fun renderGameDuration(drawService: IDrawService, titleY: Int, x: Float) {
         if (gameOver == null) return
         val alpha = (255 * screenInterpolation).toInt()
+        val scale = titleScale(titleY)
 
         drawService.matrices.push()
         drawService.matrices.translate(x, titleY.toFloat(), 0f)
         drawService.matrices.rotate(-.25f)
-        drawService.matrices.push()
-        drawService.matrices.scale(2f, 2f, 1f)
+        drawService.matrices.use {
+            scale(scale, scale, 1f)
+            val gameDuration = text.literal(gameOver.packet.duration.formatString())
+            drawService.drawText(
+                gameDuration,
+                -drawService.font.getTextWidth(gameDuration)/2, 0,
+                setAlpha(0xA3F5A3, alpha),
+                true,
+            )
+        }
 
-        val gameDuration = text.literal(gameOver.packet.duration.formatString())
-        drawService.drawText(
-            gameDuration,
-            -drawService.font.getTextWidth(gameDuration)/2, 0,
-            setAlpha(0xA3F5A3, alpha),
-            true,
-        )
+        drawService.matrices.use {
+            scale(scale * .5f, scale * .5f, 1f)
+            val title = text.string(StringKey.StatsGameDuration)
+            drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, setAlpha(0xFFFFFF, alpha), true)
 
-        drawService.matrices.pop()
+            gameOver.packet.prevBestTime?.let { prevBestTime ->
+                drawService.matrices.use {
+                    if (gameOver.packet.isBestTime) {
+                        // Animate in a "New best time!" message
+                        val now = state.now
+                        val animTimeSince = now - gameOver.packet.endedAt
+                        val animProgress = (animTimeSince / NEW_BEST_DURATION).toFloat().coerceIn(0f, 1f).pow(2)
+                        val bestScale = 2f - animProgress
+                        val bestDiff = gameOver.packet.duration - prevBestTime
+                        val bestText = text.string(StringKey.StatsBestTimeNew, bestDiff.formatStringSmall())
+                        val bestColor = Color.fromInt(ClientCardRenderer.getWinColor(now))
+                            .copy(a = (screenInterpolation * animProgress * 255).toInt().coerceAtLeast(6))
+                            .asIntWithAlpha
 
-        val title = text.string(StringKey.StatsGameDuration)
-        drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, setAlpha(0xFFFFFF, alpha), true)
-
-        gameOver.packet.prevBestTime?.let { prevBestTime ->
-            drawService.matrices.push()
-
-            if (gameOver.packet.isBestTime) {
-                // Animate in a "New best time!" message
-                val now = state.now
-                val animTimeSince = now - gameOver.packet.endedAt
-                val animProgress = (animTimeSince / NEW_BEST_DURATION).toFloat().coerceIn(0f, 1f).pow(2)
-                val bestScale = 2f - animProgress
-                val bestDiff = gameOver.packet.duration - prevBestTime
-                val bestText = text.string(StringKey.StatsBestTimeNew, bestDiff.formatStringSmall())
-                val bestColor = Color.fromInt(ClientCardRenderer.getWinColor(now))
-                    .copy(a = (screenInterpolation * animProgress * 255).toInt().coerceAtLeast(6))
-                    .asIntWithAlpha
-
-                drawService.matrices.scale(bestScale, bestScale, 1f)
-                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, bestColor, true)
-            } else {
-                val bestText = text.string(StringKey.StatsBestTime, prevBestTime.formatString())
-                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, setAlpha(0xCCA3F5, alpha), true)
+                        drawService.matrices.scale(bestScale, bestScale, 1f)
+                        drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, bestColor, true)
+                    } else {
+                        val bestText = text.string(StringKey.StatsBestTime, prevBestTime.formatString())
+                        drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, setAlpha(0xCCA3F5, alpha), true)
+                    }
+                }
             }
-
-            drawService.matrices.pop()
         }
 
         drawService.matrices.pop()
@@ -435,47 +444,47 @@ internal class BingoHudScreen(
         val winStreak = gameOver?.packet?.winStreak ?: return
         val now = state.now
         val alpha = (255 * screenInterpolation).toInt()
+        val scale = titleScale(titleY)
 
         drawService.matrices.push()
         drawService.matrices.translate(x, titleY.toFloat(), 0f)
         drawService.matrices.rotate(.25f)
-        drawService.matrices.push()
-        drawService.matrices.scale(2f, 2f, 1f)
+        drawService.matrices.use {
+            scale(scale, scale, 1f)
+            val winStreakText = text.literal("$winStreak")
+            drawService.drawText(
+                winStreakText,
+                -drawService.font.getTextWidth(winStreakText)/2, 0,
+                setAlpha(0xF5A3D6, alpha),
+                true,
+            )
+        }
 
-        val winStreakText = text.literal("$winStreak")
-        drawService.drawText(
-            winStreakText,
-            -drawService.font.getTextWidth(winStreakText)/2, 0,
-            setAlpha(0xF5A3D6, alpha),
-            true,
-        )
+        drawService.matrices.use {
+            scale(scale * .5f, scale * .5f, 1f)
+            val title = text.string(StringKey.StatsWinStreak)
+            drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, setAlpha(0xFFFFFF, alpha), true)
 
-        drawService.matrices.pop()
+            gameOver.packet.bestWinStreak?.let { bestWinStreak ->
+                drawService.matrices.use {
+                    if (gameOver.packet.isBestWinStreak) {
+                        // Animate in a "New max streak!" message
+                        val animTimeSince = now - gameOver.packet.endedAt
+                        val animProgress = (animTimeSince / NEW_BEST_DURATION).toFloat().coerceIn(0f, 1f).pow(2)
+                        val bestScale = 2f - animProgress
+                        val bestText = text.string(StringKey.StatsWinStreakNewMax)
+                        val bestColor = Color.fromInt(ClientCardRenderer.getWinColor(now))
+                            .copy(a = (screenInterpolation * animProgress * 255).toInt().coerceAtLeast(6))
+                            .asIntWithAlpha
 
-        val title = text.string(StringKey.StatsWinStreak)
-        drawService.drawText(title, -drawService.font.getTextWidth(title)/2, 18, setAlpha(0xFFFFFF, alpha), true)
-
-        gameOver.packet.bestWinStreak?.let { bestWinStreak ->
-            drawService.matrices.push()
-
-            if (gameOver.packet.isBestWinStreak) {
-                // Animate in a "New max streak!" message
-                val animTimeSince = now - gameOver.packet.endedAt
-                val animProgress = (animTimeSince / NEW_BEST_DURATION).toFloat().coerceIn(0f, 1f).pow(2)
-                val bestScale = 2f - animProgress
-                val bestText = text.string(StringKey.StatsWinStreakNewMax)
-                val bestColor = Color.fromInt(ClientCardRenderer.getWinColor(now))
-                    .copy(a = (screenInterpolation * animProgress * 255).toInt().coerceAtLeast(6))
-                    .asIntWithAlpha
-
-                drawService.matrices.scale(bestScale, bestScale, 1f)
-                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, bestColor, true)
-            } else {
-                val bestText = text.string(StringKey.StatsWinStreakMax, bestWinStreak)
-                drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, setAlpha(0xCCA3F5, alpha), true)
+                        drawService.matrices.scale(bestScale, bestScale, 1f)
+                        drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, bestColor, true)
+                    } else {
+                        val bestText = text.string(StringKey.StatsWinStreakMax, bestWinStreak)
+                        drawService.drawText(bestText, -drawService.font.getTextWidth(bestText)/2, 30, setAlpha(0xCCA3F5, alpha), true)
+                    }
+                }
             }
-
-            drawService.matrices.pop()
         }
 
         drawService.matrices.pop()
@@ -489,7 +498,7 @@ internal class BingoHudScreen(
                     .div(2000f)
                     .times(2 * PI.toFloat())
             )
-            drawService.matrices.scale(8f, 8f, 1f)
+            drawService.matrices.scale(4f * scale, 4f * scale, 1f)
             drawService.matrices.push()
             drawService.matrices.translate(-2f, -2f, 0f)
 
@@ -563,11 +572,16 @@ internal class BingoHudScreen(
         val cardTop = (height/2) - (ClientCardBufferRenderer.CARD_HEIGHT /2)
         val titleY = min((cardTop * 0.75f).roundToInt(), cardTop - 11 * 2) + tabsHeight
 
-        val decorationX = max((width - sidebarWidth) * 0.2f - 20f, 40f)
+        val decorationMaxWidth = listOfNotNull(
+            gameOver?.packet?.duration?.formatString()?.let { client.font.getTextWidth(text.literal(it)) },
+            40
+        ).max()
+        val decorationX = ((width - sidebarWidth) * 0.2f - 20f).coerceAtLeast(decorationMaxWidth.toFloat())
         renderGameDuration(drawService, titleY - 20, decorationX)
         renderWinStreak(drawService, titleY - 20, (width - sidebarWidth) - decorationX)
 
         if (tab == GameOverPacket.EndScreenTab.CARDS) {
+            cardsWidget.opacity = screenInterpolation
             cardsWidget.views = gameOver?.cards ?: state.cards.values
             cardsWidget.winner = gameOver?.packet?.winner
         }
@@ -580,23 +594,23 @@ internal class BingoHudScreen(
     }
 
     override fun mouseDragged(mouseX: Double, mouseY: Double): Boolean {
-        return cardsWidget.onMouseDragged(mouseX, mouseY)
+        return tab == GameOverPacket.EndScreenTab.CARDS && cardsWidget.onMouseDragged(mouseX, mouseY)
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double): Boolean {
-        return cardsWidget.onMouseReleased(mouseX, mouseY)
+        return tab == GameOverPacket.EndScreenTab.CARDS && cardsWidget.onMouseReleased(mouseX, mouseY)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return cardsWidget.onMouseClicked(mouseX, mouseY)
+        return tab == GameOverPacket.EndScreenTab.CARDS && cardsWidget.onMouseClicked(mouseX, mouseY)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
-        return cardsWidget.mouseScrolled(mouseX, mouseY, amount) || super.mouseScrolled(mouseX, mouseY, amount)
+        return tab == GameOverPacket.EndScreenTab.CARDS && cardsWidget.mouseScrolled(mouseX, mouseY, amount)
     }
 
     override fun keyPressed(input: IKeyInput): Boolean {
-        return cardsWidget.onKeyPressed(input)
+        return tab == GameOverPacket.EndScreenTab.CARDS && cardsWidget.onKeyPressed(input)
     }
 
     override fun shouldPause() = config.client.cardPausesGame && !sendingReadyPacket
@@ -624,6 +638,7 @@ internal class BingoHudScreen(
 
             isGui = false
         }
+        init()
     }
 
     private var hudStateListener: ICallbackHandle? = null
