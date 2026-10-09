@@ -50,6 +50,8 @@ internal class ReadyController(
     )
 
     private fun createVoteOptions(player: IPlayerHandle): List<VoteOption> {
+        if (!state.isLobbyMode) return emptyList()
+
         val vote = readyState.getVote(player.uuid)
         val operatorVote = readyState.operatorVote
         val isOperator = permissions.hasPermission(player, Permission.CONFIGURE_GAME)
