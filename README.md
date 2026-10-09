@@ -98,7 +98,7 @@ The logo design was inspired by [Aikoyori/ProgrammingVTuberLogos](https://github
 
 Arabic translations were contributed by Ksmly!<br>
 Bulgarian translations were contributed by Кирил Цветков!<br>
-Chinese Simplified translations were contributed by Fishlanding, tovv3r, Young912, BoredYukolin, yzy_sheep, nageih, teaSummer, Nattiden, ZnianXgang, and SpongeCouna!<br>
+Chinese Simplified translations were contributed by Fishlanding, tovv3r, Young912, BoredYukolin, yzy_sheep, nageih, teaSummer, Nattiden, ZnianXgang, SpongeCouna, CXZ青川星璘, and YDXF!<br>
 Chinese Traditional translations were contributed by Leo_768, BoredYukolin, notlin4, Lavskiy Ilias, and Sear!<br>
 Chinese Traditional (Hong Kong) translations were contributed by Furina_de_zh_hant and Sear!<br>
 Czech translations were contributed by Džerry!<br>
