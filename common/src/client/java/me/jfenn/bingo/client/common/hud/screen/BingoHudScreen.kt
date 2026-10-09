@@ -158,13 +158,13 @@ internal class BingoHudScreen(
         }
     }.takeIf { yacl.isInstalled() }
 
-    private val closeButton = buttonFactory.createNinePatchButton(
+    private fun closeButtonProducer(): IButton = buttonFactory.createNinePatchButton(
         sliceSize = 8,
         textureSize = Vector2i(200, 20),
         textures = BUTTON_GAME_GENERIC,
-    ).also {
-        it.message = text.string(StringKey.CardClose)
-        it.onClick {
+    ).also { button ->
+        button.message = text.string(StringKey.CardClose)
+        button.onClick {
             if (isMoreOptionsOpen) {
                 isMoreOptionsOpen = false
             } else {
@@ -172,6 +172,7 @@ internal class BingoHudScreen(
             }
         }
     }
+    private var closeButton: IButton = closeButtonProducer()
 
     private val isMoreOptionsVisible get() = gameOver != null
             && packets.readySetV2.isSupported()
@@ -181,6 +182,7 @@ internal class BingoHudScreen(
     private var isMoreOptionsOpen = false
         set(value) {
             field = value
+            closeButton = closeButtonProducer()
             init()
         }
 
