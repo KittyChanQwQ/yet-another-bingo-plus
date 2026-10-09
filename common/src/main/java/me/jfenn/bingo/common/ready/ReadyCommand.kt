@@ -75,5 +75,6 @@ class ReadyCommand(
 
     companion object {
         const val READY = "/ready"
+        const val READY_LOBBY = "/ready lobby"
     }
 }

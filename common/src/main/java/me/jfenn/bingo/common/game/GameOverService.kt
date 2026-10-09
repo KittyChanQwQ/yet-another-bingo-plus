@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 import me.jfenn.bingo.api.options.BingoWinCondition
 import me.jfenn.bingo.api.options.EndWhen
 import me.jfenn.bingo.common.Permission
-import me.jfenn.bingo.common.lobby.BingoLobbyCommand
 import me.jfenn.bingo.common.options.BingoOptions
+import me.jfenn.bingo.common.ready.ReadyCommand
 import me.jfenn.bingo.common.scoring.ScoreRanking
 import me.jfenn.bingo.common.scoring.ScoreRankingService
 import me.jfenn.bingo.common.scoring.ScoreService
@@ -348,10 +348,10 @@ internal class GameOverService(
             action = IDialogAction.RunCommand("bingo card"),
         )
 
-        if (state.isLobbyMode && permissions.hasPermission(player, Permission.COMMAND_RESET)) {
+        if (state.isLobbyMode && permissions.hasPermission(player, Permission.COMMAND_READY)) {
             builder.addAction(
                 label = text.string(StringKey.WorldReturnToLobby),
-                action = IDialogAction.RunCommand(BingoLobbyCommand.RESET_COMMAND),
+                action = IDialogAction.RunCommand(ReadyCommand.READY_LOBBY),
             )
         }
 
