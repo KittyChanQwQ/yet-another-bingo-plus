@@ -1,15 +1,23 @@
 ### New Features:
 
-- Updated to support 26.3!
+- Improved "Extend / Keep Playing" behavior, in addition to an immediate "Next Round" option when a game is over
+- Added the ability to persist or "auto shuffle" teams when starting a new round
+- Added separate pre-game and post-game scoreboards (to display the ready-up / game over info)
+- Various performance improvements for spawn finding & preloading
+- UI changes to prevent overlapping elements on large GUI scales
+- Made the card screen transition slightly smoother
 
 ### Bugs Squashed:
 
-- Fixed 'Spawn Location' when set to nether dimension spawning players on the nether roof
-- Fixed game softlock when the tutorial book is dropped from the inventory ([#176](https://gitlab.com/horrificdev/bingo/-/work_items/176))
+- Fixed tooltip descriptions not displaying on the lobby menu
+- Fixed broken prismarine items on the vanilla card map
+- Fixed world seed being lost (in lobby mode) when loading the world from a save
+- Fixed memory leaks / worldgen issues when Chunky is used via commands
 
 ### Translations:
 
-- New Czech translations from Džerry!
-- New Korean translations from enarkay!
+- New Chinese Simplified translations from CXZ青川星璘, Young912, and YDXF!
+- New Chinese Traditional translations from Sear_!
+- New Russian translations from lazdni!
 - New Spanish translations from SergioRaEsp!
-- New Ukranian translations from Dan4ikPlayUA!
+- New Turkish translations from NoNate!
