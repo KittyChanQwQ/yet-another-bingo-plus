@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:goat_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_goat",
+      "fallback": "Kill a Goat"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:goat"
+}

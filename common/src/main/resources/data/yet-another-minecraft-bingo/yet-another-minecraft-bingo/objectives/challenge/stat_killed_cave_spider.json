@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:cave_spider_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_cave_spider",
+      "fallback": "Kill a Cave Spider"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:cave_spider"
+}

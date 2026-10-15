@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:fox_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_fox",
+      "fallback": "Kill a Fox"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:fox"
+}

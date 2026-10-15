@@ -1,0 +1,17 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:diamond_pickaxe",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_blocks_mined_b",
+      "with": ["%min%"],
+      "fallback": "Break %min% Blocks"
+    }
+  },
+  "statType": "minecraft:mined",
+  "min": {
+    "type": "random",
+    "min": 500,
+    "max": 1500
+  }
+}

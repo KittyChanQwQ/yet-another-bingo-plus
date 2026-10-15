@@ -23,6 +23,7 @@ data class BingoOptions(
 
     var stalemateBehavior: StalemateBehavior = StalemateBehavior.END_GAME,
     var endGameWhen: EndWhen = EndWhen.FirstWin,
+    var locatorBarMode: LocatorBarMode = LocatorBarMode.ALL,
 
     var timeLimit: DurationType? = null,
 

@@ -1,0 +1,26 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_birch_wood",
+      "fallback": "All Birch Wood"
+    },
+    "item": "minecraft:birch_planks"
+  },
+  "objectives": [
+    "minecraft:birch_boat",
+    "minecraft:birch_button",
+    "minecraft:birch_chest_boat",
+    "minecraft:birch_door",
+    "minecraft:birch_fence",
+    "minecraft:birch_fence_gate",
+    "minecraft:birch_hanging_sign",
+    "minecraft:birch_planks",
+    "minecraft:birch_pressure_plate",
+    "minecraft:birch_shelf",
+    "minecraft:birch_sign",
+    "minecraft:birch_slab",
+    "minecraft:birch_stairs",
+    "minecraft:birch_trapdoor"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:mule_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_mule",
+      "fallback": "Kill a Mule"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:mule"
+}

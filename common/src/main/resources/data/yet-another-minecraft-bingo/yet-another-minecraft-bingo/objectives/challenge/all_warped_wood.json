@@ -1,0 +1,24 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_warped_wood",
+      "fallback": "All Warped Wood"
+    },
+    "item": "minecraft:warped_planks"
+  },
+  "objectives": [
+    "minecraft:warped_button",
+    "minecraft:warped_door",
+    "minecraft:warped_fence",
+    "minecraft:warped_fence_gate",
+    "minecraft:warped_hanging_sign",
+    "minecraft:warped_planks",
+    "minecraft:warped_pressure_plate",
+    "minecraft:warped_shelf",
+    "minecraft:warped_sign",
+    "minecraft:warped_slab",
+    "minecraft:warped_stairs",
+    "minecraft:warped_trapdoor"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:shulker_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_shulker",
+      "fallback": "Kill a Shulker"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:shulker"
+}

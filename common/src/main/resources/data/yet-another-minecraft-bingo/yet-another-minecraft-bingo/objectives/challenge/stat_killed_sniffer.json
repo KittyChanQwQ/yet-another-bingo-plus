@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:sniffer_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_sniffer",
+      "fallback": "Kill a Sniffer"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:sniffer"
+}

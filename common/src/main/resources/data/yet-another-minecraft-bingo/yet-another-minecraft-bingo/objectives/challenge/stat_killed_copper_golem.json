@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:copper_golem_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_copper_golem",
+      "fallback": "Kill a Copper Golem"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:copper_golem"
+}

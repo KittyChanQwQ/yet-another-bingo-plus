@@ -1,0 +1,26 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_poplar_wood",
+      "fallback": "All Poplar Wood"
+    },
+    "item": "minecraft:poplar_planks"
+  },
+  "objectives": [
+    "minecraft:poplar_boat",
+    "minecraft:poplar_button",
+    "minecraft:poplar_chest_boat",
+    "minecraft:poplar_door",
+    "minecraft:poplar_fence",
+    "minecraft:poplar_fence_gate",
+    "minecraft:poplar_hanging_sign",
+    "minecraft:poplar_planks",
+    "minecraft:poplar_pressure_plate",
+    "minecraft:poplar_shelf",
+    "minecraft:poplar_sign",
+    "minecraft:poplar_slab",
+    "minecraft:poplar_stairs",
+    "minecraft:poplar_trapdoor"
+  ]
+}

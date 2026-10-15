@@ -1,0 +1,19 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_stone_types",
+      "fallback": "All Stone Types"
+    },
+    "item": "minecraft:stone"
+  },
+  "objectives": [
+    "minecraft:stone",
+    "minecraft:granite",
+    "minecraft:diorite",
+    "minecraft:andesite",
+    "minecraft:tuff",
+    "minecraft:deepslate",
+    "minecraft:blackstone"
+  ]
+}

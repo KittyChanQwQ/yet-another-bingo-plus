@@ -1,0 +1,16 @@
+{
+  "type": "item",
+  "item": "minecraft:potion",
+  "components": {
+    "minecraft:potion_contents": {
+      "potion": "minecraft:slow_falling"
+    }
+  },
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.potion_slow_falling",
+      "fallback": "Potion of Slow Falling"
+    },
+    "item": "minecraft:potion"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:witch_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_witch",
+      "fallback": "Kill a Witch"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:witch"
+}

@@ -45,3 +45,11 @@ val StalemateBehavior.string get() = when (this) {
 }
 
 fun StalemateBehavior.string(text: TextProvider) = text.string(StringKey.OptionsWinBehaviorStalemate, string)
+
+val LocatorBarMode.string get() = when (this) {
+    LocatorBarMode.ALL -> StringKey.OptionsLocatorBarAll
+    LocatorBarMode.TEAM_AND_WINNER -> StringKey.OptionsLocatorBarTeamAndWinner
+    LocatorBarMode.TEAM_ONLY -> StringKey.OptionsLocatorBarTeamOnly
+}
+
+fun LocatorBarMode.string(text: TextProvider) = text.string(StringKey.OptionsLocatorBarMode, string)

@@ -5,7 +5,7 @@ import me.jfenn.bingo.common.utils.plus
 import me.jfenn.bingo.generated.StringKey
 import org.joml.Vector3d
 
-internal const val MENU_SCORE_INFO_WIDTH = 2.5
+internal const val MENU_SCORE_INFO_WIDTH = 2.0
 private const val TILE_HEIGHT = 0.425
 
 internal fun MenuComponent.registerScoreInfo(

@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:enderman_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_enderman",
+      "fallback": "Kill an Enderman"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:enderman"
+}

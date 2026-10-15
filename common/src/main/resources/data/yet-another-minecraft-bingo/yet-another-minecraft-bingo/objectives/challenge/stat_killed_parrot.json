@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:parrot_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_parrot",
+      "fallback": "Kill a Parrot"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:parrot"
+}

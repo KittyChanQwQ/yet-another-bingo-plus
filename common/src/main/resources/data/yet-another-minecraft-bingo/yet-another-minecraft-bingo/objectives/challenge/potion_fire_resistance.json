@@ -1,0 +1,16 @@
+{
+  "type": "item",
+  "item": "minecraft:potion",
+  "components": {
+    "minecraft:potion_contents": {
+      "potion": "minecraft:fire_resistance"
+    }
+  },
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.potion_fire_resistance",
+      "fallback": "Potion of Fire Resistance"
+    },
+    "item": "minecraft:potion"
+  }
+}

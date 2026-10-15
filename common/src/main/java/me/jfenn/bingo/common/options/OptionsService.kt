@@ -233,6 +233,22 @@ internal class OptionsService(
         eventBus.emit(OptionsChangedEvent, Unit)
     }
 
+    var locatorBarMode: LocatorBarMode
+        get() = options.locatorBarMode
+        set(value) = setLocatorBarModeInternal(value)
+
+    private fun setLocatorBarModeInternal(
+        locatorBarMode: LocatorBarMode,
+    ) {
+        options.locatorBarMode = locatorBarMode
+
+        // Send a message that the goal was changed
+        ctx.sendFeedback(
+            text.string(StringKey.OptionsNotifyChanged, StringKey.OptionsLocatorBar, text.string(locatorBarMode.string).formatted(Formatting.WHITE))
+        )
+        eventBus.emit(OptionsChangedEvent, Unit)
+    }
+
     override var endGameWhen: EndWhen
         get() = options.endGameWhen
         set(value) = setEndWhen(value)

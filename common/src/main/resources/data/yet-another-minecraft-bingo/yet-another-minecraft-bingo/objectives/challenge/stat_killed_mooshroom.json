@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:mooshroom_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_mooshroom",
+      "fallback": "Kill a Mooshroom"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:mooshroom"
+}

@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:wandering_trader_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_wandering_trader",
+      "fallback": "Kill a Wandering Trader"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:wandering_trader"
+}

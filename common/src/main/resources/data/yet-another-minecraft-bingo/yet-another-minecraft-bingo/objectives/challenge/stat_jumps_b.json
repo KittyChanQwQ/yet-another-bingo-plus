@@ -1,0 +1,18 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:rabbit_foot",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_jumps_b",
+      "with": ["%min%"],
+      "fallback": "Jump %min% Times"
+    }
+  },
+  "statType": "minecraft:custom",
+  "statName": "minecraft:jump",
+  "min": {
+    "type": "random",
+    "min": 600,
+    "max": 2000
+  }
+}

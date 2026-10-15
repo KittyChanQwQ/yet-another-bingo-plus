@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:ender_dragon_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_ender_dragon",
+      "fallback": "Kill an Ender Dragon"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:ender_dragon"
+}

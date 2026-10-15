@@ -1,7 +1,7 @@
 {
   "type": "stats",
   "display": {
-    "item": "minecraft:skeleton_skull",
+    "item": "minecraft:skeleton_spawn_egg",
     "name": {
       "translate": "bingo.objective.challenge.stat_killed_skeleton",
       "fallback": "Kill a Skeleton"

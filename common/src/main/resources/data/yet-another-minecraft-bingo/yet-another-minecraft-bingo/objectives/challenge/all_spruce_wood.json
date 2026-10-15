@@ -1,0 +1,26 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_spruce_wood",
+      "fallback": "All Spruce Wood"
+    },
+    "item": "minecraft:spruce_planks"
+  },
+  "objectives": [
+    "minecraft:spruce_boat",
+    "minecraft:spruce_button",
+    "minecraft:spruce_chest_boat",
+    "minecraft:spruce_door",
+    "minecraft:spruce_fence",
+    "minecraft:spruce_fence_gate",
+    "minecraft:spruce_hanging_sign",
+    "minecraft:spruce_planks",
+    "minecraft:spruce_pressure_plate",
+    "minecraft:spruce_shelf",
+    "minecraft:spruce_sign",
+    "minecraft:spruce_slab",
+    "minecraft:spruce_stairs",
+    "minecraft:spruce_trapdoor"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:warden_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_warden",
+      "fallback": "Kill a Warden"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:warden"
+}

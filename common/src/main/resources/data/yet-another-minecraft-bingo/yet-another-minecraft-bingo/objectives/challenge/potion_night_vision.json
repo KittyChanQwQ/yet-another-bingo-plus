@@ -1,0 +1,16 @@
+{
+  "type": "item",
+  "item": "minecraft:potion",
+  "components": {
+    "minecraft:potion_contents": {
+      "potion": "minecraft:night_vision"
+    }
+  },
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.potion_night_vision",
+      "fallback": "Potion of Night Vision"
+    },
+    "item": "minecraft:potion"
+  }
+}

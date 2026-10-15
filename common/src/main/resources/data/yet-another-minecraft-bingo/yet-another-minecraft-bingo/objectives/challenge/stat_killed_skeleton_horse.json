@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:skeleton_horse_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_skeleton_horse",
+      "fallback": "Kill a Skeleton Horse"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:skeleton_horse"
+}

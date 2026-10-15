@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:magma_cube_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_magma_cube",
+      "fallback": "Kill a Magma Cube"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:magma_cube"
+}

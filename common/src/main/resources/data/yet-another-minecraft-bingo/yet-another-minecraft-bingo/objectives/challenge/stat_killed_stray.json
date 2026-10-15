@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:stray_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_stray",
+      "fallback": "Kill a Stray"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:stray"
+}

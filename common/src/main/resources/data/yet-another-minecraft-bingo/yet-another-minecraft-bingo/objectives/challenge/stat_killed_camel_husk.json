@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:camel_husk_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_camel_husk",
+      "fallback": "Kill a Camel Husk"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:camel_husk"
+}

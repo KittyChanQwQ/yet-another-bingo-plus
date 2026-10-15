@@ -64,19 +64,52 @@ internal object ScoreService {
 
         val leadingTeamOrTie = teams.maxWithOrNull { a, b -> comparator.compare(a.score, b.score) }
 
-        // TODO: isPossible only checks the top-level objective at the moment
-        // - for max stat values, permanent one_of objectives, etc. this needs data from the objective manager
-        // - could be stored in objective.canAchieveTeams on each tick
-        // - also needs objective.canLose
-        fun isPossible(team: BingoTeam, objective: BingoObjective): Boolean {
+        // Determines whether [team] can still capture [objective]. This is used to decide whether
+        // the game should end because nobody can win anymore, so it deliberately errs towards
+        // "not possible" - a tile is only considered achievable if it (and enough of its required
+        // sub-objectives) can still be completed.
+        //
+        // [isTile] is true only for the top-level objectives on the card; sub-objectives (the
+        // contents of one_of/all_of) are not locked by lockout mode, so the lockout check is
+        // skipped when recursing into them.
+        fun isPossible(
+            team: BingoTeam,
+            objective: BingoObjective,
+            isTile: Boolean = true,
+            depth: Int = 0,
+        ): Boolean {
+            // if the team has already achieved the objective, it still counts towards their score
             if (objective.hasTeamAchieved(team.key)) return true
 
+            // a permanent inverse objective can no longer be achieved once it has been lost
             if (objective is BingoObjective.InverseEntry && objective.permanent)
                 return false
 
-            val canLoseTile = card.options.isInventoryMode
-            val isPermanentlyLocked = card.options.isLockoutMode && !canLoseTile && objective.hasAnyAchieved()
-            return !isPermanentlyLocked
+            // in lockout mode, a tile that has already been claimed by another team can never be re-claimed
+            if (isTile) {
+                val canLoseTile = card.options.isInventoryMode
+                val isPermanentlyLocked = card.options.isLockoutMode && !canLoseTile && objective.hasAnyAchieved()
+                if (isPermanentlyLocked) return false
+            }
+
+            if (depth >= 10) return true
+
+            // recurse into composed objectives - a tile is only achievable if enough of its
+            // required sub-objectives are still achievable. Without this, a tile whose contents
+            // have been locked/lost would still be counted as "possible" and the game would run
+            // forever instead of ending.
+            return when (objective) {
+                is BingoObjective.SomeOfEntry -> {
+                    val children = objective.someOfObjectives.mapNotNull { card.objectives[it] }
+                    if (children.isEmpty()) {
+                        false
+                    } else {
+                        val required = objective.valueMin.coerceIn(1, children.size)
+                        children.count { isPossible(team, it, isTile = false, depth = depth + 1) } >= required
+                    }
+                }
+                else -> true
+            }
         }
 
         // if noone can beat or tie with the leading team, then it is a lockout (the leading team has won)

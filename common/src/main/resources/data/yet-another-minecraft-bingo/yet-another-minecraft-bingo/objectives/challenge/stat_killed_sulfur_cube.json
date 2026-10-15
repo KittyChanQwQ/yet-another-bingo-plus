@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:sulfur_cube_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_sulfur_cube",
+      "fallback": "Kill a Sulfur Cube"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:sulfur_cube"
+}

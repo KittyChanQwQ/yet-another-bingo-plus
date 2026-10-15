@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:zombie_villager_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_zombie_villager",
+      "fallback": "Kill a Zombie Villager"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:zombie_villager"
+}

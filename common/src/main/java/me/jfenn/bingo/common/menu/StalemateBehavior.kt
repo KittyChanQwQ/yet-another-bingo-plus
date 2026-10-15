@@ -8,7 +8,7 @@ import me.jfenn.bingo.generated.StringKey
 import me.jfenn.bingo.platform.text.Formatting
 import org.joml.Vector3d
 
-internal const val MENU_STALEMATE_WIDTH = 2.0
+internal const val MENU_STALEMATE_WIDTH = 1.5
 
 internal fun MenuComponent.registerStalemateBehavior(
     position: Vector3d,

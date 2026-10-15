@@ -1,0 +1,16 @@
+{
+  "type": "item",
+  "item": "minecraft:potion",
+  "components": {
+    "minecraft:potion_contents": {
+      "potion": "minecraft:weakness"
+    }
+  },
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.potion_weakness",
+      "fallback": "Potion of Weakness"
+    },
+    "item": "minecraft:potion"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:bat_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_bat",
+      "fallback": "Kill a Bat"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:bat"
+}

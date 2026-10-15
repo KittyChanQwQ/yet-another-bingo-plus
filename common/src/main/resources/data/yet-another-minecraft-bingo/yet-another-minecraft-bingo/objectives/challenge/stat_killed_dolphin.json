@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:dolphin_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_dolphin",
+      "fallback": "Kill a Dolphin"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:dolphin"
+}

@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:strider_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_strider",
+      "fallback": "Kill a Strider"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:strider"
+}

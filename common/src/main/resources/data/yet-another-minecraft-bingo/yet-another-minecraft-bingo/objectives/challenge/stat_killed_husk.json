@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:husk_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_husk",
+      "fallback": "Kill a Husk"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:husk"
+}

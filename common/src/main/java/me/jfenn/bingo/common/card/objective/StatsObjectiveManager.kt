@@ -52,7 +52,7 @@ internal class StatsObjectiveManager(
     private fun init(objective: BingoObjective): Boolean {
         if (objective !is BingoObjective.StatsEntry) return false
 
-        val stat = statManager.getById(objective.data.statType, objective.data.statName)
+        val stat = getStatHandle(objective.data)
             ?: return false
 
         objective.stat = stat
@@ -82,6 +82,31 @@ internal class StatsObjectiveManager(
         )
 
         return true
+    }
+
+    /**
+     * Returns a stat handle for the objective, or null if it cannot be resolved.
+     *
+     * Supports the special `minecraft:distance` stat name, which sums all of the
+     * player's movement distance stats into a single value measured in blocks.
+     */
+    private fun getStatHandle(data: ObjectiveData.Stats): IStatHandle? {
+        if (data.statType == STAT_TYPE_CUSTOM && data.statName == STAT_DISTANCE) {
+            val handles = MOVEMENT_STATS.mapNotNull { statManager.getById(STAT_TYPE_CUSTOM, it) }
+            if (handles.isNotEmpty()) {
+                return object : IStatHandle {
+                    override fun getForPlayer(player: IPlayerHandle): Int =
+                        handles.sumOf { it.getForPlayer(player) } / 100
+
+                    override fun reset(player: IPlayerHandle) {
+                        handles.forEach { it.reset(player) }
+                    }
+                }
+            }
+            return null
+        }
+
+        return statManager.getById(data.statType, data.statName)
     }
 
     override fun init(card: BingoCard) {
@@ -167,5 +192,31 @@ internal class StatsObjectiveManager(
                 teams = teams
             )
         }
+    }
+
+    companion object {
+        private const val STAT_TYPE_CUSTOM = "minecraft:custom"
+        private const val STAT_DISTANCE = "minecraft:distance"
+
+        /** Movement stats (measured in centimeters) that are summed by [STAT_DISTANCE] */
+        private val MOVEMENT_STATS = listOf(
+            "minecraft:walk_one_cm",
+            "minecraft:sprint_one_cm",
+            "minecraft:crouch_one_cm",
+            "minecraft:swim_one_cm",
+            "minecraft:walk_on_water_one_cm",
+            "minecraft:walk_under_water_one_cm",
+            "minecraft:fall_one_cm",
+            "minecraft:climb_one_cm",
+            "minecraft:fly_one_cm",
+            "minecraft:aviate_one_cm",
+            "minecraft:boat_one_cm",
+            "minecraft:pig_one_cm",
+            "minecraft:horse_one_cm",
+            "minecraft:minecart_one_cm",
+            "minecraft:strider_one_cm",
+            "minecraft:happy_ghast_one_cm",
+            "minecraft:nautilus_one_cm",
+        )
     }
 }

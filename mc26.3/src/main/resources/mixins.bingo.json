@@ -27,6 +27,7 @@
         "ServerLevelAccessor",
         "ServerPlayerMixin",
         "ServerRecipeBookMixin",
+        "ServerWaypointManagerMixin",
         "WorldGenSettingsAccessor"
     ],
     "client": [],

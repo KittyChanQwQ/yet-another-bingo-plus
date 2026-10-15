@@ -1,0 +1,26 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_acacia_wood",
+      "fallback": "All Acacia Wood"
+    },
+    "item": "minecraft:acacia_planks"
+  },
+  "objectives": [
+    "minecraft:acacia_boat",
+    "minecraft:acacia_button",
+    "minecraft:acacia_chest_boat",
+    "minecraft:acacia_door",
+    "minecraft:acacia_fence",
+    "minecraft:acacia_fence_gate",
+    "minecraft:acacia_hanging_sign",
+    "minecraft:acacia_planks",
+    "minecraft:acacia_pressure_plate",
+    "minecraft:acacia_shelf",
+    "minecraft:acacia_sign",
+    "minecraft:acacia_slab",
+    "minecraft:acacia_stairs",
+    "minecraft:acacia_trapdoor"
+  ]
+}

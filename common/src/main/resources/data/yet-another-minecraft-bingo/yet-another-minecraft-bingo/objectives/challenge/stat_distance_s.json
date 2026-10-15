@@ -1,0 +1,18 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:leather_boots",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_distance_s",
+      "with": ["%min%"],
+      "fallback": "Travel %min% Blocks"
+    }
+  },
+  "statType": "minecraft:custom",
+  "statName": "minecraft:distance",
+  "min": {
+    "type": "random",
+    "min": 12000,
+    "max": 20000
+  }
+}

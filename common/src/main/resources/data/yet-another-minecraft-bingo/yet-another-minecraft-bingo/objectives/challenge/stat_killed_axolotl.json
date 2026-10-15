@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:axolotl_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_axolotl",
+      "fallback": "Kill an Axolotl"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:axolotl"
+}

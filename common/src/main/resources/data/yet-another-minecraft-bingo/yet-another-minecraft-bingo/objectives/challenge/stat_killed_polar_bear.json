@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:polar_bear_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_polar_bear",
+      "fallback": "Kill a Polar Bear"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:polar_bear"
+}

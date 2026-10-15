@@ -1,0 +1,15 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_apples",
+      "fallback": "All Apples"
+    },
+    "item": "minecraft:apple"
+  },
+  "objectives": [
+    "minecraft:apple",
+    "minecraft:golden_apple",
+    "minecraft:enchanted_golden_apple"
+  ]
+}

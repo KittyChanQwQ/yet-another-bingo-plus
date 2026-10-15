@@ -1,0 +1,26 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_mangrove_wood",
+      "fallback": "All Mangrove Wood"
+    },
+    "item": "minecraft:mangrove_planks"
+  },
+  "objectives": [
+    "minecraft:mangrove_boat",
+    "minecraft:mangrove_button",
+    "minecraft:mangrove_chest_boat",
+    "minecraft:mangrove_door",
+    "minecraft:mangrove_fence",
+    "minecraft:mangrove_fence_gate",
+    "minecraft:mangrove_hanging_sign",
+    "minecraft:mangrove_planks",
+    "minecraft:mangrove_pressure_plate",
+    "minecraft:mangrove_shelf",
+    "minecraft:mangrove_sign",
+    "minecraft:mangrove_slab",
+    "minecraft:mangrove_stairs",
+    "minecraft:mangrove_trapdoor"
+  ]
+}

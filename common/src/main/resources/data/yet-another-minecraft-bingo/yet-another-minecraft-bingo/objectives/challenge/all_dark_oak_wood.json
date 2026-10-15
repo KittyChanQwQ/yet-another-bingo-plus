@@ -1,0 +1,26 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_dark_oak_wood",
+      "fallback": "All Dark Oak Wood"
+    },
+    "item": "minecraft:dark_oak_planks"
+  },
+  "objectives": [
+    "minecraft:dark_oak_boat",
+    "minecraft:dark_oak_button",
+    "minecraft:dark_oak_chest_boat",
+    "minecraft:dark_oak_door",
+    "minecraft:dark_oak_fence",
+    "minecraft:dark_oak_fence_gate",
+    "minecraft:dark_oak_hanging_sign",
+    "minecraft:dark_oak_planks",
+    "minecraft:dark_oak_pressure_plate",
+    "minecraft:dark_oak_shelf",
+    "minecraft:dark_oak_sign",
+    "minecraft:dark_oak_slab",
+    "minecraft:dark_oak_stairs",
+    "minecraft:dark_oak_trapdoor"
+  ]
+}

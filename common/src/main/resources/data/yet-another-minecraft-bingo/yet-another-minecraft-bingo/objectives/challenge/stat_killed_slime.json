@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:slime_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_slime",
+      "fallback": "Kill a Slime"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:slime"
+}

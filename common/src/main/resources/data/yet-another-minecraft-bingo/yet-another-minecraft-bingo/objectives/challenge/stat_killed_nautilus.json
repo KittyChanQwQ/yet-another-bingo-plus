@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:nautilus_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_nautilus",
+      "fallback": "Kill a Nautilus"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:nautilus"
+}

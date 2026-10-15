@@ -1,0 +1,16 @@
+{
+  "type": "item",
+  "item": "minecraft:potion",
+  "components": {
+    "minecraft:potion_contents": {
+      "potion": "minecraft:strength"
+    }
+  },
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.potion_strength",
+      "fallback": "Potion of Strength"
+    },
+    "item": "minecraft:potion"
+  }
+}

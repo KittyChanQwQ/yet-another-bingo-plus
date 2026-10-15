@@ -1,0 +1,18 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_chestplates",
+      "fallback": "All Chestplates"
+    },
+    "item": "minecraft:diamond_chestplate"
+  },
+  "objectives": [
+    "minecraft:leather_chestplate",
+    "minecraft:copper_chestplate",
+    "minecraft:iron_chestplate",
+    "minecraft:golden_chestplate",
+    "minecraft:diamond_chestplate",
+    "minecraft:netherite_chestplate"
+  ]
+}

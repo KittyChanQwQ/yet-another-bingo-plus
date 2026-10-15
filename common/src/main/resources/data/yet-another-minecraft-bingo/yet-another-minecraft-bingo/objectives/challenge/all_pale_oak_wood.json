@@ -1,0 +1,26 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_pale_oak_wood",
+      "fallback": "All Pale Oak Wood"
+    },
+    "item": "minecraft:pale_oak_planks"
+  },
+  "objectives": [
+    "minecraft:pale_oak_boat",
+    "minecraft:pale_oak_button",
+    "minecraft:pale_oak_chest_boat",
+    "minecraft:pale_oak_door",
+    "minecraft:pale_oak_fence",
+    "minecraft:pale_oak_fence_gate",
+    "minecraft:pale_oak_hanging_sign",
+    "minecraft:pale_oak_planks",
+    "minecraft:pale_oak_pressure_plate",
+    "minecraft:pale_oak_shelf",
+    "minecraft:pale_oak_sign",
+    "minecraft:pale_oak_slab",
+    "minecraft:pale_oak_stairs",
+    "minecraft:pale_oak_trapdoor"
+  ]
+}

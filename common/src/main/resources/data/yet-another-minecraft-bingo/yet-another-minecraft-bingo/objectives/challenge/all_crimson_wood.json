@@ -1,0 +1,24 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_crimson_wood",
+      "fallback": "All Crimson Wood"
+    },
+    "item": "minecraft:crimson_planks"
+  },
+  "objectives": [
+    "minecraft:crimson_button",
+    "minecraft:crimson_door",
+    "minecraft:crimson_fence",
+    "minecraft:crimson_fence_gate",
+    "minecraft:crimson_hanging_sign",
+    "minecraft:crimson_planks",
+    "minecraft:crimson_pressure_plate",
+    "minecraft:crimson_shelf",
+    "minecraft:crimson_sign",
+    "minecraft:crimson_slab",
+    "minecraft:crimson_stairs",
+    "minecraft:crimson_trapdoor"
+  ]
+}

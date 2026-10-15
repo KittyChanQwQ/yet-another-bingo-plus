@@ -1,12 +1,11 @@
 {
   "type": "stats",
   "display": {
+    "item": "minecraft:hoglin_spawn_egg",
     "name": {
       "translate": "bingo.objective.challenge.stat_killed_hoglin",
       "fallback": "Kill a Hoglin"
-    },
-    "item": "minecraft:hoglin_spawn_egg",
-    "image": "yet-another-minecraft-bingo:hoglin_head"
+    }
   },
   "statType": "minecraft:killed",
   "statName": "minecraft:hoglin"

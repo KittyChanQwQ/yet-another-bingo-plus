@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:zoglin_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_zoglin",
+      "fallback": "Kill a Zoglin"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:zoglin"
+}

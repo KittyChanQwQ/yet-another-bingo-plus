@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:llama_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_llama",
+      "fallback": "Kill a Llama"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:llama"
+}

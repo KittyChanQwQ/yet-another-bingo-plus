@@ -8,6 +8,7 @@ import me.jfenn.bingo.api.options.StalemateBehavior
 import me.jfenn.bingo.common.LOBBY_WORLD_ID
 import me.jfenn.bingo.common.Permission
 import me.jfenn.bingo.common.options.BingoCardOptions
+import me.jfenn.bingo.common.options.LocatorBarMode
 import me.jfenn.bingo.common.options.withOptionsService
 import me.jfenn.bingo.common.scope.BingoComponent
 import me.jfenn.bingo.platform.IServerWorldFactory
@@ -50,6 +51,12 @@ class BingoOptionsCommands(
     private fun IExecutionContext.setStalemateBehavior(stalemateBehavior: StalemateBehavior) {
         withOptionsService {
             it.stalemateBehavior = stalemateBehavior
+        }
+    }
+
+    private fun IExecutionContext.setLocatorBarMode(locatorBarMode: LocatorBarMode) {
+        withOptionsService {
+            it.locatorBarMode = locatorBarMode
         }
     }
 
@@ -164,6 +171,18 @@ class BingoOptionsCommands(
                     }
                     literal("do_nothing") {
                         executes { setStalemateBehavior(StalemateBehavior.NOTHING) }
+                    }
+                }
+
+                literal("locator_bar") {
+                    literal("all") {
+                        executes { setLocatorBarMode(LocatorBarMode.ALL) }
+                    }
+                    literal("team_and_winner") {
+                        executes { setLocatorBarMode(LocatorBarMode.TEAM_AND_WINNER) }
+                    }
+                    literal("team_only") {
+                        executes { setLocatorBarMode(LocatorBarMode.TEAM_ONLY) }
                     }
                 }
 

@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:blaze_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_blaze",
+      "fallback": "Kill a Blaze"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:blaze"
+}

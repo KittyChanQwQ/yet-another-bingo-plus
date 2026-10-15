@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:glow_squid_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_glow_squid",
+      "fallback": "Kill a Glow Squid"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:glow_squid"
+}

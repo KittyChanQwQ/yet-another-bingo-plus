@@ -1,11 +1,11 @@
 {
   "type": "stats",
   "display": {
+    "item": "minecraft:creeper_spawn_egg",
     "name": {
       "translate": "bingo.objective.challenge.stat_killed_creeper",
       "fallback": "Kill a Creeper"
-    },
-    "item": "minecraft:creeper_head"
+    }
   },
   "statType": "minecraft:killed",
   "statName": "minecraft:creeper"

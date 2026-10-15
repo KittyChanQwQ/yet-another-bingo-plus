@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:pillager_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_pillager",
+      "fallback": "Kill a Pillager"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:pillager"
+}

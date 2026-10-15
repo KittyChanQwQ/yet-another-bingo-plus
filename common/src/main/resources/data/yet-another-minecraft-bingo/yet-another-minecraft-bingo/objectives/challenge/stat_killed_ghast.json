@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:ghast_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_ghast",
+      "fallback": "Kill a Ghast"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:ghast"
+}

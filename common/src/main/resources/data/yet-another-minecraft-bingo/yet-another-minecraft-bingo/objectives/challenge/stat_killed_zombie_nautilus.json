@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:zombie_nautilus_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_zombie_nautilus",
+      "fallback": "Kill a Zombie Nautilus"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:zombie_nautilus"
+}

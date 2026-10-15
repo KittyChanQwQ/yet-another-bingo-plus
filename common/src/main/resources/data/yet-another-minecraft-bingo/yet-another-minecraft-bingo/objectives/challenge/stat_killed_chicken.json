@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:chicken_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_chicken",
+      "fallback": "Kill a Chicken"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:chicken"
+}

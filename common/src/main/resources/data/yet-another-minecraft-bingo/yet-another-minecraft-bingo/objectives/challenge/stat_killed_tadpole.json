@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:tadpole_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_tadpole",
+      "fallback": "Kill a Tadpole"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:tadpole"
+}

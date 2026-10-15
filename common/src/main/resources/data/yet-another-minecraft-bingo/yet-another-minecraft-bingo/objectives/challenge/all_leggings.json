@@ -1,0 +1,18 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_leggings",
+      "fallback": "All Leggings"
+    },
+    "item": "minecraft:diamond_leggings"
+  },
+  "objectives": [
+    "minecraft:leather_leggings",
+    "minecraft:copper_leggings",
+    "minecraft:iron_leggings",
+    "minecraft:golden_leggings",
+    "minecraft:diamond_leggings",
+    "minecraft:netherite_leggings"
+  ]
+}

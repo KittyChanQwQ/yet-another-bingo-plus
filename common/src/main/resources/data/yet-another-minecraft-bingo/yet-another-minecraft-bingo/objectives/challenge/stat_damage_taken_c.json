@@ -1,0 +1,18 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:shield",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_damage_taken_c",
+      "with": ["%min%"],
+      "fallback": "Take %min% Damage"
+    }
+  },
+  "statType": "minecraft:custom",
+  "statName": "minecraft:damage_taken",
+  "min": {
+    "type": "random",
+    "min": 10,
+    "max": 40
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_helmets",
+      "fallback": "All Helmets"
+    },
+    "item": "minecraft:diamond_helmet"
+  },
+  "objectives": [
+    "minecraft:leather_helmet",
+    "minecraft:copper_helmet",
+    "minecraft:iron_helmet",
+    "minecraft:golden_helmet",
+    "minecraft:diamond_helmet",
+    "minecraft:netherite_helmet"
+  ]
+}

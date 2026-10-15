@@ -1,11 +1,11 @@
 {
   "type": "stats",
   "display": {
+    "item": "minecraft:creaking_spawn_egg",
     "name": {
       "translate": "bingo.objective.challenge.stat_killed_creaking",
       "fallback": "Kill a Creaking"
-    },
-    "item": "minecraft:creaking_heart"
+    }
   },
   "statType": "minecraft:killed",
   "statName": "minecraft:creaking",

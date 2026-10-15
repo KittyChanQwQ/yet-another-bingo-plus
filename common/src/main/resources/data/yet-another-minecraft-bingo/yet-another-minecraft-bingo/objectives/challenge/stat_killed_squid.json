@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:squid_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_squid",
+      "fallback": "Kill a Squid"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:squid"
+}

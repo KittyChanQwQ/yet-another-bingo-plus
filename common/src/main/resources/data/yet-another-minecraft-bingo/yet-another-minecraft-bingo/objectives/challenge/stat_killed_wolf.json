@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:wolf_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_wolf",
+      "fallback": "Kill a Wolf"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:wolf"
+}

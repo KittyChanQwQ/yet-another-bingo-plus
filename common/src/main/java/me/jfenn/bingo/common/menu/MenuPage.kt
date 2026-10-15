@@ -162,6 +162,11 @@ private fun createGoalPage(
         position = pos + Vector3d(MENU_SCORE_INFO_WIDTH/2, -MENU_LINE_PADDING, 0.0),
     )
     pos.add(MENU_SCORE_INFO_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
+
+    registerLocatorBarMode(
+        position = pos + Vector3d(MENU_LOCATOR_BAR_WIDTH/2, -MENU_LINE_PADDING, 0.0),
+    )
+    pos.add(MENU_LOCATOR_BAR_WIDTH + MENU_LINE_PADDING, 0.0, 0.0)
 }
 
 private fun createItemsPage(

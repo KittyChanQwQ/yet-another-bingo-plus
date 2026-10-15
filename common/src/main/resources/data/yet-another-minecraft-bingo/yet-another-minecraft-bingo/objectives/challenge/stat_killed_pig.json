@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:pig_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_pig",
+      "fallback": "Kill a Pig"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:pig"
+}

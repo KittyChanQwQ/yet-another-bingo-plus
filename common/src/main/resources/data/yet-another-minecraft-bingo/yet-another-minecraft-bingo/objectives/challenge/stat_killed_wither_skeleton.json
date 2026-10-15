@@ -1,7 +1,7 @@
 {
   "type": "stats",
   "display": {
-    "item": "minecraft:wither_skeleton_skull",
+    "item": "minecraft:wither_skeleton_spawn_egg",
     "name": {
       "translate": "bingo.objective.challenge.stat_killed_wither_skeleton",
       "fallback": "Kill a Wither Skeleton"

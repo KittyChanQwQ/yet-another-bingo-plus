@@ -1,0 +1,18 @@
+{
+  "type": "all_of",
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.all_boots",
+      "fallback": "All Boots"
+    },
+    "item": "minecraft:diamond_boots"
+  },
+  "objectives": [
+    "minecraft:leather_boots",
+    "minecraft:copper_boots",
+    "minecraft:iron_boots",
+    "minecraft:golden_boots",
+    "minecraft:diamond_boots",
+    "minecraft:netherite_boots"
+  ]
+}

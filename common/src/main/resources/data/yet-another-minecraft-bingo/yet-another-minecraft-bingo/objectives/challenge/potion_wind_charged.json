@@ -1,0 +1,16 @@
+{
+  "type": "item",
+  "item": "minecraft:potion",
+  "components": {
+    "minecraft:potion_contents": {
+      "potion": "minecraft:wind_charged"
+    }
+  },
+  "display": {
+    "name": {
+      "translate": "bingo.objective.challenge.potion_wind_charged",
+      "fallback": "Potion of Wind Charging"
+    },
+    "item": "minecraft:potion"
+  }
+}

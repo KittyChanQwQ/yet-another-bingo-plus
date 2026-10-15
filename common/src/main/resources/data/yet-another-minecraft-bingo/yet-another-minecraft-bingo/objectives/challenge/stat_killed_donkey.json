@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:donkey_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_donkey",
+      "fallback": "Kill a Donkey"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:donkey"
+}

@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:zombie_horse_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_zombie_horse",
+      "fallback": "Kill a Zombie Horse"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:zombie_horse"
+}

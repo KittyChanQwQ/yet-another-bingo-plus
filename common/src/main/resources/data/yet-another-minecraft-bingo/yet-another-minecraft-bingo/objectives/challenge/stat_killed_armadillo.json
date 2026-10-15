@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:armadillo_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_armadillo",
+      "fallback": "Kill an Armadillo"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:armadillo"
+}

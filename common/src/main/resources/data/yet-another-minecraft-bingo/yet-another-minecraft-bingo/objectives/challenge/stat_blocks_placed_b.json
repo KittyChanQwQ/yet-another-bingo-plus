@@ -1,0 +1,17 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:oak_planks",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_blocks_placed_b",
+      "with": ["%min%"],
+      "fallback": "Place %min% Blocks"
+    }
+  },
+  "statType": "minecraft:used",
+  "min": {
+    "type": "random",
+    "min": 500,
+    "max": 1500
+  }
+}

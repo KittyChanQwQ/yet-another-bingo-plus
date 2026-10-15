@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:turtle_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_turtle",
+      "fallback": "Kill a Turtle"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:turtle"
+}

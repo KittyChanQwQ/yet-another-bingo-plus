@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:ravager_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_ravager",
+      "fallback": "Kill a Ravager"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:ravager"
+}

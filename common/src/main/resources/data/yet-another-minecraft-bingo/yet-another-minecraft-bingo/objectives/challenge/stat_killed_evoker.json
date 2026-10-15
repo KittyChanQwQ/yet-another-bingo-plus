@@ -1,0 +1,12 @@
+{
+  "type": "stats",
+  "display": {
+    "item": "minecraft:evoker_spawn_egg",
+    "name": {
+      "translate": "bingo.objective.challenge.stat_killed_evoker",
+      "fallback": "Kill an Evoker"
+    }
+  },
+  "statType": "minecraft:killed",
+  "statName": "minecraft:evoker"
+}
